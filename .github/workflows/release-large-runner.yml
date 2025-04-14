@@ -21,6 +21,8 @@ env:
   DOCKER_USERNAME: finos
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   MAVEN_OPTS: -Xmx16g
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 on:
   workflow_dispatch:
@@ -34,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest-16-cores
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.FINOS_GITHUB_TOKEN }}
 
@@ -44,7 +46,7 @@ jobs:
           git config --global user.name "FINOS Administrator"
 
       - name: Set up Maven Central
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: "11"
@@ -72,4 +74,4 @@ jobs:
         run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
-        run: mvn -B -e release:perform -Darguments='-B -e -T 4 -DargLine="-Xmx12g"' -P release,docker
+        run: mvn -B -e release:perform -Darguments='-B -e -T 4 -DargLine="-Xmx12g"' -P release,docker,pct-cloud-test

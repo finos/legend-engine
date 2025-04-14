@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensiveFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
@@ -338,7 +339,18 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     Mod->nativeFunctionMapEntry(),
     Round->nativeFunctionMapEntry(),
     Floor->nativeFunctionMapEntry(),
-
+    Sum->nativeFunctionMapEntry(),
+    Average->nativeFunctionMapEntry(),
+    Count->nativeFunctionMapEntry(),
+    VarianceSample->nativeFunctionMapEntry(),
+    VariancePopulation->nativeFunctionMapEntry(),
+    Rank->nativeFunctionMapEntry(),
+    DenseRank->nativeFunctionMapEntry(),
+    PercentRank->nativeFunctionMapEntry(),
+    RowNumber->nativeFunctionMapEntry(),
+    CumulativeDistribution->nativeFunctionMapEntry(),
+    Ntile->nativeFunctionMapEntry(),
+    
     // String
     Lpad->nativeFunctionMapEntry(),
     Rpad->nativeFunctionMapEntry(),
@@ -365,6 +377,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
     // Boolean
     pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    BoolAnd->nativeFunctionMapEntry(),
+    BoolOr->nativeFunctionMapEntry(),
 
     // Temporal
     DateTrunc->nativeFunctionMapEntry(),
@@ -374,7 +388,15 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     ToTimestamp->nativeFunctionMapEntry(),
 
     // Miscellaneous
-    Coalesce->nativeFunctionMapEntry()
+    Coalesce->nativeFunctionMapEntry(),
+    Min->nativeFunctionMapEntry(),
+    Max->nativeFunctionMapEntry(),
+    Lag->nativeFunctionMapEntry(),
+    Lead->nativeFunctionMapEntry(),
+    FirstValue->nativeFunctionMapEntry(),
+    LastValue->nativeFunctionMapEntry(),
+    NthValue->nativeFunctionMapEntry()
+
   ])
 }
 

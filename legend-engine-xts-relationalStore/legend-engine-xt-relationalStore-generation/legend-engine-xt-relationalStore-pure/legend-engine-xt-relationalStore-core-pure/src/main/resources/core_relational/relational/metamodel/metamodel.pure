@@ -49,8 +49,11 @@ Class meta::relational::metamodel::DataRow
 
 Class meta::relational::metamodel::CreateViewSQL extends SQLQuery
 {
-    id : String[1];
+    schemaName : String[0..1];
+    name : String[1];
     generatedSQL : String[1];
+    secure : Boolean[1] = false;
+    copyGrants : Boolean[1] = false;
 }
 
 Class meta::relational::metamodel::CreateSchemaSQL extends SQLQuery

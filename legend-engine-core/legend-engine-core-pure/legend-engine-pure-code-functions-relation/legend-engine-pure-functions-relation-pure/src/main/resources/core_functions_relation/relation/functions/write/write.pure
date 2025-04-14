@@ -24,7 +24,7 @@ function meta::pure::functions::relation::write::writeFunctions():Function<Any>[
   meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Integer_1_;
 }
 
-function <<PCT.test>> meta::pure::functions::relation::testWrite<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::write::testWrite<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                |  #TDS

@@ -35,5 +35,13 @@ function meta::relational::functions::sqlQueryToString::snowflake::buildDummyCon
 
 function meta::relational::functions::sqlQueryToString::snowflake::createView(createViewSQL:CreateViewSQL[1], dbConfig:DbConfig[1]):String[1]
 {
-    'Create or Replace View "' + $createViewSQL.id + '" as ' + $createViewSQL.generatedSQL + ';'
+    'Create or Replace ' +
+    if($createViewSQL.secure, |'SECURE ',|'') +
+    'View ' +
+    if($createViewSQL.schemaName->isEmpty(),|'',|$createViewSQL.schemaName->toOne() + '.') +
+    $createViewSQL.name +
+    if($createViewSQL.copyGrants, |' COPY GRANTS',|'') +
+    ' as ' +
+    $createViewSQL.generatedSQL +
+    ';'
 }

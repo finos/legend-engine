@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.extension;
 
-import com.hazelcast.partition.Partition;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
@@ -25,12 +24,9 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MapIterable;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.api.multimap.list.MutableListMultimap;
-import org.eclipse.collections.api.partition.PartitionIterable;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
@@ -46,7 +42,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -162,7 +158,11 @@ public class CompilerExtensions
         this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
         this.extraRelationStoreAccessorProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRelationStoreAccessorProcessors);
         this.extraSubTypesForFunctionMatching = Maps.mutable.empty();
-        this.extensions.forEach(e -> extraSubTypesForFunctionMatching.putAll(e.getExtraSubtypesForFunctionMatching()));
+        this.extensions.forEach(
+                e -> e.getExtraSubtypesForFunctionMatching().keysView().forEach(
+                        k -> extraSubTypesForFunctionMatching.getIfAbsentPut(k, Sets.mutable::empty).addAll(e.getExtraSubtypesForFunctionMatching().get(k))
+                )
+        );
     }
 
     public List<CompilerExtension> getExtensions()

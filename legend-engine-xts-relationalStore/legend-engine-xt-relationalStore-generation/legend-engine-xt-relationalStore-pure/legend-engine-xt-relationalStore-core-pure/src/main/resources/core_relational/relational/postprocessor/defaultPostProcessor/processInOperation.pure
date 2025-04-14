@@ -138,12 +138,12 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                                                                            |^AllocationExecutionNode(
                                                                                 varName        = $allocationNodeName,
                                                                                 executionNodes = ^ConstantExecutionNode(
-                                                                                                     values     = list(list(if($collectionValuesWithoutVarPlaceHolder->at(0)->instanceOf(Date),
+                                                                                                     values     = if($collectionValuesWithoutVarPlaceHolder->at(0)->instanceOf(Date),
                                                                                                                                 |$collectionValuesWithoutVarPlaceHolder->map(d | $d->cast(@Date)->convertDateToSqlString([])),
-                                                                                                                                |$collectionValuesWithoutVarPlaceHolder))),
-                                                                                                     resultType = ^ResultType(genericType=^GenericType(rawType=List))
+                                                                                                                                |$collectionValuesWithoutVarPlaceHolder),
+                                                                                                     resultType = ^ResultType(genericType=^GenericType(rawType=$collectionValueType))
                                                                                                   ),
-                                                                                resultType     = ^ResultType(genericType=^GenericType(rawType=List))
+                                                                                resultType     = ^ResultType(genericType=^GenericType(rawType=$collectionValueType))
                                                                              );,
                                                                            |[]
                                                                         );

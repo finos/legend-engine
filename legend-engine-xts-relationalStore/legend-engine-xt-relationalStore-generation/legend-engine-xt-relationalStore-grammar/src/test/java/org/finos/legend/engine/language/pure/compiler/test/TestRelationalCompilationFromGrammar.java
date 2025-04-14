@@ -21,7 +21,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RootRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
@@ -35,7 +35,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 public class TestRelationalCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -3183,4 +3182,49 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 ")", null, Arrays.asList("COMPILATION error at [21:3-52]: Found filters with duplicate names: FirmFilter", "COMPILATION error at [22:3-44]: Found filters with duplicate names: FirmFilter"));
     }
 
+
+    @Test
+    public void testRelationalSchema()
+    {
+        test("###Relational\n" +
+                        "Database model::relational::tests::dbInc\n" +
+                        "(\n" +
+                        "   Schema test" +
+                        "   (" +
+                        "    Table personTable (ID INT PRIMARY KEY, FIRMID INT)\n" +
+                        "    Table firmTable(ID INT PRIMARY KEY)\n" +
+                        "   )" +
+                        "\n" +
+                        ")");
+    }
+
+    @Test
+    public void testRelationalSchemaDoubleQuoted()
+    {
+        test("###Relational\n" +
+                "Database model::relational::tests::dbInc\n" +
+                "(\n" +
+                "   Schema \"test\"" +
+                "   (" +
+                "    Table personTable (ID INT PRIMARY KEY, FIRMID INT)\n" +
+                "    Table firmTable(ID INT PRIMARY KEY)\n" +
+                "   )" +
+                "\n" +
+                ")");
+    }
+
+    @Test
+    public void testRelationalSchemaSingleAndDoubleQuoted()
+    {
+        test("###Relational\n" +
+                "Database model::relational::tests::dbInc\n" +
+                "(\n" +
+                "   Schema '\"test\"'" +
+                "   (" +
+                "    Table personTable (ID INT PRIMARY KEY, FIRMID INT)\n" +
+                "    Table firmTable(ID INT PRIMARY KEY)\n" +
+                "   )" +
+                "\n" +
+                ")");
+    }
 }

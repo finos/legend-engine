@@ -379,6 +379,18 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Mod, simpleFunctionProcessor('mod')),
     pair(Round, simpleFunctionProcessor('round')),
     pair(Floor, customFunctionProcessor(processorForFloor_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Sum, simpleFunctionProcessor('sum')),
+    pair(Average, simpleFunctionProcessor('avg')),
+    pair(Count, simpleFunctionProcessor('count')),
+    pair(VarianceSample, simpleFunctionProcessor('var_samp')),
+    pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
+    pair(Rank, simpleFunctionProcessor('rank')),
+    pair(DenseRank, simpleFunctionProcessor('dense_rank')),
+    pair(PercentRank, simpleFunctionProcessor('percent_rank')),
+    pair(RowNumber, simpleFunctionProcessor('row_number')),
+    pair(CumulativeDistribution, simpleFunctionProcessor('cume_dist')),
+    pair(Ntile, simpleFunctionProcessor('ntile')),
+
 
     // String
     // Custom handling required because in H2 will only consider the first character in the padding string and repeat only it whereas in all other DBs the 
@@ -410,6 +422,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
     // Boolean
     pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(BoolAnd, simpleFunctionProcessor('bool_and')),
+    pair(BoolOr, simpleFunctionProcessor('bool_or')),
 
     // Temporal
     pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -419,7 +433,15 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
     // Miscellaneous
-    pair(Coalesce, simpleFunctionProcessor('coalesce'))
+    pair(Coalesce, simpleFunctionProcessor('coalesce')),
+    pair(Min, simpleFunctionProcessor('min')),
+    pair(Max, simpleFunctionProcessor('max')),
+    pair(Lag, simpleFunctionProcessor('lag')),
+    pair(Lead, simpleFunctionProcessor('lead')),
+    pair(FirstValue, simpleFunctionProcessor('first_value')),
+    pair(LastValue, simpleFunctionProcessor('last_value')),
+    pair(NthValue, simpleFunctionProcessor('nth_value'))
+
   ])
 }
 

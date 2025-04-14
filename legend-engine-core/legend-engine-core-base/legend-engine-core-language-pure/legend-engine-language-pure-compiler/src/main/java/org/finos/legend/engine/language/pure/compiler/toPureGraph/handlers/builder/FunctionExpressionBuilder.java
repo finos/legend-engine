@@ -22,7 +22,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingCont
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
@@ -89,6 +89,8 @@ public abstract class FunctionExpressionBuilder
     {
         return (valueSpecification instanceof Variable
                 && processingContext.getInferredVariable(((Variable) valueSpecification).name) != null
+                // When variable is Nil, it says is subtype of function, so avoid that scenario
+                && !Type.isBottomType(processingContext.getInferredVariable(((Variable) valueSpecification).name)._genericType()._rawType(), pureModel.getExecutionSupport().getProcessorSupport())
                 && Type.subTypeOf(processingContext.getInferredVariable(((Variable) valueSpecification).name)._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport()));
     }
 

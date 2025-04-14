@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.77.2-SNAPSHOT</version>
+    <version>4.78.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -107,7 +107,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.41.1</legend.pure.version>
+        <legend.pure.version>5.43.0</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -3135,6 +3135,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgres-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-memsql-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

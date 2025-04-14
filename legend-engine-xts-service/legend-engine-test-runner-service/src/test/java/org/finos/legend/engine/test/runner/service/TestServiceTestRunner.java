@@ -22,7 +22,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.test.runner.shared.TestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.junit.Assert;
@@ -98,6 +97,18 @@ public class TestServiceTestRunner
     public void testMultiExecutionService() throws Exception
     {
         test("legend-sdlc-test-services-multi-execution.json", "my::Service", TestResult.SUCCESS, true);
+    }
+
+    @Test
+    public void testMultiExecutionServiceWithInstanceOf() throws Exception
+    {
+        test("legend-sdlc-test-services-multi-execution-instanceOf.json", "my::Service", TestResult.SUCCESS, true);
+    }
+
+    @Test
+    public void testMultiExecutionServiceWithInstanceOfAndNoSourceInfo() throws Exception
+    {
+        test("legend-sdlc-test-services-multi-execution-instanceOf-no-source-info.json", "my::Service", TestResult.SUCCESS, true);
     }
 
     @Test

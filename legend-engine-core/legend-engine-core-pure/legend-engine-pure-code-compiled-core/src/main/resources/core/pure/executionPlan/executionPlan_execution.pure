@@ -38,9 +38,9 @@ function meta::pure::executionPlan::processNode(node:ExecutionNode[1], mapping:M
 {
    $node->match(
       [
-         s:SequenceExecutionNode[1] | let planParams = $s.executionNodes->filter(e|$e->instanceOf(AllocationExecutionNode))->cast(@AllocationExecutionNode)->map(node |let nodeRes = $node.executionNodes->toOne()->processNode($mapping, $runtime, $parametersValues, $extensions).values->toOne();
+         s:SequenceExecutionNode[1] | let planParams = $s.executionNodes->filter(e|$e->instanceOf(AllocationExecutionNode))->cast(@AllocationExecutionNode)->map(node |let nodeRes = $node.executionNodes->toOne()->processNode($mapping, $runtime, $parametersValues, $extensions).values;
                                                                                                                                                                      let varMultiplicity = if($nodeRes->size() == 1, | PureOne, | ZeroMany);
-                                                                                                                                                                     pair(^VariableExpression(name=$node.varName, genericType = $node.resultType.genericType, multiplicity=$varMultiplicity), $nodeRes););
+                                                                                                                                                                     pair(^VariableExpression(name=$node.varName, genericType = $node.resultType.genericType, multiplicity=$varMultiplicity), if($nodeRes->size() > 1, |list($nodeRes), |$nodeRes->toOne())););
                                       $s.executionNodes->filter(e|!$e->instanceOf(FunctionParametersValidationNode) && !$e->instanceOf(AllocationExecutionNode))->map(e|$e->processNode($mapping, $runtime, $planParams->concatenate($parametersValues), $extensions))->toOne();,
          f:FreeMarkerConditionalExecutionNode[1]| if($f.falseBlock->isNotEmpty(), |$f.falseBlock->toOne()->processNode($mapping, $runtime, $parametersValues, $extensions);, |^Result<Any|*>(values = [])),
          c:ConstantExecutionNode[1]| ^Result<Any|*>(values = $c.values);

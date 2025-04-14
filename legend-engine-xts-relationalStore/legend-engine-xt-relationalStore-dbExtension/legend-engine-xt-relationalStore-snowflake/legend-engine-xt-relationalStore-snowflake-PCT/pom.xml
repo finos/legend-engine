@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-snowflake</artifactId>
-        <version>4.77.2-SNAPSHOT</version>
+        <version>4.78.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -41,7 +41,7 @@
 
     <profiles>
         <profile>
-            <id>pct-test</id>
+            <id>pct-cloud-test</id>
             <build>
                 <plugins>
                     <plugin>
@@ -49,10 +49,11 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <skip>false</skip>
-                            <systemProperties>
+                            <systemPropertyVariables>
                                 <AWS_ACCESS_KEY_ID>${env.AWS_ACCESS_KEY_ID}</AWS_ACCESS_KEY_ID>
                                 <AWS_SECRET_ACCESS_KEY>${env.AWS_SECRET_ACCESS_KEY}</AWS_SECRET_ACCESS_KEY>
-                            </systemProperties>
+                                <pct.external.resources.properties>${env.PCT_EXTERNAL_RESOURCES_PROPERTIES}</pct.external.resources.properties>
+                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -198,6 +199,10 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
 
         <!-- TEST -->
         <dependency>

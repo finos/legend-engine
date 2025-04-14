@@ -42,6 +42,8 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
     private final String basePathForInput = "src/test/resources/data/unitemporal-snapshot-milestoning/input/batch_id_based/";
     private final String basePathForExpected = "src/test/resources/data/unitemporal-snapshot-milestoning/expected/batch_id_based/";
 
+    private static final String suffixForDeletePartitionTable = "_deleted_partitions";
+
     /*
     Scenario: Test milestoning Logic without Partition when staging table pre populated
     Empty batch handling - DeleteTargetData
@@ -405,6 +407,38 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestModeWithNoOpBatchHandling, options, datasets, schema, expectedDataPass3, expectedStats);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass 3 (Delete Partition file) ------------------------
+
+        IngestMode ingestModeWithDerivePartition = ingestMode.withEmptyDatasetHandling(DeleteTargetData.builder().build());
+
+        String dataPass4 = "src/test/resources/data/empty_file.csv";
+        String deletePartitionFile = basePathForInput + "with_multi_values_partition/delete_partition.csv";
+        String expectedDataPass4 = basePathForExpected + "with_multi_values_partition/expected_pass3.csv";
+
+        DatasetDefinition deletePartitionMainDataset = DatasetDefinition.builder()
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(mainTableName + suffixForDeletePartitionTable)
+                .schema(SchemaDefinition.builder()
+                        .addFields(dateNonPk)
+                        .addFields(accountNum)
+                        .addFields(batchId)
+                        .build())
+                .build();
+
+        datasets = datasets.withDeletePartitionDataset(deletePartitionMainDataset);
+
+        // 1. Create and Load delete partition table
+        createStagingTable(deletePartitionMainDataset);
+        loadDeletePartitionDataWithMultiPartitionKeys(deletePartitionFile);
+
+        // 1. Load Staging table
+        loadStagingDataForWithMultiPartition(dataPass4);
+
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 3);
+        executePlansAndVerifyResults(ingestModeWithDerivePartition, options, datasets, schema, expectedDataPass4, expectedStats);
     }
 
 

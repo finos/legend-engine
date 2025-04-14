@@ -118,7 +118,18 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::mod(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::sign(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::round(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::floor(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::floor(),  
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::sum(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::average(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::count(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::variancePopulation(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::varianceSample(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::rank(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::denseRank(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::percentRank(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::rowNumber(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::cumulativeDistribution(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::ntile(),
 
     // String
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::lpad(),
@@ -149,8 +160,19 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toDate(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toTimestamp(),
 
+    // Boolean function
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::boolAnd(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::boolOr(),
+
     // Miscellaneous
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::coalesce(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::lag(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::lead(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::firstValue(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::lastValue(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::nthValue(),    
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::min(),    
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::max(),    
 
     // Extension Functions
     // Numeric

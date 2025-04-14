@@ -33,7 +33,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.build
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.MultiHandlerFunctionExpressionBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.RequiredInferenceSimilarSignatureFunctionExpressionBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.*;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
@@ -1058,7 +1058,13 @@ public class Handlers
         register(m(m(m(h("meta::pure::functions::collection::removeDuplicates_T_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 1)),
                         // meta::pure::functions::collection::removeDuplicates<T>(col:T[*], eql:Function<{T[1],T[1]->Boolean[1]}>[1]):T[*]
                         grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::removeDuplicates_T_MANY__Function_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> p.size() == 2))),
-                grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> p.size() == 3))));
+                grp((parameters, vsb) ->
+                {
+                    List<ValueSpecification> firstPassProcessed = parameters.stream().map(p -> p instanceof LambdaFunction ? null : p.accept(vsb)).collect(Collectors.toList());
+                    updateSimpleLambda(parameters.get(1), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), vsb.getContext());
+                    updateTwoParamsLambda(parameters.get(2), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1));
+                    return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(vsb));
+                }, h("meta::pure::functions::collection::removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> p.size() == 3))));
 
         register(h("meta::pure::tds::concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
                 h("meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_", true, ps ->
@@ -1202,8 +1208,15 @@ public class Handlers
         register("meta::pure::functions::meta::instanceOf_Any_1__Type_1__Boolean_1_", true, ps -> res("Boolean", "one"));
         register("meta::pure::functions::collection::union_T_MANY__T_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
         register("meta::pure::functions::collection::reverse_T_m__T_m_", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()));
-        register(m(m(h("meta::pure::functions::date::add_StrictDate_1__Duration_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> typeOne(ps.get(1), "Duration") && typeOne(ps.get(0), "StrictDate"))),
-                m(h("meta::pure::functions::collection::add_T_MANY__T_1__T_$1_MANY$_", true, ps -> res(ps.get(0)._genericType(), "oneMany"), ps -> true))));
+        register(
+                m(
+                    m(h("meta::pure::functions::date::add_StrictDate_1__Duration_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> typeOne(ps.get(1), "Duration") && typeOne(ps.get(0), "StrictDate"))),
+                    m(
+                            m(h("meta::pure::functions::collection::add_T_MANY__T_1__T_$1_MANY$_", true, ps -> res(ps.get(0)._genericType(), "oneMany"), ps -> ps.size() == 2)),
+                            m(h("meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_", true, ps -> res(ps.get(0)._genericType(), "oneMany"), ps -> ps.size() == 3))
+                    )
+                )
+        );
 
         register(m(m(h("meta::pure::functions::collection::dropAt_T_MANY__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 2)),
                 m(h("meta::pure::functions::collection::dropAt_T_MANY__Integer_1__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))));
@@ -1822,6 +1835,7 @@ public class Handlers
 
         register(h("meta::pure::functions::math::abs_Float_1__Float_1_", true, ps -> res("Float", "one"), ps -> typeOne(ps.get(0), "Float")),
                 h("meta::pure::functions::math::abs_Integer_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> typeOne(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::abs_Decimal_1__Decimal_1_", true, ps -> res("Decimal", "one"), ps -> typeOne(ps.get(0), "Decimal")),
                 h("meta::pure::functions::math::abs_Number_1__Number_1_", true, ps -> res("Number", "one"), ps -> typeOne(ps.get(0), "Number"))
         );
 
@@ -2403,14 +2417,14 @@ public class Handlers
         map.put("cov_String", Sets.mutable.with("String", "Varchar", "Nil"));
         map.put("cov_function_LambdaFunction", Sets.mutable.with("LambdaFunction", "Nil"));
         map.put("cov_type_Unit", Sets.mutable.with("Unit", "Nil"));
-        map.put("cov_Number", Sets.mutable.with("Number", "Integer", "Float", "Decimal", "TinyInt", "UTinyInt", "SmallInt", "USmallInt", "Int", "UInt", "BigInt", "UBigInt", "Float4", "Double", "Decimal", "Nil"));
+        map.put("cov_Number", Sets.mutable.with("Number", "Integer", "Float", "Decimal", "TinyInt", "UTinyInt", "SmallInt", "USmallInt", "Int", "UInt", "BigInt", "UBigInt", "Float4", "Double", "Numeric", "Nil"));
         map.put("cov_Boolean", Sets.mutable.with("Boolean", "Nil"));
         map.put("cov_type_Type", Sets.mutable.with("Type", "Class", "FunctionType", "DataType", "RelationType", "ClassProjection", "MappingClass", "Unit", "Enumeration", "PrimitiveType", "Measure", "Mass", "Gram", "Kilogram", "Pound", "Nil"));
         map.put("cov_Integer", Sets.mutable.with("Integer", "TinyInt", "UTinyInt", "SmallInt", "USmallInt", "Int", "UInt", "BigInt", "UBigInt", "Nil"));
-        map.put("cov_Date", Sets.mutable.with("Date", "StrictDate", "DateTime", "LatestDate", "Date", "Timestamp", "Nil"));
+        map.put("cov_Date", Sets.mutable.with("Date", "StrictDate", "DateTime", "LatestDate", "Timestamp", "Nil"));
         map.put("cov_function_FunctionDefinition", Sets.mutable.with("FunctionDefinition", "NewPropertyRouteNodeFunctionDefinition", "LambdaFunction", "QualifiedProperty", "ConcreteFunctionDefinition", "Nil"));
         map.put("cov_graphFetch_RootGraphFetchTree", Sets.mutable.with("RootGraphFetchTree", "ExtendedRootGraphFetchTree", "RoutedRootGraphFetchTree", "DataQualityRootGraphFetchTree", "SerializeTopRootGraphFetchTree", "Nil"));
-        map.put("cov_StrictDate", Sets.mutable.with("StrictDate", "Date", "Nil"));
+        map.put("cov_StrictDate", Sets.mutable.with("StrictDate", "Nil"));
         map.put("cov_date_Duration", Sets.mutable.with("Duration", "Nil"));
         map.put("cov_date_DurationUnit", Sets.mutable.with("DurationUnit", "Nil"));
         map.put("cov_DateTime", Sets.mutable.with("DateTime", "Timestamp", "Nil"));
@@ -2418,7 +2432,7 @@ public class Handlers
         map.put("cov_hash_HashType", Sets.mutable.with("HashType", "Nil"));
         map.put("cov_function_KeyExpression", Sets.mutable.with("KeyExpression", "Nil"));
         map.put("cov_Float", Sets.mutable.with("Float", "Float4", "Double", "Nil"));
-        map.put("cov_Decimal", Sets.mutable.with("Decimal", "Decimal", "Nil"));
+        map.put("cov_Decimal", Sets.mutable.with("Decimal", "Numeric", "Nil"));
         map.put("cov_wavgUtility_WavgRowMapper", Sets.mutable.with("WavgRowMapper", "Nil"));
         map.put("cov_relation_Relation", Sets.mutable.with("Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor", "TDSRelationAccessor", "Nil"));
         map.put("cov_relation_ColSpec", Sets.mutable.with("ColSpec", "Nil"));
@@ -2796,6 +2810,7 @@ public class Handlers
         map.put("meta::pure::functions::lang::subType_Any_m__T_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()));
         map.put("meta::pure::functions::math::abs_Float_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Float").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::abs_Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::abs_Decimal_1__Decimal_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::abs_Number_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::acos_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::asin_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));

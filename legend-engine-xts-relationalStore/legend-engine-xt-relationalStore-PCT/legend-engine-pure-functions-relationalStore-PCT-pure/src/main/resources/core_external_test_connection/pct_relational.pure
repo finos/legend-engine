@@ -77,6 +77,14 @@ function <<PCT.adapter>> {PCT.adapterName='Spanner'} meta::relational::tests::pc
   )
 }
 
+function <<PCT.adapter>> {PCT.adapterName='MemSQL'} meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+{
+  meta::relational::tests::pct::testAdapterForRelationalExecution(
+      $f,
+      meta::pure::testConnection::getTestConnection(DatabaseType.MemSQL)
+  )
+}
+
 function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
 {
   $f->match([
@@ -123,8 +131,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
               // processResult
               if ($resultType->toOne()->instanceOf(PrimitiveType),
                 | let preResultFinal = $res.result.rows->at(0).values->at(0);
-                println($preResultFinal);
-                  let resultFinal = 
+                  let resultFinal =
                     if ([
                           pair(|$preResultFinal == TDSNull, |[]),
                           pair(|$resultType->toOne()->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toString())),
@@ -143,13 +150,14 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                                       range($x.values->size())->map(z | if($x.values->at($z) == TDSNull,
                                                                             | let type = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->at($z).type;
                                                                               if ([
-                                                                                    pair(|$type == 'Integer' ||
+                                                                                    pair(|$type == 'Integer' || 
+                                                                                          $type == 'Number' || // TODO: Convert to Decimal
                                                                                           $type == 'meta::pure::precisePrimitives::Int', |-2147483648),
                                                                                     pair(|$type == 'String' ||
                                                                                           $type == 'meta::pure::precisePrimitives::Varchar', |'null'),
                                                                                     pair(|$type == 'DateTime' ||
                                                                                           $type == 'meta::pure::precisePrimitives::Timestamp' ||
-                                                                                          $type == 'meta::pure::precisePrimitives::Date', |'')
+                                                                                          $type == 'StrictDate', |'')
                                                                                   ],
                                                                                   |fail($type->toOne()+' is not managed yet!');0;
                                                                               );,
@@ -996,7 +1004,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testClassAsVariableReprocess():Boolean[1]
 {
   let vals = [^SimpleClass(value='myValue'), ^SimpleClass(value='myValue2')];
-  let newState = reprocess(|$vals->filter(x|$x.value == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
+  let newState = reprocess(|$vals->filter(x|$x.value == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), noDebug());
   assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.all()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEquals(1, $newState.second.mapping->size());
   assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
@@ -1009,7 +1017,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testPrimitiveListReprocess():Boolean[1]
 {
-  let newState = reprocess(|[1,2,3,4]->filter(x|$x > 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
+  let newState = reprocess(|[1,2,3,4]->filter(x|$x > 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), noDebug());
   assertEquals('{|[1, 2, 3, 4]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);
@@ -1018,7 +1026,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testPrimitiveAnyReprocess():Boolean[1]
 {
-  let newState = reprocess(|[1,'a']->filter(x|$x == 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
+  let newState = reprocess(|[1,'a']->filter(x|$x == 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), noDebug());
   assertEquals('{|[1, \'a\']->filter({x|($x == 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);
@@ -1028,7 +1036,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testEmptySetReprocess():Boolean[1]
 {
-  let newState = reprocess(|[]->filter(x|$x > 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
+  let newState = reprocess(|[]->filter(x|$x > 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), noDebug());
   assertEquals('{|[]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);

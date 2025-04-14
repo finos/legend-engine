@@ -43,7 +43,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validation.RelationalValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
@@ -843,7 +843,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
     private GenericType convertTypes(String type, RichIterable<? extends ValueSpecification> typeVariableValues, CompileContext compileContext)
     {
-        return compileContext.newGenericType((PrimitiveType) compileContext.resolvePackageableElement("meta::pure::precisePrimitives::" + type, null))
+        return compileContext.newGenericType((PrimitiveType) compileContext.resolvePackageableElement(type, null))
                 ._typeVariableValues(typeVariableValues);
     }
 
@@ -851,15 +851,15 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     {
         if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Integer)
         {
-            return convertTypes("Int", compileContext);
+            return convertTypes("meta::pure::precisePrimitives::Int", compileContext);
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Float)
         {
-            return convertTypes("Float4", compileContext);
+            return convertTypes("meta::pure::precisePrimitives::Float4", compileContext);
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Varchar)
         {
-            return convertTypes("Varchar",
+            return convertTypes("meta::pure::precisePrimitives::Varchar",
                     Lists.mutable.with(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
                             ._genericType(compileContext.pureModel.getGenericType("Integer"))
                             ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
@@ -868,7 +868,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Char)
         {
-            return convertTypes("Varchar",
+            return convertTypes("meta::pure::precisePrimitives::Varchar",
                     Lists.mutable.with(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
                             ._genericType(compileContext.pureModel.getGenericType("Integer"))
                             ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
@@ -878,7 +878,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Decimal)
         {
-            return convertTypes("Decimal",
+            return convertTypes("meta::pure::precisePrimitives::Numeric",
                     Lists.mutable.with(
                             new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
                                     ._genericType(compileContext.pureModel.getGenericType("Integer"))
@@ -892,31 +892,31 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Timestamp)
         {
-            return convertTypes("Timestamp", compileContext);
+            return convertTypes("meta::pure::precisePrimitives::Timestamp", compileContext);
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Date)
         {
-            return convertTypes("Date", compileContext);
+            return convertTypes("StrictDate", compileContext);
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.BigInt)
         {
-            return convertTypes("BigInt", compileContext);
+            return convertTypes("meta::pure::precisePrimitives::BigInt", compileContext);
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.SmallInt)
         {
-            return convertTypes("SmallInt", compileContext);
+            return convertTypes("meta::pure::precisePrimitives::SmallInt", compileContext);
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.TinyInt)
         {
-            return convertTypes("TinyInt", compileContext);
+            return convertTypes("meta::pure::precisePrimitives::TinyInt", compileContext);
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Double)
         {
-            return convertTypes("Double", compileContext);
+            return convertTypes("meta::pure::precisePrimitives::Double", compileContext);
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Numeric)
         {
-            return convertTypes("Decimal",
+            return convertTypes("meta::pure::precisePrimitives::Numeric",
                     Lists.mutable.with(
                             new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
                                     ._genericType(compileContext.pureModel.getGenericType("Integer"))
@@ -930,11 +930,11 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Bit)
         {
-            return convertTypes("TinyInt", compileContext);
+            return convertTypes("meta::pure::precisePrimitives::TinyInt", compileContext);
         }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Real)
         {
-            return convertTypes("Double", compileContext);
+            return convertTypes("meta::pure::precisePrimitives::Double", compileContext);
         }
         // Fallback to platform function if precise primitive not available
         return (GenericType) compileContext.pureModel.getExecutionSupport().getProcessorSupport().type_wrapGenericType(
@@ -1049,7 +1049,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
     public static Root_meta_relational_metamodel_TableMapper processTableMapper(TableMapper tblMap, CompileContext context)
     {
-        SetIterable<Table> tables = HelperRelationalBuilder.getAllTablesInSchema(HelperRelationalBuilder.resolveDatabase(tblMap.from.database, tblMap.from.sourceInformation, context), tblMap.from.schema, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation.getUnknownSourceInformation());
+        SetIterable<Table> tables = HelperRelationalBuilder.getAllTablesInSchema(HelperRelationalBuilder.resolveDatabase(tblMap.from.database, tblMap.from.sourceInformation, context), tblMap.from.schema, SourceInformation.getUnknownSourceInformation());
         Table tbl = tables.toList().stream().filter(t -> t._name().equals(tblMap.from.table)).findFirst().orElseThrow(() -> new RuntimeException("Can't find " + tblMap.from.table + " table in " + tblMap.from.schema + " schema."));
 
         Root_meta_relational_metamodel_TableMapper tblMapper = new Root_meta_relational_metamodel_TableMapper_Impl("")

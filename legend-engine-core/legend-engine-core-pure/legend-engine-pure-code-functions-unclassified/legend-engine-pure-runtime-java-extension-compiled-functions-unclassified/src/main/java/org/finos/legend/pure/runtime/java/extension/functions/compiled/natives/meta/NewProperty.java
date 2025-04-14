@@ -25,7 +25,7 @@ import java.text.MessageFormat;
 public class NewProperty extends AbstractNative
 {
     private static final String TEMPLATE = "new " + FullJavaPaths.Property_Impl + "<Object,Object>(\"NOID\")" +
-            "._classifierGenericType(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType((" + FullJavaPaths.Class + "<Object>)((CompiledExecutionSupport)es).getMetadataAccessor().getClass(\"Root::meta::pure::metamodel::function::property::Property\"))" +
+            "._classifierGenericType(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType((" + FullJavaPaths.Class + "<Object>)((CompiledExecutionSupport)es).getMetadataAccessor().getClass(\"meta::pure::metamodel::function::property::Property\"))" +
             "   ._multiplicityArguments(Lists.immutable.of({3}))" +
             "   ._typeArguments(Lists.immutable.of({1},{2})))" +
             "._name({0})" +

@@ -266,7 +266,7 @@ public class HelperRelationalGrammarComposer
         StringBuilder builder = new StringBuilder();
         builder.append(getTabString(baseIndentation)).append("Schema ");
         builder.append(HelperDomainGrammarComposer.renderAnnotations(schema.stereotypes, schema.taggedValues));
-        builder.append(PureGrammarComposerUtility.convertIdentifier(schema.name)).append("\n");
+        builder.append(schema.name).append("\n");
         builder.append(getTabString(baseIndentation)).append("(\n");
         boolean nonEmpty = false;
         if (!schema.tables.isEmpty())

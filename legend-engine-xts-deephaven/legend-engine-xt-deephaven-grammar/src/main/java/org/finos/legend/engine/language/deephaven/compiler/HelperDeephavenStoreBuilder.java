@@ -24,7 +24,7 @@ import org.finos.legend.engine.protocol.deephaven.metamodel.store.Table;
 import org.finos.legend.engine.protocol.deephaven.metamodel.store.Column;
 import org.finos.legend.engine.protocol.deephaven.metamodel.type.*;
 import org.finos.legend.engine.protocol.deephaven.metamodel.runtime.DeephavenConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_store_Column;

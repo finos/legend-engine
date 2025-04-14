@@ -167,7 +167,7 @@ Class meta::pure::executionPlan::AllocationExecutionNode extends meta::pure::exe
 
 Class meta::pure::executionPlan::ConstantExecutionNode extends meta::pure::executionPlan::ExecutionNode
 {
-   values : Any[1];
+   values : Any[*];
 }
 
 Class meta::pure::executionPlan::ErrorExecutionNode extends meta::pure::executionPlan::ExecutionNode

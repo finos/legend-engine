@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-server</artifactId>
-        <version>4.77.2-SNAPSHOT</version>
+        <version>4.78.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server-http-server</artifactId>
@@ -107,6 +107,10 @@
         <!-- PURE -->
 
         <!-- ENGINE -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-extensions</artifactId>
@@ -589,6 +593,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-snowflake-protocol</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-memsql-protocol</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -1151,6 +1160,11 @@
             <artifactId>legend-engine-xt-relationalStore-spanner-PCT</artifactId>
             <scope>runtime</scope>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-memsql-PCT</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <!-- PCT -->
 

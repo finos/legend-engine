@@ -1628,7 +1628,7 @@ function meta::relational::functions::pureToSqlQuery::addMissingColumn(nested:Bo
                                                          | ^$q(columns=$q.columns->concatenate(^Alias(name=$propName, relationalElement=^Literal(value=^SQLNull())))),
                                                          | let y = $union.currentTreeNodes->at($i);
                                                            let s = ^SelectWithCursor(select=$q, currentTreeNode=$y, milestoningContext=$oldSrcOperation.milestoningContext);
-                                                           let sel = processRelationalPropertyMapping($filteredRelationalPropertyMappings, $property, $propertyOwnerClass, $s, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor).select;
+                                                           let sel = processPropertyMapping($filteredRelationalPropertyMappings, $propertyOwnerClass, $s, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor).select;
                                                            let newAlias = ^Alias(
                                                                                name=$propName,
                                                                                relationalElement=if($state.inFilter,|$sel.filteringOperation->toOne(),|$sel.columns->toOne())
@@ -1654,6 +1654,66 @@ Class meta::relational::functions::pureToSqlQuery::MissingColProcessigRes
    selectWC:SelectWithCursor[1];
 }
 
+function meta::relational::functions::pureToSqlQuery::addMissingColumnIfUnion(relationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], oldSrcOperation:SelectWithCursor[1],propertyOwnerClass:Class<Any>[1],  state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):Pair<String,SelectWithCursor>[1]
+{
+  let relationalElement = $oldSrcOperation.currentTreeNode.alias.relationalElement->toOne();
+
+  if ($relationalElement->instanceOf(Union) && !$relationalElement->cast(@Union).currentTreeNodes->isEmpty(),
+      |let propName = $relationalElement->cast(@Union)->getUnionPropertyName($property, $relationalPropertyMappings, $state, $extensions);
+      pair($propName, addMissingColumn(false, $relationalElement->cast(@Union), $propName,  $relationalPropertyMappings, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));,
+      |if($relationalElement->instanceOf(SelectSQLQuery),
+        |let element = $relationalElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne();
+          if ($element->instanceOf(Union) && !$element->cast(@Union).currentTreeNodes->isEmpty(),
+              |let propName = $element->cast(@Union)->getUnionPropertyName($property, $relationalPropertyMappings, $state, $extensions);
+              pair($propName, addMissingColumn(true, $element->cast(@Union), $propName,  $relationalPropertyMappings, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));,
+              |let propName = $relationalElement->getPropertyName($property, $relationalPropertyMappings, $extensions);
+              pair($propName, $oldSrcOperation);
+          );,
+        |let propName = $relationalElement->getPropertyName($property, $relationalPropertyMappings, $extensions);
+          pair($propName, $oldSrcOperation);
+      )
+  );
+}
+
+function meta::relational::functions::pureToSqlQuery::processRelationalOperationElementOfPropertyMapping(relationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propName: String[1], srcOperation:SelectWithCursor[1],propertyOwnerClass:Class<Any>[1],  state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+  let mappingImpl = $relationalPropertyMappings->at(0).relationalOperationElement;
+  let newCurrentTreeNode = $srcOperation.currentTreeNode->toOne();
+  let relElement = $newCurrentTreeNode.alias.relationalElement;
+  let res = if (
+                ($relElement->instanceOf(SelectSQLQuery) &&
+                ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal)) &&
+                  $relElement->cast(@SelectSQLQuery).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
+                ||
+                ($relElement->instanceOf(Union) &&
+                ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal) || $mappingImpl->instanceOf(RelationalOperationElementWithJoin)) &&
+                  $relElement->cast(@Union).queries->at(0).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
+                ||
+                ($relElement->instanceOf(SelectSQLQuery) &&
+                  $relElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->instanceOf(Union) &&
+                  $relElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->cast(@Union).queries->at(0).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
+                  ,
+                | // We should not process the property mapping as it should have been done in the embedded selectSQLQuery....
+                  let sel = $srcOperation.select;
+                  //let embeddedSelect = $currentTreeNode.alias.relationalElement->cast(@SelectSQLQuery);
+                  // Warning the type of the column is bogus here....
+                  let newColumn = ^TableAliasColumn(alias=$newCurrentTreeNode.alias, column=^Column(name=$propName, type=^meta::relational::metamodel::datatype::Integer()));
+                  if ($state.inFilter,
+                      |^$srcOperation(select = ^$sel(filteringOperation+=$newColumn)),
+                      |^$srcOperation(select = ^$sel(columns+=$newColumn))
+                  );,
+                | // Process the property mapping...
+                  let srcOperationWithMilestoneProcessingState=$srcOperation->updateMilestoningContextProcessingStateForProperties(MilestoningProcessingState.DATATYPE_PROPERTY);
+                  $mappingImpl->processColumnsInRelationalOperationElements($state, $srcOperationWithMilestoneProcessingState, $nodeId, $aggFromMap, true, $context, $extensions);
+              );
+  let sel = $res.select;
+  if ($state.inFilter,
+      | ^$res(select = ^$sel(filteringOperation = $sel.filteringOperation->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));,
+      | ^$res(select = ^$sel(filteringOperation = [], columns = $sel.columns->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));
+      );
+
+ }
+
 function meta::relational::functions::pureToSqlQuery::processRelationFunctionPropertyMapping(propertyMappings:RelationFunctionPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   let propertyMapping = $propertyMappings->toOne('Unions not supported with Relation Expression mappings yet!');
@@ -1668,62 +1728,17 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
   let firstStep = $propertyReturnType->match(
                                  [
                                     p:DataType[1] | let currentTreeNode = $oldSrcOperation.currentTreeNode->toOne();
-                                                    // ---------------------------------------------------
-                                                    // Potentially add missing columns in the union!
-                                                    let relationalElement = $oldSrcOperation.currentTreeNode.alias.relationalElement->toOne();
-                                                    let result  = if ($relationalElement->instanceOf(Union) && !$relationalElement->cast(@Union).currentTreeNodes->isEmpty(),
-                                                                               |let propName = $relationalElement->cast(@Union)->getUnionPropertyName($property, $relationalPropertyMappings, $state, $extensions);
-                                                                                pair($propName, addMissingColumn(false, $relationalElement->cast(@Union), $propName,  $relationalPropertyMappings, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));,
-                                                                               |if($relationalElement->instanceOf(SelectSQLQuery),
-                                                                                   |let element = $relationalElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne();
-                                                                                    if ($element->instanceOf(Union) && !$element->cast(@Union).currentTreeNodes->isEmpty(),
-                                                                                        |let propName = $element->cast(@Union)->getUnionPropertyName($property, $relationalPropertyMappings, $state, $extensions);
-                                                                                         pair($propName, addMissingColumn(true, $element->cast(@Union), $propName,  $relationalPropertyMappings, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));,
-                                                                                        |let propName = $relationalElement->getPropertyName($property, $relationalPropertyMappings, $extensions);
-                                                                                         pair($propName, $oldSrcOperation);
-                                                                                    );,
-                                                                                   |let propName = $relationalElement->getPropertyName($property, $relationalPropertyMappings, $extensions);
-                                                                                    pair($propName, $oldSrcOperation);
-                                                                                )
-                                                                       );
-                                                    let srcOperation = $result.second;
-                                                    let propName = $result.first;
-                                                    // ---------------------------------------------------
-
                                                     let mappingImpl = $relationalPropertyMappings->at(0).relationalOperationElement;
+
+                                                    let result = meta::relational::functions::pureToSqlQuery::addMissingColumnIfUnion($relationalPropertyMappings, $property, $oldSrcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+                                                    let propName = $result.first;
+                                                    let srcOperation = $result.second;
+
                                                     let newCurrentTreeNode = $srcOperation.currentTreeNode->toOne();
-                                                    let relElement = $newCurrentTreeNode.alias.relationalElement;
-                                                    let res = if (
-                                                                  ($relElement->instanceOf(SelectSQLQuery) &&
-                                                                  ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal)) &&
-                                                                   $relElement->cast(@SelectSQLQuery).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
-                                                                  ||
-                                                                  ($relElement->instanceOf(Union) &&
-                                                                  ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal) || $mappingImpl->instanceOf(RelationalOperationElementWithJoin)) &&
-                                                                   $relElement->cast(@Union).queries->at(0).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
-                                                                  ||
-                                                                  ($relElement->instanceOf(SelectSQLQuery) &&
-                                                                   $relElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->instanceOf(Union) &&
-                                                                   $relElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->cast(@Union).queries->at(0).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
-                                                                   ,
-                                                                  | // We should not process the property mapping as it should have been done in the embedded selectSQLQuery....
-                                                                    let sel = $srcOperation.select;
-                                                                    //let embeddedSelect = $currentTreeNode.alias.relationalElement->cast(@SelectSQLQuery);
-                                                                    // Warning the type of the column is bogus here....
-                                                                    let newColumn = ^TableAliasColumn(alias=$newCurrentTreeNode.alias, column=^Column(name=$propName, type=^meta::relational::metamodel::datatype::Integer()));
-                                                                    if ($state.inFilter,
-                                                                       |^$srcOperation(select = ^$sel(filteringOperation+=$newColumn)),
-                                                                       |^$srcOperation(select = ^$sel(columns+=$newColumn))
-                                                                    );,
-                                                                  | // Process the property mapping...
-                                                                    let srcOperationWithMilestoneProcessingState=$srcOperation->updateMilestoningContextProcessingStateForProperties(MilestoningProcessingState.DATATYPE_PROPERTY);
-                                                                    $mappingImpl->processColumnsInRelationalOperationElements($state, $srcOperationWithMilestoneProcessingState, $nodeId, $aggFromMap, true, $context, $extensions);
-                                                               );
-                                                    let sel = $res.select;
-                                                    let firstStep = if ($state.inFilter,
-                                                                        |^$res(select = ^$sel(filteringOperation = $sel.filteringOperation->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));,
-                                                                        |^$res(select = ^$sel(filteringOperation = [], columns = $sel.columns->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));
-                                                                       );
+
+                                                    let firstStep = processRelationalOperationElementOfPropertyMapping($relationalPropertyMappings, $property, $propName, $srcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+                                                    let sel = $firstStep.select;
+
                                                     let secondStep = $mappingImpl->match([
                                                                                          r : RelationalOperationElementWithJoin[1] | $firstStep;,
                                                                                          a : Any[*]                                | ^$firstStep(positionBeforeLastApplyJoinTreeNode = if($srcOperation.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$srcOperation.positionBeforeLastApplyJoinTreeNode->toOne()->findNode($srcOperation.select.data->toOne(), $sel.data->toOne())->first()),
@@ -1962,20 +1977,32 @@ function meta::relational::functions::pureToSqlQuery::processCrossPropertyMappin
 
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::processSemiStructuredRelationalPropertyMapping(propertyMappings:SemiStructuredRelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], srcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]): RelationalOperationElement[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processSemiStructuredRelationalPropertyMapping(origPropertyMappings:SemiStructuredRelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]): RelationalOperationElement[1]
 {
-   assert($propertyMappings->size() >= 1, | 'Expected non-empty semi structured property mappings');
-   let result = $propertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, true, $context, $extensions);
-   $result->validate([], $extensions);
+   assert($origPropertyMappings->size() >= 1, | 'Expected non-empty semi structured property mappings');
+
+   let result = if($origPropertyMappings->forAll(p | $p.owner->toOne()->instanceOf(meta::relational::mapping::SemiStructuredEmbeddedRelationalInstanceSetImplementation)),
+                    | pair($oldSrcOperation, $origPropertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $oldSrcOperation, $nodeId, $aggFromMap, true, $context, $extensions)),
+                    | let propertyMappings = $origPropertyMappings->map(p|$p->buildPossibleEnumMappingPushDown($state));
+                      let res = addMissingColumnIfUnion($propertyMappings, $property, $oldSrcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+                      let propName = $res.first;
+                      let srcOperation = $res.second;
+                      pair($srcOperation, processRelationalOperationElementOfPropertyMapping($propertyMappings, $property, $propName, $srcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));
+                );
+
+   let srcOperation = $result.first;
+   let finalResult = $result.second;
+
+   $finalResult->validate([], $extensions);
 
    if ($property.multiplicity->hasToOneUpperBound(),
-       | $result,
+       | $finalResult,
        |
          // Property is 1->MANY. Need to flatten
-         let navigation = if($state.inFilter, | $result->cast(@SelectWithCursor).select.filteringOperation, | $result->cast(@SelectWithCursor).select.columns)->toOne();
+         let navigation = if($state.inFilter, | $finalResult->cast(@SelectWithCursor).select.filteringOperation, | $finalResult->cast(@SelectWithCursor).select.columns)->toOne();
          let updatedNavigation = $navigation->match([s:SemiStructuredObjectNavigation[1]|^$s(avoidCastIfPrimitive=true), a:Any[*]|$navigation]);
          let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = $updatedNavigation);
-         let leftAlias = $result.currentTreeNode->toOne().alias;
+         let leftAlias = $finalResult.currentTreeNode->toOne().alias;
          let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_' + $nodeId);
          let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
          let join = ^Join(
@@ -1994,7 +2021,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
             lateral = true
          );
 
-         let joinAppliedNode = applyJoinInTree($result.select.data->toOne(), $result.currentTreeNode->toOne(), $lateralJoinNode, $srcOperation, $nodeId, $joinType, true, true, [], $state, $context, $extensions);
+         let joinAppliedNode = applyJoinInTree($finalResult.select.data->toOne(), $finalResult.currentTreeNode->toOne(), $lateralJoinNode, $srcOperation, $nodeId, $joinType, true, true, [], $state, $context, $extensions);
          let joinAppliedNodeSelect = $joinAppliedNode.select;
          let flattenOutput = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $joinAppliedNode.currentTreeNode.alias->toOne(), column = ^Column(name = 'result', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType  = $property.genericType.rawType);
          let res = ^$joinAppliedNode(
@@ -2881,7 +2908,6 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
     | let fe = $p->at($p->size()-2);
       let ft = $fe.func->functionType();
       if($ft.parameters->head().genericType->concatenate($ft.returnType)->forAll(x|
-      $fe->println();
       $x.rawType->toOne()->_subTypeOf(TabularDataSet) || $x.rawType->toOne()->_subTypeOf(meta::pure::metamodel::relation::Relation);),
                   | isolateTdsSelect($select, $query, $extensions);,
                   | ^$query(select=$select)
@@ -5007,31 +5033,29 @@ function meta::relational::functions::pureToSqlQuery::isResultColumnsDynamic(sel
 
 function meta::relational::functions::pureToSqlQuery::processPivot(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  let mainQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
-  let select = $mainQuery.select->cast(@TdsSelectSqlQuery);
+  let inputQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+  let inputSelect = $inputQuery.select->cast(@TdsSelectSqlQuery);
+  let inputQueryAlias = 'pivotInput_' + $nodeId;
+  let inputTableAlias = ^TableAlias(name = $inputQueryAlias, relationalElement=$inputSelect);
   // NOTE: the semantics of Pivot is not so standardized across different DBs, so for simplicity sake, we don't optimize/merge the SQL at all,
   // we will just by default use sub-select with pivot
-  let pivotColumns = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
+  let noSubSelect = false;
+  let allInputColumns = $inputSelect.columns->map(c | let alias = $inputTableAlias->switchAliasForColumns($c)->toOne();
+                                                      let tac = $alias.relationalElement->cast(@TableAliasColumn);
+                                                      let column = $tac.column;
+                                                      ^$tac(column = ^$column(name = $alias.name));
+  );
+  let pivotColumnNames = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
       s:String[*]|$s,
       x:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|$x.names,
       v:meta::pure::metamodel::relation::ColSpec<Any>[1]|$v.name
-    ])->map(n|^TableAliasColumn(
-      alias = $select.data->toOne().alias,
-      column = ^Column
-              (
-                  name = $n,
-                  type = ^meta::relational::metamodel::datatype::Integer() // this type here does not mean much so we set it arbitrarily to Integer
-              )
-    ));
-  let noSubSelect = false;
-  let subSelectAliasName = 'pivot_' + $nodeId;
+    ]);
   let aggVS = $expression.parametersValues->at(2)->reprocessVS()->reactivate($state.inScopeVars)->evaluateAndDeactivate()->match([
                         avs:meta::pure::tds::AggregateValue<Any,Any>[*]|$avs->map(a|^AggContainer(name=$a.name,map=$a.mapFn,reduce=$a.aggregateFn));,
                         x:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|^AggContainer(name=$x.name,map=$x.map,reduce=$x.reduce);,
                         z:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]|$z.aggSpecs->map(x|^AggContainer(name=$x.name,map=$x.map,reduce=$x.reduce));
                       ]);
-  let newColumns= $aggVS->map(a|^Alias(name='"'+$a.name+'"', relationalElement=processTDSMapReduce($a, $select, $noSubSelect, $subSelectAliasName, $currentPropertyMapping, $vars, $state, $context)));
-  let existingPaths = $select.paths;
+  let existingPaths = $inputSelect.paths;
   let pathInfos = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match(
                                                                                           [
                                                                                             s:String[*]|$s,
@@ -5041,18 +5065,110 @@ function meta::relational::functions::pureToSqlQuery::processPivot(expression:Fu
                                                                                         )->map(n|$existingPaths->filter(p|$p.first == $n))
                    ->concatenate($aggVS->map(a|  let pureType = $a.reduce->toOne()->functionReturnType().rawType->toOne();
                                                  pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));));
+  let pivotColumnAliasName = 'pivot_column';
+  let subSelectAliasName = 'aggreg';
+  let pivotColumns = $pivotColumnNames->map(n | $allInputColumns->filter(c | $c.column.name->quoteSafeEqual($n))->toOne('Could not find the pivot column: ' + $n));
+  let newAggColumns = $aggVS->map(a | processTDSMapReduce($a, $inputSelect, $noSubSelect, $subSelectAliasName, $currentPropertyMapping, $vars, $state, $context));
+  let allButPivotColumns = $allInputColumns->removeAll($pivotColumns);
+  let pivotAlias = ^ColumnName(name = $pivotColumnAliasName);
 
-  ^TdsSelectSqlQuery(
-    // since we don't know which columns will present in the result, new columns based off the unique values of pivoted columns will be present
-    // so we specify no columns in order to force a `select *`
-    columns = [],
-    data = ^RootJoinTreeNode(alias = ^TableAlias(name = $subSelectAliasName, relationalElement=$select)),
-    pivot = ^Pivot(
-      pivotColumns = $pivotColumns,
-      aggColumns = $newColumns
-    ),
-    paths = $pathInfos
-  )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($mainQuery, $state, $extensions);
+  let pivotColumnExtendQueryAndAggPairs = $aggVS->map(agg | let pivotTAC = ^DynaFunction(
+                                                                    name = 'concat',
+                                                                    parameters = $pivotColumns->map(pc | $pc->concatenate(^Literal(value=meta::relational::functions::sqlQueryToString::default::pivotColumnDelimeter())))->concatenate(^Literal(value= $agg.name->toOne()))
+                                                                  );
+                                                   let pivotAlias = ^Alias(name=$pivotColumnAliasName, relationalElement=$pivotTAC);
+                                                   let pivotQueryColumns = $allButPivotColumns->concatenate($pivotAlias);
+                                                   let pivotColumExtendQuery = ^TdsSelectSqlQuery(
+                                                      columns = $pivotQueryColumns,
+                                                      data = ^RootJoinTreeNode(alias = $inputTableAlias),
+                                                      paths = $existingPaths
+                                                   )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($inputQuery, $state, $extensions);
+                                                   pair($pivotColumExtendQuery, $agg);
+                                          );
+
+  if ($pivotColumnExtendQueryAndAggPairs->size() == 1,
+      | 
+        let pivotColumnExtendQuery = $pivotColumnExtendQueryAndAggPairs->toOne().first;
+        let pivotColumnExtendSelect = $pivotColumnExtendQuery.select->cast(@TdsSelectSqlQuery);
+        ^TdsSelectSqlQuery(
+          // since we don't know which columns will present in the result, new columns based off the unique values of pivoted columns will be present
+          // so we specify no columns in order to force a `select *`
+          columns = [],
+          data = ^RootJoinTreeNode(alias = ^TableAlias(name = 'pivotColumnExtend', relationalElement = $pivotColumnExtendSelect)),
+          pivot = ^Pivot(
+            pivotColumns = $pivotAlias,
+            aggColumns = $newAggColumns->toOne()
+          ),
+          paths = $pathInfos
+        )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($pivotColumnExtendQuery, $state, $extensions);,
+      | 
+        let aggregateColumnAliasName = 'aggregate_column';
+        let originalAggColumnNames = $newAggColumns->extractTableAliasColumns()->map(tac | $tac.column.name);
+        let originalAggColumns = $originalAggColumnNames->map(n | $allInputColumns->filter(c | $c.column.name->quoteSafeEqual($n))->toOne('Could not find the original aggregate column: ' + $n));
+        let allButPivotAndAggregateColumns = $allButPivotColumns->removeAll($originalAggColumns);
+        let groupByQueries = $pivotColumnExtendQueryAndAggPairs->map(p |let pivotColumnExtendSelect = $p.first.select->cast(@TdsSelectSqlQuery);
+                                                                        let agg = $p.second;
+                                                                        let newAggColumn = ^Alias(name = $aggregateColumnAliasName, relationalElement = processTDSMapReduce(^$agg(name = $aggregateColumnAliasName), $pivotColumnExtendSelect, $noSubSelect, $subSelectAliasName, $currentPropertyMapping, $vars, $state, $context));
+                                                                        let alias = ^TableAlias(name = $subSelectAliasName, relationalElement = $pivotColumnExtendSelect);
+                                                                        let newData = ^RootJoinTreeNode(alias = $alias);
+                                                                        let pivotColumnAlias = ^Alias(name = $pivotColumnAliasName,
+                                                                                                      relationalElement = ^TableAliasColumn
+                                                                                                                          (
+                                                                                                                            alias = $alias,
+                                                                                                                            column = ^Column
+                                                                                                                                    (
+                                                                                                                                      name = $pivotColumnAliasName,
+                                                                                                                                      type = ^meta::relational::metamodel::datatype::Integer()
+                                                                                                                                    )
+                                                                                                                          ));
+                                                                        let groupByAliases = $allButPivotAndAggregateColumns->concatenate($pivotColumnAlias)->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()), alias=$alias)),
+                                                                                                                                                                               t:TableAliasColumn[1]|^$t(alias=$alias)]
+                                                                                             ));
+                                                                        ^TdsSelectSqlQuery(
+                                                                                            data = $newData,
+                                                                                            columns = $groupByAliases->concatenate($newAggColumn),
+                                                                                            groupBy = $groupByAliases,
+                                                                                            paths = $pathInfos
+                                                                        )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($p.first, $state, $extensions);
+        
+        );
+        let rootTable = ^TableAlias(
+          name = 'union',
+          relationalElement = ^UnionAll(queries = $groupByQueries.select)
+        );
+        let newRoot = ^RootJoinTreeNode(alias = $rootTable);
+        let unionAllQuery = ^TdsSelectSqlQuery(
+          columns = $groupByQueries.select->at(0).columns->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()), alias=$rootTable)),
+                                                                            t:TableAliasColumn[1]|^$t(alias=$rootTable)]
+                                                              )),
+          data = $newRoot,
+          paths = $pathInfos
+        )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($groupByQueries->at(0), $state, $extensions);
+        let unionSelect = $unionAllQuery.select->cast(@TdsSelectSqlQuery);
+        let aggDynaFunction = ^DynaFunction(
+                                              name = 'max', // After groupBy operation, there should only be one row for each pivot column, hence arbitrarily using any aggregate function
+                                              parameters = ^TableAliasColumn
+                                                           (
+                                                            alias = $rootTable,
+                                                            column = ^Column
+                                                                    (
+                                                                      name = $aggregateColumnAliasName,
+                                                                      type = ^meta::relational::metamodel::datatype::Integer()
+                                                                    )
+                                                           )
+                                           );
+        ^TdsSelectSqlQuery(
+          // since we don't know which columns will present in the result, new columns based off the unique values of pivoted columns will be present
+          // so we specify no columns in order to force a `select *`
+          columns = [],
+          data = ^RootJoinTreeNode(alias = ^TableAlias(name = 'unionAllPivot', relationalElement=$unionSelect)),
+          pivot = ^Pivot(
+            pivotColumns = $pivotAlias,
+            aggColumns = $aggDynaFunction
+          ),
+          paths = $pathInfos
+        )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($unionAllQuery, $state, $extensions);
+  );
 }
 
 function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecification[1], params:RelationalOperationElement[*], state:State[1]):RelationalOperationElement[*]
@@ -5821,7 +5937,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                      r:FunctionRoutedValueSpecification[1]|$r.value->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
                      fx:FunctionExpression[1]|
                         let f = $fx->meta::pure::functions::meta::removeAutomap()->cast(@FunctionExpression);
-                        if ($f.func->instanceOf(meta::pure::metamodel::relation::Column),                        
+                        if ($f.func->instanceOf(meta::pure::metamodel::relation::Column),
                           | let foundColumn = findAliasOrFail($f.func.name->toOne(), $columns);
                             let res = $foundColumn.relationalElement;
                             // Column application -> Generalize all that...
@@ -5850,7 +5966,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                               | $res
                             );
                             ,
-                          | 
+                          |
                             let tdsGetterDispatch = {|findColumnInTdsFromGetter($f, $columns, $returnColumnName, $vars, $state)};
                             let dispatch = [
                                             pair('getNumber', $tdsGetterDispatch),
@@ -8663,6 +8779,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::abs_Integer_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::abs_Number_1__Number_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::abs_Float_1__Float_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::abs_Decimal_1__Decimal_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::divide_Number_1__Number_1__Float_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_,second=meta::relational::functions::pureToSqlQuery::processDivideRound_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::pow_Number_1__Number_1__Number_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

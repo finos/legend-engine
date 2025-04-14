@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.test.to.TestMappingGrammarTo;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -50,6 +51,20 @@ public class TestGrammarRoundtrip
                 PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(code);
                 String parsedProtocol = objectMapper.writeValueAsString(modelData);
                 Assert.assertEquals(objectMapper.readTree(expectedProtocol), objectMapper.readTree(parsedProtocol));
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public void testTo(String protocolResource, String expectedCode)
+        {
+            try
+            {
+                PureModelContextData modelData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(protocolResource)), PureModelContextData.class);
+                String modelCode = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(modelData);
+                Assert.assertEquals(expectedCode, modelCode);
             }
             catch (IOException e)
             {

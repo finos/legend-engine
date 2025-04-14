@@ -48,4 +48,6 @@ public interface DatasetsAbstract
     Optional<Dataset> stagingDatasetWithoutDuplicates();
 
     Optional<LockInfoDataset> lockInfoDataset();
+
+    Optional<Dataset> deletePartitionDataset();
 }

@@ -18,10 +18,10 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.NoPartitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.api.optimizers.IngestModeOptimizer;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class IngestModeOptimizerTest extends BaseTest
 {
 
-    Datasets setup() throws Exception
+    Datasets setupStagingAndMainDatasets() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = DatasetDefinition.builder()
@@ -63,10 +63,58 @@ public class IngestModeOptimizerTest extends BaseTest
         return datasets;
     }
 
+    Datasets setupStagingMainAndDeletePartitionsDatasets() throws Exception
+    {
+        Datasets datasets = setupStagingAndMainDatasets();
+
+        DatasetDefinition deletePartitionDataset = DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(deletePartitionTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(date)
+                        .build())
+                .build();
+
+        // Create Delete partition table
+        createStagingTable(deletePartitionDataset);
+        String path = "src/test/resources/data/unitemporal-snapshot-milestoning/input/partition_optimization/delete_partitions1.csv";
+        loadDeletePartitionData(path);
+        return Datasets.builder()
+                .mainDataset(datasets.mainDataset())
+                .stagingDataset(datasets.stagingDataset())
+                .deletePartitionDataset(deletePartitionDataset).build();
+    }
+
+    Datasets setupStagingMainAndDeletePartitionsDatasetsMultiplePartitionsKeys() throws Exception
+    {
+        Datasets datasets = setupStagingAndMainDatasets();
+
+        Field date = Field.builder().name(dateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(false).fieldAlias(dateName).build();
+        Field entity = Field.builder().name(entityName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(false).fieldAlias(entityName).build();
+
+        DatasetDefinition deletePartitionDataset = DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(deletePartitionTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(date)
+                        .addFields(entity)
+                        .build())
+                .build();
+
+        // Create Delete partition table
+        createStagingTable(deletePartitionDataset);
+        String path = "src/test/resources/data/unitemporal-snapshot-milestoning/input/partition_optimization/delete_partitions2.csv";
+        loadDeletePartitionDataWithMultiPartitionKeys(path);
+        return Datasets.builder()
+                .mainDataset(datasets.mainDataset())
+                .stagingDataset(datasets.stagingDataset())
+                .deletePartitionDataset(deletePartitionDataset).build();
+    }
+
     @Test
     public void testOptimizeUnitempSnapshotUnPartitioned() throws Exception
     {
-        Datasets datasets = setup();
+        Datasets datasets = setupStagingAndMainDatasets();
         UnitemporalSnapshot unitemporalSnapshot = UnitemporalSnapshot.builder()
                 .digestField(digestName)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
@@ -80,12 +128,14 @@ public class IngestModeOptimizerTest extends BaseTest
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(H2Sink.get());
 
         UnitemporalSnapshot enrichedUnitempSnapshot = (UnitemporalSnapshot) unitemporalSnapshot.accept(new IngestModeOptimizer(datasets, executor, transformer));
+        assertTrue(enrichedUnitempSnapshot.partitioningStrategy() instanceof NoPartitioning);
     }
 
     @Test
     public void testOptimizeUnitempSnapshotPartitionedWithDate() throws Exception
     {
-        Datasets datasets = setup();
+        // Test with staging and main dataset
+        Datasets datasets = setupStagingAndMainDatasets();
         UnitemporalSnapshot unitemporalSnapshot = UnitemporalSnapshot.builder()
                 .digestField(digestName)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
@@ -105,12 +155,24 @@ public class IngestModeOptimizerTest extends BaseTest
         addPartitionSpec(expectedPartitionSpec, "2021-12-02");
 
         assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
+
+        // Test with staging, main and delete partition tables
+        datasets = setupStagingMainAndDeletePartitionsDatasets();
+        enrichedUnitempSnapshot = (UnitemporalSnapshot) unitemporalSnapshot.accept(new IngestModeOptimizer(datasets, executor, transformer));
+        expectedPartitionSpec = new ArrayList<>();
+        addPartitionSpec(expectedPartitionSpec, "2021-12-03");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-04");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-01");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-02");
+
+        assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
     }
 
     @Test
     public void testOptimizeUnitempSnapshotPartitionedWithDateAndString() throws Exception
     {
-        Datasets datasets = setup();
+        // Test with staging and main dataset
+        Datasets datasets = setupStagingAndMainDatasets();
         UnitemporalSnapshot unitemporalSnapshot = UnitemporalSnapshot.builder()
                 .digestField(digestName)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
@@ -134,12 +196,29 @@ public class IngestModeOptimizerTest extends BaseTest
         addPartitionSpec(expectedPartitionSpec, "2021-12-02", "JPMX");
 
         assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
+
+        // Test with staging, main and delete partition tables
+        datasets = setupStagingMainAndDeletePartitionsDatasetsMultiplePartitionsKeys();
+        enrichedUnitempSnapshot = (UnitemporalSnapshot) unitemporalSnapshot.accept(new IngestModeOptimizer(datasets, executor, transformer));
+        expectedPartitionSpec = new ArrayList<>();
+        addPartitionSpec(expectedPartitionSpec, "2021-12-03", "AAPL");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-03", "GOOGLE");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-04", "AMZN");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-04", "META");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-01", "GS");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-01", "IBM");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-01", "JPM");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-02", "GS");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-02", "IBM");
+        addPartitionSpec(expectedPartitionSpec, "2021-12-02", "JPMX");
+
+        assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
     }
 
     @Test
     public void testOptimizeUnitempSnapshotPartitionedWithMaxLimitReached() throws Exception
     {
-        Datasets datasets = setup();
+        Datasets datasets = setupStagingAndMainDatasets();
         UnitemporalSnapshot unitemporalSnapshot = UnitemporalSnapshot.builder()
                 .digestField(digestName)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
@@ -161,7 +240,7 @@ public class IngestModeOptimizerTest extends BaseTest
     @Test
     public void testOptimizeUnitempSnapshotPartitionedWithTimestamp() throws Exception
     {
-        Datasets datasets = setup();
+        Datasets datasets = setupStagingAndMainDatasets();
         UnitemporalSnapshot unitemporalSnapshot = UnitemporalSnapshot.builder()
                 .digestField(digestName)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
@@ -194,6 +273,27 @@ public class IngestModeOptimizerTest extends BaseTest
                 "INSERT INTO \"TEST\".\"staging\"(date, entity, start_time, price, volume, digest) " +
                 "SELECT CONVERT( \"date\",DATE ), \"entity\", CONVERT( \"start_time\", DATETIME), CONVERT( \"price\", DECIMAL(20,2)), CONVERT( \"volume\", BIGINT), \"digest\"" +
                 " FROM CSVREAD( '" + path + "', 'date, entity, start_time, price, volume, digest', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadDeletePartitionData(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"main_deleted_partitions\";" +
+                "INSERT INTO \"TEST\".\"main_deleted_partitions\"(date) " +
+                "SELECT CONVERT( \"date\",DATE )" +
+                " FROM CSVREAD( '" + path + "', 'date', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadDeletePartitionDataWithMultiPartitionKeys(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"main_deleted_partitions\";" +
+                "INSERT INTO \"TEST\".\"main_deleted_partitions\"(date, entity) " +
+                "SELECT CONVERT( \"date\",DATE ), \"entity\"" +
+                " FROM CSVREAD( '" + path + "', 'date, entity', NULL )";
+
         h2Sink.executeStatement(loadSql);
     }
 
