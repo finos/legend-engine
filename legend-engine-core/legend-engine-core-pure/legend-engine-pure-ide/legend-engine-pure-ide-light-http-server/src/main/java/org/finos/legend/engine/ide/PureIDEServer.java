@@ -48,6 +48,10 @@ import org.finos.legend.engine.ide.api.find.FindPureFile;
 import org.finos.legend.engine.ide.api.find.FindTextPreview;
 import org.finos.legend.engine.ide.api.source.UpdateSource;
 import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.plan.execution.stores.relational.test.H2TestServerResource;
+import org.finos.legend.engine.server.test.shared.MetadataTestServerResource;
+import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
+import org.finos.legend.engine.server.test.shared.ServerTestServerResource;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
@@ -124,6 +128,11 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
         environment.jersey().register(new Service(pureSession));
 
         enableCors(environment);
+
+        if(configuration.alloyServerMode != null && configuration.alloyServerMode)
+        {
+            withAlloyServerSupport();
+        }
 
         postInit();
 
@@ -226,39 +235,46 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
             return result;
     }
 
-        //TODO: This should probably be moved to CodeRepositoryProviderHelper in legend-pure
-        protected Map<CodeRepository, Path> findCodeRepositoriesAndMapToPath(String path, List<String> patternsToExclude)
+    //TODO: This should probably be moved to CodeRepositoryProviderHelper in legend-pure
+    protected Map<CodeRepository, Path> findCodeRepositoriesAndMapToPath(String path, List<String> patternsToExclude)
+    {
+        Map<CodeRepository, Path> result = Maps.mutable.empty();
+        FileSystem f = FileSystems.getDefault();
+        MutableList<PathMatcher> excludeMatchers = patternsToExclude.stream().map(p -> f.getPathMatcher("glob:" + p)).collect(Collectors2.toList());
+
+        try
         {
-            Map<CodeRepository, Path> result = Maps.mutable.empty();
-            FileSystem f = FileSystems.getDefault();
-            MutableList<PathMatcher> excludeMatchers = patternsToExclude.stream().map(p -> f.getPathMatcher("glob:" + p)).collect(Collectors2.toList());
-
-            try
+            Files.walkFileTree(Paths.get(path), new SimpleFileVisitor<Path>()
             {
-                Files.walkFileTree(Paths.get(path), new SimpleFileVisitor<Path>()
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, java.nio.file.attribute.BasicFileAttributes attrs)
                 {
-                    @Override
-                    public FileVisitResult preVisitDirectory(Path dir, java.nio.file.attribute.BasicFileAttributes attrs)
-                    {
-                        return excludeMatchers.anySatisfy(m -> m.matches(dir)) ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
-                    }
+                    return excludeMatchers.anySatisfy(m -> m.matches(dir)) ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
+                }
 
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                {
+                    if (file.toString().endsWith(".definition.json"))
                     {
-                        if (file.toString().endsWith(".definition.json"))
-                        {
-                            result.put(GenericCodeRepository.build(file), file);
-                        }
-                        return FileVisitResult.CONTINUE;
+                        result.put(GenericCodeRepository.build(file), file);
                     }
-                });
-            }
-            catch (IOException e)
-            {
-                throw new UncheckedIOException(e);
-            }
-            return result;
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException(e);
+        }
+        return result;
+    }
+
+    private static void withAlloyServerSupport() throws Exception
+    {
+        PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X");
+        new H2TestServerResource().start();
+        new MetadataTestServerResource().start();
+        new ServerTestServerResource("org/finos/legend/engine/server/test/userTestConfig.json").start();
     }
 }

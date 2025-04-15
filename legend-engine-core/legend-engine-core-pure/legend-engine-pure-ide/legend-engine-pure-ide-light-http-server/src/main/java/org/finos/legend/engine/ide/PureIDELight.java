@@ -40,11 +40,5 @@ public class PureIDELight extends PureIDEServer
         new PureIDELight().run(args.length == 0 ? new String[] {"server", "legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json"} : args);
     }
 
-    private static void withAlloyServerSupport() throws Exception
-    {
-        PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X");
-        new H2TestServerResource().start();
-        new MetadataTestServerResource().start();
-        new ServerTestServerResource("org/finos/legend/engine/server/test/userTestConfig.json").start();
-    }
+
 }

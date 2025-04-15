@@ -28,6 +28,7 @@ public class ServerConfiguration extends Configuration
     public SwaggerBundleConfiguration swagger;
     public SourceLocationConfiguration sourceLocationConfiguration;
     public Boolean debugMode;
+    public Boolean alloyServerMode;
     public Boolean initPureRuntimeBeforeStart;
     public List<String> requiredRepositories;
     public List<String> excludeRepositories;
