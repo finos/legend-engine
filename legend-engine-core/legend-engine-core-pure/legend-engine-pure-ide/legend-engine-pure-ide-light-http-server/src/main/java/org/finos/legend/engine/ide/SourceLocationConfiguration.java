@@ -21,7 +21,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 )
 public class SourceLocationConfiguration
 {
-    public String welcomeFileDirectory;
+    @Deprecated
     public String coreFilesLocation;
+    @Deprecated
     public String ideFilesLocation;
+
+    public String welcomeFileDirectory;
 }
