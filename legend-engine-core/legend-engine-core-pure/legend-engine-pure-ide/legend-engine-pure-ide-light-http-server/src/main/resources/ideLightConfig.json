@@ -31,6 +31,9 @@
   "debugMode" : true,
   "initPureRuntimeBeforeStart" : true,
   "sourceLocationConfiguration": {
-    "welcomeFileDirectory": "./"
-  }
+    "welcomeFileDirectory": "./",
+    "directories" : ["."],
+    "pathPatternsToExclude" : ["**/target", "**/archetype-resources"]
+  },
+  "requiredRepositories" : []
 }
