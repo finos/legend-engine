@@ -26,7 +26,8 @@ function <<MappingFeature.distinct, meta::pure::test::mft::model::MFT.testCollec
 {
  ^MFTMappingTest(setupData= ^CSVSetupData(database=meta::relational::tests::mapping::distinct::model::mapping::mft::store::MFTtestDB,path='/core_relational/relational/tests/mft/shared/setup.csv'),
                  mapping =  meta::relational::tests::mapping::distinct::model::mapping::mft::distinctTestMapping,
-                 assertions =  [^TestErrorAssertion(tests = [meta::pure::mft::tests::collection::filter::filterGraphFetch__FunctionDefinition_1_,
+                 assertions =  [
+                  ^TestErrorAssertion(tests = [meta::pure::mft::tests::collection::filter::filterGraphFetch__FunctionDefinition_1_,
                                                       meta::pure::mft::tests::collection::filter::filterAssociationGraphFetch__FunctionDefinition_1_,
                                                       meta::pure::mft::tests::collection::filter::filterAssociationIsEmptyGraphFetch__FunctionDefinition_1_,
                                                       meta::pure::mft::tests::collection::drop::dropGraphFetch__FunctionDefinition_1_,
