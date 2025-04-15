@@ -91,4 +91,47 @@ public class TestValidation
         Assert.assertEquals("meta::protocols::pure::vX_X_X::metamodel::function::activator::snowflakeApp::SnowflakeApp", info.get(0).configuration.topElement);
         Assert.assertEquals(8, info.get(0).configuration.model.size());
     }
+
+    @Test
+    public void testWrongApplicationName()
+    {
+        String val =
+                "Class a::Person {name : String[1];}\n" +
+                        "function a::f():TabularDataSet[1]{a::Person.all()->project([p|$p.name], ['name'])->from(a::m, ^meta::core::runtime::Runtime(connectionStores=^meta::core::runtime::ConnectionStore(element=a::db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=meta::relational::runtime::DatabaseType.H2))))}\n" +
+                        "###Mapping\n" +
+                        "Mapping a::m(a::Person:Relational{name : [a::db]tb.name})\n" +
+                        "###Relational\n" +
+                        "Database a::db(Table tb(name VARCHAR(100) PRIMARY KEY))\n" +
+                        "###Snowflake\n" +
+                        "SnowflakeApp a::myApp{" +
+                        "   applicationName: '@My App';" +
+                        "   description: 'ee';" +
+                        "   ownership : Deployment { identifier: 'ownership' };" +
+                        "   function: a::f():TabularDataSet[1];" +
+                        "}";
+        Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null, null);
+        Assert.assertEquals("{\"errors\":[{\"message\":\"Application name can only contain letters and digits\"}],\"warnings\":[]}", response.getEntity().toString());
+    }
+
+    @Test
+    public void testWrongDeploymentSchema()
+    {
+        String val =
+                "Class a::Person {name : String[1];}\n" +
+                        "function a::f():TabularDataSet[1]{a::Person.all()->project([p|$p.name], ['name'])->from(a::m, ^meta::core::runtime::Runtime(connectionStores=^meta::core::runtime::ConnectionStore(element=a::db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=meta::relational::runtime::DatabaseType.H2))))}\n" +
+                        "###Mapping\n" +
+                        "Mapping a::m(a::Person:Relational{name : [a::db]tb.name})\n" +
+                        "###Relational\n" +
+                        "Database a::db(Table tb(name VARCHAR(100) PRIMARY KEY))\n" +
+                        "###Snowflake\n" +
+                        "SnowflakeApp a::myApp{" +
+                        "   applicationName: 'MyApp';" +
+                        "   description: 'ee';" +
+                        "   deploymentSchema: 'My Deployment Schema';" +
+                        "   ownership : Deployment { identifier: 'ownership' };" +
+                        "   function: a::f():TabularDataSet[1];" +
+                        "}";
+        Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null, null);
+        Assert.assertEquals("{\"errors\":[{\"message\":\"Deployment schema can only contain letters, digits and underscore\"}],\"warnings\":[]}", response.getEntity().toString());
+    }
 }

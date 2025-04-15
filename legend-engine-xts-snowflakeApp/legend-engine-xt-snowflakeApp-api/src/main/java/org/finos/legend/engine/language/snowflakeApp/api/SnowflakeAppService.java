@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.snowflakeApp.api;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
@@ -115,6 +116,18 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
         if (content.applicationName.trim().equals(""))
         {
            errors.add(new SnowflakeAppError("Application name cannot be empty"));
+        }
+        if (!StringUtils.isAlphanumeric(content.applicationName))
+        {
+            errors.add(new SnowflakeAppError("Application name can only contain letters and digits"));
+        }
+        if (content.deploymentSchema.trim().equals(""))
+        {
+            errors.add(new SnowflakeAppError("Deployment Schema cannot be empty"));
+        }
+        if (!content.deploymentSchema.matches("[a-zA-Z0-9_]+"))
+        {
+            errors.add(new SnowflakeAppError("Deployment schema can only contain letters, digits and underscore"));
         }
         if (!content.sqlExpressions.isEmpty())
         {
