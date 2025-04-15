@@ -16,6 +16,8 @@ package org.finos.legend.engine.ide;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.List;
+
 @JsonIgnoreProperties(
         ignoreUnknown = true
 )
@@ -27,4 +29,6 @@ public class SourceLocationConfiguration
     public String ideFilesLocation;
 
     public String welcomeFileDirectory;
+    public List<String> directories;
+    public List<String> pathPatternsToExclude;
 }
