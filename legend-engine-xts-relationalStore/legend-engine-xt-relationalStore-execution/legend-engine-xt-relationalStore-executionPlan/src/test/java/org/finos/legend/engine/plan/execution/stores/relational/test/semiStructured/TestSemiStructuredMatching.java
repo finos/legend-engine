@@ -48,7 +48,29 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
                 "S1\n" +
                 "S2\n" +
                 "S3\n" +
-                "S4\n", h2Result.replace("\r\n", "\n"));
+                "S4\n" +
+                "Default Address\n" +
+                "Default Address\n", h2Result.replace("\r\n", "\n"));
+
+        Assert.assertEquals("[ORDER_TABLE.CUSTOMER <TableAliasColumn>]", this.scanColumns(queryFunction, h2Mapping));
+    }
+
+    @Test
+    public void testSemiStructuredMatchWithDifferentMultiplicites()
+    {
+        String queryFunction = "match::semiStructuredMatchWithDifferentMultiplicities__TabularDataSet_1_";
+
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
+        Assert.assertEquals("B1\n" +
+                "B2\n" +
+                "B3\n" +
+                "\n" +
+                "S1\n" +
+                "S2\n" +
+                "S3\n" +
+                "S4\n" +
+                "\n" +
+                "Default Customer Address\n", h2Result.replace("\r\n", "\n"));
 
         Assert.assertEquals("[ORDER_TABLE.CUSTOMER <TableAliasColumn>]", this.scanColumns(queryFunction, h2Mapping));
     }
@@ -76,7 +98,9 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
                 "S1,185\n" +
                 "S2,120\n" +
                 "S3,180\n" +
-                "S4,160\n", h2Result.replace("\r\n", "\n"));
+                "S4,160\n" +
+                ",150\n" +
+                ",150\n", h2Result.replace("\r\n", "\n"));
 
         Assert.assertEquals("[ORDER_TABLE.CUSTOMER <TableAliasColumn>]", this.scanColumns(queryFunction, h2Mapping));
     }
@@ -102,7 +126,9 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
                 "S1\n" +
                 "S2\n" +
                 "S3\n" +
-                "S4\n", h2Result.replace("\r\n", "\n"));
+                "S4\n" +
+                "\n" +
+                "\n", h2Result.replace("\r\n", "\n"));
 
         Assert.assertEquals("[ORDER_TABLE.CUSTOMER <TableAliasColumn>]", this.scanColumns(queryFunction, h2Mapping));
     }
@@ -151,6 +177,8 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
                 "true\n" +
                 "true\n" +
                 "true\n" +
+                "true\n" +
+                "true\n" +
                 "true\n", h2Result.replace("\r\n", "\n"));
 
     }
@@ -179,7 +207,9 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
                 "185\n" +
                 "120\n" +
                 "200\n" +
-                "190\n", h2Result.replace("\r\n", "\n"));
+                "190\n" +
+                "150\n" +
+                "150\n", h2Result.replace("\r\n", "\n"));
 
         Assert.assertEquals("[ORDER_TABLE.CUSTOMER <TableAliasColumn>]", this.scanColumns(queryFunction, h2Mapping));
     }
@@ -207,7 +237,9 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
                 "S1,185\n" +
                 "S2,120\n" +
                 "S3,180\n" +
-                "S4,160\n", h2Result.replace("\r\n", "\n"));
+                "S4,160\n" +
+                ",150\n" +
+                ",150\n", h2Result.replace("\r\n", "\n"));
 
         Assert.assertEquals("[ORDER_TABLE.CUSTOMER <TableAliasColumn>]", this.scanColumns(queryFunction, h2Mapping));
     }
