@@ -30,4 +30,5 @@ public class ServerConfiguration extends Configuration
     public Boolean debugMode;
     public Boolean initPureRuntimeBeforeStart;
     public List<String> requiredRepositories;
+    public List<String> excludeRepositories;
 }
