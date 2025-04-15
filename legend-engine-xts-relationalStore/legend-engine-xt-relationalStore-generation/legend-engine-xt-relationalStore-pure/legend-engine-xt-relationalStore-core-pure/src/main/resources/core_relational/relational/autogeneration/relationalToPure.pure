@@ -12,7 +12,7 @@ function meta::relational::transform::autogen::schemaToModel(schema:Schema[1], p
 {
    let classesFromTables = $schema.tables->map(t | $t->tableToClass($packageStr));
    let classesFromTabularFunctions = $schema.tabularFunctions->map(tf | $tf->tabularFunctionToClass($packageStr));
-   eval(|concatenate($classesFromTables,$classesFromTabularFunctions));
+   $classesFromTables->concatenate($classesFromTabularFunctions);
 }
 
 function <<access.private>> meta::relational::transform::autogen::columnFilterPredicate(column:Column[1]):Boolean[1]
@@ -169,7 +169,7 @@ function meta::relational::transform::autogen::databaseToMappingWithClassMapping
       _type = 'mapping',
       name = $database.name->toOne() + 'Mapping',
       package = $mappingPackageStr,
-      classMappings = eval(|concatenate($tableClassMappings,$tabularFunctionClassMappings))
+      classMappings = $tableClassMappings->concatenate($tabularFunctionClassMappings)
    );
 }
 
