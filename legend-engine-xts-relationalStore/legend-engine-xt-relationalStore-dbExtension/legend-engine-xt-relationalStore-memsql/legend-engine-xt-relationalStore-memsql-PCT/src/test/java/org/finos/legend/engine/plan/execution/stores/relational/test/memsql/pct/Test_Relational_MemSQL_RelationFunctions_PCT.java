@@ -44,10 +44,10 @@ public class Test_Relational_MemSQL_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\""),
 
             //composition
-            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   city,country,2011__|__newCol,4022__|__newCol,6035__|__newCol\n   LDN,UK,3000,null,null\n   NYC,USA,null,null,20200\n   SAN,USA,null,2600,null\n#'\nactual:   '#TDS\n   city,country,year,treePlanted\n   LDN,UK,2011,3000\n   NYC,USA,6035,20200\n   SAN,USA,4022,2600\n#'\""),
-            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   city,country,2011__|__newCol,2012__|__newCol,newCol\n   LDN,UK,3000,null,LDN_0\n   NYC,USA,5000,15200,NYC_0\n   SAN,USA,2600,null,SAN_0\n#'\nactual:   '#TDS\n   year,city,country,treePlanted,newCol\n   2011,LDN,UK,3000,LDN_0\n   2011,NYC,USA,5000,NYC_0\n   2012,NYC,USA,15200,NYC_0\n#'\""),
-            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_", "NullPointer exception"),
-            one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   city,country,2000__|__newCol,2011__|__newCol,2012__|__newCol\n   NYC,USA,15000,5000,15200\n#'"),
+            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_", "\"pivot is not supported\""),
+            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::lang::cast(Relation<()>[1],Relation<T>[*])'"),
+            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::lang::cast(Relation<()>[1],Relation<T>[*])'"),
+            one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::lang::cast(Relation<()>[1],Relation<T>[*])'"),
 
             //concatenate
             one("meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\""),
@@ -100,13 +100,15 @@ public class Test_Relational_MemSQL_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::limit::testSimpleLimit_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\""),
 
             //pivot
-            one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Function_1__Boolean_1_",  "\"\nexpected: '#TDS\n   year,UK__|__LDN__|__sum,UK__|__LDN__|__count,USA__|__NYC__|__sum,USA__|__NYC__|__count,USA__|__SAN__|__sum,USA__|__SAN__|__count\n   2000,null,null,15000,2,2000,1\n   2011,3000,1,5000,1,2600,2\n   2012,null,null,15200,2,null,null\n#'"),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Function_1__Boolean_1_", "\"pivot is not supported\""),
             one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\""),
-            one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   year,UK__|__LDN__|__sum,USA__|__NYC__|__sum,USA__|__SAN__|__sum\n   2000,null,15000,2000\n   2011,3000,5000,2600\n   2012,null,15200,null\n#'"),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_", "\"pivot is not supported\""),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_", "\"pivot is not supported\""),
             one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\""),
-            one("meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   city,country,2000__|__sum,2000__|__count,2011__|__sum,2011__|__count,2012__|__sum,2012__|__count\n   LDN,UK,null,null,3000,1,null,null\n   NYC,USA,15000,2,5000,1,15200,2\n   SAN,USA,2000,1,2600,2,null,null\n#'"),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Function_1__Boolean_1_", "\"pivot is not supported\""),
             one("meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\""),
-            one("meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   city,country,2000__|__newCol,2011__|__newCol,2012__|__newCol\n   LDN,UK,null,3000,null\n   NYC,USA,15000,5000,15200\n   SAN,USA,2000,2600,null\n#'"),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_", "\"pivot is not supported\""),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_", "\"pivot is not supported\""),
             one("meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\""),
 
             //rename
