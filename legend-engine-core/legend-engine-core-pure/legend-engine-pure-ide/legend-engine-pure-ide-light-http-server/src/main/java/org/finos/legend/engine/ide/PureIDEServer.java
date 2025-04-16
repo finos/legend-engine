@@ -46,6 +46,7 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.runtime.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +128,15 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
             );
             try
             {
-                this.pureSession.getPureRuntime().initialize();
+                this.pureSession.getPureRuntime().initialize(new Message("")
+                {
+                    @Override
+                    public void setMessage(String message)
+                    {
+                        super.setMessage(message);
+                        LOGGER.info(message);
+                    }
+                });
                 LOGGER.info("Initialization of Pure runtime completed in {}s.", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ct));
             }
             catch (Exception e)
