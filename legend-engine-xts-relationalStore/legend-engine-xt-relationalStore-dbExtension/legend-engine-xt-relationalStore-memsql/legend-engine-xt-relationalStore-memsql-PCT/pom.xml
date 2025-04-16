@@ -51,13 +51,14 @@
                     </PCTTestSuites>
                 </configuration>
                 <executions>
-                    <execution>
-                        <id>PCT-Generation</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>generate-pct-report</goal>
-                        </goals>
-                    </execution>
+<!--                    todo enable once we dont skip test-->
+<!--                    <execution>-->
+<!--                        <id>PCT-Generation</id>-->
+<!--                        <phase>process-test-classes</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>generate-pct-report</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
                 </executions>
                 <dependencies>
                     <dependency>
