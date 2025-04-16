@@ -221,7 +221,7 @@ relationType :  PAREN_OPEN
                 PAREN_CLOSE
 ;
 
-columnInfo:                                     columnName COLON type multiplicity?
+columnInfo: columnName COLON type multiplicity?
 ;
 
 columnName: identifier

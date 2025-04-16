@@ -114,7 +114,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.name, co:x|$x.val])->filter(x|$x.ceo > 2)\n" +
-                        "}", "COMPILATION error at [4:78-80]: The column 'ceo' can't be found in the relation (mycol:String, co:Integer)"
+                        "}", "COMPILATION error at [4:78-80]: The column 'ceo' can't be found in the relation (mycol:String[1], co:Integer[1])"
         );
     }
 
