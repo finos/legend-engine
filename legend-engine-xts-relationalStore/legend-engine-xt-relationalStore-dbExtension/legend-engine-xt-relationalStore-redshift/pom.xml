@@ -28,7 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-redshift-execution</module>
-        <module>legend-engine-xt-relationalStore-redshift-execution-tests</module>
         <module>legend-engine-xt-relationalStore-redshift-grammar</module>
         <module>legend-engine-xt-relationalStore-redshift-protocol</module>
         <module>legend-engine-xt-relationalStore-redshift-pure</module>

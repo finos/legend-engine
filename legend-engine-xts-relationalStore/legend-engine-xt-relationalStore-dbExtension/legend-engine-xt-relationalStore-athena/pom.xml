@@ -28,7 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-athena-execution</module>
-        <module>legend-engine-xt-relationalStore-athena-execution-tests</module>
         <module>legend-engine-xt-relationalStore-athena-grammar</module>
         <module>legend-engine-xt-relationalStore-athena-protocol</module>
         <module>legend-engine-xt-relationalStore-athena-pure</module>

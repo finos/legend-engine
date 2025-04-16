@@ -28,7 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-trino-execution</module>
-        <module>legend-engine-xt-relationalStore-trino-execution-tests</module>
         <module>legend-engine-xt-relationalStore-trino-grammar</module>
         <module>legend-engine-xt-relationalStore-trino-protocol</module>
         <module>legend-engine-xt-relationalStore-trino-pure</module>

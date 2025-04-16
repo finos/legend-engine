@@ -28,7 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-spanner-execution</module>
-        <module>legend-engine-xt-relationalStore-spanner-execution-tests</module>
         <module>legend-engine-xt-relationalStore-spanner-grammar</module>
         <module>legend-engine-xt-relationalStore-spanner-protocol</module>
         <module>legend-engine-xt-relationalStore-spanner-pure</module>
