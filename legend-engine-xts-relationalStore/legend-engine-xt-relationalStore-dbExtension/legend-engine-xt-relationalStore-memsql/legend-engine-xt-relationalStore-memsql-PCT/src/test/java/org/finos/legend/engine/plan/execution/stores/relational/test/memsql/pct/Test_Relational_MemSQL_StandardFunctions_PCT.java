@@ -90,7 +90,10 @@ public class Test_Relational_MemSQL_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::date::tests::timeBucket::testTimeBucketMonths_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::date::tests::timeBucket::testTimeBucketSeconds_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::date::tests::timeBucket::testTimeBucketWeeks_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::date::tests::timeBucket::testTimeBucketYears_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\"")
+            one("meta::pure::functions::date::tests::timeBucket::testTimeBucketYears_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""),
+
+            // Inequalities
+            pack("meta::pure::functions::boolean::tests::inequalities::between", "Could not find Java interface for meta::pure::tds::TDSNull (org.finos.legend.pure.generated.Root_meta_pure_tds_TDSNull)")
     );
 
     public static Test suite()
