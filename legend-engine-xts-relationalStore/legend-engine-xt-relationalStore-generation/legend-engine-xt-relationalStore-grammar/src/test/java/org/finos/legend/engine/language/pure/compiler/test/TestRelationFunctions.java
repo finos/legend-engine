@@ -239,7 +239,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne() + 1)->filter(i|$i.neid == 'ok')\n" +
                         "}",
-                "COMPILATION error at [7:65-68]: The column 'neid' can't be found in the relation (id:Int, nid:Integer)"
+                "COMPILATION error at [7:65-68]: The column 'neid' can't be found in the relation (id:Int, nid:Integer[1])"
         );
     }
 
@@ -758,7 +758,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->groupBy(~[other], ~new : x|$x.id : y|$y->sum())->filter(x|$x.newE > 1)\n" +
                         "}",
-                "COMPILATION error at [7:79-82]: The column 'newE' can't be found in the relation (other:Varchar(200), new:Integer)"
+                "COMPILATION error at [7:79-82]: The column 'newE' can't be found in the relation (other:Varchar(200), new:Integer[1])"
         );
     }
 
