@@ -225,15 +225,7 @@ function <<access.private>> meta::pure::functions::string::pad(str:String[1], le
   if ($result->length() > $length, | $result->substring(0, $length), | $result);
 }
 
-function {doc.doc = 'Split the string and select the part'} 
-   meta::pure::functions::string::splitPart(str:String[0..1], token:String[1], part:Integer[1]):String[0..1] 
-{
-  if ($str->isEmpty(), 
-    | [],
-    | $str->toOne()->split($token)->at($part));
-}
-
-function {doc.doc = 'Split the proivded string on camel case'} 
+function {doc.doc = 'Split the proivded string on camel case'}
    meta::pure::functions::string::splitOnCamelCase(str:String[1]):String[*] 
 {
    let chunks = $str->chunk(1);

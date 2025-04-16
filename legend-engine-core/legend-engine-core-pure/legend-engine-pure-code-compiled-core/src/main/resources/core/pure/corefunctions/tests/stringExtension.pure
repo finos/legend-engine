@@ -126,14 +126,6 @@ function <<test.Test>> meta::pure::functions::string::tests::testRpad():Boolean[
   assertEquals('abcd', rpad('abcd', 10, ''));
 }
 
-function <<test.Test>> meta::pure::functions::string::tests::testSplitPart():Boolean[1]
-{
-  assertEquals([], splitPart([], 'a', 1));
-  assertEquals('abc', splitPart('abc', 'd', 0));
-  assertEquals('a', splitPart('abc', 'b', 0));
-  assertEquals('c', splitPart('abc', 'b', 1));
-}
-
 function <<test.Test>> meta::pure::functions::string::tests::testSplitOnCamelCase():Boolean[1]
 {
    let pairs = [
