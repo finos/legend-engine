@@ -74,4 +74,4 @@ jobs:
         run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
-        run: mvn -B -e release:perform -Darguments='-B -e -T 4 -DargLine="-Xmx12g"' -P release,docker
+        run: mvn -B -e release:perform -Darguments='-B -e -DargLine="-Xmx12g"' -P release,docker
