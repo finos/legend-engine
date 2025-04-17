@@ -160,6 +160,11 @@ function <<test.Test>> meta::relational::tests::mapping::union::testProjectThrou
    let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','name']), unionMappingWithJoinInProperty, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['Anand Firm X', 'Scott Firm X', 'Taylor Firm X', 'Wright Firm X', 'Roberts Firm A'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('legalName')));
+
+   // With removal of union or join turned on
+   let result2 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','name']), unionMappingWithJoinInProperty, meta::external::store::relational::tests::testRuntime()->meta::relational::postProcessor::removeUnionOrJoins::testRuntimeWithRemoveUnionOrJoinsFeatureEnabled(), meta::relational::extension::relationalExtensions(), noDebug());
+   assert($result2->meta::relational::mapping::sql()->contains('union_gen_source_pk_0'));
+   assertEquals($result1->meta::relational::tests::csv::toCSV(), $result2.values->meta::relational::tests::csv::toCSV());
 }
 
 

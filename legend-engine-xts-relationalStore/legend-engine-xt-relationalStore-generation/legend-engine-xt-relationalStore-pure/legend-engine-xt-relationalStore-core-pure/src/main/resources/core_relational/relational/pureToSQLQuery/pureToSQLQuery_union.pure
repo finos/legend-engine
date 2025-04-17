@@ -973,8 +973,15 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
   let sourceAliasCompatibility = checkCompatibilityForUnionOrJoinRemoval(true, $oldSourceAlias, $orJoin, $extensions);
   let targetAliasCompatibility = checkCompatibilityForUnionOrJoinRemoval(false, $oldTargetAlias, $orJoin, $extensions);
 
-  if ($sourceAliasCompatibility->instanceOf(CompatibleResult) && $targetAliasCompatibility->instanceOf(CompatibleResult),
-      | 
+  if ([
+    pair(
+      {|$sourceAliasCompatibility->instanceOf(CompatibleResult) && $targetAliasCompatibility->instanceOf(CompatibleResult)},
+      {| 
+        // Case 1
+        // Both sides are compatible
+        // Generate a bridge union-all between the two tables which associates primary keys
+        // Bridge relation will join to both sides on respective primary keys
+
         let sComp = $sourceAliasCompatibility->cast(@CompatibleResult);
         let tComp = $targetAliasCompatibility->cast(@CompatibleResult);
 
@@ -1044,10 +1051,116 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
           ]
         );
 
-        ^$source(alias = $sourceAlias, childrenData += $newChild);,
- 
-      | ^$source(childrenData += $target->removeUnionOrJoins($extensions))
-  );
+        ^$source(alias = $sourceAlias, childrenData += $newChild);
+      }
+    ),
+    pair(
+      {|
+        (
+          $sourceAliasCompatibility->instanceOf(CompatibleResult) && $targetAliasCompatibility->instanceOf(InCompatibleResult)
+        )
+        &&
+        (
+          (
+            $sourceAliasCompatibility->cast(@CompatibleResult).updatedRelation->instanceOf(UnionAll) &&
+            $oldTargetAlias.relationalElement->instanceOf(SelectSQLQuery) && $oldTargetAlias.relationalElement->cast(@SelectSQLQuery).columns->forAll(c | $c->instanceOf(Alias))
+          ) 
+          ||
+          (
+            $sourceAliasCompatibility->cast(@CompatibleResult).updatedRelation->instanceOf(Table) &&
+            $oldTargetAlias.relationalElement->instanceOf(UnionAll) && $oldTargetAlias.relationalElement->cast(@UnionAll).queries->forAll(query | $query.columns->forAll(c | $c->instanceOf(Alias))) &&
+            ($oldTargetAlias.relationalElement->cast(@UnionAll).setImplementations->size() == $oldTargetAlias.relationalElement->cast(@UnionAll).queries->size()) && $oldTargetAlias.relationalElement->cast(@UnionAll).setImplementations->forAll(x | $x->instanceOf(RootRelationalInstanceSetImplementation)) &&
+            $orJoin.lastJoinInChain && $orJoin.sourceSetToTargetSetPairs.second.id->forAll(s | $s->in($oldTargetAlias.relationalElement->cast(@UnionAll).setImplementations.id))
+          )
+        )
+      },
+      {| 
+        // Case 2
+        // Source is compatible, Target is incompatible
+        // 2.a -> Source is compatible UnionAll. Target is incompatible SelectSQLQuery
+        // 2.b -> Source is compatible Table. Target is incompatible UnionAll
+        // Update target to a union all within which each leg of union joins to the target and project source primary keys and target columns
+        // Updated target relation joins back to source on primary keys
+
+        // Check for case 2.a
+        let isSourceUnionAndTargetSubquery = (
+          $sourceAliasCompatibility->cast(@CompatibleResult).updatedRelation->instanceOf(UnionAll) &&
+          $oldTargetAlias.relationalElement->instanceOf(SelectSQLQuery) && $oldTargetAlias.relationalElement->cast(@SelectSQLQuery).columns->forAll(c | $c->instanceOf(Alias))
+        );
+
+        let sComp = $sourceAliasCompatibility->cast(@CompatibleResult);
+        let newSource = $sComp.updatedRelation;
+        let newTarget = ^UnionAll(
+          queries = $orJoin.sourceSetToTargetSetPairs->size()->range()->map({idx |
+            let sourceToTargetPair = $orJoin.sourceSetToTargetSetPairs->at($idx);
+            let rootRelation = if ($isSourceUnionAndTargetSubquery,
+              | $newSource->cast(@UnionAll).queries->at($newSource->cast(@UnionAll).setImplementations.id->indexOf($sourceToTargetPair.first.id)),
+              | $newSource
+            );
+            let rootAlias = ^TableAlias(relationalElement = $rootRelation, name = 'root');
+            let childRelation = if ($isSourceUnionAndTargetSubquery,
+              | $oldTargetAlias.relationalElement->cast(@SelectSQLQuery),
+              | let oldUnion = $oldTargetAlias.relationalElement->cast(@UnionAll);
+                $oldUnion.queries->at($oldUnion.setImplementations.id->indexOf($sourceToTargetPair.second.id));
+            );
+            let childAlias = ^TableAlias(relationalElement = $childRelation, name = 'child');
+
+            let joinOp = $orJoin.parameters->at($idx)->concatenate($extraAndFilters)->reverse()->andFilters($extensions)->reprocessAliases([^OldAliasToNewAlias(first = $oldSourceAlias.name, second = $rootAlias), ^OldAliasToNewAlias(first = $oldTargetAlias.name, second = $childAlias)])->toOne()->cast(@Operation);
+            let joinName = $joinOp->buildUniqueName(false, $extensions);
+
+            ^SelectSQLQuery(
+              columns = concatenate(
+                $sComp.pkColumns->size()->range()->map(i | ^Alias(name = bridgeUnionAllPKName(true, $i), relationalElement = ^TableAliasColumn(alias = $rootAlias, column = $sComp.pkColumns->at($i)))),
+                $childRelation.columns->cast(@Alias)->map(c | ^$c(relationalElement = ^TableAliasColumnName(alias = $childAlias, columnName = $c.name)))
+              ),
+              data = ^RootJoinTreeNode(
+                alias = $rootAlias,
+                childrenData = [
+                  ^JoinTreeNode(
+                    alias = $childAlias,
+                    joinType = JoinType.INNER,
+                    database = ^Database(name='Gen_Join_DB'),
+                    joinName = $joinName,
+                    join = ^Join(
+                      name = $joinName,
+                      operation = $joinOp,
+                      target = $childAlias,
+                      aliases = [pair($rootAlias, $childAlias), pair($childAlias, $rootAlias)]
+                    )
+                  )
+                ]
+              )
+            );
+          })
+        );
+
+        let sourceAlias = ^$oldSourceAlias(relationalElement = $newSource);
+        let targetAlias = ^$oldTargetAlias(relationalElement = $newTarget);
+
+        let sourceToTargetJoinOp = $sComp.pkColumns->size()->range()->map({i |
+          nullSafeEquals(
+            ^TableAliasColumn(alias = $sourceAlias, column = $sComp.pkColumns->at($i)),
+            ^TableAliasColumn(alias = $targetAlias, column = $sComp.pkColumns->at($i)->map(p | ^$p(name = bridgeUnionAllPKName(true, $i))))
+          )
+        })->reverse()->andFilters($extensions)->toOne()->cast(@Operation);
+        let sourceToTargetJoinName = $sourceToTargetJoinOp->buildUniqueName(true, $extensions);
+
+        let newChild = ^$target(
+          alias = $targetAlias,
+          joinName = $sourceToTargetJoinName,
+          database = ^Database(name='Gen_Join_DB'),
+          join = ^Join(
+            name = $sourceToTargetJoinName,
+            operation = $sourceToTargetJoinOp,
+            target = $targetAlias,
+            aliases = [pair($sourceAlias, $targetAlias), pair($targetAlias, $sourceAlias)]
+          )
+        )->removeUnionOrJoins($extensions);
+
+        ^$source(alias = $sourceAlias, childrenData += $newChild);
+      }
+    )
+  ], {|^$source(childrenData += $target->removeUnionOrJoins($extensions))});
 }
 
 
