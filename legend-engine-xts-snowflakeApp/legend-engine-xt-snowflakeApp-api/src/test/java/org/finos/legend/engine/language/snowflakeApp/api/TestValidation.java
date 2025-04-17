@@ -104,13 +104,13 @@ public class TestValidation
                         "Database a::db(Table tb(name VARCHAR(100) PRIMARY KEY))\n" +
                         "###Snowflake\n" +
                         "SnowflakeApp a::myApp{" +
-                        "   applicationName: '@My App';" +
+                        "   applicationName: 'My @app';" +
                         "   description: 'ee';" +
                         "   ownership : Deployment { identifier: 'ownership' };" +
                         "   function: a::f():TabularDataSet[1];" +
                         "}";
         Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null, null);
-        Assert.assertEquals("{\"errors\":[{\"message\":\"Application name can only contain letters and digits\"}],\"warnings\":[]}", response.getEntity().toString());
+        Assert.assertEquals("{\"errors\":[{\"message\":\"Application name can only contains letter, digit, underscore and dollar\"}],\"warnings\":[]}", response.getEntity().toString());
     }
 
     @Test
@@ -132,6 +132,6 @@ public class TestValidation
                         "   function: a::f():TabularDataSet[1];" +
                         "}";
         Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null, null);
-        Assert.assertEquals("{\"errors\":[{\"message\":\"Deployment schema can only contain letters, digits and underscore\"}],\"warnings\":[]}", response.getEntity().toString());
+        Assert.assertEquals("{\"errors\":[{\"message\":\"Deployment schema can only contains letter, digit, underscore and dollar\"}],\"warnings\":[]}", response.getEntity().toString());
     }
 }

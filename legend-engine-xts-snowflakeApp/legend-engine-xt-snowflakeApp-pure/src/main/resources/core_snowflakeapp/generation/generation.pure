@@ -16,18 +16,10 @@ Class meta::external::function::activator::snowflakeApp::generation::Artifact
   tables: String[*];
 }
 
-function meta::external::function::activator::snowflakeApp::generation::defaultDeploymentSchema():String[1]
-{
-  'LEGEND_NATIVE_APPS'
-}
-
 function meta::external::function::activator::snowflakeApp::generation::generateFullArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1], extensions:meta::pure::extension::Extension[*]):Artifact[1]
 {
   let inputParamsStub = generateInputParamsStub($s.function, true);
-  let deploymentSchema = if($s.deploymentSchema->isNotEmpty(),
-                         | $s.deploymentSchema->toOne(),
-                         | defaultDeploymentSchema()
-                        );
+  let deploymentSchema = $s.deploymentSchema->toOne();
 
   let context = ^meta::external::function::activator::snowflakeApp::SnowFlakeAppExecutionContext(postProcessor = meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder_SQLQuery_1__PostProcessorResult_1_);
   let contextWithEnumPushDown = $context->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM);  
