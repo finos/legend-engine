@@ -22,7 +22,6 @@ import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
@@ -182,8 +181,11 @@ public class DataQualityCompilerExtension implements CompilerExtension
     private LambdaFunction<?> buildDataqualityRelationValidationQuery(DataqualityRelationValidation dataqualityRelationValidation, CompileContext compileContext)
     {
         LambdaFunction<?> relationQuery = HelperValueSpecificationBuilder.buildLambda(dataqualityRelationValidation.query, compileContext);
-        String relationQueryReturnType = Compiler.getLambdaReturnType(dataqualityRelationValidation.query, compileContext.pureModel);
-        Assert.assertTrue("meta::pure::metamodel::relation::Relation".equals(relationQueryReturnType), () -> "Relation expected from lambda");
+        String relationQueryReturnType = getLambdaFunctionRawReturnTypeName(relationQuery);
+        if (!"Relation".equals(relationQueryReturnType))
+        {
+            throw new EngineException("Relation expected from lambda", dataqualityRelationValidation.query.sourceInformation, EngineErrorType.COMPILATION);
+        }
         return relationQuery;
     }
 
@@ -212,8 +214,18 @@ public class DataQualityCompilerExtension implements CompilerExtension
         assertionInputParam.genericType = getAssertionInputParamGenericType(relationQuery, relationalValidation.type);
 
         LambdaFunction<?> assertion = HelperValueSpecificationBuilder.buildLambda(relationalValidation.assertion, compileContext);
+        String assertionReturnType = getLambdaFunctionRawReturnTypeName(assertion);
+        if (!"Boolean".equals(assertionReturnType))
+        {
+            throw new EngineException("Assertion should return Boolean", relationalValidation.assertion.sourceInformation, EngineErrorType.COMPILATION);
+        }
         relationValidation._assertion(assertion);
         return relationValidation;
+    }
+
+    private String getLambdaFunctionRawReturnTypeName(LambdaFunction<?> lambdaFunction)
+    {
+        return lambdaFunction._expressionSequence().getLast()._genericType()._rawType()._name();
     }
 
     private org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType getAssertionInputParamGenericType(LambdaFunction<?> relationQuery, String relationValidationType)

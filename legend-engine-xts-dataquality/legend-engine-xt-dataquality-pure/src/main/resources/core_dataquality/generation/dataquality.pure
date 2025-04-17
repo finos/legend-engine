@@ -638,3 +638,37 @@ function <<access.protected>> meta::external::dataquality::fromFunctions():Funct
     meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_
     ] 
 }
+
+
+function meta::external::dataquality::generateMainQueryCountLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1]): LambdaFunction<Any>[1]
+{
+  $dqRelationValidation->meta::external::dataquality::generateMainQueryCountLambda(true);
+}
+
+function meta::external::dataquality::generateMainQueryCountLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], useFrom:Boolean[1]): LambdaFunction<Any>[1]
+{
+  let lambda = $dqRelationValidation.query;
+  let relationType = $dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType().typeArguments.rawType->toOne();
+  let withSizeExpression = $dqRelationValidation->buildSizeExpression();
+  let withFromRuntimeExpression = if(!$useFrom || $dqRelationValidation.runtime->isEmpty(),
+                                    | $withSizeExpression,
+                                    | $withSizeExpression->buildFromRuntimeExpression($dqRelationValidation.runtime->toOne(), $dqRelationValidation.query->genericType())
+                                   );
+  ^$lambda(expressionSequence=$withFromRuntimeExpression);
+}
+
+function meta::external::dataquality::buildSizeExpression(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1]):FunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+  (
+     func = size_Relation_1__Integer_1_,
+     multiplicity = PureOne,
+     genericType  = ^GenericType(rawType=Integer),
+     importGroup  = system::imports::coreImport,
+     parametersValues =
+      [
+        $dqRelationValidation.query->evaluateAndDeactivate()->toOne().expressionSequence->toOne()
+      ]
+  )->evaluateAndDeactivate();
+}
+

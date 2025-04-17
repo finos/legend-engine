@@ -271,3 +271,40 @@ function <<test.Test>> meta::external::dataquality::tests::testFromFunctionListI
 
   assertEmpty($missingFuncs->map(pe|$pe->elementToPath()));
 }
+
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_main_query_row_count():Boolean[1]
+{
+  doRelationRowCountTest('###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->toOne(), $x.LASTNAME->toOne()]->joinStrings());' +
+    '        runtime: meta::external::dataquality::tests::domain::DataQualityRuntime;' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'validFirstName\';' +
+    '             description: \'first name should not be empty\';' +
+    '             assertion: row2|$row2.FIRSTNAME->isNotEmpty();' +
+    '          }' +
+    '         ];' +
+    '      }','validFirstName', {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->toOne(), $x.LASTNAME->toOne()]->joinStrings())->meta::pure::functions::relation::size()}
+    );
+
+  doRelationRowCountTest('###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME]);' +
+    '        runtime: meta::external::dataquality::tests::domain::DataQualityRuntime;' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'nonEmptyDataset\';' +
+    '             description: \'dataset should not be empty\';' +
+    '             assertion: rel|$rel->relationEmpty();' +
+    '             type: AGGREGATE;' +
+    '          }' +
+    '         ];' +
+    '      }',
+          'nonEmptyDataset',
+          {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->meta::pure::functions::relation::size()}
+    );
+}

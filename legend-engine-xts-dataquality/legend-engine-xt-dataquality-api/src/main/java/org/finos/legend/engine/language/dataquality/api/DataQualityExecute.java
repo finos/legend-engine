@@ -132,6 +132,33 @@ public class DataQualityExecute
     }
 
     @POST
+    @Path("generatePlan/relation-validation/rowcount")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response generatePlanRowCount(DataQualityExecuteTrialInput dataQualityExecuteInput, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_GENERATE_PLAN_QUERY_COUNT_START).toString());
+        try (Scope scope = GlobalTracer.get().buildSpan("DataQuality: planGenerationRowCount").startActive(true))
+        {
+            // 1. load pure model from PureModelContext
+            PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
+            // 2. call DQ PURE func to generate lambda
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> dqLambdaFunction = DataQualityLambdaGenerator.generateRelationValidationMainQueryRowCount(pureModel, dataQualityExecuteInput.packagePath);
+            // 3. Generate Plan from the lambda generated in the previous step
+            SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
+            LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_GENERATE_PLAN_QUERY_COUNT_END, System.currentTimeMillis() - start).toString());
+            return ManageConstantResult.manageResult(identity.getName(), singleExecutionPlan, objectMapper);
+        }
+        catch (Exception ex)
+        {
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PLAN_ERROR, identity.getName());
+        }
+    }
+
+    @POST
     @Path("execute")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
@@ -158,6 +185,40 @@ public class DataQualityExecute
                 MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
             }
             LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_PLAN_EXECUTION_END, System.currentTimeMillis() - start).toString());
+            return response;
+        }
+        catch (Exception ex)
+        {
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, identity.getName());
+        }
+    }
+
+    @POST
+    @Path("execute/relation-validation/rowcount")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response executeRowCount(@Context HttpServletRequest request, DataQualityExecuteTrialInput dataQualityExecuteInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_RELATION_QUERY_COUNT_PLAN_EXECUTION_START).toString());
+        try (Scope scope = GlobalTracer.get().buildSpan("DataQuality: executeRelationValidationRowCount").startActive(true))
+        {
+            // 1. load pure model from PureModelContext
+            PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
+            // 2. call DQ PURE func to generate lambda
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateRelationValidationMainQueryRowCount(pureModel, dataQualityExecuteInput.packagePath);
+            // 3. Generate Plan from the lambda generated in the previous step
+            SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
+            // 4. execute plan
+            Map<String, Object> lambdaParameterMap = dataQualityExecuteInput.lambdaParameterValues != null ? dataQualityExecuteInput.lambdaParameterValues.stream().collect(Collectors.<ParameterValue, String, Object>toMap(p -> p.name, p -> p.value.accept(new PrimitiveValueSpecificationToObjectVisitor()))) : Maps.mutable.empty();
+            Response response = executePlan(request, identity, format, start, singleExecutionPlan, lambdaParameterMap);
+            if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL))
+            {
+                MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
+            }
+            LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_RELATION_QUERY_COUNT_PLAN_EXECUTION_END, System.currentTimeMillis() - start).toString());
             return response;
         }
         catch (Exception ex)
