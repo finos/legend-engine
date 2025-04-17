@@ -33,52 +33,6 @@ function meta::pure::functions::string::endsWith(source:String[0..1], val:String
     $source->isNotEmpty() && $source->toOne()->endsWith($val)
 }
 
-function {doc.doc = 'Upper cases the first charater of the provided string'} meta::pure::functions::string::toUpperFirstCharacter(values : String[*]) : String[*] {
-      $values->map({s|
-         if($s->length() == 0, 
-            |$s, 
-            |$s->substring(0, 1)->toUpper() + $s->substring(1)
-            )
-         })
-}
-
-function {doc.doc = 'Lower cases the first charater of the provided string'} meta::pure::functions::string::toLowerFirstCharacter(values : String[*]) : String[*] {
-      $values->map({s|
-         if($s->length() == 0, 
-            |$s, 
-            |$s->substring(0, 1)->toLower() + $s->substring(1)
-            )
-         })
-}
-
-function {doc.doc = 'Return first n characters in the string'}
-meta::pure::functions::string::left(string:String[1], length:Integer[1]):String[1]
-{
-  assert($length >= 0, 'length must be >= 0');
-
-  let strLength = $string->length();
-
-  let digits = if ($length > $strLength,
-                    | $strLength,
-                    | $length);
-
-  $string->substring(0, $digits);
-}
-
-function {doc.doc = 'Return last n characters in the string'}
-meta::pure::functions::string::right(string:String[1], length:Integer[1]):String[1]
-{
-  assert($length >= 0, 'length must be >= 0');
-
-  let strLength = $string->length();
-
-  let digits = if ($length > $strLength,
-                    | 0,
-                    | $strLength - $length);
-
-  $string->substring($digits, $strLength);
-}
-
 function meta::pure::functions::string::repeatString(str:String[0..1], times:Integer[1]):String[0..1]
 {
   if ($str->isNotEmpty(), | $str->toOne()->repeat($times)->joinStrings(), | []);
@@ -195,36 +149,6 @@ function {doc.doc = 'Un-camel case / humanize the provided string using provided
       ->joinStrings(' ');
 }
 
-function meta::pure::functions::string::lpad(str:String[1], length:Integer[1]):String[1]
-{
-  lpad($str, $length, ' ')
-}
-
-function meta::pure::functions::string::lpad(str:String[1], length:Integer[1], char:String[1]):String[1]
-{
-  pad($str, $length, $char, true)
-}
-
-function meta::pure::functions::string::rpad(str:String[1], length:Integer[1]):String[1]
-{
-  rpad($str, $length, ' ')
-}
-
-function meta::pure::functions::string::rpad(str:String[1], length:Integer[1], char:String[1]):String[1]
-{
-  pad($str, $length, $char, false)
-}
-
-function <<access.private>> meta::pure::functions::string::pad(str:String[1], length:Integer[1], char:String[1], left:Boolean[1]):String[1]
-{
-  let result = if ($str->length() > $length, 
-    | $str->substring(0, $length),
-    | range($length - $str->length())->fold({acc, s | if ($left, | $char + $s, | $s + $char)}, $str->toOne())
-  );
-
-  if ($result->length() > $length, | $result->substring(0, $length), | $result);
-}
-
 function {doc.doc = 'Split the proivded string on camel case'}
    meta::pure::functions::string::splitOnCamelCase(str:String[1]):String[*] 
 {
@@ -311,7 +235,8 @@ function <<access.public>> meta::pure::functions::string::makeCamelCase(input : 
 }
 
 
-function {doc.doc='checks if string is inclusivly no longer than a length'}  meta::pure::functions::string::isNoLongerThan(input:String[0..1], length:Integer[1]) : Boolean[1]
+function {doc.doc='checks if string is inclusivly no longer than a length'}
+meta::pure::functions::string::isNoLongerThan(input:String[0..1], length:Integer[1]) : Boolean[1]
 {
    assert($length>=0,'Length must be non negative' );
     if($input->isNotEmpty(),
@@ -321,7 +246,8 @@ function {doc.doc='checks if string is inclusivly no longer than a length'}  met
   
 }
 
-function {doc.doc='checks if string is inclusivly no shorter than a length'}  meta::pure::functions::string::isNoShorterThan(input:String[0..1], length:Integer[1]) : Boolean[1]
+function {doc.doc='checks if string is inclusivly no shorter than a length'}
+meta::pure::functions::string::isNoShorterThan(input:String[0..1], length:Integer[1]) : Boolean[1]
 {
   assert($length>=0,'Length must be non negative' );
   if($input->isEmpty(),
@@ -330,7 +256,8 @@ function {doc.doc='checks if string is inclusivly no shorter than a length'}  me
    );
 }
 
-function {doc.doc='Matches string with optional Any input'}  meta::pure::functions::string::makeStringMatch(input:Any[0..1], pattern:String[1]) : Boolean[1]
+function {doc.doc='Matches string with optional Any input'}
+meta::pure::functions::string::makeStringMatch(input:Any[0..1], pattern:String[1]) : Boolean[1]
 {
     $input->makeString()->matches($pattern);
 }
@@ -359,9 +286,6 @@ function {doc.doc ='Validates a string is a UUID as per RFC4122'}  meta::pure::f
 {
    $value->makeString()->matches('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
 }
-
-
-
 
 Class meta::pure::functions::string::SplitTextResult {
    lines: String[*];

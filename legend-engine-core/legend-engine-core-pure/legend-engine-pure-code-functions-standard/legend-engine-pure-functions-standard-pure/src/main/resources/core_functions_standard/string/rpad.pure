@@ -1,0 +1,31 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function meta::pure::functions::string::rpad(str:String[1], length:Integer[1]):String[1]
+{
+  rpad($str, $length, ' ')
+}
+
+function meta::pure::functions::string::rpad(str:String[1], length:Integer[1], char:String[1]):String[1]
+{
+  pad($str, $length, $char, false)
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testRpad():Boolean[1]
+{
+  assertEquals('abc', rpad('abcd', 3, '_'));
+  assertEquals('abcd______', rpad('abcd', 10, '_'));
+  assertEquals('abcd      ', rpad('abcd', 10));
+  assertEquals('abcd', rpad('abcd', 10, ''));
+}

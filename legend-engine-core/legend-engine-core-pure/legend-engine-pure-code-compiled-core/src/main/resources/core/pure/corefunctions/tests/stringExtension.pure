@@ -110,22 +110,6 @@ function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::func
   assertEquals('abab', repeatString('ab', 2));
 }
 
-function <<test.Test>> meta::pure::functions::string::tests::testLpad():Boolean[1]
-{
-  assertEquals('abc', lpad('abcd', 3, '_'));
-  assertEquals('______abcd', lpad('abcd', 10, '_'));
-  assertEquals('      abcd', lpad('abcd', 10));
-  assertEquals('abcd', lpad('abcd', 10, ''));
-}
-
-function <<test.Test>> meta::pure::functions::string::tests::testRpad():Boolean[1]
-{
-  assertEquals('abc', rpad('abcd', 3, '_'));
-  assertEquals('abcd______', rpad('abcd', 10, '_'));
-  assertEquals('abcd      ', rpad('abcd', 10));
-  assertEquals('abcd', rpad('abcd', 10, ''));
-}
-
 function <<test.Test>> meta::pure::functions::string::tests::testSplitOnCamelCase():Boolean[1]
 {
    let pairs = [
