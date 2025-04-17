@@ -2633,7 +2633,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processMatchFunctions(f:meta::pure::metamodel::function::Function<Any>[1], query:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*],  joinType:JoinType[1], propMapping : PropertyMapping[*]):OperationWithParentPropertyMapping[1]
 {
-  assert($f->functionReturnMultiplicity()->isToOne(),'Match only supports lambdas with multiplicity [1]..! Current lambda : ' + $f->deepByPassRouterInfo()->cast(@meta::pure::metamodel::function::Function<Any>)->meta::pure::router::printer::asString());
+  assert($f->functionReturnMultiplicity() == PureZero || $f->functionReturnMultiplicity()->hasToOneUpperBound(), |'Match only supports lambdas with multiplicity [0..1] or [1]..! Current lambda : ' + $f->deepByPassRouterInfo()->cast(@meta::pure::metamodel::function::Function<Any>)->meta::pure::router::printer::asString());
   let expression = $f->cast(@meta::pure::metamodel::function::FunctionDefinition<Any>).expressionSequence;
   assertSize($expression, 1,'Lambdas  with more than one functionExpressions are not supported yet in Match..! The lambda \'' + $f->deepByPassRouterInfo()->cast(@meta::pure::metamodel::function::Function<Any>)->meta::pure::router::printer::asString() + '\' has ' + $expression->size()->toString() + ' expressions.');
   processValueSpecificationReturnPropertyMapping($expression->toOne(),$propMapping, $query, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();

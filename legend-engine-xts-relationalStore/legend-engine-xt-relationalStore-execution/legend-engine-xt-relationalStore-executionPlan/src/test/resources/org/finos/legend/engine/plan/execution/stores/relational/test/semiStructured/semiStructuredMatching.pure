@@ -30,6 +30,7 @@ Class match::model::Customer
 Class match::model::CustomerAddress
 {
   name: String[1];
+  defaultAddress: String[0..1];
 }
 
 Class match::model::BillingAddress extends match::model::CustomerAddress
@@ -199,7 +200,9 @@ Runtime match::runtime::H2Runtime
                             'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (6,\'Order6\',\'{"customerId": "Customer6", "customerAddress": {"@type":"ShippingAddress","name": "A6","shipAddress":"S2"},"transactionDetails": {"payment":{"@type":"PrepaidPayment","paymentId": "P6","amountPaid": 120}}}\')',
                             'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (5,\'Order5\',\'{"customerId": "Customer5", "customerAddress": {"@type":"ShippingAddress","name": "A5","shipAddress":"S1"},"transactionDetails": {"payment":{"@type":"PrepaidPayment","paymentId": "P5","amountPaid": 185}}}\')',
                             'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (7,\'Order7\',\'{"customerId": "Customer7", "customerAddress": {"@type":"ShippingAddress","name": "A7","shipAddress":"S3"},"transactionDetails": {"payment":{"@type":"WalletPrepaidPayment","paymentId": "P7","amountPaid": 180,"walletTransactionAmount":200}}}\')',
-                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (8,\'Order8\',\'{"customerId": "Customer8", "customerAddress": {"@type":"ShippingAddress","name": "A8","shipAddress":"S4"},"transactionDetails": {"payment":{"@type":"CardPrepaidPayment","paymentId": "P8","amountPaid": 160, "cardTransactionAmount":190}}}\')'
+                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (8,\'Order8\',\'{"customerId": "Customer8", "customerAddress": {"@type":"ShippingAddress","name": "A8","shipAddress":"S4"},"transactionDetails": {"payment":{"@type":"CardPrepaidPayment","paymentId": "P8","amountPaid": 160, "cardTransactionAmount":190}}}\')',
+                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (9,\'Order9\',\'{"customerId": "Customer9", "customerAddress": {"@type":"CustomerAddress", "name": "A9"},"transactionDetails": {"payment":{"@type":"PrepaidPayment","paymentId": "P4","amountPaid": 150}}}\');',
+                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (10,\'Order10\',\'{"customerId": "Customer10", "customerAddress": {"@type":"CustomerAddress", "name": "A10", "defaultAddress": "Default Customer Address"},"transactionDetails": {"payment":{"@type":"PrepaidPayment","paymentId": "P4","amountPaid": 150}}}\');'
 
                         ];
                     };
@@ -229,6 +232,23 @@ function match::semiStructuredMatchComplexProperty(): TabularDataSet[1]
             'Customer Address'
         ]
     );
+}
+
+function match::semiStructuredMatchWithDifferentMultiplicities(): TabularDataSet[1]
+{
+  match::model::Order.all()->project(
+    [
+      x|$x.customer.customerAddress->match(
+      [
+        s: match::model::BillingAddress[1]|$s.billAddress,
+        s: match::model::ShippingAddress[1]|$s.shipAddress,
+        s: match::model::CustomerAddress[1]|$s.defaultAddress,
+        s: Any[1]|[]
+      ]
+    )
+    ],
+    ['Customer Address']
+  )
 }
 
 function match::semiStructuredMatchWithMultipleProject(): TabularDataSet[1]
