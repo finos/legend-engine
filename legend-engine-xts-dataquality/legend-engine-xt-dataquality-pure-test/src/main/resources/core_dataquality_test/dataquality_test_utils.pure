@@ -65,6 +65,15 @@ function meta::external::dataquality::tests::doRelationTest(dq:String[1], valida
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>));
 }
 
+function meta::external::dataquality::tests::doRelationRowCountTest(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
+
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateMainQueryCountLambda(false);
+
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>));
+}
+
 function meta::external::dataquality::tests::doRelationTestWithLimit(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], resultLimit: Integer[1]):Boolean[1]
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();

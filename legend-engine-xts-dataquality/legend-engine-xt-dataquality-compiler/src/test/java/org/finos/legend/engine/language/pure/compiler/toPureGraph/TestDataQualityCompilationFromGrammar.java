@@ -219,6 +219,41 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "}");
     }
 
+    @Test
+    public void testRelationValidation_assertion_should_return_boolean()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'idLength';\n" +
+                "         description: 'id length';\n" +
+                "         assertion: row|$row.FIRSTNAME->length();\n" +
+                "         type: ROW_LEVEL;\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "COMPILATION error at [111:24-48]: Assertion should return Boolean");
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: rel|$rel->filter(r|$r.FIRSTNAME->isNotEmpty());\n" +
+                "         type: AGGREGATE;\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "COMPILATION error at [111:24-66]: Assertion should return Boolean");
+    }
+
+
 
     private static final String COMPILATION_PREREQUISITE_CODE = "###Connection\n" +
             "RelationalDatabaseConnection meta::dataquality::H2\n" +
