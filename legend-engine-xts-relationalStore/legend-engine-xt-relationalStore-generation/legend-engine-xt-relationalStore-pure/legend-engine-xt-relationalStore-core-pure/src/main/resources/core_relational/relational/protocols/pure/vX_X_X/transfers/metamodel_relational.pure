@@ -255,7 +255,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::re
    $re->match(
       [
          t:TableAliasColumn[1]|let table = $t.alias.relationalElement->cast(@NamedRelation);
-                               let schema = $table->match([t:Table[1]|$t.schema,v:View[1]|$v.schema]);
+                               let schema = $table->match([t:Table[1]|$t.schema,v:View[1]|$v.schema,tf:TabularFunction[1]|$tf.schema]);
                                ^meta::protocols::pure::vX_X_X::metamodel::store::relational::element::ColumnPtr
                                (
                                   _type = 'column',

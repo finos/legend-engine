@@ -8,6 +8,7 @@ Database meta::relational::transform::autogen::tests::testDB
      Table City(city_id INT PRIMARY KEY, name VARCHAR(200))
      Table Passport(passportId INT PRIMARY KEY, countryName VARCHAR(200))
      Table Country(name VARCHAR(200) PRIMARY KEY)
+     TabularFunction Product(productId INT NOT NULL, productName VARCHAR(50) NOT NULL)
    )
    Schema testSchema2
    (
