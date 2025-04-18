@@ -16,14 +16,10 @@ Class meta::external::function::activator::snowflakeApp::generation::Artifact
   tables: String[*];
 }
 
-function meta::external::function::activator::snowflakeApp::generation::defaultDeploymentSchema():String[1]
-{
-  'LEGEND_NATIVE_APPS'
-}
-
 function meta::external::function::activator::snowflakeApp::generation::generateFullArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1], extensions:meta::pure::extension::Extension[*]):Artifact[1]
 {
   let inputParamsStub = generateInputParamsStub($s.function, true);
+  let deploymentSchema = $s.deploymentSchema->toOne();
 
   let context = ^meta::external::function::activator::snowflakeApp::SnowFlakeAppExecutionContext(postProcessor = meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder_SQLQuery_1__PostProcessorResult_1_);
   let contextWithEnumPushDown = $context->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM);  
@@ -31,17 +27,14 @@ function meta::external::function::activator::snowflakeApp::generation::generate
   let plan =  meta::pure::executionPlan::executionPlan($s.function->cast(@ConcreteFunctionDefinition<Any>), $contextWithEnumPushDown, $extensions, noDebug());
   let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
   let generatedQueryNode = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(node|$node.sqlQuery->toLower()->startsWith('select'))->last()->toOne('candidate query not found');
-  let query = 'CREATE OR REPLACE SECURE FUNCTION %S.' + defaultDeploymentSchema() + '.' +$s.applicationName->toUpper() + $inputParamsStub + ' RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS $$ '+ $generatedQueryNode.sqlQuery +' $$;';
+  let query = 'CREATE OR REPLACE SECURE FUNCTION %S.' + $deploymentSchema + '.' +$s.applicationName->toUpper() + $inputParamsStub + ' RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS $$ '+ $generatedQueryNode.sqlQuery +' $$;';
   if($s.usageRole->isNotEmpty(),
   |
-    let grant = 'GRANT USAGE ON FUNCTION %S.' + defaultDeploymentSchema() + '.'+ $s.applicationName->toUpper()+ generateInputParamsStub($s.function, false) +  ' to role '+ if($s.usageRole->isNotEmpty(), |$s.usageRole->toOne()->toUpper(),|'PUBLIC')+';' ; 
+    let grant = 'GRANT USAGE ON FUNCTION %S.' + $deploymentSchema + '.'+ $s.applicationName->toUpper()+ generateInputParamsStub($s.function, false) +  ' to role '+ if($s.usageRole->isNotEmpty(), |$s.usageRole->toOne()->toUpper(),|'PUBLIC')+';' ; 
     ^Artifact(createQuery = $query, grantStatement = $grant, tables = $generatedQueryNode.metadata->filter(m| $m->instanceOf(TableInfo))->cast(@TableInfo)->toOne('No table info found').info->map(i|$i.schema+'.'+$i.table));,
   |  
     ^Artifact(createQuery = $query, tables = $generatedQueryNode.metadata->filter(m| $m->instanceOf(TableInfo))->cast(@TableInfo)->toOne('No table info found').info->map(i|$i.schema+'.'+$i.table));
   );
- 
-  
-  
 }
 
 function meta::external::function::activator::snowflakeApp::generation::generateArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1]):String[1]
