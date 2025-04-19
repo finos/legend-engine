@@ -89,7 +89,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -DskipTests=true install
+          mvn -B -e -DskipTests=true install -T 2
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -109,18 +109,18 @@ jobs:
       - name: Test (PR)
         if: github.ref != 'refs/heads/master'
         env:
-          MAVEN_OPTS: "-Xmx4g"
+          MAVEN_OPTS: "-Xmx1g"
         run: |
-          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -T 2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Test (with cloud integration tests)
         if: github.ref == 'refs/heads/master' # need secrets, hence can only run on engine repo
         env:
-          MAVEN_OPTS: "-Xmx4g"
+          MAVEN_OPTS: "-Xmx1g"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          mvn -B -e surefire:test -P pct-cloud-test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate          
+          mvn -B -e surefire:test -P pct-cloud-test -T 2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate          
 
       - name: Upload Test Results
         if: always()
