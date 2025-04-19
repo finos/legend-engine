@@ -46,7 +46,10 @@ public class MemSQLPCTContainer extends JdbcDatabaseContainer<MemSQLPCTContainer
     {
         this.addEnv("START_AFTER_INIT", "Y");
         this.addEnv("ROOT_PASSWORD", DEFAULT_PASSWORD);
-        this.addEnv("LICENSE_KEY", "");
+        this.addEnv("ROOT_PASSWORD", DEFAULT_PASSWORD);
+        this.addEnv("SINGLESTORE_SET_GLOBAL_default_table_type", "rowstore");
+        this.addEnv("SINGLESTORE_SET_GLOBAL_default_partitions_per_leaf", "1");
+        this.addEnv("SINGLESTORE_SET_GLOBAL_snapshots_to_keep", "1");
     }
 
     public String getDriverClassName()

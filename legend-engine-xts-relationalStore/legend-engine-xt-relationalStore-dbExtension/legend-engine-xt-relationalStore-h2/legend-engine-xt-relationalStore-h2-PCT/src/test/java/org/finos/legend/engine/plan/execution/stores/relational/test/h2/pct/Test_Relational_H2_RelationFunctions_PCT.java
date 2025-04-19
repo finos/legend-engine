@@ -44,8 +44,8 @@ public class Test_Relational_H2_RelationFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::lang::cast(Relation<()>[1],Relation<T>[*])'"),
 
             // BUG: Column name with special characters is not properly escaped
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.tb"),
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.tb"),
+            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: CREATE LOCAL TEMPORARY TABLE"),
+            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_", "Error while executing: CREATE LOCAL TEMPORARY TABLE"),
 
             pack("meta::pure::functions::relation::tests::asOfJoin", "\"AsOfJoins are not supported by H2!\"")
         );
