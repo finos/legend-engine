@@ -16,5 +16,5 @@ package org.finos.legend.engine.plan.execution.stores;
 
 public enum StoreType
 {
-    Relational, Service, InMemory, ESv7, NonRelational_MongoDB, Deephaven
+    Relational, Service, InMemory, ESv7, NonRelational_MongoDB, NonRelational_TickerPlant, TimeSeries_DeepHaven, TimeSeries_ChunkStore
 }
