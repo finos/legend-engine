@@ -35,7 +35,9 @@ public class Test_Relational_MemSQL_UnclassifiedFunctions_PCT extends PCTReportC
     private static final ReportScope reportScope = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.memsqlAdapter;
     private static final String platform = "compiled";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with();
+    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            pack("meta::pure::functions::string::tests::splitPart", "Function 'for_testing.split_part' is not defined")
+    );
 
     public static Test suite()
     {

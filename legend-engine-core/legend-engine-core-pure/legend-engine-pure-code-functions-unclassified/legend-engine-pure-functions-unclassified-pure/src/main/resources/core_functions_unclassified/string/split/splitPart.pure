@@ -22,30 +22,30 @@ function <<PCT.function>>{doc.doc = 'Split the string and select the part.'}
     | $str->toOne()->split($token)->at($part));
 }
 
-function <<PCT.test>> meta::pure::functions::string::tests::testSplitPart<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::splitPart::testSplitPart<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertEquals(['Hello'], $f->eval(|'Hello World'->splitPart(' ', 0)));
     assertEquals(['World'], $f->eval(|'Hello World'->splitPart(' ', 1)));
 }
 
-function <<PCT.test>> meta::pure::functions::string::tests::testSplitPartEmptyString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertEquals([], $f->eval(|[]->splitPart(' ', 0)));
 }
 
-function <<PCT.test>> meta::pure::functions::string::tests::testSplitPartEmptyToken<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertEquals(['Hello World'], $f->eval(|'Hello World'->splitPart('', 0)));
 }
 
-function <<PCT.test>> meta::pure::functions::string::tests::testSplitPartWithNoSplit<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertEquals(['Hello World'], $f->eval(|'Hello World'->splitPart(';', 0)));
 }
 
 // This test shows incorrect behaviour of the PURE split implementation for multichar tokens.
 // TODO: Fix when split is revised.
-//function <<PCT.test>> meta::pure::functions::string::tests::testSplitPartMultiCharToken<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+//function <<PCT.test>> meta::pure::functions::string::tests::splitPart::testSplitPartMultiCharToken<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 //{
 //    // splits on 'o', 'r' and 'or'
 //    assertEquals(['Hell'], $f->eval(|'Hello World'->splitPart('or', 0)));
@@ -53,7 +53,7 @@ function <<PCT.test>> meta::pure::functions::string::tests::testSplitPartWithNoS
 //    assertEquals(['ld'], $f->eval(|'Hello World'->splitPart('or', 2)));
 //}
 
-function <<PCT.test>> meta::pure::functions::string::tests::testSplitPartTypicalToken<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::splitPart::testSplitPartTypicalToken<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertEquals(['Phone'], $f->eval(|'Sunglasses, Keys, Phone, SL-card'->splitPart(', ', 2)));
     assertEquals(['name'], $f->eval(|'user.name'->splitPart('.', 1)));

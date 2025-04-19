@@ -549,7 +549,7 @@ function meta::relational::functions::sqlQueryToString::default::processTempTabl
 
 function meta::relational::functions::sqlQueryToString::default::translateCreateSchemaStatementDefault(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
-   'Create Schema ' + $createSchemaSQL.schema.name + ';';
+   'Create Schema if not exists ' + $createSchemaSQL.schema.name + ';';
 }
 
 function meta::relational::functions::sqlQueryToString::default::translateDropSchemaStatementDefault(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]

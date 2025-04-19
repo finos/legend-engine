@@ -17,8 +17,9 @@ package org.finos.legend.engine.shared.core.vault.aws;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.shared.core.vault.VaultImplementation;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -30,13 +31,14 @@ import software.amazon.awssdk.services.secretsmanager.model.ResourceNotFoundExce
 
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class AWSVaultImplementation implements VaultImplementation
 {
-    private SecretsManagerClient client;
-    private String secretKey;
+    private final SecretsManagerClient client;
+    private final String secretKey;
+
+    private final Map<String, String> cache = ConcurrentHashMap.newMap();
 
     public AWSVaultImplementation(String accessKeyId, String secretAccessKey, Region region, String secretKey)
     {
@@ -50,6 +52,11 @@ public class AWSVaultImplementation implements VaultImplementation
     @Override
     public String getValue(String key)
     {
+        return this.cache.computeIfAbsent(key, this::getValueFromAwsVault);
+    }
+
+    private String getValueFromAwsVault(String key)
+    {
         GetSecretValueRequest.Builder requestBuilder = GetSecretValueRequest.builder().secretId(this.secretKey);
         GetSecretValueRequest getSecretValueRequest = requestBuilder.build();
         GetSecretValueResponse secretValue;
@@ -59,7 +66,7 @@ public class AWSVaultImplementation implements VaultImplementation
         }
         catch (ResourceNotFoundException e)
         {
-            throw new RuntimeException("The secret " + this.secretKey + " can't be found. Available ones:" + ListIterate.collect(this.client.listSecrets().secretList(), x -> x.getValueForField("Name", String.class).get()).makeString(", "));
+            return null;
         }
 
         JsonNode val;
@@ -84,9 +91,6 @@ public class AWSVaultImplementation implements VaultImplementation
     @Override
     public boolean hasValue(String key)
     {
-        GetSecretValueRequest.Builder requestBuilder = GetSecretValueRequest.builder().secretId(this.secretKey);
-        GetSecretValueRequest getSecretValueRequest = requestBuilder.build();
-        GetSecretValueResponse secretValue = this.client.getSecretValue(getSecretValueRequest);
-        return secretValue.getValueForField(key, String.class).isPresent();
+        return this.getValue(key) != null;
     }
 }

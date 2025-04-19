@@ -453,7 +453,22 @@ function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], d
   let dbc = $runtime.connectionByElement($database)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
 
   // Update the database ------------
-  let setUpSQLs = $csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($database->toOne(), $dbc.type);
+  let dbConfig =  meta::relational::functions::sqlQueryToString::createDbConfig($dbc.type);
+  let originalExtension = $dbConfig.dbExtension;
+  let originalTranslator = $originalExtension.ddlCommandsTranslator;
+
+  let ddlTranslator = ^RelationalDDLCommandsTranslator(
+    createSchema = $originalTranslator.createSchema,
+    dropSchema =  {sql: DropSchemaSQL[1], c: DbConfig[1] | []->cast(@String)}, // wont drop schemas as best to reuse them between tests specailly on shared resources
+    dropTable = $originalTranslator.dropTable,
+    createTable = {sql: CreateTableSQL[1], c: DbConfig[1] | $originalTranslator.createTable->map(f | $f->eval(^$sql(isTempTable = true), $c))}, // create temp table to best isolate tables on shared resources
+    loadTable = $originalTranslator.loadTable,
+    createView = $originalTranslator.createView
+  );
+
+  let pctDbConfig = ^$dbConfig(dbExtension = ^$originalExtension(ddlCommandsTranslator = $ddlTranslator));
+
+  let setUpSQLs = $csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($database->toOne(), $pctDbConfig);
   print(if($debug.debug,|'\n' + $setUpSQLs->joinStrings('\n') + '\n',|''));
 
   let updatePlan = ^meta::pure::executionPlan::ExecutionPlan

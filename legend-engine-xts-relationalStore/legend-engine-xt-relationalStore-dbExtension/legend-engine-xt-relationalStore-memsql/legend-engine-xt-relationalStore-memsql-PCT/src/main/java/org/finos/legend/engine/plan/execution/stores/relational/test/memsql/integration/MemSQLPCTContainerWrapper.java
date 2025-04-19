@@ -33,7 +33,6 @@ public class MemSQLPCTContainerWrapper
 
     public void start()
     {
-        System.out.println("This is containerID: " + this.memSQLContainer.getContainerId());
         this.memSQLContainer.start();
     }
 
