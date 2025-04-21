@@ -29,7 +29,6 @@ public class TestSnowflakeAppRoundtrip extends TestGrammarRoundtrip.TestGrammarR
                 "   function : zxx(Integer[1]):String[1];\n" +
                 "   ownership : Deployment { identifier: 'pierre'};\n" +
                 "   description : 'A super nice app!';\n" +
-                "   deploymentSchema : 'legend_native_apps_1';\n" +
                 "   activationConfiguration : a::b::connection;\n" +
                 "}\n");
     }

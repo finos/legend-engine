@@ -76,7 +76,6 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
                     ._applicationName(app.applicationName)
                     ._function(func)
                     ._description(app.description)
-                    ._deploymentSchema(app.deploymentSchema != null ? app.deploymentSchema : "LEGEND_NATIVE_APPS")
                     ._usageRole(app.usageRole)
                     ._permissionScheme(app.permissionScheme != null ? context.pureModel.getEnumValue("meta::external::function::activator::snowflakeApp::SnowflakePermissionScheme", app.permissionScheme.toString()) : context.pureModel.getEnumValue("meta::external::function::activator::snowflakeApp::SnowflakePermissionScheme", SnowflakePermissionScheme.DEFAULT.toString()))
                     ._ownership(new Root_meta_external_function_activator_DeploymentOwnership_Impl("")._id(((DeploymentOwner)app.ownership).id))

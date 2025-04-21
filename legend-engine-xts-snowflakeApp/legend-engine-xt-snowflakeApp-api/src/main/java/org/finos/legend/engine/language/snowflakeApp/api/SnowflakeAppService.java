@@ -112,8 +112,10 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     {
         MutableList<FunctionActivatorError> errors = Lists.mutable.empty();
         SnowflakeAppContent content = (SnowflakeAppContent)artifact.content;
-        validateFormat(content.applicationName, "Application name", errors);
-        validateFormat(content.deploymentSchema, "Deployment schema", errors);
+        if (content.applicationName.trim().equals(""))
+        {
+           errors.add(new SnowflakeAppError("Application name cannot be empty"));
+        }
         if (!content.sqlExpressions.isEmpty())
         {
             int size = content.sqlExpressions.select(e -> !e.toLowerCase().endsWith("to role public;")).size();
@@ -133,22 +135,6 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
             }
         }
         return new FunctionActivatorResult(errors);
-    }
-
-    public void validateFormat(String name, String entity, MutableList<FunctionActivatorError> errors)
-    {
-        if (name.trim().equals(""))
-        {
-            errors.add(new SnowflakeAppError(entity + " cannot be empty"));
-        }
-        if (name.trim().length() > 0 && !Character.toString(name.charAt(0)).matches("[a-zA-Z_]"))
-        {
-            errors.add(new SnowflakeAppError(entity + " first character can only be letter, digit or underscore"));
-        }
-        if (name.trim().length() > 1 && !name.substring(1).matches("[a-zA-Z0-9_$]+"))
-        {
-            errors.add(new SnowflakeAppError(entity + " can only contains letter, digit, underscore and dollar"));
-        }
     }
 
     @Override
