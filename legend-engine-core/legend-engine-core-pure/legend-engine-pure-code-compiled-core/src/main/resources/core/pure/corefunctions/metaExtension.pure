@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::relation::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::path::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::core::runtime::*;
+
 function meta::pure::functions::meta::forgivingPathToElement(path:String[1]):PackageableElement[0..1]
 {
     if($path == '::',
@@ -34,6 +36,7 @@ function meta::pure::functions::meta::functionReturnType(f:Function<Any>[1]):Gen
                   p:Path<Nil,Any|*>[1] | $p.classifierGenericType->toOne().typeArguments->at(1),
                   f:NativeFunction<Any>[1] | $f->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType).returnType,
                   f:FunctionDefinition<Any>[1] | $f->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType).returnType,
+                  c:Column<Nil,Any|*>[1]|$c.classifierGenericType->toOne().typeArguments->at(1),
                   a:Any[1] | assert(false, |'functionReturnType not supported yet for the type '+$a->type()->id());^GenericType();
                ]
             );
@@ -352,6 +355,7 @@ function meta::pure::functions::meta::functionReturnMultiplicity(f:Function<Any>
                [
                   p:AbstractProperty<Any>[1] | $p.multiplicity,
                   p:Path<Nil,Any|*>[1] | $p.classifierGenericType->toOne().multiplicityArguments->at(0),
+                  c:Column<Nil,Any|*>[1] | $c.classifierGenericType->toOne().multiplicityArguments->at(0),
                   f:NativeFunction<Any>[1] | $f->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType).returnMultiplicity,
                   f:FunctionDefinition<Any>[1] | $f->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType).returnMultiplicity,
                   a:Any[1] | fail('functionReturnMultiplicity not supported yet for the type '+$a->type()->id());PureOne;

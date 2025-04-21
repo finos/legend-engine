@@ -67,6 +67,14 @@ function <<test.Test>> meta::relational::tests::mapping::function::snowflake::te
    assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$snowflakeSql);
 }
 
+function <<test.Test>> meta::relational::tests::mapping::function::snowflake::testToSQLStringSplitPartSnowflake():Boolean[1]
+{
+   let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.splitPartResult], ['splitPart']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select split_part("root".string1, "root".string2, "root".string3) as "splitPart" from dataTable as "root"',$snowflakeSql);
+}
+
 function  <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::function::snowflake::testToSQLStringLenSnowflake():Boolean[1]
 {
    let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | length($s.concatResult)], ['len']),

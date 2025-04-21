@@ -53,12 +53,12 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     private SnowflakeAppDeploymentTool snowflakeAppDeploymentTool;
     private PlanExecutor planExecutor;
     private ConnectionManagerSelector connectionManager;
-    private static final String deploymentSchema = "LEGEND_NATIVE_APPS";
+    private String deploymentSchema;
     private static final  String deploymentTable = "APP_METADATA";
     private static final  String limit = "10000";
 
 
-    private static String deployStub = "/schemas/" + deploymentSchema + "/user-function/%S()";
+    private String deployStub;
 
     private String enrichDeploymentLocation(String deploymentLocation, String appName)
     {
@@ -103,6 +103,8 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         {
             String appName = ((SnowflakeAppContent)artifact.content).applicationName;
             jdbcConnection.setAutoCommit(false);
+            this.deploymentSchema = ((SnowflakeAppContent)artifact.content).deploymentSchema;
+            deployStub = "/schemas/" + this.deploymentSchema + "/user-function/%S()";
             this.deployImpl(jdbcConnection, (SnowflakeAppContent)artifact.content);
             jdbcConnection.commit();
             LOGGER.info("Completed deployment successfully");

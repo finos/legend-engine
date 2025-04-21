@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-snowflake</artifactId>
-        <version>4.78.4-SNAPSHOT</version>
+        <version>4.80.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -74,6 +74,9 @@
                                 </PCTTestSuite>
                                 <PCTTestSuite>
                                     org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_RelationFunctions_PCT
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_UnclassifiedFunctions_PCT
                                 </PCTTestSuite>
                             </PCTTestSuites>
                         </configuration>
@@ -173,6 +176,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
         </dependency>
 
         <dependency>

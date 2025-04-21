@@ -146,4 +146,14 @@ public class DataQualityLambdaGenerator
         );
     }
 
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateRelationValidationMainQueryRowCount(PureModel pureModel, String qualifiedPath)
+    {
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateMainQueryCountLambda_DataQualityRelationValidation_1__LambdaFunction_1_((Root_meta_external_dataquality_DataQualityRelationValidation) pureModel.getPackageableElement(qualifiedPath), pureModel.getExecutionSupport());
+    }
+
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateRelationValidationMainQueryRowCount(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement)
+    {
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateMainQueryCountLambda_DataQualityRelationValidation_1__LambdaFunction_1_(packageableElement, pureModel.getExecutionSupport());
+    }
+
 }

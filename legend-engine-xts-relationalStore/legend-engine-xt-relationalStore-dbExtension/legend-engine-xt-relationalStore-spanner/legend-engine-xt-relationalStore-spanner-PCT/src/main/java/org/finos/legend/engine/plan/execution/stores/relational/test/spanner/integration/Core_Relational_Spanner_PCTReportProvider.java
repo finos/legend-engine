@@ -37,7 +37,8 @@ public class Core_Relational_Spanner_PCTReportProvider implements PCTReportProvi
                 "pct-reports/ADAPTER_standard_compiled_Spanner.json",
                 "pct-reports/ADAPTER_essential_compiled_Spanner.json",
                 "pct-reports/ADAPTER_grammar_compiled_Spanner.json",
-                "pct-reports/ADAPTER_relation_compiled_Spanner.json"
+                "pct-reports/ADAPTER_relation_compiled_Spanner.json",
+                "pct-reports/ADAPTER_unclassified_compiled_Spanner.json"
         );
     }
 }

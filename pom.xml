@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.78.4-SNAPSHOT</version>
+    <version>4.80.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -102,12 +102,11 @@
         <!-- Application -->
         <module>legend-engine-application-query</module>
         <module>legend-engine-xts-identity</module>
-        <module>legend-engine-xts-ingest</module>
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.43.0</legend.pure.version>
+        <legend.pure.version>5.44.0</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -686,16 +685,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-repl-client</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-ingest-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-ingest-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

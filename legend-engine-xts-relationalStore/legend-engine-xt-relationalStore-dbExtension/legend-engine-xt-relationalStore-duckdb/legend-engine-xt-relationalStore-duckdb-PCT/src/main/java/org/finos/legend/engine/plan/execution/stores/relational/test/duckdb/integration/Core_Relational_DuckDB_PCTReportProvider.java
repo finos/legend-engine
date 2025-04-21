@@ -37,7 +37,8 @@ public class Core_Relational_DuckDB_PCTReportProvider implements PCTReportProvid
                 "pct-reports/ADAPTER_standard_compiled_DuckDB.json",
                 "pct-reports/ADAPTER_essential_compiled_DuckDB.json",
                 "pct-reports/ADAPTER_grammar_compiled_DuckDB.json",
-                "pct-reports/ADAPTER_relation_compiled_DuckDB.json"
+                "pct-reports/ADAPTER_relation_compiled_DuckDB.json",
+                "pct-reports/ADAPTER_unclassified_compiled_DuckDB.json"
         );
     }
 }

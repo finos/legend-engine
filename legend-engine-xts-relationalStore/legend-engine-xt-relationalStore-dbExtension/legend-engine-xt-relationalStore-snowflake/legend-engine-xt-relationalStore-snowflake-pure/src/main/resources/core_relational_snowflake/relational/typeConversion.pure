@@ -15,10 +15,9 @@
 import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::*;
 import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::*;
 
-function meta::relational::functions::typeConversion::snowflake::convert(genericType:meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[1]):meta::relational::metamodel::datatype::DataType[1]
+function meta::relational::functions::typeConversion::snowflake::convert(genericType:GenericType[1]):meta::relational::metamodel::datatype::DataType[1]
 {
-    let _path = $genericType.rawType->cast(@PackageableType).fullPath;
-    let path = if($_path->indexOf('::') != -1,|$_path->substring($_path->lastIndexOf('::')+2),|$_path);
+    let path = $genericType.rawType.name->toOne();
     let variables = $genericType.typeVariableValues;
     if (
         [
@@ -35,7 +34,7 @@ function meta::relational::functions::typeConversion::snowflake::convert(generic
 
             pair(|$path == 'BigInt', |^meta::relational::metamodel::datatype::Decimal(precision=19, scale=0)),
             pair(|$path == 'StrictDate', |^meta::relational::metamodel::datatype::Date()),
-            pair(|$path == 'Numeric', |^meta::relational::metamodel::datatype::Decimal(precision=$variables->cast(@CInteger)->at(0).value, scale=$variables->cast(@CInteger)->at(1).value)),
+            pair(|$path == 'Numeric', |^meta::relational::metamodel::datatype::Decimal(precision=$variables->at(0)->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer), scale=$variables->at(1)->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer))),
             pair(|$path == 'Double', |^meta::relational::metamodel::datatype::Double()),
             pair(|$path == 'Float4', |^meta::relational::metamodel::datatype::Float()),
             pair(|$path == 'Int', |^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),
@@ -47,7 +46,7 @@ function meta::relational::functions::typeConversion::snowflake::convert(generic
             pair(|$path == 'UInt', |^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),
             pair(|$path == 'USmallInt', |^meta::relational::metamodel::datatype::Decimal(precision=5, scale=0)),
             pair(|$path == 'UTinyInt', |^meta::relational::metamodel::datatype::Decimal(precision=3, scale=0)),
-            pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@CInteger).value->toOne()))
+            pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer)))
         ],
         | fail ($path + ' is not managed yet');
     )->cast(@meta::relational::metamodel::datatype::DataType);

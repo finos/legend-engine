@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-spanner</artifactId>
-        <version>4.78.4-SNAPSHOT</version>
+        <version>4.80.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-relationalStore-spanner-PCT</artifactId>
@@ -50,6 +50,7 @@
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_EssentialFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_GrammarFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_RelationFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_UnclassifiedFunctions_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -123,11 +124,15 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
