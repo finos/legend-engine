@@ -211,12 +211,12 @@ public class DataQualityExecute
         // 2. call DQ PURE func to generate lambda
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction = generateLambdaFunction(dataQualityExecuteInput, pureModel, rowCount);
         // 3. Generate Plan from the lambda generated in the previous step
-        SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
-        return singleExecutionPlan;
+        return PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
     }
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction generateLambdaFunction(DataQualityExecuteTrialInput dataQualityExecuteInput, PureModel pureModel, boolean rowCount) {
-        if (rowCount) {
+        if (rowCount)
+        {
             return DataQualityLambdaGenerator.generateRelationValidationMainQueryRowCount(pureModel, dataQualityExecuteInput.packagePath);
         }
         return DataQualityLambdaGenerator.generateLambdaForTrial(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.queryLimit, dataQualityExecuteInput.validationName, dataQualityExecuteInput.runQuery);
