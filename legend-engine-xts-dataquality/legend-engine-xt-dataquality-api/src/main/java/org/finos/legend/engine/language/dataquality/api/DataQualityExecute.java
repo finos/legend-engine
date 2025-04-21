@@ -214,7 +214,7 @@ public class DataQualityExecute
         return PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
     }
 
-    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction generateLambdaFunction(DataQualityExecuteTrialInput dataQualityExecuteInput, PureModel pureModel, boolean rowCount) {
+    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction generateLambdaFunction(DataQualityExecuteTrialInput dataQualityExecuteInput, PureModel pureModel, boolean rowCount) {
         if (rowCount)
         {
             return DataQualityLambdaGenerator.generateRelationValidationMainQueryRowCount(pureModel, dataQualityExecuteInput.packagePath);
