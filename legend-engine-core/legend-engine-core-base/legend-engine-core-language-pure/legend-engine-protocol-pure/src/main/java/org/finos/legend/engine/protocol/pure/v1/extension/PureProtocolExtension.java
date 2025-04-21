@@ -14,7 +14,10 @@
 
 package org.finos.legend.engine.protocol.pure.v1.extension;
 
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
@@ -32,7 +35,6 @@ public interface PureProtocolExtension extends LegendLanguageExtension
         return "Protocol";
     }
 
-    @Deprecated
     default List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Collections.emptyList();
@@ -49,6 +51,11 @@ public interface PureProtocolExtension extends LegendLanguageExtension
     }
 
     default List<ProtocolConverter<?>> getProtocolConverters()
+    {
+        return Lists.fixedSize.empty();
+    }
+
+    default MutableList<Pair<Class, JsonDeserializer>> getExtraDeserializer()
     {
         return Lists.fixedSize.empty();
     }
