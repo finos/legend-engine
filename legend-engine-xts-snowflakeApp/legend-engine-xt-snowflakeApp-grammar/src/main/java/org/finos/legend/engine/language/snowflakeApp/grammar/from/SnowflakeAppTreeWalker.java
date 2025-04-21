@@ -103,11 +103,6 @@ public class SnowflakeAppTreeWalker
                 throw new EngineException("Unknown permission scheme '" + PureGrammarParserUtility.fromIdentifier(schemeContext.identifier()) + "'", this.walkerSourceInformation.getSourceInformation(schemeContext), EngineErrorType.PARSER);
             }
         }
-        SnowflakeAppParserGrammar.DeploymentSchemaContext deploymentSchemaContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.deploymentSchema(), "deploymentSchema", snowflakeApp.sourceInformation);
-        if (deploymentSchemaContext != null)
-        {
-            snowflakeApp.deploymentSchema = PureGrammarParserUtility.fromGrammarString(deploymentSchemaContext.STRING().getText(), true);
-        }
         SnowflakeAppParserGrammar.ActivationContext activationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.activation(), "activation", snowflakeApp.sourceInformation);
         if (activationContext != null)
         {
