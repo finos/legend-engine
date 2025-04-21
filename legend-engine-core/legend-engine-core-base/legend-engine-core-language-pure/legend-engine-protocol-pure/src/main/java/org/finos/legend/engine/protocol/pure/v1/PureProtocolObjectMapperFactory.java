@@ -150,6 +150,12 @@ public class PureProtocolObjectMapperFactory
                         superTypesWithDefaultRegisteredSubtype.put(info.getSuperType(), info);
                         addModule.accept(mapperOrBuilder, info.registerDefaultSubType());
                     }
+
+                    // Add extra deserializer
+                    SimpleModule module = new SimpleModule();
+                    extension.getExtraDeserializer().forEach(x -> module.addDeserializer(x.getOne(), x.getTwo()));
+                    addModule.accept(mapperOrBuilder, module);
+
                     // register sub types by type ID
                     info.getSubTypes().forEach(subType ->
                     {
