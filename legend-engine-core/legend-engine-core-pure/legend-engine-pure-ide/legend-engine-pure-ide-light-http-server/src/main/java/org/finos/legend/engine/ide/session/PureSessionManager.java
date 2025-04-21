@@ -24,21 +24,29 @@ public class PureSessionManager
     private SourceLocationConfiguration sourceLocationConfiguration;
     private boolean debugMode;
     private MutableList<RepositoryCodeStorage> repositories;
+    private boolean hasSession;
 
     public PureSessionManager(SourceLocationConfiguration sourceLocationConfiguration, boolean debugMode, MutableList<RepositoryCodeStorage> repositories)
     {
         this.sourceLocationConfiguration = sourceLocationConfiguration;
         this.debugMode = debugMode;
         this.repositories = repositories;
+        this.hasSession = false;
     }
 
     public synchronized void createSession()
     {
         this.session = new PureSession(this.sourceLocationConfiguration, this.debugMode, this.repositories);
+        this.hasSession = true;
     }
 
     public synchronized PureSession getSession()
     {
+        if (!this.hasSession)
+        {
+            throw new IllegalStateException("Session has not been created yet. Please create a session before accessing it.");
+        }
+
         return this.session;
     }
 
