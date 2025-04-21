@@ -320,6 +320,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectSQLQueryForMemSQL(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
+  assertEmpty($sq.pivot, 'pivot is not supported');
   let s = if($sq.fromRow->isNotEmpty() && $sq.toRow->isEmpty(), |$sq->rewriteSliceAsWindowFunction(), |$sq);
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
@@ -348,7 +349,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
 function meta::relational::functions::sqlQueryToString::memsql::translateCreateSchemaStatementMemSQL(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
-  if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema ' + $dbConfig.identifierProcessor($createSchemaSQL.schema.name) + ';');
+  if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema if not exists ' + $dbConfig.identifierProcessor($createSchemaSQL.schema.name) + ';');
 }
 
 function meta::relational::functions::sqlQueryToString::memsql::translateDropSchemaStatementMemSQL(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
@@ -365,7 +366,7 @@ function meta::relational::functions::sqlQueryToString::memsql::translateDropTab
 function meta::relational::functions::sqlQueryToString::memsql::translateCreateTableStatementMemSQL(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   if($createTableSQL.isTempTable->isTrue(),|
-   'CREATE TEMPORARY TABLE ' + $createTableSQL.table->tableToString($dbConfig) + '('+ $createTableSQL.table.columns->map(r|$r->match([c:Column[1]| $c.name->toOne() + ' ' + if($c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() == 'TIMESTAMP',|'DATETIME(6)',|$c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()),
+   'CREATE TEMPORARY TABLE ' + $createTableSQL.table->tableToString($dbConfig) + '('+ $createTableSQL.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + if($c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() == 'TIMESTAMP',|'DATETIME(6)',|$c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()),
                                                                                                     r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]))->joinStrings(',') + ');'
   ,|let t= $createTableSQL.table;
     let applyConstraints = $createTableSQL.applyConstraints;

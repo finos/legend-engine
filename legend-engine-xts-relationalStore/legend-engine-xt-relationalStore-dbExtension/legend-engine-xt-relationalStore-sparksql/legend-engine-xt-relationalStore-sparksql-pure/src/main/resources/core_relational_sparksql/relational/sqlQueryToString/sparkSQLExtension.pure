@@ -241,6 +241,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spark
   //            as "limitoffset_via_window_subquery" where "limitoffset_via_window_subquery".row_number < 10) as x
   // Also see https://www.jooq.org/doc/3.1/manual/sql-building/sql-statements/select-statement/limit-clause/#N467C4
 
+  assertEmpty($sq.pivot, 'pivot is not supported');
   let s = if($isSubSelect && ($sq.fromRow->isNotEmpty() || $sq.toRow->isNotEmpty()), |$sq->rewriteSliceAsWindowFunction(), |$sq);
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));

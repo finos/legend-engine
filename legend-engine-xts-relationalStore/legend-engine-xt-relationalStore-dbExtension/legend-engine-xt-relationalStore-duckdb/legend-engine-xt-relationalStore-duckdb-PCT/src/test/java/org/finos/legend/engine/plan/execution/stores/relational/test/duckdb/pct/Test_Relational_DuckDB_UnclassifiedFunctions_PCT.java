@@ -37,8 +37,8 @@ public class Test_Relational_DuckDB_UnclassifiedFunctions_PCT extends PCTReportC
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             //SplitPart
-            one("meta::pure::functions::string::tests::testSplitPartEmptyString_Function_1__Boolean_1_", "\"\nexpected: []\nactual:   ['']\""),
-            one("meta::pure::functions::string::tests::testSplitPartEmptyToken_Function_1__Boolean_1_", "\"\nexpected: 'Hello World'\nactual:   'H'\"")
+            one("meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString_Function_1__Boolean_1_", "\"\nexpected: []\nactual:   ['']\""),
+            one("meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_", "\"\nexpected: 'Hello World'\nactual:   'H'\"")
     );
 
     public static Test suite()
