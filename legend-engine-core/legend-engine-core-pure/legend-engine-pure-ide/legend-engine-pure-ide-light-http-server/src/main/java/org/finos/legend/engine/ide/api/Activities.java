@@ -15,7 +15,7 @@
 package org.finos.legend.engine.ide.api;
 
 import io.swagger.annotations.Api;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -32,11 +32,11 @@ import java.io.PrintWriter;
 @Path("/")
 public class Activities
 {
-    private PureSession pureSession;
+    private final PureSessionManager sessionManager;
 
-    public Activities(PureSession pureSession)
+    public Activities(PureSessionManager sessionManager)
     {
-        this.pureSession = pureSession;
+        this.sessionManager = sessionManager;
     }
 
     @GET
@@ -45,7 +45,7 @@ public class Activities
     {
         return Response.ok((StreamingOutput) outputStream ->
         {
-            outputStream.write(("{\"initializing\":" + !this.pureSession.getPureRuntime().isInitializedNoLock() + ",\"text\":\"" + this.pureSession.message.getMessage() + "\"}").getBytes());
+            outputStream.write(("{\"initializing\":" + !this.sessionManager.getSession().getPureRuntime().isInitializedNoLock() + ",\"text\":\"" + this.sessionManager.getSession().message.getMessage() + "\"}").getBytes());
             outputStream.close();
         }).build();
     }
@@ -58,12 +58,12 @@ public class Activities
         {
             boolean isExecuting = false;
             boolean isInitializing = true;
-            if (pureSession != null)
+            if (sessionManager.getSession() != null)
             {
-                isInitializing = pureSession.getPureRuntime().isInitializing();
-                isExecuting = pureSession.getCurrentExecutionCount() != 0;
+                isInitializing = sessionManager.getSession().getPureRuntime().isInitializing();
+                isExecuting = sessionManager.getSession().getCurrentExecutionCount() != 0;
             }
-            outputStream.write(("{\"executing\":" + (isExecuting || isInitializing) + ",\"text\":\"" + pureSession.message.getMessage() + "\"}").getBytes());
+            outputStream.write(("{\"executing\":" + (isExecuting || isInitializing) + ",\"text\":\"" + sessionManager.getSession().message.getMessage() + "\"}").getBytes());
             outputStream.close();
         }).build();
     }
@@ -76,7 +76,7 @@ public class Activities
         {
             JSONObject json = new JSONObject();
             json.put("initializing", false);
-            json.put("text", this.pureSession.message.getMessage());
+            json.put("text", this.sessionManager.getSession().message.getMessage());
             json.put("archiveLocked", false);
             try (PrintWriter writer = new PrintWriter(outStream))
             {

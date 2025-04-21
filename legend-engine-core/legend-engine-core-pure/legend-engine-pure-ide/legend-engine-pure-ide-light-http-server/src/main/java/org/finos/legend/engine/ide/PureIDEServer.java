@@ -48,6 +48,7 @@ import org.finos.legend.engine.ide.api.find.FindPureFile;
 import org.finos.legend.engine.ide.api.find.FindTextPreview;
 import org.finos.legend.engine.ide.api.source.UpdateSource;
 import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.engine.plan.execution.stores.relational.test.H2TestServerResource;
 import org.finos.legend.engine.server.test.shared.MetadataTestServerResource;
 import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
@@ -74,6 +75,7 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
     private static final Logger LOGGER = LoggerFactory.getLogger(PureIDEServer.class);
 
     private PureSession pureSession;
+    private PureSessionManager pureSessionManager;
 
     @Override
     public void initialize(Bootstrap<ServerConfiguration> bootstrap)
@@ -102,31 +104,34 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
                         (configuration.swagger.getContextRoot().endsWith("/") ? "" : "/") + "api")
         );
 
-        this.pureSession = new PureSession(configuration.sourceLocationConfiguration, configuration.debugMode != null && configuration.debugMode, this.getRepositories(configuration));
 
-        environment.jersey().register(new Concept(pureSession));
-        environment.jersey().register(new RenameConcept(pureSession));
-        environment.jersey().register(new MovePackageableElements(pureSession));
+        this.pureSessionManager = new PureSessionManager(configuration.sourceLocationConfiguration, configuration.debugMode != null && configuration.debugMode, this.getRepositories(configuration));
+        this.pureSessionManager.createSession();
 
-        environment.jersey().register(new Execute(pureSession));
-        environment.jersey().register(new ExecuteGo(pureSession));
-        environment.jersey().register(new ExecuteTests(pureSession));
-        environment.jersey().register(new Debugging(pureSession));
+        environment.jersey().register(new PureSessionManagerAPI(this.pureSessionManager));
 
-        environment.jersey().register(new FindInSources(pureSession));
-        environment.jersey().register(new FindPureFile(pureSession));
-        environment.jersey().register(new FindTextPreview((pureSession)));
+        environment.jersey().register(new Concept(pureSessionManager));
+        environment.jersey().register(new RenameConcept(pureSessionManager));
+        environment.jersey().register(new MovePackageableElements(pureSessionManager));
 
-        environment.jersey().register(new UpdateSource(pureSession));
+        environment.jersey().register(new Execute(pureSessionManager));
+        environment.jersey().register(new ExecuteGo(pureSessionManager));
+        environment.jersey().register(new ExecuteTests(pureSessionManager));
+        environment.jersey().register(new Debugging(pureSessionManager));
 
-        environment.jersey().register(new Activities(pureSession));
-        environment.jersey().register(new FileManagement(pureSession));
-        environment.jersey().register(new LifeCycle(pureSession));
-        environment.jersey().register(new PureRuntimeOptions(pureSession));
+        environment.jersey().register(new FindInSources(pureSessionManager));
+        environment.jersey().register(new FindPureFile(pureSessionManager));
+        environment.jersey().register(new FindTextPreview((pureSessionManager)));
 
-        environment.jersey().register(new Suggestion(pureSession));
+        environment.jersey().register(new UpdateSource(pureSessionManager));
 
-        environment.jersey().register(new Service(pureSession));
+        environment.jersey().register(new Activities(pureSessionManager));
+        environment.jersey().register(new FileManagement(pureSessionManager));
+        environment.jersey().register(new LifeCycle(pureSessionManager));
+        environment.jersey().register(new PureRuntimeOptions(pureSessionManager));
+
+        environment.jersey().register(new Suggestion(pureSessionManager));
+        environment.jersey().register(new Service(pureSessionManager));
 
         enableCors(environment);
 

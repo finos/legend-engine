@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.ide.helpers.response.ExceptionTranslation;
 import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.ScratchCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNodeStatus;
@@ -50,11 +51,11 @@ public class FileManagement
 {
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile("/?+(\\w+/)*+\\w+(\\.\\w++)*+");
 
-    private final PureSession session;
+    private final PureSessionManager sessionManager;
 
-    public FileManagement(PureSession session)
+    public FileManagement(PureSessionManager sessionManager)
     {
-        this.session = session;
+        this.sessionManager = sessionManager;
     }
 
 
@@ -82,7 +83,7 @@ public class FileManagement
     {
         try
         {
-            session.getPureRuntime().delete("/" + filePath);
+            sessionManager.getSession().getPureRuntime().delete("/" + filePath);
             return Response.ok((StreamingOutput) outputStream ->
             {
                 outputStream.write(("{\"cached\":" + false + "}").getBytes());
@@ -93,7 +94,7 @@ public class FileManagement
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }
@@ -105,7 +106,7 @@ public class FileManagement
     {
         try
         {
-            session.getPureRuntime().create("/" + filePath);
+            sessionManager.getSession().getPureRuntime().create("/" + filePath);
 
             return Response.ok((StreamingOutput) outputStream ->
             {
@@ -117,7 +118,7 @@ public class FileManagement
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }
@@ -129,7 +130,7 @@ public class FileManagement
     {
         try
         {
-            session.getCodeStorage().createFolder("/" + filePath);
+            this.sessionManager.getSession().getCodeStorage().createFolder("/" + filePath);
 
             return Response.ok((StreamingOutput) outputStream ->
             {
@@ -141,7 +142,7 @@ public class FileManagement
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }
@@ -165,7 +166,7 @@ public class FileManagement
                 throw new IllegalArgumentException("Invalid new path");
             }
 
-            this.session.getPureRuntime().move(oldPath, newPath);
+            this.sessionManager.getSession().getPureRuntime().move(oldPath, newPath);
 
             return Response.ok((StreamingOutput) outputStream ->
             {
@@ -177,7 +178,7 @@ public class FileManagement
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }
@@ -192,7 +193,7 @@ public class FileManagement
             response.setContentType("application/json");
             String path = request.getParameter("parameters");
             StringBuilder json = new StringBuilder("[");
-            MutableList<CodeStorageNode> nodes = LazyIterate.reject(session.getCodeStorage().getFiles(path), IGNORED_NODE).toSortedList(NODE_COMPARATOR);
+            MutableList<CodeStorageNode> nodes = LazyIterate.reject(sessionManager.getSession().getCodeStorage().getFiles(path), IGNORED_NODE).toSortedList(NODE_COMPARATOR);
             if ("/".equals(path))
             {
                 nodes.sortThis((o1, o2) ->
@@ -205,7 +206,7 @@ public class FileManagement
             ;
             if (nodes.notEmpty())
             {
-                MutableRepositoryCodeStorage codeStorage = session.getCodeStorage();
+                MutableRepositoryCodeStorage codeStorage = sessionManager.getSession().getCodeStorage();
                 Iterator<CodeStorageNode> iterator = nodes.iterator();
                 writeNode(json, codeStorage, path, iterator.next());
                 while (iterator.hasNext())
@@ -226,7 +227,7 @@ public class FileManagement
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }
@@ -238,7 +239,7 @@ public class FileManagement
     {
         try
         {
-            MutableRepositoryCodeStorage codeStorage = session.getCodeStorage();
+            MutableRepositoryCodeStorage codeStorage = sessionManager.getSession().getCodeStorage();
             if (codeStorage == null)
             {
                 throw new RuntimeException("Cannot find code storage");
@@ -275,7 +276,7 @@ public class FileManagement
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }

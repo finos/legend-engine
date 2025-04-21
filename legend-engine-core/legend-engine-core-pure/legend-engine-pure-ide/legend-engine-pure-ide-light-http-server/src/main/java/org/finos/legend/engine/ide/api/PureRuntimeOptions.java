@@ -16,7 +16,7 @@ package org.finos.legend.engine.ide.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,25 +31,25 @@ import javax.ws.rs.core.StreamingOutput;
 @Path("/pureRuntimeOptions")
 public class PureRuntimeOptions
 {
-    private final PureSession pureSession;
+    private final PureSessionManager sessionManager;
 
-    public PureRuntimeOptions(PureSession session)
+    public PureRuntimeOptions(PureSessionManager sessionManager)
     {
-        this.pureSession = session;
+        this.sessionManager = sessionManager;
     }
 
     @GET
     @Path("setPureRuntimeOption/{name}/{value}")
     public void setPureRuntimeOption(@PathParam("name") String optionName, @PathParam("value") Boolean value)
     {
-        this.pureSession.setPureRuntimeOption(optionName, value);
+        sessionManager.getSession().setPureRuntimeOption(optionName, value);
     }
 
     @GET
     @Path("getPureRuntimeOption/{name}")
     public Boolean getPureRuntimeOption(@PathParam("optionName") String optionName)
     {
-        return this.pureSession.getPureRuntimeOption(optionName);
+        return sessionManager.getSession().getPureRuntimeOption(optionName);
     }
 
     @GET
@@ -59,10 +59,9 @@ public class PureRuntimeOptions
         return Response.ok((StreamingOutput) outputStream ->
         {
             ObjectMapper om = new ObjectMapper();
-            outputStream.write(om.writeValueAsBytes(this.pureSession.getAllPureRuntimeOptions()));
+            outputStream.write(om.writeValueAsBytes(sessionManager.getSession().getAllPureRuntimeOptions()));
             outputStream.close();
         }).build();
     }
 
 }
-

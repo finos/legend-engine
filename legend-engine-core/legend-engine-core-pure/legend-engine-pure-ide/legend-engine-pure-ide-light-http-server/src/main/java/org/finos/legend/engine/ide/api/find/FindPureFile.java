@@ -17,7 +17,7 @@ package org.finos.legend.engine.ide.api.find;
 import io.swagger.annotations.Api;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,11 +34,11 @@ import java.util.regex.Pattern;
 @Path("/")
 public class FindPureFile
 {
-    private final PureSession session;
+    private final PureSessionManager sessionManager;
 
-    public FindPureFile(PureSession session)
+    public FindPureFile(PureSessionManager sessionManager)
     {
-        this.session = session;
+        this.sessionManager = sessionManager;
     }
 
     @GET
@@ -53,8 +53,8 @@ public class FindPureFile
             try
             {
                 Pattern filePattern = Pattern.compile(fileName);
-                RichIterable<String> fileMatches = isRegex ? session.getPureRuntime().getSourceRegistry().findSourceIds(filePattern)
-                        : session.getPureRuntime().getSourceRegistry().findSourceIds(fileName);
+                RichIterable<String> fileMatches = isRegex ? sessionManager.getSession().getPureRuntime().getSourceRegistry().findSourceIds(filePattern)
+                        : sessionManager.getSession().getPureRuntime().getSourceRegistry().findSourceIds(fileName);
                 response.setContentType("application/json");
                 final StringBuilder sb = new StringBuilder("[");
                 fileMatches.toSortedList().forEach(new Procedure<String>()

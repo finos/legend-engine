@@ -15,7 +15,7 @@
 package org.finos.legend.engine.ide.api;
 
 import io.swagger.annotations.Api;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,24 +32,24 @@ import java.io.IOException;
 @Path("/")
 public class LifeCycle
 {
-    private PureSession pureSession;
+    private final PureSessionManager sessionManager;
 
-    public LifeCycle(PureSession pureSession)
+    public LifeCycle(PureSessionManager sessionManager)
     {
-        this.pureSession = pureSession;
+        this.sessionManager = sessionManager;
     }
 
     @GET
     @Path("initialize")
     public Response initialize()
     {
-        PureRuntime pureRuntime = pureSession.getPureRuntime();
+        PureRuntime pureRuntime = sessionManager.getSession().getPureRuntime();
 
         return Response.ok((StreamingOutput) outStream ->
         {
             if (pureRuntime.isFullyInitialized())
             {
-                outStream.write(("{\"cached\":false, \"datamarts\": [" + pureSession.getPureRuntime().getCodeStorage().getAllRepositories().collect(s -> "\"" + s.getName() + "\"").makeString(",") + "]}").getBytes());
+                outStream.write(("{\"cached\":false, \"datamarts\": [" + pureRuntime.getCodeStorage().getAllRepositories().collect(s -> "\"" + s.getName() + "\"").makeString(",") + "]}").getBytes());
                 outStream.close();
                 return;
             }
@@ -57,15 +57,14 @@ public class LifeCycle
             try
             {
                 pureRuntime.reset();
-                pureRuntime.initialize(pureSession.message);
+                pureRuntime.initialize(sessionManager.getSession().message);
                 outStream.write("{\"text\":\"Full recompile completed successfully\", \"cached\":".getBytes());
                 outStream.write((pureRuntime.getCache().getCacheState().isCached() + "}").getBytes());
                 outStream.close();
             }
             catch (IOException | RuntimeException | Error e)
             {
-                //e.printStackTrace();
-                pureSession.getPureRuntime().getCache().deleteCache();
+                pureRuntime.getCache().deleteCache();
                 throw e;
             }
         }).build();
@@ -77,10 +76,10 @@ public class LifeCycle
     {
         return Response.ok((StreamingOutput) outputStream ->
         {
-            PureRuntime pureRuntime = pureSession.getPureRuntime();
+            PureRuntime pureRuntime = sessionManager.getSession().getPureRuntime();
             pureRuntime.reset();
             pureRuntime.getCache().deleteCache();
-            pureSession.saveFiles(request, response);
+            sessionManager.getSession().saveFiles(request, response);
             outputStream.write(("{\"text\":\"Reset Done\", \"cached\":" + false + "}").getBytes());
             outputStream.close();
         }).build();

@@ -18,6 +18,7 @@ import io.swagger.annotations.Api;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.tuple.primitive.BooleanObjectPair;
 import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.pure.m3.execution.test.TestExceptionStatus;
 import org.finos.legend.pure.m3.execution.test.TestRunner;
 import org.finos.legend.pure.m3.execution.test.TestStatus;
@@ -42,12 +43,12 @@ import java.util.concurrent.Executors;
 @Path("/")
 public class ExecuteTests
 {
-    private PureSession pureSession;
+    private final PureSessionManager sessionManager;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public ExecuteTests(PureSession pureSession)
+    public ExecuteTests(PureSessionManager sessionManager)
     {
-        this.pureSession = pureSession;
+        this.sessionManager = sessionManager;
     }
 
     @POST
@@ -56,7 +57,7 @@ public class ExecuteTests
     {
         return Response.ok((StreamingOutput) outputStream ->
         {
-            this.pureSession.saveFilesAndExecute(request, response, outputStream, new TestRun(this.executorService));
+            this.sessionManager.getSession().saveFilesAndExecute(request, response, outputStream, new TestRun(this.executorService));
         }).build();
     }
 
@@ -67,7 +68,7 @@ public class ExecuteTests
         return Response.ok((StreamingOutput) outputStream ->
         {
             int testRunnerId = getTestRunnerId(request);
-            TestRunner runner = pureSession.removeTestRunner(testRunnerId);
+            TestRunner runner = sessionManager.getSession().removeTestRunner(testRunnerId);
             if (runner == null)
             {
                 outputStream.write("{\"text\":\"Unknown test runner: ".getBytes());
@@ -93,7 +94,7 @@ public class ExecuteTests
         return Response.ok((StreamingOutput) outputStream ->
         {
             int testRunnerId = getTestRunnerId(request);
-            CallBack callBack = pureSession.getTestCallBack(testRunnerId);
+            CallBack callBack = sessionManager.getSession().getTestCallBack(testRunnerId);
             if (callBack == null)
             {
                 outputStream.write("{\"error\":true,\"text\":\"Unknown test runner: ".getBytes());
@@ -109,7 +110,7 @@ public class ExecuteTests
 
                 if (finished)
                 {
-                    pureSession.removeTestRunner(testRunnerId);
+                    sessionManager.getSession().removeTestRunner(testRunnerId);
                 }
 
                 outputStream.write("{\"finished\":".getBytes());
@@ -118,11 +119,11 @@ public class ExecuteTests
                 if (testResults.notEmpty())
                 {
                     Iterator<org.finos.legend.engine.ide.api.execution.test.TestResult> iterator = testResults.iterator();
-                    writeTestResult(outputStream, iterator.next(), pureSession);
+                    writeTestResult(outputStream, iterator.next(), sessionManager.getSession());
                     while (iterator.hasNext())
                     {
                         outputStream.write(',');
-                        writeTestResult(outputStream, iterator.next(), pureSession);
+                        writeTestResult(outputStream, iterator.next(), sessionManager.getSession());
                     }
                 }
                 outputStream.write("]}".getBytes());
@@ -144,7 +145,7 @@ public class ExecuteTests
         if (!TestStatus.SUCCESS.equals(result.getStatus()))
         {
             outStream.write(",\"error\":".getBytes());
-            outStream.write(PureSession.exceptionToJson(session, ((TestExceptionStatus) result.getStatus()).getException(), null).getBytes());
+            outStream.write(session.exceptionToJson(sessionManager.getSession(), ((TestExceptionStatus) result.getStatus()).getException(), null).getBytes());
         }
         outStream.write('}');
     }

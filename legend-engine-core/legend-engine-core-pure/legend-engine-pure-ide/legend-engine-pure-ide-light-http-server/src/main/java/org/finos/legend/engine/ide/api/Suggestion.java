@@ -23,6 +23,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.finos.legend.engine.ide.helpers.response.ExceptionTranslation;
 import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
@@ -89,11 +90,11 @@ public class Suggestion
             "meta::pure::tools",
             "meta::pure::profiles"
     );
-    private final PureSession session;
+    private final PureSessionManager sessionManager;
 
-    public Suggestion(PureSession session)
+    public Suggestion(PureSessionManager sessionManager)
     {
-        this.session = session;
+        this.sessionManager = sessionManager;
     }
 
     @POST
@@ -103,7 +104,7 @@ public class Suggestion
             IncompletePathSuggestionInput input,
             @Context HttpServletResponse response)
     {
-        PureRuntime runtime = this.session.getPureRuntime();
+        PureRuntime runtime = this.sessionManager.getSession().getPureRuntime();
         ProcessorSupport processorSupport = runtime.getProcessorSupport();
         try
         {
@@ -182,7 +183,7 @@ public class Suggestion
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(this.sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }
@@ -200,7 +201,7 @@ public class Suggestion
                                                 IdentifierSuggestionInput input,
                                                 @Context HttpServletResponse response)
     {
-        PureRuntime runtime = this.session.getPureRuntime();
+        PureRuntime runtime = this.sessionManager.getSession().getPureRuntime();
         ProcessorSupport processorSupport = runtime.getProcessorSupport();
         // NOTE: here we take into account: first, the imported packages in scope, then the root package (::) and lastly
         // the auto imported packages in the global scope
@@ -277,7 +278,7 @@ public class Suggestion
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }
@@ -295,7 +296,7 @@ public class Suggestion
                                                AttributeSuggestionInput input,
                                                @Context HttpServletResponse response)
     {
-        PureRuntime runtime = this.session.getPureRuntime();
+        PureRuntime runtime = this.sessionManager.getSession().getPureRuntime();
         ProcessorSupport processorSupport = runtime.getProcessorSupport();
         // NOTE: here we take into account: first, the imported packages in scope, then the root package (::) and lastly
         // the auto imported packages in the global scope
@@ -373,7 +374,7 @@ public class Suggestion
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }
@@ -407,7 +408,7 @@ public class Suggestion
                                            ClassSuggestionInput input,
                                            @Context HttpServletResponse response)
     {
-        PureRuntime runtime = this.session.getPureRuntime();
+        PureRuntime runtime = this.sessionManager.getSession().getPureRuntime();
         ProcessorSupport processorSupport = runtime.getProcessorSupport();
         MutableList<String> packagePaths = Lists.mutable.withAll(input.importPaths).withAll(AUTO_IMPORTS).distinct();
 
@@ -467,7 +468,7 @@ public class Suggestion
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }
@@ -484,7 +485,7 @@ public class Suggestion
                                               VariableSuggestionInput input,
                                               @Context HttpServletResponse response)
     {
-        PureRuntime runtime = this.session.getPureRuntime();
+        PureRuntime runtime = this.sessionManager.getSession().getPureRuntime();
         try
         {
             Source source = runtime.getSourceById(input.sourceId);
@@ -539,7 +540,7 @@ public class Suggestion
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }

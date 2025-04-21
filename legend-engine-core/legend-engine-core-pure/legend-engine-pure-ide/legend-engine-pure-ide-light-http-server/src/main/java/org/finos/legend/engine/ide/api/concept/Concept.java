@@ -16,6 +16,7 @@ package org.finos.legend.engine.ide.api.concept;
 
 import io.swagger.annotations.Api;
 import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedPropertyInstance;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
@@ -42,11 +43,11 @@ import java.io.OutputStream;
 @Path("/")
 public class Concept
 {
-    private final PureSession session;
+    private final PureSessionManager sessionManager;
 
-    public Concept(PureSession session)
+    public Concept(PureSessionManager sessionManager)
     {
-        this.session = session;
+        this.sessionManager = sessionManager;
     }
 
     @POST
@@ -55,7 +56,7 @@ public class Concept
     {
         return Response.ok((StreamingOutput) outputStream ->
         {
-            this.session.saveOnly(request, response, outputStream, new GetConcept());
+            this.sessionManager.getSession().saveOnly(request, response, outputStream, new GetConcept());
         }).build();
     }
 
@@ -69,31 +70,31 @@ public class Concept
             String line = request.getParameter("line");
             String column = request.getParameter("column");
 
-            PureRuntime pureRuntime = session.getPureRuntime();
+            PureRuntime pureRuntime = sessionManager.getSession().getPureRuntime();
             Source src = pureRuntime.getSourceById(file);
 
             response.setContentType("application/json");
             if (src != null)
             {
-                CoreInstance found = src.navigate(Integer.parseInt(line), Integer.parseInt(column), session.getPureRuntime().getProcessorSupport());
+                CoreInstance found = src.navigate(Integer.parseInt(line), Integer.parseInt(column), pureRuntime.getProcessorSupport());
                 if (found != null)
                 {
                     String doc = PCTTools.getDoc(found, pureRuntime.getProcessorSupport());
-                    if (Instance.instanceOf(found, M3Paths.AbstractProperty, session.getPureRuntime().getProcessorSupport()))
+                    if (Instance.instanceOf(found, M3Paths.AbstractProperty, pureRuntime.getProcessorSupport()))
                     {
                         String path = PackageableElement.getUserPathForPackageableElement(found);
-                        CoreInstance owner = Instance.getValueForMetaPropertyToOneResolved(found, M3Properties.owner, session.getPureRuntime().getProcessorSupport());
+                        CoreInstance owner = Instance.getValueForMetaPropertyToOneResolved(found, M3Properties.owner, pureRuntime.getProcessorSupport());
                         String ownerPath = PackageableElement.getUserPathForPackageableElement(owner);
                         outputStream.write(("{\"path\":\"" + path + "\",\"pureName\":\"" + found.getValueForMetaPropertyToOne(M3Properties.name).getName() + "\",\"owner\":\"" + ownerPath + "\",\"pureType\":\"" + (found instanceof QualifiedPropertyInstance ? "QualifiedProperty" : "Property") + "\",\"doc\":" + (doc != null ? ("\"" + doc + "\"") : null) + "}").getBytes());
                     }
-                    else if (Instance.instanceOf(found, M3Paths.Enum, session.getPureRuntime().getProcessorSupport()))
+                    else if (Instance.instanceOf(found, M3Paths.Enum, pureRuntime.getProcessorSupport()))
                     {
                         String path = PackageableElement.getUserPathForPackageableElement(found);
                         CoreInstance owner = found.getClassifier();
                         String ownerPath = PackageableElement.getUserPathForPackageableElement(owner);
                         outputStream.write(("{\"path\":\"" + path + "\",\"pureName\":\"" + found.getName() + "\",\"owner\":\"" + ownerPath + "\",\"pureType\":\"Enum\",\"doc\":" + (doc != null ? ("\"" + doc + "\"") : null) + "}").getBytes());
                     }
-                    else if (Instance.instanceOf(found, M3Paths.ConcreteFunctionDefinition, session.getPureRuntime().getProcessorSupport()) || Instance.instanceOf(found, M3Paths.NativeFunction, session.getPureRuntime().getProcessorSupport()))
+                    else if (Instance.instanceOf(found, M3Paths.ConcreteFunctionDefinition, pureRuntime.getProcessorSupport()) || Instance.instanceOf(found, M3Paths.NativeFunction, pureRuntime.getProcessorSupport()))
                     {
                         String path = PackageableElement.getUserPathForPackageableElement(found);
                         String grammarDoc = PCTTools.getGrammarDoc(found, pureRuntime.getProcessorSupport());

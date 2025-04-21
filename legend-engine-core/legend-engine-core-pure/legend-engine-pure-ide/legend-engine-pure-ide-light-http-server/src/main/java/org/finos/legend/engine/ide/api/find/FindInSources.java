@@ -17,7 +17,7 @@ package org.finos.legend.engine.ide.api.find;
 import io.swagger.annotations.Api;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.multimap.Multimap;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.pure.m3.serialization.runtime.SourceCoordinates;
 import org.json.simple.JSONValue;
 
@@ -42,11 +42,11 @@ public class FindInSources
     private static final String CASE_SENSITIVE_PARAM = "caseSensitive";
     private static final String MAX_RESULTS_PARAM = "limit";
 
-    private final PureSession session;
+    private final PureSessionManager sessionManager;
 
-    public FindInSources(PureSession session)
+    public FindInSources(PureSessionManager sessionManager)
     {
-        this.session = session;
+        this.sessionManager = sessionManager;
     }
 
     @GET
@@ -74,11 +74,11 @@ public class FindInSources
                 if (regex)
                 {
                     Pattern pattern = Pattern.compile(string, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
-                    results = session.getPureRuntime().getSourceRegistry().find(pattern, sourcePattern);
+                    results = sessionManager.getSession().getPureRuntime().getSourceRegistry().find(pattern, sourcePattern);
                 }
                 else
                 {
-                    results = session.getPureRuntime().getSourceRegistry().find(string, caseSensitive, sourcePattern);
+                    results = sessionManager.getSession().getPureRuntime().getSourceRegistry().find(string, caseSensitive, sourcePattern);
                 }
 
                 response.setContentType("application/json");

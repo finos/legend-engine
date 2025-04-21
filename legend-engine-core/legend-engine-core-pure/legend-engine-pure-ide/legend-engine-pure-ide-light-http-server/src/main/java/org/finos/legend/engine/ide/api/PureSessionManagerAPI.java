@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,37 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.ide.api.execution.go;
+package org.finos.legend.engine.ide.api;
 
 import io.swagger.annotations.Api;
 import org.finos.legend.engine.ide.session.PureSessionManager;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.POST;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 
-@Api(tags = "Execute")
-@Path("/")
-public class ExecuteGo
+@Api(tags = "Pure Session Management")
+@Path("/pureSession")
+public class PureSessionManagerAPI
 {
     private final PureSessionManager sessionManager;
 
-    public ExecuteGo(PureSessionManager sessionManager)
+    public PureSessionManagerAPI(PureSessionManager sessionManager)
     {
         this.sessionManager = sessionManager;
     }
 
-    @POST
-    @Path("executeGo")
-    public Response executeGo(@Context HttpServletRequest request, @Context HttpServletResponse response)
+    @GET
+    @Path("restartSession")
+    public void resetSession()
     {
-        return Response.ok((StreamingOutput) outputStream ->
-        {
-            this.sessionManager.getSession().saveFilesAndExecute(request, response, outputStream, new GoRun());
-        }).build();
+        sessionManager.resetSession();
     }
 }

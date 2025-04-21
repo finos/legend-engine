@@ -15,6 +15,16 @@
 package org.finos.legend.engine.ide.api.concept;
 
 import io.swagger.annotations.Api;
+import java.io.ByteArrayOutputStream;
+import java.util.List;
+import java.util.regex.Pattern;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
@@ -23,19 +33,8 @@ import org.eclipse.collections.api.partition.list.PartitionMutableList;
 import org.eclipse.collections.impl.factory.Multimaps;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.ide.helpers.response.ExceptionTranslation;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.json.simple.JSONValue;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-import java.io.ByteArrayOutputStream;
-import java.util.List;
-import java.util.regex.Pattern;
 
 @Api(tags = "Concepts")
 @Path("/")
@@ -43,11 +42,11 @@ public class MovePackageableElements
 {
     private static final Pattern PACKAGE_PATH_PATTERN = Pattern.compile("\\w[\\w$]*+(::\\w[\\w$]*+)*+");
 
-    private final PureSession session;
+    private final PureSessionManager sessionManager;
 
-    public MovePackageableElements(PureSession session)
+    public MovePackageableElements(PureSessionManager sessionManager)
     {
-        this.session = session;
+        this.sessionManager = sessionManager;
     }
 
     @PUT
@@ -81,7 +80,7 @@ public class MovePackageableElements
                 }
             }
 
-            if (!entryIndex.keysView().allSatisfy(sourceId -> this.session.getPureRuntime().getSourceById(sourceId).isCompiled()))
+            if (!entryIndex.keysView().allSatisfy(sourceId -> this.sessionManager.getSession().getPureRuntime().getSourceById(sourceId).isCompiled()))
             {
                 throw new IllegalStateException("Source code must be compiled before refactoring");
             }
@@ -92,7 +91,7 @@ public class MovePackageableElements
 
             entryIndex.forEachKeyMultiValues((sourceId, entries) ->
             {
-                String originalSourceCode = session.getPureRuntime().getSourceById(sourceId).getContent();
+                String originalSourceCode = sessionManager.getSession().getPureRuntime().getSourceById(sourceId).getContent();
                 String[] originalSourceCodeLines = originalSourceCode.split("\n", -1);
                 PartitionMutableList<org.finos.legend.engine.ide.api.concept.RenamePackageEntry> partition = (PartitionMutableList<org.finos.legend.engine.ide.api.concept.RenamePackageEntry>) (org.finos.legend.engine.ide.api.concept.RenameConceptUtility.removeInvalidReplaceConceptEntries(originalSourceCodeLines, Lists.mutable.ofAll(entries)))
                         .partition(entry -> entry.getReplaceColumnIndex() >= 0 && originalSourceCodeLines[entry.getReplaceLineIndex()].startsWith(entry.getOriginalReplaceString(), entry.getReplaceColumnIndex()));
@@ -101,7 +100,7 @@ public class MovePackageableElements
                         updatedSourceCode.split("\n", -1),
                         partition.getRejected().sortThisBy(AbstractRenameConceptEntry::getReplaceLineIndex)
                 );
-                session.getPureRuntime().modify(sourceId, updatedSourceCode);
+                sessionManager.getSession().getPureRuntime().modify(sourceId, updatedSourceCode);
             });
 
             return Response.noContent().build();
@@ -110,7 +109,7 @@ public class MovePackageableElements
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(this.session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(this.sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }

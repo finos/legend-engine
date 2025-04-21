@@ -22,7 +22,7 @@ import org.finos.legend.engine.ide.api.execution.function.manager.ExecutionManag
 import org.finos.legend.engine.ide.api.execution.function.manager.ExecutionRequest;
 import org.finos.legend.engine.ide.api.execution.function.manager.HttpServletResponseWriter;
 import org.finos.legend.engine.ide.helpers.JSONResponseTools;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 
@@ -40,11 +40,11 @@ import java.util.Stack;
 @Path("/")
 public class Execute
 {
-    private PureSession pureSession;
+    private final PureSessionManager sessionManager;
 
-    public Execute(PureSession pureSession)
+    public Execute(PureSessionManager sessionManager)
     {
-        this.pureSession = pureSession;
+        this.sessionManager = sessionManager;
     }
 
     @GET
@@ -55,7 +55,7 @@ public class Execute
         {
             try
             {
-                FunctionExecution functionExecution = this.pureSession.getFunctionExecution();
+                FunctionExecution functionExecution = this.sessionManager.getSession().getFunctionExecution();
                 if (null == functionExecution || !functionExecution.isFullyInitializedForExecution())
                 {
                     throw new PureExecutionException("System not initialized. Make sure that your pure code has compiled successfully in the IDE.", Stacks.mutable.empty());

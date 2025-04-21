@@ -16,7 +16,7 @@ package org.finos.legend.engine.ide.api.find;
 
 import io.swagger.annotations.Api;
 import org.eclipse.collections.api.RichIterable;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.pure.m3.serialization.runtime.SourceCoordinates;
 import org.json.simple.JSONValue;
 
@@ -35,11 +35,11 @@ import java.util.List;
 @Path("/")
 public class FindTextPreview
 {
-    private final PureSession session;
+    private final PureSessionManager sessionManager;
 
-    public FindTextPreview(PureSession session)
+    public FindTextPreview(PureSessionManager sessionManager)
     {
-        this.session = session;
+        this.sessionManager = sessionManager;
     }
 
     @POST
@@ -51,7 +51,7 @@ public class FindTextPreview
             try
             {
                 response.setContentType("application/json");
-                writeResultsJSON(outputStream, session.getPureRuntime().getSourceRegistry().getPreviewTextWithCoordinates(coordinates));
+                writeResultsJSON(outputStream, sessionManager.getSession().getPureRuntime().getSourceRegistry().getPreviewTextWithCoordinates(coordinates));
             }
             catch (IOException | RuntimeException | Error e)
             {

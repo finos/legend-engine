@@ -25,7 +25,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.pure.m3.serialization.runtime.Source;
 import org.json.simple.JSONValue;
 
@@ -46,11 +46,11 @@ public class UpdateSource
 {
     private static final Pattern LINE_SPLITTER = Pattern.compile("^", Pattern.MULTILINE);
 
-    private PureSession session;
+    private final PureSessionManager sessionManager;
 
-    public UpdateSource(PureSession session)
+    public UpdateSource(PureSessionManager sessionManager)
     {
-        this.session = session;
+        this.sessionManager = sessionManager;
     }
 
     @PUT
@@ -65,7 +65,7 @@ public class UpdateSource
             for (String path : indexByPath.keysView().toSortedList())
             {
                 RichIterable<UpdateSourceInput> inputs = indexByPath.get(path);
-                Source source = this.session.getPureRuntime().getSourceRegistry().getSource(path);
+                Source source = this.sessionManager.getSession().getPureRuntime().getSourceRegistry().getSource(path);
                 MutableMap<Integer, UpdateSourceInput> messageToAddByLines = Maps.mutable.empty();
                 MutableMap<Integer, UpdateSourceInput> messageToRemoveByLines = Maps.mutable.empty();
                 MutableSet<Integer> linesToAdd = Sets.mutable.empty();
@@ -151,7 +151,7 @@ public class UpdateSource
                     throw new IllegalArgumentException("Invalid file update request - Line number out of range");
                 }
 
-                session.getPureRuntime().modify(path, buffer.toString());
+                sessionManager.getSession().getPureRuntime().modify(path, buffer.toString());
             }
 
             outStream.write("{".getBytes());

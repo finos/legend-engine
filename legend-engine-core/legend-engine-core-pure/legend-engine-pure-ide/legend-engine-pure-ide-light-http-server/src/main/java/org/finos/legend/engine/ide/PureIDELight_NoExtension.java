@@ -26,6 +26,7 @@ import io.federecio.dropwizard.swagger.SwaggerResource;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
 import org.finos.legend.engine.ide.api.Activities;
 import org.finos.legend.engine.ide.api.FileManagement;
@@ -56,7 +57,7 @@ import java.util.EnumSet;
 
 public class PureIDELight_NoExtension extends Application<ServerConfiguration>
 {
-    private PureSession pureSession;
+    private PureSessionManager pureSessionManager;
 
     public PureIDELight_NoExtension()
     {
@@ -86,22 +87,23 @@ public class PureIDELight_NoExtension extends Application<ServerConfiguration>
     {
         environment.jersey().setUrlPattern("/*");
         environment.jersey().register(new SwaggerResource("", configuration.swagger.getSwaggerViewConfiguration(), configuration.swagger.getSwaggerOAuth2Configuration(), configuration.swagger.getContextRoot() + (configuration.swagger.getContextRoot().endsWith("/") ? "" : "/") + "api"));
-        this.pureSession = new PureSession(configuration.sourceLocationConfiguration, configuration.debugMode != null && configuration.debugMode, this.getRepositories(configuration.sourceLocationConfiguration));
-        environment.jersey().register(new Concept(this.pureSession));
-        environment.jersey().register(new RenameConcept(this.pureSession));
-        environment.jersey().register(new MovePackageableElements(this.pureSession));
-        environment.jersey().register(new Execute(this.pureSession));
-        environment.jersey().register(new ExecuteGo(this.pureSession));
-        environment.jersey().register(new ExecuteTests(this.pureSession));
-        environment.jersey().register(new FindInSources(this.pureSession));
-        environment.jersey().register(new FindPureFile(this.pureSession));
-        environment.jersey().register(new FindTextPreview(this.pureSession));
-        environment.jersey().register(new UpdateSource(this.pureSession));
-        environment.jersey().register(new Activities(this.pureSession));
-        environment.jersey().register(new FileManagement(this.pureSession));
-        environment.jersey().register(new LifeCycle(this.pureSession));
-        environment.jersey().register(new Suggestion(this.pureSession));
-        environment.jersey().register(new Service(this.pureSession));
+        this.pureSessionManager = new PureSessionManager(configuration.sourceLocationConfiguration, configuration.debugMode != null && configuration.debugMode, this.getRepositories(configuration.sourceLocationConfiguration));
+        this.pureSessionManager.createSession();
+        environment.jersey().register(new Concept(this.pureSessionManager));
+        environment.jersey().register(new RenameConcept(this.pureSessionManager));
+        environment.jersey().register(new MovePackageableElements(this.pureSessionManager));
+        environment.jersey().register(new Execute(this.pureSessionManager));
+        environment.jersey().register(new ExecuteGo(this.pureSessionManager));
+        environment.jersey().register(new ExecuteTests(this.pureSessionManager));
+        environment.jersey().register(new FindInSources(this.pureSessionManager));
+        environment.jersey().register(new FindPureFile(this.pureSessionManager));
+        environment.jersey().register(new FindTextPreview(this.pureSessionManager));
+        environment.jersey().register(new UpdateSource(this.pureSessionManager));
+        environment.jersey().register(new Activities(this.pureSessionManager));
+        environment.jersey().register(new FileManagement(this.pureSessionManager));
+        environment.jersey().register(new LifeCycle(this.pureSessionManager));
+        environment.jersey().register(new Suggestion(this.pureSessionManager));
+        environment.jersey().register(new Service(this.pureSessionManager));
         this.enableCors(environment);
         this.postInit();
     }
@@ -136,6 +138,6 @@ public class PureIDELight_NoExtension extends Application<ServerConfiguration>
 
     public PureSession getPureSession()
     {
-        return this.pureSession;
+        return this.pureSessionManager.getSession();
     }
 }

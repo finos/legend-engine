@@ -26,7 +26,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import org.eclipse.collections.impl.factory.Maps;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.engine.pure.ide.interpreted.debug.DebugState;
 import org.finos.legend.engine.pure.ide.interpreted.debug.FunctionExecutionInterpretedWithDebugSupport;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
@@ -37,18 +37,18 @@ import org.json.simple.parser.JSONParser;
 @Path("/")
 public class Debugging
 {
-    private final PureSession pureSession;
+    private final PureSessionManager sessionManager;
 
-    public Debugging(PureSession pureSession)
+    public Debugging(PureSessionManager sessionManager)
     {
-        this.pureSession = pureSession;
+        this.sessionManager = sessionManager;
     }
 
     @POST
     @Path("debugging")
     public Response debugging(@Context HttpServletRequest request, @Context HttpServletResponse response) throws Exception
     {
-        FunctionExecution functionExecution = pureSession.getFunctionExecution();
+        FunctionExecution functionExecution = sessionManager.getSession().getFunctionExecution();
         if (functionExecution instanceof FunctionExecutionInterpretedWithDebugSupport)
         {
             FunctionExecutionInterpretedWithDebugSupport debugSupport = (FunctionExecutionInterpretedWithDebugSupport) functionExecution;

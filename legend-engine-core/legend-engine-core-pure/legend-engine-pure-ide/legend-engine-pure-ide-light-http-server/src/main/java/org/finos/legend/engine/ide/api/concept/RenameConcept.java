@@ -20,7 +20,7 @@ import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.impl.factory.Multimaps;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.ide.helpers.response.ExceptionTranslation;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.json.simple.JSONValue;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,11 +37,11 @@ import java.util.List;
 @Path("/")
 public class RenameConcept
 {
-    private final PureSession session;
+    private final PureSessionManager sessionManager;
 
-    public RenameConcept(PureSession session)
+    public RenameConcept(PureSessionManager sessionManager)
     {
-        this.session = session;
+        this.sessionManager = sessionManager;
     }
 
     @PUT
@@ -61,7 +61,7 @@ public class RenameConcept
                 );
             }
 
-            if (!entryIndex.keysView().allSatisfy(sourceId -> this.session.getPureRuntime().getSourceById(sourceId).isCompiled()))
+            if (!entryIndex.keysView().allSatisfy(sourceId -> this.sessionManager.getSession().getPureRuntime().getSourceById(sourceId).isCompiled()))
             {
                 throw new IllegalStateException("Source code must be compiled before refactoring");
             }
@@ -72,8 +72,8 @@ public class RenameConcept
 
             entryIndex.forEachKeyMultiValues((sourceId, entry) ->
             {
-                String[] originalSourceCodeLines = session.getPureRuntime().getSourceById(sourceId).getContent().split("\n", -1);
-                session.getPureRuntime().modify(sourceId, org.finos.legend.engine.ide.api.concept.RenameConceptUtility.replace(originalSourceCodeLines, org.finos.legend.engine.ide.api.concept.RenameConceptUtility.removeInvalidReplaceConceptEntries(originalSourceCodeLines, (MutableList<? extends AbstractRenameConceptEntry>) entry)));
+                String[] originalSourceCodeLines = sessionManager.getSession().getPureRuntime().getSourceById(sourceId).getContent().split("\n", -1);
+                sessionManager.getSession().getPureRuntime().modify(sourceId, org.finos.legend.engine.ide.api.concept.RenameConceptUtility.replace(originalSourceCodeLines, org.finos.legend.engine.ide.api.concept.RenameConceptUtility.removeInvalidReplaceConceptEntries(originalSourceCodeLines, (MutableList<? extends AbstractRenameConceptEntry>) entry)));
             });
 
             return Response.noContent().build();
@@ -82,7 +82,7 @@ public class RenameConcept
         {
             return Response.status(Response.Status.BAD_REQUEST).entity((StreamingOutput) outputStream ->
             {
-                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(this.session, e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
+                outputStream.write(("\"" + JSONValue.escape(ExceptionTranslation.buildExceptionMessage(this.sessionManager.getSession(), e, new ByteArrayOutputStream()).getText()) + "\"").getBytes());
                 outputStream.close();
             }).build();
         }

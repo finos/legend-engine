@@ -21,7 +21,7 @@ import org.finos.legend.engine.ide.api.execution.function.manager.ContentType;
 import org.finos.legend.engine.ide.api.execution.function.manager.ExecutionManager;
 import org.finos.legend.engine.ide.api.execution.function.manager.ExecutionRequest;
 import org.finos.legend.engine.ide.api.execution.function.manager.HttpServletResponseWriter;
-import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.ide.session.PureSessionManager;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,11 +37,11 @@ import java.util.Map;
 @Path("")
 public class Service
 {
-    private final PureSession pureSession;
+    private final PureSessionManager sessionManager;
 
-    public Service(PureSession pureSession)
+    public Service(PureSessionManager sessionManager)
     {
-        this.pureSession = pureSession;
+        this.sessionManager = sessionManager;
     }
 
     @GET
@@ -49,14 +49,14 @@ public class Service
     @ApiOperation(value = "")
     public void exec(@Context HttpServletRequest request, @Context HttpServletResponse response, @PathParam("path") String path) throws IOException
     {
-        Pair<CoreInstance, Map<String, String[]>> result = this.pureSession.getPureRuntime().getURLPatternLibrary().tryExecution("/" + path, this.pureSession.getPureRuntime().getProcessorSupport(), request.getParameterMap());
+        Pair<CoreInstance, Map<String, String[]>> result = sessionManager.getSession().getPureRuntime().getURLPatternLibrary().tryExecution("/" + path, sessionManager.getSession().getPureRuntime().getProcessorSupport(), request.getParameterMap());
         if (result == null)
         {
             response.sendError(404, "The service '" + path + "' can't be found!");
             return;
         }
 
-        ExecutionManager executionManager = new ExecutionManager(pureSession.getFunctionExecution());
+        ExecutionManager executionManager = new ExecutionManager(sessionManager.getSession().getFunctionExecution());
         executionManager.execute(new ExecutionRequest(result.getTwo()), new HttpServletResponseWriter(response), ContentType.text);
     }
 }
