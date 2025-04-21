@@ -10,9 +10,7 @@ import meta::relational::transform::autogen::*;
 
 function meta::relational::transform::autogen::schemaToModel(schema:Schema[1], packageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[*]
 {
-   let classesFromTables = $schema.tables->map(t | $t->tableToClass($packageStr));
-   let classesFromTabularFunctions = $schema.tabularFunctions->map(tf | $tf->tabularFunctionToClass($packageStr));
-   $classesFromTables->concatenate($classesFromTabularFunctions);
+   $schema.tables->map(t | $t->tableToClass($packageStr, columnFilterPredicate_Column_1__Boolean_1_));
 }
 
 function <<access.private>> meta::relational::transform::autogen::columnFilterPredicate(column:Column[1]):Boolean[1]
@@ -20,24 +18,14 @@ function <<access.private>> meta::relational::transform::autogen::columnFilterPr
    true;
 }
 
-function meta::relational::transform::autogen::tableToClass(table:Table[1], packageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]
+function meta::relational::transform::autogen::tableToClass(table:Table[1], packageStr:String[1], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]
 {
-   relationalElementToClass($table.name, $table.schema.name, $table.columns, $packageStr, columnFilterPredicate_Column_1__Boolean_1_);
-}
-
-function meta::relational::transform::autogen::tabularFunctionToClass(tabularFunction:TabularFunction[1], packageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]
-{
-   relationalElementToClass($tabularFunction.name, $tabularFunction.schema.name, $tabularFunction.columns, $packageStr, columnFilterPredicate_Column_1__Boolean_1_);
-}
-
-function meta::relational::transform::autogen::relationalElementToClass(relationalName:String[1], schemaName:String[1], columns:RelationalOperationElement[*], packageStr:String[1], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]
-{
-  ^meta::protocols::pure::vX_X_X::metamodel::m3::type::Class
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::type::Class
    (
       _type = 'class',
-      name = createValidClassName($relationalName),
-      package = $packageStr + '::' + $schemaName,
-      properties = $columns->cast(@Column)
+      name = createValidClassName($table.name),
+      package = $packageStr + '::' + $table.schema.name,
+      properties = $table.columns->cast(@Column)
            ->filter(c | $columnFilterFunction->eval($c))
            ->map(c | $c->columnToProperty()),
       taggedValues = [createPureGeneratedTaggedDoc()]
@@ -161,60 +149,34 @@ function meta::relational::transform::autogen::databaseToMappingWithClassMapping
 
 function meta::relational::transform::autogen::databaseToMappingWithClassMappings(database:Database[1], mappingPackageStr:String[1], classPackageStr:String[1], joinStrategyFunctions:Function<Any>[*], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1]
 {
-   let tableClassMappings = $database.schemas->map(s | $s.tables->map(t | $t->tableToClassMapping($classPackageStr, $database, $columnFilterFunction)));
-   let tabularFunctionClassMappings = $database.schemas->map(s | $s.tabularFunctions->map(t | $t->tabularFunctionToClassMapping($classPackageStr, $database, $columnFilterFunction)));
-
    ^meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping
    (
       _type = 'mapping',
       name = $database.name->toOne() + 'Mapping',
       package = $mappingPackageStr,
-      classMappings = $tableClassMappings->concatenate($tabularFunctionClassMappings)
-   );
+      classMappings = $database.schemas->map(s | $s.tables->map(t | $t->tableToClassMapping($classPackageStr, $database, $columnFilterFunction)))
+   )
 }
 
 function <<access.private>> meta::relational::transform::autogen::tableToClassMapping(table:Table[1], classPackageStr:String[1], database:Database[1], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping[1]
 {
-   let userDefinedPrimaryKey = $table.primaryKey->isEmpty();
-   let primaryKey = if ($userDefinedPrimaryKey, 
-                        | 
-                           let notNullColumns = $table.columns->filter(c | $c->cast(@Column).nullable == false);
-                           if($notNullColumns->isEmpty(), 
-                              | $table.columns->cast(@Column), 
-                              | $notNullColumns->cast(@Column)); ,
-                        | $table.primaryKey);
-  
-   relationalElementToClassMapping($table, $table.name, $table.schema.name, $table.columns, $primaryKey, $classPackageStr, $database, $columnFilterFunction);
-
-}
-
-function <<access.private>> meta::relational::transform::autogen::tabularFunctionToClassMapping(tabularFunction:TabularFunction[1], classPackageStr:String[1], database:Database[1], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping[1]
-{ 
-   let notNullColumns = $tabularFunction.columns->filter(c | $c->cast(@Column).nullable == false);
-   let primaryKey = if($notNullColumns->isEmpty(), 
-                        | $tabularFunction.columns->cast(@Column), 
-                        | $notNullColumns->cast(@Column));
-
-   relationalElementToClassMapping($tabularFunction, $tabularFunction.name, $tabularFunction.schema.name, $tabularFunction.columns, $primaryKey, $classPackageStr, $database, $columnFilterFunction);
-}
-
-function <<access.private>> meta::relational::transform::autogen::relationalElementToClassMapping(relationalElement:RelationalOperationElement[1], relationalName: String[1], schemaName: String[1], columns:RelationalOperationElement[*], primaryKey: Column[*], classPackageStr:String[1], database:Database[1], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping[1]
-{
-   let classPath = $classPackageStr + '::' + $schemaName + '::' + createValidClassName($relationalName);
+   let tableName = $table.name;
+   let schemaName = $table.schema.name;
+   let classPath = $classPackageStr + '::' + $schemaName + '::' + createValidClassName($tableName);
    let databasePath = $database->elementToPath();
-   let relationalElementAlias = ^TableAlias(name=$relationalName, relationalElement=$relationalElement, database=$database, schema=$schemaName);
+   let tableAlias = ^TableAlias(name=$tableName, relationalElement=$table, database=$database, schema=$schemaName);
 
-   let propertyMappings = $columns->cast(@Column)->filter(c|$columnFilterFunction->eval($c))
+   let propertyMappings = $table.columns->cast(@Column)->filter(c|$columnFilterFunction->eval($c))
                                                        ->map(c | let columnName = $c.name->createSQLSafeName();
                                                                  let propertyName = $columnName->createValidPropertyName();
                                                                  let propertyRawReturnType = meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($c.type);
                                                              
-                                                                 let relationalElementAliasColumn = ^TableAliasColumn(columnName=$columnName, alias=$relationalElementAlias, column=$c);
+                                                                 let tableAliasColumn = ^TableAliasColumn(columnName=$columnName, alias=$tableAlias, column=$c);
                                                              
                                                                  let element = if($propertyRawReturnType == Boolean && $c.type->instanceOf(Bit), 
                                                                     {| 
                                                                        let e = ^DynaFunction(name='case', parameters = [
-                                                                          ^DynaFunction(name = 'equal', parameters = [$relationalElementAliasColumn, ^Literal(value=1)]),
+                                                                          ^DynaFunction(name = 'equal', parameters = [$tableAliasColumn, ^Literal(value=1)]),
                                                                           ^DynaFunction(name = 'sqlTrue'), 
                                                                           ^DynaFunction(name = 'sqlFalse')
                                                                           ]);
@@ -222,14 +184,14 @@ function <<access.private>> meta::relational::transform::autogen::relationalElem
                                                                        if($c.nullable == false, 
                                                                          | $e,
                                                                          | ^DynaFunction(name='case', parameters = [
-                                                                             ^DynaFunction(name = 'isNull', parameters = [$relationalElementAliasColumn]),
+                                                                             ^DynaFunction(name = 'isNull', parameters = [$tableAliasColumn]),
                                                                              ^DynaFunction(name = 'sqlNull'), 
                                                                              $e
                                                                              ]
                                                                             );
                                                                          );
                                                                      },
-                                                                    | $relationalElementAliasColumn
+                                                                    | $tableAliasColumn
                                                                     );
 
                                                                  ^meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping(
@@ -242,9 +204,18 @@ function <<access.private>> meta::relational::transform::autogen::relationalElem
                                                                     relationalOperation = $element->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalOperationElement($database)
                                                                  );
                                                           );
+
+   let userDefinedPrimaryKey = $table.primaryKey->isEmpty();
+   let primaryKey = if ($userDefinedPrimaryKey, 
+                        | 
+                           let notNullColumns = $table.columns->filter(c | $c->cast(@Column).nullable == false);
+                           if($notNullColumns->isEmpty(), 
+                              | $table.columns->cast(@Column), 
+                              | $notNullColumns->cast(@Column)); ,
+                        | $table.primaryKey);
    
-   let namedRelation = $relationalElementAlias.relationalElement->cast(@NamedRelation);
-   let storeFromTableAlias = $relationalElementAlias.database;
+   let namedRelation = $tableAlias.relationalElement->cast(@NamedRelation);
+   let storeFromTableAlias = $tableAlias.database;
    ^meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping
    (
       id = $classPath->replace('::', '_'),
@@ -258,7 +229,7 @@ function <<access.private>> meta::relational::transform::autogen::relationalElem
          database = $databasePath,
          schema = $schemaName),
       distinct = false,
-      primaryKey = $primaryKey->map(c | ^TableAliasColumn(columnName=$c.name->createSQLSafeName(), alias=$relationalElementAlias, column=$c))->map(c|$c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalOperationElement($database)),
+      primaryKey = $primaryKey->map(c | ^TableAliasColumn(columnName=$c.name->createSQLSafeName(), alias=$tableAlias, column=$c))->map(c|$c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalOperationElement($database)),
       propertyMappings = $propertyMappings
    );
 }
