@@ -113,8 +113,8 @@ jobs:
           # upload the target directory as it is the output of the build
           # upload also the m2 repo to store the state of the install step
           path: |            
-            "~/**/target/"
-            "~/.m2/repository/org/finos/legend/engine/"
+            ~/**/target/
+            ~/.m2/repository/org/finos/legend/engine/
           retention-days: 1
           overwrite: true
           include-hidden-files: true
