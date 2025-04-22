@@ -38,8 +38,7 @@ runs:
         fail-on-cache-miss: true
 
     - name: Restore build output artifacts
-      uses: actions/cache/restore@v4
+      uses: actions/download-artifact@v4
       with:
-        path: "**/target/"
-        key: target-outputs-${{ runner.os }}-${{ github.run_id }}
-        fail-on-cache-miss: true
+        name: build-output
+        path: "~/"

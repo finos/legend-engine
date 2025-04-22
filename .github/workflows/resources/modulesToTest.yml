@@ -1,0 +1,43 @@
+- name: server
+  modules:
+      - legend-engine-server-http-server
+
+- name: javaBinding
+  modules:
+    - legend-engine-xt-javaPlatformBinding-PCT
+
+- name: h2
+  modules:
+    - legend-engine-xt-relationalStore-h2-PCT
+    - legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure
+
+- name: duckdb
+  modules:
+    - legend-engine-xt-relationalStore-duckdb-PCT
+    - legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure
+
+- name: postgres
+  modules:
+    - legend-engine-xt-relationalStore-postgres-PCT
+    - legend-engine-xt-relationalStore-SDT-pure
+
+- name: memsql
+  modules:
+    - legend-engine-xt-relationalStore-memsql-PCT
+
+- name: spanner
+  modules:
+    - legend-engine-xt-relationalStore-spanner-PCT
+
+- name: elasticsearch
+  modules:
+    - legend-engine-xt-elasticsearch-executionPlan-test
+
+- name: javaCompiler
+  modules:
+    - legend-engine-pure-runtime-java-extension-compiled-functions-javaCompiler
+    - legend-engine-pure-runtime-java-extension-interpreted-functions-javaCompiler
+- name: legendCompiler
+  modules:
+    - legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler
+    - legend-engine-pure-runtime-java-extension-interpreted-functions-legendCompiler
