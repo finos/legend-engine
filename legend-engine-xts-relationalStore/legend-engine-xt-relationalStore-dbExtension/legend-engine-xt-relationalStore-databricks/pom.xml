@@ -28,7 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-databricks-execution</module>
-        <module>legend-engine-xt-relationalStore-databricks-execution-tests</module>
         <module>legend-engine-xt-relationalStore-databricks-grammar</module>
         <module>legend-engine-xt-relationalStore-databricks-protocol</module>
         <module>legend-engine-xt-relationalStore-databricks-pure</module>

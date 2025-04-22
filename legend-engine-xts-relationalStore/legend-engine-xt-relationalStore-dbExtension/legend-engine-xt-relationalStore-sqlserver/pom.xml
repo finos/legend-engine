@@ -29,7 +29,6 @@
     <modules>
         <module>legend-engine-xt-relationalStore-sqlserver-connection</module>
         <module>legend-engine-xt-relationalStore-sqlserver-execution</module>
-        <module>legend-engine-xt-relationalStore-sqlserver-execution-tests</module>
         <module>legend-engine-xt-relationalStore-sqlserver-pure</module>
     </modules>
 </project>

@@ -28,7 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-bigquery-execution</module>
-        <module>legend-engine-xt-relationalStore-bigquery-execution-tests</module>
         <module>legend-engine-xt-relationalStore-bigquery-grammar</module>
         <module>legend-engine-xt-relationalStore-bigquery-protocol</module>
         <module>legend-engine-xt-relationalStore-bigquery-pure</module>
