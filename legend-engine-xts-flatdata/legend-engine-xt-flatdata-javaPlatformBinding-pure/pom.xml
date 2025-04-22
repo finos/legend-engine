@@ -208,11 +208,6 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-compiler</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
         <!-- TEST -->
@@ -227,8 +222,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-compiler</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

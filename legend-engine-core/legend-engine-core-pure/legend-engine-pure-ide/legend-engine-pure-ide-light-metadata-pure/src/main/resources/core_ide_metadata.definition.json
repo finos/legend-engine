@@ -4,7 +4,6 @@
   "dependencies": [
     "platform",
     "core",
-    "core_relational",
-    "core_servicestore"
+    "core_relational"
   ]
 }

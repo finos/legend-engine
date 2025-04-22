@@ -3,8 +3,6 @@
   "pattern": "(meta::external::language::java::generation::featureBased)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_dsl_diagram",
-    "platform_dsl_mapping",
     "core_functions_unclassified",
     "core",
     "core_generation",

@@ -125,6 +125,11 @@
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
@@ -143,11 +148,6 @@
             <artifactId>legend-pure-m3-core</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!-- TEST -->
     </dependencies>
