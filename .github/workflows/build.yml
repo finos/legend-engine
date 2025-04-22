@@ -40,6 +40,8 @@ jobs:
     # Also, skip this build for release commits
     if: "!contains(github.event.head_commit.message, '[maven-release-plugin]') && github.repository == 'finos/legend-engine'"
     runs-on: ubuntu-latest
+    outputs:
+      modulesToTest: ${{ steps.modulesToTest.outputs }}
 
     steps:
       - name: Checkout repo
@@ -126,6 +128,12 @@ jobs:
           name: event-file
           path: ${{ github.event_path }}
 
+      - name: Load module to test in parallel
+        uses: actions-tools/yaml-outputs@v2
+        id: modulesToTest
+        with:
+          file-path: '.github/resources/modulesToTest.yml'
+
   test:
     name: Run Unit Tests
     runs-on: ubuntu-latest
@@ -139,21 +147,16 @@ jobs:
       - name: Before Test
         uses: ./.github/workflows/actions/before-test
 
-      - name: Load module to test in parallel
-        uses: actions-tools/yaml-outputs@v2
-        id: modulesToTest
-        with:
-          file-path: '.github/resources/modulesToTest.yml'
-
-      - name: Flatten
-        run: echo EXCLUSION_MODULES=`'${{ steps.modulesToTest.outputs }}' | jq 'map(.modules) | flatten | map("!org.finos.legend.engine:" + .) | join(",")'` >> $GITHUB_OUTPUT
+      - name: Excluded Modules
+        id: modulesToExclude
+        run: echo EXCLUSION_MODULES=`'${{ needs.build.outputs.modulesToTest }}' | jq 'map(.modules) | flatten | map("!org.finos.legend.engine:" + .) | join(",")'` >> $GITHUB_OUTPUT
 
       - name: Test
         env:
           MAVEN_OPTS: "-Xmx1g"
         # exclude some modules by -pl !_MODULE_, as these modules are tested in other parallel jobs
         run: |
-          mvn -B -e surefire:test -pl '${{ steps.modulesToTest.outputs.EXCLUSION_MODULES }}' -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -pl '${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }}' -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
@@ -161,3 +164,38 @@ jobs:
         with:
           name: test-results
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
+
+  test-modules:
+    name: Test Module - ${{ matrix.test.name }}
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    strategy:
+      matrix:
+        test: ${{fromJson(needs.job1.outputs.matrix)}}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Before Test
+        uses: ./.github/workflows/actions/before-test
+
+      - name: Included Modules
+        id: modulesToInclude
+        run: echo INCLUSION_MODULES=`'${{ matrix.test.modules }}' | jq 'flatten | map("org.finos.legend.engine:" + .) | join(",")'` >> $GITHUB_OUTPUT
+
+# todo pct cloud profile
+      - name: Test
+        env:
+          MAVEN_OPTS: "-Xmx1g"
+        run: |
+          mvn -B -e surefire:test -pl '${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }}' -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-pct-${{ matrix.test.name }}
+          path: '**/${{ inputs.module }}/target/surefire-reports/*.xml'

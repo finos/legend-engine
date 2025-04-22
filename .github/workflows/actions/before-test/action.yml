@@ -41,4 +41,4 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: build-output
-        path: "~/"
+        path: ~/
