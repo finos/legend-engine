@@ -41,9 +41,6 @@
                                 <dependency> org.finos.legend.engine:legend-engine-pure-platform-dsl-graph-java</dependency>
                                 <dependency> org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-graph</dependency>
                             </ignoredUnusedDeclaredDependencies>
-                            <ignoreUsedUndeclaredDependencies>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-graph-java</dependency>
-                            </ignoreUsedUndeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -199,6 +196,7 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
@@ -216,11 +214,6 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
             <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

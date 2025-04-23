@@ -3,6 +3,9 @@
   "pattern": "(meta::external::format::flatdata)(::.*)?",
   "dependencies": [
     "platform",
+    "platform_dsl_diagram",
+    "platform_dsl_graph",
+    "platform_dsl_mapping",
     "core_functions_unclassified",
     "core"
   ]

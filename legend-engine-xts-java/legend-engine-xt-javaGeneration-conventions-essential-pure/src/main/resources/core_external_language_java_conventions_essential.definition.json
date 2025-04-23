@@ -4,8 +4,6 @@
     "dependencies" :
     [
         "platform",
-        "platform_dsl_mapping",
-        "platform_dsl_graph",
         "core_external_language_java"
     ]
 }

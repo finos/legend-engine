@@ -14,7 +14,6 @@
     "core_java_platform_binding",
     "core_java_platform_binding_external_format",
     "core_external_language_java_conventions_essential",
-    "core_external_format_json_java_platform_binding",
-    "core_external_compiler"
+    "core_external_format_json_java_platform_binding"
   ]
 }
