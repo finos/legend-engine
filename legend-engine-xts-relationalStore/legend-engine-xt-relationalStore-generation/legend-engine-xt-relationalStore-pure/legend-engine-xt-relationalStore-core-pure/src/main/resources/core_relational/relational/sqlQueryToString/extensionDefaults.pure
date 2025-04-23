@@ -197,7 +197,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('coalesce',               $allStates,            ^ToSql(format='coalesce%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
     dynaFnToSql('cos',                    $allStates,            ^ToSql(format='cos(%s)')),
-    dynaFnToSql('cosh',                    $allStates,            ^ToSql(format='cosh(%s)')),
+    dynaFnToSql('cosh',                   $allStates,            ^ToSql(format='cosh(%s)')),
     dynaFnToSql('cot',                    $allStates,            ^ToSql(format='cot(%s)')),
     dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('denseRank',              $allStates,            ^ToSql(format='dense_rank()')),
