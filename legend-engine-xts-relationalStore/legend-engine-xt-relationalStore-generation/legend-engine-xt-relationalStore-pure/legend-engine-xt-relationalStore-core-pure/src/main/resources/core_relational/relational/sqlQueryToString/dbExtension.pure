@@ -1029,6 +1029,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   convertVarchar128,
   convertTimeZone,
   cos,
+  cosh,
   cot,
   count,
   cumulativeDistribution,

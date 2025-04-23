@@ -16,6 +16,7 @@ package org.finos.legend.pure.runtime.java.extension.functions.standard.interpre
 
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.date.operation.TimeBucket;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.math.trigonometry.CosH;
 import org.finos.legend.pure.runtime.java.interpreted.extension.BaseInterpretedExtension;
 
 public class StandardFunctionExtensionInterpreted extends BaseInterpretedExtension
@@ -23,7 +24,10 @@ public class StandardFunctionExtensionInterpreted extends BaseInterpretedExtensi
     public StandardFunctionExtensionInterpreted()
     {
         super(//Date
-                Tuples.pair("timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_", TimeBucket::new)
+                Tuples.pair("timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_", TimeBucket::new),
+
+                // Math
+                Tuples.pair("cosh_Number_1__Float_1_", CosH::new)
         );
     }
 
