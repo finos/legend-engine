@@ -37,6 +37,7 @@
   modules:
     - legend-engine-pure-runtime-java-extension-compiled-functions-javaCompiler
     - legend-engine-pure-runtime-java-extension-interpreted-functions-javaCompiler
+
 - name: legendCompiler
   modules:
     - legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler

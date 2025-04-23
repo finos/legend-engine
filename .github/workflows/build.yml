@@ -42,6 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       modulesToTest: ${{ steps.modulesToTest.outputs }}
+      profiles: ${{ steps.masterBuild.outputs.PROFILES }}
 
     steps:
       - name: Checkout repo
@@ -94,6 +95,7 @@ jobs:
           mvn -B -e -T2 -DskipTests=true install
 
       - name: Build (with Maven Deploy + Docker Snapshot)
+        id: masterBuild
         if: github.ref == 'refs/heads/master'
         env:
           DOCKER_USERNAME: finos
@@ -106,6 +108,7 @@ jobs:
         # and can cause problem with some code generators
         # See https://github.com/finos/legend-engine/pull/924
         run: |
+          echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
           mvn -B -e -T2 -DskipTests=true deploy -P docker-snapshot,pct-cloud-test
 
       - name: Store build output artifacts
@@ -120,6 +123,23 @@ jobs:
           retention-days: 1
           overwrite: true
           include-hidden-files: true
+          if-no-files-found: error
+
+      - name: Generate PCT Report
+        run: |
+          mvn exec:java -pl org.finos.legend.engine:legend-engine-server-http-server -Dexec.mainClass="org.finos.legend.engine.server.core.pct.PCT_to_SimpleHTML"
+
+      - name: Upload PCT HTML Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pct-html-report
+          path: target/ok.html
+
+      - name: Load module to test in parallel
+        uses: actions-tools/yaml-outputs@v2
+        id: modulesToTest
+        with:
+          file-path: ./.github/workflows/resources/modulesToTest.yml
 
       - name: Upload CI Event
         if: always()
@@ -127,12 +147,6 @@ jobs:
         with:
           name: event-file
           path: ${{ github.event_path }}
-
-      - name: Load module to test in parallel
-        uses: actions-tools/yaml-outputs@v2
-        id: modulesToTest
-        with:
-          file-path: '.github/resources/modulesToTest.yml'
 
   test:
     name: Run Unit Tests
@@ -156,7 +170,7 @@ jobs:
           MAVEN_OPTS: "-Xmx1g"
         # exclude some modules by -pl !_MODULE_, as these modules are tested in other parallel jobs
         run: |
-          mvn -B -e surefire:test -pl '${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }}' -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -pl '${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }}' ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
@@ -191,11 +205,25 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx1g"
         run: |
-          mvn -B -e surefire:test -pl '${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }}' -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -pl '${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }}' ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-pct-${{ matrix.test.name }}
-          path: '**/${{ inputs.module }}/target/surefire-reports/*.xml'
+          path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
+
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - build
+      - test
+      - test-modules
+
+    steps:
+      - uses: geekyeggo/delete-artifact@v5
+        with:
+          name: my-artifact
