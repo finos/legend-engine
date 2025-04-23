@@ -41,7 +41,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[maven-release-plugin]') && github.repository == 'finos/legend-engine'"
     runs-on: ubuntu-latest
     outputs:
-      modulesToTest: ${{ steps.modulesToTest.outputs }}
+      testMatrix: ${{ steps.testMatrix.outputs.testMatrix }}
       profiles: ${{ steps.masterBuild.outputs.PROFILES }}
 
     steps:
@@ -94,8 +94,12 @@ jobs:
         run: |
           mvn -B -e -T2 -DskipTests=true install
 
-      - name: Build (with Maven Deploy + Docker Snapshot)
+      - name: Set profiles for master branch
         id: masterBuild
+        if: github.ref == 'refs/heads/master'
+        run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
+
+      - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
         env:
           DOCKER_USERNAME: finos
@@ -107,9 +111,7 @@ jobs:
         # as the latter binds to generate-sources which runs before compile phase
         # and can cause problem with some code generators
         # See https://github.com/finos/legend-engine/pull/924
-        run: |
-          echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
-          mvn -B -e -T2 -DskipTests=true deploy -P docker-snapshot,pct-cloud-test
+        run: mvn -B -e -T2 -DskipTests=true deploy -P docker-snapshot,pct-cloud-test
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4
@@ -125,21 +127,9 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
 
-      - name: Generate PCT Report
-        run: |
-          mvn exec:java -pl org.finos.legend.engine:legend-engine-server-http-server -Dexec.mainClass="org.finos.legend.engine.server.core.pct.PCT_to_SimpleHTML"
-
-      - name: Upload PCT HTML Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: pct-html-report
-          path: target/ok.html
-
-      - name: Load module to test in parallel
-        uses: actions-tools/yaml-outputs@v2
-        id: modulesToTest
-        with:
-          file-path: ./.github/workflows/resources/modulesToTest.yml
+      - name: Set Test Matrix
+        id: testMatrix
+        run: echo "testMatrix=$(jq -c . < .github/workflows/resources/modulesToTest.json)" >> $GITHUB_OUTPUT
 
       - name: Upload CI Event
         if: always()
@@ -163,14 +153,14 @@ jobs:
 
       - name: Excluded Modules
         id: modulesToExclude
-        run: echo EXCLUSION_MODULES=`'${{ needs.build.outputs.modulesToTest }}' | jq 'map(.modules) | flatten | map("!org.finos.legend.engine:" + .) | join(",")'` >> $GITHUB_OUTPUT
+        run: echo EXCLUSION_MODULES=`jq '.include | map(.modules) | flatten | map("!org.finos.legend.engine:" + .) | join(",")' ./.github/workflows/resources/modulesToTest.json` >> $GITHUB_OUTPUT
 
       - name: Test
         env:
           MAVEN_OPTS: "-Xmx1g"
         # exclude some modules by -pl !_MODULE_, as these modules are tested in other parallel jobs
         run: |
-          mvn -B -e surefire:test -pl '${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }}' ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
@@ -180,14 +170,13 @@ jobs:
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
 
   test-modules:
-    name: Test Module - ${{ matrix.test.name }}
+    name: Test Module - ${{ matrix.name }}
     runs-on: ubuntu-latest
     needs:
       - build
 
     strategy:
-      matrix:
-        test: ${{fromJson(needs.job1.outputs.matrix)}}
+      matrix: ${{fromJson(needs.build.outputs.testMatrix)}}
 
     steps:
       - name: Checkout repo
@@ -198,14 +187,13 @@ jobs:
 
       - name: Included Modules
         id: modulesToInclude
-        run: echo INCLUSION_MODULES=`'${{ matrix.test.modules }}' | jq 'flatten | map("org.finos.legend.engine:" + .) | join(",")'` >> $GITHUB_OUTPUT
+        run: echo INCLUSION_MODULES=`jq 'flatten | map("org.finos.legend.engine:" + .) | join(",")' <<< ${{ matrix.modules }}` >> $GITHUB_OUTPUT
 
-# todo pct cloud profile
       - name: Test
         env:
           MAVEN_OPTS: "-Xmx1g"
         run: |
-          mvn -B -e surefire:test -pl '${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }}' ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
@@ -213,6 +201,69 @@ jobs:
         with:
           name: test-results-pct-${{ matrix.test.name }}
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
+
+  pct-report:
+    name: PCT Report
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - build
+      - test
+      - test-modules
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/workflows/actions/before-test
+
+      - name: Generate PCT Report
+        run: |
+          mvn exec:java -pl org.finos.legend.engine:legend-engine-server-http-server -Dexec.mainClass="org.finos.legend.engine.server.core.pct.PCT_to_SimpleHTML"
+
+      - name: Upload PCT HTML Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pct-html-report
+          path: target/ok.html
+
+      - name: Checkout Legend Docs
+        uses: actions/checkout@v4
+        with:
+          path: 'legend-docs'
+          ref: 'master'
+          repository: 'finos/legend'
+          token: ${{ secrets.FINOS_GITHUB_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Copy Legend Docs
+        shell: bash
+        run: |
+          mkdir -p legend-docs/website/static/pct/
+          cp -rvT target/ok.html legend-docs/website/static/pct/PCT_Report_Compatibility.html
+
+      - name: Check for new documentation files
+        id: newFiles
+        shell: bash
+        working-directory: legend-docs
+        run: |
+          git add -A
+          git status --porcelain | wc -l
+          if [[ $(git status --porcelain | wc -l) -gt 0 ]]; then
+            echo  "hasNewFiles=true" >> $GITHUB_OUTPUT
+          else
+            echo  "hasNewFiles=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit new documentation files
+        if: ${{ steps.newFiles.outputs.hasNewFiles == 'true' }}
+        shell: bash
+        working-directory: legend-docs
+        run: |
+          git commit -m "maint: update legend-engine docs from ref: ${{ github.sha }}"
+          git push
+
 
   cleanup:
     name: Cleanup
@@ -222,8 +273,9 @@ jobs:
       - build
       - test
       - test-modules
+      - pct-report
 
     steps:
       - uses: geekyeggo/delete-artifact@v5
         with:
-          name: my-artifact
+          name: build-output
