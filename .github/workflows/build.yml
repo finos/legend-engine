@@ -187,7 +187,7 @@ jobs:
 
       - name: Included Modules
         id: modulesToInclude
-        run: echo INCLUSION_MODULES=`jq 'flatten | map("org.finos.legend.engine:" + .) | join(",")' <<< ${{ matrix.modules }}` >> $GITHUB_OUTPUT
+        run: echo INCLUSION_MODULES=`${{ matrix.modules }} | jq 'flatten | map("org.finos.legend.engine:" + .) | join(",")'` >> $GITHUB_OUTPUT
 
       - name: Test
         env:
