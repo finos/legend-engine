@@ -94,11 +94,6 @@ jobs:
         run: |
           mvn -B -e -T2 -DskipTests=true install
 
-      - name: Set profiles for master branch
-        id: masterBuild
-        if: github.ref == 'refs/heads/master'
-        run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
-
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
         env:
@@ -112,6 +107,11 @@ jobs:
         # and can cause problem with some code generators
         # See https://github.com/finos/legend-engine/pull/924
         run: mvn -B -e -T2 -DskipTests=true deploy -P docker-snapshot,pct-cloud-test
+
+      - name: Set profiles for master branch
+        id: masterBuild
+        if: github.ref == 'refs/heads/master'
+        run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4
@@ -153,12 +153,11 @@ jobs:
 
       - name: Excluded Modules
         id: modulesToExclude
-        run: echo EXCLUSION_MODULES=`jq '.include | map(.modules) | flatten | map("!org.finos.legend.engine:" + .) | join(",")' ./.github/workflows/resources/modulesToTest.json` >> $GITHUB_OUTPUT
+        run: echo EXCLUSION_MODULES=`jq -c '.include | map(.modules) | flatten | map("!org.finos.legend.engine:" + .) | join(",")' ./.github/workflows/resources/modulesToTest.json` >> $GITHUB_OUTPUT
 
       - name: Test
         env:
           MAVEN_OPTS: "-Xmx1g"
-        # exclude some modules by -pl !_MODULE_, as these modules are tested in other parallel jobs
         run: |
           mvn -B -e surefire:test -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
@@ -187,7 +186,10 @@ jobs:
 
       - name: Included Modules
         id: modulesToInclude
-        run: echo INCLUSION_MODULES=`${{ matrix.modules }} | jq 'flatten | map("org.finos.legend.engine:" + .) | join(",")'` >> $GITHUB_OUTPUT
+        env:
+          MODULES: ${{ toJSON(matrix.modules) }}
+        run: |
+          echo INCLUSION_MODULES=`jq -c 'map("org.finos.legend.engine:" + .) | join(",")' <<< $MODULES` >> $GITHUB_OUTPUT
 
       - name: Test
         env:
@@ -265,17 +267,17 @@ jobs:
           git push
 
 
-  cleanup:
-    name: Cleanup
-    runs-on: ubuntu-latest
-    if: always()
-    needs:
-      - build
-      - test
-      - test-modules
-      - pct-report
-
-    steps:
-      - uses: geekyeggo/delete-artifact@v5
-        with:
-          name: build-output
+#  cleanup:
+#    name: Cleanup
+#    runs-on: ubuntu-latest
+#    if: always()
+#    needs:
+#      - build
+#      - test
+#      - test-modules
+#      - pct-report
+#
+#    steps:
+#      - uses: geekyeggo/delete-artifact@v5
+#        with:
+#          name: build-output
