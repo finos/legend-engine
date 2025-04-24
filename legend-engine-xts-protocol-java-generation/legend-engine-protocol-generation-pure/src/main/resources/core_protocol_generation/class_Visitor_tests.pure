@@ -1,0 +1,101 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+import meta::protocols::generation::java::tests::visitor::model::*;
+import meta::protocols::generation::java::*;
+
+Class <<Visitor.exclude>> meta::protocols::generation::java::tests::visitor::model::TopClass
+{
+
+}
+
+Class meta::protocols::generation::java::tests::visitor::model::SubClassA extends TopClass
+{
+  myProperty : String[1];
+}
+
+Class meta::protocols::generation::java::tests::visitor::model::SubClassB extends TopClass
+{
+}
+
+Enum meta::protocols::generation::java::tests::visitor::model::ZEnum
+{
+  myA,
+  myB
+}
+
+function <<test.Test>> meta::protocols::generation::java::tests::visitor::testDisable():Boolean[1]
+{
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::visitor::model',
+    javaPackage  = 'org.finos',
+    json = ^meta::protocols::generation::java::translation::JSONConfiguration
+           (
+              generateJSONAnnotations = false,
+              typeKeyword = '_type',
+              subTypeOnTopType = true
+           )
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::generateProtocolProject($config, [])
+        ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()
+        ->sortBy(c | $c.simpleName)
+        ->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
+
+  assertEquals(4, $sources->size());
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public class SubClassA extends TopClass\n'+
+                '{\n'+
+                '    public String myProperty;\n'+
+                '\n'+
+                '    public SubClassA _myProperty(String myProperty)\n'+
+                '    {\n'+
+                '        this.myProperty = myProperty;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '}', $sources->at(0));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public class SubClassB extends TopClass\n'+
+                '{\n'+
+                '}', $sources->at(1));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public abstract class TopClass\n'+
+                '{\n'+
+                '}', $sources->at(2));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public enum ZEnum\n'+
+                '{\n'+
+                '    myA,\n'+
+                '    myB;\n'+
+                '\n'+
+                '    public String getName()\n'+
+                '    {\n'+
+                '        return this.name();\n'+
+                '    }\n'+
+                '\n'+
+                '    public static ZEnum getEnumFromPureName(String pureName)\n'+
+                '    {\n'+
+                '        return ZEnum.valueOf(pureName);\n'+
+                '    }\n'+
+                '}', $sources->at(3));
+}

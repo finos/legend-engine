@@ -19,6 +19,11 @@ import meta::external::language::java::metamodel::*;
 import meta::protocols::generation::java::translation::*;
 import meta::protocols::generation::java::*;
 
+Profile meta::protocols::generation::java::Visitor
+{
+    stereotypes : [exclude];
+}
+
 function meta::protocols::generation::java::buildVisitorClass(taxonomy : Taxonomy[1], typeVariable:TypeVariable[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Class[1]
 {
   javaClass(['public', 'interface'], $typeVariable, $conventions.typeAndPackageNameStrategy->toOne()->eval($taxonomy.topClass, $conventions).first->javaPackage(), $taxonomy.topClass.name->toOne()+'Visitor')

@@ -70,7 +70,7 @@ function meta::protocols::generation::java::generateProtocolProject(configJson: 
   let taxonomies = allTypes($config)->findTaxonomies($config);
   let package = javaPackage($config.javaPackage);
 
-  let visitorByTaxonomy = newMap($taxonomies->map(t|pair($t, $t->generateVisitor($package, $conventions))));
+  let visitorByTaxonomy = newMap($taxonomies->filter(t|!$t.topClass->hasStereotype('exclude', Visitor))->map(t|pair($t, $t->generateVisitor($package, $conventions))));
 
   let typesFromDependencies = getTypesFromDependencies($dependencies);
 
@@ -279,7 +279,7 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
     |$base->jextends(pureTypeToJavaTypeNoTypeArgs($context.conventions, $superType->toOne(), PureOne))
   );
 
-  let result = if ($taxonomy->isEmpty() || !$context.configuration.generateVisitor,
+  let result = if ($taxonomy->isEmpty() || !$context.configuration.generateVisitor || $taxonomy->toOne().topClass->hasStereotype('exclude', Visitor),
     |$withExtends,
     |$withExtends->addMethod(buildAccept($base, $c, $taxonomy->toOne(), $context));
   );
