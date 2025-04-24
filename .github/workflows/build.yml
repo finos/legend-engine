@@ -92,7 +92,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -T2 -DskipTests=true install
+          mvn -o -B -e -T2 -DskipTests=true install
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -106,7 +106,7 @@ jobs:
         # as the latter binds to generate-sources which runs before compile phase
         # and can cause problem with some code generators
         # See https://github.com/finos/legend-engine/pull/924
-        run: mvn -B -e -T2 -DskipTests=true deploy -P docker-snapshot,pct-cloud-test
+        run: mvn -o -B -e -T2 -DskipTests=true deploy -P docker-snapshot,pct-cloud-test
 
       - name: Set profiles for master branch
         id: masterBuild
@@ -119,7 +119,7 @@ jobs:
           name: build-output
           # upload the target directory as it is the output of the build
           # upload also the m2 repo to store the state of the install step
-          path: |            
+          path: |
             ~/**/target/
             ~/.m2/repository/org/finos/legend/engine/
           retention-days: 1
@@ -159,7 +159,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx1g"
         run: |
-          mvn -B -e surefire:test -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -o -B -e surefire:test -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
@@ -195,7 +195,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx1g"
         run: |
-          mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -o -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
@@ -221,7 +221,7 @@ jobs:
 
       - name: Generate PCT Report
         run: |
-          mvn exec:java -pl org.finos.legend.engine:legend-engine-server-http-server -Dexec.mainClass="org.finos.legend.engine.server.core.pct.PCT_to_SimpleHTML"
+          mvn -o exec:java -pl org.finos.legend.engine:legend-engine-server-http-server -Dexec.mainClass="org.finos.legend.engine.server.core.pct.PCT_to_SimpleHTML"
 
       - name: Upload PCT HTML Report
         uses: actions/upload-artifact@v4

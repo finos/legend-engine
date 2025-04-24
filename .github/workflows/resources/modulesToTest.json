@@ -9,7 +9,25 @@
     {
       "name": "javaBinding",
       "modules": [
-        "legend-engine-xt-javaPlatformBinding-PCT"
+        "legend-engine-xt-javaPlatformBinding-PCT",
+        "legend-engine-xt-json-javaPlatformBinding-test",
+        "legend-engine-xt-flatdata-javaPlatformBinding-test"
+      ]
+    },
+    {
+      "name": "sql",
+      "modules": [
+        "legend-engine-xt-sql-grammar-integration",
+        "legend-engine-xt-sql-pure",
+        "legend-engine-xt-sql-http-api"
+      ]
+    },
+    {
+      "name": "graphql",
+      "modules": [
+        "legend-engine-xt-graphQL-http-api",
+        "legend-engine-xt-graphQL-grammar-integration",
+        "legend-engine-xt-sql-http-api"
       ]
     },
     {
@@ -58,17 +76,22 @@
       ]
     },
     {
-      "name": "javaCompiler",
+      "name": "deephaven",
       "modules": [
-        "legend-engine-pure-runtime-java-extension-compiled-functions-javaCompiler",
-        "legend-engine-pure-runtime-java-extension-interpreted-functions-javaCompiler"
+        "legend-engine-xt-deephaven-executionPlan-test"
       ]
     },
     {
-      "name": "legendCompiler",
+      "name": "ide-tools",
       "modules": [
+        "legend-engine-pure-runtime-java-extension-compiled-functions-javaCompiler",
+        "legend-engine-pure-runtime-java-extension-interpreted-functions-javaCompiler",
         "legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler",
-        "legend-engine-pure-runtime-java-extension-interpreted-functions-legendCompiler"
+        "legend-engine-pure-runtime-java-extension-interpreted-functions-legendCompiler",
+        "legend-engine-pure-runtime-java-extension-compiled-functions-planExecution",
+        "legend-engine-pure-runtime-java-extension-interpreted-functions-planExecution",
+        "legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions",
+        "legend-engine-pure-runtime-java-extension-interpreted-functions-pureExtensions"
       ]
     }
   ]
