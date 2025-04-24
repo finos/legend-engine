@@ -1,0 +1,5 @@
+import meta::pure::functions::math::*;
+function test():Any[*]
+{
+   meta::pure::functions::math::cosh(.5);
+}
