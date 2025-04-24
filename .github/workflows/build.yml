@@ -201,7 +201,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-pct-${{ matrix.test.name }}
+          name: test-results-${{ matrix.name }}
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
 
   pct-report:
