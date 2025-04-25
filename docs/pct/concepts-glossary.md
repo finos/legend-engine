@@ -11,8 +11,9 @@ of the target platform and executes in the target runtime.
 A Native function has no implementation in Pure. The Pure runtime depends on the "native" implementation of the function 
 in order to cross-compile or execute it.
 
-### Native function in Pure Runtime
-These are defined using Java, the "native" language of the platform. They have no Pure-language definition.
+### Native (Java) Function in Pure Runtime
+These are defined using Java, the "native" language of the platform. They have no Pure-language definition. For the Pure Runtime,
+native functions are defined in Java.
 
 ### Native Functions in Target Runtimes
 These are the functions of the target runtime. For example, the "timeBucket" platform function has equivalent functions in target databases.
@@ -69,6 +70,11 @@ select (((-10000003 is not null and -10000002 is not null) and -10000003 >= -100
 
 ##### What is the difference between pushing the function expression composition (fully routed) vs the function (without fully routing) to the target runtime?
 When you push down the function - you call the function natively in the target runtime and this may pick up any optimizations that the native runtime has defined for the function. In doing so, you are also subject to the target-specific implementation of that runtime. This is where PCT provides value in ensuring functional correctness.
+
+## Pure Runtime Code Paths
+When executing a function on the platform, the execution can happen in two possible modes/code paths:
+1) *Interpreted* - Pure code is compiled on the fly (used for development use cases).
+2)  *Compiled* - Pure code has already been compiled to a jar (used for production use cases).
 
 ------
 # FAQ
