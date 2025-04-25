@@ -41,7 +41,7 @@ function go():Any[*]
 }
 ```
 
-5. Once you have the pure logic for your function, add some PCT Tests. You can look at existing functions tagged with stereotype ```<<PCT.test>>``` to get inspiration. Also, check [PCT Test Conventions](conventions.md#pct-tests) for a refresher on best practices.
+5. Once you have the pure logic for your function, add some PCT Tests. You can look at existing functions tagged with stereotype ```<<PCT.test>>``` to get inspiration. Also, check [PCT Test Conventions](conventions.md#pct-tests) for useful tips and a refresher on best practices.
 
 6. Use welcome.pure to execute your tests using the InMemory Adapter and refine your tests. E.g.
 

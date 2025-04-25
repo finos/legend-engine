@@ -30,12 +30,18 @@ This section describes some common scenarios with examples.
 For ANSI SQL functions, we add them to ```extensionDefaults.pure```. This file contains the default SQL translation to
 enable cross-compilation to relational target runtimes.
 
+###### Example
+*cosh* was added to extensionDefaults.pure instead of in the database-specific extensions as it falls into the same category of functions
+as *cos*, *sin*, etc. which are ANSI and already defined in that file.
+```Java
+dynaFnToSql('cosh',                   $allStates,            ^ToSql(format='cosh(%s)'),
+```
+
 ### Non-ANSI SQL Functions
-We will need to add database-specific SQL to the respective pure file that contains the custom wiring for that database. E.g. *timeBucket*
-has different syntax in two target database runtimes: duckDb and Snowflake.
+We will need to add database-specific SQL to the respective pure file that contains the custom wiring for that database.
 
 ##### Example
-These two queries will not yield equivalent results. Further, you can see that the parameters they accept are different.
+*timeBucket* has different syntax in two target database runtimes: duckDb and Snowflake. These two queries will not yield equivalent results. Further, you can see that the parameters they accept are different.
 ```Java
 // DuckDb
 Select time_bucket(Interval '2 Day', timestamp '2024-01-31 00:32:34');
@@ -97,8 +103,9 @@ function meta::relational::functions::sqlQueryToString::snowflake::constructInte
 ```
 
 ### To Route or not to Route?
-This is a choice by the developer. PCT does not care about implementation details, it cares about functional correctness.
-Routing is controlled in ```router_routing.pure```.
+- Native Platform Functions - are never routed, as there is no implementation in Pure. **Skip** this section for *native functions*.
+- Pure Platform Functions - This is a choice by the developer. PCT does not care about implementation details, it cares about functional correctness.
+Routing is controlled in ```router_routing.pure``` via the config in ```function meta::pure::router::routing::shouldStopFunctions```
 
 ##### Routing Example
 In the case of the *between* platform function, we saw that the platform implementation of inequality

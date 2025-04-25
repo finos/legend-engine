@@ -17,10 +17,8 @@ It is critical that utmost care is taken when deciding on:
 ### Practices
 #### PCT Tests
 Checklist for writing good PCT Tests:
-- [ ] Are all your PCT Tests defined in the same *.pure filea s your function signature?
-- [ ] Test organization - tests should be granular such that a failure can be easily isolated. E.g. testing Float inputs should be declared in a separate
-test from one that tests for Integer inputs. That way, the test failure clearly isolates what may be wrong.
-- [ ] Test package naming - naming related tests to belong in the same Pure Package will enable expectedFailures or other configs to be done per package.
+- [ ] Test package naming - related tests should belong to the same Pure Package. This will enable expectedFailures or other configs to be done per package.
+Format: ```{pkg prefix}::tests::{function name}::{test name}```
 ###### E.g.
 ```Java
 // Example Good package name: a test package named like so
@@ -32,7 +30,9 @@ pack("meta::pure::functions::date::tests::timeBucket", "\"meta::pure::functions:
 // Example Bad package name: a test package named like so can only be registered in expectedFailures one by one
 meta::pure::functions::date::tests
 ```
-
+- [ ] Are all your PCT Tests defined in the same *.pure filea s your function signature?
+- [ ] Test organization - tests should be granular such that a failure can be easily isolated. E.g. testing Float inputs should be declared in a separate
+test from one that tests for Integer inputs. That way, the test failure clearly isolates what may be wrong.
 - [ ] Did you account for edge cases? e.g. if testing Number inputs, did you try very large/small numbers?
 
 #### Error Messages
