@@ -1677,6 +1677,7 @@ public class Handlers
     private void registerTrigo()
     {
         register("meta::pure::functions::math::cos_Number_1__Float_1_", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::cosh_Number_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::cot_Number_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::sin_Number_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::tan_Number_1__Float_1_", true, ps -> res("Float", "one"));
@@ -2829,6 +2830,7 @@ public class Handlers
         map.put("meta::pure::functions::math::cbrt_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::ceiling_Number_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::cos_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::cosh_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::cot_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::distanceHaversineDegrees_Number_1__Number_1__Number_1__Number_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(3)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::distanceHaversineRadians_Number_1__Number_1__Number_1__Number_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(3)._genericType()._rawType()._name()));

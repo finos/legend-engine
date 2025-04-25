@@ -34,4 +34,15 @@ public class StandardFunctionsHelper
             throw new PureExecutionException(e.getMessage(), e.getCause(), Stacks.mutable.empty());
         }
     }
+
+    // MATH ---------------------------------------------------------------------
+    public static double cosh(Number input)
+    {
+        return cosh(input.doubleValue());
+    }
+
+    public static double cosh(double input)
+    {
+        return Math.cosh(input);
+    }
 }
