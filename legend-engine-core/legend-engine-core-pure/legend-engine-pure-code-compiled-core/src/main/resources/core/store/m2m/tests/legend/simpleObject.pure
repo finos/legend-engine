@@ -680,7 +680,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
     '        }\n'+
     '      }\n'+
     '    }#\n'+
-    '  )\n'+
+    '  )->from(test::mapping::simpleModelMappingWithMultipleSubTypes, test::runtime::testRuntime)\n'+
     '}\n'+
     '\n'+
     'Class test::model::Person\n'+
@@ -767,9 +767,9 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
   let function = $elements->filter(e|$e->instanceOf(FunctionDefinition))->at(0)->cast(@FunctionDefinition<{->String[1]}>);
   let runtime = $elements->filter(e|$e->instanceOf(meta::pure::runtime::PackageableRuntime))->at(0)->cast(@meta::pure::runtime::PackageableRuntime).runtimeValue;
 
-  let result = execute($function, $mapping, $runtime, meta::pure::extension::defaultExtensions());
-
-  assert(jsonEquivalent('{"firms":[{"legalName":"ABC","employees":[{"aName":"AAA"},{"bName":"BBB"}]}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
+  let result = meta::legend::executeLegendQuery($function, [], meta::pure::extension::defaultExtensions());
+  
+  assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"firms":[{"legalName":"ABC","employees":[{"aName":"AAA"},{"bName":"BBB"}]}]}}'->parseJSON(), $result->toOne()->parseJSON()));
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
