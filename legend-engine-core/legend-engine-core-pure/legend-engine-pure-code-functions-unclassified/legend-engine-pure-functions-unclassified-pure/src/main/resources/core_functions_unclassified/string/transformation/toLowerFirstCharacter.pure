@@ -12,11 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function {doc.doc = 'Lower cases the first charater of the provided string'} meta::pure::functions::string::toLowerFirstCharacter(values : String[*]) : String[*] {
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> {doc.doc = 'Lower cases the first charater of the provided string'} 
+  meta::pure::functions::string::toLowerFirstCharacter(values : String[*]) : String[*] {
       $values->map({s|
          if($s->length() == 0,
             |$s,
             |$s->substring(0, 1)->toLower() + $s->substring(1)
             )
          })
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::tolower::TestToLowerFirstCharacter<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('xoXoXoX', $f->eval(|'XoXoXoX'->toLowerFirstCharacter()));
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::tolower::TestToLowerFirstCharacterAlreadyLower<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('xOxOxOx', $f->eval(|'xOxOxOx'->toLowerFirstCharacter()));
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::tolower::TestToLowerFirstCharacterNumber<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('1isOne', $f->eval(|'1isOne'->toLowerFirstCharacter()));
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::tolower::TestToLowerFirstCharacterEmptyString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('', $f->eval(|''->toLowerFirstCharacter()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::tolower::TestToLowerFirstCharacterManyStrings<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(['cANDY', 'hEIST', 'lAVA'], $f->eval(|['CANDY', 'HEIST', 'LAVA']->toLowerFirstCharacter()));
+  assertEquals(['1CANDY', '2HEIST', '3LAVA'], $f->eval(|['1CANDY', '2HEIST', '3LAVA']->toLowerFirstCharacter()));
+  assertEquals(['cANDY', 'hEIST', 'lAVA'], $f->eval(|['cANDY', 'hEIST', 'lAVA']->toLowerFirstCharacter()));
+  assertEquals(['', 'hEIST', 'lAVA'], $f->eval(|['', 'HEIST', 'LAVA']->toLowerFirstCharacter()));
 }

@@ -103,13 +103,6 @@ function <<test.Test>> meta::pure::functions::string::tests::testIsAlphaNumeric(
    assertFalse('%'->isAlphaNumeric());
 }
 
-function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::functions::string::tests::testRepeatString():Boolean[1]
-{
-  assertEquals([], repeatString([], 2));
-  assertEquals('', repeatString('', 2));
-  assertEquals('abab', repeatString('ab', 2));
-}
-
 function <<test.Test>> meta::pure::functions::string::tests::testSplitOnCamelCase():Boolean[1]
 {
    let pairs = [

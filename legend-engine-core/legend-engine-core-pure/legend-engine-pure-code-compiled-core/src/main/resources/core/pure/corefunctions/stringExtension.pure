@@ -33,11 +33,6 @@ function meta::pure::functions::string::endsWith(source:String[0..1], val:String
     $source->isNotEmpty() && $source->toOne()->endsWith($val)
 }
 
-function meta::pure::functions::string::repeatString(str:String[0..1], times:Integer[1]):String[0..1]
-{
-  if ($str->isNotEmpty(), | $str->toOne()->repeat($times)->joinStrings(), | []);
-}
-
 function meta::pure::functions::string::lastIndexOf(str:String[1], value : String[1]):Integer[1] {
    let i = $str->indexOf($value);
    if ($i < 0, 

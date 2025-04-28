@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function {doc.doc = 'Return first n characters in the string'}
-meta::pure::functions::string::left(string:String[1], length:Integer[1]):String[1]
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> {doc.doc = 'Return first n characters in the string. The given length n must be larger than zero.'}
+  meta::pure::functions::string::left(string:String[1], length:Integer[1]):String[1]
 {
   assert($length >= 0, 'length must be >= 0');
 
@@ -24,4 +26,19 @@ meta::pure::functions::string::left(string:String[1], length:Integer[1]):String[
                     | $length);
 
   $string->substring(0, $digits);
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::left::testLeft<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('abc', $f->eval(|'abcdefg'->left(3)));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::left::testLeftTooShortString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('ab', $f->eval(|'ab'->left(7)));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::left::testLeftEmptyString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('', $f->eval(|''->left(7)));
 }

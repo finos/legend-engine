@@ -12,10 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-native function meta::pure::functions::string::jaroWinklerSimilarity(str1:String[1], str2:String[1]):Float[1];
+import meta::pure::test::pct::*;
 
-function <<test.Test>> meta::pure::functions::string::tests::jaroWinklerSimilarity::testSimple():Boolean[1]
+native function <<PCT.function>> {doc.doc = 'Calculates the Jaro-Winkler similarity between two strings, returning a value between 0 and 1.'}
+  meta::pure::functions::string::jaroWinklerSimilarity(str1:String[1], str2:String[1]):Float[1];
+
+function <<PCT.test>> meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals(0.88, jaroWinklerSimilarity('John Smith', 'Jane Smith'));
-    assertEquals(1.0, jaroWinklerSimilarity('John Smith', 'John Smith'));
+  assertEquals(1.0,  $f->eval(|'John Smith'->jaroWinklerSimilarity('John Smith')));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityNotEqual<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(0.88, $f->eval(|'John Smith'->jaroWinklerSimilarity('Jane Smith')));
 }

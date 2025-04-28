@@ -12,11 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function {doc.doc = 'Upper cases the first charater of the provided string'} meta::pure::functions::string::toUpperFirstCharacter(values : String[*]) : String[*] {
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> {doc.doc = 'Upper cases the first charater of the provided string'} 
+  meta::pure::functions::string::toUpperFirstCharacter(values : String[*]) : String[*] {
       $values->map({s|
          if($s->length() == 0,
             |$s,
             |$s->substring(0, 1)->toUpper() + $s->substring(1)
             )
          })
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::toupper::TestToUpperFirstCharacter<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('XOxOxOx', $f->eval(|'xOxOxOx'->toUpperFirstCharacter()));
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::toupper::TestToUpperFirstCharacterAlreadyLower<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('XoXoXoX', $f->eval(|'XoXoXoX'->toUpperFirstCharacter()));
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::toupper::TestToUpperFirstCharacterNumber<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('1isOne', $f->eval(|'1isOne'->toUpperFirstCharacter()));
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::toupper::TestToUpperFirstCharacterEmptyString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('', $f->eval(|''->toUpperFirstCharacter()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::toupper::TestToUpperFirstCharacterManyStrings<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(['Candy', 'Heist', 'Lava'], $f->eval(|['candy', 'heist', 'lava']->toUpperFirstCharacter()));
+  assertEquals(['1candy', '2heist', '3lava'], $f->eval(|['1candy', '2heist', '3lava']->toUpperFirstCharacter()));
+  assertEquals(['Candy', 'Heist', 'Lava'], $f->eval(|['Candy', 'Heist', 'Lava']->toUpperFirstCharacter()));
+  assertEquals(['', 'Heist', 'Lava'], $f->eval(|['', 'heist', 'lava']->toUpperFirstCharacter()));
 }

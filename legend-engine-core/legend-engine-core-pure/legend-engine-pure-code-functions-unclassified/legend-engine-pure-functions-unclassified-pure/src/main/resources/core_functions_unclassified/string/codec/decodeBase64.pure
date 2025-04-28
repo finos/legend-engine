@@ -12,17 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-native function meta::pure::functions::string::decodeBase64(string:String[1]):String[1];
+import meta::pure::test::pct::*;
 
-function <<test.Test>> meta::pure::functions::string::tests::base64::testBase64Decoding():Boolean[1]
+native function <<PCT.function>> {doc.doc = 'Decodes a Base64-encoded string and returns the original string.'}
+  meta::pure::functions::string::decodeBase64(string:String[1]):String[1];
+
+function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBase64<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assertEquals('Hello, World!', 'SGVsbG8sIFdvcmxkIQ'->decodeBase64());
-   assertEquals('Hello, World!', 'SGVsbG8sIFdvcmxkIQ='->decodeBase64());
-   assertEquals('Hello, World!', 'SGVsbG8sIFdvcmxkIQ=='->decodeBase64());
+  assertEquals('Hello, World!', $f->eval(|'SGVsbG8sIFdvcmxkIQ'->decodeBase64()));
+  assertEquals('Hello, World!', $f->eval(|'SGVsbG8sIFdvcmxkIQ='->decodeBase64()));
+  assertEquals('Hello, World!', $f->eval(|'SGVsbG8sIFdvcmxkIQ=='->decodeBase64()));
 }
 
-function <<test.Test>> meta::pure::functions::string::tests::base64::testBase64RoundTrip():Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBase64RountTrip<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   let str = 'Any Random String';
-   assertEquals($str, $str->encodeBase64()->decodeBase64());
+  let testString = 'Any Random String';
+  let encodedString = $f->eval(|$testString->encodeBase64());
+  assertEquals($testString, $f->eval(|$encodedString->decodeBase64()));
 }

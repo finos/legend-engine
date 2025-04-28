@@ -1,0 +1,60 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> {doc.doc = 'Pads the beginning of a string with the specified character until it reaches the desired length.'}
+  meta::pure::functions::string::lpad(str:String[1], length:Integer[1], char:String[1]):String[1]
+{
+  pad($str, $length, $char, true)
+}
+
+function <<PCT.function>> 
+  meta::pure::functions::string::lpad(str:String[1], length:Integer[1]):String[1]
+{
+  lpad($str, $length, ' ')
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::lpad::testLpad<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('______abcd', $f->eval(|'abcd'->lpad(10, '_')));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::lpad::testLpadDefaultCharacter<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('      abcd', $f->eval(|'abcd'->lpad(10)));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::lpad::testLpadStringLongerThanLength<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('abc', $f->eval(|'abcd'->lpad(3, '_')));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::lpad::testLpadEmptyString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('???', $f->eval(|''->lpad(3, '?')));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::lpad::testLpadEmptyChar<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('abcd', $f->eval(|'abcd'->lpad(10, '')));
+}
+
+// This test shows incorrect behaviour of the PURE pad implementation for multichar tokens.
+// TODO: Fix when pad is revised.
+// function <<PCT.test>> meta::pure::functions::string::tests::lpad::testLpadMultiChar<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+// {
+//   // overwrites string
+//   assertEquals('xoxox', $f->eval(|'pp'->lpad(5, 'xo')));
+// }

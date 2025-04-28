@@ -12,11 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-native function meta::pure::functions::string::ascii(source:String[1]):Integer[1];
+import meta::pure::test::pct::*;
 
-function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::functions::string::tests::ascii::testSimpleAscii():Boolean[1]
+native function <<PCT.function>> {doc.doc = 'Returns the ASCII integer value of the first character in the given string.'} 
+  meta::pure::functions::string::ascii(source:String[1]):Integer[1];
+
+function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAscii<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals(0, ascii(''));
-    assertEquals(32, ascii(' '));
-    assertEquals(97, ascii('abc'));
+  assertEquals(65, $f->eval(|'A'->ascii()));
+  assertEquals(66, $f->eval(|'B'->ascii()));
+  assertEquals(67, $f->eval(|'C'->ascii()));
+
+  assertEquals(97, $f->eval(|'a'->ascii()));
+  assertEquals(98, $f->eval(|'b'->ascii()));
+  assertEquals(99, $f->eval(|'c'->ascii()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAsciiSpecialCharacter<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(0, $f->eval(|''->ascii()));
+  assertEquals(10, $f->eval(|'\n'->ascii()));
+  assertEquals(32, $f->eval(|' '->ascii()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAsciiMultiCharString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(97, $f->eval(|'abc'->ascii()));
 }

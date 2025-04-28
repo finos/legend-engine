@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::functions::hash::*;
+import meta::pure::test::pct::*;
 
 Enum meta::pure::functions::hash::HashType
 {
@@ -21,20 +22,20 @@ Enum meta::pure::functions::hash::HashType
     SHA256
 }
 
-native function meta::pure::functions::hash::hash(text: String[1], hashType: meta::pure::functions::hash::HashType[1]):String[1];
+native function <<PCT.function>> {doc.doc = 'Computes the hash of the given text using the specified hash algorithm (MD5, SHA1, or SHA256) and returns the resulting hash as a string.'}
+  meta::pure::functions::hash::hash(text: String[1], hashType: meta::pure::functions::hash::HashType[1]):String[1];
 
-
-function <<test.Test>> meta::pure::functions::hash::tests::testMD5_Hash():Boolean[1]
+function <<PCT.test>> meta::pure::functions::hash::tests::testMD5Hash<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assertEquals('65A8E27D8879283831B664BD8B7F0AD4'->toLower(), hash('Hello, World!', HashType.MD5));
+  assertEquals('65A8E27D8879283831B664BD8B7F0AD4'->toLower(), $f->eval(|'Hello, World!'->hash(HashType.MD5)));
 }
 
-function <<test.Test>> meta::pure::functions::hash::tests::testSHA1_Hash():Boolean[1]
+function <<PCT.test>> meta::pure::functions::hash::tests::testSHA1Hash<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assertEquals('0A0A9F2A6772942557AB5355D76AF442F8F65E01'->toLower(), hash('Hello, World!', HashType.SHA1));
+  assertEquals('0A0A9F2A6772942557AB5355D76AF442F8F65E01'->toLower(), $f->eval(|'Hello, World!'->hash(HashType.SHA1)));
 }
 
-function <<test.Test>> meta::pure::functions::hash::tests::testSHA256_Hash():Boolean[1]
+function <<PCT.test>> meta::pure::functions::hash::tests::testSHA256Hash<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assertEquals('DFFD6021BB2BD5B0AF676290809EC3A53191DD81C7F70A4B28688A362182986F'->toLower(), hash('Hello, World!', HashType.SHA256));
+  assertEquals('DFFD6021BB2BD5B0AF676290809EC3A53191DD81C7F70A4B28688A362182986F'->toLower(), $f->eval(|'Hello, World!'->hash(HashType.SHA256)));
 }
