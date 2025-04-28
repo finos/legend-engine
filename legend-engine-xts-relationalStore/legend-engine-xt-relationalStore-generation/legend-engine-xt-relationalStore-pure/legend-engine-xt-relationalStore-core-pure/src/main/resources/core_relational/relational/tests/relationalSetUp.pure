@@ -1035,7 +1035,7 @@ Mapping meta::relational::tests::TestMappingWithViewJoins
      ~mainTable [db] firmTable
      firstName : [db]@personViewWithFirmTable|PersonViewWithDistinct.firstName,
      lastName : [db]@personViewWithFirmTable|PersonViewWithDistinct.lastName,
-     activeEmployment: [db] case( equal(@personViewWithFirmTable| firmTable.LEGALNAME, sqlNull()),'false','true')
+     activeEmployment: [db] case( equal(@personViewWithFirmTable| firmTable.LEGALNAME, sqlNull()), 'false','true')
    }
 )
 
