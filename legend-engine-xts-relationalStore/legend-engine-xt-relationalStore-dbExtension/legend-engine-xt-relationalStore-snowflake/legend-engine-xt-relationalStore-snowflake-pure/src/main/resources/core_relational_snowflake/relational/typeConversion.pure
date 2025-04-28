@@ -24,7 +24,7 @@ function meta::relational::functions::typeConversion::snowflake::convert(generic
             pair(|$path == 'Boolean', |fail('not supported yet!')),
             pair(|$path == 'Integer', |^meta::relational::metamodel::datatype::Decimal(precision=19, scale=0)),
             pair(|$path == 'Float', |^meta::relational::metamodel::datatype::Double()),
-            pair(|$path == 'Byte', |fail('not supported yet!')),
+            pair(|$path == 'Byte', |^meta::relational::metamodel::datatype::Binary(size=10000)),
             pair(|$path == 'StrictTime', |fail('not supported yet!')),
             pair(|$path == 'Decimal', |^meta::relational::metamodel::datatype::Decimal(precision=10, scale=10)),
             pair(|$path == 'String', |^meta::relational::metamodel::datatype::Varchar(size=1024)),

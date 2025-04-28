@@ -1033,6 +1033,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   cot,
   count,
   cumulativeDistribution,
+  currentUserId,
   dateDiff,
   datePart,
   dayOfMonth,
