@@ -64,6 +64,28 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\""),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\""),
 
+            // Median
+            one("meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+            one("meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Aggregate_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function median(double precision) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts."),
+            one("meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Window_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function median(double precision) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts."),
+            one("meta::pure::functions::math::tests::median::testMedian_Integers_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+            one("meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Aggregate_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function median(integer) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts."),
+            one("meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Window_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function median(integer) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts."),
+            one("meta::pure::functions::math::tests::median::testMedian_Numbers_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+            one("meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function median(double precision) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts."),
+            one("meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Window_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function median(double precision) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts."),
+
+            // Mode
+            one("meta::pure::functions::math::tests::mode::testMode_Float_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+            one("meta::pure::functions::math::tests::mode::testMode_Floats_Relation_Aggregate_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+            one("meta::pure::functions::math::tests::mode::testMode_Floats_Relation_Window_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+            one("meta::pure::functions::math::tests::mode::testMode_Integer_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+            one("meta::pure::functions::math::tests::mode::testMode_Integer_Relation_Aggregate_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+            one("meta::pure::functions::math::tests::mode::testMode_Integer_Relation_Window_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+            one("meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+            one("meta::pure::functions::math::tests::mode::testMode_Number_Relation_Aggregate_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+            one("meta::pure::functions::math::tests::mode::testMode_Number_Relation_Window_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"),
+
             // Date
             pack("meta::pure::functions::date::tests::timeBucket", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""),
 
