@@ -641,7 +641,136 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
   assert(jsonEquivalent('{"vehicles":[{"engine":true},{"type":"sports"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_20_0',
+   doc.doc='Given: a single JSON object that matches a source definition, and an M2M mapping',
+   doc.doc='When:  the mapping is executed using graphFetch with multiple Subtype names and serialize and autoMapped when source and target classes are same',
+   doc.doc='Then:  multiple Subtypes are matched, the mapping is applied and the result of the mapping is serialized.'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObjectWithMultipleSubTypesForAutoMapping() : Boolean[1]
+{
+   let grammar = '###Pure\n'+
+    'function test::query::getFirmDetails(): String[1]\n'+
+    '{\n'+
+    '  test::model::Firms.all()->graphFetch(\n'+
+    '    #{\n'+
+    '      test::model::Firms{\n'+
+    '        firms{\n'+
+    '          legalName,\n'+
+    '          employees->subType(@test::model::PersonA){\n'+
+    '            aName\n'+
+    '          },\n'+
+    '          employees->subType(@test::model::PersonB){\n'+
+    '            bName\n'+
+    '          }\n'+
+    '        }\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->serialize(\n'+
+    '    #{\n'+
+    '      test::model::Firms{\n'+
+    '        firms{\n'+
+    '          legalName,\n'+
+    '          employees->subType(@test::model::PersonA){\n'+
+    '            aName\n'+
+    '          },\n'+
+    '          employees->subType(@test::model::PersonB){\n'+
+    '            bName\n'+
+    '          }\n'+
+    '        }\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->from(test::mapping::simpleModelMappingWithMultipleSubTypes, test::runtime::testRuntime)\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Person\n'+
+    '{\n'+
+    '  firstName: String[0..1];\n'+
+    '  lastName: String[0..1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::PersonA extends test::model::Person\n'+
+    '{\n'+
+    '  aName: String[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::PersonB extends test::model::Person\n'+
+    '{\n'+
+    '  bName: String[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::PersonC extends test::model::Person\n'+
+    '{\n'+
+    '  cName: String[0..1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Firm\n'+
+    '{\n'+
+    '  legalName: String[1];\n'+
+    '  employees: test::model::Person[*];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Firms\n'+
+    '{\n'+
+    '  firms: test::model::Firm[1..*];\n'+
+    '}\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping test::mapping::simpleModelMappingWithMultipleSubTypes\n'+
+    '(\n'+
+    '  *test::model::Firms: Pure\n'+
+    '  {\n'+
+    '    ~src test::model::Firms\n'+
+    '    firms: $src.firms\n'+
+    '  }\n'+
+    '  *test::model::Firm: Pure\n'+
+    '  {\n'+
+    '    ~src test::model::Firm\n'+
+    '    legalName: $src.legalName,\n'+
+    '    employees: $src.employees->map(\n'+
+    '      e|$e->match(\n'+
+    '        [\n'+
+    '          a: test::model::PersonA[1]|$a,\n'+
+    '          b: test::model::PersonB[1]|$b,\n'+
+    '          c: test::model::PersonC[1]|$c\n'+
+    '        ]\n'+
+    '      )\n'+
+    '    )\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'JsonModelConnection test::connection::testConnection\n'+
+    '{\n'+
+    '  class: test::model::Firms;\n'+
+    '  url: \'data:application/json,{"firms": [{ "legalName": "ABC",  "employees": [ { "@type": "PersonA", "aName": "AAA" }, { "@type": "PersonB", "bName": "BBB" }, { "@type": "PersonC" } ] } ] }\';\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime test::runtime::testRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    test::mapping::simpleModelMappingWithMultipleSubTypes\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    ModelStore:\n'+
+    '    [\n'+
+    '      connection_1: test::connection::testConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}';
 
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let mapping = $elements->filter(e|$e->instanceOf(meta::pure::mapping::Mapping))->at(0)->cast(@meta::pure::mapping::Mapping);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition))->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+  let runtime = $elements->filter(e|$e->instanceOf(meta::pure::runtime::PackageableRuntime))->at(0)->cast(@meta::pure::runtime::PackageableRuntime).runtimeValue;
+
+  let result = meta::legend::executeLegendQuery($function, [], meta::pure::extension::defaultExtensions());
+  
+  assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"firms":[{"legalName":"ABC","employees":[{"aName":"AAA"},{"bName":"BBB"}]}]}}'->parseJSON(), $result->toOne()->parseJSON()));
+}
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_20_0',
@@ -1446,10 +1575,10 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
 
 
-###Mapping 
+###Mapping
 Mapping meta::pure::mapping::modelToModel::test::shared::dest::MappingWithNoPropertyAccessOnClass
 (
-  *meta::pure::mapping::modelToModel::test::shared::dest::Target : Pure 
+  *meta::pure::mapping::modelToModel::test::shared::dest::Target : Pure
   {
     ~src meta::pure::mapping::modelToModel::test::shared::source::A
     id : meta::pure::mapping::modelToModel::test::alloy::f($src, [])
@@ -1457,7 +1586,7 @@ Mapping meta::pure::mapping::modelToModel::test::shared::dest::MappingWithNoProp
   }
 )
 
-###Pure 
+###Pure
 import meta::pure::executionPlan::profiles::*;
 
 Class meta::pure::mapping::modelToModel::test::shared::src::PrimitiveMappingSourceWrapper
@@ -1465,7 +1594,7 @@ Class meta::pure::mapping::modelToModel::test::shared::src::PrimitiveMappingSour
   p : meta::pure::mapping::modelToModel::test::shared::src::PrimitiveMappingSource[1];
 }
 
-Class meta::pure::mapping::modelToModel::test::shared::src::PrimitiveMappingSource 
+Class meta::pure::mapping::modelToModel::test::shared::src::PrimitiveMappingSource
 {
   d : StrictDate[1];
 }
@@ -1527,11 +1656,11 @@ Mapping meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingT
 (
   *meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDest : Pure
   {
-    ~src meta::pure::mapping::modelToModel::test::shared::src::PrimitiveMappingSource 
+    ~src meta::pure::mapping::modelToModel::test::shared::src::PrimitiveMappingSource
     c[mydate] : $src.d
   }
 
-  meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDestInner[mydate] : Pure  
+  meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDestInner[mydate] : Pure
   {
     ~src StrictDate
     d : $src
@@ -1545,10 +1674,9 @@ Mapping meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingT
     c[mydate] : $src.p.d
   }
 
-  meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDestInner[mydate] : Pure  
+  meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDestInner[mydate] : Pure
   {
     ~src StrictDate
     d : $src
   }
 )
-
