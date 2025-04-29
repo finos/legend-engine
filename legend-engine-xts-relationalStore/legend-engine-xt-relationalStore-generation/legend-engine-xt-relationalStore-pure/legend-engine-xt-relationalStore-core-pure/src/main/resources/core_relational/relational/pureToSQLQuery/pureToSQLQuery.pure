@@ -554,7 +554,7 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                   l:LambdaFunction<Any>[1] | $l.expressionSequence->at(0)->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_i'+$vals->indexOf($v)->toString()), $aggFromMap, $context, $extensions),
                                   x:meta::pure::store::RelationStoreAccessor<Any>[1] |
                                       let relation = $x.sourceElement->cast(@Table);
-                                      let tableAlias = ^TableAlias(name='dbAccessor', relationalElement=$relation);
+                                      let tableAlias = ^TableAlias(name='dbAccessor' + buildNodeId($nodeId,'_i'+$vals->indexOf($v)->toString()), relationalElement=$relation);
                                       let res = ^$operation
                                                 (
                                                   select = ^TdsSelectSqlQuery
