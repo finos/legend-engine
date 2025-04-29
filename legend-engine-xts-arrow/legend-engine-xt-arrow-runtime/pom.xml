@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-arrow</artifactId>
-        <version>4.83.3</version>
+        <version>4.83.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
