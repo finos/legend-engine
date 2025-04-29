@@ -14,56 +14,49 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> meta::pure::functions::math::median(numbers:Number[*]):Float[0..1]
+function <<PCT.function>> meta::pure::functions::math::median(numbers:Number[*]):Float[1]
 {
-    if($numbers->isEmpty(),
-      | fail('Error: Median of an empty set.');0.0;,
-      | if($numbers->size()->mod(2) != 1,
-          |($numbers->sort()->at(($numbers->size() / 2)->floor()) + $numbers->sort()->at(($numbers->size() / 2)->floor() - 1)) / 2;,
-          |$numbers->sort()->at(($numbers->size() / 2)->floor())/1;
-    ));
+    let sortedNumbers = $numbers->toOneMany()->sort();
+    if($sortedNumbers->size()->mod(2) != 1,
+        |($sortedNumbers->at(($sortedNumbers->size() / 2)->floor()) + $sortedNumbers->at(($sortedNumbers->size() / 2)->floor() - 1)) / 2;,
+        |$sortedNumbers->at(($sortedNumbers->size() / 2)->floor())/1;
+    );
 }
 
-function <<PCT.function>> meta::pure::functions::math::median(numbers:Integer[*]):Float[0..1]
+function <<PCT.function>> meta::pure::functions::math::median(numbers:Integer[*]):Float[1]
 {
-    if($numbers->isEmpty(),
-      | fail('Error: Median of an empty set.');0.0;,
-      | if($numbers->size()->mod(2) != 1,
-          |($numbers->sort()->at(($numbers->size() / 2)->floor()) + $numbers->sort()->at(($numbers->size() / 2)->floor() - 1)) / 2;,
-          |$numbers->sort()->at(($numbers->size() / 2)->floor())/1;
-    ));
-
+    let sortedNumbers = $numbers->toOneMany()->sort();
+    if($sortedNumbers->size()->mod(2) != 1,
+        |($sortedNumbers->at(($sortedNumbers->size() / 2)->floor()) + $sortedNumbers->at(($sortedNumbers->size() / 2)->floor() - 1)) / 2;,
+        |$sortedNumbers->at(($sortedNumbers->size() / 2)->floor())/1;
+    );
 }
 
-function <<PCT.function>> meta::pure::functions::math::median(numbers:Float[*]):Float[0..1]
+function <<PCT.function>> meta::pure::functions::math::median(numbers:Float[*]):Float[1]
 {
-    if($numbers->isEmpty(),
-      | fail('Error: Median of an empty set.');0.0;,
-      | if($numbers->size()->mod(2) != 1,
-          |($numbers->sort()->at(($numbers->size() / 2)->floor()) + $numbers->sort()->at(($numbers->size() / 2)->floor() - 1)) / 2;,
-          |$numbers->sort()->at(($numbers->size() / 2)->floor())/1;
-    ));
+    let sortedNumbers = $numbers->toOneMany()->sort();
+    if($sortedNumbers->size()->mod(2) != 1,
+        |($sortedNumbers->at(($sortedNumbers->size() / 2)->floor()) + $sortedNumbers->at(($sortedNumbers->size() / 2)->floor() - 1)) / 2;,
+        |$sortedNumbers->at(($sortedNumbers->size() / 2)->floor())/1;
+    );
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Floats<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assertEquals([], $f->eval(|mode([]->cast(@Float))));
-   assertEq(3.0, $f->eval(|median([5.0,1.0,2.0,8.0,3.0]))->toOne());
-   assertEq(3.5, $f->eval(|median([5.0,1.0,2.0,8.0,3.0,4.0]))->toOne());
+   assertEq(3.0, $f->eval(|median([5.0,1.0,2.0,8.0,3.0])));
+   assertEq(3.5, $f->eval(|median([5.0,1.0,2.0,8.0,3.0,4.0])));
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Integers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals([], $f->eval(|mode([]->cast(@Integer))));
-  assertEq(3.0, $f->eval(|median([5,1,2,8,3]))->toOne());
-  assertEq(3.5, $f->eval(|median([5,1,2,8,3,4]))->toOne());
+  assertEq(3.0, $f->eval(|median([5,1,2,8,3])));
+  assertEq(3.5, $f->eval(|median([5,1,2,8,3,4])));
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Numbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals([], $f->eval(|mode([]->cast(@Number))));
-  assertEq(3.0, $f->eval(|median([5.0,1.0,2,8.0,3]))->toOne());
-  assertEq(3.5, $f->eval(|median([5,1.0,2,8.0,3,4]))->toOne());
+  assertEq(3.0, $f->eval(|median([5.0,1.0,2,8.0,3])));
+  assertEq(3.5, $f->eval(|median([5,1.0,2,8.0,3,4])));
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

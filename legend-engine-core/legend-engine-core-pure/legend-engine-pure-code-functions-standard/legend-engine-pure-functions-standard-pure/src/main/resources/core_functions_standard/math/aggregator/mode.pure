@@ -22,82 +22,63 @@ Class <<access.private>> meta::pure::functions::math::Accumulator
    prevCount: Integer[1];   
 }
 
-function <<PCT.function>> meta::pure::functions::math::mode(numbers:Number[*]):Number[0..1]
+function <<PCT.function>> meta::pure::functions::math::mode(numbers:Number[*]):Number[1]
 {
-  if($numbers->size() == 1, 
-  |$numbers->toOne(), 
-  |
-     let sortedNumbers = $numbers->sort();
+     let sortedNumbers = $numbers->toOneMany()->sort();
+     let res = $sortedNumbers->fold({x, y | let currCount =  if(!(($x < $y.prev->cast(@Number)) || ($x > $y.prev->cast(@Number))), |$y.prevCount + 1,|1);
+                                            if($currCount > $y.maxCount,
+                                                |^$y(numMax = $x, maxCount = $currCount, prev = $x, prevCount = $currCount);,
+                                                |^$y(prev = $x, prevCount = $currCount););
+                                    }, ^meta::pure::functions::math::Accumulator(numMax = 0, maxCount = 0, prev = 0, prevCount = 0));
 
-     let res = $sortedNumbers->fold({x, y | 
-     let currCount =  if(!(($x < $y.prev->cast(@Number)) || ($x > $y.prev->cast(@Number))), |$y.prevCount + 1,|1);
-     if($currCount > $y.maxCount,
-     |^$y(numMax = $x, maxCount = $currCount, prev = $x, prevCount = $currCount);,
-     |^$y(prev = $x, prevCount = $currCount););
-     }, 
-     ^meta::pure::functions::math::Accumulator(numMax = 0, maxCount = 0, prev = 0, prevCount = 0));
 
-    if($res.maxCount == 0, |[], |$res.numMax->cast(@Number));
-  );
+    $res.numMax->cast(@Number);
 }
 
-function <<PCT.function>> meta::pure::functions::math::mode(numbers:Float[*]):Float[0..1]
+function <<PCT.function>> meta::pure::functions::math::mode(numbers:Float[*]):Float[1]
 {
-  if($numbers->size() == 1, 
-  |$numbers->toOne(), 
-  |
-     let sortedNumbers = $numbers->sort();
-     let res = $sortedNumbers->fold({x, y | 
-     let currCount =  if($x == $y.prev, |$y.prevCount + 1,|1);
-     if($currCount > $y.maxCount,
-     |^$y(numMax = $x, maxCount = $currCount, prev = $x, prevCount = $currCount);,
-     |^$y(prev = $x, prevCount = $currCount););
-     }, 
-     ^meta::pure::functions::math::Accumulator(numMax = 0, maxCount = 0, prev = 0, prevCount = 0));
+     let sortedNumbers = $numbers->toOneMany()->sort();
+     let res = $sortedNumbers->fold({x, y | let currCount =  if($x == $y.prev, |$y.prevCount + 1,|1);
+                                            if($currCount > $y.maxCount,
+                                                |^$y(numMax = $x, maxCount = $currCount, prev = $x, prevCount = $currCount);,
+                                                |^$y(prev = $x, prevCount = $currCount););
+                                    }, ^meta::pure::functions::math::Accumulator(numMax = 0, maxCount = 0, prev = 0, prevCount = 0));
 
-     if($res.maxCount == 0, |[], |$res.numMax->cast(@Float));
-  );
+     $res.numMax->cast(@Float);
 }
 
 
-function <<PCT.function>> meta::pure::functions::math::mode(numbers:Integer[*]):Integer[0..1]
+function <<PCT.function>> meta::pure::functions::math::mode(numbers:Integer[*]):Integer[1]
 {
-   if($numbers->size() == 1, 
-  | $numbers->toOne();, 
-  |
-     let sortedNumbers = $numbers->sort();
-     let res = $sortedNumbers->fold({x, y | 
-     let currCount =  if($x == $y.prev, |$y.prevCount + 1,|1);
-     if($currCount > $y.maxCount,
-     |^$y(numMax = $x, maxCount = $currCount, prev = $x, prevCount = $currCount);,
-     |^$y(prev = $x, prevCount = $currCount););
-     }, 
-     ^meta::pure::functions::math::Accumulator(numMax = 0, maxCount = 0, prev = 0, prevCount = 0));
+     let sortedNumbers = $numbers->toOneMany()->sort();
+     let res = $sortedNumbers->fold({x, y | let currCount =  if($x == $y.prev, |$y.prevCount + 1,|1);
+                                            if($currCount > $y.maxCount,
+                                                |^$y(numMax = $x, maxCount = $currCount, prev = $x, prevCount = $currCount);,
+                                                |^$y(prev = $x, prevCount = $currCount););
+                                    }, ^meta::pure::functions::math::Accumulator(numMax = 0, maxCount = 0, prev = 0, prevCount = 0));
 
-    if($res.maxCount == 0, |[], |$res.numMax->cast(@Integer));
-    
-  );
+    $res.numMax->cast(@Integer);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::mode::testMode_Number<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assertEquals([], $f->eval(|mode([]->cast(@Number))));
-   assertEq(3, $f->eval(|mode([3, 3.0, 3, 2, 2]))->toOne());
-   assertEq(2.0, $f->eval(|mode([3, 2, 3.0, 7.0, 2, 2, 3, 2.0, 2.0]))->toOne());
+   assertEq(5, $f->eval(|mode([5])));
+   assertEq(3, $f->eval(|mode([3, 3.0, 3, 2, 2])));
+   assertEq(2.0, $f->eval(|mode([3, 2, 3.0, 7.0, 2, 2, 3, 2.0, 2.0])));
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::mode::testMode_Float<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assertEquals([], $f->eval(|mode([]->cast(@Float))));
-   assertEq(5.0, $f->eval(|mode([5.0, 5.0, 5.0, 2.0, 2.0]))->toOne());
-   assertEq(1.2, $f->eval(|mode([1.2, 1.7, 1.2, 2.3, 1.7, 1.2]))->toOne());
+   assertEq(1.0, $f->eval(|mode([1.0])));
+   assertEq(5.0, $f->eval(|mode([5.0, 5.0, 5.0, 2.0, 2.0])));
+   assertEq(1.2, $f->eval(|mode([1.2, 1.7, 1.2, 2.3, 1.7, 1.2])));
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::mode::testMode_Integer<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assertEquals([], $f->eval(|mode([]->cast(@Integer))));
-   assertEq(1, $f->eval(|mode([1, 1, 1, 2, 2]))->toOne());
-   assertEq(2, $f->eval(|mode([2, 3, 2, 1, 2, 4, 1, 3, 4, 2]))->toOne());
+   assertEq(5, $f->eval(|mode([5])));
+   assertEq(1, $f->eval(|mode([1, 1, 1, 2, 2])));
+   assertEq(2, $f->eval(|mode([2, 3, 2, 1, 2, 4, 1, 3, 4, 2])));
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::mode::testMode_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

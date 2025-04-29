@@ -1901,14 +1901,14 @@ public class Handlers
                 h("meta::pure::functions::math::sum_Integer_MANY__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
                 h("meta::pure::functions::math::sum_Number_MANY__Number_1_", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")));
 
-        register(h("meta::pure::functions::math::median_Float_MANY__Float_$0_1$_", false, ps -> res("Float", "zeroOne"), ps -> typeMany(ps.get(0), "Float")),
-                 h("meta::pure::functions::math::median_Integer_MANY__Float_$0_1$_", false, ps -> res("Float", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
-                 h("meta::pure::functions::math::median_Number_MANY__Float_$0_1$_", false, ps -> res("Float", "zeroOne"), ps -> typeMany(ps.get(0), "Number"))
+        register(h("meta::pure::functions::math::median_Float_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
+                 h("meta::pure::functions::math::median_Integer_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
+                 h("meta::pure::functions::math::median_Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))
                 );
 
-        register(h("meta::pure::functions::math::mode_Float_MANY__Float_$0_1$_", false, ps -> res("Float", "zeroOne"), ps -> typeMany(ps.get(0), "Float")),
-                h("meta::pure::functions::math::mode_Integer_MANY__Integer_$0_1$_", false, ps -> res("Integer", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::mode_Number_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number"))
+        register(h("meta::pure::functions::math::mode_Float_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
+                h("meta::pure::functions::math::mode_Integer_MANY__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::mode_Number_MANY__Number_1_", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number"))
         );
 
         register(m(m(h("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))),
@@ -2837,12 +2837,12 @@ public class Handlers
         map.put("meta::pure::functions::math::average_Float_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Float").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::average_Integer_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::average_Number_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::math::median_Number_MANY__Float_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Float").contains(ps.get(0)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::math::median_Integer_MANY__Float_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::math::median_Float_MANY__Float_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::math::mode_Float_MANY__Float_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Float").contains(ps.get(0)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::math::mode_Integer_MANY__Integer_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::math::mode_Number_MANY__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::median_Number_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Float").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::median_Integer_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::median_Float_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::mode_Float_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Float").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::mode_Integer_MANY__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::mode_Number_MANY__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::cbrt_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::ceiling_Number_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::cos_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
