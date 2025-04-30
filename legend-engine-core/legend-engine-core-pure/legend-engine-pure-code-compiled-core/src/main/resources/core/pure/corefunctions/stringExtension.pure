@@ -33,6 +33,14 @@ function meta::pure::functions::string::endsWith(source:String[0..1], val:String
     $source->isNotEmpty() && $source->toOne()->endsWith($val)
 }
 
+function {doc.doc = 'Upper cases the first character of the provided strings'} meta::pure::functions::string::toUpperFirstCharacter(values : String[*]) : String[*] {
+      $values->map({s|$s->toUpperFirstCharacter()})
+}
+
+function {doc.doc = 'Lower cases the first character of the provided strings'} meta::pure::functions::string::toLowerFirstCharacter(values : String[*]) : String[*] {
+      $values->map({s|$s->toLowerFirstCharacter()})
+}
+
 function meta::pure::functions::string::lastIndexOf(str:String[1], value : String[1]):Integer[1] {
    let i = $str->indexOf($value);
    if ($i < 0, 

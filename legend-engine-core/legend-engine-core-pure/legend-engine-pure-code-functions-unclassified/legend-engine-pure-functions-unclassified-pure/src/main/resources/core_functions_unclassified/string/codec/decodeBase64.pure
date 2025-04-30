@@ -24,7 +24,7 @@ function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBa
   assertEquals('Hello, World!', $f->eval(|'SGVsbG8sIFdvcmxkIQ=='->decodeBase64()));
 }
 
-function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBase64RountTrip<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   let testString = 'Any Random String';
   let encodedString = $f->eval(|$testString->encodeBase64());

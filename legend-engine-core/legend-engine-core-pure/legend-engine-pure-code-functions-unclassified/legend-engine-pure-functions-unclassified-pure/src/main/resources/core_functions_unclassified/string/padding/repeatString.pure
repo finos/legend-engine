@@ -17,7 +17,7 @@ import meta::pure::test::pct::*;
 function <<PCT.function>> {doc.doc = 'Repeats the given string a specified number of times and returns the resulting concatenated string.'}
   meta::pure::functions::string::repeatString(str:String[0..1], times:Integer[1]):String[0..1]
 {
-  if ($str->isNotEmpty(), 
+  if ($str->isNotEmpty(),
     | $str->toOne()->repeat($times)->joinStrings(''),
     | []
   );

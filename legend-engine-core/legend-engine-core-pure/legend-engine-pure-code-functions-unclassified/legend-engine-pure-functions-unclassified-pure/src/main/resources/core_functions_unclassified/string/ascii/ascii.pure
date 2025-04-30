@@ -17,21 +17,36 @@ import meta::pure::test::pct::*;
 native function <<PCT.function>> {doc.doc = 'Returns the ASCII integer value of the first character in the given string.'} 
   meta::pure::functions::string::ascii(source:String[1]):Integer[1];
 
-function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAscii<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAsciiUpper<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals(65, $f->eval(|'A'->ascii()));
-  assertEquals(66, $f->eval(|'B'->ascii()));
-  assertEquals(67, $f->eval(|'C'->ascii()));
-
-  assertEquals(97, $f->eval(|'a'->ascii()));
-  assertEquals(98, $f->eval(|'b'->ascii()));
-  assertEquals(99, $f->eval(|'c'->ascii()));
+  assertEquals(90, $f->eval(|'Z'->ascii()));
 }
 
-function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAsciiSpecialCharacter<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAsciiLower<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(97, $f->eval(|'a'->ascii()));
+  assertEquals(122, $f->eval(|'z'->ascii()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAsciiDigit<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(48, $f->eval(|'0'->ascii()));
+  assertEquals(57, $f->eval(|'9'->ascii()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAsciiEmptyChar<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals(0, $f->eval(|''->ascii()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAsciiNewline<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
   assertEquals(10, $f->eval(|'\n'->ascii()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAsciiWhitespace<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
   assertEquals(32, $f->eval(|' '->ascii()));
 }
 

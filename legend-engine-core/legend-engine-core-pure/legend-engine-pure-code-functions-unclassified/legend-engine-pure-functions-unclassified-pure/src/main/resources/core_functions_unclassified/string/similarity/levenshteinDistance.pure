@@ -17,12 +17,12 @@ import meta::pure::test::pct::*;
 native function <<PCT.function>> {doc.doc = 'Calculates the Levenshtein distance between two strings, returning the number of single character edits required to transform one string into the other.'}
 meta::pure::functions::string::levenshteinDistance(str1:String[1], str2:String[1]):Integer[1];
 
-function <<PCT.test>> meta::pure::functions::string::tests::levenshteinDistance::testLevenstheinDistanceEqual<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceEqual<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals(0,  $f->eval(|'John Smith'->levenshteinDistance('John Smith')));
 }
 
-function <<PCT.test>> meta::pure::functions::string::tests::levenshteinDistance::testLevenstheinDistanceNotEqual<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceNotEqual<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals(3, $f->eval(|'John Smith'->levenshteinDistance('Jane Smith')));
 }

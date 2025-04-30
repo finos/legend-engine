@@ -17,8 +17,30 @@ import meta::pure::test::pct::*;
 native function <<PCT.function>> {doc.doc = 'Returns the character corresponding to the specified ASCII integer value.'}
   meta::pure::functions::string::char(source:Integer[1]):String[1];
 
-function <<PCT.test>> meta::pure::functions::string::tests::char::testChar<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::char::testCharUpper<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('A', $f->eval(|65->char()));
+  assertEquals('Z', $f->eval(|90->char()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::char::testCharLower<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('a', $f->eval(|97->char()));
+  assertEquals('z', $f->eval(|122->char()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::char::testCharDigits<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('0', $f->eval(|48->char()));
+  assertEquals('9', $f->eval(|57->char()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::char::testEmptyChar<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals('', $f->eval(|0->char()));
-  assertEquals('a', $f->eval(|97->char()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::char::testNewLine<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('\n', $f->eval(|32->char()));
 }
