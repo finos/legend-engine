@@ -76,6 +76,42 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
             list(['Eve', 'Arts', 88, null()])
           ]
         )
+      ),
+      sqlFunctionTest(
+        testSetupDataForWindowFunctions(),
+        // With unbounded frame
+        windowFunctionCall(
+          ^FunctionCall(
+            name = ^QualifiedName(parts = 'nth_value'), 
+            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'student')), literal(2)],
+            window = ^meta::external::query::sql::metamodel::Window(
+              orderBy = [
+                ^SortItem(
+                  sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+                  ordering = SortItemOrdering.DESCENDING, 
+                  nullOrdering = SortItemNullOrdering.LAST
+                )
+              ],
+              partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+              windowFrame = ^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.UNBOUNDED_PRECEDING), end = ^FrameBound(type = FrameBoundType.UNBOUNDED_FOLLOWING))
+            )
+          ),
+          'testTable',
+          'student'
+        ),
+        ^TestExpectedResult(
+          columns = ['student', 'dept', 'score', 'result'], 
+          data = [
+            list(['Alice', 'Science', 90, 'Bob']),
+            list(['Bob', 'Science', 88, 'Bob']),
+            list(['Charlie', 'Science', 85, 'Bob']), 
+            list(['David', 'Science', 80, 'Bob']),
+            list(['Eve', 'Arts', 88, 'Frank']),
+            list(['Frank', 'Arts', 85, 'Frank']),
+            list(['Grace', 'Arts', 84, 'Frank']),
+            list(['Hannah', 'Arts', 80, 'Frank'])
+          ]
+        )
       )
     ]
   )

@@ -148,7 +148,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     comparisonExpressionNodeProcessor_default(),
     logicalBinaryExpressionNodeProcessor_default(),
     notExpressionNodeProcessor_default(),
-    arithmeticExpressionNodeProcessor_h2(),
+    arithmeticExpressionNodeProcessor_default(),
     qualifiedNameReferenceNodeProcessor_default(),
     isNullPredicateNodeProcessor_default(),
     isNotNullPredicateNodeProcessor_default(),
@@ -195,16 +195,17 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   [
     sortItemProcessor_default(),
     selectProcessor_default(),
-    withQueryProcessor_default()
+    withQueryProcessor_default(),
+    windowFrameProcessor_default()
   ]
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2DialectDDLProcessors(): NodeProcessor<Node>[*]
 {
   [
-    createTableProcessor_default(),
-    dropTableProcessor_default(),
-    insertIntoTableProcessor_default()
+    createTestTableProcessor_default(),
+    dropTestTableProcessor_default(),
+    insertIntoTestTableProcessor_default()
   ]
 }
 
@@ -326,30 +327,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   ]
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::arithmeticExpressionNodeProcessor_h2(): NodeProcessor<ArithmeticExpression>[1]
-{
-  nodeProcessor(
-    ArithmeticExpression,
-    {sqlDialect, a, state, config |
-      let leftExpr = $sqlDialect->executeNodeProcessor($a.left, $a, $state, $config);
-      let rightExpr = $sqlDialect->executeNodeProcessor($a.right, $a, $state, $config);
-      let operator = if(
-        [
-          pair(|$a.type == ArithmeticType.ADD, | '+'),
-          pair(|$a.type == ArithmeticType.SUBTRACT, | '-'),
-          pair(|$a.type == ArithmeticType.MULTIPLY, | '*'),
-          pair(|$a.type == ArithmeticType.DIVIDE, | '/'),
-          pair(|$a.type == ArithmeticType.MODULUS, | '%'),
-          pair(|$a.type == ArithmeticType.POWER, | '^')
-        ],
-        | failWithMessage('Unhandled arithmetic operator type: ' + $a.type->toString())
-      );
-
-      $leftExpr + ' ' + $operator + ' ' + $rightExpr;
-    }
-  )
-}
-
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::functionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
 {
   newMap([
@@ -358,12 +335,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     // No Native function CBRT - Implemented it using POWER
     pair(Cbrt, customFunctionProcessor(processorForCbrt_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Ceil, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(Ceiling, customFunctionProcessor(processorForCeiling_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Ceiling, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Degrees, simpleFunctionProcessor('degrees')),
     pair(Exp, simpleFunctionProcessor('exp')),
     pair(Ln, simpleFunctionProcessor('ln')),
-    // Default base is 'e' not 10 as we expect
-    pair(Log, customFunctionProcessor(processorForLog_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Log, argTransformFunctionProcessor('log', {n:Node[*]| if($n->size() == 1, | literal(10)->concatenate($n), | $n)})),
     pair(Log10, simpleFunctionProcessor('log10')),
     pair(Sqrt, simpleFunctionProcessor('sqrt')),
     pair(Acos, simpleFunctionProcessor('acos')),
@@ -514,32 +490,16 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   );
 }
 
-
-
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForLog(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  if($processedArgs->size()==2, | generateFunctionCallWithArgs($sqlDialect, 'log', [$processedArgs->at(0), $processedArgs->at(1)], [], $state, $config), | generateFunctionCallWithArgs($sqlDialect, 'log', ['10', $processedArgs->at(0)], [], $state, $config));
-  
-}
-
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForCeil(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let ceilDecimal = simpleFunctionProcessor('ceil').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
-  $sqlDialect->generateCast($ceilDecimal, 'float', $state, $config);
+  $sqlDialect->generateCast($ceilDecimal, 'numeric', $state, $config);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForFloor(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let ceilDecimal = simpleFunctionProcessor('floor').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
-  $sqlDialect->generateCast($ceilDecimal, 'float', $state, $config);
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForCeiling(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  let ceilingDecimal = simpleFunctionProcessor('ceiling').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
-  $sqlDialect->generateCast($ceilingDecimal, 'float', $state, $config);
+  $sqlDialect->generateCast($ceilDecimal, 'numeric', $state, $config);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForTrim(directionFunc:String[1], f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]

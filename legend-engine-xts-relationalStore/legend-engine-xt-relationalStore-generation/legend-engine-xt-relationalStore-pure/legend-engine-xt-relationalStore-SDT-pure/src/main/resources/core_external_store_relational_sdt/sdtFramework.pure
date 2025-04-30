@@ -31,7 +31,7 @@ native function meta::external::store::relational::sdt::framework::runSqlDialect
 function meta::external::store::relational::sdt::framework::runSqlDialectTest(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*], debug: DebugContext[1]): Boolean[1]
 {
   let testQuery = $sdt->generateTestSqlForSdtTestCase($dbType, $extensions);
-  let setupSqls = $sdt->generateSetupSqlsForSdtTestCase($dbType, $extensions);
+  let setupSqls = $sdt->generateInitSqlsForSdtTestCase($dbType, $extensions)->concatenate($sdt->generateSetupSqlsForSdtTestCase($dbType, $extensions));
   let teardownSqls = $sdt->generateTeardownSqlsForSdtTestCase($dbType, $extensions);
   $setupSqls->concatenate($testQuery)->concatenate($teardownSqls)->map(s | print(if(!$debug.debug, |'', | $debug.space + 'Running query: ' + $s + '\n')));
   let result = $dbType->runSqlDialectTestQuery($testQuery, $setupSqls, $teardownSqls)->testResultFromResultSet();
@@ -76,6 +76,11 @@ function meta::external::store::relational::sdt::framework::collectSDTTestsInPac
 function meta::external::store::relational::sdt::framework::getSqlDialectTests(func: ConcreteFunctionDefinition<{->SqlDialectTest[*]}>[1]): SqlDialectTest[*]
 {
   $func->eval()
+}
+
+function <<access.private>> meta::external::store::relational::sdt::framework::generateInitSqlsForSdtTestCase(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): String[*]
+{
+  $dbType->fetchSqlDialectForDbType($extensions).initSqlStatementsForTests;
 }
 
 function <<access.private>> meta::external::store::relational::sdt::framework::generateSetupSqlsForSdtTestCase(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): String[*]
@@ -168,7 +173,7 @@ function meta::external::store::relational::sdt::framework::testConfigForSqlFunc
                                                 ^InsertIntoTestTable(tableName = $d.tableName, columns = $d.columns.first, values = $d.data)
                                               ]
                                           ),
-    teardownStatements = $test.setupData->map(d| ^DropTestTable(tableName = $d.tableName)),
+    teardownStatements = $test.setupData->map(d| ^DropTestTable(tableName = $d.tableName, isTempTable = $d.useTempTable)),
     testQuery = $query,
     expectedResult = $expectedResult
   );

@@ -60,7 +60,8 @@
     {
       "name": "snowflake",
       "modules": [
-        "legend-engine-xt-relationalStore-snowflake-PCT"
+        "legend-engine-xt-relationalStore-snowflake-PCT",
+        "legend-engine-xt-relationalStore-snowflake-sqlDialectTranslation-pure"
       ]
     },
     {

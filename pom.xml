@@ -1584,6 +1584,11 @@
                 <artifactId>legend-engine-xt-relationalStore-snowflake-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-snowflake-sqlDialectTranslation-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>

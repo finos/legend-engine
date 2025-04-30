@@ -35,7 +35,7 @@ function meta::external::store::relational::sqlDialectTranslation::sqlDialectTra
   'SqlDialectTranslation'
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::fetchSqlDialectForDbType(dbType: String[1], extensions: Extension[*]): SqlDialect[1]
+function meta::external::store::relational::sqlDialectTranslation::fetchSqlDialectForDbType(dbType: String[1], extensions: Extension[*]): SqlDialect[1]
 {
   let sqlDialects = $extensions.moduleExtensions->filter(m | $m.module == sqlDialectTranslationModuleExtensionName())->cast(@SqlDialectTranslationModuleExtension).extraSqlDialects;
   let filtered = $sqlDialects->filter(s | $s.dbType == $dbType);

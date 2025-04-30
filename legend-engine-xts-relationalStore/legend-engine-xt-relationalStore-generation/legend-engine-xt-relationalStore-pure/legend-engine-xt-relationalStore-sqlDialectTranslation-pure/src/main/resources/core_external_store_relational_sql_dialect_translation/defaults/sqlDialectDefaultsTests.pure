@@ -489,6 +489,13 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
       ),
       $state, $config)
   );
+  assertEquals('RANGE UNBOUNDED PRECEDING', $dialect->executeNodeProcessor(^WindowFrame(mode = WindowFrameMode.RANGE, start = ^FrameBound(type = FrameBoundType.UNBOUNDED_PRECEDING)), $state, $config));
+  assertEquals('ROWS UNBOUNDED PRECEDING', $dialect->executeNodeProcessor(^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.UNBOUNDED_PRECEDING)), $state, $config));
+  assertEquals('ROWS 2 PRECEDING', $dialect->executeNodeProcessor(^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.PRECEDING, value = literal(2))), $state, $config));
+  assertEquals('ROWS CURRENT ROW', $dialect->executeNodeProcessor(^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.CURRENT_ROW)), $state, $config));
+  assertEquals('ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW', $dialect->executeNodeProcessor(^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.UNBOUNDED_PRECEDING), end = ^FrameBound(type = FrameBoundType.CURRENT_ROW)), $state, $config));
+  assertEquals('ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING', $dialect->executeNodeProcessor(^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.CURRENT_ROW), end = ^FrameBound(type = FrameBoundType.UNBOUNDED_FOLLOWING)), $state, $config));
+  assertEquals('ROWS BETWEEN CURRENT ROW AND 2 FOLLOWING', $dialect->executeNodeProcessor(^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.CURRENT_ROW), end = ^FrameBound(type = FrameBoundType.FOLLOWING, value = literal(2))), $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testTableProcessing(): Boolean[1]
@@ -1314,8 +1321,8 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let config = testSqlDialectTranslationConfig(false);
 
   assertEquals('DROP TABLE IF EXISTS testTable', $dialect->executeNodeProcessor(^DropTestTable(tableName = 'testTable'), $state, $config));
-  assertEquals('DROP TEMPORARY TABLE IF EXISTS testTable', $dialect->executeNodeProcessor(^DropTestTable(tableName = 'testTable', isTempTable = true), $state, $config));
+  assertEquals('DROP TABLE IF EXISTS testTable', $dialect->executeNodeProcessor(^DropTestTable(tableName = 'testTable', isTempTable = true), $state, $config));
 
   let configWithPretty = testSqlDialectTranslationConfig(true);
-  assertEquals('DROP TEMPORARY TABLE IF EXISTS testTable', $dialect->executeNodeProcessor(^DropTestTable(tableName = 'testTable', isTempTable = true), $state, $configWithPretty));
+  assertEquals('DROP TABLE IF EXISTS testTable', $dialect->executeNodeProcessor(^DropTestTable(tableName = 'testTable', isTempTable = true), $state, $configWithPretty));
 }
