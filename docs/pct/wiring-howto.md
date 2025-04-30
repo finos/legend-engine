@@ -119,5 +119,17 @@ the platform's implementation of the calculation. [Note the lack of SQL wiring i
 See [Platform Concepts](concepts-glossary.md) for details about the platform/PCT's preference
 for functional correctness, and details about *routing*.
 
+## Testing your Wiring to Target Runtimes with Adapters
+You can use *Adapters* to test your wiring. Ctrl+Shift+F for "testAdapterFor" to find all available adapters. You can use these adapters
+to execute your PCT Tests in the respective target runtime. 
+
+##### Example
+```Java
+let duckdbadapter = meta::relational::tests::pct::testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_;
+  
+// runs the PCT "testTimeBucketSeconds" against DuckDb (eval on DuckDb)
+meta::pure::functions::date::tests::testTimeBucketSeconds($duckdbadapter);
+```
+
 ## Next Step
 Learn how to run PCT Test Suites, and register expectedFailures, for targets where we have chosen not to implement yet, via the [Expected Failures How-To](expected-failures-howto.md).

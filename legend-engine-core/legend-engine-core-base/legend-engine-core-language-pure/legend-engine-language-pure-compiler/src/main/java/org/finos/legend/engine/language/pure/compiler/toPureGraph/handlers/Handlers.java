@@ -1680,7 +1680,9 @@ public class Handlers
         register("meta::pure::functions::math::cosh_Number_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::cot_Number_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::sin_Number_1__Float_1_", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::sinh_Number_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::tan_Number_1__Float_1_", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::tanh_Number_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::asin_Number_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::acos_Number_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::atan_Number_1__Float_1_", true, ps -> res("Float", "one"));
@@ -2885,6 +2887,7 @@ public class Handlers
         map.put("meta::pure::functions::math::round_Number_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::sign_Number_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::sin_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::sinh_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::sqrt_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::stdDevPopulation_Number_$1_MANY$__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && matchOneMany(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::stdDevPopulation_Number_MANY__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
@@ -2894,6 +2897,7 @@ public class Handlers
         map.put("meta::pure::functions::math::sum_Integer_MANY__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::sum_Number_MANY__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::tan_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::tanh_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::times_Decimal_MANY__Decimal_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::times_Float_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Float").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::times_Integer_MANY__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()));

@@ -45,4 +45,24 @@ public class StandardFunctionsHelper
     {
         return Math.cosh(input);
     }
+
+    public static double sinh(Number input)
+    {
+        return sinh(input.doubleValue());
+    }
+
+    public static double sinh(double input)
+    {
+        return Math.sinh(input);
+    }
+
+    public static double tanh(Number input)
+    {
+        return tanh(input.doubleValue());
+    }
+
+    public static double tanh(double input)
+    {
+        return Math.tanh(input);
+    }
 }

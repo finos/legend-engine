@@ -21,6 +21,8 @@ import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.date.operation.TimeBucket;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.CosH;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.SinH;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.TanH;
 
 import java.util.List;
 
@@ -40,7 +42,9 @@ public class StandardFunctionsExtensionCompiled extends AbstractCompiledExtensio
             new TimeBucket(),
 
             // Math
-            new CosH()
+            new CosH(),
+            new SinH(),
+            new TanH()
         );
     }
 

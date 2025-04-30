@@ -97,7 +97,15 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
 
             // CosH
             one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_", "\"meta::pure::functions::math::cosh_Number_1__Float_1_ is not supported yet!\"")
+            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_", "\"meta::pure::functions::math::cosh_Number_1__Float_1_ is not supported yet!\""),
+
+            // SinH
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_", "\"meta::pure::functions::math::sinh_Number_1__Float_1_ is not supported yet!\""),
+
+            // TanH
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "\"meta::pure::functions::math::tanh_Number_1__Float_1_ is not supported yet!\"")
         );
 
     public static Test suite()
