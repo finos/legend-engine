@@ -24,7 +24,7 @@ Class meta::external::store::relational::sqlDialectTranslation::tests::utils::Te
   tableName: String[1];
   columns: Pair<String, String>[1..*];
   data: List<meta::external::query::sql::metamodel::Literal>[1..*];
-  useTempTable: Boolean[1] = false;
+  useTempTable: Boolean[1] = true;
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::tests::utils::TestExpectedResult

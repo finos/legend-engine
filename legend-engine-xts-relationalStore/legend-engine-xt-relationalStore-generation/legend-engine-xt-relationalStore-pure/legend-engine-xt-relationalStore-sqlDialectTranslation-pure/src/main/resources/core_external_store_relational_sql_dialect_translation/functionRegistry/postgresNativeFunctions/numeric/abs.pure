@@ -47,8 +47,8 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         101
       ),
       sqlFunctionTest(
-        simpleFunctionCall('abs', literal(-101.0)),
-        101.0
+        simpleFunctionCall('abs', literal(-101.1)),
+        101.1
       ),
       sqlFunctionTest(
         simpleFunctionCall('abs', literal(0)),

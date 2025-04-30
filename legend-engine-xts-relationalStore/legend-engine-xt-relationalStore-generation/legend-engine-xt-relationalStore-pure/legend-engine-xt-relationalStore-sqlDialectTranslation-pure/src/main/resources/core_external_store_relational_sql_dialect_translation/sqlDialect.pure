@@ -29,6 +29,9 @@ Class meta::external::store::relational::sqlDialectTranslation::SqlDialect
   expressionPrecedenceComparator: ExpressionPrecedenceComparator[1];
   keywords: String[*];
   functionProcessorMap: Map<Class<SqlFunction>, FunctionProcessor>[0..1];
+
+  // For testing
+  initSqlStatementsForTests: String[*];
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::NodeProcessor<T> // T extends Node

@@ -33,6 +33,7 @@
         <module>legend-engine-xt-relationalStore-snowflake-protocol</module>
         <module>legend-engine-xt-relationalStore-snowflake-PCT</module>
         <module>legend-engine-xt-relationalStore-snowflake-pure</module>
+        <module>legend-engine-xt-relationalStore-snowflake-sqlDialectTranslation-pure</module>
     </modules>
 
 </project>

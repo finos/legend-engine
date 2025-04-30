@@ -177,16 +177,17 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   [
     sortItemProcessor_default(),
     selectProcessor_default(),
-    withQueryProcessor_default()
+    withQueryProcessor_default(),
+    windowFrameProcessor_default()
   ]
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectDDLProcessors(): NodeProcessor<Node>[*]
 {
   [
-    createTableProcessor_default(),
-    dropTableProcessor_default(),
-    insertIntoTableProcessor_default()
+    createTestTableProcessor_default(),
+    dropTestTableProcessor_default(),
+    insertIntoTestTableProcessor_default()
   ]
 }
 

@@ -1,0 +1,540 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::snowflake::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
+import meta::external::store::relational::sqlDialectTranslation::tests::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::query::sql::metamodel::*;
+import meta::pure::extension::*;
+
+function meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeSqlDialect(): SqlDialect[1]
+{
+  ^SqlDialect
+  (
+    dbType = 'Snowflake',
+    quoteConfig = snowflakeQuoteConfiguration(),
+    nodeProcessors = snowflakeDialectNodeProcessors(),
+    identifierProcessor = snowflakeIdentifierProcessor(),
+    expressionPrecedenceComparator = snowflakeExpressionPrecedenceComparator(),
+    keywords = snowflakeKeywords(),
+    functionProcessorMap = snowflakeFunctionProcessorMap(),
+
+    // For testing
+    initSqlStatementsForTests = [
+      'USE SCHEMA DEMO_DB.PUBLIC'
+    ]
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeSqlDialectExtension(): Extension[1]
+{
+  ^Extension
+  (
+    type = 'SnowflakeSqlDialectExtension',
+    moduleExtensions = [
+      ^SqlDialectTranslationModuleExtension
+      (
+        module = sqlDialectTranslationModuleExtensionName(),
+        extraSqlDialects = snowflakeSqlDialect()
+      )
+    ]
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeFunctionTestsExpectedErrors(): Map<String, String>[1]
+{
+  [
+    pair(
+      // https://docs.snowflake.com/en/sql-reference/functions-date-time#supported-date-and-time-parts
+      'FuncTests - date_part(6/6)',
+      'Snowflake doesn\'t support millisecond extraction in date_part'
+    ),
+    pair(
+      // Snowflake returns integer when scale is 0 (which is not standard)
+      'FuncTests - round(2/3)',
+      'Expected - {"columnNames":["result"],"rows":[{"values":[3.0]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":[3]}]}'
+    ),
+    pair(
+      // Snowflake returns integer when scale is 0 (which is not standard)
+      'FuncTests - round(3/3)',
+      'Expected - {"columnNames":["result"],"rows":[{"values":[2.0]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":[2]}]}'
+    ),
+    pair(
+      // Snowflake always does floating point division (unlike other dbs)
+      'NumberArithmetic - divide integer',
+      'Expected - {"columnNames":["result"],"rows":[{"values":[0]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":[0.5]}]}'
+    ),
+    pair(
+      // Snowflake returns empty string for no rows (which is not standard)
+      'FuncTests - string_agg(0/0)',
+      'Expected - {"columnNames":["age","result"],"rows":[{"values":[18,"Anthony,John"]},{"values":[20,"Fabrice"]},{"values":[{"key":[]},"Oliver"]},{"values":[30,{"key":[]}]}]}\n' +
+      'Actual - {"columnNames":["age","result"],"rows":[{"values":[30,""]},{"values":[18,"Anthony,John"]},{"values":[20,"Fabrice"]},{"values":[{"key":[]},"Oliver"]}]}'
+    ),
+    pair(
+      // Snowflake differs from ANSI standard for default frame (https://docs.snowflake.com/en/sql-reference/functions-window-syntax#usage-notes-for-window-frames)
+      // Also, it doesn't support the default frame (RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+      'FuncTests - nth_value(0/1)',
+      'Expected - {"columnNames":["student","dept","score","result"],"rows":[{"values":["Bob","Science",88,"Bob"]},{"values":["Charlie","Science",85,"Bob"]},{"values":["David","Science",80,"Bob"]},{"values":["Frank","Arts",85,"Frank"]},{"values":["Grace","Arts",84,"Frank"]},{"values":["Hannah","Arts",80,"Frank"]},{"values":["Alice","Science",90,{"key":[]}]},{"values":["Eve","Arts",88,{"key":[]}]}]}\n' +
+      'Actual - {"columnNames":["student","dept","score","result"],"rows":[{"values":["Alice","Science",90,"Bob"]},{"values":["Bob","Science",88,"Bob"]},{"values":["Charlie","Science",85,"Bob"]},{"values":["David","Science",80,"Bob"]},{"values":["Eve","Arts",88,"Frank"]},{"values":["Frank","Arts",85,"Frank"]},{"values":["Grace","Arts",84,"Frank"]},{"values":["Hannah","Arts",80,"Frank"]}]}'
+    ),
+    pair(
+      // Snowflake differs from ANSI standard for default frame (https://docs.snowflake.com/en/sql-reference/functions-window-syntax#usage-notes-for-window-frames)
+      // Also, it doesn't support the default frame (RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+      'FuncTests - last_value(0/1)',
+      'Expected - {"columnNames":["student","dept","score","result"],"rows":[{"values":["Alice","Science",90,"Alice"]},{"values":["Bob","Science",88,"Bob"]},{"values":["Charlie","Science",85,"Charlie"]},{"values":["David","Science",80,"David"]},{"values":["Eve","Arts",88,"Eve"]},{"values":["Frank","Arts",85,"Frank"]},{"values":["Grace","Arts",84,"Grace"]},{"values":["Hannah","Arts",80,"Hannah"]}]}\n' +
+      'Actual - {"columnNames":["student","dept","score","result"],"rows":[{"values":["Alice","Science",90,"David"]},{"values":["Bob","Science",88,"David"]},{"values":["Charlie","Science",85,"David"]},{"values":["David","Science",80,"David"]},{"values":["Eve","Arts",88,"Hannah"]},{"values":["Frank","Arts",85,"Hannah"]},{"values":["Grace","Arts",84,"Hannah"]},{"values":["Hannah","Arts",80,"Hannah"]}]}'
+    )
+  ]->newMap()->cast(@Map<String, String>)
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeQuoteConfiguration(): QuoteConfiguration[1]
+{
+  ^QuoteConfiguration
+  (
+    start = '"',
+    end = '"',
+    escape = '""'
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeDialectNodeProcessors(): Map<Class<Node>, NodeProcessor<Node>>[1]
+{
+  newMap(
+    snowflakeDialectStatementProcessors()
+    ->concatenate(
+      snowflakeDialectRelationProcessors()
+    )
+    ->concatenate(
+      snowflakeDialectExpressionProcessors()
+    )
+    ->concatenate(
+      snowflakeDialectLiteralProcessors()
+    )
+    ->concatenate(
+      snowflakeDialectSelectItemProcessors()
+    )
+    ->concatenate(
+      snowflakeDialectOtherNodeProcessors()
+    )
+    ->concatenate(
+      snowflakeDialectDDLProcessors()
+    )
+    ->map(n | pair($n.nodeType, $n))
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeDialectStatementProcessors(): NodeProcessor<Statement>[*]
+{
+  [
+    queryProcessor_default(),
+    windowProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeDialectRelationProcessors(): NodeProcessor<Relation>[*]
+{
+  [
+    tableProcessor_default(),
+    aliasedRelationProcessor_default(),
+    joinProcessor_default(),
+    querySpecificationProcessor_default(),
+    unionProcessor_default(),
+    tableSubqueryProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeDialectExpressionProcessors(): NodeProcessor<meta::external::query::sql::metamodel::Expression>[*]
+{
+  [
+    comparisonExpressionNodeProcessor_default(),
+    logicalBinaryExpressionNodeProcessor_default(),
+    notExpressionNodeProcessor_default(),
+    arithmeticExpressionNodeProcessor_snowflake(),
+    qualifiedNameReferenceNodeProcessor_default(),
+    isNullPredicateNodeProcessor_default(),
+    isNotNullPredicateNodeProcessor_default(),
+    negativeNodeProcessor_default(),
+    currentTimeNodeProcessor_default(),
+    whenClauseNodeProcessor_default(),
+    searchedCaseExpressionNodeProcessor_default(),
+    columnTypeProcessor_default(),
+    castProcessor_default(),
+    inListExpressionProcessor_default(),
+    inPredicateProcessor_default(),
+    extractProcessor_default(),
+    betweenPredicateProcessor_default(),
+    functionCallProcessor_default(),
+    subQueryExpressionProcessor_default(),
+    trimProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeDialectLiteralProcessors(): NodeProcessor<Literal>[*]
+{
+  [
+    integerLiteralNodeProcessor_default(),
+    stringLiteralNodeProcessor_default(),
+    booleanLiteralNodeProcessor_default(),
+    longLiteralNodeProcessor_default(),
+    doubleLiteralNodeProcessor_default(),
+    dateLiteralNodeProcessor_default(),
+    timestampLiteralNodeProcessor_default(),
+    nullLiteralNodeProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeDialectSelectItemProcessors(): NodeProcessor<SelectItem>[*]
+{
+  [
+    allColumnsNodeProcessor_default(),
+    singleColumnNodeProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeDialectOtherNodeProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    sortItemProcessor_default(),
+    selectProcessor_default(),
+    withQueryProcessor_default(),
+    windowFrameProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeDialectDDLProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    createTestTableProcessor_default(),
+    dropTestTableProcessor_default(),
+    insertIntoTestTableProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeIdentifierProcessor(): IdentifierProcessor[1]
+{
+  identifierProcessor_default()
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeExpressionPrecedenceComparator(): ExpressionPrecedenceComparator[1]
+{
+  ^ExpressionPrecedenceComparator(
+    findOperatorType = findOperatorType_default_Expression_1__String_1_,
+    operatorPrecedence = operatorPrecedence_default()
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeKeywords(): String[*]
+{
+  // Based on https://docs.snowflake.com/en/sql-reference/reserved-keywords
+  [ 
+    'account',
+    'all',
+    'alter',
+    'and',
+    'any',
+    'as',
+    'between',
+    'by',
+    'case',
+    'cast',
+    'check',
+    'column',
+    'connect',
+    'connection',
+    'constraint',
+    'create',
+    'cross',
+    'current',
+    'current_date',
+    'current_time',
+    'current_timestamp',
+    'current_user',
+    'database',
+    'delete',
+    'distinct',
+    'drop',
+    'else',
+    'exists',
+    'false',
+    'following',
+    'for',
+    'from',
+    'full',
+    'grant',
+    'group',
+    'gscluster',
+    'having',
+    'ilike',
+    'in',
+    'increment',
+    'inner',
+    'insert',
+    'intersect',
+    'into',
+    'is',
+    'issue',
+    'join',
+    'lateral',
+    'left',
+    'like',
+    'localtime',
+    'localtimestamp',
+    'minus',
+    'natural',
+    'not',
+    'null',
+    'of',
+    'on',
+    'or',
+    'order',
+    'organization',
+    'qualify',
+    'regexp',
+    'revoke',
+    'right',
+    'rlike',
+    'row',
+    'rows',
+    'sample',
+    'schema',
+    'select',
+    'set',
+    'some',
+    'start',
+    'table',
+    'tablesample',
+    'then',
+    'to',
+    'trigger',
+    'true',
+    'try_cast',
+    'union',
+    'unique',
+    'update',
+    'using',
+    'values',
+    'view',
+    'when',
+    'whenever',
+    'where',
+    'window',
+    'with'
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::arithmeticExpressionNodeProcessor_snowflake(): NodeProcessor<ArithmeticExpression>[1]
+{
+  nodeProcessor(
+    ArithmeticExpression,
+    {sqlDialect, a, state, config |
+      let leftExpr = $sqlDialect->executeNodeProcessor($a.left, $a, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($a.right, $a, $state, $config);
+      if ($a.type == ArithmeticType.POWER,
+          | $sqlDialect->generateFunctionCallWithArgs('power', [$leftExpr, $rightExpr], [], $state, $config),
+          | let operator = if(
+              [
+                pair(|$a.type == ArithmeticType.ADD, | '+'),
+                pair(|$a.type == ArithmeticType.SUBTRACT, | '-'),
+                pair(|$a.type == ArithmeticType.MULTIPLY, | '*'),
+                pair(|$a.type == ArithmeticType.DIVIDE, | '/'),
+                pair(|$a.type == ArithmeticType.MODULUS, | '%')
+              ],
+              | failWithMessage('Unhandled arithmetic operator type: ' + $a.type->toString())
+            );
+            $leftExpr + ' ' + $operator + ' ' + $rightExpr;
+      );
+    }
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeFunctionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
+{
+  newMap([
+    // Numeric
+    pair(Abs, simpleFunctionProcessor('abs')),
+    pair(Acos, simpleFunctionProcessor('acos')),
+    pair(Average, simpleFunctionProcessor('avg')),
+    pair(Asin, simpleFunctionProcessor('asin')),
+    pair(Atan, simpleFunctionProcessor('atan')),
+    pair(Atan2, simpleFunctionProcessor('atan2')),
+    pair(Cbrt, simpleFunctionProcessor('cbrt')),
+    pair(Ceil, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Ceiling, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Cos, simpleFunctionProcessor('cos')),
+    pair(Cot, simpleFunctionProcessor('cot')),
+    pair(Count, simpleFunctionProcessor('count')),
+    pair(CumulativeDistribution, simpleFunctionProcessor('cume_dist')),
+    pair(Degrees, simpleFunctionProcessor('degrees')),
+    pair(DenseRank, simpleFunctionProcessor('dense_rank')),
+    pair(Exp, simpleFunctionProcessor('exp')),
+    pair(Floor, customFunctionProcessor(processorForFloor_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Ln, simpleFunctionProcessor('ln')),
+    pair(Log, argTransformFunctionProcessor('log', {n:Node[*]| if($n->size() == 1, | literal(10)->concatenate($n), | $n)})),
+    pair(Log10, argTransformFunctionProcessor('log', {n:Node[*]| literal(10)->concatenate($n)})),
+    pair(Mod, simpleFunctionProcessor('mod')),
+    pair(Ntile, simpleFunctionProcessor('ntile')),
+    pair(PercentRank, simpleFunctionProcessor('percent_rank')),
+    pair(Power, simpleFunctionProcessor('power')),
+    pair(Rank, simpleFunctionProcessor('rank')),
+    pair(Round, simpleFunctionProcessor('round')),
+    pair(RowNumber, simpleFunctionProcessor('row_number')),
+    pair(Sin, simpleFunctionProcessor('sin')),
+    pair(Sign, simpleFunctionProcessor('sign')),
+    pair(Sqrt, simpleFunctionProcessor('sqrt')),
+    pair(Sum, simpleFunctionProcessor('sum')),
+    pair(Tan, simpleFunctionProcessor('tan')),
+    pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
+    pair(VarianceSample, simpleFunctionProcessor('var_samp')),
+
+    // String
+    pair(Ascii, simpleFunctionProcessor('ascii')),
+    pair(CharLength, simpleFunctionProcessor('length')),
+    pair(Chr, simpleFunctionProcessor('chr')),
+    pair(Concat, customFunctionProcessor(processorForConcat_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Left, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]  | processorForDirectionalIndex('left', $f, $sqlDialect, $state, $config)})), // Custom handling to handle negative index
+    pair(Lower, simpleFunctionProcessor('lower')),
+    pair(Lpad, simpleFunctionProcessor('lpad')),
+    pair(Ltrim, simpleFunctionProcessor('ltrim')),
+    pair(Md5, simpleFunctionProcessor('md5')),
+    pair(Repeat, simpleFunctionProcessor('repeat')),
+    pair(Replace, simpleFunctionProcessor('replace')),
+    pair(Reverse, simpleFunctionProcessor('reverse')),
+    pair(Right, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1] | processorForDirectionalIndex('right', $f, $sqlDialect, $state, $config)})), // Custom handling to handle negative index
+    pair(Rpad, simpleFunctionProcessor('rpad')),
+    pair(Rtrim, simpleFunctionProcessor('rtrim')),
+    pair(Sha1, simpleFunctionProcessor('sha1')),
+    pair(Sha256, argTransformFunctionProcessor('sha2', {n:Node[*] | $n->concatenate(literal(256))})),
+    pair(SplitPart, simpleFunctionProcessor('split_part')),
+    pair(StringAgg, simpleFunctionProcessor('listagg')),
+    pair(StrPos, argTransformFunctionProcessor('position', {n:Node[*]| $n->reverse()})),
+    pair(Substring, simpleFunctionProcessor('substring')),
+    pair(Upper, simpleFunctionProcessor('upper')),
+
+    // Boolean
+    pair(BoolAnd, simpleFunctionProcessor('booland_agg')),
+    pair(BoolOr, simpleFunctionProcessor('boolor_agg')),
+    pair(RegexpLike, customFunctionProcessor(processorForRegExpLikeSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+
+    // Temporal
+    pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Now, simpleFunctionProcessor('current_timestamp')),
+    pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+
+    // Miscellaneous
+    pair(Coalesce, simpleFunctionProcessor('coalesce')),
+    pair(FirstValue, simpleFunctionProcessor('first_value')),
+    pair(Lag, simpleFunctionProcessor('lag')),
+    pair(LastValue, simpleFunctionProcessor('last_value')),
+    pair(Lead, simpleFunctionProcessor('lead')),
+    pair(Min, simpleFunctionProcessor('min')),
+    pair(Max, simpleFunctionProcessor('max')),
+    pair(NthValue, simpleFunctionProcessor('nth_value'))
+  ])
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForCeil(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let ceilCall = simpleFunctionProcessor('ceil').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($ceilCall, 'NUMERIC(37,1)', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForFloor(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let floorCall = simpleFunctionProcessor('floor').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($floorCall, 'NUMERIC(37,1)', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForConcat(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config)->map({arg |
+    'coalesce(to_char(' + $arg + '), \'\')'
+  });
+  $sqlDialect->generateFunctionCallWithArgs('concat', $processedArgs, [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForDirectionalIndex(directionFunc:String[1], f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let index = $processedArgs->at(1);
+  let modifiedIndex = if($index->parseInteger() < 0, | $sqlDialect->generateFunctionCallWithArgs('length', [$processedArgs->at(0)], [], $state, $config) + $index, | $index);
+  $sqlDialect->generateFunctionCallWithArgs($directionFunc, [$processedArgs->at(0), $modifiedIndex], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForRegExpLikeSnowflake(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let patternParam = '\'^' + $processedArgs->at(1)->removeQuotes() + '$\'';
+  $sqlDialect->generateFunctionCallWithArgs('regexp_like', [$processedArgs->at(0), $patternParam], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForDatePart(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  if($processedArgs->at(0)->toLower()->removeQuotes()->in(['millisecond', 'milliseconds']),
+     | // Snowflake doesn't support millisecond in date_part (https://docs.snowflake.com/en/sql-reference/functions-date-time#label-supported-date-time-parts)
+       fail('Snowflake doesn\'t support millisecond extraction in date_part'); '';,
+     | $sqlDialect->generateFunctionCallWithArgs('date_part', $processedArgs, [], $state, $config)
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForDateTrunc(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let dateTruncCall = simpleFunctionProcessor('date_trunc').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($dateTruncCall, 'TIMESTAMP', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForToDate(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('to_date', [$processedArgs->at(0), $processedArgs->at(1)->dateFormatSpecifierForSnowflake()], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForToTimestamp(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('to_timestamp', [$processedArgs->at(0)]->concatenate(if($processedArgs->size() == 1, | [] , | $processedArgs->at(1)->dateFormatSpecifierForSnowflake())), [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::dateFormatSpecifierForSnowflake(f:String[1]): String[1]
+{
+  let formatSubs = [
+    pair('Month', 'MON'),
+    pair('Mon', 'MON'),
+    pair('MS', 'FF3'),
+    pair('US', 'FF6')
+    // TODO: Handle more format specifiers
+  ];
+
+  $formatSubs->fold({i, a|$a->replace($i.first, $i.second)}, $f);
+}
+
+// --------------------------------------------------------------------------
