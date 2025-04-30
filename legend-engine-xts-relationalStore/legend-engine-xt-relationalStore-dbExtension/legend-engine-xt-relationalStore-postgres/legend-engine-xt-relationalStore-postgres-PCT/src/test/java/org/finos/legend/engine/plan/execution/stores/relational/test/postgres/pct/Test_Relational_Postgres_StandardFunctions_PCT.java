@@ -80,6 +80,14 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function cosh(numeric) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
             one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function cosh(integer) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
 
+            // SinH
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function sinh(integer) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function sinh(numeric) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
+
+            // TanH
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function tanh(integer) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function tanh(numeric) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
+
             // And
             one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
 

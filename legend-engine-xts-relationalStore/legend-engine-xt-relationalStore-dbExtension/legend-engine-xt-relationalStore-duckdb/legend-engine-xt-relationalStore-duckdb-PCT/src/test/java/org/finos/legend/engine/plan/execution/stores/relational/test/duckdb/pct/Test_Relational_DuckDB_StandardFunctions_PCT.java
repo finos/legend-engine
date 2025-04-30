@@ -68,6 +68,14 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name cosh does not exist!\nDid you mean \"cos\"?\nLINE 1: select cosh(0)\n               ^"),
             one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name cosh does not exist!\nDid you mean \"cos\"?\nLINE 1: select cosh(-3.14)\n               ^"),
 
+            // SinH
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name sinh does not exist!\nDid you mean \"sin\"?\nLINE 1: select sinh(0)\n               ^"),
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name sinh does not exist!\nDid you mean \"sin\"?\nLINE 1: select sinh(-3.14)\n               ^"),
+
+            // TanH
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name tanh does not exist!\nDid you mean \"tan\"?\nLINE 1: select tanh(0)\n               ^"),
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name tanh does not exist!\nDid you mean \"tan\"?\nLINE 1: select tanh(-3.14)\n               ^"),
+
             // And
             one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
 

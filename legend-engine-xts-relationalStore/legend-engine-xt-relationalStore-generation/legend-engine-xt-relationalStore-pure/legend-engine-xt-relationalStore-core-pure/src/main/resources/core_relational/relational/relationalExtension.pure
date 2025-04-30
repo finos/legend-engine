@@ -1385,6 +1385,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'sinh',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
+            )
+         ])
+      ),
+
+      pair(
          'size',
          list([
             pair(
@@ -1512,6 +1522,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
 
       pair(
          'tan',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
+            )
+         ])
+      ),
+
+      pair(
+         'tanh',
          list([
             pair(
                {params: RelationalOperationElement[*] | true},
