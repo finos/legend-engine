@@ -61,13 +61,12 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
 
             // Median
-            one("meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_", "\"copy_T_1__String_1__KeyExpression_MANY__T_1_ is prohibited!\""),
             one("meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Aggregate_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
             one("meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Window_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
-            one("meta::pure::functions::math::tests::median::testMedian_Integers_Function_1__Boolean_1_", "\"copy_T_1__String_1__KeyExpression_MANY__T_1_ is prohibited!\""),
+            one("meta::pure::functions::math::tests::median::testMedian_Integers_Function_1__Boolean_1_", "Failed in node: root"),
             one("meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Aggregate_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
             one("meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Window_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
-            one("meta::pure::functions::math::tests::median::testMedian_Numbers_Function_1__Boolean_1_", "\"copy_T_1__String_1__KeyExpression_MANY__T_1_ is prohibited!\""),
+            one("meta::pure::functions::math::tests::median::testMedian_Numbers_Function_1__Boolean_1_", "Failed in node: root"),
             one("meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
             one("meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Window_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
 
