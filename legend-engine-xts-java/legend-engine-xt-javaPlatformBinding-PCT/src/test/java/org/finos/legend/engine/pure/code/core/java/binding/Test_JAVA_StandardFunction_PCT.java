@@ -105,7 +105,19 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
 
             // TanH
             one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "\"meta::pure::functions::math::tanh_Number_1__Float_1_ is not supported yet!\"")
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "\"meta::pure::functions::math::tanh_Number_1__Float_1_ is not supported yet!\""),
+
+            // Greatest
+            one("meta::pure::functions::collection::tests::greatest::testGreatest_Date_Function_1__Boolean_1_", "\"Cast exception: JSONNull cannot be cast to JSONObject\""),
+            one("meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_", "\"Cast exception: JSONNull cannot be cast to JSONObject\""),
+            one("meta::pure::functions::collection::tests::greatest::testGreatest_Number_Function_1__Boolean_1_", "\"Cast exception: JSONNull cannot be cast to JSONObject\""),
+            one("meta::pure::functions::collection::tests::greatest::testGreatest_StrictDate_Function_1__Boolean_1_", "\"Cast exception: JSONNull cannot be cast to JSONObject\""),
+
+            // Least
+            one("meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_", "\"Cast exception: JSONNull cannot be cast to JSONObject\""),
+            one("meta::pure::functions::collection::tests::least::testLeast_Date_Function_1__Boolean_1_", "\"Cast exception: JSONNull cannot be cast to JSONObject\""),
+            one("meta::pure::functions::collection::tests::least::testLeast_Number_Function_1__Boolean_1_", "\"Cast exception: JSONNull cannot be cast to JSONObject\""),
+            one("meta::pure::functions::collection::tests::least::testLeast_StrictDate_Function_1__Boolean_1_", "\"Cast exception: JSONNull cannot be cast to JSONObject\"")
         );
 
     public static Test suite()
