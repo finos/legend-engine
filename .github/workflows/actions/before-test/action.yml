@@ -35,7 +35,14 @@ runs:
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
-        fail-on-cache-miss: true
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
+    - name: Download deps and plugins
+      shell: bash
+      run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
 
     - name: Configure git
       shell: bash
