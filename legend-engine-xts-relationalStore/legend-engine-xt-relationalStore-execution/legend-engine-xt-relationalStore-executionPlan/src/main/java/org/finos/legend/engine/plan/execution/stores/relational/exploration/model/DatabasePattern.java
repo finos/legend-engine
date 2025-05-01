@@ -89,7 +89,7 @@ public class DatabasePattern
 
     public String getFunctionPattern()
     {
-        return tablePattern;
+        return functionPattern;
     }
 
     public boolean isEscapeSchemaPattern()
