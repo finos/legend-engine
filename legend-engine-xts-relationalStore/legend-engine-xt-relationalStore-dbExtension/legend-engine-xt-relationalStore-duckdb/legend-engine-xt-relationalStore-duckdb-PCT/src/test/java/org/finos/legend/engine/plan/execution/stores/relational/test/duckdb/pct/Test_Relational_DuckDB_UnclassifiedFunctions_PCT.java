@@ -59,7 +59,13 @@ public class Test_Relational_DuckDB_UnclassifiedFunctions_PCT extends PCTReportC
             one("meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_", "java.sql.SQLException: Invalid Input Error: Insufficient padding in LPAD."),
 
             //rpad
-            one("meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_", "java.sql.SQLException: Invalid Input Error: Insufficient padding in RPAD.")
+            one("meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_", "java.sql.SQLException: Invalid Input Error: Insufficient padding in RPAD."),
+
+            //tolowerfirstcharacter
+            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'xoXoXoX'\nactual:   'XoXoXoX'\""),
+
+            //toupperfirstcharacter
+            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'xOxOxOx'\"")
     );
 
     public static Test suite()

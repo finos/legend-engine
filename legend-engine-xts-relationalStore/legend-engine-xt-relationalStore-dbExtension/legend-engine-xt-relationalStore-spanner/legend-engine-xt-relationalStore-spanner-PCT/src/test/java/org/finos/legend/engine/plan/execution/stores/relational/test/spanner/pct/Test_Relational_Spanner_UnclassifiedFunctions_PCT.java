@@ -78,7 +78,17 @@ public class Test_Relational_Spanner_UnclassifiedFunctions_PCT extends PCTReport
             pack("meta::pure::functions::string::tests::matches", "\"[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet\""),
 
             //splitpart
-            pack("meta::pure::functions::string::tests::splitPart", "NOT_FOUND: [ERROR] function split_part")
+            pack("meta::pure::functions::string::tests::splitPart", "NOT_FOUND: [ERROR] function split_part"),
+
+            //tolowerfirstcharacter
+            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower_Function_1__Boolean_1_", "\"\nexpected: 'xOxOxOx'\nactual:   'xxOxOxOx'\""),
+            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterNumber_Function_1__Boolean_1_", "\"\nexpected: '1isOne'\nactual:   '11isOne'\""),
+            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'xoXoXoX'\nactual:   'xXoXoXoX'\""),
+
+            //toupperfirstcharacter
+            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower_Function_1__Boolean_1_", "\"\nexpected: 'XoXoXoX'\nactual:   'XXoXoXoX'\""),
+            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber_Function_1__Boolean_1_", "\"\nexpected: '1isOne'\nactual:   '11isOne'\""),
+            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'XxOxOxOx'\"")
     );
 
     public static Test suite()
