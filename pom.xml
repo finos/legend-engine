@@ -191,7 +191,7 @@
         <jsonunit.version>2.17.0</jsonunit.version>
         <junit-jupiter.version>5.4.0</junit-jupiter.version>
         <junit.version>4.13.1</junit.version>
-        <log4j.version>1.2.17</log4j.version>
+        <reload4j.version>1.2.19</reload4j.version>
         <logback-contrib.version>0.1.5</logback-contrib.version>
         <logback.version>1.2.3</logback.version>
         <minio.version>8.5.5</minio.version>
@@ -206,7 +206,7 @@
         <pac4j.version>3.7.0</pac4j.version>
         <prometheus.version>0.8.1</prometheus.version>
         <protobuf.java.version>3.25.3</protobuf.java.version>
-        <slf4j.version>1.7.25</slf4j.version>
+        <slf4j.version>1.7.36</slf4j.version>
         <snakeyaml.version>1.33</snakeyaml.version>
         <swagger.annotation.version>1.5.20</swagger.annotation.version>
         <test.mongodb.version>1.38.0</test.mongodb.version>
@@ -538,10 +538,9 @@
                                         <include>org.slf4j:slf4j-api:${slf4j.version}</include>
                                         <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
                                         <include>org.slf4j:slf4j-jdk14:${slf4j.version}</include>
-                                        <include>org.slf4j:slf4j-log4j12:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-reload4j:${slf4j.version}</include>
                                         <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
-                                        <include>log4j:log4j:${log4j.version}</include>
-                                        <include>log4j:apache-log4j-extras:${log4j.version}</include>
+                                        <include>ch.qos.reload4j:reload4j:${reload4j.version}</include>
                                     </includes>
                                 </bannedDependencies>
                             </rules>
@@ -590,8 +589,7 @@
                                         <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
                                         <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
                                         <include>org.finos.legend.pure:legend-pure-m4</include>
-                                        <include>log4j:log4j:${log4j.version}</include>
-                                        <include>log4j:apache-log4j-extras:${log4j.version}</include>
+                                        <include>ch.qos.reload4j:reload4j:${reload4j.version}</include>
                                     </includes>
                                 </bannedDependencies>
                             </rules>
@@ -628,8 +626,7 @@
                                         <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
                                         <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
                                         <include>org.finos.legend.pure:legend-pure-m4</include>
-                                        <include>log4j:log4j:${log4j.version}</include>
-                                        <include>log4j:apache-log4j-extras:${log4j.version}</include>
+                                        <include>ch.qos.reload4j:reload4j:${reload4j.version}</include>
                                     </includes>
                                 </bannedDependencies>
                             </rules>
@@ -3323,13 +3320,13 @@
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
+                <artifactId>slf4j-reload4j</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>${log4j.version}</version>
+                <groupId>ch.qos.reload4j</groupId>
+                <artifactId>reload4j</artifactId>
+                <version>${reload4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
