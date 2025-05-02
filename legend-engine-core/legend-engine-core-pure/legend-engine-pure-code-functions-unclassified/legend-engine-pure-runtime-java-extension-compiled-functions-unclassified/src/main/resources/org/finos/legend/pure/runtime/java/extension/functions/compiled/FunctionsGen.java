@@ -135,7 +135,7 @@ public class FunctionsGen extends org.finos.legend.pure.runtime.java.extension.f
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Any> _class = new Root_meta_pure_metamodel_type_Class_Impl(name)._name(name)._package(_package);
         return _class._classifierGenericType(
                         new Root_meta_pure_metamodel_type_generics_GenericType_Impl("Anonymous_StripedId")
-                                ._rawType(ma.getClass("Root::meta::pure::metamodel::type::Class"))
+                                ._rawType(ma.getClass("meta::pure::metamodel::type::Class"))
                                 ._typeArguments(Lists.immutable.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("Anonymous_StripedId")._rawType(_class))))
                 ._generalizations(Lists.immutable.of(
                         new Root_meta_pure_metamodel_relationship_Generalization_Impl("Anonymous_StripedId")
@@ -162,7 +162,7 @@ public class FunctionsGen extends org.finos.legend.pure.runtime.java.extension.f
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association _association = new Root_meta_pure_metamodel_relationship_Association_Impl(name)._name(name)._package(_package);
         return _association._propertiesAdd(p1)._propertiesAdd(p2)._classifierGenericType(
                 new Root_meta_pure_metamodel_type_generics_GenericType_Impl("Anonymous_StripedId")
-                        ._rawType(ma.getClass("Root::meta::pure::metamodel::relationship::Association")));
+                        ._rawType(ma.getClass("meta::pure::metamodel::relationship::Association")));
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration<Any> newEnumeration(final String fullPathString, RichIterable values, MetadataAccessor ma, SourceInformation si)
@@ -185,11 +185,11 @@ public class FunctionsGen extends org.finos.legend.pure.runtime.java.extension.f
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration<Any> _enumeration = new Root_meta_pure_metamodel_type_Enumeration_Impl<Any>(name)._name(name)._package(_package);
         return _enumeration._classifierGenericType(
                         new Root_meta_pure_metamodel_type_generics_GenericType_Impl("Anonymous_StripedId")
-                                ._rawType(ma.getClass("Root::meta::pure::metamodel::type::Enumeration"))
+                                ._rawType(ma.getClass("meta::pure::metamodel::type::Enumeration"))
                                 ._typeArguments(Lists.immutable.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("Anonymous_StripedId")._rawType(_enumeration))))
                 ._generalizations(Lists.immutable.of(
                         new Root_meta_pure_metamodel_relationship_Generalization_Impl("Anonymous_StripedId")
-                                ._general(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("Anonymous_StripedId")._rawType(ma.getClass("Root::meta::pure::metamodel::type::Enum")))
+                                ._general(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("Anonymous_StripedId")._rawType(ma.getClass("meta::pure::metamodel::type::Enum")))
                                 ._specific(_enumeration)))
                 ._values(values.collect(new DefendedFunction<String, PureEnum>()
                 {
