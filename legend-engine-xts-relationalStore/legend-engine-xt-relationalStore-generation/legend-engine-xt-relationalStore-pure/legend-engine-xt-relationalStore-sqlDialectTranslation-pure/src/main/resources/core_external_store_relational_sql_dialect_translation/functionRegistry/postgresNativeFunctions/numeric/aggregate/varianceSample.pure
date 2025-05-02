@@ -20,18 +20,18 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::VariancePopulation extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::VarianceSample extends PostgresNativeSqlFunction
 [
-  $this.name == 'var_pop'
+  $this.name == 'var_samp'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::variancePopulation(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::varianceSample(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::VariancePopulation
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::VarianceSample
   (
-    name = 'var_pop',
-    documentation = 'Returns the population variance of the input values (square of the population standard deviation)',
+    name = 'var_samp',
+    documentation = 'Returns the sample variance of the input values (square of the sample standard deviation)',
     variations = [
       ^SqlFunctionVariation
       (
@@ -46,11 +46,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     ],
     tests = [
       sqlFunctionTest(
-        testSetupDataForStatistics(),
-        // SELECT country, var_pop(temperature) AS result FROM testTable GROUP BY country ORDER BY result ASC NULLS LAST
+        testSetupDataForStatistics(),        
+        // SELECT country, var_samp(temperature) AS result FROM testTable GROUP BY country ORDER BY result ASC NULLS LAST
         simpleAggFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'var_pop'), 
+            name = ^QualifiedName(parts = 'var_samp'), 
             arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'temperature'))]
           ),
           'testTable',
@@ -59,8 +59,8 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         ^TestExpectedResult(
           columns = ['country', 'result'], 
           data = [
-            list(['US', 0.25]),
-            list(['India', 34.64])
+            list(['US', 0.5]),
+            list(['India', 51.96])            
           ]
         )
       )

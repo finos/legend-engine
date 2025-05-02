@@ -19,15 +19,15 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::BoolAnd extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::aggregate::BoolAnd extends PostgresNativeSqlFunction
 [
   $this.name == 'bool_and'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::boolAnd(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::aggregate::boolAnd(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::BoolAnd
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::aggregate::BoolAnd
   (
     name = 'bool_and',
     documentation = 'Returns true if all input values are true, otherwise false',

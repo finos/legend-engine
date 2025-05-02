@@ -16,15 +16,18 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
-import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
-import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
 import meta::external::store::relational::sqlDialectTranslation::duckDB::*;
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
@@ -314,85 +317,100 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::functionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
 {
   newMap([
+    // Postgres Native Functions
     // Numeric
     pair(Abs, simpleFunctionProcessor('abs')),
-    pair(Cbrt, simpleFunctionProcessor('cbrt')),
-    pair(Ceil, simpleFunctionProcessor('ceil')),
-    pair(Ceiling, simpleFunctionProcessor('ceiling')),
-    pair(Degrees, simpleFunctionProcessor('degrees')),
-    pair(Exp, simpleFunctionProcessor('exp')),
-    pair(Ln, simpleFunctionProcessor('ln')),
-    pair(Log, simpleFunctionProcessor('log')),
-    pair(Log10, simpleFunctionProcessor('log10')),
-    pair(Sqrt, simpleFunctionProcessor('sqrt')),
     pair(Acos, simpleFunctionProcessor('acos')),
     pair(Asin, simpleFunctionProcessor('asin')),
     pair(Atan, simpleFunctionProcessor('atan')),
     pair(Atan2, simpleFunctionProcessor('atan2')),
+    pair(Cbrt, simpleFunctionProcessor('cbrt')),
+    pair(Ceil, simpleFunctionProcessor('ceil')),
+    pair(Ceiling, simpleFunctionProcessor('ceiling')),
     pair(Cos, simpleFunctionProcessor('cos')),
     pair(Cot, simpleFunctionProcessor('cot')),
-    pair(Sin, simpleFunctionProcessor('sin')),
-    pair(Tan, simpleFunctionProcessor('tan')),
-    pair(Power, simpleFunctionProcessor('power')),
-    pair(Sign, simpleFunctionProcessor('sign')),
-    pair(Mod, simpleFunctionProcessor('mod')),
-    pair(Round, simpleFunctionProcessor('round')),
+    pair(Degrees, simpleFunctionProcessor('degrees')),
+    pair(Exp, simpleFunctionProcessor('exp')),
     pair(Floor, simpleFunctionProcessor('floor')),
-    pair(Sum, simpleFunctionProcessor('sum')),
+    pair(Ln, simpleFunctionProcessor('ln')),
+    pair(Log, simpleFunctionProcessor('log')),
+    pair(Mod, simpleFunctionProcessor('mod')),
+    pair(Power, simpleFunctionProcessor('power')),
+    pair(Round, simpleFunctionProcessor('round')),
+    pair(Sign, simpleFunctionProcessor('sign')),
+    pair(Sin, simpleFunctionProcessor('sin')),
+    pair(Sqrt, simpleFunctionProcessor('sqrt')),
+    pair(Tan, simpleFunctionProcessor('tan')),
+
+    // Numeric Aggregate
     pair(Average, simpleFunctionProcessor('avg')),
-    pair(Count, simpleFunctionProcessor('count')),
+    pair(Sum, simpleFunctionProcessor('sum')),
     pair(VarianceSample, simpleFunctionProcessor('var_samp')),
     pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
-    pair(Rank, simpleFunctionProcessor('rank')),
-    pair(DenseRank, simpleFunctionProcessor('dense_rank')),
-    pair(PercentRank, simpleFunctionProcessor('percent_rank')),
-    pair(RowNumber, simpleFunctionProcessor('row_number')),
-    pair(CumulativeDistribution, simpleFunctionProcessor('cume_dist')),
-    pair(Ntile, simpleFunctionProcessor('ntile')),
 
     // String
-    pair(Lpad, argTransformFunctionProcessor('lpad', {n:Node[*]| if($n->size() == 2, |$n->concatenate(^StringLiteral(value = ' ')), |$n)})),
-    pair(Rpad, argTransformFunctionProcessor('rpad', {n:Node[*]| if($n->size() == 2, |$n->concatenate(^StringLiteral(value = ' ')), |$n)})),
-    pair(Ltrim, simpleFunctionProcessor('ltrim')),
-    pair(Rtrim, simpleFunctionProcessor('rtrim')),
     pair(Ascii, simpleFunctionProcessor('ascii')),
-    pair(Lower, simpleFunctionProcessor('lower')),
-    pair(Upper, simpleFunctionProcessor('upper')),
-    pair(Repeat, simpleFunctionProcessor('repeat')),
-    pair(Replace, simpleFunctionProcessor('replace')),
-    pair(Md5, simpleFunctionProcessor('md5')),
     pair(CharLength, simpleFunctionProcessor('length')),
     pair(Chr, simpleFunctionProcessor('chr')),
-    pair(Reverse, simpleFunctionProcessor('reverse')),
-    pair(SplitPart, simpleFunctionProcessor('split_part')),
-    pair(Substring, simpleFunctionProcessor('substring')),
-    pair(Left, simpleFunctionProcessor('left')),
-    pair(Right, simpleFunctionProcessor('right')),
-    pair(StrPos, simpleFunctionProcessor('strpos')),
-    pair(StringAgg, simpleFunctionProcessor('string_agg')),
     pair(Concat, simpleFunctionProcessor('concat')),
+    pair(Left, simpleFunctionProcessor('left')),
+    pair(Lower, simpleFunctionProcessor('lower')),
+    pair(Lpad, argTransformFunctionProcessor('lpad', {n:Node[*]| if($n->size() == 2, |$n->concatenate(^StringLiteral(value = ' ')), |$n)})),
+    pair(Ltrim, simpleFunctionProcessor('ltrim')),
+    pair(Md5, simpleFunctionProcessor('md5')),
+    pair(Repeat, simpleFunctionProcessor('repeat')),
+    pair(Replace, simpleFunctionProcessor('replace')),
+    pair(Reverse, simpleFunctionProcessor('reverse')),
+    pair(Right, simpleFunctionProcessor('right')),
+    pair(Rpad, argTransformFunctionProcessor('rpad', {n:Node[*]| if($n->size() == 2, |$n->concatenate(^StringLiteral(value = ' ')), |$n)})),
+    pair(Rtrim, simpleFunctionProcessor('rtrim')),
+    pair(SplitPart, simpleFunctionProcessor('split_part')),
+    pair(StrPos, simpleFunctionProcessor('strpos')),
+    pair(Substring, simpleFunctionProcessor('substring')),
+    pair(Upper, simpleFunctionProcessor('upper')),
 
-    // Boolean
-    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // String Aggregate
+    pair(StringAgg, simpleFunctionProcessor('string_agg')),
+
+    // Boolean Aggregate
     pair(BoolAnd, simpleFunctionProcessor('bool_and')),
     pair(BoolOr, simpleFunctionProcessor('bool_or')),
 
     // Temporal
-    pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DatePart, simpleFunctionProcessor('date_part')),
+    pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
     // Miscellaneous
     pair(Coalesce, simpleFunctionProcessor('coalesce')),
-    pair(Min, simpleFunctionProcessor('min')),
+
+    // Aggregate
+    pair(Count, simpleFunctionProcessor('count')),
     pair(Max, simpleFunctionProcessor('max')),
-    pair(Lag, simpleFunctionProcessor('lag')),
-    pair(Lead, simpleFunctionProcessor('lead')),
+    pair(Min, simpleFunctionProcessor('min')),
+
+    // Window
+    pair(CumulativeDistribution, simpleFunctionProcessor('cume_dist')),
+    pair(DenseRank, simpleFunctionProcessor('dense_rank')),
     pair(FirstValue, simpleFunctionProcessor('first_value')),
+    pair(Lag, simpleFunctionProcessor('lag')),
     pair(LastValue, simpleFunctionProcessor('last_value')),
-    pair(NthValue, simpleFunctionProcessor('nth_value'))
+    pair(Lead, simpleFunctionProcessor('lead')),
+    pair(NthValue, simpleFunctionProcessor('nth_value')),
+    pair(Ntile, simpleFunctionProcessor('ntile')),
+    pair(PercentRank, simpleFunctionProcessor('percent_rank')),
+    pair(Rank, simpleFunctionProcessor('rank')),
+    pair(RowNumber, simpleFunctionProcessor('row_number')),
+
+    // Extension functions
+    // Numeric
+    pair(Log10, simpleFunctionProcessor('log10')),
+
+    // String
+    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_))
+
   ])
 }
 

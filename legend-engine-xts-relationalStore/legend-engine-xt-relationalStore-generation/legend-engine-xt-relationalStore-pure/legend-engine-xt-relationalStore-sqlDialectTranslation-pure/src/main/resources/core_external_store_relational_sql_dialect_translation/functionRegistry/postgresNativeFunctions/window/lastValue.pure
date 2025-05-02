@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::store::relational::sqlDialectTranslation::defaults::*;
 import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
@@ -21,34 +20,34 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::NthValue extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::LastValue extends PostgresNativeSqlFunction
 [
-  $this.name == 'nth_value'
+  $this.name == 'last_value'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::nthValue(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::lastValue(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::NthValue
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::LastValue
   (
-    name = 'nth_value',
-    documentation = 'Returns value evaluated at the row that is the nth row of the window frame (counting from 1); returns NULL if there is no such row.',
+    name = 'last_value',
+    documentation = 'Returns value evaluated at the row that is the last row of the window frame.',
     variations = orderedSubTypes(SqlType)->map({sqlType |
       ^SqlFunctionVariation
       (
-        parameterTypes = [$sqlType]->concatenate(AbstractIntegerSqlType),
+        parameterTypes = $sqlType,
         returnType = $sqlType
       )
-    }), 
+    }),
     tests = [
       sqlFunctionTest(
         testSetupDataForWindowFunctions(),
         // Default window frame is ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW; So We only get the Last Value till the current row
-        //  SELECT nth_value(student, 2) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
+        // SELECT *, last_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
         windowFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'nth_value'), 
-            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'student')), literal(2)],
+            name = ^QualifiedName(parts = 'last_value'), 
+            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'student'))],
             window = ^meta::external::query::sql::metamodel::Window(
               orderBy = [
                 ^SortItem(
@@ -66,14 +65,14 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         ^TestExpectedResult(
           columns = ['student', 'dept', 'score', 'result'], 
           data = [
+            list(['Alice', 'Science', 90, 'Alice']),
             list(['Bob', 'Science', 88, 'Bob']),
-            list(['Charlie', 'Science', 85, 'Bob']), 
-            list(['David', 'Science', 80, 'Bob']),
+            list(['Charlie', 'Science', 85, 'Charlie']), 
+            list(['David', 'Science', 80, 'David']),
+            list(['Eve', 'Arts', 88, 'Eve']),
             list(['Frank', 'Arts', 85, 'Frank']),
-            list(['Grace', 'Arts', 84, 'Frank']),
-            list(['Hannah', 'Arts', 80, 'Frank']),
-            list(['Alice', 'Science', 90, null()]),
-            list(['Eve', 'Arts', 88, null()])
+            list(['Grace', 'Arts', 84, 'Grace']),
+            list(['Hannah', 'Arts', 80, 'Hannah'])
           ]
         )
       ),
@@ -82,8 +81,8 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         // With unbounded frame
         windowFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'nth_value'), 
-            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'student')), literal(2)],
+            name = ^QualifiedName(parts = 'last_value'), 
+            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'student'))],
             window = ^meta::external::query::sql::metamodel::Window(
               orderBy = [
                 ^SortItem(
@@ -102,14 +101,14 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         ^TestExpectedResult(
           columns = ['student', 'dept', 'score', 'result'], 
           data = [
-            list(['Alice', 'Science', 90, 'Bob']),
-            list(['Bob', 'Science', 88, 'Bob']),
-            list(['Charlie', 'Science', 85, 'Bob']), 
-            list(['David', 'Science', 80, 'Bob']),
-            list(['Eve', 'Arts', 88, 'Frank']),
-            list(['Frank', 'Arts', 85, 'Frank']),
-            list(['Grace', 'Arts', 84, 'Frank']),
-            list(['Hannah', 'Arts', 80, 'Frank'])
+            list(['Alice', 'Science', 90, 'David']),
+            list(['Bob', 'Science', 88, 'David']),
+            list(['Charlie', 'Science', 85, 'David']), 
+            list(['David', 'Science', 80, 'David']),
+            list(['Eve', 'Arts', 88, 'Hannah']),
+            list(['Frank', 'Arts', 85, 'Hannah']),
+            list(['Grace', 'Arts', 84, 'Hannah']),
+            list(['Hannah', 'Arts', 80, 'Hannah'])
           ]
         )
       )

@@ -15,12 +15,15 @@
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
-import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
-import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
@@ -377,10 +380,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeFunctionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
 {
   newMap([
+    // Postgres Native Functions
     // Numeric
     pair(Abs, simpleFunctionProcessor('abs')),
     pair(Acos, simpleFunctionProcessor('acos')),
-    pair(Average, simpleFunctionProcessor('avg')),
     pair(Asin, simpleFunctionProcessor('asin')),
     pair(Atan, simpleFunctionProcessor('atan')),
     pair(Atan2, simpleFunctionProcessor('atan2')),
@@ -389,27 +392,22 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Ceiling, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Cos, simpleFunctionProcessor('cos')),
     pair(Cot, simpleFunctionProcessor('cot')),
-    pair(Count, simpleFunctionProcessor('count')),
-    pair(CumulativeDistribution, simpleFunctionProcessor('cume_dist')),
     pair(Degrees, simpleFunctionProcessor('degrees')),
-    pair(DenseRank, simpleFunctionProcessor('dense_rank')),
     pair(Exp, simpleFunctionProcessor('exp')),
     pair(Floor, customFunctionProcessor(processorForFloor_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Ln, simpleFunctionProcessor('ln')),
     pair(Log, argTransformFunctionProcessor('log', {n:Node[*]| if($n->size() == 1, | literal(10)->concatenate($n), | $n)})),
-    pair(Log10, argTransformFunctionProcessor('log', {n:Node[*]| literal(10)->concatenate($n)})),
     pair(Mod, simpleFunctionProcessor('mod')),
-    pair(Ntile, simpleFunctionProcessor('ntile')),
-    pair(PercentRank, simpleFunctionProcessor('percent_rank')),
     pair(Power, simpleFunctionProcessor('power')),
-    pair(Rank, simpleFunctionProcessor('rank')),
     pair(Round, simpleFunctionProcessor('round')),
-    pair(RowNumber, simpleFunctionProcessor('row_number')),
-    pair(Sin, simpleFunctionProcessor('sin')),
     pair(Sign, simpleFunctionProcessor('sign')),
+    pair(Sin, simpleFunctionProcessor('sin')),
     pair(Sqrt, simpleFunctionProcessor('sqrt')),
-    pair(Sum, simpleFunctionProcessor('sum')),
     pair(Tan, simpleFunctionProcessor('tan')),
+
+    // Numeric Aggregate
+    pair(Average, simpleFunctionProcessor('avg')),
+    pair(Sum, simpleFunctionProcessor('sum')),
     pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
     pair(VarianceSample, simpleFunctionProcessor('var_samp')),
 
@@ -429,18 +427,17 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Right, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1] | processorForDirectionalIndex('right', $f, $sqlDialect, $state, $config)})), // Custom handling to handle negative index
     pair(Rpad, simpleFunctionProcessor('rpad')),
     pair(Rtrim, simpleFunctionProcessor('rtrim')),
-    pair(Sha1, simpleFunctionProcessor('sha1')),
-    pair(Sha256, argTransformFunctionProcessor('sha2', {n:Node[*] | $n->concatenate(literal(256))})),
     pair(SplitPart, simpleFunctionProcessor('split_part')),
-    pair(StringAgg, simpleFunctionProcessor('listagg')),
     pair(StrPos, argTransformFunctionProcessor('position', {n:Node[*]| $n->reverse()})),
     pair(Substring, simpleFunctionProcessor('substring')),
     pair(Upper, simpleFunctionProcessor('upper')),
 
-    // Boolean
+    // String Aggregate
+    pair(StringAgg, simpleFunctionProcessor('listagg')),
+
+    // Boolean Aggregate
     pair(BoolAnd, simpleFunctionProcessor('booland_agg')),
     pair(BoolOr, simpleFunctionProcessor('boolor_agg')),
-    pair(RegexpLike, customFunctionProcessor(processorForRegExpLikeSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
     // Temporal
     pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -451,13 +448,34 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
     // Miscellaneous
     pair(Coalesce, simpleFunctionProcessor('coalesce')),
+
+    // Aggregate
+    pair(Count, simpleFunctionProcessor('count')),
+    pair(Max, simpleFunctionProcessor('max')),
+    pair(Min, simpleFunctionProcessor('min')),
+
+    // Window
+    pair(CumulativeDistribution, simpleFunctionProcessor('cume_dist')),
+    pair(DenseRank, simpleFunctionProcessor('dense_rank')),
     pair(FirstValue, simpleFunctionProcessor('first_value')),
+    pair(PercentRank, simpleFunctionProcessor('percent_rank')),
     pair(Lag, simpleFunctionProcessor('lag')),
     pair(LastValue, simpleFunctionProcessor('last_value')),
     pair(Lead, simpleFunctionProcessor('lead')),
-    pair(Min, simpleFunctionProcessor('min')),
-    pair(Max, simpleFunctionProcessor('max')),
-    pair(NthValue, simpleFunctionProcessor('nth_value'))
+    pair(NthValue, simpleFunctionProcessor('nth_value')),
+    pair(Ntile, simpleFunctionProcessor('ntile')),
+    pair(Rank, simpleFunctionProcessor('rank')),
+    pair(RowNumber, simpleFunctionProcessor('row_number')),
+
+    // Extensio functions
+    // Numeric
+    pair(Log10, argTransformFunctionProcessor('log', {n:Node[*]| literal(10)->concatenate($n)})),
+
+    // String
+    pair(RegexpLike, customFunctionProcessor(processorForRegExpLikeSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Sha1, simpleFunctionProcessor('sha1')),
+    pair(Sha256, argTransformFunctionProcessor('sha2', {n:Node[*] | $n->concatenate(literal(256))}))
+
   ])
 }
 

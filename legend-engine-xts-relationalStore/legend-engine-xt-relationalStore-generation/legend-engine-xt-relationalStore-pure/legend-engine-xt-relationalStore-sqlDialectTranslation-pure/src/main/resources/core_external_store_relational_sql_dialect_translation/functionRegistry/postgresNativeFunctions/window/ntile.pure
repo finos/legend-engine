@@ -20,33 +20,33 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::CumulativeDistribution extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::Ntile extends PostgresNativeSqlFunction
 [
-  $this.name == 'cume_dist'
+  $this.name == 'ntile'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::cumulativeDistribution(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::ntile(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::CumulativeDistribution
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::Ntile
   (
-    name = 'cume_dist',
-    documentation = 'Returns the cumulative distribution, that is (number of partition rows preceding or peers with current row) / (total partition rows). The value thus ranges from 1/N to 1.',
+    name = 'ntile',
+    documentation = 'Returns an integer ranging from 1 to the argument value, dividing the partition as equally as possible.',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [],
-        returnType = DoubleSqlType
+        parameterTypes = AbstractIntegerSqlType,
+        returnType = AbstractIntegerSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
         testSetupDataForWindowFunctions(),
-        // SELECT *, cume_dist() OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
+        //  SELECT *, ntile(2) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
         windowFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'cume_dist'), 
-            arguments = [],
+            name = ^QualifiedName(parts = 'ntile'), 
+            arguments = [literal(2)],
             window = ^meta::external::query::sql::metamodel::Window(
               orderBy = [
                 ^SortItem(
@@ -64,14 +64,14 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         ^TestExpectedResult(
           columns = ['student', 'dept', 'score', 'result'], 
           data = [
-            list(['Alice', 'Science', 90, 0.25]), 
-            list(['Eve', 'Arts', 88, 0.25]),
-            list(['Bob', 'Science', 88, 0.5]),
-            list(['Frank', 'Arts', 85, 0.5]),
-            list(['Charlie', 'Science', 85, 0.75]),
-            list(['Grace', 'Arts', 84, 0.75]),
-            list(['David', 'Science', 80, 1.0]),
-            list(['Hannah', 'Arts', 80, 1.0])
+            list(['Alice', 'Science', 90, 1]), 
+            list(['Bob', 'Science', 88, 1]),
+            list(['Eve', 'Arts', 88, 1]),
+            list(['Frank', 'Arts', 85, 1]),
+            list(['Charlie', 'Science', 85, 2]), 
+            list(['David', 'Science', 80, 2]),
+            list(['Grace', 'Arts', 84, 2]),
+            list(['Hannah', 'Arts', 80, 2])
           ]
         )
       )

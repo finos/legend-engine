@@ -1,13 +1,13 @@
 // Copyright 2025 Goldman Sachs
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
+// distributed under the License is distributed on an 'AS IS' BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
@@ -20,18 +20,18 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Rank extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::DenseRank extends PostgresNativeSqlFunction
 [
-  $this.name == 'rank'
+  $this.name == 'dense_rank'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::rank(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::denseRank(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Rank
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::DenseRank
   (
-    name = 'rank',
-    documentation = 'Returns the rank of the current row, with gaps; that is, the row_number of the first row in its peer group.',
+    name = 'dense_rank',
+    documentation = 'Returns the rank of the current row, without gaps; this function effectively counts peer groups.',
     variations = [
       ^SqlFunctionVariation
       (
@@ -42,10 +42,10 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     tests = [
       sqlFunctionTest(
         testSetupDataForWindowFunctions(),
-        // SELECT *, rank() OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
+        // SELECT *, dense_rank() OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
         windowFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'rank'), 
+            name = ^QualifiedName(parts = 'dense_rank'), 
             arguments = [],
             window = ^meta::external::query::sql::metamodel::Window(
               orderBy = [
@@ -60,7 +60,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
           ),
           'testTable',
           'student'
-        ),
+        ),        
         ^TestExpectedResult(
           columns = ['student', 'dept', 'score', 'result'], 
           data = [
