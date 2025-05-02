@@ -21,15 +21,15 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::Lead extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::Lead extends PostgresNativeSqlFunction
 [
   $this.name == 'lead'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::lead(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::lead(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::Lead
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::Lead
   (
     name = 'lead',
     documentation = 'Returns value evaluated at the row that is offset rows after the current row within the partition; if there is no such row, instead returns default (which must be of a type compatible with value). Both offset and default are evaluated with respect to the current row. If omitted, offset defaults to 1 and default to NULL.',

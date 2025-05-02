@@ -19,30 +19,25 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Average extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::Min extends PostgresNativeSqlFunction
 [
-  $this.name == 'avg'
+  $this.name == 'min'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::average(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::min(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Average
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::Min
   (
-    name = 'avg',
-    documentation = 'Returns the average (arithmetic mean) of all non-null input values',
-    variations = [
+    name = 'min',
+    documentation = 'Returns the minimum value of expression across all non-null input values',
+    variations = orderedSubTypes(SqlType)->map({sqlType |
       ^SqlFunctionVariation
       (
-        parameterTypes = DoubleSqlType,
-        returnType = DoubleSqlType
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractNumericSqlType
+        parameterTypes = $sqlType,
+        returnType = $sqlType
       )
-    ],
+    }),
     tests = [
       sqlFunctionTest(
         ^TestSetupData(
@@ -53,56 +48,59 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
             dataRow([32, 'Physics', 'Robert']), 
             dataRow([20, 'Math', 'Jane']),
             dataRow([25, 'Physics', 'Jane']),
-            dataRow([^NullLiteral(), 'Math', 'John'])
+            dataRow([16, 'Math', 'John']),
+            dataRow([43, 'Chemistry', 'Robert']), 
+            dataRow([26, 'Chemistry', 'Jane'])
           ]
         ),
-        // SELECT name, avg(marks) AS result FROM testTable GROUP BY name ORDER BY result ASC NULLS LAST
+        // SELECT subject, min(marks) AS result FROM testTable GROUP BY subject ORDER BY result ASC NULLS LAST
         simpleAggFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'avg'), 
+            name = ^QualifiedName(parts = 'min'), 
             arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'marks'))]
           ),
           'testTable',
-          'name'
+          'subject'
         ),
         ^TestExpectedResult(
-          columns = ['name', 'result'], 
+          columns = ['subject', 'result'], 
           data = [
-            list(['Jane', 22.5]), 
-            list(['Robert', 25.0]), 
-            list(['John', null()])
+            list(['Math', 16]), 
+            list(['Physics', 25]), 
+            list(['Chemistry', 26])
           ]
         )
       ),
       sqlFunctionTest(
         ^TestSetupData(
           tableName = 'testTable', 
-          columns = [pair('marks', 'double precision'), pair('subject', 'varchar'), pair('name', 'varchar')], 
+          columns = [pair('name', 'varchar'), pair('class', 'varchar'), pair('dob', 'date')], 
           data = [
-            dataRow([18.2, 'Math', 'Robert']), 
-            dataRow([32.6, 'Physics', 'Robert']), 
-            dataRow([20.5, 'Math', 'Jane']),
-            dataRow([25.5, 'Physics', 'Jane']),
-            dataRow([^NullLiteral(), 'Math', 'John'])
+            dataRow(['Robert', 'Fifth', '2015-12-30']), 
+            dataRow(['Julie', 'Fifth', '2015-12-31']), 
+            dataRow(['Alex', 'Fourth', '2014-11-30']), 
+            dataRow(['Katie', 'Fourth', '2014-07-30']), 
+            dataRow(['Thomas', 'Third', '2013-07-30'])
           ]
         ),
+        // SELECT class, min(dob) AS result FROM testTable GROUP BY class ORDER BY result ASC NULLS LAST
         simpleAggFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'avg'), 
-            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'marks'))]
+            name = ^QualifiedName(parts = 'min'), 
+            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dob'))]
           ),
           'testTable',
-          'name'
+          'class'
         ),
         ^TestExpectedResult(
-          columns = ['name', 'result'], 
+          columns = ['class', 'result'], 
           data = [
-            list(['Jane', 23.0]), 
-            list(['Robert', 25.4]), 
-            list(['John', null()])
+            list(['Third', %2013-07-30]), 
+            list(['Fourth', %2014-07-30]), 
+            list(['Fifth', %2015-12-30])
           ]
         )
-      )
+      )          
     ]
   )
 }

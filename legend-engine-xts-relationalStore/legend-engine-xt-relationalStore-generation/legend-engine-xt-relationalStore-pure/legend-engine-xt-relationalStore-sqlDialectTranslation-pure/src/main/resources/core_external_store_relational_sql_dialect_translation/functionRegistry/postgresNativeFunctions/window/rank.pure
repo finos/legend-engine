@@ -20,18 +20,18 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::RowNumber extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::Rank extends PostgresNativeSqlFunction
 [
-  $this.name == 'row_number'
+  $this.name == 'rank'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::rowNumber(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::rank(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::RowNumber
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::Rank
   (
-    name = 'row_number',
-    documentation = 'Returns the number of the current row within its partition, counting from 1.',
+    name = 'rank',
+    documentation = 'Returns the rank of the current row, with gaps; that is, the row_number of the first row in its peer group.',
     variations = [
       ^SqlFunctionVariation
       (
@@ -42,10 +42,10 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     tests = [
       sqlFunctionTest(
         testSetupDataForWindowFunctions(),
-        // SELECT *, row_number() OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
+        // SELECT *, rank() OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
         windowFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'row_number'), 
+            name = ^QualifiedName(parts = 'rank'), 
             arguments = [],
             window = ^meta::external::query::sql::metamodel::Window(
               orderBy = [
@@ -72,8 +72,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
             list(['Grace', 'Arts', 84, 3]),
             list(['David', 'Science', 80, 4]),
             list(['Hannah', 'Arts', 80, 4])
-
-          ]  
+          ]
         )
       )
     ]

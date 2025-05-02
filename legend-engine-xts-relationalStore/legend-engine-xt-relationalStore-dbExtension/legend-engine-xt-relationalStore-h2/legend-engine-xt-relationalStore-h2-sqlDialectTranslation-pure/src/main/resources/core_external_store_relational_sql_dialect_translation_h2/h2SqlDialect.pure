@@ -16,15 +16,18 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
-import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
-import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
 import meta::external::store::relational::sqlDialectTranslation::h2::*;
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
@@ -330,93 +333,99 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::functionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
 {
   newMap([
+    // Postgres Native Functions
     // Numeric
     pair(Abs, simpleFunctionProcessor('abs')),
-    // No Native function CBRT - Implemented it using POWER
-    pair(Cbrt, customFunctionProcessor(processorForCbrt_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(Ceil, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(Ceiling, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(Degrees, simpleFunctionProcessor('degrees')),
-    pair(Exp, simpleFunctionProcessor('exp')),
-    pair(Ln, simpleFunctionProcessor('ln')),
-    pair(Log, argTransformFunctionProcessor('log', {n:Node[*]| if($n->size() == 1, | literal(10)->concatenate($n), | $n)})),
-    pair(Log10, simpleFunctionProcessor('log10')),
-    pair(Sqrt, simpleFunctionProcessor('sqrt')),
     pair(Acos, simpleFunctionProcessor('acos')),
     pair(Asin, simpleFunctionProcessor('asin')),
     pair(Atan, simpleFunctionProcessor('atan')),
     pair(Atan2, simpleFunctionProcessor('atan2')),
+    pair(Cbrt, customFunctionProcessor(processorForCbrt_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)), // No Native function CBRT - Implemented it using POWER
+    pair(Ceil, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Ceiling, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Cos, simpleFunctionProcessor('cos')),
     pair(Cot, simpleFunctionProcessor('cot')),
-    pair(Sin, simpleFunctionProcessor('sin')),
-    pair(Tan, simpleFunctionProcessor('tan')),
-    pair(Power, simpleFunctionProcessor('power')),
-    pair(Sign, simpleFunctionProcessor('sign')),
-    pair(Mod, simpleFunctionProcessor('mod')),
-    pair(Round, simpleFunctionProcessor('round')),
+    pair(Degrees, simpleFunctionProcessor('degrees')),
+    pair(Exp, simpleFunctionProcessor('exp')),
     pair(Floor, customFunctionProcessor(processorForFloor_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(Sum, simpleFunctionProcessor('sum')),
-    pair(Average, simpleFunctionProcessor('avg')),
-    pair(Count, simpleFunctionProcessor('count')),
-    pair(VarianceSample, simpleFunctionProcessor('var_samp')),
-    pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
-    pair(Rank, simpleFunctionProcessor('rank')),
-    pair(DenseRank, simpleFunctionProcessor('dense_rank')),
-    pair(PercentRank, simpleFunctionProcessor('percent_rank')),
-    pair(RowNumber, simpleFunctionProcessor('row_number')),
-    pair(CumulativeDistribution, simpleFunctionProcessor('cume_dist')),
-    pair(Ntile, simpleFunctionProcessor('ntile')),
+    pair(Ln, simpleFunctionProcessor('ln')),
+    pair(Log, argTransformFunctionProcessor('log', {n:Node[*]| if($n->size() == 1, | literal(10)->concatenate($n), | $n)})),
+    pair(Mod, simpleFunctionProcessor('mod')),
+    pair(Power, simpleFunctionProcessor('power')),
+    pair(Round, simpleFunctionProcessor('round')),
+    pair(Sign, simpleFunctionProcessor('sign')),
+    pair(Sin, simpleFunctionProcessor('sin')),
+    pair(Sqrt, simpleFunctionProcessor('sqrt')),
+    pair(Tan, simpleFunctionProcessor('tan')),
 
+    // Numeric Aggregate
+    pair(Average, simpleFunctionProcessor('avg')),
+    pair(Sum, simpleFunctionProcessor('sum')),
+    pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
+    pair(VarianceSample, simpleFunctionProcessor('var_samp')),
 
     // String
-    // Custom handling required because in H2 will only consider the first character in the padding string and repeat only it whereas in all other DBs the 
-    // entire string is repeated.
-    pair(Lpad, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForPad('lpad', $f, $sqlDialect, $state, $config )})),
-    pair(Rpad, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForPad('rpad', $f, $sqlDialect, $state, $config )})),
-    // Custom handling required because in H2 will only consider the first character in the trim string and trim only it whereas in all other DBs the 
-    // entire string is trimmed.
-    pair(Ltrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('ltrim', $f, $sqlDialect, $state, $config )})),
-    pair(Rtrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('rtrim', $f, $sqlDialect, $state, $config )})),
     pair(Ascii, simpleFunctionProcessor('ascii')),
-    pair(Lower, simpleFunctionProcessor('lower')),
-    pair(Upper, simpleFunctionProcessor('upper')),
-    pair(Repeat, simpleFunctionProcessor('repeat')),
-    pair(Replace, simpleFunctionProcessor('replace')),
-    // We need custom handling here because negtive index is not supported like how it is supported in Postgres and Other DBs ,
-    // where it returns string from the opposite side. 
-    pair(Left, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('left', $f, $sqlDialect, $state, $config )})),
-    pair(Right, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('right', $f, $sqlDialect, $state, $config )})),
-    pair(Md5, argTransformFunctionProcessor('hash', {n:Node[*]| literal('md5')->concatenate($n)})),
     pair(CharLength, simpleFunctionProcessor('char_length')),
     pair(Chr, simpleFunctionProcessor('char')),
-    pair(Substring, simpleFunctionProcessor('substring')),
-    pair(StrPos, argTransformFunctionProcessor('locate', {n:Node[*]| $n->reverse()})),
-    pair(Sha1, argTransformFunctionProcessor('hash', {n:Node[*]| literal('SHA-1')->concatenate($n)})),
-    pair(Sha256, argTransformFunctionProcessor('hash', {n:Node[*]| literal('SHA-256')->concatenate($n)})),
-    pair(StringAgg, customFunctionProcessor(processorForStringAgg_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Concat, simpleFunctionProcessor('concat')),
+    pair(Left, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('left', $f, $sqlDialect, $state, $config )})), // Negative index handling
+    pair(Lower, simpleFunctionProcessor('lower')),
+    pair(Lpad, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForPad('lpad', $f, $sqlDialect, $state, $config )})), // Custom handling required because in H2 will only consider the first character in the padding string and repeat only it whereas in all other DBs the entire string is repeated
+    pair(Ltrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('ltrim', $f, $sqlDialect, $state, $config )})),
+    pair(Md5, argTransformFunctionProcessor('hash', {n:Node[*]| literal('md5')->concatenate($n)})),
+    pair(Repeat, simpleFunctionProcessor('repeat')),
+    pair(Replace, simpleFunctionProcessor('replace')), 
+    pair(Right, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('right', $f, $sqlDialect, $state, $config )})), // Negative index handling
+    pair(Rpad, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForPad('rpad', $f, $sqlDialect, $state, $config )})), // Custom handling required because in H2 will only consider the first character in the padding string and repeat only it whereas in all other DBs the entire string is repeated
+    pair(Rtrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('rtrim', $f, $sqlDialect, $state, $config )})),
+    pair(StrPos, argTransformFunctionProcessor('locate', {n:Node[*]| $n->reverse()})),
+    pair(Substring, simpleFunctionProcessor('substring')),
+    pair(Upper, simpleFunctionProcessor('upper')),
 
-    // Boolean
-    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // String Aggregate
+    pair(StringAgg, customFunctionProcessor(processorForStringAgg_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+
+    // Boolean Aggregate
     pair(BoolAnd, simpleFunctionProcessor('bool_and')),
     pair(BoolOr, simpleFunctionProcessor('bool_or')),
 
     // Temporal
-    pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
     // Miscellaneous
     pair(Coalesce, simpleFunctionProcessor('coalesce')),
-    pair(Min, simpleFunctionProcessor('min')),
+
+    // Aggregate
+    pair(Count, simpleFunctionProcessor('count')),
     pair(Max, simpleFunctionProcessor('max')),
-    pair(Lag, simpleFunctionProcessor('lag')),
-    pair(Lead, simpleFunctionProcessor('lead')),
+    pair(Min, simpleFunctionProcessor('min')),
+
+    // Window
+    pair(CumulativeDistribution, simpleFunctionProcessor('cume_dist')),
+    pair(DenseRank, simpleFunctionProcessor('dense_rank')),
     pair(FirstValue, simpleFunctionProcessor('first_value')),
+    pair(Lag, simpleFunctionProcessor('lag')),
     pair(LastValue, simpleFunctionProcessor('last_value')),
-    pair(NthValue, simpleFunctionProcessor('nth_value'))
+    pair(Lead, simpleFunctionProcessor('lead')),
+    pair(NthValue, simpleFunctionProcessor('nth_value')),
+    pair(Ntile, simpleFunctionProcessor('ntile')),
+    pair(PercentRank, simpleFunctionProcessor('percent_rank')),
+    pair(Rank, simpleFunctionProcessor('rank')),
+    pair(RowNumber, simpleFunctionProcessor('row_number')),
+
+    // Extension functions
+    // Numeric
+    pair(Log10, simpleFunctionProcessor('log10')),
+
+    // String
+    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Sha1, argTransformFunctionProcessor('hash', {n:Node[*]| literal('SHA-1')->concatenate($n)})),
+    pair(Sha256, argTransformFunctionProcessor('hash', {n:Node[*]| literal('SHA-256')->concatenate($n)}))
 
   ])
 }
