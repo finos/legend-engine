@@ -19,18 +19,18 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::Min extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::Max extends PostgresNativeSqlFunction
 [
-  $this.name == 'min'
+  $this.name == 'max'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::min(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::max(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::Min
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::Max
   (
-    name = 'min',
-    documentation = 'Returns the minimum value of expression across all non-null input values',
+    name = 'max',
+    documentation = 'Returns the maximum value of expression across all non-null input values',
     variations = orderedSubTypes(SqlType)->map({sqlType |
       ^SqlFunctionVariation
       (
@@ -53,10 +53,10 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
             dataRow([26, 'Chemistry', 'Jane'])
           ]
         ),
-        // SELECT subject, min(marks) AS result FROM testTable GROUP BY subject ORDER BY result ASC NULLS LAST
+        // SELECT subject, max(marks) AS result FROM testTable GROUP BY subject ORDER BY result ASC NULLS LAST
         simpleAggFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'min'), 
+            name = ^QualifiedName(parts = 'max'), 
             arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'marks'))]
           ),
           'testTable',
@@ -65,9 +65,9 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         ^TestExpectedResult(
           columns = ['subject', 'result'], 
           data = [
-            list(['Math', 16]), 
-            list(['Physics', 25]), 
-            list(['Chemistry', 26])
+            list(['Math', 20]), 
+            list(['Physics', 32]), 
+            list(['Chemistry', 43])
           ]
         )
       ),
@@ -83,10 +83,10 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
             dataRow(['Thomas', 'Third', '2013-07-30'])
           ]
         ),
-        // SELECT class, min(dob) AS result FROM testTable GROUP BY class ORDER BY result ASC NULLS LAST
+        // SELECT class, max(dob) AS result FROM testTable GROUP BY class ORDER BY result ASC NULLS LAST
         simpleAggFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'min'), 
+            name = ^QualifiedName(parts = 'max'), 
             arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dob'))]
           ),
           'testTable',
@@ -96,11 +96,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
           columns = ['class', 'result'], 
           data = [
             list(['Third', %2013-07-30]), 
-            list(['Fourth', %2014-07-30]), 
-            list(['Fifth', %2015-12-30])
+            list(['Fourth', %2014-11-30]), 
+            list(['Fifth', %2015-12-31])
           ]
         )
-      )          
+      )        
     ]
   )
 }

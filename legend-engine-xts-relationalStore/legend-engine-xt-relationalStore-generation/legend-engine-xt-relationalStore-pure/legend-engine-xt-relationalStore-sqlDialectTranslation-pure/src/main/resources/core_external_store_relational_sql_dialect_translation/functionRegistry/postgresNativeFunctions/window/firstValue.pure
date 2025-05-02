@@ -1,17 +1,18 @@
 // Copyright 2025 Goldman Sachs
 //
-// Licensed under the Apache License, Version 2.0 (the 'License');
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an 'AS IS' BASIS,
+// distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::defaults::*;
 import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
@@ -20,33 +21,33 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::DenseRank extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::FirstValue extends PostgresNativeSqlFunction
 [
-  $this.name == 'dense_rank'
+  $this.name == 'first_value'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::denseRank(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::firstValue(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::DenseRank
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::FirstValue
   (
-    name = 'dense_rank',
-    documentation = 'Returns the rank of the current row, without gaps; this function effectively counts peer groups.',
-    variations = [
+    name = 'first_value',
+    documentation = 'Returns value evaluated at the row that is the first row of the window frame.',
+    variations = orderedSubTypes(SqlType)->map({sqlType |
       ^SqlFunctionVariation
       (
-        parameterTypes = [],
-        returnType = BigIntSqlType
+        parameterTypes = $sqlType,
+        returnType = $sqlType
       )
-    ],
+    }),
     tests = [
       sqlFunctionTest(
         testSetupDataForWindowFunctions(),
-        // SELECT *, dense_rank() OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
+        // SELECT *, first_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST,  student ASC NULLS LAST
         windowFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'dense_rank'), 
-            arguments = [],
+            name = ^QualifiedName(parts = 'first_value'), 
+            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'student'))],
             window = ^meta::external::query::sql::metamodel::Window(
               orderBy = [
                 ^SortItem(
@@ -60,18 +61,18 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
           ),
           'testTable',
           'student'
-        ),        
+        ),
         ^TestExpectedResult(
           columns = ['student', 'dept', 'score', 'result'], 
           data = [
-            list(['Alice', 'Science', 90, 1]), 
-            list(['Eve', 'Arts', 88, 1]),
-            list(['Bob', 'Science', 88, 2]),
-            list(['Frank', 'Arts', 85, 2]),
-            list(['Charlie', 'Science', 85, 3]),
-            list(['Grace', 'Arts', 84, 3]),
-            list(['David', 'Science', 80, 4]),
-            list(['Hannah', 'Arts', 80, 4])
+            list(['Alice', 'Science', 90, 'Alice']),
+            list(['Bob', 'Science', 88, 'Alice']),
+            list(['Charlie', 'Science', 85, 'Alice']), 
+            list(['David', 'Science', 80, 'Alice']),
+            list(['Eve', 'Arts', 88, 'Eve']),
+            list(['Frank', 'Arts', 85, 'Eve']),
+            list(['Grace', 'Arts', 84, 'Eve']),
+            list(['Hannah', 'Arts', 80, 'Eve'])
           ]
         )
       )

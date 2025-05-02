@@ -18,15 +18,15 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::RegexpLike extends ExtensionSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::RegexpLike extends ExtensionSqlFunction
 [
   $this.name == 'regexp_like'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::regexpLike(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::regexpLike(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::RegexpLike
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::RegexpLike
   (
     name = 'regexp_like',
     documentation = 'Returns a full string regex match.',

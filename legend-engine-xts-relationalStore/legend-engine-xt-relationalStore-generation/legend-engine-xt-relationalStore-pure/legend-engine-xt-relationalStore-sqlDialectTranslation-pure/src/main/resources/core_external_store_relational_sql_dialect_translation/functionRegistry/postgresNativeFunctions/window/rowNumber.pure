@@ -20,33 +20,33 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Ntile extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::RowNumber extends PostgresNativeSqlFunction
 [
-  $this.name == 'ntile'
+  $this.name == 'row_number'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::ntile(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::rowNumber(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Ntile
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::RowNumber
   (
-    name = 'ntile',
-    documentation = 'Returns an integer ranging from 1 to the argument value, dividing the partition as equally as possible.',
+    name = 'row_number',
+    documentation = 'Returns the number of the current row within its partition, counting from 1.',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = AbstractIntegerSqlType,
-        returnType = AbstractIntegerSqlType
+        parameterTypes = [],
+        returnType = BigIntSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
         testSetupDataForWindowFunctions(),
-        //  SELECT *, ntile(2) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
+        // SELECT *, row_number() OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
         windowFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'ntile'), 
-            arguments = [literal(2)],
+            name = ^QualifiedName(parts = 'row_number'), 
+            arguments = [],
             window = ^meta::external::query::sql::metamodel::Window(
               orderBy = [
                 ^SortItem(
@@ -65,14 +65,15 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
           columns = ['student', 'dept', 'score', 'result'], 
           data = [
             list(['Alice', 'Science', 90, 1]), 
-            list(['Bob', 'Science', 88, 1]),
             list(['Eve', 'Arts', 88, 1]),
-            list(['Frank', 'Arts', 85, 1]),
-            list(['Charlie', 'Science', 85, 2]), 
-            list(['David', 'Science', 80, 2]),
-            list(['Grace', 'Arts', 84, 2]),
-            list(['Hannah', 'Arts', 80, 2])
-          ]
+            list(['Bob', 'Science', 88, 2]),
+            list(['Frank', 'Arts', 85, 2]),
+            list(['Charlie', 'Science', 85, 3]),
+            list(['Grace', 'Arts', 84, 3]),
+            list(['David', 'Science', 80, 4]),
+            list(['Hannah', 'Arts', 80, 4])
+
+          ]  
         )
       )
     ]

@@ -20,15 +20,15 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::StringAgg extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::aggregate::StringAgg extends PostgresNativeSqlFunction
 [
   $this.name == 'string_agg'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::stringAgg(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::aggregate::stringAgg(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::StringAgg
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::aggregate::StringAgg
   (
     name = 'string_agg',
     documentation = 'Aggregate function that concatenates the non-null input values into a single string.',

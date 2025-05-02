@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::store::relational::sqlDialectTranslation::defaults::*;
 import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
@@ -21,33 +20,33 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::FirstValue extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::PercentRank extends PostgresNativeSqlFunction
 [
-  $this.name == 'first_value'
+  $this.name == 'percent_rank'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::firstValue(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::percentRank(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::FirstValue
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::PercentRank
   (
-    name = 'first_value',
-    documentation = 'Returns value evaluated at the row that is the first row of the window frame.',
-    variations = orderedSubTypes(SqlType)->map({sqlType |
+    name = 'percent_rank',
+    documentation = 'Returns the relative rank of the current row, that is (rank - 1) / (total partition rows - 1). The value thus ranges from 0 to 1 inclusive.',
+    variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = $sqlType,
-        returnType = $sqlType
+        parameterTypes = [],
+        returnType = DoubleSqlType
       )
-    }),
+    ],
     tests = [
       sqlFunctionTest(
         testSetupDataForWindowFunctions(),
-        // SELECT *, first_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST,  student ASC NULLS LAST
+        // SELECT *, percent_rank() OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
         windowFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'first_value'), 
-            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'student'))],
+            name = ^QualifiedName(parts = 'percent_rank'), 
+            arguments = [],
             window = ^meta::external::query::sql::metamodel::Window(
               orderBy = [
                 ^SortItem(
@@ -65,14 +64,14 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         ^TestExpectedResult(
           columns = ['student', 'dept', 'score', 'result'], 
           data = [
-            list(['Alice', 'Science', 90, 'Alice']),
-            list(['Bob', 'Science', 88, 'Alice']),
-            list(['Charlie', 'Science', 85, 'Alice']), 
-            list(['David', 'Science', 80, 'Alice']),
-            list(['Eve', 'Arts', 88, 'Eve']),
-            list(['Frank', 'Arts', 85, 'Eve']),
-            list(['Grace', 'Arts', 84, 'Eve']),
-            list(['Hannah', 'Arts', 80, 'Eve'])
+            list(['Alice', 'Science', 90, 0.0]), 
+            list(['Eve', 'Arts', 88, 0.0]),
+            list(['Bob', 'Science', 88, 0.33333333]),
+            list(['Frank', 'Arts', 85, 0.33333333]),
+            list(['Charlie', 'Science', 85, 0.66666667]),
+            list(['Grace', 'Arts', 84, 0.66666667]),
+            list(['David', 'Science', 80, 1.0]),
+            list(['Hannah', 'Arts', 80, 1.0])
           ]
         )
       )
