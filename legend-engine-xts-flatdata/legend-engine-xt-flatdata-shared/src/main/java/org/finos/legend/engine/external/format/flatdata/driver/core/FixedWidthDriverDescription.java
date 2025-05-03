@@ -14,11 +14,13 @@
 
 package org.finos.legend.engine.external.format.flatdata.driver.core;
 
+import java.util.Iterator;
 import org.finos.legend.engine.external.format.flatdata.driver.core.connection.InputStreamConnection;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataProcessingContext;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataReadDriver;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.RecordTypeMultiplicity;
 import org.finos.legend.engine.external.format.flatdata.metamodel.FlatData;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataRecordField;
 import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataSection;
 import org.finos.legend.engine.external.format.flatdata.validation.FlatDataDefect;
 import org.finos.legend.engine.external.format.flatdata.validation.FlatDataValidator;
@@ -51,13 +53,27 @@ public class FixedWidthDriverDescription extends StreamingDriverDescription impl
     public List<FlatDataDefect> validate(FlatData store, FlatDataSection section)
     {
         List<FlatDataDefect> defects = new ArrayList<>();
-        section.recordType.fields.forEach(field ->
+        Iterator<FlatDataRecordField> fieldIterator = section.recordType.fields.iterator();
+
+        while (fieldIterator.hasNext())
         {
-            if (field.address == null || field.address != null && !field.address.matches("^\\d+:\\d+$"))
+            FlatDataRecordField field = fieldIterator.next();
+            if (fieldIterator.hasNext())
             {
-                defects.add(new FlatDataDefect(store, section, "Invalid address for '" + field.label + "' (Expected start:end column numbers)"));
+                if (field.address == null || field.address != null && !field.address.matches("^\\d+:\\d+$"))
+                {
+                    defects.add(new FlatDataDefect(store, section, "Invalid address for '" + field.label + "' (Expected start:end column numbers)"));
+                }
             }
-        });
+            else
+            {
+                if (field.address == null || field.address != null && !(field.address.matches("^\\d+:\\d+$") || field.address.matches("^\\d+$")))
+                {
+                   //TODO better error message
+                    defects.add(new FlatDataDefect(store, section, "Invalid address for '" + field.label + "' (Expected start:end column numbers or for final column start column number)"));
+                }
+            }
+        }
         return defects;
     }
 

@@ -52,8 +52,26 @@ public class FixedWidthReadDriver<T> extends StreamingReadDriver<T>
         for (int i = 0; i < addresses.length; i++)
         {
             String address = section.recordType.fields.get(i).address;
-            int start = Integer.parseInt(address.split(":")[0]) - 1;
-            int end = Integer.parseInt(address.split(":")[1]);
+            int start;
+            int end;
+            if (i == addresses.length - 1)
+            {
+                if (address.contains(":"))
+                {
+                    start = Integer.parseInt(address.split(":")[0]) - 1;
+                    end = Integer.parseInt(address.split(":")[1]);
+                }
+                else
+                {
+                    start = Integer.parseInt(address) - 1;
+                    end = -1;
+                }
+            }
+            else
+            {
+                start = Integer.parseInt(address.split(":")[0]) - 1;
+                end = Integer.parseInt(address.split(":")[1]);
+            }
 
             this.addresses[i] = address;
             this.starts[i] = start;
@@ -99,9 +117,16 @@ public class FixedWidthReadDriver<T> extends StreamingReadDriver<T>
             String text = line.getText();
             for (int i = 0; i < addresses.length; i++)
             {
-                values[i] = ends[i] <= text.length()
-                        ? text.substring(starts[i], ends[i]).trim()
-                        : "";
+                if (i == addresses.length - 1 && ends[i] == -1)
+                {
+                    values[i] = text.substring(starts[i]).trim();
+                }
+                else
+                {
+                    values[i] = ends[i] <= text.length()
+                            ? text.substring(starts[i], ends[i]).trim()
+                            : "";
+                }
             }
             RawFlatData rawFlatData = dataFactory.createRawFlatData(++recordNumber, line, values);
             return Optional.of(BasicChecked.newChecked(rawFlatData, null));

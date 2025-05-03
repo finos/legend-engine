@@ -115,6 +115,97 @@ public class TestFixedWidth extends AbstractDriverTest
         Assert.assertEquals("MD", p3.TITLE);
     }
 
+
+    @Test
+    public void canReadErrorFreeDynamicSizeFinalColumn()
+    {
+        FlatData flatData = parseFlatData("section default: FixedWidth\n" +
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    FIRM          {1:2} : STRING;\n" +
+                "    AGE           {3:4} : INTEGER;\n" +
+                "    MASTER        {5:5} : INTEGER(optional);\n" +
+                "    WEIGHT        {6:8} : STRING(optional);\n" +
+                "    NAME          {9:12} : STRING;\n" +
+                "    EMPLOYED_DATE {13:22} : DATE(format='yyyy-MM-dd');\n" +
+                "    TITLE         {23} : STRING;\n" +
+                "  }\n" +
+                "}\n");
+
+        String data = data("\r\n",
+                "GS2511.1Alex2013-08-13Mrs",
+                "GG2601.2Brad2003-01-01Mr",
+                "FB2711.3Karl2011-11-26Master"
+        );
+
+        List<IChecked<Person>> records = deserialize(Person.class, flatData, data);
+        records.forEach(this::assertNoDefects);
+
+        List<ExpectedRecordValue> expectedRecordValues1 = Arrays.asList(
+                AbstractDriverTest.rValue("1:2", "GS"),
+                AbstractDriverTest.rValue("3:4", "25"),
+                AbstractDriverTest.rValue("5:5", "1"),
+                AbstractDriverTest.rValue("6:8", "1.1"),
+                AbstractDriverTest.rValue("9:12", "Alex"),
+                AbstractDriverTest.rValue("13:22", "2013-08-13"),
+                AbstractDriverTest.rValue("23", "Mrs")
+        );
+
+        List<ExpectedRecordValue> expectedRecordValues2 = Arrays.asList(
+                AbstractDriverTest.rValue("1:2", "GG"),
+                AbstractDriverTest.rValue("3:4", "26"),
+                AbstractDriverTest.rValue("5:5", "0"),
+                AbstractDriverTest.rValue("6:8", "1.2"),
+                AbstractDriverTest.rValue("9:12", "Brad"),
+                AbstractDriverTest.rValue("13:22", "2003-01-01"),
+                AbstractDriverTest.rValue("23", "Mr")
+        );
+
+        List<AbstractDriverTest.ExpectedRecordValue> expectedRecordValues3 = Arrays.asList(
+                AbstractDriverTest.rValue("1:2", "FB"),
+                AbstractDriverTest.rValue("3:4", "27"),
+                AbstractDriverTest.rValue("5:5", "1"),
+                AbstractDriverTest.rValue("6:8", "1.3"),
+                AbstractDriverTest.rValue("9:12", "Karl"),
+                AbstractDriverTest.rValue("13:22", "2011-11-26"),
+                AbstractDriverTest.rValue("23", "Master")
+        );
+
+        assertSource(1, 1, "GS2511.1Alex2013-08-13Mrs", expectedRecordValues1, records.get(0));
+        Person p1 = records.get(0).getValue();
+        Assert.assertEquals("GS", p1.FIRM);
+        Assert.assertEquals(25L, p1.AGE);
+        Assert.assertEquals(1, p1.MASTER);
+        Assert.assertEquals("1.1", p1.WEIGHT);
+        Assert.assertEquals("Alex", p1.NAME);
+        Assert.assertEquals(LocalDate.parse("2013-08-13"), p1.EMPLOYED_DATE);
+        Assert.assertEquals("Mrs", p1.TITLE);
+
+        assertSource(2, 2, "GG2601.2Brad2003-01-01Mr", expectedRecordValues2, records.get(1));
+        Person p2 = records.get(1).getValue();
+        Assert.assertEquals("GG", p2.FIRM);
+        Assert.assertEquals(26L, p2.AGE);
+        Assert.assertEquals(0, p2.MASTER);
+        Assert.assertEquals("1.2", p2.WEIGHT);
+        Assert.assertEquals("Brad", p2.NAME);
+        Assert.assertEquals(LocalDate.parse("2003-01-01"), p2.EMPLOYED_DATE);
+        Assert.assertEquals("Mr", p2.TITLE);
+
+
+        assertSource(3, 3, "FB2711.3Karl2011-11-26Master", expectedRecordValues3, records.get(2));
+        Person p3 = records.get(2).getValue();
+        Assert.assertEquals("FB", p3.FIRM);
+        Assert.assertEquals(27L, p3.AGE);
+        Assert.assertEquals(1, p3.MASTER);
+        Assert.assertEquals("1.3", p3.WEIGHT);
+        Assert.assertEquals("Karl", p3.NAME);
+        Assert.assertEquals(LocalDate.parse("2011-11-26"), p3.EMPLOYED_DATE);
+        Assert.assertEquals("Master", p3.TITLE);
+    }
+
     @SuppressWarnings("WeakerAccess")  // Required for reflective access
     public static class Person
     {
