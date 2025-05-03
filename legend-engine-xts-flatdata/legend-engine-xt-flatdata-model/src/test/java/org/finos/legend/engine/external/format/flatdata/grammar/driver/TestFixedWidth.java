@@ -178,7 +178,7 @@ public class TestFixedWidth extends AbstractDriverTest
                 AbstractDriverTest.rValue("23:EOL", "Master")
         );
 
-        assert(new FixedWidthDriverDescription().validate(flatData, flatData.sections.get(0)).isEmpty());
+        Assert.assertTrue(new FixedWidthDriverDescription().validate(flatData, flatData.sections.get(0)).isEmpty());
         assertSource(1, 1, "GS2511.1Alex2013-08-13Mrs", expectedRecordValues1, records.get(0));
         Person p1 = records.get(0).getValue();
         Assert.assertEquals("GS", p1.FIRM);
