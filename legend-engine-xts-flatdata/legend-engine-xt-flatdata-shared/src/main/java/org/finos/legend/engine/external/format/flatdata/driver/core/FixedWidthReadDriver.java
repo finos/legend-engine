@@ -56,16 +56,9 @@ public class FixedWidthReadDriver<T> extends StreamingReadDriver<T>
             int end;
             if (i == addresses.length - 1)
             {
-                if (address.contains(":"))
-                {
-                    start = Integer.parseInt(address.split(":")[0]) - 1;
-                    end = Integer.parseInt(address.split(":")[1]);
-                }
-                else
-                {
-                    start = Integer.parseInt(address) - 1;
-                    end = -1;
-                }
+                String[] indices = address.split(":");
+                start = Integer.parseInt(indices[0]) - 1;
+                end = indices[1].equals("EOL") ? -1 : Integer.parseInt(indices[1]);
             }
             else
             {

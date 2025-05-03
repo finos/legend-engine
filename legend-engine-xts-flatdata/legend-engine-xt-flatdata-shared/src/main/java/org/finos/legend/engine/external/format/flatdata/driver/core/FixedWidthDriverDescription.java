@@ -67,10 +67,9 @@ public class FixedWidthDriverDescription extends StreamingDriverDescription impl
             }
             else
             {
-                if (field.address == null || field.address != null && !(field.address.matches("^\\d+:\\d+$") || field.address.matches("^\\d+$")))
+                if (field.address == null || field.address != null && !(field.address.matches("^\\d+:(\\d+|EOL)$")))
                 {
-                   //TODO better error message
-                    defects.add(new FlatDataDefect(store, section, "Invalid address for '" + field.label + "' (Expected start:end column numbers or for final column start column number)"));
+                    defects.add(new FlatDataDefect(store, section, "Invalid address for '" + field.label + "' (Expected start:end column numbers or EOL for final column end index)"));
                 }
             }
         }
