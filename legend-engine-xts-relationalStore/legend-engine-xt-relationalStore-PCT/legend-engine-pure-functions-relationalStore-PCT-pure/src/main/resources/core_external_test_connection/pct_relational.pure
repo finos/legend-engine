@@ -108,7 +108,16 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
     let rawPlan = meta::pure::executionPlan::executionPlan($newFunction, ^meta::pure::runtime::ExecutionContext(), $extensions, $debug);
 
-    let planBindToJava = $rawPlan->meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions('LegendJava');
+    let planWithTeardown = ^$rawPlan(rootExecutionNode =
+        ^meta::pure::executionPlan::RelationalBlockExecutionNode(
+            executionNodes = $rawPlan.rootExecutionNode,
+            resultType = $rawPlan.rootExecutionNode.resultType,
+            resultSizeRange =  $rawPlan.rootExecutionNode.resultSizeRange,
+            finallyExecutionNodes = meta::relational::tests::pct::process::teardownDatabase($repocessed.second.database, $repocessed.second.runtime, $debug)
+        )
+    );
+
+    let planBindToJava = $planWithTeardown->meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions('LegendJava');
 
     let plan = $planBindToJava->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($extensions);
 
@@ -459,7 +468,7 @@ function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], d
 
   let ddlTranslator = ^RelationalDDLCommandsTranslator(
     createSchema = $originalTranslator.createSchema,
-    dropSchema =  {sql: DropSchemaSQL[1], c: DbConfig[1] | []->cast(@String)}, // wont drop schemas as best to reuse them between tests specailly on shared resources
+    dropSchema =  {sql: DropSchemaSQL[1], c: DbConfig[1] | []->cast(@String)}, // wont drop schemas as best to reuse them between tests specially on shared (not in memory) resources
     dropTable = $originalTranslator.dropTable,
     createTable = {sql: CreateTableSQL[1], c: DbConfig[1] | $originalTranslator.createTable->map(f | $f->eval(^$sql(isTempTable = true), $c))}, // create temp table to best isolate tables on shared resources
     loadTable = $originalTranslator.loadTable,
@@ -488,6 +497,14 @@ function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], d
   let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
 
   meta::legend::executePlanAsJSON($planAsJson, []);
+}
+
+function meta::relational::tests::pct::process::teardownDatabase(database: Database[1], runtime: Runtime[1], debug: DebugContext[1]): meta::pure::executionPlan::ExecutionNode[*]
+{
+  let dbc = $runtime.connectionByElement($database)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+  let dbConfig =  meta::relational::functions::sqlQueryToString::createDbConfig($dbc.type);
+  let dropTableStatements = $database.schemas->map(s|$s.tables)->map(t | $t->meta::relational::functions::toDDL::dropTableStatement($dbConfig));
+  $dropTableStatements->map(sql | meta::relational::mapping::generateSQLExecNode($sql, $dbc));
 }
 
 Class meta::relational::tests::pct::process::ProcessingState

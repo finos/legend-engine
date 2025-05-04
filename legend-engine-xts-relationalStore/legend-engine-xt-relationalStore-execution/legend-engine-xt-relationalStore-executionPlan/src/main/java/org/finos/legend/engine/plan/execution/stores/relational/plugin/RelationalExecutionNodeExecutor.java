@@ -213,6 +213,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().closeAllBlockConnections();
                 throw e;
             }
+            finally
+            {
+                relationalBlockExecutionNode.finallyExecutionNodes.forEach(x -> new ExecutionNodeExecutor(this.identity, new ExecutionState(this.executionState)).visit(x));
+            }
         }
         else if (executionNode instanceof CreateAndPopulateTempTableExecutionNode)
         {
