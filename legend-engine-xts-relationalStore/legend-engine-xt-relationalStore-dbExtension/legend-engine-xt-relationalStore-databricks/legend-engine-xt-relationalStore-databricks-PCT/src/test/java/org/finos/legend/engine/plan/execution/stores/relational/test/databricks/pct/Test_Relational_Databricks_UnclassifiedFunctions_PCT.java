@@ -35,7 +35,9 @@ public class Test_Relational_Databricks_UnclassifiedFunctions_PCT extends PCTRep
     private static final ReportScope reportScope = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.databricksAdapter;
     private static final String platform = "compiled";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with();
+    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+
+    );
 
     public static Test suite()
     {

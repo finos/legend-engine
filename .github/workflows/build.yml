@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       testMatrix: ${{ steps.testMatrix.outputs.testMatrix }}
-      profiles: ${{ steps.masterBuild.outputs.PROFILES }}
+      profiles: ${{ steps.requiredSecrets.outputs.PROFILES }}
 
     steps:
       - name: Checkout repo
@@ -87,12 +87,17 @@ jobs:
         with:
           theme: dark
 
+      - name: Set profiles that required github secrets
+        id: requiredSecrets
+        if: github.repository == 'finos/legend-engine'
+        run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
+
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -T2 -DskipTests=true install
+          mvn -B -e -T2 -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }}
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -107,11 +112,6 @@ jobs:
         # and can cause problem with some code generators
         # See https://github.com/finos/legend-engine/pull/924
         run: mvn -B -e -T2 -DskipTests=true deploy -P docker-snapshot,pct-cloud-test
-
-      - name: Set profiles for master branch
-        id: masterBuild
-        if: github.ref == 'refs/heads/master'
-        run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4
