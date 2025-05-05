@@ -12,11 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-native function meta::pure::functions::string::matches(string:String[1], regexp:String[1]):Boolean[1];
+import meta::pure::test::pct::*;
 
-function <<test.Test>> meta::pure::functions::string::tests::matches::testMatches():Boolean[1]
+native function <<PCT.function>> {doc.doc = 'Checks if the given string matches the specified regular expression.'}
+  meta::pure::functions::string::matches(string:String[1], regexp:String[1]):Boolean[1];
+
+function <<PCT.test>> meta::pure::functions::string::tests::matches::testMatches<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assert('hello'->matches('hello'));
-   assert('abc'->matches('[a-z][a-z][a-z]'));
-   assertFalse('abc'->matches('[a-z][a-z][a-z][a-z]'));
+  assert($f->eval(|'hello'->matches('hello')));
+  assert($f->eval(|'abc'->matches('[a-z][a-z][a-z]')));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::matches::testMatchesNoMatch<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertFalse($f->eval(|'abc'->matches('[a-z][a-z][a-z][a-z]')));
 }

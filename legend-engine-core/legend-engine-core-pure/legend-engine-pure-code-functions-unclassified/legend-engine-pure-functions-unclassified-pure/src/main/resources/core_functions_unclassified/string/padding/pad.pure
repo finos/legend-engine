@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::profiles::*;
-
-function <<test.Test>> meta::pure::functions::string::tests::toupper::testToUpperFirstCharacter():Boolean[1]
+function <<access.private>> meta::pure::functions::string::pad(str:String[1], length:Integer[1], char:String[1], left:Boolean[1]):String[1]
 {
-   assertEquals('', ''->toUpperFirstCharacter());
-   assertEquals('A', 'a'->toUpperFirstCharacter());
-   assertEquals('B', 'B'->toUpperFirstCharacter());
-   assertEquals('Bed', 'bed'->toUpperFirstCharacter());
-   assertEquals('Cat', 'Cat'->toUpperFirstCharacter());
+  let result = if ($str->length() > $length,
+    | $str->substring(0, $length),
+    | range($length - $str->length())->fold({acc, s | if ($left, | $char + $s, | $s + $char)}, $str->toOne())
+  );
+
+  if ($result->length() > $length, | $result->substring(0, $length), | $result);
 }

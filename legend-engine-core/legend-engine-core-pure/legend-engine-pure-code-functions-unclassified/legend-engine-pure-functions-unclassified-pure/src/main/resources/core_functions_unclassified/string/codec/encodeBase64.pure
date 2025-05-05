@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-native function meta::pure::functions::string::encodeBase64(string:String[1]):String[1];
+import meta::pure::test::pct::*;
 
-function <<test.Test>> meta::pure::functions::string::tests::base64::testBase64Encoding():Boolean[1]
+native function <<PCT.function>> {doc.doc = 'Encodes a string into its Base64 representation.'} 
+  meta::pure::functions::string::encodeBase64(string:String[1]):String[1];
+
+function <<PCT.test>> meta::pure::functions::string::tests::base64::testEncodeBase64<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assertEquals('SGVsbG8sIFdvcmxkIQ', 'Hello, World!'->encodeBase64());
+  assertEquals('SGVsbG8sIFdvcmxkIQ', $f->eval(|'Hello, World!'->encodeBase64()));
 }

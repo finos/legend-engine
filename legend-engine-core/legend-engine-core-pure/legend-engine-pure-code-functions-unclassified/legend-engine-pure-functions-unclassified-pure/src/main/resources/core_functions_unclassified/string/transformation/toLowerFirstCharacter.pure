@@ -1,0 +1,44 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> {doc.doc = 'Lower cases the first charater of the provided string'}
+  meta::pure::functions::string::toLowerFirstCharacter(str : String[1]) : String[1] 
+{
+  if($str->length() == 0,
+    |$str,
+    |$str->substring(0, 1)->toLower() + $str->substring(1)
+  )
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('xoXoXoX', $f->eval(|'XoXoXoX'->toLowerFirstCharacter()));
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('xOxOxOx', $f->eval(|'xOxOxOx'->toLowerFirstCharacter()));
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterNumber<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('1isOne', $f->eval(|'1isOne'->toLowerFirstCharacter()));
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterEmptyString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('', $f->eval(|''->toLowerFirstCharacter()));
+}
