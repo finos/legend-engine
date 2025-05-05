@@ -108,12 +108,13 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
     let rawPlan = meta::pure::executionPlan::executionPlan($newFunction, ^meta::pure::runtime::ExecutionContext(), $extensions, $debug);
 
+    let setup = meta::relational::tests::pct::process::setupDatabase($repocessed.second.csvs, $repocessed.second.database, $repocessed.second.runtime, $debug);
+
     let planWithTeardown = ^$rawPlan(rootExecutionNode =
         ^meta::pure::executionPlan::RelationalBlockExecutionNode(
-            executionNodes = $rawPlan.rootExecutionNode,
+            executionNodes = $setup->concatenate($rawPlan.rootExecutionNode),
             resultType = $rawPlan.rootExecutionNode.resultType,
-            resultSizeRange =  $rawPlan.rootExecutionNode.resultSizeRange,
-            finallyExecutionNodes = meta::relational::tests::pct::process::teardownDatabase($repocessed.second.database, $repocessed.second.runtime, $debug)
+            resultSizeRange =  $rawPlan.rootExecutionNode.resultSizeRange
         )
     );
 
@@ -348,9 +349,6 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
             let otherFuncs = $allReprocessed.current->map(r | $r->meta::relational::tests::pct::extractDependentFunctions())->distinct();
             let reprocessed = $allReprocessed->tail()->fold({prev, reproc |meta::relational::tests::pct::process::merge($prev, $reproc)}, $allReprocessed->head()->toOne());
 
-            // Update the database ------------
-            meta::relational::tests::pct::process::setupDatabase($reprocessed.csvs, $db, $reprocessed.runtime->toOne(), $debug);
-
             let code =  '\n###Relational\n'+
                         $reprocessed.database->toOne()->printDatabase()+
                         if ($reprocessed.mapping->isEmpty(),
@@ -457,7 +455,7 @@ function meta::relational::tests::pct::process::addWith(func: FunctionDefinition
   ]);
 }
 
-function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], database: Database[1], runtime: Runtime[1], debug: DebugContext[1]): String[1]
+function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], database: Database[1], runtime: Runtime[1], debug: DebugContext[1]): meta::pure::executionPlan::SequenceExecutionNode[1]
 {
   let dbc = $runtime.connectionByElement($database)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
 
@@ -480,31 +478,13 @@ function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], d
   let setUpSQLs = $csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($database->toOne(), $pctDbConfig);
   print(if($debug.debug,|'\n' + $setUpSQLs->joinStrings('\n') + '\n',|''));
 
-  let updatePlan = ^meta::pure::executionPlan::ExecutionPlan
-  (
-      func = |'dummy',
-      mapping = ^Mapping(package=meta::pure::executionPlan, name='dummy'),
-      runtime = $runtime->toOne(),
-      rootExecutionNode = ^meta::pure::executionPlan::SequenceExecutionNode(
-                            resultType = ^meta::pure::executionPlan::VoidResultType(genericType=^GenericType(rawType=meta::pure::router::store::routing::Void)),
-                            executionNodes = $setUpSQLs->map(sql | meta::relational::mapping::generateSQLExecNode($sql, $dbc))
-                          ),
-      authDependent = false
+  let nodes = ^meta::pure::executionPlan::SequenceExecutionNode(
+        resultType = ^meta::pure::executionPlan::VoidResultType(genericType=^GenericType(rawType=meta::pure::router::store::routing::Void)),
+        executionNodes = $setUpSQLs->map(sql |
+            let sqlNode = $sql->meta::relational::mapping::generateSQLExecNode($dbc);
+            if($sql->toLower()->startsWith('drop') && $sql->toLower()->contains('table') , |^$sqlNode(onConnectionCloseCommitQuery = $sql, onConnectionCloseRollbackQuery = $sql), |$sqlNode);
+        )
   );
-
-  let plan = $updatePlan->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan(meta::relational::extension::relationalExtensions());
-
-  let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
-
-  meta::legend::executePlanAsJSON($planAsJson, []);
-}
-
-function meta::relational::tests::pct::process::teardownDatabase(database: Database[1], runtime: Runtime[1], debug: DebugContext[1]): meta::pure::executionPlan::ExecutionNode[*]
-{
-  let dbc = $runtime.connectionByElement($database)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
-  let dbConfig =  meta::relational::functions::sqlQueryToString::createDbConfig($dbc.type);
-  let dropTableStatements = $database.schemas->map(s|$s.tables)->map(t | $t->meta::relational::functions::toDDL::dropTableStatement($dbConfig));
-  $dropTableStatements->map(sql | meta::relational::mapping::generateSQLExecNode($sql, $dbc));
 }
 
 Class meta::relational::tests::pct::process::ProcessingState
