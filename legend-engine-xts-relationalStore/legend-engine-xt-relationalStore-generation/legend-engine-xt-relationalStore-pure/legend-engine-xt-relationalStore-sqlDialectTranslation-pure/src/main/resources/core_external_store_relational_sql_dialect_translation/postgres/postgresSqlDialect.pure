@@ -12,16 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensiveFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
-import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
@@ -316,87 +319,101 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::functionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
 {
   newMap([
+    // Postgres Native Functions
     // Numeric
     Abs->nativeFunctionMapEntry(),
-    Cbrt->nativeFunctionMapEntry(),
-    Ceil->nativeFunctionMapEntry(),
-    Ceiling->nativeFunctionMapEntry(),
-    Degrees->nativeFunctionMapEntry(),
-    Exp->nativeFunctionMapEntry(),
-    Ln->nativeFunctionMapEntry(),
-    Log->nativeFunctionMapEntry(),
-    pair(Log10, argTransformFunctionProcessor('log', {n:Node[*]| literal(10)->concatenate($n)})),
-    Sqrt->nativeFunctionMapEntry(),
     Acos->nativeFunctionMapEntry(),
     Asin->nativeFunctionMapEntry(),
     Atan->nativeFunctionMapEntry(),
     Atan2->nativeFunctionMapEntry(),
+    Cbrt->nativeFunctionMapEntry(),
+    Ceil->nativeFunctionMapEntry(),
+    Ceiling->nativeFunctionMapEntry(),
     Cos->nativeFunctionMapEntry(),
     Cot->nativeFunctionMapEntry(),
-    Sin->nativeFunctionMapEntry(),
-    Tan->nativeFunctionMapEntry(),
-    Power->nativeFunctionMapEntry(),
-    pair(Sign, customFunctionProcessor(processorForSign_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    Mod->nativeFunctionMapEntry(),
-    Round->nativeFunctionMapEntry(),
+    Degrees->nativeFunctionMapEntry(),
+    Exp->nativeFunctionMapEntry(),
     Floor->nativeFunctionMapEntry(),
-    Sum->nativeFunctionMapEntry(),
+    Ln->nativeFunctionMapEntry(),
+    Log->nativeFunctionMapEntry(),
+    Mod->nativeFunctionMapEntry(),
+    Power->nativeFunctionMapEntry(),
+    Round->nativeFunctionMapEntry(),
+    pair(Sign, customFunctionProcessor(processorForSign_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    Sin->nativeFunctionMapEntry(),
+    Sqrt->nativeFunctionMapEntry(),
+    Tan->nativeFunctionMapEntry(),
+
+    // Numeric Aggregate
     Average->nativeFunctionMapEntry(),
-    Count->nativeFunctionMapEntry(),
+    Sum->nativeFunctionMapEntry(),
     VarianceSample->nativeFunctionMapEntry(),
     VariancePopulation->nativeFunctionMapEntry(),
-    Rank->nativeFunctionMapEntry(),
-    DenseRank->nativeFunctionMapEntry(),
-    PercentRank->nativeFunctionMapEntry(),
-    RowNumber->nativeFunctionMapEntry(),
-    CumulativeDistribution->nativeFunctionMapEntry(),
-    Ntile->nativeFunctionMapEntry(),
     
     // String
-    Lpad->nativeFunctionMapEntry(),
-    Rpad->nativeFunctionMapEntry(),
-    Ltrim->nativeFunctionMapEntry(),
-    Rtrim->nativeFunctionMapEntry(),
     Ascii->nativeFunctionMapEntry(),
-    Lower->nativeFunctionMapEntry(),
-    Upper->nativeFunctionMapEntry(),
-    Repeat->nativeFunctionMapEntry(),
-    Replace->nativeFunctionMapEntry(),
-    Md5->nativeFunctionMapEntry(),
     CharLength->nativeFunctionMapEntry(),
     Chr->nativeFunctionMapEntry(),
-    Reverse->nativeFunctionMapEntry(),
-    SplitPart->nativeFunctionMapEntry(),
-    Substring->nativeFunctionMapEntry(),
-    Left->nativeFunctionMapEntry(),
-    Right->nativeFunctionMapEntry(),
-    StrPos->nativeFunctionMapEntry(),
-    pair(Sha1, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha1', $f, $sqlDialect, $state, $config )})),
-    pair(Sha256, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha256', $f, $sqlDialect, $state, $config )})),
-    StringAgg->nativeFunctionMapEntry(),
     Concat->nativeFunctionMapEntry(),
+    Left->nativeFunctionMapEntry(),
+    Lower->nativeFunctionMapEntry(),
+    Lpad->nativeFunctionMapEntry(),
+    Ltrim->nativeFunctionMapEntry(),
+    Md5->nativeFunctionMapEntry(),
+    Repeat->nativeFunctionMapEntry(),
+    Replace->nativeFunctionMapEntry(),
+    Reverse->nativeFunctionMapEntry(),
+    Rpad->nativeFunctionMapEntry(),
+    Rtrim->nativeFunctionMapEntry(),
+    SplitPart->nativeFunctionMapEntry(),
+    StrPos->nativeFunctionMapEntry(),
+    Substring->nativeFunctionMapEntry(),
+    Right->nativeFunctionMapEntry(),
+    Upper->nativeFunctionMapEntry(),
 
-    // Boolean
-    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // String Aggregate
+    StringAgg->nativeFunctionMapEntry(),
+
+    // Boolean Aggregate
     BoolAnd->nativeFunctionMapEntry(),
     BoolOr->nativeFunctionMapEntry(),
 
     // Temporal
-    DateTrunc->nativeFunctionMapEntry(),
     pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    DateTrunc->nativeFunctionMapEntry(),
     Now->nativeFunctionMapEntry(),
     ToDate->nativeFunctionMapEntry(),
     ToTimestamp->nativeFunctionMapEntry(),
 
     // Miscellaneous
     Coalesce->nativeFunctionMapEntry(),
-    Min->nativeFunctionMapEntry(),
+
+    // Aggregate
+    Count->nativeFunctionMapEntry(),
     Max->nativeFunctionMapEntry(),
-    Lag->nativeFunctionMapEntry(),
-    Lead->nativeFunctionMapEntry(),
+    Min->nativeFunctionMapEntry(),
+
+    // Window
+    CumulativeDistribution->nativeFunctionMapEntry(),
+    DenseRank->nativeFunctionMapEntry(),
     FirstValue->nativeFunctionMapEntry(),
+    Lag->nativeFunctionMapEntry(),
     LastValue->nativeFunctionMapEntry(),
-    NthValue->nativeFunctionMapEntry()
+    Lead->nativeFunctionMapEntry(),
+    NthValue->nativeFunctionMapEntry(),
+    Ntile->nativeFunctionMapEntry(),
+    PercentRank->nativeFunctionMapEntry(),
+    Rank->nativeFunctionMapEntry(),
+    RowNumber->nativeFunctionMapEntry(),
+
+    // Extension Functions
+    // Numeric
+    pair(Log10, argTransformFunctionProcessor('log', {n:Node[*]| literal(10)->concatenate($n)})),
+
+    // String
+    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Sha1, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha1', $f, $sqlDialect, $state, $config )})),
+    pair(Sha256, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha256', $f, $sqlDialect, $state, $config )}))
 
   ])
 }

@@ -1,0 +1,118 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
+
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::NthValue extends PostgresNativeSqlFunction
+[
+  $this.name == 'nth_value'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::nthValue(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::NthValue
+  (
+    name = 'nth_value',
+    documentation = 'Returns value evaluated at the row that is the nth row of the window frame (counting from 1); returns NULL if there is no such row.',
+    variations = orderedSubTypes(SqlType)->map({sqlType |
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [$sqlType]->concatenate(AbstractIntegerSqlType),
+        returnType = $sqlType
+      )
+    }), 
+    tests = [
+      sqlFunctionTest(
+        testSetupDataForWindowFunctions(),
+        // Default window frame is ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW; So We only get the Last Value till the current row
+        //  SELECT nth_value(student, 2) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result ASC NULLS LAST, student ASC NULLS LAST
+        windowFunctionCall(
+          ^FunctionCall(
+            name = ^QualifiedName(parts = 'nth_value'), 
+            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'student')), literal(2)],
+            window = ^meta::external::query::sql::metamodel::Window(
+              orderBy = [
+                ^SortItem(
+                  sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+                  ordering = SortItemOrdering.DESCENDING, 
+                  nullOrdering = SortItemNullOrdering.LAST
+                )
+              ],
+              partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))]
+            )
+          ),
+          'testTable',
+          'student'
+        ),
+        ^TestExpectedResult(
+          columns = ['student', 'dept', 'score', 'result'], 
+          data = [
+            list(['Bob', 'Science', 88, 'Bob']),
+            list(['Charlie', 'Science', 85, 'Bob']), 
+            list(['David', 'Science', 80, 'Bob']),
+            list(['Frank', 'Arts', 85, 'Frank']),
+            list(['Grace', 'Arts', 84, 'Frank']),
+            list(['Hannah', 'Arts', 80, 'Frank']),
+            list(['Alice', 'Science', 90, null()]),
+            list(['Eve', 'Arts', 88, null()])
+          ]
+        )
+      ),
+      sqlFunctionTest(
+        testSetupDataForWindowFunctions(),
+        // With unbounded frame
+        windowFunctionCall(
+          ^FunctionCall(
+            name = ^QualifiedName(parts = 'nth_value'), 
+            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'student')), literal(2)],
+            window = ^meta::external::query::sql::metamodel::Window(
+              orderBy = [
+                ^SortItem(
+                  sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+                  ordering = SortItemOrdering.DESCENDING, 
+                  nullOrdering = SortItemNullOrdering.LAST
+                )
+              ],
+              partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+              windowFrame = ^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.UNBOUNDED_PRECEDING), end = ^FrameBound(type = FrameBoundType.UNBOUNDED_FOLLOWING))
+            )
+          ),
+          'testTable',
+          'student'
+        ),
+        ^TestExpectedResult(
+          columns = ['student', 'dept', 'score', 'result'], 
+          data = [
+            list(['Alice', 'Science', 90, 'Bob']),
+            list(['Bob', 'Science', 88, 'Bob']),
+            list(['Charlie', 'Science', 85, 'Bob']), 
+            list(['David', 'Science', 80, 'Bob']),
+            list(['Eve', 'Arts', 88, 'Frank']),
+            list(['Frank', 'Arts', 85, 'Frank']),
+            list(['Grace', 'Arts', 84, 'Frank']),
+            list(['Hannah', 'Arts', 80, 'Frank'])
+          ]
+        )
+      )
+    ]
+  )
+}
