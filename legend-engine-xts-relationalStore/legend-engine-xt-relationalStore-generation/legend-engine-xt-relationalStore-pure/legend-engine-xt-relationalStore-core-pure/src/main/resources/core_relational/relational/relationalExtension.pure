@@ -1023,6 +1023,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'median',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
+            )
+         ])
+      ),
+
+      pair(
          'min',
          list([
             pair(
@@ -1065,6 +1075,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
+
+      pair(
+               'mode',
+               list([
+                  pair(
+                     {params: RelationalOperationElement[*] | true},
+                     {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
+                  )
+               ])
+            ),
 
       pair(
          'month',
