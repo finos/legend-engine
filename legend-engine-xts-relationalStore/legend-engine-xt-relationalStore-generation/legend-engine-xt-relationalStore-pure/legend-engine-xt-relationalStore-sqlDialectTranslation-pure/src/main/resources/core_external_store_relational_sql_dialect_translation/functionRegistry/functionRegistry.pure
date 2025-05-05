@@ -19,6 +19,11 @@ import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 
+Profile meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionInfo
+{
+  tags: [initializer];
+}
+
 Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::functionRegistry::SqlFunction
 {
   name: String[*];

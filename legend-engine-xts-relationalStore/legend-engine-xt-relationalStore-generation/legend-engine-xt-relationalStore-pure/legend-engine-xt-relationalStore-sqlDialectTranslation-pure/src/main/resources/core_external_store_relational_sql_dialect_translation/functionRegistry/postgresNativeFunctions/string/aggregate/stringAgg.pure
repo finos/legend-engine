@@ -20,7 +20,7 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::aggregate::StringAgg extends PostgresNativeSqlFunction
+Class {sqlFunctionInfo.initializer = 'stringAgg'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::aggregate::StringAgg extends PostgresNativeSqlFunction
 [
   $this.name == 'string_agg'
 ]

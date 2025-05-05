@@ -18,7 +18,7 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::Log10 extends ExtensionSqlFunction
+Class {sqlFunctionInfo.initializer = 'log10'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::Log10 extends ExtensionSqlFunction
 [
   $this.name == 'log10'
 ]

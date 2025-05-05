@@ -30,11 +30,9 @@ native function meta::external::store::relational::sdt::framework::runSqlDialect
 
 function meta::external::store::relational::sdt::framework::runSqlDialectTest(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*], debug: DebugContext[1]): Boolean[1]
 {
-  let testQuery = $sdt->generateTestSqlForSdtTestCase($dbType, $extensions);
-  let setupSqls = $sdt->generateInitSqlsForSdtTestCase($dbType, $extensions)->concatenate($sdt->generateSetupSqlsForSdtTestCase($dbType, $extensions));
-  let teardownSqls = $sdt->generateTeardownSqlsForSdtTestCase($dbType, $extensions);
-  $setupSqls->concatenate($testQuery)->concatenate($teardownSqls)->map(s | print(if(!$debug.debug, |'', | $debug.space + 'Running query: ' + $s + '\n')));
-  let result = $dbType->runSqlDialectTestQuery($testQuery, $setupSqls, $teardownSqls)->testResultFromResultSet();
+  let sdtTestCaseSqls = $sdt->generateSdtTestCaseSqls($dbType, $extensions);
+  $sdtTestCaseSqls.setupSqls->concatenate($sdtTestCaseSqls.testQuery)->concatenate($sdtTestCaseSqls.teardownSqls)->map(s | print(if(!$debug.debug, |'', | $debug.space + 'Running statement: ' + $s + '\n')));
+  let result = $dbType->runSqlDialectTestQuery($sdtTestCaseSqls.testQuery, $sdtTestCaseSqls.setupSqls, $sdtTestCaseSqls.teardownSqls)->testResultFromResultSet();
   $sdt->assertSdtTestPasses($result);
 }
 
@@ -78,24 +76,23 @@ function meta::external::store::relational::sdt::framework::getSqlDialectTests(f
   $func->eval()
 }
 
-function <<access.private>> meta::external::store::relational::sdt::framework::generateInitSqlsForSdtTestCase(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): String[*]
+Class <<access.private>>  meta::external::store::relational::sdt::framework::SdtTestCaseSqls
 {
-  $dbType->fetchSqlDialectForDbType($extensions).initSqlStatementsForTests;
+  setupSqls: String[*];
+  testQuery: String[1];
+  teardownSqls: String[*];
 }
 
-function <<access.private>> meta::external::store::relational::sdt::framework::generateSetupSqlsForSdtTestCase(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): String[*]
+function <<access.private>> meta::external::store::relational::sdt::framework::generateSdtTestCaseSqls(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): SdtTestCaseSqls[1]
 {
-  $sdt.setupStatements->map(s | $s->generateSqlDialectForStatement(sdtTestSqlDialectTranslationConfig($dbType), $extensions))
-}
+  let cfg = sdtTestSqlDialectTranslationConfig($dbType);
 
-function <<access.private>> meta::external::store::relational::sdt::framework::generateTestSqlForSdtTestCase(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): String[1]
-{
-  $sdt.testQuery->generateSqlDialectForStatement(sdtTestSqlDialectTranslationConfig($dbType), $extensions);
-}
-
-function <<access.private>> meta::external::store::relational::sdt::framework::generateTeardownSqlsForSdtTestCase(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): String[*]
-{
-  $sdt.teardownStatements->map(s | $s->generateSqlDialectForStatement(sdtTestSqlDialectTranslationConfig($dbType), $extensions))
+  ^SdtTestCaseSqls
+  (
+    setupSqls = $dbType->fetchSqlDialectForDbType($extensions).initSqlStatementsForTests->concatenate($sdt.setupStatements->map(s | $s->generateSqlDialectForStatement($cfg, $extensions))),
+    testQuery = $sdt.testQuery->generateSqlDialectForStatement($cfg, $extensions),
+    teardownSqls = $sdt.teardownStatements->map(s | $s->generateSqlDialectForStatement($cfg, $extensions))
+  );
 }
 
 function <<access.private>> meta::external::store::relational::sdt::framework::testResultFromResultSet(rs: meta::relational::metamodel::execute::ResultSet[1]): TestResult[1]

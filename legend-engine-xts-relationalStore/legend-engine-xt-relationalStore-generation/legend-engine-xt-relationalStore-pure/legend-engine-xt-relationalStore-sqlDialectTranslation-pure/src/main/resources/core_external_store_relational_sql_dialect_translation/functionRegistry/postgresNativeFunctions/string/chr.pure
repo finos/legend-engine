@@ -18,7 +18,7 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Chr extends PostgresNativeSqlFunction
+Class {sqlFunctionInfo.initializer = 'chr'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Chr extends PostgresNativeSqlFunction
 [
   $this.name == 'chr'
 ]

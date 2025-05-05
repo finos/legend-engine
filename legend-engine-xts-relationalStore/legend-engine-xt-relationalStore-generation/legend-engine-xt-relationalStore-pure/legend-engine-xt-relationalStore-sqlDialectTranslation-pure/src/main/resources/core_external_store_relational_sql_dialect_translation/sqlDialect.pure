@@ -115,7 +115,8 @@ function meta::external::store::relational::sqlDialectTranslation::executeNodePr
 function meta::external::store::relational::sqlDialectTranslation::executeNodeProcessor(sqlDialect: SqlDialect[1], node: Node[1], parentNode: Node[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
   let nodeClass = $node->class();
-  let nodeClassNonTyped = if ($nodeClass->_subTypeOf(TypedSqlExpression), | $nodeClass->validGeneralizations()->filter(x | !$x->_subTypeOf(TypedSqlExpression))->toOne(), | $nodeClass);
+  let nodeClassGeneralizations = $nodeClass->validGeneralizations();
+  let nodeClassNonTyped = if ($nodeClassGeneralizations->contains(TypedSqlExpression), | $nodeClassGeneralizations->filter(x | $x != TypedSqlExpression)->toOne(), | $nodeClass);
   let nodeProcessor = $sqlDialect.nodeProcessors->get($nodeClassNonTyped);
   if ($nodeProcessor->isNotEmpty(),
       | let processedNode = $nodeProcessor.processFunction->toOne()->evaluate([list($sqlDialect), list($node), list($state), list($config)])->toOne()->cast(@String);
@@ -150,7 +151,7 @@ function meta::external::store::relational::sqlDialectTranslation::executeIdenti
   $sqlDialect.identifierProcessor.processFunction->eval($sqlDialect, $identifier, $shouldQuote, $state, $config)
 }
 
-function meta::external::store::relational::sqlDialectTranslation::simpleFunctionProcessor(functionName: String[1]): FunctionProcessor[1]
+function meta::external::store::relational::sqlDialectTranslation::simpleFunctionProcessor(functionName: String[*]): FunctionProcessor[1]
 {
   functionProcessor(
     {sqlDialect, f, state, config |
@@ -186,9 +187,9 @@ function meta::external::store::relational::sqlDialectTranslation::customFunctio
 
 function meta::external::store::relational::sqlDialectTranslation::nativeFunctionProcessor(functionClass: Class<SqlFunction>[1]): FunctionProcessor[1]
 {
-  let sqlFunctionRegistry = sqlFunctionRegistry();
-  let functionName = $sqlFunctionRegistry->get($functionClass).name->toOne();
-  simpleFunctionProcessor($functionName);
+  let initializerPath = $functionClass.package->toOne()->elementToPath() + '::' + $functionClass->value4Tag('initializer', sqlFunctionInfo).value->toOne() + '__SqlFunction_1_';
+  let sqlFunc = $initializerPath->pathToElement()->cast(@Function<{->SqlFunction[1]}>)->eval();
+  simpleFunctionProcessor($sqlFunc.name);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::doFunctionCallChecks(f: FunctionCall[1]): Any[*]
@@ -204,13 +205,13 @@ function meta::external::store::relational::sqlDialectTranslation::processFuncti
   $args->map(a|$sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config));
 }
 
-function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[1], args: Node[*], window: meta::external::query::sql::metamodel::Window[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: Node[*], window: meta::external::query::sql::metamodel::Window[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($args, $state, $config);
   generateFunctionCallWithArgs($sqlDialect, $targetFunction, $processedArgs, $window, $state, $config);
 }
 
-function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[1], args: String[*], window: meta::external::query::sql::metamodel::Window[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: String[*], window: meta::external::query::sql::metamodel::Window[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
   let sep0 = $state.separatorIfPretty(0, $config);
   let sep1 = $state.separatorIfPretty(1, $config);

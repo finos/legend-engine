@@ -21,7 +21,7 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::Lag extends PostgresNativeSqlFunction
+Class {sqlFunctionInfo.initializer = 'lag'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::Lag extends PostgresNativeSqlFunction
 [
   $this.name == 'lag'
 ]
