@@ -430,7 +430,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
-                    <useManifestOnlyJar>false</useManifestOnlyJar>
                     <trimStackTrace>false</trimStackTrace>
                     <argLine>${argLine} ${surefire.vm.params}</argLine>
                     <!-- Used to aggregate test reports if required -->
