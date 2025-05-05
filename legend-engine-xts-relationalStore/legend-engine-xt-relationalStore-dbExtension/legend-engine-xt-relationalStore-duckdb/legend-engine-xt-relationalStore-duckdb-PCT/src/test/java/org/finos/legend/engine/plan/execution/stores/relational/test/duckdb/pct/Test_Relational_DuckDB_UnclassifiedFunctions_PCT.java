@@ -47,8 +47,6 @@ public class Test_Relational_DuckDB_UnclassifiedFunctions_PCT extends PCTReportC
             one("meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_", "Unexpected token"),
 
             //char
-            one("meta::pure::functions::string::tests::char::testEmptyChar_Function_1__Boolean_1_", "\"\nexpected: ''\nactual:   '\0'\""),
-            one("meta::pure::functions::string::tests::char::testNewLine_Function_1__Boolean_1_", "\"\nexpected: '\n'\nactual:   ' '\""),
 
             //base64
             one("meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'encodeBase64_String_1__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),

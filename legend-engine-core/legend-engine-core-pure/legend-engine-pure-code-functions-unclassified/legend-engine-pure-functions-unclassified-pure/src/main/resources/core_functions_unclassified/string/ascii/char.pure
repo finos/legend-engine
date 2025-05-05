@@ -37,10 +37,15 @@ function <<PCT.test>> meta::pure::functions::string::tests::char::testCharDigits
 
 function <<PCT.test>> meta::pure::functions::string::tests::char::testEmptyChar<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals('', $f->eval(|0->char()));
+  assertEquals('\0', $f->eval(|0->char()));
 }
 
-function <<PCT.test>> meta::pure::functions::string::tests::char::testNewLine<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::tests::char::testNewline<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals('\n', $f->eval(|32->char()));
+  assertEquals('\n', $f->eval(|10->char()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::char::testSpace<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(' ', $f->eval(|32->char()));
 }
