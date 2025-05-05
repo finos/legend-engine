@@ -198,7 +198,6 @@
         <mockito-core.version>4.4.0</mockito-core.version>
         <mongodb.version>3.12.8</mongodb.version>
         <opencsv.version>4.6</opencsv.version>
-        <openjdk.jol.version>0.9</openjdk.jol.version>
         <opentracing.contrib.version>0.3.0</opentracing.contrib.version>
         <opentracing.version>0.32.0</opentracing.version>
         <pac4j.jaxrs.version>3.0.0</pac4j.jaxrs.version>
@@ -3244,14 +3243,6 @@
                 <version>${jackson.version}</version>
             </dependency>
             <!-- JACKSON -->
-
-            <!-- OPEN JDK -->
-            <dependency>
-                <groupId>org.openjdk.jol</groupId>
-                <artifactId>jol-core</artifactId>
-                <version>${openjdk.jol.version}</version>
-            </dependency>
-            <!-- OPEN JDK -->
 
             <!-- JUNIT -->
             <dependency>

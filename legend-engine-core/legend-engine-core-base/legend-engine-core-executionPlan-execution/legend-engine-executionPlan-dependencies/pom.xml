@@ -83,12 +83,6 @@
         </dependency>
         <!-- JACKSON -->
 
-        <!-- OPEN JDK -->
-        <dependency>
-            <groupId>org.openjdk.jol</groupId>
-            <artifactId>jol-core</artifactId>
-        </dependency>
-        <!-- OPEN JDK -->
         <!-- Dependencies needed to compile generaated code -->
     </dependencies>
 </project>
