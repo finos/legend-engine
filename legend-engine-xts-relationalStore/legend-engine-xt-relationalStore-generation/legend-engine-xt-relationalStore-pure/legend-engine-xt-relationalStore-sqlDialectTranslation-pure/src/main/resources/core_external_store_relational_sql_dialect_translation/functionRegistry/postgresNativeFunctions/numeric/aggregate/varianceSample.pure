@@ -20,7 +20,7 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::VarianceSample extends PostgresNativeSqlFunction
+Class {sqlFunctionInfo.initializer = 'varianceSample'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::VarianceSample extends PostgresNativeSqlFunction
 [
   $this.name == 'var_samp'
 ]

@@ -18,7 +18,7 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Mod extends PostgresNativeSqlFunction
+Class {sqlFunctionInfo.initializer = 'mod'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Mod extends PostgresNativeSqlFunction
 [
   $this.name == 'mod'
 ]

@@ -18,7 +18,7 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Atan2 extends PostgresNativeSqlFunction
+Class {sqlFunctionInfo.initializer = 'atan2'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Atan2 extends PostgresNativeSqlFunction
 [
   $this.name == 'atan2'
 ]

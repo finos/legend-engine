@@ -20,7 +20,7 @@ import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlT
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::Ntile extends PostgresNativeSqlFunction
+Class {sqlFunctionInfo.initializer = 'ntile'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::Ntile extends PostgresNativeSqlFunction
 [
   $this.name == 'ntile'
 ]
