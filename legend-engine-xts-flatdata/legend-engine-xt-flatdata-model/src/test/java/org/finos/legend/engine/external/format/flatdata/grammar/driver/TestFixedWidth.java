@@ -236,6 +236,31 @@ public class TestFixedWidth extends AbstractDriverTest
         Assert.assertEquals("Invalid address for 'TITLE' (Expected start:end column numbers or EOL for final column end index) in section 'default'", defects.get(0).toString());
     }
 
+    @Test
+    public void checkValidationErrorEOLNonFinalColumn()
+    {
+        FlatData flatData = parseFlatData("section default: FixedWidth\n" +
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    FIRM          {1:2} : STRING;\n" +
+                "    AGE           {3:4} : INTEGER;\n" +
+                "    MASTER        {5:5} : INTEGER(optional);\n" +
+                "    WEIGHT        {6:EOL} : STRING(optional);\n" +
+                "    NAME          {9:12} : STRING;\n" +
+                "    EMPLOYED_DATE {13:22} : DATE(format='yyyy-MM-dd');\n" +
+                "    TITLE         {23:EOL} : STRING;\n" +
+                "  }\n" +
+                "}\n");
+
+        FixedWidthDriverDescription fdd = new FixedWidthDriverDescription();
+        List<FlatDataDefect> defects = fdd.validate(flatData, flatData.sections.get(0));
+        Assert.assertEquals(1, defects.size());
+        Assert.assertEquals("Invalid address for 'WEIGHT' (Expected start:end column numbers) in section 'default'", defects.get(0).toString());
+    }
+
     @SuppressWarnings("WeakerAccess")  // Required for reflective access
     public static class Person
     {
