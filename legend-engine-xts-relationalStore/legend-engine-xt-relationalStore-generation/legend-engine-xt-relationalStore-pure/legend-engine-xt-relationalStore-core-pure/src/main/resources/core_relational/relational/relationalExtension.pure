@@ -1060,7 +1060,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
          'minus',
          list([
             pair(
-               {params: RelationalOperationElement[*] | $params->at(0)->inferRelationalType()->genericType().rawType->toOne()->cast(@Class<Any>) == $params->at(1)->inferRelationalType()->genericType().rawType->toOne()->cast(@Class<Any>)},
+               {params: RelationalOperationElement[*] | $params->size() > 1 && $params->map(x | $x->inferRelationalType())->isSafeTypePossible()},
                {params: RelationalOperationElement[*] | $params->at(0)->inferRelationalType()}
             )
          ])
@@ -1230,7 +1230,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
             ),
             pair(
-               {params: RelationalOperationElement[*] | $params->size() > 1 && $params->map(p |$p->inferRelationalType()->genericType().rawType->toOne()->cast(@Class<Any>))->removeDuplicates()->size() == 1},
+               {params: RelationalOperationElement[*] | $params->size() > 1 && $params->map(x | $x->inferRelationalType())->isSafeTypePossible()},
                {params: RelationalOperationElement[*] | $params->at(0)->inferRelationalType()}
             )
          ])
