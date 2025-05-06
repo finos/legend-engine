@@ -58,6 +58,14 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeParam_DateTime_1__TabularDataSet_1_, $expected);
 }
 
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeStamp():Boolean[1]
+{
+  // the time zone info in the connection should be ignored in the generated sql
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION %S.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"LASTUPDATED" TIMESTAMP) LANGUAGE SQL AS $$ select "root".FIRSTNAME, "root".LASTNAME, cast("root".LAST_UPDATED as TIMESTAMP) from personTable as "root" $$;';
+  assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithTimestamp__TabularDataSet_1_, $expected);
+}
+
 // not supported yet
 function <<test.Test, test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParams():Boolean[1]
 {
@@ -143,6 +151,12 @@ function meta::external::function::activator::snowflakeApp::tests::simpleRelatio
 function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeParam(asOf: DateTime[1]):TabularDataSet[1]
 {
     PersonX.all()->filter(p|$p.lastUpdated ==$asOf)->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntimeWithTimeZone(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithTimestamp():TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.lastUpdated, 'lastUpdated')])
     ->from(simpleRelationalMapping, testRuntimeWithTimeZone(dbInc))
 }
 
