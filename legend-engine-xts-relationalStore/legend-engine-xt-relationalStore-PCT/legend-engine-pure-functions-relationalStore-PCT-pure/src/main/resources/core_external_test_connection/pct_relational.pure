@@ -482,6 +482,7 @@ function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], d
         resultType = ^meta::pure::executionPlan::VoidResultType(genericType=^GenericType(rawType=meta::pure::router::store::routing::Void)),
         executionNodes = $setUpSQLs->map(sql |
             let sqlNode = $sql->meta::relational::mapping::generateSQLExecNode($dbc);
+            // todo better way to do this?
             if($sql->toLower()->startsWith('drop') && $sql->toLower()->contains('table') , |^$sqlNode(onConnectionCloseCommitQuery = $sql, onConnectionCloseRollbackQuery = $sql), |$sqlNode);
         )
   );

@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
+import java.io.File;
+import java.util.regex.Pattern;
 import org.finos.legend.engine.authentication.vaults.InMemoryVaultForTesting;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TrinoDelegatedKerberosAuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.trino.TrinoManager;
@@ -63,7 +65,7 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
         assertEquals("true", properties.getProperty(SSL));
         assertEquals("test_user", properties.getProperty(USER));
         assertEquals("changeme", properties.getProperty(SSL_TRUST_STORE_PASSWORD));
-        assertTrue(properties.getProperty(SSL_TRUST_STORE_PATH).matches("/tmp/trino_keystore_testPathRef.*jks"));
+        assertTrue(properties.getProperty(SSL_TRUST_STORE_PATH).matches(Pattern.quote(System.getProperty("java.io.tmpdir")) + "trino_keystore_testPathRef.*jks"));
     }
 
     @Test
