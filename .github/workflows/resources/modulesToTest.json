@@ -71,6 +71,12 @@
       ]
     },
     {
+      "name": "databricks",
+      "modules": [
+        "legend-engine-xt-relationalStore-databricks-PCT"
+      ]
+    },
+    {
       "name": "elasticsearch",
       "modules": [
         "legend-engine-xt-elasticsearch-executionPlan-test"
