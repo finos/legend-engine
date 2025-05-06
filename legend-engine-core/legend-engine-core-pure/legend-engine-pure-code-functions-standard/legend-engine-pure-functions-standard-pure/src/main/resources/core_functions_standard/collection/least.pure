@@ -34,10 +34,32 @@ meta::pure::functions::collection::least<X>(values : X[1..*]):X[1]
     min($values);
 }
 
-function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_Integer<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_Empty<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertEquals([], $f->eval(|least([]->cast(@Integer))));
+    assertEquals([], $f->eval(|least([]->cast(@Float))));
+    assertEquals([], $f->eval(|least([]->cast(@Number))));
+    assertEquals([], $f->eval(|least([]->cast(@StrictDate))));
+    assertEquals([], $f->eval(|least([]->cast(@DateTime))));
+    assertEquals([], $f->eval(|least([]->cast(@Date))));
+    assertEquals([], $f->eval(|least([]->cast(@Boolean))));
+    assertEquals([], $f->eval(|least([]->cast(@String))));
+}
+
+function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_Single<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
     assertEquals(-1, $f->eval(|least([-1])));
+    assertEquals(1.0, $f->eval(|least([1.0])));
+    assertEquals(1.0d, $f->eval(|least([1.0d])));
+    assertEquals(%2025-04-09, $f->eval(|least([%2025-04-09])));
+    assertEquals(%2025-02-10T20:10:20, $f->eval(|least([%2025-02-10T20:10:20])));
+    assertEquals(true, $f->eval(|least([true])));
+    assertEquals(false, $f->eval(|least([false])));
+    assertEquals('a', $f->eval(|least(['a'])));
+}
+
+function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_Integer<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
     assertEquals(1, $f->eval(|least([1, 2])));
     assertEquals(1, $f->eval(|least([2, 1])));
     assertEquals(1, $f->eval(|least([4, 7, 1, 3, 4])));
@@ -45,8 +67,6 @@ function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast
 
 function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_Float<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals([], $f->eval(|least([]->cast(@Float))));
-    assertEquals(1.0, $f->eval(|least([1.0])));
     assertEquals(1.23, $f->eval(|least([1.23, 2.8])));
     assertEquals(1.23, $f->eval(|least([2.8, 1.23])));
     assertEquals(1.0, $f->eval(|least([4.23, 7.345, 1.0, 3.678, 4.6])));
@@ -54,8 +74,6 @@ function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast
 
 function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_Number<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals([], $f->eval(|least([]->cast(@Number))));
-    assertEquals(1.0d, $f->eval(|least([1.0d])));
     assertEquals(1.23, $f->eval(|least([1.23, 2])));
     assertEquals(1.23, $f->eval(|least([2, 1.23])));
     assertEquals(1.0, $f->eval(|least([4.23, 7.345, 1.0, 3, 4])));
@@ -64,8 +82,6 @@ function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast
 
 function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_StrictDate<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals([], $f->eval(|least([]->cast(@StrictDate))));
-    assertEquals(%2025-04-09, $f->eval(|least([%2025-04-09])));
     assertEquals(%2025-02-09, $f->eval(|least([%2025-04-09, %2025-02-09])));
     assertEquals(%2025-02-09, $f->eval(|least([%2025-02-09, %2025-04-09])));
     assertEquals(%2024-12-14, $f->eval(|least([%2025-02-09, %2025-04-09, %2025-01-01, %2024-12-14, %2025-04-02])));
@@ -73,8 +89,6 @@ function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast
 
 function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_DateTime<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals([], $f->eval(|least([]->cast(@DateTime))));
-    assertEquals(%2025-02-10T20:10:20, $f->eval(|least([%2025-02-10T20:10:20])));
     assertEquals(%2025-01-10T15:25:30, $f->eval(|least([%2025-02-10T20:10:20, %2025-01-10T15:25:30])));
     assertEquals(%2025-01-10T15:25:30, $f->eval(|least([%2025-01-10T15:25:30, %2025-02-10T20:10:20])));
     assertEquals(%2024-05-17T23:11:14, $f->eval(|least([%2025-01-10T15:25:30, %2025-02-10T10:11:15, %2025-02-10T20:10:20, %2024-05-17T23:11:14])));
@@ -82,7 +96,6 @@ function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast
 
 function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_Date<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals([], $f->eval(|least([]->cast(@Date))));
     assertEquals(%2025-02-10, $f->eval(|least([%2025-02-10T20:10:20, %2025-02-10])));
     assertEquals(%2025-02-10, $f->eval(|least([%2025-02-10, %2025-02-10T20:10:20])));
     assertEquals(%2025-01-10T15:25:30, $f->eval(|least([%2025-02-09T00:14:44, %2025-04-09, %2025-02-09T01:15:20, %2025-01-10T15:25:30])));
@@ -90,9 +103,6 @@ function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast
 
 function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_Boolean<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals([], $f->eval(|least([]->cast(@Boolean))));
-    assertEquals(true, $f->eval(|least([true])));
-    assertEquals(false, $f->eval(|least([false])));
     assertEquals(false, $f->eval(|least([true, false])));
     assertEquals(false, $f->eval(|least([false, true])));
     assertEquals(false, $f->eval(|least([true, false, true, true, false])));
@@ -100,8 +110,6 @@ function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast
 
 function <<PCT.test>> meta::pure::functions::collection::tests::least::testLeast_String<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals([], $f->eval(|least([]->cast(@String))));
-    assertEquals('a', $f->eval(|least(['a'])));
     assertEquals('a', $f->eval(|least(['a', 'b'])));
     assertEquals('a', $f->eval(|least(['b', 'a'])));
     assertEquals('a', $f->eval(|least(['a', 'b', 'abc', 'def'])));
