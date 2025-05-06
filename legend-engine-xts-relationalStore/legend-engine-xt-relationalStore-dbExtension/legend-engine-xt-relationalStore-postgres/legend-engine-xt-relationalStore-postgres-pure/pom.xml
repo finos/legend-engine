@@ -271,8 +271,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-h2-execution-2.1.214</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
