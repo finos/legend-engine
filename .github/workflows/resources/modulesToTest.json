@@ -62,7 +62,8 @@
       "modules": [
         "legend-engine-xt-relationalStore-snowflake-PCT",
         "legend-engine-xt-relationalStore-snowflake-sqlDialectTranslation-pure"
-      ]
+      ],
+      "requiredSecrets": true
     },
     {
       "name": "spanner",
@@ -74,7 +75,8 @@
       "name": "databricks",
       "modules": [
         "legend-engine-xt-relationalStore-databricks-PCT"
-      ]
+      ],
+      "requiredSecrets": true
     },
     {
       "name": "elasticsearch",

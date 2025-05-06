@@ -92,6 +92,15 @@ jobs:
         if: github.repository == 'finos/legend-engine'
         run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
 
+      - name: Set Test Matrix
+        id: testMatrix
+        run: |
+          if [ "$GITHUB_REPOSITORY" != "finos/legend-engine" ]; then
+            echo "testMatrix=$(jq -c '.include[] | select(.requiredSecrets != true) | {include: [.]}' < .github/workflows/resources/modulesToTest.json)" >> $GITHUB_OUTPUT
+          else
+            echo "testMatrix=$(jq -c . < .github/workflows/resources/modulesToTest.json)" >> $GITHUB_OUTPUT          
+          fi
+
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         env:
@@ -126,10 +135,6 @@ jobs:
           overwrite: true
           include-hidden-files: true
           if-no-files-found: error
-
-      - name: Set Test Matrix
-        id: testMatrix
-        run: echo "testMatrix=$(jq -c . < .github/workflows/resources/modulesToTest.json)" >> $GITHUB_OUTPUT
 
       - name: Upload CI Event
         if: always()
