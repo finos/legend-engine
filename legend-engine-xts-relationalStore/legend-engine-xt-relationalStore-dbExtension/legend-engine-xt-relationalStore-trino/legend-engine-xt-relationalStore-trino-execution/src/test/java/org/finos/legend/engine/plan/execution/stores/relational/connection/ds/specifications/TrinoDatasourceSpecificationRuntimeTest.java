@@ -16,12 +16,14 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.s
 
 import java.io.File;
 import java.util.regex.Pattern;
+import org.apache.commons.lang.SystemUtils;
 import org.finos.legend.engine.authentication.vaults.InMemoryVaultForTesting;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TrinoDelegatedKerberosAuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.trino.TrinoManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.TrinoDatasourceSpecificationKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoSSLSpecification;
 import org.finos.legend.engine.shared.core.vault.Vault;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,6 +57,8 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
     @Test
     public void testTrinoDatasourceSpecificationProperties_WithValidCustomTrustStore()
     {
+        Assume.assumeFalse("Trust store path is unix specific", SystemUtils.IS_OS_WINDOWS);
+
         TrinoSSLSpecification trinoSSLSpecification = buildSSLSpecWith(true, "testPathRef", "testPwdRef");
         TrinoDatasourceSpecificationRuntime ds = buildDatasourceSpecificationRuntime(trinoSSLSpecification);
 
@@ -65,7 +69,7 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
         assertEquals("true", properties.getProperty(SSL));
         assertEquals("test_user", properties.getProperty(USER));
         assertEquals("changeme", properties.getProperty(SSL_TRUST_STORE_PASSWORD));
-        assertTrue(properties.getProperty(SSL_TRUST_STORE_PATH).matches(Pattern.quote(System.getProperty("java.io.tmpdir")) + "trino_keystore_testPathRef.*jks"));
+        assertTrue(properties.getProperty(SSL_TRUST_STORE_PATH).matches("/tmp/trino_keystore_testPathRef.*jks"));
     }
 
     @Test
