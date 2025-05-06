@@ -26,7 +26,7 @@ public class TestPCTReport
     public void canFindPCTReport()
     {
         Assert.assertEquals("Native", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
-        ImmutableSet<String> expectedReports = Sets.immutable.of("essential", "grammar", "relation", "standard", "unclassified");
+        ImmutableSet<String> expectedReports = Sets.immutable.of("essential", "grammar", "relation", "standard", "unclassified", "variant");
         Assert.assertEquals(expectedReports, PCTReportProviderLoader.gatherReports().collect(c -> c.reportScope.module).toSet());
     }
 }
