@@ -14,9 +14,11 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StagedFilesDatasetProperties
 {
@@ -38,4 +40,6 @@ public interface StagedFilesDatasetProperties
             throw new IllegalStateException("Cannot build StagedFilesDatasetProperties, Only one out of filePatterns and filePaths should be provided");
         }
     }
+
+    Optional<FileFormatType> fileFormatType();
 }

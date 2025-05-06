@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.exception.JsonReadOrWriteException;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
@@ -33,15 +34,14 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Les
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.NotEquals;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.NotIn;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
@@ -431,6 +431,11 @@ public class LogicalPlanUtils
 
     public static StagedFilesFieldValue getStagedFilesFieldValueWithType(Dataset dataset, Field field, FieldType fieldType, boolean columnNumbersPresent, int counter)
     {
+        Optional<FileFormatType> fileFormatType = Optional.empty();
+        if (dataset instanceof StagedFilesDataset)
+        {
+            fileFormatType = ((StagedFilesDataset)dataset).stagedFilesDatasetProperties().fileFormatType();
+        }
         return StagedFilesFieldValue.builder()
             .columnNumber(columnNumbersPresent ? field.columnNumber().get() : counter)
             .datasetRefAlias(dataset.datasetReference().alias())
@@ -438,6 +443,7 @@ public class LogicalPlanUtils
             .elementPath(field.elementPath())
             .fieldType(fieldType)
             .fieldName(field.name())
+            .fileFormatType(fileFormatType)
             .build();
     }
 

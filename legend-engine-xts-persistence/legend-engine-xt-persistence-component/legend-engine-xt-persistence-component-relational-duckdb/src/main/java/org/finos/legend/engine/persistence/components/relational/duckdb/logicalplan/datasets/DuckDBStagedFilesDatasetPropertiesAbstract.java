@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.immutables.value.Value;
 
 import java.util.Map;
+import java.util.Optional;
 
 
 @Value.Immutable
@@ -43,5 +44,10 @@ public interface DuckDBStagedFilesDatasetPropertiesAbstract extends StagedFilesD
         {
             throw new IllegalStateException("Cannot build DuckDBStagedFilesDatasetProperties, AVRO file loading is not supported");
         }
+    }
+
+    default Optional<FileFormatType> fileFormatType()
+    {
+        return Optional.of(fileFormat());
     }
 }

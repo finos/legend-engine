@@ -19,6 +19,8 @@ import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 
 @Value.Immutable
 @Value.Style(
@@ -47,5 +49,10 @@ public interface H2StagedFilesDatasetPropertiesAbstract extends StagedFilesDatas
         {
             throw new IllegalStateException("Cannot build H2StagedFilesDatasetProperties, only CSV file loading supported");
         }
+    }
+
+    default Optional<FileFormatType> fileFormatType()
+    {
+        return Optional.of(fileFormat());
     }
 }

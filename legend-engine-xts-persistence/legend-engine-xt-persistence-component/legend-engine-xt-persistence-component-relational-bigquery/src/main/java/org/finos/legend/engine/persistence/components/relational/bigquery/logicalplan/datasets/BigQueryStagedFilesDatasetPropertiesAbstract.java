@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.immutables.value.Value;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(
@@ -34,4 +35,9 @@ public interface BigQueryStagedFilesDatasetPropertiesAbstract extends StagedFile
     FileFormatType fileFormat();
 
     Map<String, Object> loadOptions();
+
+    default Optional<FileFormatType> fileFormatType()
+    {
+        return Optional.of(fileFormat());
+    }
 }
