@@ -33,6 +33,8 @@ public class SqlGenUtils
     public static final String ASSIGNMENT_OPERATOR = "=";
     public static final String DOT = ".";
     public static final String COLON = ":";
+    public static final String MULTIPLICATION = "*";
+    public static final String ADDITION = "+";
     public static final String FORWARD_SLASH = "/";
 
     public static String getQuotedField(String columnName, String quoteIdentifier)
