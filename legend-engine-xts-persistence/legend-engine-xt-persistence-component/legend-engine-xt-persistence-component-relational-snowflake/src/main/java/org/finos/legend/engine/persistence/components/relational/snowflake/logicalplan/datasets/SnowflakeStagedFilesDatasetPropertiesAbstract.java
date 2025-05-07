@@ -54,7 +54,7 @@ public interface SnowflakeStagedFilesDatasetPropertiesAbstract extends StagedFil
 
     default Optional<FileFormatType> fileFormatType()
     {
-        return (fileFormat().isPresent() && fileFormat().get() instanceof StandardFileFormatAbstract) ?
+        return (fileFormat().isPresent() && fileFormat().get() instanceof StandardFileFormat) ?
                 Optional.of(((StandardFileFormatAbstract)fileFormat().get()).formatType()) : Optional.empty();
     }
 }
