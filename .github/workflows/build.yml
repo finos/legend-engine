@@ -89,17 +89,27 @@ jobs:
 
       - name: Set profiles that required github secrets
         id: requiredSecrets
-        if: github.repository == 'finos/legend-engine'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'finos/legend-engine') || github.event_name == 'push'
         run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
+
+      - name: Test Matrix (from engine repo)
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'finos/legend-engine') || github.event_name == 'push'
+        id: testMatrixFromEngine
+        run: echo "testMatrix=$(jq -c . < .github/workflows/resources/modulesToTest.json)" >> $GITHUB_OUTPUT
+
+      - name: Test Matrix (from forks)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != 'finos/legend-engine'
+        id: testMatrixFromFork
+        run: |
+          echo "testMatrix=$(jq -c '.include[] |= select(.requiredSecrets == null or .requiredSecrets == false)' < .github/workflows/resources/modulesToTest.json)" >> $GITHUB_OUTPUT
 
       - name: Set Test Matrix
         id: testMatrix
+        env:
+          FROM_FORK: ${{ steps.testMatrixFromFork.outputs.testMatrix }}
+          FROM_ENGINE: ${{ steps.testMatrixFromEngine.outputs.testMatrix }}
         run: |
-          if [ "$GITHUB_REPOSITORY" != "finos/legend-engine" ]; then
-            echo "testMatrix=$(jq -c '.include[] | select(.requiredSecrets != true) | {include: [.]}' < .github/workflows/resources/modulesToTest.json)" >> $GITHUB_OUTPUT
-          else
-            echo "testMatrix=$(jq -c . < .github/workflows/resources/modulesToTest.json)" >> $GITHUB_OUTPUT          
-          fi
+          echo "testMatrix=${FROM_FORK:=$FROM_ENGINE}" >> $GITHUB_OUTPUT
 
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
