@@ -27,6 +27,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.ServiceSt
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
+import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -41,6 +43,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExtension
 {
@@ -99,6 +102,21 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
     }
 
     @Override
+    public List<Procedure3<ClassMapping, CompileContext, Set<PackageableElementPointer>>> getExtraClassMappingPrerequisiteElementsPassProcessors()
+    {
+        return Collections.singletonList(
+                (cm, context, prerequisiteElements) ->
+                {
+                    if (cm instanceof RootServiceStoreClassMapping)
+                    {
+                        RootServiceStoreClassMapping classMapping = (RootServiceStoreClassMapping) cm;
+                        HelperServiceStoreClassMappingBuilder.collectPrerequisiteElementsFromRootServiceStoreClassMapping(prerequisiteElements, classMapping, context);
+                    }
+                }
+        );
+    }
+
+    @Override
     public List<Function2<Connection, CompileContext, Root_meta_core_runtime_Connection>> getExtraConnectionValueProcessors()
     {
         return Lists.mutable.with(
@@ -139,5 +157,11 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
     public List<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> getExtraEmbeddedDataProcessors()
     {
         return Collections.singletonList(ServiceStoreEmbeddedDataCompiler::compileServiceStoreEmbeddedDataCompiler);
+    }
+
+    @Override
+    public List<Procedure3<Set<PackageableElementPointer>, EmbeddedData, CompileContext>> getExtraEmbeddedDataPrerequisiteElementsPassProcessors()
+    {
+        return Collections.singletonList(ServiceStoreEmbeddedDataCompiler::collectPrerequisiteElementsFromServiceStoreEmbeddedDataCompiler);
     }
 }

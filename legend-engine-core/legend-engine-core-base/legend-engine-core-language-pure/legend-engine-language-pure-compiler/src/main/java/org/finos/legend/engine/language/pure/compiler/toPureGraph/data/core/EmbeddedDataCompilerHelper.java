@@ -21,8 +21,10 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.*;
@@ -37,6 +39,7 @@ import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public interface EmbeddedDataCompilerHelper
 {
@@ -109,6 +112,35 @@ public interface EmbeddedDataCompilerHelper
         else
         {
             return null;
+        }
+    }
+
+    static void collectPrerequisiteElementsFromCoreEmbeddedDataTypes(Set<PackageableElementPointer> prerequisiteElements, EmbeddedData embeddedData, CompileContext context)
+    {
+        if (embeddedData instanceof ModelStoreData)
+        {
+            ModelStoreData modelStoreData = (ModelStoreData) embeddedData;
+            ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+            for (ModelTestData modelTestData : modelStoreData.modelData)
+            {
+                prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, modelTestData.model, modelTestData.sourceInformation));
+                if (modelTestData instanceof ModelEmbeddedTestData)
+                {
+                    context.getCompilerExtensions().getExtraEmbeddedDataPrerequisiteElementsPassProcessors().forEach(processor -> processor.value(prerequisiteElements, ((ModelEmbeddedTestData) modelTestData).data, context));
+                }
+                else if (modelTestData instanceof ModelInstanceTestData)
+                {
+                    ModelInstanceTestData modelInstanceData = (ModelInstanceTestData) modelTestData;
+                    modelInstanceData.instances.accept(valueSpecificationPrerequisiteElementsPassBuilder);
+                }
+            }
+        }
+        else if (embeddedData instanceof DataElementReference
+                && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATA)
+        )
+        {
+            DataElementReference dataElementReference = (DataElementReference) embeddedData;
+            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.DATAELEMENT, dataElementReference.dataElement.path, dataElementReference.sourceInformation));
         }
     }
 

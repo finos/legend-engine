@@ -27,6 +27,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
+import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQualityExecutionContext;
@@ -35,6 +36,7 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeD
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
@@ -114,12 +116,12 @@ public class DataQualityCompilerExtension implements CompilerExtension
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Lists.fixedSize.of(
-                getDataQualityModelContraintProcessor(),
+                getDataQualityModelConstraintProcessor(),
                 getDataQualityRelationValidationProcessor()
         );
     }
 
-    private Processor<DataQuality> getDataQualityModelContraintProcessor()
+    private Processor<DataQuality> getDataQualityModelConstraintProcessor()
     {
         return Processor.newProcessor(
                 DataQuality.class,
@@ -144,8 +146,22 @@ public class DataQualityCompilerExtension implements CompilerExtension
                             ._filter(getFilterLambda(dataquality, compileContext))
                             ._validationTree(buildRootGraphFetchTree(dataquality.dataQualityRootGraphFetchTree, compileContext, compileContext.pureModel.getClass(dataquality.dataQualityRootGraphFetchTree._class), null, new ProcessingContext("DataQuality")));
                     metamodel._validate(true, SourceInformationHelper.toM3SourceInformation(dataquality.sourceInformation), compileContext.getExecutionSupport());
-                }
+                },
+                this::dataQualityPrerequisiteElementsPass
         );
+    }
+
+    private Set<PackageableElementPointer> dataQualityPrerequisiteElementsPass(DataQuality dataQuality, CompileContext compileContext)
+    {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, dataQuality.dataQualityRootGraphFetchTree._class));
+        collectPrerequisiteElementsFromDataQualityExecutionContext(prerequisiteElements, dataQuality.context);
+        if (Objects.nonNull(dataQuality.filter))
+        {
+            dataQuality.filter.accept(new ValueSpecificationPrerequisiteElementsPassBuilder(compileContext, prerequisiteElements));
+        }
+        // TODO: Revisit dataquality.dataQualityRootGraphFetchTree
+        return prerequisiteElements;
     }
 
     private Processor<DataqualityRelationValidation> getDataQualityRelationValidationProcessor()
@@ -174,8 +190,22 @@ public class DataQualityCompilerExtension implements CompilerExtension
                     metamodel._validations(buildDataQualityRelationValidations(dataqualityRelationValidation.validations, relationValidationQuery, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext));
                     metamodel._runtime(buildRelationValidationRuntime(dataqualityRelationValidation.runtime, relationValidationQuery, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext));
                     metamodel._validate(true, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext.getExecutionSupport());
-                }
+                },
+                this::dataQualityRelationValidationPrerequisiteElementsPass
         );
+    }
+
+    private Set<PackageableElementPointer> dataQualityRelationValidationPrerequisiteElementsPass(DataqualityRelationValidation dataqualityRelationValidation, CompileContext compileContext)
+    {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(compileContext, prerequisiteElements);
+        dataqualityRelationValidation.query.accept(valueSpecificationPrerequisiteElementsPassBuilder);
+        ListIterate.forEach(dataqualityRelationValidation.validations, validation -> validation.assertion.accept(valueSpecificationPrerequisiteElementsPassBuilder));
+        if (Objects.nonNull(dataqualityRelationValidation.runtime))
+        {
+            prerequisiteElements.add(dataqualityRelationValidation.runtime);
+        }
+        return prerequisiteElements;
     }
 
     private LambdaFunction<?> buildDataqualityRelationValidationQuery(DataqualityRelationValidation dataqualityRelationValidation, CompileContext compileContext)
@@ -258,6 +288,21 @@ public class DataQualityCompilerExtension implements CompilerExtension
             return buildDataSpaceExecutionContext(((DataSpaceDataQualityExecutionContext) app.context), context);
         }
         throw new EngineException("Unsupported DataQuality ExecutionContext");
+    }
+
+    private void collectPrerequisiteElementsFromDataQualityExecutionContext(Set<PackageableElementPointer> prerequisiteElements, DataQualityExecutionContext dataQualityExecutionContext)
+    {
+        if (dataQualityExecutionContext instanceof MappingAndRuntimeDataQualityExecutionContext)
+        {
+            MappingAndRuntimeDataQualityExecutionContext mappingAndRuntimeDataQualityExecutionContext = (MappingAndRuntimeDataQualityExecutionContext) dataQualityExecutionContext;
+            prerequisiteElements.add(mappingAndRuntimeDataQualityExecutionContext.mapping);
+            prerequisiteElements.add(mappingAndRuntimeDataQualityExecutionContext.runtime);
+        }
+        else if (dataQualityExecutionContext instanceof DataSpaceDataQualityExecutionContext)
+        {
+            DataSpaceDataQualityExecutionContext dataSpaceDataQualityExecutionContext = (DataSpaceDataQualityExecutionContext) dataQualityExecutionContext;
+            prerequisiteElements.add(dataSpaceDataQualityExecutionContext.dataSpace);
+        }
     }
 
     private Root_meta_external_dataquality_MappingAndRuntimeDataQualityExecutionContext buildMappingAndRuntimeExecutionContext(MappingAndRuntimeDataQualityExecutionContext mappingAndRuntimeDataQualityExecutionContext, CompileContext compileContext)

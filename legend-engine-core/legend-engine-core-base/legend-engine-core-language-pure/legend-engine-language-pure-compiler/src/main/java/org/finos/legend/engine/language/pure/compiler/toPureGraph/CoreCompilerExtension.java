@@ -26,6 +26,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Inclu
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.MappingIncludedMappingHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.core.TestAssertionCompilerHelper;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
@@ -67,9 +68,21 @@ public class CoreCompilerExtension implements CompilerExtension, EmbeddedDataCom
     }
 
     @Override
+    public List<Procedure3<Set<PackageableElementPointer>, EmbeddedData, CompileContext>> getExtraEmbeddedDataPrerequisiteElementsPassProcessors()
+    {
+        return Collections.singletonList(EmbeddedDataCompilerHelper::collectPrerequisiteElementsFromCoreEmbeddedDataTypes);
+    }
+
+    @Override
     public List<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> getExtraTestAssertionProcessors()
     {
         return Collections.singletonList(TestAssertionCompilerHelper::compileCoreTestAssertionTypes);
+    }
+
+    @Override
+    public List<Procedure3<Set<PackageableElementPointer>, TestAssertion, CompileContext>> getExtraTestAssertionPrerequisiteElementsPassProcessors()
+    {
+        return Collections.singletonList(TestAssertionCompilerHelper::collectPrerequisiteElementsFromCoreTestAssertionTypes);
     }
 
     @Override

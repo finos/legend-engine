@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -22,6 +23,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
@@ -34,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 public interface IPersistenceCompilerExtension extends CompilerExtension
 {
@@ -77,6 +80,11 @@ public interface IPersistenceCompilerExtension extends CompilerExtension
     }
 
     default List<Function2<PersistenceTarget, CompileContext, Root_meta_pure_persistence_metamodel_target_PersistenceTarget>> getExtraPersistenceTargetProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Procedure2<PersistenceTarget, Set<PackageableElementPointer>>> getExtraPersistenceTargetPrerequisiteElementsProcessors()
     {
         return Collections.emptyList();
     }

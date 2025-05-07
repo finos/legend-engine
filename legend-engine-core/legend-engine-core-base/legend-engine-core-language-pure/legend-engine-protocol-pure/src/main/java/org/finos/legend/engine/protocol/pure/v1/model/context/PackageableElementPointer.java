@@ -70,15 +70,14 @@ public class PackageableElementPointer
             return false;
         }
         PackageableElementPointer that = (PackageableElementPointer) o;
-        return type == that.type &&
-                Objects.equals(path, that.path);
+        return Objects.equals(path, that.path);
     }
 
     @Override
     @JsonIgnore
     public int hashCode()
     {
-        return Objects.hash(type, path);
+        return Objects.hash(path);
     }
 }
 

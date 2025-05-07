@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.*;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
@@ -137,6 +138,34 @@ public class HelperServiceBuilder
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported service execution type '" + execution.getClass().getSimpleName() + "'"));
     }
 
+    public static void collectPrerequisiteElementsFromServiceExecution(Set<PackageableElementPointer> prerequisiteElements, Execution execution, CompileContext context)
+    {
+        if (execution instanceof PureSingleExecution)
+        {
+            PureSingleExecution pureSingleExecution = (PureSingleExecution) execution;
+            if (pureSingleExecution.mapping != null && pureSingleExecution.runtime != null)
+            {
+                prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.MAPPING, pureSingleExecution.mapping, pureSingleExecution.mappingSourceInformation));
+                HelperRuntimeBuilder.collectPrerequisiteElementsFromPureRuntime(prerequisiteElements, pureSingleExecution.runtime);
+            }
+            pureSingleExecution.func.accept(new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements));
+        }
+        else if (execution instanceof PureMultiExecution)
+        {
+            PureMultiExecution pureMultiExecution = (PureMultiExecution) execution;
+            pureMultiExecution.func.accept(new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements));
+
+            if (pureMultiExecution.executionParameters != null && !pureMultiExecution.executionParameters.isEmpty())
+            {
+                ListIterate.forEach(pureMultiExecution.executionParameters, executionParameter -> collectPrerequisiteElementsFromServiceKeyedExecutionParameter(prerequisiteElements, executionParameter));
+            }
+        }
+        else
+        {
+            getServiceCompilerExtensions(context).stream().flatMap(extension -> extension.getExtraServiceExecutionPrerequisiteElementsPassProcessors().stream()).forEach(processor -> processor.value(execution, context, prerequisiteElements));
+        }
+    }
+
     private static Root_meta_legend_service_metamodel_KeyedExecutionParameter processServiceKeyedExecutionParameter(KeyedExecutionParameter keyedExecutionParameter, Service service, CompileContext context, Set<String> executionKeyValues)
     {
         Mapping mapping = context.resolveMapping(keyedExecutionParameter.mapping, keyedExecutionParameter.mappingSourceInformation);
@@ -154,6 +183,12 @@ public class HelperServiceBuilder
                 ._runtime(runtime);
     }
 
+    private static void collectPrerequisiteElementsFromServiceKeyedExecutionParameter(Set<PackageableElementPointer> prerequisiteElements, KeyedExecutionParameter keyedExecutionParameter)
+    {
+        prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.MAPPING, keyedExecutionParameter.mapping, keyedExecutionParameter.mappingSourceInformation));
+        HelperRuntimeBuilder.collectPrerequisiteElementsFromPureRuntime(prerequisiteElements, keyedExecutionParameter.runtime);
+    }
+
     public static Root_meta_legend_service_metamodel_ServiceTestData processServiceTestSuiteData(TestData testData, CompileContext context, ProcessingContext processingContext)
     {
         Root_meta_legend_service_metamodel_ServiceTestData pureTestData = new Root_meta_legend_service_metamodel_ServiceTestData_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::ServiceTestData"));
@@ -164,6 +199,15 @@ public class HelperServiceBuilder
         }
 
         return pureTestData;
+    }
+
+    public static void collectPrerequisiteElementsFromServiceTestSuiteData(Set<PackageableElementPointer> prerequisiteElements, TestData testData, CompileContext context)
+    {
+        if (testData.connectionsTestData != null && !testData.connectionsTestData.isEmpty())
+        {
+            EmbeddedDataPrerequisiteElementsPassBuilder embeddedDataPrerequisiteElementsPassBuilder = new EmbeddedDataPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+            ListIterate.forEach(testData.connectionsTestData, data -> data.data.accept(embeddedDataPrerequisiteElementsPassBuilder));
+        }
     }
 
     private static Root_meta_legend_service_metamodel_ConnectionTestData processServiceConnectionData(ConnectionTestData connectionData, CompileContext context, ProcessingContext processingContext)
@@ -259,6 +303,24 @@ public class HelperServiceBuilder
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported service test type '" + serviceTest.getClass().getSimpleName() + "'"));
     }
 
+    public static void collectPrerequisiteElementsServiceTest(Set<PackageableElementPointer> prerequisiteElements, ServiceTest_Legacy serviceTest, CompileContext context, Execution execution)
+    {
+        if (serviceTest instanceof SingleExecutionTest)
+        {
+            SingleExecutionTest singleExecutionTest = (SingleExecutionTest) serviceTest;
+            ListIterate.forEach(singleExecutionTest.asserts, assertion -> collectPrerequisiteElementsFromTestContainer(prerequisiteElements, assertion, context));
+        }
+        else if (serviceTest instanceof MultiExecutionTest)
+        {
+            MultiExecutionTest multiExecutionTest = (MultiExecutionTest) serviceTest;
+            ListIterate.forEach(multiExecutionTest.tests, test -> collectPrerequisiteElementsFromServiceKeyedSingleExecutionTest(prerequisiteElements, test, context));
+        }
+        else
+        {
+            getServiceCompilerExtensions(context).stream().flatMap(extension -> extension.getExtraServiceTestPrerequisiteElementsPassProcessors().stream()).forEach(processor -> processor.value(serviceTest, execution, context, prerequisiteElements));
+        }
+    }
+
     private static Root_meta_legend_service_metamodel_KeyedSingleExecutionTest processServiceKeyedSingleExecutionTest(KeyedSingleExecutionTest keyedSingleExecutionTest, CompileContext context, Set<String> testKeyValues)
     {
         if (!testKeyValues.add(keyedSingleExecutionTest.key))
@@ -269,6 +331,11 @@ public class HelperServiceBuilder
                 ._key(keyedSingleExecutionTest.key)
                 ._data(keyedSingleExecutionTest.data)
                 ._asserts(ListIterate.collect(keyedSingleExecutionTest.asserts, assertion -> processTestContainer(assertion, context)));
+    }
+
+    private static void collectPrerequisiteElementsFromServiceKeyedSingleExecutionTest(Set<PackageableElementPointer> prerequisiteElements, KeyedSingleExecutionTest keyedSingleExecutionTest, CompileContext context)
+    {
+        ListIterate.forEach(keyedSingleExecutionTest.asserts, assertion -> collectPrerequisiteElementsFromTestContainer(prerequisiteElements, assertion, context));
     }
 
     public static Root_meta_legend_service_metamodel_TestContainer processTestContainer(TestContainer testContainer, CompileContext context)
@@ -283,6 +350,13 @@ public class HelperServiceBuilder
         return new Root_meta_legend_service_metamodel_TestContainer_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::TestContainer"))
                 ._parametersValues(ListIterate.collect(testContainer.parametersValues, parameterValue -> parameterValue.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))))
                 ._assert(HelperValueSpecificationBuilder.buildLambda(testContainer._assert, context));
+    }
+
+    public static void collectPrerequisiteElementsFromTestContainer(Set<PackageableElementPointer> prerequisiteElements, TestContainer testContainer, CompileContext context)
+    {
+        ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+        ListIterate.forEach(testContainer.parametersValues, parameterValue -> parameterValue.accept(valueSpecificationPrerequisiteElementsPassBuilder));
+        testContainer._assert.accept(valueSpecificationPrerequisiteElementsPassBuilder);
     }
 
     public static Root_meta_legend_service_metamodel_ExecutionParameters processExecutionParameters(ExecutionParameters params, CompileContext context)
@@ -337,6 +411,32 @@ public class HelperServiceBuilder
                             param -> (Root_meta_legend_service_metamodel_SingleExecutionParameters) processExecutionParameters(param, context)));
         }
         throw new UnsupportedOperationException("Unsupported service execution type '" + params.getClass().getSimpleName() + "'");
+    }
+
+    public static void collectPrerequisiteElementsFromExecutionParameters(Set<PackageableElementPointer> prerequisiteElements, ExecutionParameters params)
+    {
+        if (params instanceof SingleExecutionParameters)
+        {
+            SingleExecutionParameters execParams = (SingleExecutionParameters) params;
+            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.MAPPING, execParams.mapping, execParams.mappingSourceInformation));
+
+            if (execParams.runtime != null)
+            {
+                HelperRuntimeBuilder.collectPrerequisiteElementsFromPureRuntime(prerequisiteElements, execParams.runtime);
+            }
+            else
+            {
+                RuntimeComponents runtimeComponents = execParams.runtimeComponents;
+                prerequisiteElements.add(runtimeComponents.binding);
+                prerequisiteElements.add(runtimeComponents.clazz);
+                HelperRuntimeBuilder.collectPrerequisiteElementsFromPureRuntime(prerequisiteElements, runtimeComponents.runtime);
+            }
+        }
+        else if (params instanceof MultiExecutionParameters)
+        {
+            MultiExecutionParameters execParams = (MultiExecutionParameters) params;
+            ListIterate.forEach(execParams.singleExecutionParameters, param -> HelperServiceBuilder.collectPrerequisiteElementsFromExecutionParameters(prerequisiteElements, param));
+        }
     }
 
     private static void checkMappingRuntimeCompatibility(Supplier<String> context, Root_meta_core_runtime_Runtime pureRuntime, Runtime runtime, Mapping pureMapping, String mapping, SourceInformation sourceInformation, PureModel pureModel)

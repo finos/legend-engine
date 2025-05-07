@@ -16,13 +16,16 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTest;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTest_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test;
 
+import java.util.Set;
 
 public class TestCompilerHelper
 {
@@ -45,5 +48,16 @@ public class TestCompilerHelper
             return compiledTest;
         }
         throw new EngineException("Tests in mapping must be of type MappingTest", test.sourceInformation, EngineErrorType.COMPILATION);
+    }
+
+    public static void collectPrerequisiteElementsFromPureMappingTests(Set<PackageableElementPointer> prerequisiteElements, org.finos.legend.engine.protocol.pure.v1.model.test.Test test, CompileContext context)
+    {
+        if (test instanceof MappingTest)
+        {
+            MappingTest mappingTest = (MappingTest) test;
+            ListIterate.forEach(mappingTest.storeTestData, ele -> HelperMappingBuilder.collectPrerequisiteElementsFromMappingElementTestData(prerequisiteElements, ele, context));
+            TestAssertionPrerequisiteElementsPassBuilder testAssertionPrerequisiteElementsPassBuilder = new TestAssertionPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+            ListIterate.forEach(mappingTest.assertions, assertion -> assertion.accept(testAssertionPrerequisiteElementsPassBuilder));
+        }
     }
 }
