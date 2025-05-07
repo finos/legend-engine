@@ -55,7 +55,7 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
                     current.fieldType().dataType().equals(DataType.TIMESTAMP_NTZ))
             {
                 int scale = current.fieldType().scale().orElse(0); // default seconds
-                prev.push( new ToTimestampFunction(stageField, "NUMBER", Optional.empty(), scale, context.quoteIdentifier()));
+                prev.push(new ToTimestampFunction(stageField, "NUMBER", Optional.empty(), scale, context.quoteIdentifier()));
                 return new VisitorResult(null);
             }
             if (current.fieldType().dataType().equals(DataType.DATE))
@@ -63,7 +63,7 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
                 long secondsInADay = TimeUnit.DAYS.toSeconds(1);
                 ToTimestampFunction timestampFunction = new ToTimestampFunction(
                         stageField, "NUMBER", Optional.of(secondsInADay), 0, context.quoteIdentifier());
-                prev.push( new ToDateFunction(timestampFunction, "DATE", context.quoteIdentifier()));
+                prev.push(new ToDateFunction(timestampFunction, "DATE", context.quoteIdentifier()));
                 return new VisitorResult(null);
             }
         }
