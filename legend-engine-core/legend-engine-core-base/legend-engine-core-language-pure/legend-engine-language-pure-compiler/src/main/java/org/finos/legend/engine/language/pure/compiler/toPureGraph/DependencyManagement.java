@@ -75,36 +75,6 @@ public class DependencyManagement
             }));
     }
 
-//    public void processElementDependencyGraph(MutableMap<PackageableElementPathPair, MutableSet<String>> elementDependencyGraph)
-//    {
-//        elementDependencyGraph.forEach((dependent, dependencies) ->
-//        {
-//            dependentToDependencies.put(dependent, dependencies);
-//            unionFind.putIfAbsent(dependent, dependent);
-//            rankBySize.putIfAbsent(dependent, 1);
-//            collectAbstractClasses(dependent, abstractClasses);
-//            dependencies.forEach(dependency ->
-//            {
-//                if (!dependencyGraph.containsKey(dependency))
-//                {
-//                    dependentToDependencies.putIfAbsent(dependency, Lists.mutable.empty());
-//                }
-//                unionFind.putIfAbsent(dependency, dependency);
-//                rankBySize.putIfAbsent(dependency, 1);
-//                collectAbstractClasses(dependency, abstractClasses);
-//            });
-//        });
-//
-//        dependentToDependencies.forEachKey(clazz ->
-//                abstractClasses.forEach(abstractClass ->
-//                {
-//                    if (abstractClass != clazz && abstractClass.isAssignableFrom(clazz))
-//                    {
-//                        dependentToDependencies.get(abstractClass).add(clazz);
-//                    }
-//                }));
-//    }
-
     private void collectAbstractClasses(Class<? extends PackageableElement> clazz, MutableSet<Class<? extends PackageableElement>> abstractClasses)
     {
         if (Modifier.isAbstract(clazz.getModifiers()))
@@ -164,87 +134,6 @@ public class DependencyManagement
             throw new EngineException("Detected a circular dependency in dependencyGraph", EngineErrorType.COMPILATION);
         }
     }
-
-//    public FastListMultimap<java.lang.Class<? extends PackageableElement>, PackageableElementsByDependencyLevel> topologicallySortElements(FastListMultimap<java.lang.Class<? extends PackageableElement>, PackageableElementsByDependencyLevel> classToElements, MutableMap<java.lang.Class<? extends PackageableElement>, MutableMap<String, MutableSet<String>>> elementPrerequisitesByClass)
-//    {
-//        FastListMultimap<java.lang.Class<? extends PackageableElement>, PackageableElementsByDependencyLevel> classToElementsSortedByDependencyLevel = new FastListMultimap<>();
-//        classToElements.forEachKeyMultiValues((clazz, elementsByDependencyLevel) ->
-//        {
-//            if (elementPrerequisitesByClass.containsKey(clazz))
-//            {
-//                MutableMap<String, MutableSet<String>> elementPrerequisites = elementPrerequisitesByClass.get(clazz);
-//                MutableMap<String, Integer> inDegrees = Maps.mutable.empty();
-//                MutableMap<String, List<String>> dependencyToDependents = Maps.mutable.empty();
-//                elementPrerequisites.forEachKeyValue((dependentElementFullPath, prerequisiteFullPaths) ->
-//                {
-//                    dependencyToDependents.putIfAbsent(dependentElementFullPath, Lists.mutable.empty());
-//                    inDegrees.put(dependentElementFullPath, inDegrees.getOrDefault(dependentElementFullPath, 0) + prerequisiteFullPaths.size());
-//                    prerequisiteFullPaths.forEach(prerequisiteFullPath ->
-//                    {
-//                        dependencyToDependents.putIfAbsent(prerequisiteFullPath, Lists.mutable.empty());
-//                        dependencyToDependents.get(prerequisiteFullPath).add(dependentElementFullPath);
-//                    });
-//                });
-//                MutableMap<String, PackageableElement> packageableElementsIndex = Maps.mutable.empty();
-//                elementsByDependencyLevel.forEach(elementsInCurrentDependencyLevel ->
-//                {
-//                    elementsInCurrentDependencyLevel.getIndependentElementAndPathPairs().forEach(elementAndPathPair ->
-//                    {
-//                        PackageableElement element = elementAndPathPair.getOne();
-//                        String elementFullPath = elementAndPathPair.getTwo();
-//                        packageableElementsIndex.put(elementFullPath, element);
-//                        inDegrees.putIfAbsent(elementFullPath, 0);
-//                    });
-//                });
-//
-//                Queue<String> queue = new LinkedList<>();
-//                inDegrees.forEach((elementFullPath, inDegree) ->
-//                {
-//                    if (inDegree == 0)
-//                    {
-//                        queue.offer(elementFullPath);
-//                    }
-//                });
-//
-//                int sortedElementCount = 0;
-//                MutableList<PackageableElementsByDependencyLevel> elementsSortedByDependencyLevel = Lists.mutable.empty();
-//                while (!queue.isEmpty())
-//                {
-//                    int size = queue.size();
-//                    MutableList<Pair<PackageableElement, String>> currentDependencyLevelElements = Lists.mutable.empty();
-//                    for (int i = 0; i < size; i++)
-//                    {
-//                        String elementFullPath = queue.poll();
-//                        currentDependencyLevelElements.add(Tuples.pair(packageableElementsIndex.get(elementFullPath), elementFullPath));
-//                        sortedElementCount++;
-//                        dependencyToDependents.getOrDefault(elementFullPath, Lists.fixedSize.empty()).forEach(dependent ->
-//                        {
-//                            inDegrees.put(dependent, inDegrees.getOrDefault(dependent, 0) - 1);
-//                            if (inDegrees.get(dependent) == 0)
-//                            {
-//                                queue.offer(dependent);
-//                            }
-//                        });
-//                    }
-//                    elementsSortedByDependencyLevel.add(new PackageableElementsByDependencyLevel(currentDependencyLevelElements));
-//                }
-//
-//                if (sortedElementCount != packageableElementsIndex.size())
-//                {
-//                    throw new EngineException("Detected a circular dependency in element prerequisites graph in the following metamodel: " + clazz + ".\nCycle: " + getElementsInCircularDependency(elementPrerequisites), EngineErrorType.COMPILATION);
-//                }
-//
-//                classToElementsSortedByDependencyLevel.putAll(clazz, elementsSortedByDependencyLevel);
-//            }
-//
-//            else
-//            {
-//                classToElementsSortedByDependencyLevel.putAll(clazz, elementsByDependencyLevel);
-//            }
-//        });
-//
-//        return classToElementsSortedByDependencyLevel;
-//    }
 
     public List<PackageableElementsByDependencyLevel> topologicallySortElements(MutableMap<PackageableElementPathPair, MutableSet<String>> elementPrerequisites)
     {
