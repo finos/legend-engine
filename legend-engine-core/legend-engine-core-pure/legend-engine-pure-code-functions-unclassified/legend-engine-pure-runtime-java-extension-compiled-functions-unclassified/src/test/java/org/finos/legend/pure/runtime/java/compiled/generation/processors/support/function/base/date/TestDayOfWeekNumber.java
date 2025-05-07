@@ -14,8 +14,9 @@
 
 package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.date;
 
-import org.finos.legend.engine.pure.code.core.functions.unclassified.base.date.AbstractTestDayOfWeekNumber;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
+import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
+import org.finos.legend.pure.m3.tests.function.base.date.AbstractTestDayOfWeekNumber;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
 import org.junit.BeforeClass;
@@ -25,7 +26,7 @@ public class TestDayOfWeekNumber extends AbstractTestDayOfWeekNumber
     @BeforeClass
     public static void setUp()
     {
-        setUpRuntime(getFunctionExecution(), JavaModelFactoryRegistryLoader.loader());
+        AbstractPureTestWithCoreCompiled.setUpRuntime(getFunctionExecution(), JavaModelFactoryRegistryLoader.loader());
     }
 
     protected static FunctionExecution getFunctionExecution()

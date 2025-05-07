@@ -16,17 +16,29 @@ package org.finos.legend.pure.runtime.java.compiled.generation.processors.suppor
 
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
-import org.finos.legend.pure.m3.tests.function.base.date.AbstractTestWeekOfYear;
+import org.finos.legend.pure.m3.tests.function.base.date.AbstractTestToday;
+import org.finos.legend.pure.m3.tools.test.ToFix;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
-public class TestWeekOfYear extends AbstractTestWeekOfYear
+public class TestTodayCompiled extends AbstractTestToday
 {
     @BeforeClass
     public static void setUp()
     {
         AbstractPureTestWithCoreCompiled.setUpRuntime(getFunctionExecution(), JavaModelFactoryRegistryLoader.loader());
+    }
+
+    @ToFix
+    @Ignore
+    @Test
+    @Override
+    public void testToday()
+    {
+        // TODO fix this by allowing native functions to be called directly in compiled mode
     }
 
     protected static FunctionExecution getFunctionExecution()

@@ -16,12 +16,12 @@ package org.finos.legend.pure.runtime.java.compiled.generation.processors.suppor
 
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
-import org.finos.legend.pure.m3.tests.function.base.date.AbstractTestWeekOfYear;
+import org.finos.legend.pure.m3.tests.function.base.date.AbstractTestSecond;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
 import org.junit.BeforeClass;
 
-public class TestWeekOfYear extends AbstractTestWeekOfYear
+public class TestSecond extends AbstractTestSecond
 {
     @BeforeClass
     public static void setUp()
