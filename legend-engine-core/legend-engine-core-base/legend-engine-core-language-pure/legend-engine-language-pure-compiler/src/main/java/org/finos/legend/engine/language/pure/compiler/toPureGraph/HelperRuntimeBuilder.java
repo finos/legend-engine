@@ -22,14 +22,17 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.ConnectionStores;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.SingleConnectionEngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
@@ -233,6 +236,36 @@ public class HelperRuntimeBuilder
         return pureRuntime;
     }
 
+    public static void collectPrerequisiteElementsFromEngineRuntime(Set<PackageableElementPointer> prerequisiteElements, EngineRuntime engineRuntime)
+    {
+        prerequisiteElements.addAll(engineRuntime.mappings);
+        ListIterate.forEach(engineRuntime.connectionStores, connectionStores -> HelperRuntimeBuilder.collectPrerequisiteElementsFromConnectionStores(prerequisiteElements, connectionStores));
+        ListIterate.forEach(engineRuntime.connections, storeConnections -> HelperRuntimeBuilder.collectPrerequisiteElementsFromStoreConnections(prerequisiteElements, storeConnections));
+    }
+
+    public static void collectPrerequisiteElementsFromConnectionStores(Set<PackageableElementPointer> prerequisiteElements, ConnectionStores connectionStores)
+    {
+        if (connectionStores.connection == null)
+        {
+            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CONNECTION, connectionStores.connectionPointer.connection, connectionStores.connectionPointer.sourceInformation));
+        }
+        ListIterate.forEach(connectionStores.storePointers, storePointer ->
+        {
+            if (storePointer.type != PackageableElementType.DATASPACE) // TODO: This prevents circular dependencies with runtime and dataspace. Revisit later to see if this needs to be fixed
+            {
+                prerequisiteElements.add(storePointer);
+            }
+        });
+    }
+
+    public static void collectPrerequisiteElementsFromStoreConnections(Set<PackageableElementPointer> prerequisiteElements, StoreConnections storeConnections)
+    {
+        if (storeConnections.store.type != PackageableElementType.DATASPACE)
+        {
+            prerequisiteElements.add(storeConnections.store);
+        }
+    }
+
     public static Root_meta_core_runtime_Runtime buildPureRuntime(Runtime runtime, CompileContext context)
     {
         if (runtime == null)
@@ -264,6 +297,23 @@ public class HelperRuntimeBuilder
             return context.resolveRuntime(((RuntimePointer) runtime).runtime, ((RuntimePointer) runtime).sourceInformation);
         }
         throw new UnsupportedOperationException();
+    }
+
+    public static void collectPrerequisiteElementsFromPureRuntime(Set<PackageableElementPointer> prerequisiteElements, Runtime runtime)
+    {
+        if (!(runtime == null || runtime instanceof LegacyRuntime))
+        {
+            if (runtime instanceof EngineRuntime)
+            {
+                EngineRuntime engineRuntime = (EngineRuntime) runtime;
+                HelperRuntimeBuilder.collectPrerequisiteElementsFromEngineRuntime(prerequisiteElements, engineRuntime);
+            }
+            else if (runtime instanceof RuntimePointer)
+            {
+                RuntimePointer runtimePointer = (RuntimePointer) runtime;
+                prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.RUNTIME, runtimePointer.runtime, runtimePointer.sourceInformation));
+            }
+        }
     }
 
     public static Store getStore(String element, SourceInformation sourceInformation, CompileContext context)

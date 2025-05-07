@@ -44,6 +44,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Inclu
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
@@ -98,10 +99,14 @@ public class CompilerExtensions
     private final ImmutableList<Procedure3<ClassMapping, Mapping, CompileContext>> extraClassMappingSecondPassProcessors;
     private final ImmutableList<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> extraAggregationAwareClassMappingFirstPassProcessors;
     private final ImmutableList<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> extraAggregationAwareClassMappingSecondPassProcessors;
+    private final ImmutableList<Procedure2<AggregationAwareClassMapping, Set<PackageableElementPointer>>> extraAggregationAwareClassMappingPrerequisiteElementsPassProcessors;
+    private final ImmutableList<Procedure3<ClassMapping, CompileContext, Set<PackageableElementPointer>>> extraClassMappingPrerequisiteElementsPassProcessors;
     private final ImmutableList<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> extraAssociationMappingProcessors;
+    private final ImmutableList<Procedure2<AssociationMapping, Set<PackageableElementPointer>>> extraAssociationMappingPrerequisiteElementsPassProcessors;
     private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_core_runtime_Connection>> extraConnectionValueProcessors;
     private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_core_runtime_Connection, CompileContext>> extraConnectionSecondPassProcessors;
     private final ImmutableList<Procedure2<InputData, CompileContext>> extraMappingTestInputDataProcessors;
+    private final ImmutableList<Procedure2<InputData, Set<PackageableElementPointer>>> extraMappingTestInputDataPrerequisiteElementsPassProcessors;
     private final ImmutableList<Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> extraFunctionHandlerDispatchBuilderInfoCollectors;
     private final ImmutableList<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> extraFunctionExpressionBuilderRegistrationInfoCollectors;
     private final ImmutableList<Function<Handlers, List<FunctionHandlerRegistrationInfo>>> extraFunctionHandlerRegistrationInfoCollectors;
@@ -114,9 +119,13 @@ public class CompilerExtensions
     private final ImmutableList<Procedure2<PureModel, PureModelContextData>> extraPostValidators;
     private final ImmutableList<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> extraExecutionOptionProcessors;
     private final ImmutableList<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> extraEmbeddedDataProcessors;
+    private final ImmutableList<Procedure3<Set<PackageableElementPointer>, EmbeddedData, CompileContext>> extraEmbeddedDataPrerequisiteElementsPassProcessors;
     private final ImmutableList<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> extraTestProcessors;
+    private final ImmutableList<Procedure3<Set<PackageableElementPointer>, Test, CompileContext>> extraTestPrerequisiteElementsPassProcessors;
     private final ImmutableList<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> extraTestAssertionProcessors;
+    private final ImmutableList<Procedure3<Set<PackageableElementPointer>, TestAssertion, CompileContext>> extraTestAssertionPrerequisiteElementsPassProcessors;
     private final Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> extraClassInstanceProcessors;
+    private final Map<String, Procedure2<Object, Set<PackageableElementPointer>>> extraClassInstancePrerequisiteElementsPassProcessors;
     private final ImmutableList<BiConsumer<PureModel, MappingValidatorContext>> extraMappingPostValidators;
     private final ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> extraValueSpecificationBuilderForFuncExpr;
     private final ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> extraRelationStoreAccessorProcessors;
@@ -131,11 +140,15 @@ public class CompilerExtensions
         this.extraClassMappingFirstPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraClassMappingFirstPassProcessors);
         this.extraAggregationAwareClassMappingFirstPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraAggregationAwareClassMappingFirstPassProcessors);
         this.extraAggregationAwareClassMappingSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraAggregationAwareClassMappingSecondPassProcessors);
+        this.extraAggregationAwareClassMappingPrerequisiteElementsPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraAggregationAwareClassMappingPrerequisiteElementsPassProcessors);
         this.extraClassMappingSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraClassMappingSecondPassProcessors);
+        this.extraClassMappingPrerequisiteElementsPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraClassMappingPrerequisiteElementsPassProcessors);
         this.extraAssociationMappingProcessors = this.extensions.flatCollect(CompilerExtension::getExtraAssociationMappingProcessors);
+        this.extraAssociationMappingPrerequisiteElementsPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraAssociationMappingPrerequisiteElementsPassProcessors);
         this.extraConnectionValueProcessors = this.extensions.flatCollect(CompilerExtension::getExtraConnectionValueProcessors);
         this.extraConnectionSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraConnectionSecondPassProcessors);
         this.extraMappingTestInputDataProcessors = this.extensions.flatCollect(CompilerExtension::getExtraMappingTestInputDataProcessors);
+        this.extraMappingTestInputDataPrerequisiteElementsPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraMappingTestInputDataPrerequisiteElementsPassProcessors);
         this.extraFunctionHandlerDispatchBuilderInfoCollectors = this.extensions.flatCollect(CompilerExtension::getExtraFunctionHandlerDispatchBuilderInfoCollectors);
         this.extraFunctionExpressionBuilderRegistrationInfoCollectors = this.extensions.flatCollect(CompilerExtension::getExtraFunctionExpressionBuilderRegistrationInfoCollectors);
         this.extraFunctionHandlerRegistrationInfoCollectors = this.extensions.flatCollect(CompilerExtension::getExtraFunctionHandlerRegistrationInfoCollectors);
@@ -148,10 +161,15 @@ public class CompilerExtensions
         this.extraPostValidators = this.extensions.flatCollect(CompilerExtension::getExtraPostValidators);
         this.extraExecutionOptionProcessors = this.extensions.flatCollect(CompilerExtension::getExtraExecutionOptionProcessors);
         this.extraEmbeddedDataProcessors = this.extensions.flatCollect(CompilerExtension::getExtraEmbeddedDataProcessors);
+        this.extraEmbeddedDataPrerequisiteElementsPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraEmbeddedDataPrerequisiteElementsPassProcessors);
         this.extraTestProcessors = this.extensions.flatCollect(CompilerExtension::getExtraTestProcessors);
+        this.extraTestPrerequisiteElementsPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraTestPrerequisiteElementsPassProcessors);
         this.extraTestAssertionProcessors = this.extensions.flatCollect(CompilerExtension::getExtraTestAssertionProcessors);
+        this.extraTestAssertionPrerequisiteElementsPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraTestAssertionPrerequisiteElementsPassProcessors);
         this.extraClassInstanceProcessors = Maps.mutable.empty();
         this.extensions.forEach(e -> extraClassInstanceProcessors.putAll(e.getExtraClassInstanceProcessors()));
+        this.extraClassInstancePrerequisiteElementsPassProcessors = Maps.mutable.empty();
+        this.extensions.forEach(e -> extraClassInstancePrerequisiteElementsPassProcessors.putAll(e.getExtraClassInstancePrerequisiteElementsPassProcessors()));
         this.extraMappingPostValidators = this.extensions.flatCollect(CompilerExtension::getExtraMappingPostValidators);
         this.extraValueSpecificationBuilderForFuncExpr = this.extensions.flatCollect(CompilerExtension::getExtraValueSpecificationBuilderForFuncExpr);
         this.extraIncludedMappingHandlers = Maps.mutable.empty();
@@ -236,15 +254,29 @@ public class CompilerExtensions
         return this.extraAggregationAwareClassMappingFirstPassProcessors.castToList();
     }
 
-
     public List<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> getExtraAggregationAwareClassMappingSecondPassProcessors()
     {
         return this.extraAggregationAwareClassMappingSecondPassProcessors.castToList();
     }
 
+    public List<Procedure2<AggregationAwareClassMapping, Set<PackageableElementPointer>>> getExtraAggregationAwareClassMappingPrerequisiteElementsPassProcessors()
+    {
+        return this.extraAggregationAwareClassMappingPrerequisiteElementsPassProcessors.castToList();
+    }
+
+    public List<Procedure3<ClassMapping, CompileContext, Set<PackageableElementPointer>>> getExtraClassMappingPrerequisiteElementsPassProcessors()
+    {
+        return this.extraClassMappingPrerequisiteElementsPassProcessors.castToList();
+    }
+
     public List<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> getExtraAssociationMappingProcessors()
     {
         return this.extraAssociationMappingProcessors.castToList();
+    }
+
+    public List<Procedure2<AssociationMapping, Set<PackageableElementPointer>>> getExtraAssociationMappingPrerequisiteElementsPassProcessors()
+    {
+        return this.extraAssociationMappingPrerequisiteElementsPassProcessors.castToList();
     }
 
     public List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_core_runtime_Connection>> getExtraConnectionValueProcessors()
@@ -260,6 +292,11 @@ public class CompilerExtensions
     public List<Procedure2<InputData, CompileContext>> getExtraMappingTestInputDataProcessors()
     {
         return this.extraMappingTestInputDataProcessors.castToList();
+    }
+
+    public List<Procedure2<InputData, Set<PackageableElementPointer>>> getExtraMappingTestInputDataPrerequisiteElementsPassProcessors()
+    {
+        return this.extraMappingTestInputDataPrerequisiteElementsPassProcessors.castToList();
     }
 
     public List<Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> getExtraFunctionHandlerDispatchBuilderInfoCollectors()
@@ -307,14 +344,29 @@ public class CompilerExtensions
         return this.extraEmbeddedDataProcessors.castToList();
     }
 
+    public List<Procedure3<Set<PackageableElementPointer>, EmbeddedData, CompileContext>> getExtraEmbeddedDataPrerequisiteElementsPassProcessors()
+    {
+        return this.extraEmbeddedDataPrerequisiteElementsPassProcessors.castToList();
+    }
+
     public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> getExtraTestProcessors()
     {
         return this.extraTestProcessors.castToList();
     }
 
+    public List<Procedure3<Set<PackageableElementPointer>, Test, CompileContext>> getExtraTestPrerequisiteElementsPassProcessors()
+    {
+        return this.extraTestPrerequisiteElementsPassProcessors.castToList();
+    }
+
     public List<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> getExtraTestAssertionProcessors()
     {
         return this.extraTestAssertionProcessors.castToList();
+    }
+
+    public List<Procedure3<Set<PackageableElementPointer>, TestAssertion, CompileContext>> getExtraTestAssertionPrerequisiteElementsPassProcessors()
+    {
+        return this.extraTestAssertionPrerequisiteElementsPassProcessors.castToList();
     }
 
     public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
@@ -489,6 +541,11 @@ public class CompilerExtensions
     public Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> getExtraClassInstanceProcessors()
     {
         return extraClassInstanceProcessors;
+    }
+
+    public Map<String, Procedure2<Object, Set<PackageableElementPointer>>> getExtraClassInstancePrerequisiteElementsPassProcessors()
+    {
+        return extraClassInstancePrerequisiteElementsPassProcessors;
     }
 
     public IncludedMappingHandler getExtraIncludedMappingHandlers(String classType)

@@ -49,6 +49,8 @@ import org.finos.legend.engine.protocol.pure.m3.extension.Profile;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
@@ -86,6 +88,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
+import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
+import org.finos.legend.pure.m3.navigation.function.InvalidFunctionDescriptorException;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
@@ -112,6 +116,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -253,6 +258,8 @@ public class PureModel implements IPureModel
             span.log("GRAPH_PRE_VALIDATION_COMPLETED");
 
             List<org.finos.legend.engine.protocol.pure.m3.PackageableElement> elements = pureModelContextData.getElements();
+            MutableSet<String> elementPaths = Sets.mutable.empty();
+            ListIterate.forEach(elements, element -> elementPaths.add(element.getPath()));
             DependencyManagement dependencyManagement = new DependencyManagement();
             FastListMultimap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.m3.PackageableElement>, DependencyManagement.PackageableElementsByDependencyLevel> classToElements = FastListMultimap.newMultimap();
             ListIterate.groupBy(elements, x ->
@@ -268,7 +275,7 @@ public class PureModel implements IPureModel
                 List<Pair<org.finos.legend.engine.protocol.pure.m3.PackageableElement, String>> elementAndPathPairs = StreamSupport.stream(elementsInCurrentClass.spliterator(), false)
                         .map(e -> Tuples.pair(e, buildPackageString(e._package, e.name)))
                         .collect(Collectors.toList());
-                classToElements.putAll(clazz, Lists.fixedSize.with(dependencyManagement.new PackageableElementsByDependencyLevel(elementAndPathPairs)));
+                classToElements.putAll(clazz, Lists.fixedSize.with(new DependencyManagement.PackageableElementsByDependencyLevel(elementAndPathPairs)));
             });
 
             Runnable runPasses = () ->
@@ -296,7 +303,7 @@ public class PureModel implements IPureModel
                 MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.m3.PackageableElement>, Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.m3.PackageableElement>>> dependentToDependencies = dependencyManagement.getDependentToDependencies();
                 dependencyManagement.detectCircularDependency();
                 MutableSet<MutableSet<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.m3.PackageableElement>>> disjointDependencyGraphs = dependencyManagement.getDisjointDependencyGraphs();
-                MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.m3.PackageableElement>, MutableMap<String, MutableSet<String>>> elementPrerequisitesByClass = forkJoinPool == null ? Maps.mutable.empty() : new ConcurrentHashMap<>();
+                MutableMap<DependencyManagement.PackageableElementPathPair, MutableSet<String>> elementPrerequisites = forkJoinPool == null ? Maps.mutable.empty() : new ConcurrentHashMap<>();
                 this.maybeParallel(disjointDependencyGraphs.stream()).forEach(disjointDependencyGraph ->
                 {
                     processPass("firstPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processFirstPass), disjointDependencyGraph);
@@ -305,18 +312,47 @@ public class PureModel implements IPureModel
                             .flatMap(clazz -> classToElements.get(clazz).flatCollect(elementsInThisClass -> elementsInThisClass.getIndependentElementAndPathPairs().collect(Pair::getOne)).stream());
                     this.maybeParallel(allElementsInDisjointDependencyGraph).forEach(element ->
                     {
-                        java.lang.Class<? extends org.finos.legend.engine.protocol.pure.m3.PackageableElement> elementClass = element.getClass();
                         String elementFullPath = buildPackageString(element._package, element.name);
-                        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> prerequisiteElements = processPrerequisiteElementsPass(element);
-                        MutableSet<String> prerequisiteElementFullPaths = Sets.fixedSize.withAll(prerequisiteElements.collect(prerequisiteElement ->
-                                platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(prerequisiteElement, getExecutionSupport())));
-                        elementPrerequisitesByClass.putIfAbsent(elementClass, forkJoinPool == null ? Maps.mutable.empty() : new ConcurrentHashMap<>());
-                        elementPrerequisitesByClass.get(elementClass).put(elementFullPath, prerequisiteElementFullPaths);
+                        CompileContext context = getContext(element);
+                        Set<PackageableElementPointer> packageableElementPointers = processPrerequisiteElementsPass(element);
+                        MutableSet<String> prerequisiteElementFullPaths = Sets.mutable.empty();
+                        for (PackageableElementPointer packageableElementPointer : packageableElementPointers)
+                        {
+                            String fullPath = packageableElementPointer.path;
+                            if (packageableElementPointer.type == PackageableElementType.FUNCTION)
+                            {
+                                try
+                                {
+                                    fullPath = FunctionDescriptor.functionDescriptorToId(fullPath);
+                                }
+                                catch (InvalidFunctionDescriptorException ignored)
+                                {
+                                    // Full path could already be an ID, and if it is not, it will be validated in the the next if-else
+                                }
+                            }
+                            if (elementPaths.contains(fullPath))
+                            {
+                                prerequisiteElementFullPaths.add(fullPath);
+                            }
+                            else
+                            {
+                                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement prerequisiteElement = context.resolvePackageableElement_safe(fullPath, packageableElementPointer.sourceInformation == null ? SourceInformation.getUnknownSourceInformation() : packageableElementPointer.sourceInformation);
+                                if (Objects.nonNull(prerequisiteElement))
+                                {
+                                    String prerequisiteElementFullPath = platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(prerequisiteElement, getExecutionSupport());
+                                    if (elementPaths.contains(prerequisiteElementFullPath))
+                                    {
+                                        prerequisiteElementFullPaths.add(prerequisiteElementFullPath);
+                                    }
+                                }
+                            }
+                        }
+                        elementPrerequisites.put(new DependencyManagement.PackageableElementPathPair(element, elementFullPath), prerequisiteElementFullPaths);
                     });
-                    FastListMultimap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.m3.PackageableElement>, DependencyManagement.PackageableElementsByDependencyLevel> classToElementsSortedByDependencyLevel = dependencyManagement.topologicallySortElements(classToElements, elementPrerequisitesByClass);
-                    processPass("milestoningPass", classToElementsSortedByDependencyLevel, dependentToDependencies, handleEngineExceptions(this::processMilestoningPass), disjointDependencyGraph);
-                    processPass("thirdPass", classToElementsSortedByDependencyLevel, dependentToDependencies, handleEngineExceptions(this::processThirdPass), disjointDependencyGraph);
                 });
+                List<DependencyManagement.PackageableElementsByDependencyLevel> elementsSortedByDependencyLevel = dependencyManagement.topologicallySortElements(elementPrerequisites);
+                processPass("milestoningPass", elementsSortedByDependencyLevel, handleEngineExceptions(this::processMilestoningPass));
+                processPass("thirdPass", elementsSortedByDependencyLevel, handleEngineExceptions(this::processThirdPass));
             };
 
             if (forkJoinPool != null)
@@ -599,6 +635,16 @@ public class PureModel implements IPureModel
         }
     }
 
+    private void processPass(String name, List<DependencyManagement.PackageableElementsByDependencyLevel> elementsSortedByDependencyLevel, Consumer<org.finos.legend.engine.protocol.pure.m3.PackageableElement> passConsumer)
+    {
+        ListIterate.forEachWithIndex(elementsSortedByDependencyLevel, (elementsInCurrentDependencyLevel, i) ->
+        {
+            LOGGER.debug("{} - Starting compilation of dependency level {}", name, i);
+            this.maybeParallel(elementsInCurrentDependencyLevel.getIndependentElementAndPathPairs().collect(Pair::getOne).stream()).forEach(passConsumer);
+            LOGGER.debug("{} - Finished compilation of dependency level {}", name, i);
+        });
+    }
+
     private void processFirstPass(org.finos.legend.engine.protocol.pure.m3.PackageableElement element)
     {
         visitWithErrorHandling(element, () ->
@@ -617,7 +663,7 @@ public class PureModel implements IPureModel
         });
     }
 
-    private RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElementsPass(org.finos.legend.engine.protocol.pure.m3.PackageableElement element)
+    private Set<PackageableElementPointer> processPrerequisiteElementsPass(org.finos.legend.engine.protocol.pure.m3.PackageableElement element)
     {
         return visitWithErrorHandling(element, () -> getContext(element).processPrerequisiteElementsPass(element));
     }

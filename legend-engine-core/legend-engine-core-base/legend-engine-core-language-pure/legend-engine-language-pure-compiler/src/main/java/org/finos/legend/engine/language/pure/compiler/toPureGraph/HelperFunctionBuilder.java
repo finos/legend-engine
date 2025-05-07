@@ -18,11 +18,14 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
@@ -40,6 +43,8 @@ import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_Store
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+
+import java.util.Set;
 
 public class HelperFunctionBuilder
 {
@@ -113,6 +118,35 @@ public class HelperFunctionBuilder
         return null;
     }
 
+    static void collectPrerequisiteElementsFromFunctionTestSuites(Set<PackageableElementPointer> prerequisiteElements, org.finos.legend.engine.protocol.pure.v1.model.test.Test test, CompileContext compileContext)
+    {
+        if (test instanceof FunctionTestSuite)
+        {
+            FunctionTestSuite testSuite = (FunctionTestSuite) test;
+            if (testSuite.testData != null && !testSuite.testData.isEmpty())
+            {
+                EmbeddedDataPrerequisiteElementsPassBuilder embeddedDataPrerequisiteElementsPassBuilder = new EmbeddedDataPrerequisiteElementsPassBuilder(compileContext, prerequisiteElements);
+                ListIterate.forEach(testSuite.testData, storeData ->
+                {
+                    prerequisiteElements.add(storeData.store);
+                    storeData.data.accept(embeddedDataPrerequisiteElementsPassBuilder);
+                });
+            }
+            ListIterate.forEach(testSuite.tests, unitTest -> collectPrerequisiteElementsFromFunctionTestSuites(prerequisiteElements, unitTest, compileContext));
+        }
+        else if (test instanceof FunctionTest)
+        {
+            FunctionTest functionTest = (FunctionTest) test;
+
+            if (functionTest.parameters != null && !functionTest.parameters.isEmpty())
+            {
+                ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(compileContext, prerequisiteElements);
+                ListIterate.forEach(functionTest.parameters, param -> param.value.accept(valueSpecificationPrerequisiteElementsPassBuilder));
+            }
+            ListIterate.forEach(functionTest.assertions, assertion -> assertion.accept(new TestAssertionPrerequisiteElementsPassBuilder(compileContext, prerequisiteElements)));
+        }
+    }
+
     private static Root_meta_legend_function_metamodel_StoreTestData buildFunctionTestData(org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime runtime, StoreTestData storeTestData, CompileContext compileContext, ProcessingContext ctx)
     {
         Root_meta_legend_function_metamodel_StoreTestData_Impl metamodelStoreTestData = new Root_meta_legend_function_metamodel_StoreTestData_Impl("", SourceInformationHelper.toM3SourceInformation(storeTestData.sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::StoreTestData"));
@@ -143,6 +177,4 @@ public class HelperFunctionBuilder
         pureParameterValue._value(Lists.immutable.with(parameterValue.value.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))));
         return pureParameterValue;
     }
-
-
 }

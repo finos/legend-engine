@@ -23,11 +23,14 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetTypeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.Delta;
@@ -231,6 +234,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class HelperPersistenceBuilder
@@ -271,6 +275,14 @@ public class HelperPersistenceBuilder
         }
 
         return pureServiceOutputTarget;
+    }
+
+    public static void collectPrerequisiteElementsFromServiceOutputTarget(Set<PackageableElementPointer> prerequisiteElements, ServiceOutputTarget serviceOutputTarget)
+    {
+        if (serviceOutputTarget.persistenceTarget != null)
+        {
+            ListIterate.flatCollect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraPersistenceTargetPrerequisiteElementsProcessors).forEach(processor -> processor.value(serviceOutputTarget.persistenceTarget, prerequisiteElements));
+        }
     }
 
     public static Root_meta_pure_persistence_metamodel_service_ServiceOutput buildServiceOutput(ServiceOutput serviceOutput, CompileContext context)
@@ -547,6 +559,11 @@ public class HelperPersistenceBuilder
         return persister.accept(new PersisterBuilder(context));
     }
 
+    public static void collectPrerequisiteElementsFromPersister(Set<PackageableElementPointer> prerequisiteElements, Persister persister)
+    {
+        persister.accept(new PersisterPrerequisiteElementsBuilder(prerequisiteElements));
+    }
+
     public static Root_meta_pure_persistence_metamodel_notifier_Notifier buildNotifier(Notifier notifier, CompileContext context)
     {
         return new Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::notifier::Notifier"))
@@ -605,6 +622,19 @@ public class HelperPersistenceBuilder
             }));
         }
         return purePersistenceTest;
+    }
+
+    public static void collectPrerequisiteElementsFromPersistenceTest(Set<PackageableElementPointer> prerequisiteElements, PersistenceTest test, CompileContext context)
+    {
+        if (test.testBatches != null)
+        {
+            TestAssertionPrerequisiteElementsPassBuilder testAssertionPrerequisiteElementsPassBuilder = new TestAssertionPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+            ListIterate.forEach(test.testBatches, testBatch ->
+            {
+                HelperPersistenceBuilder.collectPrerequisiteElementsFromPersistenceTestBatchData(prerequisiteElements, testBatch.testData, context);
+                ListIterate.forEach(testBatch.assertions, assertion -> assertion.accept(testAssertionPrerequisiteElementsPassBuilder));
+            });
+        }
     }
 
     public static Database buildDatabase(PackageableElementPointer database, SourceInformation sourceInformation, CompileContext context)
@@ -727,6 +757,31 @@ public class HelperPersistenceBuilder
         }
     }
 
+    private static class PersisterPrerequisiteElementsBuilder implements PersisterVisitor<Set<PackageableElementPointer>>
+    {
+        private final Set<PackageableElementPointer> prerequisiteElements;
+
+        private PersisterPrerequisiteElementsBuilder(Set<PackageableElementPointer> prerequisiteElements)
+        {
+            this.prerequisiteElements = prerequisiteElements;
+        }
+
+        @Override
+        public Set<PackageableElementPointer> visit(BatchPersister val)
+        {
+            val.targetShape.accept(new TargetShapePrerequisiteElementsBuilder(this.prerequisiteElements));
+            val.sink.accept(new SinkPrerequisiteElementsBuilder(this.prerequisiteElements));
+            return this.prerequisiteElements;
+        }
+
+        @Override
+        public Set<PackageableElementPointer> visit(StreamingPersister val)
+        {
+            val.sink.accept(new SinkPrerequisiteElementsBuilder(this.prerequisiteElements));
+            return this.prerequisiteElements;
+        }
+    }
+
     private static class NotifyeeBuilder implements NotifyeeVisitor<Root_meta_pure_persistence_metamodel_notifier_Notifyee>
     {
         private final CompileContext context;
@@ -763,6 +818,14 @@ public class HelperPersistenceBuilder
         return pureTestBatchData;
     }
 
+    public static void collectPrerequisiteElementsFromPersistenceTestBatchData(Set<PackageableElementPointer> prerequisiteElements, TestData testData, CompileContext context)
+    {
+        if (testData.connection != null)
+        {
+            HelperPersistenceBuilder.collectPrerequisiteElementsFromPersistenceConnectionData(prerequisiteElements, testData.connection, context);
+        }
+    }
+
     private static Root_meta_pure_persistence_metamodel_ConnectionTestData processPersistenceConnectionData(ConnectionTestData connectionData, CompileContext context, ProcessingContext processingContext)
     {
         Root_meta_pure_persistence_metamodel_ConnectionTestData pureConnectionData = new Root_meta_pure_persistence_metamodel_ConnectionTestData_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::ConnectionTestData"));
@@ -770,6 +833,11 @@ public class HelperPersistenceBuilder
         pureConnectionData._data(connectionData.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
 
         return pureConnectionData;
+    }
+
+    private static void collectPrerequisiteElementsFromPersistenceConnectionData(Set<PackageableElementPointer> prerequisiteElements, ConnectionTestData connectionData, CompileContext context)
+    {
+        connectionData.data.accept(new EmbeddedDataPrerequisiteElementsPassBuilder(context, prerequisiteElements));
     }
 
     private static class SinkBuilder implements SinkVisitor<Root_meta_pure_persistence_metamodel_persister_sink_Sink>
@@ -793,6 +861,30 @@ public class HelperPersistenceBuilder
         {
             return new Root_meta_pure_persistence_metamodel_persister_sink_ObjectStorageSink_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::sink::ObjectStorageSink"))
                     ._binding(buildBinding(val.binding, val.sourceInformation, context));
+        }
+    }
+
+    private static class SinkPrerequisiteElementsBuilder implements SinkVisitor<Set<PackageableElementPointer>>
+    {
+        private final Set<PackageableElementPointer> prerequisiteElements;
+
+        private SinkPrerequisiteElementsBuilder(Set<PackageableElementPointer> prerequisiteElements)
+        {
+            this.prerequisiteElements = prerequisiteElements;
+        }
+
+        @Override
+        public Set<PackageableElementPointer> visit(RelationalSink val)
+        {
+            this.prerequisiteElements.add(val.database);
+            return this.prerequisiteElements;
+        }
+
+        @Override
+        public Set<PackageableElementPointer> visit(ObjectStorageSink val)
+        {
+            this.prerequisiteElements.add(val.binding);
+            return this.prerequisiteElements;
         }
     }
 
@@ -824,6 +916,30 @@ public class HelperPersistenceBuilder
                 map.put(p.modelProperty, modelClass);
                 return map;
             }).asUnmodifiable();
+        }
+    }
+
+    private static class TargetShapePrerequisiteElementsBuilder implements TargetShapeVisitor<Set<PackageableElementPointer>>
+    {
+        private final Set<PackageableElementPointer> prerequisiteElements;
+
+        private TargetShapePrerequisiteElementsBuilder(Set<PackageableElementPointer> prerequisiteElements)
+        {
+            this.prerequisiteElements = prerequisiteElements;
+        }
+
+        @Override
+        public Set<PackageableElementPointer> visit(FlatTarget val)
+        {
+            this.prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, val.modelClass));
+            return this.prerequisiteElements;
+        }
+
+        @Override
+        public Set<PackageableElementPointer> visit(MultiFlatTarget val)
+        {
+            this.prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, val.modelClass));
+            return this.prerequisiteElements;
         }
     }
 

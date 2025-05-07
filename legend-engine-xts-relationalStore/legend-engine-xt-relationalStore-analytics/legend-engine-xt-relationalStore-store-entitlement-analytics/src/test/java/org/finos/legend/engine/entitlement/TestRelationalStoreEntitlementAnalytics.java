@@ -143,7 +143,7 @@ public class TestRelationalStoreEntitlementAnalytics
     {
         String pureModelString = getResourceAsString("models/databaseCircularDependency.pure");
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
-        String expectedErrorMessage = "COMPILATION error: Detected a circular dependency in element prerequisites graph in the following metamodel: class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database";
+        String expectedErrorMessage = "COMPILATION error: Detected a circular dependency in element prerequisites graph!";
         try
         {
             Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());

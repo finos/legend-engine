@@ -22,6 +22,7 @@ import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -45,6 +46,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.Mapp
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -57,7 +60,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -226,15 +228,11 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                             }
                             ListIterate.forEach(srcDatabase.schemas, _schema -> HelperRelationalBuilder.processDatabaseSchemaViewsSecondPass(_schema, context, database));
                         },
-                        (Database srcDatabase, CompileContext context) ->
-                        {
-                            org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = HelperRelationalBuilder.getDatabase(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), srcDatabase.sourceInformation, context);
-                            return database._includes();
-                        }
+                        this::databasePrerequisiteElementsPass
                 ),
                 Processor.newProcessor(
                         RelationalMapper.class,
-                        Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store.class),
+                        Lists.fixedSize.with(Database.class),
                         (relationalMapper, context) ->
                         {
                             Root_meta_relational_metamodel_RelationalMapper metamodel = new Root_meta_relational_metamodel_RelationalMapper_Impl(relationalMapper.name, null, context.pureModel.getClass("meta::relational::metamodel::RelationalMapper"))._name(relationalMapper.name);
@@ -268,8 +266,23 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                             metamodel._databaseMappers(ListIterate.collect(relationalMapper.databaseMappers, dbMap -> processDatabaseMapper(dbMap, context)));
                             metamodel._schemaMappers(ListIterate.collect(relationalMapper.schemaMappers, schMap -> processSchemaMapper(schMap, context)));
                             metamodel._tableMappers(ListIterate.collect(relationalMapper.tableMappers, tblMap -> processTableMapper(tblMap, context)));
-                        }
+                        },
+                        this::relationalMapperPrerequisiteElementsPass
                 ));
+    }
+
+    private Set<PackageableElementPointer> databasePrerequisiteElementsPass(Database srcDatabase, CompileContext context)
+    {
+        return Sets.fixedSize.withAll(srcDatabase.includedStores);
+    }
+
+    private Set<PackageableElementPointer> relationalMapperPrerequisiteElementsPass(RelationalMapper relationalMapper, CompileContext context)
+    {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        prerequisiteElements.addAll(ListIterate.flatCollect(relationalMapper.databaseMappers, dbMap -> ListIterate.collect(dbMap.schemas, sch -> new PackageableElementPointer(PackageableElementType.STORE, sch.database, sch.sourceInformation))));
+        prerequisiteElements.addAll(ListIterate.collect(relationalMapper.schemaMappers, schMap -> new PackageableElementPointer(PackageableElementType.STORE, schMap.from.database, schMap.from.sourceInformation)));
+        prerequisiteElements.addAll(ListIterate.collect(relationalMapper.tableMappers, tblMap -> new PackageableElementPointer(PackageableElementType.STORE, tblMap.from.database, tblMap.from.sourceInformation)));
+        return prerequisiteElements;
     }
 
     @Override
@@ -364,6 +377,33 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     }
 
     @Override
+    public List<Procedure3<ClassMapping, CompileContext, Set<PackageableElementPointer>>> getExtraClassMappingPrerequisiteElementsPassProcessors()
+    {
+        return Collections.singletonList(
+                (cm, context, prerequisiteElements) ->
+                {
+                    if (cm instanceof RootRelationalClassMapping)
+                    {
+                        RootRelationalClassMapping classMapping = (RootRelationalClassMapping) cm;
+                        prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, classMapping._class, classMapping.classSourceInformation));
+                        ListIterate.forEach(classMapping.groupBy, relationalOperationElement -> HelperRelationalBuilder.collectPrerequisiteElementsFromRelationalOperationElement(prerequisiteElements, relationalOperationElement));
+                        if (classMapping.mainTable != null)
+                        {
+                            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.STORE, classMapping.mainTable.database, classMapping.mainTable.sourceInformation));
+                            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.STORE, classMapping.mainTable.getDb(), classMapping.mainTable.sourceInformation));
+                        }
+                        if (classMapping.mappingClass != null)
+                        {
+                            HelperMappingBuilder.collectPrerequisiteElementsFromMappingClass(prerequisiteElements, classMapping.mappingClass, context);
+                        }
+                        HelperRelationalBuilder.collectPrerequisiteElementsFromRelationalClassMapping(prerequisiteElements, classMapping);
+                        HelperRelationalBuilder.collectPrerequisiteElementsFromRootRelationalClassMapping(prerequisiteElements, classMapping);
+                    }
+                }
+        );
+    }
+
+    @Override
     public List<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> getExtraAggregationAwareClassMappingFirstPassProcessors()
     {
         return Collections.singletonList(
@@ -417,6 +457,31 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     }
 
     @Override
+    public List<Procedure2<AggregationAwareClassMapping, Set<PackageableElementPointer>>> getExtraAggregationAwareClassMappingPrerequisiteElementsPassProcessors()
+    {
+        return Collections.singletonList(
+                (cm, prerequisiteElements) ->
+                {
+                    prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, cm._class, cm.classSourceInformation));
+                    if (cm.mainSetImplementation instanceof RootRelationalClassMapping)
+                    {
+                        RootRelationalClassMapping classMapping = (RootRelationalClassMapping) cm.mainSetImplementation;
+                        HelperRelationalBuilder.collectPrerequisiteElementsFromRootRelationalClassMapping(prerequisiteElements, classMapping);
+                    }
+                    for (AggregateSetImplementationContainer agg : cm.aggregateSetImplementations)
+                    {
+                        if (agg.setImplementation instanceof RootRelationalClassMapping)
+                        {
+                            RootRelationalClassMapping classMapping = (RootRelationalClassMapping) agg.setImplementation;
+                            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, classMapping._class, classMapping.classSourceInformation));
+                            HelperRelationalBuilder.collectPrerequisiteElementsFromRootRelationalClassMapping(prerequisiteElements, classMapping);
+                        }
+                    }
+                }
+        );
+    }
+
+    @Override
     public List<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> getExtraAssociationMappingProcessors()
     {
         return Collections.singletonList(
@@ -438,6 +503,23 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         return base;
                     }
                     return null;
+                }
+        );
+    }
+
+    @Override
+    public List<Procedure2<AssociationMapping, Set<PackageableElementPointer>>> getExtraAssociationMappingPrerequisiteElementsPassProcessors()
+    {
+        return Collections.singletonList(
+                (associationMapping, prerequisiteElements) ->
+                {
+                    if (associationMapping instanceof RelationalAssociationMapping)
+                    {
+                        RelationalAssociationMapping relationalAssociationImplementation = (RelationalAssociationMapping) associationMapping;
+                        prerequisiteElements.add(relationalAssociationImplementation.association);
+                        prerequisiteElements.addAll(ListIterate.collect(relationalAssociationImplementation.stores, s -> new PackageableElementPointer(PackageableElementType.STORE, s)));
+                        ListIterate.forEach(relationalAssociationImplementation.propertyMappings, propertyMapping -> HelperRelationalBuilder.collectPrerequisiteElementsFromAbstractRelationalPropertyMapping(prerequisiteElements, propertyMapping));
+                    }
                 }
         );
     }
@@ -749,6 +831,19 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
             {
                 RelationalInputData relationalInputData = (RelationalInputData) inputData;
                 compileContext.resolveStore(relationalInputData.database, relationalInputData.sourceInformation);
+            }
+        }));
+    }
+
+    @Override
+    public List<Procedure2<InputData, Set<PackageableElementPointer>>> getExtraMappingTestInputDataPrerequisiteElementsPassProcessors()
+    {
+        return Collections.singletonList(((inputData, prerequisiteElements) ->
+        {
+            if (inputData instanceof RelationalInputData)
+            {
+                RelationalInputData relationalInputData = (RelationalInputData) inputData;
+                prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.STORE, relationalInputData.database, relationalInputData.sourceInformation));
             }
         }));
     }

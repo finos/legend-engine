@@ -25,6 +25,8 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtensionLoader;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestBodyBuildInfo;
@@ -118,6 +120,13 @@ public class HelperServiceStoreClassMappingBuilder
         return Tuples.pair(res, embeddedSetImplementations);
     }
 
+    public static void collectPrerequisiteElementsFromRootServiceStoreClassMapping(Set<PackageableElementPointer> prerequisiteElements, RootServiceStoreClassMapping serviceStoreClassMapping, CompileContext context)
+    {
+        prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, serviceStoreClassMapping._class, serviceStoreClassMapping.classSourceInformation));
+        collectPrerequisiteElementsFromMappingClass(prerequisiteElements, serviceStoreClassMapping);
+        ListIterate.forEach(serviceStoreClassMapping.servicesMapping, sm -> collectPrerequisiteElementsFromServiceMapping(prerequisiteElements, sm, context));
+    }
+
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingClass generateMappingClass(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String id, RootServiceStoreClassMapping serviceStoreClassMapping, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, CompileContext context)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingClass mappingClass = new Root_meta_pure_mapping_MappingClass_Impl<>("");
@@ -146,6 +155,11 @@ public class HelperServiceStoreClassMappingBuilder
         return mappingClass;
     }
 
+    private static void collectPrerequisiteElementsFromMappingClass(Set<PackageableElementPointer> prerequisiteElements, RootServiceStoreClassMapping serviceStoreClassMapping)
+    {
+        prerequisiteElements.addAll(ListIterate.collect(serviceStoreClassMapping.localMappingProperties, property -> new PackageableElementPointer(null, property.type, property.sourceInformation)));
+    }
+
     private static Root_meta_external_store_service_metamodel_mapping_ServiceMapping compileServiceMapping(ServiceMapping serviceMapping, Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation owner, CompileContext context)
     {
         Root_meta_external_store_service_metamodel_mapping_ServiceMapping pureServiceMapping = new Root_meta_external_store_service_metamodel_mapping_ServiceMapping_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::mapping::ServiceMapping"));
@@ -166,6 +180,16 @@ public class HelperServiceStoreClassMappingBuilder
 
         validateServiceMapping(pureServiceMapping, owner._class(), serviceMapping.sourceInformation, context);
         return pureServiceMapping;
+    }
+
+    private static void collectPrerequisiteElementsFromServiceMapping(Set<PackageableElementPointer> prerequisiteElements, ServiceMapping serviceMapping, CompileContext context)
+    {
+        HelperServiceStoreBuilder.collectPrerequisiteElementsFromServicePtr(prerequisiteElements, serviceMapping.service);
+//        TODO: Revisit serviceMapping.pathOffset
+        if (serviceMapping.requestBuildInfo != null)
+        {
+            collectPrerequisiteElementsFromRequestBuildInfo(prerequisiteElements, serviceMapping.requestBuildInfo, context);
+        }
     }
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path compilePath(Path pathOffset, Root_meta_external_store_service_metamodel_Service service, CompileContext ctx)
@@ -193,6 +217,18 @@ public class HelperServiceStoreClassMappingBuilder
         return pureRequestBuildInfo;
     }
 
+    private static void collectPrerequisiteElementsFromRequestBuildInfo(Set<PackageableElementPointer> prerequisiteElements, ServiceRequestBuildInfo requestBuildInfo, CompileContext context)
+    {
+        if (requestBuildInfo.requestParametersBuildInfo != null)
+        {
+            collectPrerequisiteElementsFromServiceRequestParametersBuildInfo(prerequisiteElements, requestBuildInfo.requestParametersBuildInfo, context);
+        }
+        if (requestBuildInfo.requestBodyBuildInfo != null)
+        {
+            collectPrerequisiteElementsFromServiceRequestBodyBuildInfo(prerequisiteElements, requestBuildInfo.requestBodyBuildInfo, context);
+        }
+    }
+
     private static Root_meta_external_store_service_metamodel_mapping_ServiceRequestParametersBuildInfo compileServiceRequestParametersBuildInfo(ServiceRequestParametersBuildInfo requestParametersBuildInfo, Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation owner, Root_meta_external_store_service_metamodel_Service service, CompileContext context)
     {
         Root_meta_external_store_service_metamodel_mapping_ServiceRequestParametersBuildInfo pureRequestParametersBuildInfo = new Root_meta_external_store_service_metamodel_mapping_ServiceRequestParametersBuildInfo_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::mapping::ServiceRequestParametersBuildInfo"));
@@ -200,6 +236,11 @@ public class HelperServiceStoreClassMappingBuilder
         pureRequestParametersBuildInfo._parameterBuildInfoList(ListIterate.collect(requestParametersBuildInfo.parameterBuildInfoList, parameterBuildInfo -> compileServiceRequestParameterBuildInfo(parameterBuildInfo, owner, service, context)));
 
         return pureRequestParametersBuildInfo;
+    }
+
+    private static void collectPrerequisiteElementsFromServiceRequestParametersBuildInfo(Set<PackageableElementPointer> prerequisiteElements, ServiceRequestParametersBuildInfo requestParametersBuildInfo, CompileContext context)
+    {
+        ListIterate.forEach(requestParametersBuildInfo.parameterBuildInfoList, parameterBuildInfo -> collectPrerequisiteElementsFromServiceRequestParameterBuildInfo(prerequisiteElements, parameterBuildInfo, context));
     }
 
     private static Root_meta_external_store_service_metamodel_mapping_ServiceRequestParameterBuildInfo compileServiceRequestParameterBuildInfo(ServiceRequestParameterBuildInfo serviceRequestParameterBuildInfo, Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation owner, Root_meta_external_store_service_metamodel_Service service, CompileContext context)
@@ -219,6 +260,11 @@ public class HelperServiceStoreClassMappingBuilder
         return pureRequestParameterBuildInfo;
     }
 
+    private static void collectPrerequisiteElementsFromServiceRequestParameterBuildInfo(Set<PackageableElementPointer> prerequisiteElements, ServiceRequestParameterBuildInfo serviceRequestParameterBuildInfo, CompileContext context)
+    {
+        collectPrerequisiteElementsFromTransform(prerequisiteElements, serviceRequestParameterBuildInfo.transform, context);
+    }
+
     private static Root_meta_external_store_service_metamodel_mapping_ServiceRequestBodyBuildInfo compileServiceRequestBodyBuildInfo(ServiceRequestBodyBuildInfo requestBodyBuildInfo, Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation owner, CompileContext context)
     {
         Root_meta_external_store_service_metamodel_mapping_ServiceRequestBodyBuildInfo pureRequestBodyBuildInfo = new Root_meta_external_store_service_metamodel_mapping_ServiceRequestBodyBuildInfo_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::mapping::ServiceRequestBodyBuildInfo"));
@@ -226,6 +272,11 @@ public class HelperServiceStoreClassMappingBuilder
         pureRequestBodyBuildInfo._transform(processTransform(requestBodyBuildInfo.transform, null, owner, context));
 
         return pureRequestBodyBuildInfo;
+    }
+
+    private static void collectPrerequisiteElementsFromServiceRequestBodyBuildInfo(Set<PackageableElementPointer> prerequisiteElements, ServiceRequestBodyBuildInfo requestBodyBuildInfo, CompileContext context)
+    {
+        collectPrerequisiteElementsFromTransform(prerequisiteElements, requestBodyBuildInfo.transform, context);
     }
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction processTransform(LambdaFunction transform, String id, Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation owner, CompileContext context)
@@ -250,6 +301,12 @@ public class HelperServiceStoreClassMappingBuilder
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(Lists.mutable.with(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
+    }
+
+    private static void collectPrerequisiteElementsFromTransform(Set<PackageableElementPointer> prerequisiteElements, LambdaFunction transform, CompileContext context)
+    {
+        ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+        ListIterate.forEach(transform.body, p -> p.accept(valueSpecificationPrerequisiteElementsPassBuilder));
     }
 
     private static List<PropertyMapping> generatePropertyMappingsForClassMapping(Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation rootClassMapping, List<EmbeddedSetImplementation> embeddedSetImplementations, RootServiceStoreClassMapping serviceStoreClassMapping, Set<Class<?>> processedClasses, CompileContext context)
