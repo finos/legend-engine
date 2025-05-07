@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-deephaven</artifactId>
-        <version>4.83.4-SNAPSHOT</version>
+        <version>4.84.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-deephaven-grammar</artifactId>
