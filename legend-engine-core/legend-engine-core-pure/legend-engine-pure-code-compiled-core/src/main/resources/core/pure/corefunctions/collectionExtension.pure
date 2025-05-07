@@ -165,52 +165,12 @@ function meta::pure::functions::collection::uniqueValueOnly<T>(values : T[*], de
       );
 }
 
-function meta::pure::functions::collection::greatest<X>(values : X[*]):X[0..1]
-{
-   max($values);
-}
-
-function meta::pure::functions::collection::least<X>(values : X[*]):X[0..1]
-{
-   min($values);
-}
-
-function meta::pure::functions::collection::greatest<X>(values : X[1..*]):X[1]
-{
-   max($values);
-}
-
-function meta::pure::functions::collection::least<X>(values : X[1..*]):X[1]
-{
-   min($values);
-}
-
-function meta::pure::functions::collection::max<X>(values : X[1..*]):X[1]
-{
-   $values->sort()->last()->toOne();
-}
-
-function meta::pure::functions::collection::min<X>(values : X[1..*]):X[1]
-{
-   $values->sort()->first()->toOne();
-}
-
-function meta::pure::functions::collection::max<X>(values : X[*]):X[0..1]
-{
-   $values->sort()->last();
-}
-
-function meta::pure::functions::collection::min<X>(values : X[*]):X[0..1]
-{
-   $values->sort()->first();
-}
-
 function {doc.doc ='returns true only if exactly one of the values are true'} meta::pure::functions::collection::oneOf(values:Boolean[*]):Boolean[1]
 {
   $values ->filter(b | $b == true)->size() == 1;
 }
 
-function meta::pure::functions::collection::toIndexed<T>(values:T[*]): Pair<Integer,T>[*]
+function meta::pure::functions::collection::toI``ndexed<T>(values:T[*]): Pair<Integer,T>[*]
 {
    zip(range($values->size()), $values);
 }
@@ -223,25 +183,6 @@ function meta::pure::functions::collection::toNumbered<T>(values:T[*]): Pair<Int
 function meta::pure::functions::collection::sortBy<T,U|m>(col:T[m], key:Function<{T[1]->U[1]}>[0..1]):T[m]
 {
     sort($col, $key, [])
-}
-
-
-
-
-
-function meta::pure::functions::collection::max<T>(col:T[1..*], comp:Function<{T[1],T[1]->Integer[1]}>[1]):T[1]
-{
-    $col->tail()->fold({v, m | if($comp->eval($v, $m) > 0, | $v, | $m)}, $col->at(0))
-}
-
-function meta::pure::functions::collection::min<T>(col:T[1..*], comp:Function<{T[1],T[1]->Integer[1]}>[1]):T[1]
-{
-    $col->tail()->fold({v, m | if($comp->eval($v, $m) < 0, | $v, | $m)}, $col->at(0))
-}
-
-function meta::pure::functions::collection::containsAll(collection:Any[*], values:Any[*]):Boolean[1]
-{
-    $values->forAll(v | $collection->contains($v))
 }
 
 
