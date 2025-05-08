@@ -89,7 +89,7 @@ jobs:
 
       - name: Set profiles that required github secrets
         id: requiredSecrets
-        if: github.repository == 'finos/legend-engine'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'finos/legend-engine') || github.event_name == 'push'
         run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
 
       - name: Build (PR)
