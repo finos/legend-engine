@@ -62,7 +62,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeStamp():Boolean[1]
 {
   // the time zone info in the connection should be ignored in the generated sql
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION %S.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"LASTUPDATED" TIMESTAMP) LANGUAGE SQL AS $$ select "root".FIRSTNAME, "root".LASTNAME, cast("root".LAST_UPDATED as TIMESTAMP) from personTable as "root" $$;';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION %S.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"LASTUPDATED" TIMESTAMP) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", cast("root".LAST_UPDATED as TIMESTAMP) as "lastUpdated" from personTable as "root" $$;';
   assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithTimestamp__TabularDataSet_1_, $expected);
 }
 

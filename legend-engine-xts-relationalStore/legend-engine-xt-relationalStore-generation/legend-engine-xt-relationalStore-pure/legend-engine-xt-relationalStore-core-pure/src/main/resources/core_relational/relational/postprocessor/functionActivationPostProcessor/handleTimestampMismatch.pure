@@ -40,14 +40,11 @@ function meta::relational::postProcessor::HandleTimestampMismatch(query:SQLQuery
 function <<access.private>> meta::relational::postProcessor::transformAlias(a: Alias[1]): RelationalOperationElement[1]
 {   
   if($a.relationalElement->instanceOf(TableAliasColumn),
-      |meta::relational::postProcessor::replaceTableAliasColumn($a.relationalElement->cast(@TableAliasColumn));,
+      | let t = $a.relationalElement->cast(@TableAliasColumn);
+        if($t.column.type->instanceOf(Timestamp),
+            | ^$a(relationalElement = ^DynaFunction(name = 'cast', parameters = [$t, ^Literal(value=dataTypeToSqlText($t.column.type))]));,
+            | $a
+          );,
       |$a
     );
-}
-
-function <<access.private>> meta::relational::postProcessor::replaceTableAliasColumn(t: TableAliasColumn[1]): RelationalOperationElement[1]
-{
-  if($t.column.type->instanceOf(Timestamp),
-      |^DynaFunction(name = 'cast', parameters = [$t, ^Literal(value=dataTypeToSqlText($t.column.type))]);,
-      |$t);
 }
