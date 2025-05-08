@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.contentPattern.ContentPatternFirstPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceRequestPattern;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceResponseDefinition;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStoreEmbeddedData;
@@ -40,11 +41,17 @@ import org.finos.legend.pure.generated.Root_meta_external_store_service_metamode
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.Map;
+import java.util.Set;
 
 public class HelperServiceStoreEmbeddedDataCompiler
 {
     private CompileContext context;
     private ProcessingContext processingContext;
+
+    public HelperServiceStoreEmbeddedDataCompiler(CompileContext context)
+    {
+        this.context = context;
+    }
 
     public HelperServiceStoreEmbeddedDataCompiler(CompileContext context, ProcessingContext processingContext)
     {
@@ -58,6 +65,12 @@ public class HelperServiceStoreEmbeddedDataCompiler
         pureServiceStoreEmbeddedData._serviceStubMappings(ListIterate.collect(serviceStoreEmbeddedData.serviceStubMappings, this::compileServiceStubMapping));
 
         return pureServiceStoreEmbeddedData;
+    }
+
+    public void collectPrerequisiteElementsFromServiceStoreEmbeddedData(Set<PackageableElementPointer> prerequisiteElements, ServiceStoreEmbeddedData serviceStoreEmbeddedData, CompileContext context)
+    {
+        EmbeddedDataPrerequisiteElementsPassBuilder builder = new EmbeddedDataPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+        ListIterate.forEach(serviceStoreEmbeddedData.serviceStubMappings, ssm -> ssm.responseDefinition.body.accept(builder));
     }
 
     private Root_meta_external_store_service_metamodel_data_ServiceStubMapping compileServiceStubMapping(ServiceStubMapping serviceStubMapping)

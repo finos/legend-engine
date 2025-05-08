@@ -15,9 +15,11 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -27,6 +29,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+
+import java.util.Set;
 
 public class PackageableRuntimeCompilerExtension implements CompilerExtension
 {
@@ -53,7 +57,8 @@ public class PackageableRuntimeCompilerExtension implements CompilerExtension
                         (PackageableRuntime packageableRuntime, CompileContext context) ->
                         {
                         },
-                        this::packageableRuntimeThirdPass
+                        this::packageableRuntimeThirdPass,
+                        this::packageableRuntimePrerequisiteElementsPass
                 )
         );
     }
@@ -72,5 +77,12 @@ public class PackageableRuntimeCompilerExtension implements CompilerExtension
         String fullPath = context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name);
         Root_meta_pure_runtime_PackageableRuntime metamodel = context.pureModel.getPackageableRuntime(fullPath, packageableRuntime.sourceInformation);
         HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, metamodel._runtimeValue(), context);
+    }
+
+    private Set<PackageableElementPointer> packageableRuntimePrerequisiteElementsPass(PackageableRuntime packageableRuntime, CompileContext context)
+    {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        HelperRuntimeBuilder.collectPrerequisiteElementsFromEngineRuntime(prerequisiteElements, packageableRuntime.runtimeValue);
+        return prerequisiteElements;
     }
 }

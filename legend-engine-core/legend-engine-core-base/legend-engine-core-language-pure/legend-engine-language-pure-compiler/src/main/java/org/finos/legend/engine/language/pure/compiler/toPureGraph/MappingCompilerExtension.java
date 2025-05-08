@@ -29,6 +29,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.m3.relationship.Association;
 import org.finos.legend.engine.protocol.pure.m3.type.Class;
 import org.finos.legend.engine.protocol.pure.m3.type.Enumeration;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
@@ -143,9 +145,32 @@ public class MappingCompilerExtension implements CompilerExtension
         }
     }
 
-    private RichIterable<? extends PackageableElement> mappingPrerequisiteElementsPass(Mapping mapping, CompileContext context)
+    private Set<PackageableElementPointer> mappingPrerequisiteElementsPass(Mapping mapping, CompileContext context)
     {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
         final org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = context.pureModel.getMapping(context.pureModel.buildPackageString(mapping._package, mapping.name), mapping.sourceInformation);
-        return pureMapping._includes().collect(MappingIncludeAccessor::_included);
+        RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> includedMappings = pureMapping._includes().collect(MappingIncludeAccessor::_included);
+        for (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping i : includedMappings)
+        {
+            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.MAPPING, HelperModelBuilder.getElementFullPath(i, context.pureModel.getExecutionSupport())));
+        }
+        if (mapping.classMappings != null)
+        {
+            ClassMappingPrerequisiteElementsPassBuilder classMappingPrerequisiteElementsPassBuilder = new ClassMappingPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+            ListIterate.forEach(mapping.classMappings, cm -> cm.accept(classMappingPrerequisiteElementsPassBuilder));
+        }
+        if (!mapping.tests.isEmpty())
+        {
+            ListIterate.forEach(mapping.tests, t -> HelperMappingBuilder.collectPrerequisiteElementsFromMappingTest(prerequisiteElements, t, context));
+        }
+        if (mapping.testSuites != null)
+        {
+            ListIterate.forEach(mapping.testSuites, suite -> HelperMappingBuilder.collectPrerequisiteElementsFromMappingTestAndTestSuite(prerequisiteElements, suite, context));
+        }
+        if (mapping.associationMappings != null)
+        {
+            ListIterate.forEach(mapping.associationMappings, cm -> HelperMappingBuilder.collectPrerequisiteElementsFromAssociationImplementation(prerequisiteElements, cm, context));
+        }
+        return prerequisiteElements;
     }
 }

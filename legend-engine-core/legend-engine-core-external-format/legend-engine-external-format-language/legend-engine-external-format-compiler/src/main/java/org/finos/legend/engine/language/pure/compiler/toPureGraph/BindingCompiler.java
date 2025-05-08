@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -34,6 +37,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 public class BindingCompiler
 {
@@ -47,7 +51,7 @@ public class BindingCompiler
 
     public Processor<Binding> getProcessor()
     {
-        return Processor.newProcessor(Binding.class, Collections.singletonList(ExternalFormatSchemaSet.class), this::firstPass, this::secondPass, this::thirdPass);
+        return Processor.newProcessor(Binding.class, Collections.singletonList(ExternalFormatSchemaSet.class), this::firstPass, this::secondPass, this::thirdPass, this::prerequisiteElementsPass);
     }
 
     public Root_meta_external_format_shared_binding_Binding getCompiledBinding(String fullPath)
@@ -117,6 +121,14 @@ public class BindingCompiler
             Root_meta_external_format_shared_binding_validation_FailedBindingDetail failed = (Root_meta_external_format_shared_binding_validation_FailedBindingDetail) bindingDetail;
             throw new EngineException("Model and schema are mismatched:\n" + failed._errorMessages().makeString("\n"), srcBinding.sourceInformation, EngineErrorType.COMPILATION);
         }
+    }
+
+    private Set<PackageableElementPointer> prerequisiteElementsPass(Binding srcBinding, CompileContext context)
+    {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        prerequisiteElements.addAll(ListIterate.collect(srcBinding.modelUnit.packageableElementIncludes, pe -> new PackageableElementPointer(PackageableElementType.CLASS, pe, srcBinding.sourceInformation)));
+        prerequisiteElements.addAll(ListIterate.collect(srcBinding.modelUnit.packageableElementExcludes, pe -> new PackageableElementPointer(PackageableElementType.CLASS, pe, srcBinding.sourceInformation)));
+        return prerequisiteElements;
     }
 
     private ExternalFormatExtension<?> getExtension(Root_meta_external_format_shared_binding_Binding binding, Binding srcBinding)

@@ -15,12 +15,14 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.m3.relationship.Association;
 import org.finos.legend.engine.protocol.pure.m3.type.Class;
@@ -38,6 +40,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Set;
 
 public class FunctionCompilerExtension implements CompilerExtension
 {
@@ -66,7 +69,8 @@ public class FunctionCompilerExtension implements CompilerExtension
                         (Function function, CompileContext context) ->
                         {
                         },
-                        this::functionThirdPass
+                        this::functionThirdPass,
+                        this::functionPrerequisiteElementsPass
                 )
         );
     }
@@ -136,5 +140,15 @@ public class FunctionCompilerExtension implements CompilerExtension
         ctx.pop();
         targetFunc._expressionSequence(body);
         HelperFunctionBuilder.processFunctionSuites(function, targetFunc, context, ctx);
+    }
+
+    private Set<PackageableElementPointer> functionPrerequisiteElementsPass(Function function, CompileContext context)
+    {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        ValueSpecificationPrerequisiteElementsPassBuilder builder = new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+        ListIterate.forEach(function.parameters, p -> p.accept(builder));
+        ListIterate.forEach(function.body, expression -> expression.accept(builder));
+        ListIterate.forEach(function.tests, suite -> HelperFunctionBuilder.collectPrerequisiteElementsFromFunctionTestSuites(prerequisiteElements, suite, context));
+        return prerequisiteElements;
     }
 }

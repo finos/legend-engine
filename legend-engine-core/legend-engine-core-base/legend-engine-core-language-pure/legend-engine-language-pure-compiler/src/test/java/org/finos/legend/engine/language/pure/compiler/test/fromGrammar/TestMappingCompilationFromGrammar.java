@@ -65,7 +65,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
                 ")\n" +
-                "\n", "COMPILATION error: Detected a circular dependency in element prerequisites graph in the following metamodel: class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.\nCycle: test::M1 -> test::M1");
+                "\n", "COMPILATION error: Detected a circular dependency in element prerequisites graph!\nCycle: test::M1 -> test::M1");
         test(models +
                 "###Mapping\n" +
                 "Mapping test::M1 (\n" +
@@ -83,7 +83,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
                 ")\n" +
-                "\n", "COMPILATION error: Detected a circular dependency in element prerequisites graph in the following metamodel: class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping");
+                "\n", "COMPILATION error: Detected a circular dependency in element prerequisites graph!");
         test(models +
                 "###Mapping\n" +
                 "import test::*;\n" +
@@ -110,7 +110,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
                 ")\n" +
-                "\n", "COMPILATION error: Detected a circular dependency in element prerequisites graph in the following metamodel: class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping");
+                "\n", "COMPILATION error: Detected a circular dependency in element prerequisites graph!");
     }
 
     @Test

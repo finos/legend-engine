@@ -39,6 +39,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Inclu
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
@@ -55,6 +56,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
+import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
@@ -75,6 +77,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
@@ -365,8 +368,54 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                             }
                         });
                     }
-                }
+                },
+                this::dataSpacePrerequisiteElementsPass
         ));
+    }
+
+    private Set<PackageableElementPointer> dataSpacePrerequisiteElementsPass(DataSpace dataSpace, CompileContext context)
+    {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        ListIterate.forEach(dataSpace.executionContexts, executionContext ->
+        {
+            prerequisiteElements.add(executionContext.mapping);
+            prerequisiteElements.add(executionContext.defaultRuntime);
+        });
+
+        if (dataSpace.elements != null)
+        {
+            MutableList<DataSpaceElementPointer> includes = ListIterate.select(dataSpace.elements, el -> el.exclude == null || !el.exclude);
+            ListIterate.forEach(includes, include -> prerequisiteElements.add(new PackageableElementPointer(null, include.path, include.sourceInformation)));
+        }
+
+        if (dataSpace.executables != null)
+        {
+            ListIterate.forEach(dataSpace.executables, executable ->
+            {
+                if (executable instanceof DataSpacePackageableElementExecutable)
+                {
+                    DataSpacePackageableElementExecutable dataSpacePackageableElementExecutable = (DataSpacePackageableElementExecutable) executable;
+                    prerequisiteElements.add(dataSpacePackageableElementExecutable.executable);
+                }
+                else if (executable instanceof DataSpaceTemplateExecutable)
+                {
+                    DataSpaceTemplateExecutable dataSpaceTemplateExecutable = (DataSpaceTemplateExecutable) executable;
+                    dataSpaceTemplateExecutable.query.accept(new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements));
+                }
+            });
+        }
+
+        if (dataSpace.featuredDiagrams != null)
+        {
+            prerequisiteElements.addAll(dataSpace.featuredDiagrams);
+        }
+
+        if (dataSpace.diagrams != null)
+        {
+            ListIterate.forEach(dataSpace.diagrams, diagram -> prerequisiteElements.add(diagram.diagram));
+        }
+
+        return prerequisiteElements;
     }
 
     @Override
@@ -457,6 +506,21 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
         return null;
     }
 
+    @Override
+    public List<Procedure3<Set<PackageableElementPointer>, EmbeddedData, CompileContext>> getExtraEmbeddedDataPrerequisiteElementsPassProcessors()
+    {
+        return Collections.singletonList(this::collectPrerequisiteElementsFromDataspaceDataElementReference);
+    }
+
+    private void collectPrerequisiteElementsFromDataspaceDataElementReference(Set<PackageableElementPointer> prerequisiteElements, EmbeddedData embeddedData, CompileContext context)
+    {
+        if (embeddedData instanceof DataElementReference
+                && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATASPACE))
+        {
+            DataElementReference data = (DataElementReference) embeddedData;
+            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.DATASPACE, data.dataElement.path, data.sourceInformation));
+        }
+    }
 
     @Override
     public Iterable<? extends Function2<DataElementReference, PureModelContextData, List<EmbeddedData>>> getExtraDataElementReferencePMCDTraversers()

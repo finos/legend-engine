@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -24,11 +25,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.m3.relationship.Association;
 import org.finos.legend.engine.protocol.pure.m3.type.Class;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Association_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+
+import java.util.Set;
 
 public class AssociationCompilerExtension implements CompilerExtension
 {
@@ -53,7 +58,8 @@ public class AssociationCompilerExtension implements CompilerExtension
                         Lists.fixedSize.with(Class.class),
                         this::associationFirstPass,
                         this::associationSecondPass,
-                        this::associationThirdPass
+                        this::associationThirdPass,
+                        this::associationPrerequisiteElementsPass
                 )
         );
     }
@@ -144,5 +150,13 @@ public class AssociationCompilerExtension implements CompilerExtension
             ctx.flushVariable("this");
             return prop._expressionSequence(body);
         });
+    }
+
+    private Set<PackageableElementPointer> associationPrerequisiteElementsPass(Association srcAssociation, CompileContext context)
+    {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, ((PackageableType) srcAssociation.properties.get(0).genericType.rawType).fullPath, srcAssociation.properties.get(0).sourceInformation));
+        prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, ((PackageableType) srcAssociation.properties.get(1).genericType.rawType).fullPath, srcAssociation.properties.get(1).sourceInformation));
+        return prerequisiteElements;
     }
 }

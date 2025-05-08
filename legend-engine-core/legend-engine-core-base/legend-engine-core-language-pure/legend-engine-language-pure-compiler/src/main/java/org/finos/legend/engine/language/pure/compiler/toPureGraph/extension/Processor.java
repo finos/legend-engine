@@ -14,13 +14,14 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.extension;
 
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -38,7 +39,7 @@ public abstract class Processor<T extends PackageableElement>
         return Collections.emptyList();
     }
 
-    public RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> getPrerequisiteElements(PackageableElement element, CompileContext context)
+    public Set<PackageableElementPointer> getPrerequisiteElements(PackageableElement element, CompileContext context)
     {
         return processPrerequisiteElements(castElement(element), context);
     }
@@ -76,7 +77,7 @@ public abstract class Processor<T extends PackageableElement>
         return "<Processor class=" + getElementClass().getName() + " @" + Integer.toHexString(hashCode()) + ">";
     }
 
-    protected abstract RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElements(T element, CompileContext context);
+    protected abstract Set<PackageableElementPointer> processPrerequisiteElements(T element, CompileContext context);
 
     protected abstract org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processElementFirstPass(T element, CompileContext context);
 
@@ -130,9 +131,9 @@ public abstract class Processor<T extends PackageableElement>
             }
 
             @Override
-            protected RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElements(T element, CompileContext context)
+            protected Set<PackageableElementPointer> processPrerequisiteElements(T element, CompileContext context)
             {
-                return Lists.fixedSize.empty();
+                return Sets.fixedSize.empty();
             }
 
             @Override
@@ -179,7 +180,7 @@ public abstract class Processor<T extends PackageableElement>
                                                                            BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
                                                                            BiConsumer<? super T, CompileContext> secondPass,
                                                                            BiConsumer<? super T, CompileContext> thirdPass,
-                                                                           BiFunction<? super T, CompileContext, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> prerequisiteElementsPass)
+                                                                           BiFunction<? super T, CompileContext, Set<PackageableElementPointer>> prerequisiteElementsPass)
     {
         return newProcessor(elementClass, null, firstPass, secondPass, thirdPass, prerequisiteElementsPass);
     }
@@ -189,7 +190,7 @@ public abstract class Processor<T extends PackageableElement>
                                                                            BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
                                                                            BiConsumer<? super T, CompileContext> secondPass,
                                                                            BiConsumer<? super T, CompileContext> thirdPass,
-                                                                           BiFunction<? super T, CompileContext, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> prerequisiteElementsPass)
+                                                                           BiFunction<? super T, CompileContext, Set<PackageableElementPointer>> prerequisiteElementsPass)
     {
         Collection<? extends Class<? extends PackageableElement>> resolvedPrerequisiteClasses = (prerequisiteClasses == null) ? Collections.emptyList() : prerequisiteClasses;
          return new Processor<T>()
@@ -207,13 +208,13 @@ public abstract class Processor<T extends PackageableElement>
             }
 
             @Override
-            protected RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElements(T element, CompileContext context)
+            protected Set<PackageableElementPointer> processPrerequisiteElements(T element, CompileContext context)
             {
                 if (prerequisiteElementsPass != null)
                 {
                     return prerequisiteElementsPass.apply(element, context);
                 }
-                return Lists.fixedSize.empty();
+                return Sets.fixedSize.empty();
             }
 
             @Override
