@@ -35,6 +35,37 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>com.h2database:h2:2.1.214</artifact>
+                                    <includes>
+                                        <include>**/*.class</include>
+                                        <include>**/*.xml</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org/h2/engine/Mode</exclude>
+                                        <exclude>org/h2/value/TypeInfo</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <!-- H2 -->
         <dependency>
