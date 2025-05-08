@@ -14,9 +14,9 @@
 
 package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.date;
 
+import org.finos.legend.engine.pure.code.core.functions.unclassified.base.date.AbstractTestToday;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
-import org.finos.legend.pure.m3.tests.function.base.date.AbstractTestToday;
 import org.finos.legend.pure.m3.tools.test.ToFix;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
