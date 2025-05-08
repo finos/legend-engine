@@ -170,7 +170,7 @@ function {doc.doc ='returns true only if exactly one of the values are true'} me
   $values ->filter(b | $b == true)->size() == 1;
 }
 
-function meta::pure::functions::collection::toI``ndexed<T>(values:T[*]): Pair<Integer,T>[*]
+function meta::pure::functions::collection::toIndexed<T>(values:T[*]): Pair<Integer,T>[*]
 {
    zip(range($values->size()), $values);
 }
@@ -183,6 +183,11 @@ function meta::pure::functions::collection::toNumbered<T>(values:T[*]): Pair<Int
 function meta::pure::functions::collection::sortBy<T,U|m>(col:T[m], key:Function<{T[1]->U[1]}>[0..1]):T[m]
 {
     sort($col, $key, [])
+}
+
+function meta::pure::functions::collection::containsAll(collection:Any[*], values:Any[*]):Boolean[1]
+{
+    $values->forAll(v | $collection->contains($v))
 }
 
 
