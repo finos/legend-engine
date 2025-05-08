@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ public class ToTimestampFunction extends Value
         {
             builder.append(WHITE_SPACE);
             builder.append(MULTIPLICATION);
+            builder.append(WHITE_SPACE);
             builder.append(multiplier.get());
         }
 

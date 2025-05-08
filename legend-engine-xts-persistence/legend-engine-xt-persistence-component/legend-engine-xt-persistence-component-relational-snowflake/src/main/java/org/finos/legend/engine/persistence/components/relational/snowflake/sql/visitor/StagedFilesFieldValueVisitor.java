@@ -54,7 +54,7 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
             if (current.fieldType().dataType().equals(DataType.TIMESTAMP) ||
                     current.fieldType().dataType().equals(DataType.TIMESTAMP_NTZ))
             {
-                int scale = current.fieldType().scale().orElse(0); // default seconds
+                int scale = current.fieldType().scale().orElse(6); // default seconds
                 prev.push(new ToTimestampFunction(stageField, "NUMBER", Optional.empty(), scale, context.quoteIdentifier()));
                 return new VisitorResult(null);
             }
