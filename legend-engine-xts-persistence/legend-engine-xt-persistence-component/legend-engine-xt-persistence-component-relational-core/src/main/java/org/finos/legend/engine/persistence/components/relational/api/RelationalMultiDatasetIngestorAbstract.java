@@ -715,6 +715,12 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         {
             builder.alias(mainDatasetReference.alias().get());
         }
+
+        if (mainDatasetReference.datasetAdditionalProperties().isPresent())
+        {
+            builder.datasetAdditionalProperties(mainDatasetReference.datasetAdditionalProperties().get());
+        }
+
         DatasetDefinition mainDatasetDefinition = builder.build();
 
         return ApiUtils.deriveMainDatasetFromStaging(mainDatasetDefinition, ingestStage.stagingDataset(), enrichedIngestMode);
