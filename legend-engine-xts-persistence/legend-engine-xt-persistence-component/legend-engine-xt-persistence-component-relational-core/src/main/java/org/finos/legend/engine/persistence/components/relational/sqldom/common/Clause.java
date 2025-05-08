@@ -70,7 +70,8 @@ public enum Clause
     FILES("FILES"),
     EXTERNAL("EXTERNAL"),
     OPTIONS("OPTIONS"),
-    DISTINCT("DISTINCT");
+    DISTINCT("DISTINCT"),
+    TO_TIMESTAMP_NTZ("TO_TIMESTAMP_NTZ");
 
     private final String clause;
 

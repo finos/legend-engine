@@ -14,16 +14,21 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.StagedFilesField;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.ToDateFunction;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.ToTimestampFunction;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.FunctionName;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFilesFieldValue>
 {
@@ -41,11 +46,30 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
            Function parseJson = new Function(FunctionName.fromName("PARSE_JSON"), Arrays.asList(stageField), null, context.quoteIdentifier());
            Function toVariant = new Function(FunctionName.fromName("TO_VARIANT"), Arrays.asList(parseJson), current.alias().orElse(null), context.quoteIdentifier());
            prev.push(toVariant);
+           return new VisitorResult(null);
         }
-        else
+
+        if (current.fileFormatType().isPresent() && current.fileFormatType().get().equals(FileFormatType.AVRO))
         {
-            prev.push(stageField);
+            if (current.fieldType().dataType().equals(DataType.TIMESTAMP) ||
+                    current.fieldType().dataType().equals(DataType.TIMESTAMP_NTZ))
+            {
+                int scale = current.fieldType().scale().orElse(6); // default seconds
+                prev.push(new ToTimestampFunction(stageField, "NUMBER", Optional.empty(), scale, context.quoteIdentifier()));
+                return new VisitorResult(null);
+            }
+            if (current.fieldType().dataType().equals(DataType.DATE))
+            {
+                long secondsInADay = TimeUnit.DAYS.toSeconds(1);
+                ToTimestampFunction timestampFunction = new ToTimestampFunction(
+                        stageField, "NUMBER", Optional.of(secondsInADay), 0, context.quoteIdentifier());
+                prev.push(new ToDateFunction(timestampFunction, "DATE", context.quoteIdentifier()));
+                return new VisitorResult(null);
+            }
         }
+        prev.push(stageField);
         return new VisitorResult(null);
     }
+
+
 }

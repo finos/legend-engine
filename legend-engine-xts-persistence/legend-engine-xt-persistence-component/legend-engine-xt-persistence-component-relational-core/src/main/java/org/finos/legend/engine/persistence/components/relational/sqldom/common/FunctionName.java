@@ -53,7 +53,8 @@ public enum FunctionName
     CONVERT("CONVERT"),
     STRUCT("STRUCT"),
     JSON_EXTRACT_PATH_TEXT("JSON_EXTRACT_PATH_TEXT"),
-    APPROX_COUNT_DISTINCT("APPROX_COUNT_DISTINCT");
+    APPROX_COUNT_DISTINCT("APPROX_COUNT_DISTINCT"),
+    TO_TIMESTAMP_NTZ("TO_TIMESTAMP_NTZ");
 
     private static final Map<String, FunctionName> BY_NAME = Arrays
         .stream(FunctionName.values())
