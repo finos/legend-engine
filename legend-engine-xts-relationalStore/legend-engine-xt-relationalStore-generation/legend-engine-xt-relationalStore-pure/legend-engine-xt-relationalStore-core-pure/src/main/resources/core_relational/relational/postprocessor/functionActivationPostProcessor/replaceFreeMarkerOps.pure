@@ -25,7 +25,7 @@ import meta::relational::mapping::*;
 
 function meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder(query:SQLQuery[1]): PostProcessorResult[1]
 {
-  let transformFunc = {r: RelationalOperationElement[1], uniqueId: Integer[1] |  
+  let transformFunc = {r: RelationalOperationElement[1] |  
                         $r->match([
                           l: Literal[1] | $l->replaceLiteral(),
                           v: VarPlaceHolder[1] | $v->replaceVarPlaceHolder(),

@@ -25,8 +25,10 @@ import meta::pure::runtime::*;
 function meta::relational::mapping::contextBasedPostProcessors(result:PostProcessorResult[1], runtime:Runtime[1], ext:RoutedValueSpecification[0..1], mapping:Mapping[0..1], store:Database[0..1], exeCtx:ExecutionContext[1]): PostProcessorResult[1]
 {
    $exeCtx->match([
-      f: FunctionActivatorExecutionContext[1] | let res = $f.postProcessor->cast(@ConcreteFunctionDefinition<{SQLQuery[1]->PostProcessorResult[1]}>)->toOne()->eval($result.query)->toOne();
-                                                ^$result(query = $res.query, templateFunctions = $result.templateFunctions->concatenate($res.templateFunctions),executionNodes =$result.executionNodes->concatenate( $res.executionNodes), postExecutionNodes=$result.postExecutionNodes->concatenate($res.postExecutionNodes));,
+      f: FunctionActivatorExecutionContext[1] | let res = $f.postProcessor->fold({pp, agg |
+                                                  $pp->cast(@ConcreteFunctionDefinition<{SQLQuery[1]->PostProcessorResult[1]}>)->toOne()->eval($agg.query);
+                                               }, $result)->toOne();
+        ^$result(query = $res.query, templateFunctions = $result.templateFunctions->concatenate($res.templateFunctions),executionNodes =$result.executionNodes->concatenate( $res.executionNodes), postExecutionNodes=$result.postExecutionNodes->concatenate($res.postExecutionNodes));,
       m: MultiExecutionContext[1] | $m.allContexts()->fold({ctx, prevResult | contextBasedPostProcessors($prevResult, $runtime, $ext, $mapping, $store, $ctx);}, $result),                                                
 
       a: Any[1] | $result]);

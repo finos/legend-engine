@@ -36,7 +36,7 @@ Class meta::relational::runtime::RelationalExecutionContext extends meta::pure::
 
 Class meta::relational::runtime::FunctionActivatorExecutionContext extends meta::pure::runtime::ExecutionContext
 {
-  postProcessor:  ConcreteFunctionDefinition<Any>[1];
+  postProcessor:  ConcreteFunctionDefinition<Any>[*];
 }
 
 function meta::relational::runtime::hasFunctionActivatorExecutionContext(exeCtx:meta::pure::runtime::ExecutionContext[1]): Boolean[1]
