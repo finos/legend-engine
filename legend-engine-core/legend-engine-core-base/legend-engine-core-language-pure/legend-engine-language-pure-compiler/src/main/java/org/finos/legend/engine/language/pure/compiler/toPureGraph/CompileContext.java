@@ -478,6 +478,11 @@ public class CompileContext
         return functionExpression;
     }
 
+    public void collectPrerequisiteElementsFromFunctionName(Set<PackageableElementPointer> prerequisiteElements, String functionName, int parametersSize)
+    {
+        this.pureModel.handlers.collectPrerequisiteElementsFromUserDefinedFunctionHandlers(prerequisiteElements, functionName, parametersSize);
+    }
+
     private void testFunction(String functionName, ProcessingContext processingContext, SimpleFunctionExpression handler)
     {
         if (handler == null || !functionName.equals(handler._func()._name()))

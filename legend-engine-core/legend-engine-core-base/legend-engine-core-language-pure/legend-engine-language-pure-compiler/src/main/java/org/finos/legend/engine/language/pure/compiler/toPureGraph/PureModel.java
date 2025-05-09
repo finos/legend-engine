@@ -308,6 +308,10 @@ public class PureModel implements IPureModel
                 {
                     processPass("firstPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processFirstPass), disjointDependencyGraph);
                     processPass("secondPass", classToElements, dependentToDependencies, handleEngineExceptions(this::processSecondPass), disjointDependencyGraph);
+                });
+
+                this.maybeParallel(disjointDependencyGraphs.stream()).forEach(disjointDependencyGraph ->
+                {
                     Stream<org.finos.legend.engine.protocol.pure.m3.PackageableElement> allElementsInDisjointDependencyGraph = disjointDependencyGraph.stream()
                             .flatMap(clazz -> classToElements.get(clazz).flatCollect(elementsInThisClass -> elementsInThisClass.getIndependentElementAndPathPairs().collect(Pair::getOne)).stream());
                     this.maybeParallel(allElementsInDisjointDependencyGraph).forEach(element ->
@@ -346,6 +350,10 @@ public class PureModel implements IPureModel
                                     }
                                 }
                             }
+                        }
+                        if (element instanceof Function) // Allow function recursion
+                        {
+                            prerequisiteElementFullPaths.remove(elementFullPath);
                         }
                         elementPrerequisites.put(new DependencyManagement.PackageableElementPathPair(element, elementFullPath), prerequisiteElementFullPaths);
                     });
