@@ -172,7 +172,16 @@ function meta::relational::functions::typeInference::inferRelationalType(rop: Re
       ]),
       j : meta::relational::metamodel::operation::JoinStrings[1] | ^meta::relational::metamodel::datatype::Varchar(size = $j.strings->concatenate($j.prefix)->concatenate($j.separator)->concatenate($j.suffix)->map(x | $x->inferRelationalType($failOnMatchFailure)->toOne()->getSize())->sum()),
       c:Column[1] | $c.type,
-      l : Any[1] | if($failOnMatchFailure, | fail('Not supported yet!'); ^meta::relational::metamodel::datatype::DataType();, |[]);
+      s: meta::relational::metamodel::operation::SemiStructuredPropertyAccess[1] | 
+        let type = $s.operand->inferRelationalType($failOnMatchFailure)->filter(x | $x->instanceOf(meta::relational::metamodel::datatype::Object))->map(x | $x->cast(@meta::relational::metamodel::datatype::Object).valueType);
+        assert(!$failOnMatchFailure || $type->isNotEmpty(), 'Fail to find type of semi structure property operand');
+        $type->head();,
+      s: meta::relational::metamodel::operation::SemiStructuredArrayElementAccess[1] | 
+        let type = $s.operand->inferRelationalType($failOnMatchFailure)->filter(x | $x->instanceOf(meta::relational::metamodel::datatype::Array))->map(x | $x->cast(@meta::relational::metamodel::datatype::Array).type);
+        assert(!$failOnMatchFailure || $type->isNotEmpty(), 'Fail to find type of semi structure array operand');
+        $type->head();,
+      fl: meta::relational::metamodel::FoldRelationalLambda[1] | $fl.parameters->at(1).value->inferRelationalType($failOnMatchFailure),
+      l : Any[1] | if($failOnMatchFailure, | fail('Not supported yet: ' + $l->type()->elementToPath()); ^meta::relational::metamodel::datatype::DataType();, |[]);
    ]);
 }
 
@@ -1327,6 +1336,26 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'parseJson',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::SemiStructured()}
+            )
+         ])
+      ),
+
+      pair(
+         'toJson',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 2048)}
+            )
+         ])
+      ),         
+
+      pair(
          'plus',
          list([
             pair(
@@ -1739,6 +1768,26 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
+
+      pair(
+         'toVariant',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::SemiStructured()}
+            )
+         ])
+      ),
+
+      pair(
+         'cast',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | $params->at(1)->instanceOf(DataTypeInfo)},
+               {params: RelationalOperationElement[*] | $params->at(1)->cast(@DataTypeInfo).dataType}
+            )
+         ])
+      ),     
 
       pair(
          'toUpper',

@@ -64,7 +64,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Char;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Date;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Decimal;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Json;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Numeric;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Real;
@@ -481,15 +480,6 @@ public class RelationalParseTreeWalker
                 if (!ctx.INTEGER().isEmpty())
                 {
                     throw new EngineException("Column data type SEMISTRUCTURED does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
-                }
-                break;
-            }
-            case JSON:
-            {
-                column.type = new Json();
-                if (!ctx.INTEGER().isEmpty())
-                {
-                    throw new EngineException("Column data type JSON does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }

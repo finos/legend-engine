@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function;
+package org.finos.legend.pure.runtime.java.extension.relation.interpreted.pure;
 
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestPCTReport
+public class TestPCTReportRelationFunctionsInterpreted
 {
     @Test
     public void canFindPCTReport()
     {
         Assert.assertEquals("Native", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
-        Assert.assertEquals(4, PCTReportProviderLoader.gatherReports().size());
+        Assert.assertEquals(5, PCTReportProviderLoader.gatherReports().size());
     }
 }

@@ -191,7 +191,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
     dynaFnToSql('average',                $allStates,            ^ToSql(format='avg(1.0 * %s)')),
     dynaFnToSql('averageRank',            $allStates,            ^ToSql(format='average_rank()')),
-    dynaFnToSql('cast',                   $allStates,            ^ToSql(format='cast(%s as %s)', transform = {p:String[2] | [$p->at(0), $p->at(1)->replace('\'','')]})),
+    dynaFnToSql('cast',                   $allStates,            ^ToSql(format='cast(%s as %s)')),
     dynaFnToSql('cbrt',                   $allStates,            ^ToSql(format='cbrt(%s)')),
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceiling(%s)')),
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='chr(%s)')),

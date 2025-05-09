@@ -97,6 +97,7 @@ public class TestTDSInterpreted extends TestTDS
                 break;
             }
             case STRING:
+            case CUSTOM:
             {
                 String[] data = (String[]) dataAsObject;
                 String value = data[rowNum];

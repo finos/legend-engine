@@ -42,7 +42,7 @@ function <<access.private>> meta::relational::postProcessor::transformAlias(a: A
   if($a.relationalElement->instanceOf(TableAliasColumn),
       | let t = $a.relationalElement->cast(@TableAliasColumn);
         if($t.column.type->instanceOf(Timestamp),
-            | ^$a(relationalElement = ^DynaFunction(name = 'cast', parameters = [$t, ^Literal(value=dataTypeToSqlText($t.column.type))]));,
+            | ^$a(relationalElement = ^DynaFunction(name = 'cast', parameters = [$t, ^DataTypeInfo(dataType=$t.column.type)]));,
             | $a
           );,
       |$a

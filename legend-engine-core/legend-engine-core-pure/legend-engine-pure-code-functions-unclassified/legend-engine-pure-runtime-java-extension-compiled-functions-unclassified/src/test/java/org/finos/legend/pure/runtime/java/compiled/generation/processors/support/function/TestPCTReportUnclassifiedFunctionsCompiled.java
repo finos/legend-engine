@@ -12,21 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct;
+package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function;
 
-import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestPCTReport
+public class TestPCTReportUnclassifiedFunctionsCompiled
 {
     @Test
     public void canFindPCTReport()
     {
-        Assert.assertEquals(
-                Sets.mutable.with("essential", "grammar", "standard", "relation", "unclassified"),
-                PCTReportProviderLoader.gatherReports().select(x -> x.adapterKey.adapter.name.equals("DuckDB")).collect(x -> x.reportScope.module).toSet()
-        );
+        Assert.assertEquals("Native", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
+        Assert.assertEquals(4, PCTReportProviderLoader.gatherReports().size());
     }
 }

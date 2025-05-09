@@ -32,7 +32,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -312,21 +314,26 @@ public class RelationNativeImplementation
         boolean[] nulls = new boolean[(int) size];
         switch (colFuncSpecTrans.columnType)
         {
-            case "String":
+            case M3Paths.String:
                 MutableList<String> res = Lists.mutable.empty();
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> res.add((String) val));
                 return new ColumnValue(colFuncSpecTrans.newColName, DataType.STRING, res.toArray(new String[0]));
-            case "Integer":
+            case M3Paths.Integer:
                 long[] resultLong = new long[(int) size];
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultLong[i] = (long) val));
                 return new ColumnValue(colFuncSpecTrans.newColName, DataType.LONG, resultLong, nulls);
-            case "Double":
-            case "Float":
+            case M3Paths.Float:
                 double[] resultDouble = new double[(int) size];
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultDouble[i] = (double) val));
                 return new ColumnValue(colFuncSpecTrans.newColName, DataType.DOUBLE, resultDouble, nulls);
+            case M3Paths.Variant:
+            case "Variant":
+                MutableList<Variant> variantRes = Lists.mutable.empty();
+                extracted(tds, window, colFuncSpecTrans, es, (i, val) -> variantRes.add((Variant) val));
+                return new ColumnValue(colFuncSpecTrans.newColName, DataType.CUSTOM, variantRes.toArray(new Variant[0]));
+            default:
+                throw new RuntimeException(colFuncSpecTrans.columnType + " not supported yet");
         }
-        throw new RuntimeException(colFuncSpecTrans.columnType + " not supported yet");
     }
 
     private static void processWithNull(Integer j, Object val, boolean[] nulls, Proc p)
@@ -511,21 +518,21 @@ public class RelationNativeImplementation
             int size = sorted.getTwo().size();
             switch (aggColSpecTrans.reduceType)
             {
-                case "String":
+                case M3Paths.String:
                 {
                     String[] finalRes = new String[size];
                     performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalRes[j] = (String) o, true);
                     existing.addColumn(aggColSpecTrans.newColName, DataType.STRING, finalRes);
                     break;
                 }
-                case "Integer":
+                case M3Paths.Integer:
                 {
                     long[] finalResLong = new long[size];
                     performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalResLong[j] = (long) o, true);
                     existing.addColumn(aggColSpecTrans.newColName, DataType.LONG, finalResLong);
                     break;
                 }
-                case "Float":
+                case M3Paths.Float:
                 {
                     double[] finalResDouble = new double[size];
                     performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalResDouble[j] = (double) o, true);
@@ -601,19 +608,18 @@ public class RelationNativeImplementation
         {
             switch (aggColSpecTrans.reduceType)
             {
-                case "String":
+                case M3Paths.String:
                     String[] finalRes = new String[size];
                     performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> finalRes[j] = (String) o, compress);
                     columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.STRING, finalRes));
                     break;
-                case "Integer":
+                case M3Paths.Integer:
                     long[] finalResLong = new long[size];
                     performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> processWithNull(j, o, nulls, () -> finalResLong[j] = (long) o), compress);
                     columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.LONG, finalResLong, nulls));
                     break;
-                case "Double":
-                case "Float":
-                case "Number":
+                case M3Paths.Float:
+                case M3Paths.Number:
                     double[] finalResDouble = new double[size];
                     performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> processWithNull(j, o, nulls, () -> finalResDouble[j] = (double) o), compress);
                     columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.DOUBLE, finalResDouble, nulls));
@@ -703,15 +709,14 @@ public class RelationNativeImplementation
                 RichIterable<?> li = CompiledSupport.toPureCollection(f.execute(Lists.mutable.with(o), es));
                 switch ((String) typesL.get(i))
                 {
-                    case "String":
+                    case M3Paths.String:
                         one.addColumn(namesL.get(i), DataType.STRING, li.toArray(new String[0]));
                         break;
-                    case "Integer":
+                    case M3Paths.Integer:
                         one.addColumn(namesL.get(i), DataType.LONG, toLong(li));
                         break;
-                    case "Double":
-                    case "Float":
-                    case "Number":
+                    case M3Paths.Float:
+                    case M3Paths.Number:
                         one.addColumn(namesL.get(i), DataType.DOUBLE, toDouble(li));
                         break;
                     default:

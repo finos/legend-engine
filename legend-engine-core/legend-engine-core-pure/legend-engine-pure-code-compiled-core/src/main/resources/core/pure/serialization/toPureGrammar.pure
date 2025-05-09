@@ -432,9 +432,14 @@ function meta::pure::metamodel::serialization::grammar::printAggregationKind(agg
 
 function meta::pure::metamodel::serialization::grammar::printGenericType(genericType:GenericType[1]):String[1]
 {
+  printGenericType($genericType, true);
+}
+
+function meta::pure::metamodel::serialization::grammar::printGenericType(genericType:GenericType[1], fullPath:Boolean[1]):String[1]
+{
     if ($genericType->instanceOf(GenericTypeOperation),
       |let go = $genericType->cast(@GenericTypeOperation);
-       if($go.left->isEmpty(),|'',|$go.left->toOne()->printGenericType()) + 
+       if($go.left->isEmpty(),|'',|$go.left->toOne()->printGenericType($fullPath)) + 
        if(
           [
             pair(|$go.type == GenericTypeOperationType.Union,|'+'),
@@ -443,7 +448,7 @@ function meta::pure::metamodel::serialization::grammar::printGenericType(generic
           ],
           |'='
        ) + 
-       $go.right->printGenericType();,
+       $go.right->printGenericType($fullPath);,
       |if ($genericType.rawType->isEmpty(),
             |if ($genericType.typeParameter->isEmpty(),
                   |'',
@@ -453,15 +458,15 @@ function meta::pure::metamodel::serialization::grammar::printGenericType(generic
                         [
                             f:FunctionType[1]|printFunctionType($f),
                             x:meta::pure::metamodel::relation::RelationType<Any>[1]|printRelationType($x),
-                            c:Class<Any>[1]|if ($c.name->isEmpty(),|'?MappingClass?',|$c->elementToPath()),
-                            e:Enumeration<Any>[1]|$e->elementToPath(),
-                            x:DataType[1]|$x->elementToPath(),
+                            c:Class<Any>[1]|if ($c.name->isEmpty(),|'?MappingClass?',|if($fullPath, |$c->elementToPath(), |$c.name->toOne())),
+                            e:Enumeration<Any>[1]|if($fullPath, |$e->elementToPath(), |$e->toString()),
+                            x:DataType[1]|if($fullPath, |$x->elementToPath(), |$x->toString()),
                             a:Any[1]|$a->id()
                         ]) +
                         if($genericType.typeArguments->isNotEmpty(),
                            |if($genericType.multiplicityArguments->isNotEmpty(),
-                               |'<' + $genericType.typeArguments->map(g|$g->printGenericType())->joinStrings(', ') + '|' + $genericType.multiplicityArguments->map(m | $m->printMultiplicity())->joinStrings(', ') + '>',
-                               |$genericType.typeArguments->map(g|$g->printGenericType())->joinStrings('<', ', ', '>')),
+                               |'<' + $genericType.typeArguments->map(g|$g->printGenericType($fullPath))->joinStrings(', ') + '|' + $genericType.multiplicityArguments->map(m | $m->printMultiplicity())->joinStrings(', ') + '>',
+                               |$genericType.typeArguments->map(g|$g->printGenericType($fullPath))->joinStrings('<', ', ', '>')),
                            |if($genericType.multiplicityArguments->isNotEmpty(),
                                |$genericType.multiplicityArguments->map(m | $m->printMultiplicity())->joinStrings('<|', ', ', '>'),
                                |'')

@@ -36,6 +36,5 @@ public enum RelationalDataType
     ARRAY,
     OTHER,
     SEMISTRUCTURED,
-    JSON,
     UNKNOWN
 }

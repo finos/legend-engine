@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::variant::*;
 import meta::pure::executionPlan::featureFlag::*;
 import meta::pure::executionPlan::connection::*;
 import meta::relational::translation::*;
@@ -155,12 +156,13 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                        ],
                        |$class->match([
                                   e : Enumeration<Any>[1] | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
-                                  p : PrimitiveType[1] | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
+                                  p : PrimitiveType[1]    | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
+                                  p : Class<Variant>[1]   | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
                                   c : Class<Any>[1] | ^ClassResultType
                                                       (
                                                          genericType=^GenericType(rawType=$class),
                                                          setImplementations = if($ext->isEmpty(),
-                                                                                 | $m->toOne()->rootClassMappingByClass($c)->toOne(),
+                                                                                 | $m->toOne('mapping missing and cannot construct return type for class: ' + $class->elementToPath())->rootClassMappingByClass($c)->toOne(),
                                                                                  | $ext->cast(@StoreMappingRoutedValueSpecification).sets->at(0)
                                                                               )->resolveOperation($m->toOne())
                                                      )
@@ -193,7 +195,7 @@ function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], 
    (
       sqlComment = $query.comment,
       sqlQuery = $sql,
-      resultColumns = $query->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->columnLabel($connection, $extensions), dataType = $c->getRelationalTypeFromRelationalOperationElement()->translateCoreTypeToDbSpecificType(^TranslationContext(dbType = $connection.type)))), a:Any[1] | []]),
+      resultColumns = $query->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->columnLabel($connection, $extensions), dataType = $c->meta::relational::functions::typeInference::inferRelationalType(false, ^TranslationContext(dbType = $connection.type)))), a:Any[1] | []]),
       resultType = ^ResultType(genericType=^GenericType(rawType=Any)),
       connection = $connection->meta::relational::mapping::updateConnection($extensions)->cast(@meta::external::store::relational::runtime::DatabaseConnection),
       supportFunctions = relationalPlanSupportFunctions($connection)->concatenate($enumMapSupportFunctions),
@@ -220,16 +222,6 @@ function <<access.private>> meta::relational::mapping::columnLabel(v:RelationalO
          r:RelationalOperationElement[1] | $r->meta::relational::functions::sqlQueryToString::processOperation($connection.type, $extensions)
       ]
    )
-}
-
-function <<access.private>> meta::relational::mapping::getRelationalTypeFromRelationalOperationElement(r:RelationalOperationElement[1]):meta::relational::metamodel::datatype::DataType[0..1]
-{
-   $r->match([
-      t:TableAliasColumn[1] | $t.column.type,
-      a:Alias[1] | $a.relationalElement->getRelationalTypeFromRelationalOperationElement(),
-      c:Column[1] | $c.type,
-      a:Any[1] | [];// TOFIX - support all possible Types  fail($a->type().name ->toOne() + ' is not supported in planExecution yet') meta::relational::functions::typeInference::inferRelationalType
-   ])->cast(@meta::relational::metamodel::datatype::DataType);
 }
 
 function meta::relational::mapping::addEnumMapSupportFunctions(sq:meta::pure::mapping::StoreQuery[1], m:Mapping[0..1]):String[*]

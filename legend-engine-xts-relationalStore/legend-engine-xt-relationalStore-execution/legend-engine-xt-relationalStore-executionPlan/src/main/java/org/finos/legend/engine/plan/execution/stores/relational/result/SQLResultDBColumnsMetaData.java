@@ -28,6 +28,7 @@ public class SQLResultDBColumnsMetaData
     private final List<Integer> dbMetaDataType;
     private final boolean[] timeStampColumns;
     private final boolean[] dateColumns;
+    private final boolean[] variantColumns;
 
     SQLResultDBColumnsMetaData(List<SQLResultColumn> resultColumns, ResultSetMetaData rsMetaData) throws SQLException
     {
@@ -36,7 +37,7 @@ public class SQLResultDBColumnsMetaData
         this.dbMetaDataType = Lists.multiReader.ofInitialCapacity(size);
         this.timeStampColumns = new boolean[size];
         this.dateColumns = new boolean[size];
-
+        this.variantColumns = new boolean[size];
 
         for (int i = 1; i <= size; i++)
         {
@@ -52,7 +53,15 @@ public class SQLResultDBColumnsMetaData
                 dateColumns[i - 1] = true;
 
             }
-
+            else if (
+                    columnIsOfType(i, Types.JAVA_OBJECT, "SEMISTRUCTURED")
+                            || columnIsOfType(i, Types.OTHER, "SEMISTRUCTURED")
+                            || columnIsOfType(i, Types.ARRAY, "ARRAY")
+                            || columnIsOfType(i, Types.STRUCT, "OBJECT")
+            )
+            {
+                variantColumns[i - 1] = true;
+            }
         }
     }
 
@@ -65,6 +74,11 @@ public class SQLResultDBColumnsMetaData
     boolean isDateColumn(int index)
     {
         return dateColumns[index - 1];
+    }
+
+    boolean isVariantColumn(int index)
+    {
+        return variantColumns[index - 1];
     }
 
     private boolean columnIsOfType(int index, int dbColumnType, String alloyColumnType)

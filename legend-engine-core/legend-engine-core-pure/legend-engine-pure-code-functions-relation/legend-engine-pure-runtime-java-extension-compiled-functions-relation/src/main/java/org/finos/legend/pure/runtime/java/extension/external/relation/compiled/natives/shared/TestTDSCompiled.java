@@ -126,7 +126,10 @@ public class TestTDSCompiled extends TestTDS
                 return M3Paths.Float;
             case DATETIME_AS_LONG:
                 return M3Paths.Date;
+            case CUSTOM:
+                return M3Paths.Variant;
+            default:
+                throw new RuntimeException("To Handle " + dataType);
         }
-        throw new RuntimeException("To Handle " + dataType);
     }
 }

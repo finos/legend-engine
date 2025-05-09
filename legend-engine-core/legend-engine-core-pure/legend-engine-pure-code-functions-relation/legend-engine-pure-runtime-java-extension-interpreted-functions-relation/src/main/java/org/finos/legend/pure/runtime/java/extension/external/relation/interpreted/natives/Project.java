@@ -92,17 +92,17 @@ public class Project extends Shared
                 CoreInstance subResult = this.functionExecution.executeFunction(false, fInfo.getOne(), parameters, resolvedTypeParameters, resolvedMultiplicityParameters, fInfo.getTwo(), functionExpressionCallStack, profiler, instantiationContext, executionSupport);
                 subResult.getValueForMetaPropertyToMany("values").forEach(c -> vals.add(valExtractor.apply(c)));
 
-                if (type == _Package.getByUserPath("String", processorSupport))
+                if (type == _Package.getByUserPath(M3Paths.String, processorSupport))
                 {
                     colResType = DataType.STRING;
                     colRes = vals.toArray(new String[0]);
                 }
-                if (type == _Package.getByUserPath("Integer", processorSupport))
+                if (type == _Package.getByUserPath(M3Paths.Integer, processorSupport))
                 {
                     colResType = DataType.LONG;
                     colRes = vals.stream().mapToLong(x -> ((Number) x).longValue()).toArray();
                 }
-                if (type == _Package.getByUserPath("Float", processorSupport))
+                if (type == _Package.getByUserPath(M3Paths.Float, processorSupport))
                 {
                     colResType = DataType.DOUBLE;
                     colRes = vals.stream().mapToDouble(x -> (Double) x).toArray();

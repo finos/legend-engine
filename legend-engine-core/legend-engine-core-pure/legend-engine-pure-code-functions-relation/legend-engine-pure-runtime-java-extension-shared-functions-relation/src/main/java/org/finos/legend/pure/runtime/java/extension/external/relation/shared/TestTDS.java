@@ -19,6 +19,14 @@ import io.deephaven.csv.parsers.DataType;
 import io.deephaven.csv.parsers.Parsers;
 import io.deephaven.csv.reading.CsvReader;
 import io.deephaven.csv.sinks.SinkFactory;
+import java.io.ByteArrayInputStream;
+import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Objects;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
@@ -33,12 +41,14 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ArrayIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.function.Function;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
@@ -93,20 +103,16 @@ public abstract class TestTDS
                 result = !isNull[rowNum] ? data[rowNum] : null;
                 break;
             }
-            case STRING:
-            {
-                String[] data = (String[]) dataAsObject;
-                result = data[rowNum];
-                break;
-            }
             case DOUBLE:
             {
                 double[] data = (double[]) dataAsObject;
                 result = !isNull[rowNum] ? data[rowNum] : null;
                 break;
             }
+            case STRING:
+            case CUSTOM:
             case DATETIME_AS_LONG:
-                PureDate[] data = (PureDate[]) dataAsObject;
+                Object[] data = (Object[]) dataAsObject;
                 result = data[rowNum];
                 break;
             default:
@@ -127,7 +133,7 @@ public abstract class TestTDS
         TestTDS testTDS = newTDS(columnsOrdered, columnType, 1);
         for (String col : columnsOrdered)
         {
-            testTDS.isNullByColumn.put(col, new boolean[]{true});
+            testTDS.isNullByColumn.put(col, new boolean[] {true});
             switch (columnType.get(col))
             {
                 case LONG:
@@ -155,6 +161,11 @@ public abstract class TestTDS
                     testTDS.dataByColumnName.put(col, new PureDate[(int) testTDS.rowCount]);
                     break;
                 }
+                case CUSTOM:
+                {
+                    testTDS.dataByColumnName.put(col, new Variant[(int) this.rowCount]);
+                    break;
+                }
                 default:
                     throw new RuntimeException("ERROR " + columnType.get(col) + " not supported yet!");
             }
@@ -175,13 +186,20 @@ public abstract class TestTDS
 
         ArrayIterate.forEach(result.columns(), c ->
         {
-            String name = c.name().split(":")[0];
+            String name = c.name();
+            DataType type = c.dataType();
+            int typeIndex = name.indexOf(':');
+            if (typeIndex != -1)
+            {
+                name = name.substring(0, typeIndex);
+                type = DataType.CUSTOM;
+            }
             columnsOrdered.add(name);
-            columnType.put(name, c.dataType());
+            columnType.put(name, type);
             dataByColumnName.put(name, c.data());
             boolean[] isNullFlag = new boolean[(int) this.rowCount];
             isNullByColumn.put(name, isNullFlag);
-            switch (c.dataType())
+            switch (type)
             {
                 case LONG:
                     for (int i = 0; i < this.rowCount; i++)
@@ -206,13 +224,8 @@ public abstract class TestTDS
                     }
                     break;
                 case STRING:
-                    for (int i = 0; i < this.rowCount; i++)
-                    {
-                        if ("null".equals(((String[]) c.data())[i]))
-                        {
-                            ((String[]) c.data())[i] = null;
-                        }
-                    }
+                case CUSTOM:
+                    // nothing... csv parser manage how to handle null sentinels
                     break;
                 case DATETIME_AS_LONG:
                     PureDate[] dates = new PureDate[(int) this.rowCount];
@@ -259,6 +272,11 @@ public abstract class TestTDS
                     this.dataByColumnName.put(p.getOne(), new String[(int) this.rowCount]);
                     break;
                 }
+                case CUSTOM:
+                {
+                    this.dataByColumnName.put(p.getOne(), new Variant[(int) this.rowCount]);
+                    break;
+                }
                 case DOUBLE:
                 {
                     this.dataByColumnName.put(p.getOne(), new double[(int) this.rowCount]);
@@ -300,6 +318,9 @@ public abstract class TestTDS
                     break;
                 case STRING:
                     res.dataByColumnName.put(c.getOne(), new String[1]);
+                    break;
+                case CUSTOM:
+                    res.dataByColumnName.put(c.getOne(), new Variant[1]);
                     break;
                 case DATETIME_AS_LONG:
                     res.dataByColumnName.put(c.getOne(), new PureDate[1]);
@@ -394,20 +415,17 @@ public abstract class TestTDS
                 nullAsObject[row] = nullAsObjectSrc[srcRow];
                 break;
             }
-            case STRING:
-            {
-                ((String[]) dataAsObject)[row] = ((String[]) srcTDS.dataByColumnName.get(columnName))[srcRow];
-                break;
-            }
             case DOUBLE:
             {
                 ((double[]) dataAsObject)[row] = ((double[]) srcTDS.dataByColumnName.get(columnName))[srcRow];
                 nullAsObject[row] = nullAsObjectSrc[srcRow];
                 break;
             }
+            case STRING:
             case DATETIME_AS_LONG:
+            case CUSTOM:
             {
-                ((PureDate[]) dataAsObject)[row] = ((PureDate[]) srcTDS.dataByColumnName.get(columnName))[srcRow];
+                ((Object[]) dataAsObject)[row] = ((Object[]) srcTDS.dataByColumnName.get(columnName))[srcRow];
                 break;
             }
             default:
@@ -442,20 +460,17 @@ public abstract class TestTDS
                     copyIsNull = Arrays.copyOf(isNullByColumn.get(columnName), (int) rowCount);
                     break;
                 }
-                case STRING:
-                {
-                    copy = Arrays.copyOf((String[]) dataAsObject, (int) rowCount);
-                    break;
-                }
                 case DOUBLE:
                 {
                     copy = Arrays.copyOf((double[]) dataAsObject, (int) rowCount);
                     copyIsNull = Arrays.copyOf(isNullByColumn.get(columnName), (int) rowCount);
                     break;
                 }
+                case STRING:
                 case DATETIME_AS_LONG:
+                case CUSTOM:
                 {
-                    copy = Arrays.copyOf((PureDate[]) dataAsObject, (int) rowCount);
+                    copy = Arrays.copyOf((Object[]) dataAsObject, (int) rowCount);
                     break;
                 }
                 default:
@@ -515,21 +530,6 @@ public abstract class TestTDS
                     copy.isNullByColumn.put(columnName, isNullTarget);
                     break;
                 }
-                case STRING:
-                {
-                    String[] src = (String[]) dataAsObject;
-                    String[] target = new String[(int) copy.rowCount - size];
-                    int j = 0;
-                    for (int i = 0; i < copy.rowCount; i++)
-                    {
-                        if (!rows.contains(i))
-                        {
-                            target[j++] = src[i];
-                        }
-                    }
-                    copy.dataByColumnName.put(columnName, target);
-                    break;
-                }
                 case DOUBLE:
                 {
                     double[] src = (double[]) dataAsObject;
@@ -547,10 +547,12 @@ public abstract class TestTDS
                     copy.isNullByColumn.put(columnName, isNullTarget);
                     break;
                 }
+                case STRING:
                 case DATETIME_AS_LONG:
+                case CUSTOM:
                 {
-                    PureDate[] src = (PureDate[]) dataAsObject;
-                    PureDate[] target = new PureDate[(int) copy.rowCount - size];
+                    Object[] src = (Object[]) dataAsObject;
+                    Object[] target = (Object[]) Array.newInstance(src.getClass().getComponentType(), (int) copy.rowCount - size);
                     int j = 0;
                     for (int i = 0; i < copy.rowCount; i++)
                     {
@@ -606,13 +608,6 @@ public abstract class TestTDS
                     newIsNull = concatenate((boolean[]) isNullByColumn.get(columnName), (boolean[]) tds2.isNullByColumn.get(columnName));
                     break;
                 }
-                case STRING:
-                {
-                    String[] _copy = Arrays.copyOf((String[]) dataAsObject1, (int) result.rowCount);
-                    System.arraycopy((String[]) dataAsObject2, 0, _copy, (int) rowCount, (int) tds2.rowCount);
-                    copy = _copy;
-                    break;
-                }
                 case DOUBLE:
                 {
                     double[] _copy = Arrays.copyOf((double[]) dataAsObject1, (int) result.rowCount);
@@ -621,10 +616,12 @@ public abstract class TestTDS
                     newIsNull = concatenate((boolean[]) isNullByColumn.get(columnName), (boolean[]) tds2.isNullByColumn.get(columnName));
                     break;
                 }
+                case STRING:
                 case DATETIME_AS_LONG:
+                case CUSTOM:
                 {
-                    PureDate[] _copy = Arrays.copyOf((PureDate[]) dataAsObject1, (int) result.rowCount);
-                    System.arraycopy((PureDate[]) dataAsObject2, 0, _copy, (int) rowCount, (int) tds2.rowCount);
+                    Object[] _copy = Arrays.copyOf((Object[]) dataAsObject1, (int) result.rowCount);
+                    System.arraycopy((Object[]) dataAsObject2, 0, _copy, (int) rowCount, (int) tds2.rowCount);
                     copy = _copy;
                     break;
                 }
@@ -752,20 +749,17 @@ public abstract class TestTDS
                     copy.isNullByColumn.put(columnName, Arrays.copyOfRange(isNull, from, to));
                     break;
                 }
-                case STRING:
-                {
-                    copy.dataByColumnName.put(columnName, Arrays.copyOfRange((String[]) dataAsObject, from, to));
-                    break;
-                }
                 case DOUBLE:
                 {
                     copy.dataByColumnName.put(columnName, Arrays.copyOfRange((double[]) dataAsObject, from, to));
                     copy.isNullByColumn.put(columnName, Arrays.copyOfRange(isNull, from, to));
                     break;
                 }
+                case STRING:
                 case DATETIME_AS_LONG:
+                case CUSTOM:
                 {
-                    copy.dataByColumnName.put(columnName, Arrays.copyOfRange((PureDate[]) dataAsObject, from, to));
+                    copy.dataByColumnName.put(columnName, Arrays.copyOfRange((Object[]) dataAsObject, from, to));
                     break;
                 }
                 default:
@@ -874,30 +868,6 @@ public abstract class TestTDS
                     }
                     break;
                 }
-                case STRING:
-                {
-                    String[] src = (String[]) dataAsObject;
-                    String val = src[start];
-                    int subStart = start;
-                    for (int i = start; i < end; i++)
-                    {
-                        if (!Objects.equals(src[i], val) || (Objects.equals(src[i], val) && i == end - 1))
-                        {
-                            int realEnd = (Objects.equals(src[i], val) && i == end - 1) ? end : i;
-                            if (sortInfos.size() > 1)
-                            {
-                                sort(copy, sortInfos.subList(1, sortInfos.size()), subStart, realEnd, ranges);
-                            }
-                            else
-                            {
-                                ranges.add(Tuples.pair(subStart, realEnd));
-                            }
-                            val = src[i];
-                            subStart = i;
-                        }
-                    }
-                    break;
-                }
                 case DOUBLE:
                 {
                     double[] src = (double[]) dataAsObject;
@@ -922,10 +892,12 @@ public abstract class TestTDS
                     }
                     break;
                 }
+                case STRING:
                 case DATETIME_AS_LONG:
+                case CUSTOM:
                 {
-                    PureDate[] src = (PureDate[]) dataAsObject;
-                    PureDate val = src[start];
+                    Object[] src = (Object[]) dataAsObject;
+                    Object val = src[start];
                     int subStart = start;
                     for (int i = start; i < end; i++)
                     {
@@ -996,22 +968,6 @@ public abstract class TestTDS
                 this.reorder(copy, list.collect(Pair::getOne), start, end);
                 break;
             }
-            case STRING:
-            {
-                String[] src = (String[]) dataAsObject;
-                MutableList<Pair<Integer, String>> list = Lists.mutable.empty();
-                for (int i = start; i < end; i++)
-                {
-                    list.add(Tuples.pair(i, src[i]));
-                }
-                list.sortThisBy(Pair::getTwo);
-                if (sortInfo.direction == SortDirection.DESC)
-                {
-                    list.reverseThis();
-                }
-                this.reorder(copy, list.collect(Pair::getOne), start, end);
-                break;
-            }
             case DOUBLE:
             {
                 double[] src = (double[]) dataAsObject;
@@ -1028,10 +984,12 @@ public abstract class TestTDS
                 this.reorder(copy, list.collect(Pair::getOne), start, end);
                 break;
             }
+            case STRING:
             case DATETIME_AS_LONG:
+            case CUSTOM:
             {
-                PureDate[] src = (PureDate[]) dataAsObject;
-                MutableList<Pair<Integer, PureDate>> list = Lists.mutable.empty();
+                Comparable<Object>[] src = (Comparable<Object>[]) dataAsObject;
+                MutableList<Pair<Integer, Comparable<Object>>> list = Lists.mutable.empty();
                 for (int i = start; i < end; i++)
                 {
                     list.add(Tuples.pair(i, src[i]));
@@ -1085,17 +1043,6 @@ public abstract class TestTDS
                     System.arraycopy(isNullResult, 0, isNull, start, end - start);
                     break;
                 }
-                case STRING:
-                {
-                    String[] src = (String[]) dataAsObject;
-                    String[] result = new String[(int) copy.rowCount];
-                    for (int i = 0; i < indices.size(); i++)
-                    {
-                        result[i] = src[indices.get(i)];
-                    }
-                    System.arraycopy(result, 0, src, start, end - start);
-                    break;
-                }
                 case DOUBLE:
                 {
                     double[] src = (double[]) dataAsObject;
@@ -1110,10 +1057,12 @@ public abstract class TestTDS
                     System.arraycopy(isNullResult, 0, isNull, start, end - start);
                     break;
                 }
+                case STRING:
                 case DATETIME_AS_LONG:
+                case CUSTOM:
                 {
-                    PureDate[] src = (PureDate[]) dataAsObject;
-                    PureDate[] result = new PureDate[(int) copy.rowCount];
+                    Object[] src = (Object[]) dataAsObject;
+                    Object[] result = (Object[]) Array.newInstance(src.getClass().getComponentType(), (int) copy.rowCount);
                     for (int i = 0; i < indices.size(); i++)
                     {
                         result[i] = src[indices.get(i)];
@@ -1206,19 +1155,16 @@ public abstract class TestTDS
                     valid = valid && ((boolean[]) firstDataAsObject)[rowFirst] == ((boolean[]) secondDataAsObject)[rowSecond];
                     break;
                 }
-                case STRING:
-                {
-                    valid = valid && Objects.equals(((String[]) firstDataAsObject)[rowFirst], (((String[]) secondDataAsObject)[rowSecond]));
-                    break;
-                }
                 case DOUBLE:
                 {
                     valid = valid && ((double[]) firstDataAsObject)[rowFirst] == ((double[]) secondDataAsObject)[rowSecond];
                     break;
                 }
+                case STRING:
                 case DATETIME_AS_LONG:
+                case CUSTOM:
                 {
-                    valid = valid && Objects.equals(((PureDate[]) firstDataAsObject)[rowFirst], (((PureDate[]) secondDataAsObject)[rowSecond]));
+                    valid = valid && Objects.equals(((Object[]) firstDataAsObject)[rowFirst], (((Object[]) secondDataAsObject)[rowSecond]));
                     break;
                 }
                 default:

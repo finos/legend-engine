@@ -15,6 +15,8 @@
 package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared;
 
 import io.deephaven.csv.parsers.DataType;
+import java.util.Arrays;
+import java.util.Stack;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.list.FixedSizeList;
 import org.eclipse.collections.api.list.ListIterable;
@@ -35,26 +37,28 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionTy
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
-import org.finos.legend.pure.m3.navigation.*;
+import org.finos.legend.pure.m3.navigation.Instance;
+import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.M3Properties;
+import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Sort;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationContext;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
-
-import java.util.Arrays;
-import java.util.Stack;
 
 public class ProjectExtend extends AggregationShared
 {
@@ -190,6 +194,12 @@ public class ProjectExtend extends AggregationShared
             processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
             return new ColumnValue(name, DataType.DOUBLE, finalRes, nulls);
         }
+        else if (type == _Package.getByUserPath(M3Paths.Variant, processorSupport))
+        {
+            String[] finalRes = new String[(int) source.getOne().getRowCount()];
+            processOneColumn(source, window, lambdaFunction, (j, val) -> finalRes[j] = val == null ? null : val.getName(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, DataType.STRING, finalRes);
+        }
         else
         {
             throw new RuntimeException("The type " + type._name() + " is not supported yet!");
@@ -239,7 +249,7 @@ public class ProjectExtend extends AggregationShared
 
     public static class RepoPrimitiveBuilder implements Frame.PrimitiveBuilder
     {
-        private ModelRepository repository;
+        private final ModelRepository repository;
 
         public RepoPrimitiveBuilder(ModelRepository repository)
         {

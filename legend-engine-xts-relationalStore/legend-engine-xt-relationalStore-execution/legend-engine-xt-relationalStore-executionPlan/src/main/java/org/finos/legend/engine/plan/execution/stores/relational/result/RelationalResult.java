@@ -470,6 +470,10 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         {
             result = resultSet.getDate(columnIndex);
         }
+        else if (resultDBColumnsMetaData.isVariantColumn(columnIndex))
+        {
+            result = resultSet.getString(columnIndex);
+        }
         else
         {
             result = resultSet.getObject(columnIndex);
