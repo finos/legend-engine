@@ -14,8 +14,8 @@
 
 package org.finos.legend.pure.runtime.java.interpreted.function.base.lang;
 
+import org.finos.legend.engine.pure.code.core.functions.unclassified.base.lang.AbstractTestRawEvalProperty;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.function.base.lang.AbstractTestRawEvalProperty;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.junit.BeforeClass;
 
