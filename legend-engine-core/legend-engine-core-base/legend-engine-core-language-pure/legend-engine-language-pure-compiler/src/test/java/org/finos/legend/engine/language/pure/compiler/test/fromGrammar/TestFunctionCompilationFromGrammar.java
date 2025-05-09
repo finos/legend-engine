@@ -106,6 +106,29 @@ public class TestFunctionCompilationFromGrammar
     }
 
     @Test
+    public void testAppliedFunctionWithOverloadedFunctionsFailedToCompile()
+    {
+        // Currently we return all matching functions as prerequisite elements.
+        // Supporting this could be expensive, and we do not expect users to overload functions
+        test("function model::FunctionA(int: Integer[1]): String[1]\n" +
+                "{\n" +
+                "  model::FunctionA($int->toString());\n" +
+                "}\n" +
+                "function model::FunctionA(str: String[1]): String[1]\n" +
+                "{\n" +
+                "  $str;\n" +
+                "}\n" +
+                "function model::FunctionA(float: Float[1]): String[1]\n" +
+                "{\n" +
+                "  model::FunctionA($float->toString());\n" +
+                "}\n" +
+                "function model::FunctionB(int: Integer[1]): String[1]\n" +
+                "{\n" +
+                "  model::FunctionA($int);\n" +
+                "}\n", "COMPILATION error: Detected a circular dependency in element prerequisites graph!");
+    }
+
+    @Test
     public void testRecursiveAppliedFunction()
     {
         test("function model::FunctionA(int: Integer[1]): String[1]\n" +
