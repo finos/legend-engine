@@ -503,9 +503,10 @@ function meta::pure::router::clustering::getClusterVSFromSets(r:StoreMappingRout
 function meta::pure::router::clustering::storeContractForSetImplementation(setImpl:SetImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):Pair<StoreContract, Store>[1]
 {
   $setImpl->match([
-      t:RelationFunctionInstanceSetImplementation[1]| let vs = $t.relationFunction.expressionSequence->evaluateAndDeactivate()->at(0);
-                                                      assert($vs->instanceOf(StoreClusteredValueSpecification), 'Relation mapping does not support cross store queries yet.');
-                                                      let store = $vs->cast(@StoreClusteredValueSpecification).store;
+      t:RelationFunctionInstanceSetImplementation[1]| let vs = $t.relationFunction.expressionSequence->evaluateAndDeactivate();
+                                                      assert($vs->size() == 1, 'Function used in Relation function class mapping can only have a single expression!');
+                                                      assert($vs->at(0)->instanceOf(StoreClusteredValueSpecification), 'Relation function for set \'' + $setImpl.id + '\' in mapping \'' + $mapping->elementToPath() + '\' may not have been routed correctly. Found a ' + $vs->type().name->toOne() + ' instead of a StoreClusteredValueSpecification.');
+                                                      let store = $vs->at(0)->cast(@StoreClusteredValueSpecification).store;
                                                       pair(meta::pure::extension::storeContractFromStore($extensions, $store), $store);,
       i: InstanceSetImplementation[1]|
          let storeContract = $extensions->meta::pure::extension::storeContractForSetImplementation($i->toOne());
@@ -513,6 +514,7 @@ function meta::pure::router::clustering::storeContractForSetImplementation(setIm
          pair($storeContract, $mapping->resolveStore($store));,
       o: meta::pure::mapping::OperationSetImplementation[1]|
          let roots = $o->resolveInstanceSetImplementations();
+         assert($roots->forAll(r|!$r->instanceOf(RelationFunctionInstanceSetImplementation)), 'Relation function class mapping not supported in union operations yet!');
          let storeContract = $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicatesBy(x|$x.id)->toOne();
          let store = $roots->map(r|$mapping->resolveStore($storeContract.resolveStoreFromSetImplementation->toOne()->eval($r)))->removeDuplicatesBy(x|$x->elementToPath())->toOne();
          pair($storeContract, $mapping->resolveStore($store));
