@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
+import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
@@ -28,16 +29,17 @@ import org.finos.legend.engine.persistence.components.transformer.VisitorContext
 import org.finos.legend.engine.persistence.components.util.Capability;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 
 public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFilesFieldValue>
 {
 
-    private Set<Capability> capabilities;
+    private Optional<Set<Capability>> capabilities;
 
     public StagedFilesFieldValueVisitor(Set<Capability> capabilities)
     {
-        this.capabilities = capabilities;
+        this.capabilities = Optional.of(capabilities);
     }
 
     @Override
@@ -58,8 +60,7 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
 
         if (current.fileFormatType().isPresent()
                 && current.fileFormatType().get().equals(FileFormatType.AVRO)
-                && capabilities != null
-                && capabilities.contains(Capability.AVRO_DATE_TIMESTAMP_SUPPORT))
+                && capabilities.orElse(Sets.fixedSize.empty()).contains(Capability.AVRO_DATE_TIMESTAMP_SUPPORT))
         {
             if (current.fieldType().dataType().equals(DataType.TIMESTAMP))
             {
