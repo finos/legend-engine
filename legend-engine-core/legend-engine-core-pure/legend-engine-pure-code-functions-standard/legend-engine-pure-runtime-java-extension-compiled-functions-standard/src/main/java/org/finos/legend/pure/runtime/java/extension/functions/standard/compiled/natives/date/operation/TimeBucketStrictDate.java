@@ -14,13 +14,13 @@
 
 package org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.date.operation;
 
-import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNativeFunctionGeneric;
 
-public class TimeBucket extends AbstractNativeFunctionGeneric
+public class TimeBucketStrictDate extends AbstractNativeFunctionGeneric
 {
-    public TimeBucket()
+    public TimeBucketStrictDate()
     {
-        super("StandardFunctionGen.timeBucket", new Class[]{DateTime.class, Long.class, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum.class}, "timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_");
+        super("StandardFunctionGen.timeBucketStrictDate", new Class[]{StrictDate.class, Long.class, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum.class}, "timeBucket_StrictDate_1__Integer_1__DurationUnit_1__StrictDate_1_");
     }
 }

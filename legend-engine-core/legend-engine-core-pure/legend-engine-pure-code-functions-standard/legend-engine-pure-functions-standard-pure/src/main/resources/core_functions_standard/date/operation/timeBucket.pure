@@ -17,11 +17,38 @@ import meta::pure::test::pct::*;
 native function
     <<PCT.function>>
     {
-         doc.doc='calculates a time bucket for DateTime, where the bucket is of size quantity unit (e.g. 5 Hour). Uses unix Epoch as the origin for the calculation.'
+         doc.doc='calculates a time bucket for DateTime, where the bucket is of size quantity unit (e.g. 5 Hours). Uses unix Epoch as the origin for the calculation.'
     }
-    meta::pure::functions::date::timeBucket(date:DateTime[1], quantity:Integer[1], unit:DurationUnit[1]):DateTime[1];
+meta::pure::functions::date::timeBucket(date:DateTime[1], quantity:Integer[1], unit:DurationUnit[1]):DateTime[1];
 
-function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBucketSeconds<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function
+    <<PCT.function>>
+    {
+         doc.doc='calculates a time bucket for DateTime, where the bucket is of size quantity unit (e.g. 5 Hours). Uses unix Epoch as the origin for the calculation. Multiplicity 0..1 is allowed.'
+    }
+meta::pure::functions::date::timeBucket(date:DateTime[0..1], quantity:Integer[1], unit:DurationUnit[1]):DateTime[0..1]
+{
+  if($date->isEmpty(),|[],|$date->toOne()->timeBucket($quantity, $unit));
+}
+
+native function
+    <<PCT.function>>
+    {
+         doc.doc='calculates a time bucket for StrictDate, where the bucket is of size quantity unit (e.g. 5 Months). Only units in the set (YEARS, DAYS, MONTHS, WEEKS) are allowed.'
+    }
+meta::pure::functions::date::timeBucket(date:StrictDate[1], quantity:Integer[1], unit:DurationUnit[1]):StrictDate[1];
+
+function
+    <<PCT.function>>
+    {
+         doc.doc='calculates a time bucket for StrictDate, where the bucket is of size quantity unit (e.g. 5 months). Only units in the set (YEARS, DAYS, MONTHS, WEEKS) are allowed. Multiplicity 0..1 is allowed.'
+    }
+meta::pure::functions::date::timeBucket(date:StrictDate[0..1], quantity:Integer[1], unit:DurationUnit[1]):StrictDate[0..1]
+{
+  if($date->isEmpty(),|[],|$date->toOne()->timeBucket($quantity, $unit));
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketSeconds<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals(%2024-01-31T00:32:34.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(1, DurationUnit.SECONDS)));
   assertEquals(%2024-01-31T00:32:34.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(2, DurationUnit.SECONDS)));
@@ -36,7 +63,7 @@ function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBu
   assertEquals(%2124-08-21T23:59:30.000000000+0000, $f->eval(|%2124-08-21T23:59:51.000000000+0000->timeBucket(30, DurationUnit.SECONDS)));
 }
 
-function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBucketMinutes<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMinutes<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals(%2024-01-31T00:32:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(1, DurationUnit.MINUTES)));
   assertEquals(%2024-01-31T00:32:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(2, DurationUnit.MINUTES)));
@@ -51,7 +78,7 @@ function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBu
   assertEquals(%2124-08-21T23:30:00.000000000+0000, $f->eval(|%2124-08-21T23:59:51.000000000+0000->timeBucket(30, DurationUnit.MINUTES)));
 }
 
-function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBucketHours<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketHours<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals(%2024-01-31T00:00:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(1, DurationUnit.HOURS)));
   assertEquals(%2024-01-31T00:00:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(2, DurationUnit.HOURS)));
@@ -66,7 +93,7 @@ function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBu
   assertEquals(%2124-08-21T00:00:00.000000000+0000, $f->eval(|%2124-08-21T23:59:51.000000000+0000->timeBucket(30, DurationUnit.HOURS)));
 }
 
-function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBucketDays<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals(%2024-01-31T00:00:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(1, DurationUnit.DAYS)));
   assertEquals(%2024-01-30T00:00:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(2, DurationUnit.DAYS)));
@@ -81,7 +108,7 @@ function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBu
   assertEquals(%2124-08-01T00:00:00.000000000+0000, $f->eval(|%2124-08-21T23:59:51.000000000+0000->timeBucket(30, DurationUnit.DAYS)));
 }
 
-function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBucketWeeks<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketWeeks<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals(%2024-01-29T00:00:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(1, DurationUnit.WEEKS)));
   assertEquals(%2024-01-29T00:00:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(2, DurationUnit.WEEKS)));
@@ -96,7 +123,7 @@ function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBu
   assertEquals(%2124-01-31T00:00:00.000000000+0000, $f->eval(|%2124-08-21T23:59:51.000000000+0000->timeBucket(30, DurationUnit.WEEKS)));
 }
 
-function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBucketMonths<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMonths<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals(%2024-01-01T00:00:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(1, DurationUnit.MONTHS)));
   assertEquals(%2024-01-01T00:00:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(2, DurationUnit.MONTHS)));
@@ -111,7 +138,7 @@ function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBu
   assertEquals(%2122-07-01T00:00:00.000000000+0000, $f->eval(|%2124-08-21T23:59:51.000000000+0000->timeBucket(30, DurationUnit.MONTHS)));
 }
 
-function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBucketYears<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketYears<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals(%2024-01-01T00:00:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(1, DurationUnit.YEARS)));
   assertEquals(%2024-01-01T00:00:00.000000000+0000, $f->eval(|%2024-01-31T00:32:34.999123456+0000->timeBucket(2, DurationUnit.YEARS)));
@@ -124,4 +151,79 @@ function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::testTimeBu
   assertEquals(%2024-01-01T00:00:00.000000000+0000, $f->eval(|%2024-01-31T17:15:59.249123456+0000->timeBucket(18, DurationUnit.YEARS)));
   assertEquals(%1949-01-01T00:00:00.000000000+0000, $f->eval(|%1951-10-21T08:59:00.676123456+0000->timeBucket(3, DurationUnit.YEARS)));
   assertEquals(%2120-01-01T00:00:00.000000000+0000, $f->eval(|%2124-08-21T23:59:51.000000000+0000->timeBucket(30, DurationUnit.YEARS)));
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketSeconds<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertError(|$f->eval(|%2024-01-31->timeBucket(1, DurationUnit.SECONDS)), 'Unsupported duration unit for StrictDate. Units can only be: [YEARS, DAYS, MONTHS, WEEKS]');
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketMinutes<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertError(|$f->eval(|%2024-01-31->timeBucket(1, DurationUnit.MINUTES)), 'Unsupported duration unit for StrictDate. Units can only be: [YEARS, DAYS, MONTHS, WEEKS]');
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketHours<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertError(|$f->eval(|%2024-01-31->timeBucket(1, DurationUnit.HOURS)), 'Unsupported duration unit for StrictDate. Units can only be: [YEARS, DAYS, MONTHS, WEEKS]');
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketDays<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(%2024-01-31, $f->eval(|%2024-01-31->timeBucket(1, DurationUnit.DAYS)));
+  assertEquals(%2024-01-30, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.DAYS)));
+  assertEquals(%2024-01-28, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.DAYS)));
+  assertEquals(%2024-01-24, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.DAYS)));
+  assertEquals(%2024-01-30, $f->eval(|%2024-01-31->timeBucket(3, DurationUnit.DAYS)));
+  assertEquals(%2024-01-18, $f->eval(|%2024-01-31->timeBucket(30, DurationUnit.DAYS)));
+  assertEquals(%2024-01-30, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.DAYS)));
+  assertEquals(%2024-01-28, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.DAYS)));
+  assertEquals(%2024-01-24, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.DAYS)));
+  assertEquals(%1951-10-20, $f->eval(|%1951-10-21->timeBucket(3, DurationUnit.DAYS)));
+  assertEquals(%2124-08-01, $f->eval(|%2124-08-21->timeBucket(30, DurationUnit.DAYS)));
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketWeeks<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(%2024-01-29, $f->eval(|%2024-01-31->timeBucket(1, DurationUnit.WEEKS)));
+  assertEquals(%2024-01-29, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.WEEKS)));
+  assertEquals(%2024-01-15, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.WEEKS)));
+  assertEquals(%2023-10-23, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.WEEKS)));
+  assertEquals(%2024-01-15, $f->eval(|%2024-01-31->timeBucket(3, DurationUnit.WEEKS)));
+  assertEquals(%2024-01-15, $f->eval(|%2024-01-31->timeBucket(30, DurationUnit.WEEKS)));
+  assertEquals(%2024-01-29, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.WEEKS)));
+  assertEquals(%2024-01-15, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.WEEKS)));
+  assertEquals(%2023-10-23, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.WEEKS)));
+  assertEquals(%1951-10-08, $f->eval(|%1951-10-21->timeBucket(3, DurationUnit.WEEKS)));
+  assertEquals(%2124-01-31, $f->eval(|%2124-08-21->timeBucket(30, DurationUnit.WEEKS)));
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketMonths<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(1, DurationUnit.MONTHS)));
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.MONTHS)));
+  assertEquals(%2023-05-01, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.MONTHS)));
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.MONTHS)));
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(3, DurationUnit.MONTHS)));
+  assertEquals(%2022-07-01, $f->eval(|%2024-01-31->timeBucket(30, DurationUnit.MONTHS)));
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.MONTHS)));
+  assertEquals(%2023-05-01, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.MONTHS)));
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.MONTHS)));
+  assertEquals(%1951-10-01, $f->eval(|%1951-10-21->timeBucket(3, DurationUnit.MONTHS)));
+  assertEquals(%2122-07-01, $f->eval(|%2124-08-21->timeBucket(30, DurationUnit.MONTHS)));
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketYears<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(1, DurationUnit.YEARS)));
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.YEARS)));
+  assertEquals(%2020-01-01, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.YEARS)));
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.YEARS)));
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(3, DurationUnit.YEARS)));
+  assertEquals(%2000-01-01, $f->eval(|%2024-01-31->timeBucket(30, DurationUnit.YEARS)));
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.YEARS)));
+  assertEquals(%2020-01-01, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.YEARS)));
+  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.YEARS)));
+  assertEquals(%1949-01-01, $f->eval(|%1951-10-21->timeBucket(3, DurationUnit.YEARS)));
+  assertEquals(%2120-01-01, $f->eval(|%2124-08-21->timeBucket(30, DurationUnit.YEARS)));
 }

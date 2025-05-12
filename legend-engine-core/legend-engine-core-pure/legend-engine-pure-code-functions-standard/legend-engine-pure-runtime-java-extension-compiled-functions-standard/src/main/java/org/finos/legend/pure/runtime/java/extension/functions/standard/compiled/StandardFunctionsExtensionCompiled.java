@@ -19,7 +19,8 @@ import org.finos.legend.pure.runtime.java.compiled.compiler.StringJavaSource;
 import org.finos.legend.pure.runtime.java.compiled.extension.AbstractCompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
-import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.date.operation.TimeBucket;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.date.operation.TimeBucketDateTime;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.date.operation.TimeBucketStrictDate;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.CosH;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.SinH;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.TanH;
@@ -39,7 +40,8 @@ public class StandardFunctionsExtensionCompiled extends AbstractCompiledExtensio
     {
         return Lists.fixedSize.with(
             // Date
-            new TimeBucket(),
+            new TimeBucketDateTime(),
+            new TimeBucketStrictDate(),
 
             // Math
             new CosH(),
