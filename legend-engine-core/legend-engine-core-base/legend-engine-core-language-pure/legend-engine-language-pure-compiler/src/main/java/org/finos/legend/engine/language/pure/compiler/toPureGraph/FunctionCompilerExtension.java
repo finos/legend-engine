@@ -17,12 +17,14 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.m3.relationship.Association;
 import org.finos.legend.engine.protocol.pure.m3.type.Class;
@@ -144,11 +146,12 @@ public class FunctionCompilerExtension implements CompilerExtension
 
     private Set<PackageableElementPointer> functionPrerequisiteElementsPass(Function function, CompileContext context)
     {
-        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        MutableSet<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
         ValueSpecificationPrerequisiteElementsPassBuilder builder = new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements);
         ListIterate.forEach(function.parameters, p -> p.accept(builder));
         ListIterate.forEach(function.body, expression -> expression.accept(builder));
         ListIterate.forEach(function.tests, suite -> HelperFunctionBuilder.collectPrerequisiteElementsFromFunctionTestSuites(prerequisiteElements, suite, context));
+        prerequisiteElements.removeIf(p -> PackageableElementType.FUNCTION.equals(p.type)); // Functions don't care about the body of functions, so we don't need to explicitly add other functions. This will allow for recursion
         return prerequisiteElements;
     }
 }

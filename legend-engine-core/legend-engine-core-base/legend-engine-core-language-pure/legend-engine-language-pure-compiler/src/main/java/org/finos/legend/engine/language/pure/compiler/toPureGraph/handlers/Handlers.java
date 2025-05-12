@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
+import org.eclipse.collections.api.LazyIterable;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -41,6 +42,8 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFuncti
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSAggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapAggregation;
@@ -2007,6 +2010,17 @@ public class Handlers
     {
         FunctionExpressionBuilder builder = valueSpecificationBuilder.getContext().resolveFunctionBuilder(functionName, this.registeredMetaPackages, this.map, sourceInformation, valueSpecificationBuilder.getProcessingContext());
         return builder.buildFunctionExpression(parameters, sourceInformation, valueSpecificationBuilder);
+    }
+
+    public void collectPrerequisiteElementsFromUserDefinedFunctionHandlers(Set<PackageableElementPointer> prerequisiteElements, String functionName, int parametersSize)
+    {
+        FunctionExpressionBuilder functionExpressionBuilder = this.map.get(functionName);
+        if (Objects.nonNull(functionExpressionBuilder))
+        {
+            functionExpressionBuilder.handlers().asLazy().selectInstancesOf(UserDefinedFunctionHandler.class)
+                    .select(h -> h.getParametersSize() == parametersSize)
+                    .forEach(h -> prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.FUNCTION, h.getFullName())));
+        }
     }
 
     private void registerMetaPackage(FunctionHandler... handlers)
