@@ -1019,10 +1019,10 @@ public class BulkLoadTest
                 "(\"col_string\", \"col_datetime\", \"col_date\", \"col_timestamp\", \"digest\", \"batch_id\", \"append_time\") " +
                 "FROM (SELECT legend_persistence_stage.$1:\"col_string\" as \"col_string\"," +
                 "legend_persistence_stage.$1:\"col_datetime\" as \"col_datetime\"," +
-                "IFF(IS_INTEGER(legend_persistence_stage.$1:\"col_date\"::VARIANT), TO_DATE(TO_TIMESTAMP_NTZ((legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400)::VARCHAR)), TO_DATE(legend_persistence_stage.$1:\"col_date\"::VARCHAR)) as \"col_date\"," +
+                "TO_DATE(TO_TIMESTAMP_NTZ((legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400)::VARCHAR)) as \"col_date\"," +
                 "TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp\"::VARCHAR) as \"col_timestamp\"," +
                 "LAKEHOUSE_UDF(CONCAT(" +
-                "COLUMN_STRING_UDF('col_date',CAST(IFF(IS_INTEGER(legend_persistence_stage.$1:\"col_date\"::VARIANT), TO_DATE(TO_TIMESTAMP_NTZ((legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400)::VARCHAR)), TO_DATE(legend_persistence_stage.$1:\"col_date\"::VARCHAR)) AS DATE))," +
+                "COLUMN_STRING_UDF('col_date',CAST(TO_DATE(TO_TIMESTAMP_NTZ((legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400)::VARCHAR)) AS DATE))," +
                 "COLUMN_STRING_UDF('col_datetime',CAST(legend_persistence_stage.$1:\"col_datetime\" AS DATETIME))," +
                 "COLUMN_STRING_UDF('col_string',CAST(legend_persistence_stage.$1:\"col_string\" AS VARCHAR))," +
                 "COLUMN_STRING_UDF('col_timestamp',CAST(TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp\"::VARCHAR) AS TIMESTAMP))))," +

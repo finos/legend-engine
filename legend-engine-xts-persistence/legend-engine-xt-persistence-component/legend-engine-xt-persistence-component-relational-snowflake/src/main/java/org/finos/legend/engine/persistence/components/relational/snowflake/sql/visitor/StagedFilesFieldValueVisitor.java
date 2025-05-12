@@ -25,13 +25,20 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.common.F
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
+import org.finos.legend.engine.persistence.components.util.Capability;
 
 import java.util.Arrays;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFilesFieldValue>
 {
+
+    private Set<Capability> capabilities;
+
+    public StagedFilesFieldValueVisitor(Set<Capability> capabilities)
+    {
+        this.capabilities = capabilities;
+    }
 
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, StagedFilesFieldValue current, VisitorContext context)
@@ -49,7 +56,10 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
            return new VisitorResult(null);
         }
 
-        if (current.fileFormatType().isPresent() && current.fileFormatType().get().equals(FileFormatType.AVRO))
+        if (current.fileFormatType().isPresent()
+                && current.fileFormatType().get().equals(FileFormatType.AVRO)
+                && capabilities != null
+                && capabilities.contains(Capability.AVRO_DATE_TIMESTAMP_SUPPORT))
         {
             if (current.fieldType().dataType().equals(DataType.TIMESTAMP))
             {
