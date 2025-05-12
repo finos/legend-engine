@@ -18,13 +18,17 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
+import org.finos.legend.engine.shared.core.function.Procedure3;
+import org.finos.legend.engine.shared.core.function.Procedure4;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Execution;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Test;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public interface ServiceCompilerExtension extends CompilerExtension
 {
@@ -33,7 +37,17 @@ public interface ServiceCompilerExtension extends CompilerExtension
         return Collections.emptyList();
     }
 
+    default List<Procedure3<Execution, CompileContext, Set<PackageableElementPointer>>> getExtraServiceExecutionPrerequisiteElementsPassProcessors()
+    {
+        return Collections.emptyList();
+    }
+
     default List<Function3<ServiceTest_Legacy, Execution, CompileContext, Root_meta_legend_service_metamodel_Test>> getExtraServiceTestProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Procedure4<ServiceTest_Legacy, Execution, CompileContext, Set<PackageableElementPointer>>> getExtraServiceTestPrerequisiteElementsPassProcessors()
     {
         return Collections.emptyList();
     }

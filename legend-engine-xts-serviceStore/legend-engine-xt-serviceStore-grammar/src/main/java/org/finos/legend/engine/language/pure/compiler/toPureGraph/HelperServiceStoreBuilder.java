@@ -25,6 +25,8 @@ import org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureG
 import org.finos.legend.engine.language.pure.grammar.to.HelperServiceStoreGrammarComposer;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.BooleanTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ComplexTypeReference;
@@ -76,6 +78,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class HelperServiceStoreBuilder
@@ -129,6 +132,11 @@ public class HelperServiceStoreBuilder
         {
             throw new EngineException(e.getMessage(), sourceInformation, EngineErrorType.COMPILATION);
         }
+    }
+
+    public static void collectPrerequisiteElementsFromServicePtr(Set<PackageableElementPointer> prerequisiteElements, ServicePtr servicePtr)
+    {
+        prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.STORE, servicePtr.serviceStore, servicePtr.sourceInformation));
     }
 
     private static Root_meta_external_store_service_metamodel_ServiceGroup getServiceGroup(ServiceGroupPtr serviceGroupPtr, Root_meta_external_store_service_metamodel_ServiceStore serviceStore, SourceInformation sourceInformation)

@@ -30,8 +30,11 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.EmbeddedRelationalPropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.InlineEmbeddedPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.OtherwiseEmbeddedRelationalPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalClassMapping;
@@ -121,6 +124,7 @@ import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_PropertyMappingsImplementation.Root_meta_pure_mapping_superMapping_PropertyMappingsImplementation_1__PropertyMappingsImplementation_$0_1$_;
@@ -818,12 +822,45 @@ public class HelperRelationalBuilder
         throw new UnsupportedOperationException();
     }
 
+    public static void collectPrerequisiteElementsFromRelationalOperationElement(Set<PackageableElementPointer> prerequisiteElements, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement operationElement)
+    {
+        if (operationElement instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn)
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn tableAliasColumn = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn) operationElement;
+            // Self join
+            if (!(tableAliasColumn.table.table.equals(SELF_JOIN_TABLE_NAME) && tableAliasColumn.tableAlias.equals(SELF_JOIN_TABLE_NAME)))
+            {
+                prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.STORE, tableAliasColumn.table.database, tableAliasColumn.table.sourceInformation));
+                prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.STORE, tableAliasColumn.table.getDb(), tableAliasColumn.table.sourceInformation));
+            }
+        }
+        else if (operationElement instanceof ElementWithJoins)
+        {
+            ElementWithJoins elementWithJoins = (ElementWithJoins) operationElement;
+            prerequisiteElements.addAll(ListIterate.collect(elementWithJoins.joins, joinPointer -> new PackageableElementPointer(PackageableElementType.STORE, joinPointer.db, joinPointer.sourceInformation)));
+            if (elementWithJoins.relationalElement != null)
+            {
+                collectPrerequisiteElementsFromRelationalOperationElement(prerequisiteElements, elementWithJoins.relationalElement);
+            }
+        }
+        else if (operationElement instanceof DynaFunc)
+        {
+            DynaFunc dynaFunc = (DynaFunc) operationElement;
+            ListIterate.forEach(dynaFunc.parameters, parameter -> collectPrerequisiteElementsFromRelationalOperationElement(prerequisiteElements, parameter));
+        }
+    }
+
     private static JoinTreeNode buildElementWithJoinsJoinTreeNode(List<JoinPointer> joins, CompileContext context)
     {
         MutableList<JoinWithJoinType> newJoins = ListIterate.collect(joins, joinPointer -> new JoinWithJoinType(
                 getJoin(joinPointer, context), joinPointer.joinType == null
                 ? null : context.pureModel.getEnumValue("meta::relational::metamodel::join::JoinType", "INNER".equals(joinPointer.joinType) ? "INNER" : "LEFT_OUTER")));
         return processElementWithJoinsJoins(newJoins, context);
+    }
+
+    private static void collectPrerequisiteElementsFromJoinPointers(Set<PackageableElementPointer> prerequisiteElements, List<JoinPointer> joins)
+    {
+        prerequisiteElements.addAll(ListIterate.collect(joins, joinPointer -> new PackageableElementPointer(PackageableElementType.STORE, joinPointer.db, joinPointer.sourceInformation)));
     }
 
     private static JoinTreeNode processElementWithJoinsJoins(MutableList<JoinWithJoinType> joins, CompileContext context)
@@ -934,6 +971,30 @@ public class HelperRelationalBuilder
         throw new UnsupportedOperationException();
     }
 
+    public static void collectPrerequisiteElementsFromAbstractRelationalPropertyMapping(Set<PackageableElementPointer> prerequisiteElements, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping propertyMapping)
+    {
+        if (propertyMapping instanceof RelationalPropertyMapping)
+        {
+            collectPrerequisiteElementsFromRelationalPropertyMapping(prerequisiteElements, (RelationalPropertyMapping) propertyMapping);
+        }
+        else if (propertyMapping instanceof EmbeddedRelationalPropertyMapping)
+        {
+            EmbeddedRelationalPropertyMapping embeddedRelationalPropertyMapping = (EmbeddedRelationalPropertyMapping) propertyMapping;
+            if (embeddedRelationalPropertyMapping instanceof OtherwiseEmbeddedRelationalPropertyMapping)
+            {
+                collectPrerequisiteElementsFromOtherwiseEmbeddedRelationalPropertyMapping(prerequisiteElements, (OtherwiseEmbeddedRelationalPropertyMapping) embeddedRelationalPropertyMapping);
+            }
+            else
+            {
+                collectPrerequisiteElementsFromEmbeddedRelationalPropertyMapping(prerequisiteElements, embeddedRelationalPropertyMapping);
+            }
+        }
+        else if (propertyMapping instanceof InlineEmbeddedPropertyMapping)
+        {
+            collectPrerequisiteElementsFromInlineEmbeddedPropertyMapping(prerequisiteElements, (InlineEmbeddedPropertyMapping) propertyMapping);
+        }
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static PropertyMapping processRelationalPropertyMapping(RelationalPropertyMapping propertyMapping, CompileContext context, PropertyMappingsImplementation immediateParent, InstanceSetImplementation topParent, RichIterable<EnumerationMapping<Object>> allEnumerationMappings, MutableMap<String, TableAlias> aliasMap)
     {
@@ -968,6 +1029,23 @@ public class HelperRelationalBuilder
         return res;
     }
 
+    private static void collectPrerequisiteElementsFromRelationalPropertyMapping(Set<PackageableElementPointer> prerequisiteElements, RelationalPropertyMapping propertyMapping)
+    {
+        collectPrerequisiteElementsFromRelationalPropertyPointer(prerequisiteElements, propertyMapping);
+
+        if (propertyMapping.bindingTransformer != null)
+        {
+            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.BINDING, propertyMapping.bindingTransformer.binding, propertyMapping.bindingTransformer.sourceInformation));
+        }
+
+        collectPrerequisiteElementsFromRelationalOperationElement(prerequisiteElements, propertyMapping.relationalOperation);
+
+        if (propertyMapping.localMappingProperty != null)
+        {
+            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation));
+        }
+    }
+
     private static PropertyMapping processEmbeddedRelationalPropertyMapping(EmbeddedRelationalPropertyMapping propertyMapping, CompileContext context, PropertyMappingsImplementation immediateParent, InstanceSetImplementation topParent, MutableList<EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings, RichIterable<EnumerationMapping<Object>> allEnumerationMappings, MutableMap<String, TableAlias> aliasMap)
     {
         if (propertyMapping instanceof OtherwiseEmbeddedRelationalPropertyMapping)
@@ -983,6 +1061,12 @@ public class HelperRelationalBuilder
         org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.OtherwiseEmbeddedRelationalInstanceSetImplementation rpm = new Root_meta_relational_mapping_OtherwiseEmbeddedRelationalInstanceSetImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), context.pureModel.getClass("meta::relational::mapping::OtherwiseEmbeddedRelationalInstanceSetImplementation"));
         rpm._otherwisePropertyMapping(processAbstractRelationalPropertyMapping(propertyMapping.otherwisePropertyMapping, context, immediateParent, topParent, embeddedRelationalPropertyMappings, allEnumerationMappings, aliasMap));
         return processEmbeddedRelationalPropertyMapping(propertyMapping, rpm, context, immediateParent, (RootRelationalInstanceSetImplementation) topParent, embeddedRelationalPropertyMappings, allEnumerationMappings, aliasMap);
+    }
+
+    private static void collectPrerequisiteElementsFromOtherwiseEmbeddedRelationalPropertyMapping(Set<PackageableElementPointer> prerequisiteElements, OtherwiseEmbeddedRelationalPropertyMapping propertyMapping)
+    {
+        collectPrerequisiteElementsFromAbstractRelationalPropertyMapping(prerequisiteElements, propertyMapping.otherwisePropertyMapping);
+        collectPrerequisiteElementsFromEmbeddedRelationalPropertyMapping(prerequisiteElements, propertyMapping);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -1002,6 +1086,11 @@ public class HelperRelationalBuilder
                 ._parent(topParent._parent());
         embeddedRelationalPropertyMappings.add(rpm);
         return rpm;
+    }
+
+    private static void collectPrerequisiteElementsFromInlineEmbeddedPropertyMapping(Set<PackageableElementPointer> prerequisiteElements, InlineEmbeddedPropertyMapping propertyMapping)
+    {
+        collectPrerequisiteElementsFromPropertyPointer(prerequisiteElements, propertyMapping);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -1039,6 +1128,21 @@ public class HelperRelationalBuilder
                 ._propertyMappings(ListIterate.collect(relationalClassMapping.propertyMappings, propertyMapping -> processAbstractRelationalPropertyMapping(propertyMapping, context, base, topParent, embeddedRelationalPropertyMappings, enumerationMappings, aliasMap)))
                 ._parent(parent);
         return base;
+    }
+
+    public static void collectPrerequisiteElementsFromRelationalClassMapping(Set<PackageableElementPointer> prerequisiteElements, RelationalClassMapping relationalClassMapping)
+    {
+        if (relationalClassMapping._class != null)
+        {
+            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, relationalClassMapping._class, relationalClassMapping.classSourceInformation));
+        }
+        ListIterate.forEach(relationalClassMapping.primaryKey, p -> collectPrerequisiteElementsFromRelationalOperationElement(prerequisiteElements, p));
+        MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping> localMappingProperties = ListIterate.select(relationalClassMapping.propertyMappings, p -> p.localMappingProperty != null);
+        if (localMappingProperties.notEmpty())
+        {
+            prerequisiteElements.addAll(ListIterate.collect(localMappingProperties, propertyMapping -> new PackageableElementPointer(PackageableElementType.CLASS, propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation)));
+        }
+        ListIterate.forEach(relationalClassMapping.propertyMappings, propertyMapping -> collectPrerequisiteElementsFromAbstractRelationalPropertyMapping(prerequisiteElements, propertyMapping));
     }
 
     public static void processRelationalPrimaryKey(RootRelationalInstanceSetImplementation rootRelationalInstanceSetImplementation, CompileContext context)
@@ -1115,6 +1219,15 @@ public class HelperRelationalBuilder
         }
     }
 
+    private static void collectPrerequisiteElementsFromPropertyPointer(Set<PackageableElementPointer> prerequisiteElements, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping propertyMapping)
+    {
+        if (propertyMapping.property._class != null)
+        {
+            prerequisiteElements.add(new PackageableElementPointer(null, propertyMapping.property._class, propertyMapping.property.sourceInformation));
+            prerequisiteElements.add(new PackageableElementPointer(null, propertyMapping.property.property, propertyMapping.property.sourceInformation));
+        }
+    }
+
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping processEmbeddedRelationalPropertyMapping(EmbeddedRelationalPropertyMapping propertyMapping, EmbeddedRelationalInstanceSetImplementation rpm, CompileContext context, PropertyMappingsImplementation firstParent, RootRelationalInstanceSetImplementation topParent, MutableList<EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings, RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping<Object>> enumerationMappings, MutableMap<String, TableAlias> aliasMap)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> propertyOwnerClass = extractPropertyOwner(context, propertyMapping, firstParent);
@@ -1163,6 +1276,16 @@ public class HelperRelationalBuilder
         return rpm;
     }
 
+    private static void collectPrerequisiteElementsFromEmbeddedRelationalPropertyMapping(Set<PackageableElementPointer> prerequisiteElements, EmbeddedRelationalPropertyMapping propertyMapping)
+    {
+        collectPrerequisiteElementsFromPropertyPointer(prerequisiteElements, propertyMapping);
+        if (propertyMapping.classMapping._class != null)
+        {
+            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, propertyMapping.classMapping._class, propertyMapping.classMapping.classSourceInformation));
+        }
+        collectPrerequisiteElementsFromRelationalClassMapping(prerequisiteElements, propertyMapping.classMapping);
+    }
+
     private static Property<?, ?> resolvePropertyForRelationalPropertyMapping(RelationalPropertyMapping propertyMapping, PropertyMappingsImplementation immediateParent, CompileContext context)
     {
         String propertyName = propertyMapping.property.property;
@@ -1186,6 +1309,14 @@ public class HelperRelationalBuilder
         {
             Class<?> _class = getPropertyOwnerForRelationalPropertyMapping(context, propertyMapping, immediateParent);
             return HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, _class, Optional.empty(), propertyName, true, propertyMapping.sourceInformation);
+        }
+    }
+
+    private static void collectPrerequisiteElementsFromRelationalPropertyPointer(Set<PackageableElementPointer> prerequisiteElements, RelationalPropertyMapping propertyMapping)
+    {
+        if (propertyMapping.localMappingProperty == null)
+        {
+            collectPrerequisiteElementsFromPropertyPointer(prerequisiteElements, propertyMapping);
         }
     }
 
@@ -1533,6 +1664,19 @@ public class HelperRelationalBuilder
         if (rsi._primaryKey().isEmpty())
         {
             HelperRelationalBuilder.processRelationalPrimaryKey(rsi, context);
+        }
+    }
+
+    public static void collectPrerequisiteElementsFromRootRelationalClassMapping(Set<PackageableElementPointer> prerequisiteElements, RootRelationalClassMapping classMapping)
+    {
+        if (classMapping.filter != null)
+        {
+            FilterMapping filter = classMapping.filter;
+            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.STORE, filter.filter.db, filter.sourceInformation));
+            if (!filter.joins.isEmpty())
+            {
+                HelperRelationalBuilder.collectPrerequisiteElementsFromJoinPointers(prerequisiteElements, filter.joins);
+            }
         }
     }
 

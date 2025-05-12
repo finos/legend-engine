@@ -28,6 +28,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuild
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingEnumSourceValue;
@@ -98,6 +99,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Mapping.Root_meta_pure_mapping__allClassMappingsRecursive_Mapping_1__SetImplementation_MANY_;
@@ -308,6 +310,12 @@ public class HelperMappingBuilder
                 ._expressionSequence(valueSpecifications);
     }
 
+    public static void collectPrerequisiteElementsFromPurePropertyMappingTransform(Set<PackageableElementPointer> prerequisiteElements, PurePropertyMapping ppm, CompileContext context)
+    {
+        ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+        ListIterate.forEach(ppm.transform.body, p -> p.accept(valueSpecificationPrerequisiteElementsPassBuilder));
+    }
+
     public static void processMappingTest(MappingTest_Legacy mappingTestLegacy, CompileContext context)
     {
         // todo hack to support legacy test flow
@@ -319,6 +327,12 @@ public class HelperMappingBuilder
 
         HelperValueSpecificationBuilder.buildLambda(mappingTestLegacy.query, context);
         mappingTestLegacy.inputData.forEach(t -> HelperMappingBuilder.processMappingTestInputData(t, context));
+    }
+
+    public static void collectPrerequisiteElementsFromMappingTest(Set<PackageableElementPointer> prerequisiteElements, MappingTest_Legacy mappingTestLegacy, CompileContext context)
+    {
+        mappingTestLegacy.query.accept(new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements));
+        ListIterate.forEach(mappingTestLegacy.inputData, t -> HelperMappingBuilder.collectPrerequisiteElementsFromMappingTestInputData(prerequisiteElements, t, context));
     }
 
     public static void processMappingTestInputData(InputData inputData, CompileContext context)
@@ -338,6 +352,19 @@ public class HelperMappingBuilder
         }
     }
 
+    public static void collectPrerequisiteElementsFromMappingTestInputData(Set<PackageableElementPointer> prerequisiteElements, InputData inputData, CompileContext context)
+    {
+        if (inputData instanceof ObjectInputData)
+        {
+            ObjectInputData objectInputData = (ObjectInputData) inputData;
+            prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, objectInputData.sourceClass, objectInputData.sourceInformation));
+        }
+        else
+        {
+            context.getCompilerExtensions().getExtraMappingTestInputDataPrerequisiteElementsPassProcessors().forEach(processor -> processor.value(inputData, prerequisiteElements));
+        }
+    }
+
     public static AssociationImplementation processAssociationImplementation(AssociationMapping associationMapping, CompileContext context, Mapping parentMapping)
     {
         if (associationMapping instanceof XStoreAssociationMapping)
@@ -354,6 +381,22 @@ public class HelperMappingBuilder
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported association mapping type '" + associationMapping.getClass() + "'"));
+    }
+
+    public static void collectPrerequisiteElementsFromAssociationImplementation(Set<PackageableElementPointer> prerequisiteElements, AssociationMapping associationMapping, CompileContext context)
+    {
+        if (associationMapping instanceof XStoreAssociationMapping)
+        {
+            XStoreAssociationMapping xStoreAssociationMapping = (XStoreAssociationMapping) associationMapping;
+            prerequisiteElements.add(xStoreAssociationMapping.association);
+            prerequisiteElements.addAll(ListIterate.collect(xStoreAssociationMapping.stores, s -> new PackageableElementPointer(PackageableElementType.STORE, s)));
+            PropertyMappingPrerequisiteElementsBuilder propertyMappingPrerequisiteElementsBuilder = new PropertyMappingPrerequisiteElementsBuilder(context, prerequisiteElements);
+            ListIterate.forEach(xStoreAssociationMapping.propertyMappings, propertyMapping -> propertyMapping.accept(propertyMappingPrerequisiteElementsBuilder));
+        }
+        else
+        {
+            context.getCompilerExtensions().getExtraAssociationMappingPrerequisiteElementsPassProcessors().forEach(processor -> processor.value(associationMapping, prerequisiteElements));
+        }
     }
 
     public static Root_meta_pure_mapping_MappingClass_Impl processMappingClass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingClass mappingclass, CompileContext context, Mapping parent)
@@ -381,6 +424,15 @@ public class HelperMappingBuilder
         return mappingClass;
     }
 
+    public static void collectPrerequisiteElementsFromMappingClass(Set<PackageableElementPointer> prerequisiteElements, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingClass mappingClass, CompileContext context)
+    {
+        prerequisiteElements.addAll(mappingClass.superTypes);
+        if (Objects.nonNull(mappingClass.setImplementation))
+        {
+            mappingClass.setImplementation.accept(new ClassMappingPrerequisiteElementsPassBuilder(context, prerequisiteElements));
+        }
+    }
+
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregateSetImplementationContainer processAggregateSetImplementationContainer(AggregateSetImplementationContainer aggregateSetImplementationContainer, CompileContext context, Mapping parent)
     {
         if (aggregateSetImplementationContainer.setImplementation.mappingClass == null)
@@ -395,6 +447,13 @@ public class HelperMappingBuilder
         container._index(aggregateSetImplementationContainer.index);
         container._aggregateSpecification(processAggregateSpecification(aggregateSetImplementationContainer.aggregateSpecification, context, Lists.mutable.empty(), aggregateSetImplementationContainer.setImplementation._class));
         return container;
+    }
+
+    public static void collectPrerequisiteElementsFromAggregateSetImplementationContainer(Set<PackageableElementPointer> prerequisiteElements, AggregateSetImplementationContainer aggregateSetImplementationContainer, CompileContext context)
+    {
+        prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, aggregateSetImplementationContainer.setImplementation._class, aggregateSetImplementationContainer.setImplementation.classSourceInformation));
+        aggregateSetImplementationContainer.setImplementation.accept(new ClassMappingPrerequisiteElementsPassBuilder(context, prerequisiteElements));
+        HelperMappingBuilder.collectPrerequisiteElementsFromAggregateSpecification(prerequisiteElements, aggregateSetImplementationContainer.aggregateSpecification, context);
     }
 
     private static AggregateSpecification processAggregateSpecification(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSpecification aggregateSpecification, CompileContext context, MutableList<String> openVariables, String parentClassPath)
@@ -414,6 +473,17 @@ public class HelperMappingBuilder
         }
         ctx.flushVariable("this");
         return as;
+    }
+
+    private static void collectPrerequisiteElementsFromAggregateSpecification(Set<PackageableElementPointer> prerequisiteElements, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSpecification aggregateSpecification, CompileContext context)
+    {
+        ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+        ListIterate.forEach(aggregateSpecification.groupByFunctions, gb -> gb.groupByFn.accept(valueSpecificationPrerequisiteElementsPassBuilder));
+        ListIterate.forEach(aggregateSpecification.aggregateValues, af ->
+        {
+            af.mapFn.accept(valueSpecificationPrerequisiteElementsPassBuilder);
+            af.aggregateFn.accept(valueSpecificationPrerequisiteElementsPassBuilder);
+        });
     }
 
     private static GroupByFunctionSpecification processGroupByFunction(GroupByFunction groupByFunction, CompileContext context, MutableList<String> openVariables, ProcessingContext processingContext)
@@ -468,6 +538,19 @@ public class HelperMappingBuilder
         PropertyOwner owner = context.resolvePropertyOwner(propertyMapping.property._class, propertyMapping.property.sourceInformation);
         Class<?> _class = owner instanceof Class<?> ? (Class<?>) owner : HelperModelBuilder.getAssociationPropertyClass((Association) owner, propertyMapping.property.property, propertyMapping.property.sourceInformation, context);
         return HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, _class, Optional.empty(), propertyMapping.property.property, propertyMapping.property.sourceInformation);
+    }
+
+    public static void collectPrerequisiteElementsFromMappedProperty(Set<PackageableElementPointer> prerequisiteElements, PropertyMapping propertyMapping)
+    {
+        if (propertyMapping.localMappingProperty != null)
+        {
+            prerequisiteElements.add(new PackageableElementPointer(null, propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation));
+        }
+        else
+        {
+            prerequisiteElements.add(new PackageableElementPointer(null, propertyMapping.property._class, propertyMapping.property.sourceInformation));
+            prerequisiteElements.add(new PackageableElementPointer(null, propertyMapping.property.property, propertyMapping.property.sourceInformation));
+        }
     }
 
     public static void buildMappingClassOutOfLocalProperties(SetImplementation setImplementation, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> propertyMappings, CompileContext context)
@@ -544,6 +627,22 @@ public class HelperMappingBuilder
         }
     }
 
+    public static void collectPrerequisiteElementsFromMappingTestAndTestSuite(Set<PackageableElementPointer> prerequisiteElements, org.finos.legend.engine.protocol.pure.v1.model.test.Test test, CompileContext context)
+    {
+        if (test instanceof MappingTestSuite)
+        {
+            MappingTestSuite queryTestSuite = (MappingTestSuite) test;
+            queryTestSuite.func.accept(new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements));
+            ListIterate.forEach(queryTestSuite.tests, unitTest -> HelperMappingBuilder.collectPrerequisiteElementsFromMappingTestAndTestSuite(prerequisiteElements, unitTest, context));
+        }
+        else if (test instanceof MappingTest)
+        {
+            MappingTest mappingTest = (MappingTest) test;
+            TestCompilerHelper.collectPrerequisiteElementsFromPureMappingTests(prerequisiteElements, mappingTest, context);
+            ListIterate.forEach(mappingTest.assertions, assertion -> context.getCompilerExtensions().getExtraTestAssertionPrerequisiteElementsPassProcessors().forEach(processor -> processor.value(prerequisiteElements, assertion, context)));
+        }
+    }
+
     static Root_meta_pure_data_StoreTestData processMappingElementTestData(StoreTestData testData, CompileContext context, ProcessingContext processingContext)
     {
         Root_meta_pure_data_StoreTestData mappingStoreTestData = new Root_meta_pure_data_StoreTestData_Impl("", SourceInformationHelper.toM3SourceInformation(testData.sourceInformation), context.pureModel.getClass("meta::pure::data::StoreTestData"));
@@ -560,6 +659,15 @@ public class HelperMappingBuilder
             mappingStoreTestData._store(context.resolveStore(testData.store.path, testData.store.sourceInformation));
         }
         return mappingStoreTestData;
+    }
+
+    static void collectPrerequisiteElementsFromMappingElementTestData(Set<PackageableElementPointer> prerequisiteElements, StoreTestData testData, CompileContext context)
+    {
+        context.getCompilerExtensions().getExtraEmbeddedDataPrerequisiteElementsPassProcessors().forEach(processor -> processor.value(prerequisiteElements, testData.data, context));
+        if (!testData.store.path.equals("ModelStore"))
+        {
+            prerequisiteElements.add(testData.store);
+        }
     }
 
     static ImmutableList<Store> getStoresFromMappingIgnoringIncludedMappings(Mapping mapping, CompileContext context)

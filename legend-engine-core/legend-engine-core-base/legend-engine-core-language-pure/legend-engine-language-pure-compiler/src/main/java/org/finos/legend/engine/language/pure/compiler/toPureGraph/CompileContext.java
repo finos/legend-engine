@@ -213,7 +213,7 @@ public class CompileContext
         getExtraProcessorOrThrow(element).processSecondPass(element, this);
     }
 
-    protected RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElementsPass(PackageableElement element)
+    protected Set<PackageableElementPointer> processPrerequisiteElementsPass(PackageableElement element)
     {
         return getExtraProcessorOrThrow(element).getPrerequisiteElements(element, this);
     }
@@ -284,6 +284,11 @@ public class CompileContext
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement(String fullPath, SourceInformation sourceInformation)
     {
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getPackageableElement(path, sourceInformation));
+    }
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement_safe(String fullPath, SourceInformation sourceInformation)
+    {
+        return this.resolve(fullPath, sourceInformation, this.pureModel::getPackageableElement_safe);
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type resolveType(String fullPath)

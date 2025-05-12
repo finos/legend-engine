@@ -17,6 +17,8 @@ package org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.block.procedure.Procedure2;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
@@ -25,6 +27,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
@@ -33,8 +36,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
@@ -45,6 +52,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
+import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
@@ -58,6 +66,7 @@ import org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph.HelperServiceBuilder.processOwnershipModel;
@@ -199,7 +208,8 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                                     });
                                 }
                             }
-                        }),
+                        },
+                        this::servicePrerequisiteElementsPass),
                 Processor.newProcessor(
                         ExecutionEnvironmentInstance.class,
                         Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class, Binding.class),
@@ -214,8 +224,16 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         {
                             Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = (Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance) context.pureModel.getPackageableElement(execEnv);
                             HelperServiceBuilder.validate(execEnv, pureExecEnv, context);
-                        })
+                        },
+                        this::executionEnvironmentInstancePrerequisiteElementsPass)
         );
+    }
+
+    private Set<PackageableElementPointer> executionEnvironmentInstancePrerequisiteElementsPass(ExecutionEnvironmentInstance execEnv, CompileContext context)
+    {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        ListIterate.forEach(execEnv.executionParameters, executionParameter -> HelperServiceBuilder.collectPrerequisiteElementsFromExecutionParameters(prerequisiteElements, executionParameter));
+        return prerequisiteElements;
     }
 
     public Root_meta_legend_service_metamodel_Service processserviceFirstPass(Service service, CompileContext context)
@@ -236,6 +254,35 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 ._owners(Lists.mutable.withAll(service.owners))
                 ._ownership(service.ownership != null ? processOwnershipModel(service.ownership) : null)
                 ._documentation(service.documentation);
+    }
+
+    private Set<PackageableElementPointer> servicePrerequisiteElementsPass(Service service, CompileContext context)
+    {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        HelperServiceBuilder.collectPrerequisiteElementsFromServiceExecution(prerequisiteElements, service.execution, context);
+
+        if (service.test != null)
+        {
+            HelperServiceBuilder.collectPrerequisiteElementsServiceTest(prerequisiteElements, service.test, context, service.execution);
+        }
+
+        if (service.testSuites != null)
+        {
+            TestPrerequisiteElementsPassBuilder testPrerequisiteElementsPassBuilder = new TestPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+            ListIterate.forEach(service.testSuites, suite -> suite.accept(testPrerequisiteElementsPassBuilder));
+        }
+
+        if (service.postValidations != null)
+        {
+            ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+            ListIterate.forEach(service.postValidations, constraint ->
+            {
+                ListIterate.forEach(constraint.parameters, parameter -> parameter.accept(valueSpecificationPrerequisiteElementsPassBuilder));
+                ListIterate.forEach(constraint.assertions, assertion -> assertion.assertion.accept(valueSpecificationPrerequisiteElementsPassBuilder));
+            });
+        }
+
+        return prerequisiteElements;
     }
 
     @Override
@@ -312,6 +359,36 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
     }
 
     @Override
+    public List<Procedure3<Set<PackageableElementPointer>, Test, CompileContext>> getExtraTestPrerequisiteElementsPassProcessors()
+    {
+        return Collections.singletonList((prerequisiteElements, test, context) ->
+        {
+            if (test instanceof ServiceTestSuite)
+            {
+                ServiceTestSuite serviceTestSuite = (ServiceTestSuite) test;
+                TestPrerequisiteElementsPassBuilder testPrerequisiteElementsPassBuilder = new TestPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+                ListIterate.forEach(serviceTestSuite.tests, unitTest -> unitTest.accept(testPrerequisiteElementsPassBuilder));
+                if (serviceTestSuite.testData != null)
+                {
+                    HelperServiceBuilder.collectPrerequisiteElementsFromServiceTestSuiteData(prerequisiteElements, serviceTestSuite.testData, context);
+                }
+            }
+            else if (test instanceof ServiceTest)
+            {
+                ServiceTest serviceTest = (ServiceTest) test;
+
+                if (serviceTest.parameters != null && !serviceTest.parameters.isEmpty())
+                {
+                    ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+                    ListIterate.forEach(serviceTest.parameters, param -> param.value.accept(valueSpecificationPrerequisiteElementsPassBuilder));
+                }
+                TestAssertionPrerequisiteElementsPassBuilder testAssertionPrerequisiteElementsPassBuilder = new TestAssertionPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+                ListIterate.forEach(serviceTest.assertions, assertion -> assertion.accept(testAssertionPrerequisiteElementsPassBuilder));
+            }
+        });
+    }
+
+    @Override
     public List<Function<Handlers, List<FunctionHandlerRegistrationInfo>>> getExtraFunctionHandlerRegistrationInfoCollectors()
     {
         return Collections.singletonList((handlers) ->
@@ -338,6 +415,17 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                             ._genericType(execEnvGenericType)
                             ._multiplicity(context.pureModel.getMultiplicity("one"))
                             ._values(FastList.newListWith(pureExecEnv));
+                }
+        );
+    }
+
+    @Override
+    public Map<String, Procedure2<Object, Set<PackageableElementPointer>>> getExtraClassInstancePrerequisiteElementsPassProcessors()
+    {
+        return Maps.mutable.with("executionEnvironmentInstance", (obj, prerequisiteElements) ->
+                {
+                    ExecutionEnvironmentInstance execEnv = (ExecutionEnvironmentInstance) obj;
+                    prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.EXECUTION_ENVIRONMENT_INSTANCE, execEnv.getPath(), execEnv.sourceInformation));
                 }
         );
     }

@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGra
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -29,6 +30,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
@@ -61,6 +63,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_validation_Val
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.finos.legend.pure.generated.core_persistence_persistence_validation.Root_meta_pure_persistence_validation_validate_T_1__ValidationRuleSet_1__ValidationResult_1_;
 import static org.finos.legend.pure.generated.core_persistence_persistence_validations_rules.Root_meta_pure_persistence_validation_commonRules_Extension_MANY__ValidationRuleSet_1_;
@@ -105,7 +108,11 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             }
                             purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));
                             purePersistence._tests(HelperPersistenceBuilder.buildTests(persistence, purePersistence, context));
-                        }
+                        },
+                        (persistence, context) ->
+                        {
+                        },
+                        this::persistencePrerequisiteElementsPass
                 ),
                 Processor.newProcessor(
                         PersistenceContext.class,
@@ -151,8 +158,33 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                                             EngineErrorType.COMPILATION);
                                 }
                             });
-                        }
+                        },
+                        this::persistenceContextPrerequisiteElementsPass
                 ));
+    }
+
+    private Set<PackageableElementPointer> persistencePrerequisiteElementsPass(Persistence persistence, CompileContext context)
+    {
+        Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        prerequisiteElements.add(persistence.service);
+        if (persistence.serviceOutputTargets != null)
+        {
+            ListIterate.forEach(persistence.serviceOutputTargets, ot -> HelperPersistenceBuilder.collectPrerequisiteElementsFromServiceOutputTarget(prerequisiteElements, ot));
+        }
+        if (persistence.persister != null)
+        {
+            HelperPersistenceBuilder.collectPrerequisiteElementsFromPersister(prerequisiteElements, persistence.persister);
+        }
+        if (persistence.tests != null)
+        {
+            ListIterate.forEach(persistence.tests, test -> HelperPersistenceBuilder.collectPrerequisiteElementsFromPersistenceTest(prerequisiteElements, test, context));
+        }
+        return prerequisiteElements;
+    }
+
+    private Set<PackageableElementPointer> persistenceContextPrerequisiteElementsPass(PersistenceContext persistenceContext, CompileContext context)
+    {
+        return Sets.fixedSize.with(persistenceContext.persistence);
     }
 
     @Override

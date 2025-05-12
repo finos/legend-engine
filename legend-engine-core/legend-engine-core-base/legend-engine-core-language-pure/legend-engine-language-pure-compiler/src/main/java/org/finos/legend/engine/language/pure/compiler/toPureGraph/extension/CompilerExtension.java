@@ -33,6 +33,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
@@ -89,12 +90,27 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Maps.mutable.empty();
     }
 
+    default Map<String, Procedure2<Object, Set<PackageableElementPointer>>> getExtraClassInstancePrerequisiteElementsPassProcessors()
+    {
+        return Maps.mutable.empty();
+    }
+
     default List<Function3<LambdaFunction, CompileContext, ProcessingContext, LambdaFunction>> getExtraLambdaPostProcessor()
     {
         return Collections.emptyList();
     }
 
     default List<Function3<ClassMapping, Mapping, CompileContext, Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>>>> getExtraClassMappingFirstPassProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Procedure3<ClassMapping, Mapping, CompileContext>> getExtraClassMappingSecondPassProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Procedure3<ClassMapping, CompileContext, Set<PackageableElementPointer>>> getExtraClassMappingPrerequisiteElementsPassProcessors()
     {
         return Collections.emptyList();
     }
@@ -109,12 +125,17 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
-    default List<Procedure3<ClassMapping, Mapping, CompileContext>> getExtraClassMappingSecondPassProcessors()
+    default List<Procedure2<AggregationAwareClassMapping, Set<PackageableElementPointer>>> getExtraAggregationAwareClassMappingPrerequisiteElementsPassProcessors()
     {
         return Collections.emptyList();
     }
 
     default List<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> getExtraAssociationMappingProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Procedure2<AssociationMapping, Set<PackageableElementPointer>>> getExtraAssociationMappingPrerequisiteElementsPassProcessors()
     {
         return Collections.emptyList();
     }
@@ -134,6 +155,11 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
+    default List<Procedure2<InputData, Set<PackageableElementPointer>>> getExtraMappingTestInputDataPrerequisiteElementsPassProcessors()
+    {
+        return Collections.emptyList();
+    }
+
     default List<Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> getExtraFunctionHandlerDispatchBuilderInfoCollectors()
     {
         return Collections.emptyList();
@@ -149,7 +175,7 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
-    default List<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>>  getExtraRelationStoreAccessorProcessors()
+    default List<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> getExtraRelationStoreAccessorProcessors()
     {
         return Collections.emptyList();
     }
@@ -218,12 +244,27 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
+    default List<Procedure3<Set<PackageableElementPointer>, EmbeddedData, CompileContext>> getExtraEmbeddedDataPrerequisiteElementsPassProcessors()
+    {
+        return Collections.emptyList();
+    }
+
     default List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> getExtraTestProcessors()
     {
         return Collections.emptyList();
     }
 
+    default List<Procedure3<Set<PackageableElementPointer>, Test, CompileContext>> getExtraTestPrerequisiteElementsPassProcessors()
+    {
+        return Collections.emptyList();
+    }
+
     default List<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> getExtraTestAssertionProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Procedure3<Set<PackageableElementPointer>, TestAssertion, CompileContext>> getExtraTestAssertionPrerequisiteElementsPassProcessors()
     {
         return Collections.emptyList();
     }

@@ -23,6 +23,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
@@ -30,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Enum;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
@@ -72,6 +74,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public class HelperValueSpecificationBuilder
 {
@@ -444,5 +447,26 @@ public class HelperValueSpecificationBuilder
     private static String getPropertyIdentifier(PropertyGraphFetchTree propertyGraphFetchTree)
     {
         return propertyGraphFetchTree.alias != null ? propertyGraphFetchTree.alias : propertyGraphFetchTree.property;
+    }
+
+    public static void collectPrerequisiteElementsFromGenericType(Set<PackageableElementPointer> prerequisiteElements, org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType genericType, CompileContext context)
+    {
+        if (Objects.nonNull(genericType))
+        {
+            org.finos.legend.engine.protocol.pure.m3.type.Type protocolType = genericType.rawType;
+            if (protocolType instanceof PackageableType)
+            {
+                PackageableType packageableType = (PackageableType) protocolType;
+                prerequisiteElements.add(new PackageableElementPointer(null, packageableType.fullPath, packageableType.sourceInformation));
+            }
+            else if (protocolType instanceof org.finos.legend.engine.protocol.pure.m3.relation.RelationType)
+            {
+                org.finos.legend.engine.protocol.pure.m3.relation.RelationType relationType = (org.finos.legend.engine.protocol.pure.m3.relation.RelationType) protocolType;
+                ListIterate.forEach(relationType.columns, c -> HelperValueSpecificationBuilder.collectPrerequisiteElementsFromGenericType(prerequisiteElements, c.genericType, context));
+            }
+
+            ListIterate.forEach(genericType.typeVariableValues, x -> x.accept(new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements)));
+            ListIterate.forEach(genericType.typeArguments, x -> HelperValueSpecificationBuilder.collectPrerequisiteElementsFromGenericType(prerequisiteElements, x, context));
+        }
     }
 }

@@ -18,13 +18,18 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataPrerequisiteElementsPassBuilder;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualToJson_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualTo_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
+
+import java.util.Set;
 
 public class TestAssertionCompilerHelper
 {
@@ -46,6 +51,20 @@ public class TestAssertionCompilerHelper
         else
         {
             return null;
+        }
+    }
+
+    public static void collectPrerequisiteElementsFromCoreTestAssertionTypes(Set<PackageableElementPointer> prerequisiteElements, TestAssertion testAssertion, CompileContext context)
+    {
+        if (testAssertion instanceof EqualTo)
+        {
+            EqualTo equalTo = (EqualTo) testAssertion;
+            equalTo.expected.accept(new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements));
+        }
+        else if (testAssertion instanceof EqualToJson)
+        {
+            EqualToJson equalToJson = (EqualToJson) testAssertion;
+            equalToJson.expected.accept(new EmbeddedDataPrerequisiteElementsPassBuilder(context, prerequisiteElements));
         }
     }
 }

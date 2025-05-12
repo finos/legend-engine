@@ -36,9 +36,12 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatab
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBClassMapping;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
@@ -131,6 +134,23 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
                         return Tuples.pair(mongoDBSetImplementation, embeddedSetImplementations);
                     }
                     return null;
+                }
+        );
+    }
+
+    @Override
+    public List<Procedure3<ClassMapping, CompileContext, Set<PackageableElementPointer>>> getExtraClassMappingPrerequisiteElementsPassProcessors()
+    {
+        return Collections.singletonList(
+                (cm, context, prerequisiteElements) ->
+                {
+                    if (cm instanceof RootMongoDBClassMapping)
+                    {
+                        RootMongoDBClassMapping classMapping = (RootMongoDBClassMapping) cm;
+                        prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.BINDING, classMapping.bindingPath, classMapping.sourceInformation));
+                        prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.STORE, classMapping.storePath, classMapping.sourceInformation));
+                        prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, classMapping._class, classMapping.classSourceInformation));
+                    }
                 }
         );
     }
