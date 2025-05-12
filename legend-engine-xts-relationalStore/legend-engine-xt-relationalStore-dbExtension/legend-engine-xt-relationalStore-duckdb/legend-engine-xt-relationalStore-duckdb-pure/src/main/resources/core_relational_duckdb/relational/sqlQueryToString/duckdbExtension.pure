@@ -223,7 +223,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),  // TODO - pure uses 0-based indexing,  duck db returns location with 1-based index , keeping this as H2 also returns 1-based currently, many user tests need to be fixed
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
-    dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='cast(time_bucket(%s) as timestamp_s)', transform={p:String[3] | constructIntervalFunction($p->at(2), $p->at(1)) + ', ' + $p->at(0) + ', ' + constructTimeBucketOffset($p->at(2))})),
+    dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='time_bucket(%s)', transform={p:String[3] | constructIntervalFunction($p->at(2), $p->at(1)) + ', ' + $p->at(0) + ', ' + constructTimeBucketOffset($p->at(2))})),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='cast(today() as timestamp_s)')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),

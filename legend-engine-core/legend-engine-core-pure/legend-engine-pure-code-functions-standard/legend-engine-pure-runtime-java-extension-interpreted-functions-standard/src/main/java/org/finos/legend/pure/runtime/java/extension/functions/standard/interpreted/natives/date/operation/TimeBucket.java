@@ -26,7 +26,9 @@ import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
@@ -36,6 +38,7 @@ import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives.date.operation.TimeBucketShared;
 
 import java.util.Stack;
+import java.util.concurrent.ExecutionException;
 
 public class TimeBucket extends NativeFunction
 {
@@ -51,10 +54,11 @@ public class TimeBucket extends NativeFunction
     {
         try
         {
-            DateTime date = (DateTime) PrimitiveUtilities.getDateValue(Instance.getValueForMetaPropertyToOneResolved(params.get(0), M3Properties.values, processorSupport));
             long quantity = PrimitiveUtilities.getIntegerValue(Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport)).longValue();
             String unit = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, M3Properties.name, processorSupport).getName();
-            DateTime result = TimeBucketShared.time_bucket(date, quantity, unit);
+
+            PureDate date = PrimitiveUtilities.getDateValue(Instance.getValueForMetaPropertyToOneResolved(params.get(0), M3Properties.values, processorSupport));
+            PureDate result = TimeBucketShared.time_bucket(date, quantity, unit);
             return ValueSpecificationBootstrap.newDateLiteral(this.repository, result, processorSupport);
         }
         catch (Exception e)
