@@ -276,6 +276,7 @@ public class ValueSpecificationPrerequisiteElementsPassBuilder implements ValueS
     @Override
     public Set<PackageableElementPointer> visit(AppliedFunction appliedFunction)
     {
+        this.context.collectPrerequisiteElementsFromFunctionName(this.prerequisiteElements, appliedFunction.function, appliedFunction.parameters.size());
         ListIterate.forEach(appliedFunction.parameters, expression -> expression.accept(this));
         return this.prerequisiteElements;
     }
