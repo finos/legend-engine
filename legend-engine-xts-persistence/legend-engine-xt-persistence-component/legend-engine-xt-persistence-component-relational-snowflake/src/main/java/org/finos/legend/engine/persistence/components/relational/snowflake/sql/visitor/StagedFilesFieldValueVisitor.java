@@ -51,19 +51,14 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
 
         if (current.fileFormatType().isPresent() && current.fileFormatType().get().equals(FileFormatType.AVRO))
         {
-            if (current.fieldType().dataType().equals(DataType.TIMESTAMP) ||
-                    current.fieldType().dataType().equals(DataType.TIMESTAMP_NTZ))
+            if (current.fieldType().dataType().equals(DataType.TIMESTAMP))
             {
-                int scale = current.fieldType().scale().orElse(6); // default seconds
-                prev.push(new ToTimestampFunction(stageField, "NUMBER", Optional.empty(), scale, context.quoteIdentifier()));
+                prev.push(new ToTimestampFunction(stageField, context.quoteIdentifier()));
                 return new VisitorResult(null);
             }
             if (current.fieldType().dataType().equals(DataType.DATE))
             {
-                long secondsInADay = TimeUnit.DAYS.toSeconds(1);
-                ToTimestampFunction timestampFunction = new ToTimestampFunction(
-                        stageField, "NUMBER", Optional.of(secondsInADay), 0, context.quoteIdentifier());
-                prev.push(new ToDateFunction(timestampFunction, "DATE", context.quoteIdentifier()));
+                prev.push(new ToDateFunction(stageField, context.quoteIdentifier()));
                 return new VisitorResult(null);
             }
         }

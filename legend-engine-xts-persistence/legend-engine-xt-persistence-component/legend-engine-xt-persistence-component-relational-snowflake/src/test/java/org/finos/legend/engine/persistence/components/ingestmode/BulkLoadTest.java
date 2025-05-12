@@ -1019,13 +1019,13 @@ public class BulkLoadTest
                 "(\"col_string\", \"col_datetime\", \"col_date\", \"col_timestamp\", \"digest\", \"batch_id\", \"append_time\") " +
                 "FROM (SELECT legend_persistence_stage.$1:\"col_string\" as \"col_string\"," +
                 "legend_persistence_stage.$1:\"col_datetime\" as \"col_datetime\"," +
-                "TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400, 0)::DATE as \"col_date\"," +
-                "TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp\"::NUMBER, 3) as \"col_timestamp\"," +
+                "IFF(IS_INTEGER(legend_persistence_stage.$1:\"col_date\"::VARIANT), TO_DATE(TO_TIMESTAMP_NTZ((legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400)::VARCHAR)), TO_DATE(legend_persistence_stage.$1:\"col_date\"::VARCHAR)) as \"col_date\"," +
+                "TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp\"::VARCHAR) as \"col_timestamp\"," +
                 "LAKEHOUSE_UDF(CONCAT(" +
-                "COLUMN_STRING_UDF('col_date',CAST(TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400, 0)::DATE AS DATE))," +
+                "COLUMN_STRING_UDF('col_date',CAST(IFF(IS_INTEGER(legend_persistence_stage.$1:\"col_date\"::VARIANT), TO_DATE(TO_TIMESTAMP_NTZ((legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400)::VARCHAR)), TO_DATE(legend_persistence_stage.$1:\"col_date\"::VARCHAR)) AS DATE))," +
                 "COLUMN_STRING_UDF('col_datetime',CAST(legend_persistence_stage.$1:\"col_datetime\" AS DATETIME))," +
                 "COLUMN_STRING_UDF('col_string',CAST(legend_persistence_stage.$1:\"col_string\" AS VARCHAR))," +
-                "COLUMN_STRING_UDF('col_timestamp',CAST(TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp\"::NUMBER, 3) AS TIMESTAMP))))," +
+                "COLUMN_STRING_UDF('col_timestamp',CAST(TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp\"::VARCHAR) AS TIMESTAMP))))," +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
                 "WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
                 "FROM my_location as legend_persistence_stage) FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +

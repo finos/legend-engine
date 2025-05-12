@@ -18,20 +18,18 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomEx
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.*;
 
 public class ToDateFunction extends Value
 {
     private Value column;
-    private String typeInference;
 
-    public ToDateFunction(Value column, String typeInference, String quoteIdentifier)
+    public ToDateFunction(Value column, String quoteIdentifier)
     {
         super(column.getAlias(), quoteIdentifier);
         this.column = column;
-        this.typeInference = typeInference;
     }
 
     @Override
@@ -41,12 +39,59 @@ public class ToDateFunction extends Value
         super.genSql(builder);
     }
 
+    /*
+        Supports both 'yyyy-MM-dd' format and integer (days since epoch) format
+        IFF(IS_INTEGER($1::variant),
+            TO_DATE(TO_TIMESTAMP_NTZ(($1::NUMBER * 86400)::VARCHAR)),
+            TO_DATE($1::VARCHAR)
+        )
+         */
+
     @Override
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
+        //IFF(IS_INTEGER($1::variant),
+        builder.append(Clause.IFF);
+        builder.append(OPEN_PARENTHESIS);
+        builder.append(Clause.IS_INTEGER);
+        builder.append(OPEN_PARENTHESIS);
         column.genSqlWithoutAlias(builder);
         builder.append("::");
-        builder.append(typeInference);
+        builder.append("VARIANT");
+        builder.append(CLOSING_PARENTHESIS);
+        builder.append(COMMA);
+        builder.append(WHITE_SPACE);
+        //TO_DATE(TO_TIMESTAMP_NTZ(($1::NUMBER * 86400)::VARCHAR)),
+        builder.append(Clause.TO_DATE);
+        builder.append(OPEN_PARENTHESIS);
+        builder.append(Clause.TO_TIMESTAMP_NTZ);
+        builder.append(OPEN_PARENTHESIS);
+        builder.append(OPEN_PARENTHESIS);
+        column.genSqlWithoutAlias(builder);
+        builder.append(COLON);
+        builder.append(COLON);
+        builder.append("NUMBER");
+        builder.append(WHITE_SPACE);
+        builder.append(MULTIPLICATION);
+        builder.append(WHITE_SPACE);
+        builder.append(TimeUnit.DAYS.toSeconds(1));
+        builder.append(CLOSING_PARENTHESIS);
+        builder.append(COLON);
+        builder.append(COLON);
+        builder.append("VARCHAR");
+        builder.append(CLOSING_PARENTHESIS);
+        builder.append(CLOSING_PARENTHESIS);
+        builder.append(COMMA);
+        builder.append(WHITE_SPACE);
+        //TO_DATE($1::VARCHAR)
+        builder.append(Clause.TO_DATE);
+        builder.append(OPEN_PARENTHESIS);
+        column.genSqlWithoutAlias(builder);
+        builder.append(COLON);
+        builder.append(COLON);
+        builder.append("VARCHAR");
+        builder.append(CLOSING_PARENTHESIS);
+        builder.append(CLOSING_PARENTHESIS);
     }
 
     @Override
