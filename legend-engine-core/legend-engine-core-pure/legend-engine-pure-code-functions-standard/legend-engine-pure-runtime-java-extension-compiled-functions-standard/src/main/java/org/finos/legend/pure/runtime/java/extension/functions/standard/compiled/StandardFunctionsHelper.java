@@ -18,12 +18,25 @@ import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives.date.operation.TimeBucketShared;
 
 public class StandardFunctionsHelper
 {
     // DATE-TIME --------------------------------------------------------------
-    public static DateTime timeBucket(DateTime date, long quantity, Enum unit)
+    public static DateTime timeBucketDateTime(DateTime date, long quantity, Enum unit)
+    {
+        try
+        {
+            return TimeBucketShared.time_bucket(date, quantity, unit._name());
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new PureExecutionException(e.getMessage(), e.getCause(), Stacks.mutable.empty());
+        }
+    }
+
+    public static StrictDate timeBucketStrictDate(StrictDate date, long quantity, Enum unit)
     {
         try
         {
