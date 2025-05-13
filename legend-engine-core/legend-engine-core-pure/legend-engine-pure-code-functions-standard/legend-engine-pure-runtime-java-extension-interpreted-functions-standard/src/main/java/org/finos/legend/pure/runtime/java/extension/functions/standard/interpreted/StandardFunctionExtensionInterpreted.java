@@ -27,6 +27,7 @@ public class StandardFunctionExtensionInterpreted extends BaseInterpretedExtensi
     {
         super(//Date
                 Tuples.pair("timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_", TimeBucket::new),
+                Tuples.pair("timeBucket_StrictDate_1__Integer_1__DurationUnit_1__StrictDate_1_", TimeBucket::new),
 
                 // Math
                 Tuples.pair("cosh_Number_1__Float_1_", CosH::new),

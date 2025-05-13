@@ -14,8 +14,8 @@
 
 package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.meta;
 
+import org.finos.legend.engine.pure.code.core.functions.unclassified.base.meta.AbstractTestNewLambdaFunction;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.function.base.meta.AbstractTestNewLambdaFunction;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
 import org.junit.BeforeClass;

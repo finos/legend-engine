@@ -14,8 +14,12 @@
 
 package org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives.date.operation;
 
+import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.impl.factory.Sets;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateWithSubsecond;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -28,6 +32,32 @@ import java.time.temporal.TemporalAdjusters;
 
 public class TimeBucketShared
 {
+
+    public static PureDate time_bucket(PureDate date, long quantity, String unit) throws IllegalArgumentException
+    {
+        if (date instanceof DateTime)
+        {
+            return time_bucket((DateTime) date, quantity, unit);
+        }
+        else
+        {
+            return time_bucket((StrictDate) date, quantity, unit);
+        }
+    }
+
+    public static StrictDate time_bucket(StrictDate strictDate, long quantity, String unit) throws IllegalArgumentException
+    {
+        // validate DurationUnits are at least DAYS or greater
+        MutableSet<String> validUnits = Sets.mutable.with("YEARS", "MONTHS", "WEEKS", "DAYS");
+        if (!validUnits.contains(unit))
+        {
+            throw new IllegalArgumentException("Unsupported duration unit for StrictDate. Units can only be: " + validUnits);
+        }
+        DateTime dte = DateWithSubsecond.newDateWithSubsecond(strictDate.getYear(), strictDate.getMonth(), strictDate.getDay(), 0, 0, 0, "000000000");
+        DateTime dateTimeBucket = time_bucket(dte, quantity, unit);
+        return StrictDate.newStrictDate(dateTimeBucket.getYear(), dateTimeBucket.getMonth(), dateTimeBucket.getDay());
+    }
+
     public static DateTime time_bucket(DateTime dateTime, long quantity, String unit) throws IllegalArgumentException
     {
         if (quantity < 1)

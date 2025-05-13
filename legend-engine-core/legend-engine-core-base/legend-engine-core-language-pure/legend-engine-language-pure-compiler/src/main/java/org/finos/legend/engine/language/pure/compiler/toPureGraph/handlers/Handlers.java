@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
+import org.eclipse.collections.api.LazyIterable;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -41,6 +42,8 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFuncti
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSAggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapAggregation;
@@ -1569,6 +1572,9 @@ public class Handlers
         register("meta::pure::functions::date::convertTimeZone_DateTime_1__String_1__String_1__String_1_", false, ps -> res("String", "one"));
 
         register("meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_", true, ps -> res("DateTime", "one"));
+        register("meta::pure::functions::date::timeBucket_DateTime_$0_1$__Integer_1__DurationUnit_1__DateTime_$0_1$_", false, ps -> res("DateTime", "zeroOne"));
+        register("meta::pure::functions::date::timeBucket_StrictDate_1__Integer_1__DurationUnit_1__StrictDate_1_", true, ps -> res("StrictDate", "one"));
+        register("meta::pure::functions::date::timeBucket_StrictDate_$0_1$__Integer_1__DurationUnit_1__StrictDate_$0_1$_", false, ps -> res("StrictDate", "zeroOne"));
 
         register(m(m(h("meta::pure::functions::date::date_Integer_1__Date_1_", true, ps -> res("Date", "one"), ps -> ps.size() == 1)),
                 m(h("meta::pure::functions::date::date_Integer_1__Integer_1__Date_1_", true, ps -> res("Date", "one"), ps -> ps.size() == 2)),
@@ -2007,6 +2013,17 @@ public class Handlers
     {
         FunctionExpressionBuilder builder = valueSpecificationBuilder.getContext().resolveFunctionBuilder(functionName, this.registeredMetaPackages, this.map, sourceInformation, valueSpecificationBuilder.getProcessingContext());
         return builder.buildFunctionExpression(parameters, sourceInformation, valueSpecificationBuilder);
+    }
+
+    public void collectPrerequisiteElementsFromUserDefinedFunctionHandlers(Set<PackageableElementPointer> prerequisiteElements, String functionName, int parametersSize)
+    {
+        FunctionExpressionBuilder functionExpressionBuilder = this.map.get(functionName);
+        if (Objects.nonNull(functionExpressionBuilder))
+        {
+            functionExpressionBuilder.handlers().asLazy().selectInstancesOf(UserDefinedFunctionHandler.class)
+                    .select(h -> h.getParametersSize() == parametersSize)
+                    .forEach(h -> prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.FUNCTION, h.getFullName())));
+        }
     }
 
     private void registerMetaPackage(FunctionHandler... handlers)
@@ -2728,6 +2745,9 @@ public class Handlers
         map.put("meta::pure::functions::date::add_StrictDate_1__Duration_1__StrictDate_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_StrictDate").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_date_Duration").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Date").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_date_DurationUnit").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "DateTime").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "DurationUnit".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::date::timeBucket_DateTime_$0_1$__Integer_1__DurationUnit_1__DateTime_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "DateTime").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "DurationUnit".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::date::timeBucket_StrictDate_1__Integer_1__DurationUnit_1__StrictDate_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "StrictDate").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "DurationUnit".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::date::timeBucket_StrictDate_$0_1$__Integer_1__DurationUnit_1__StrictDate_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "StrictDate").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "DurationUnit".equals(ps.get(2)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::date::convertTimeZone_DateTime_1__String_1__String_1__String_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_DateTime").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::dateDiff_Date_$0_1$__Date_$0_1$__DurationUnit_1__Integer_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 3 && matchZeroOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Date").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Date").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_date_DurationUnit").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Date").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Date").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_date_DurationUnit").contains(ps.get(2)._genericType()._rawType()._name()));
