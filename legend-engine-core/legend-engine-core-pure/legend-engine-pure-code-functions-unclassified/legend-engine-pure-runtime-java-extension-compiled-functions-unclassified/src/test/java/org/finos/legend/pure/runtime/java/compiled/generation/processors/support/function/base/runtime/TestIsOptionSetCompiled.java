@@ -14,9 +14,8 @@
 
 package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.runtime;
 
+import org.finos.legend.engine.pure.code.core.functions.unclassified.base.runtime.AbstractTestIsOptionSet;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
-import org.finos.legend.pure.m3.tests.function.base.runtime.AbstractTestIsOptionSet;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
 import org.junit.BeforeClass;
@@ -26,7 +25,7 @@ public class TestIsOptionSetCompiled extends AbstractTestIsOptionSet
     @BeforeClass
     public static void setUp()
     {
-        AbstractPureTestWithCoreCompiled.setUpRuntime(getFunctionExecution(), AbstractTestIsOptionSet.getOptions(), JavaModelFactoryRegistryLoader.loader());
+        setUpRuntime(getFunctionExecution(), AbstractTestIsOptionSet.getOptions(), JavaModelFactoryRegistryLoader.loader());
     }
 
     protected static FunctionExecution getFunctionExecution()
