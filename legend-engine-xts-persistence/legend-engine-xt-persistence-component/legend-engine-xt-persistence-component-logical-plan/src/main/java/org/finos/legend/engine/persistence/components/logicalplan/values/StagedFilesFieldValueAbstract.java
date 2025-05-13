@@ -39,4 +39,6 @@ public interface StagedFilesFieldValueAbstract extends FieldValueAbstract
     FieldType fieldType();
 
     Optional<FileFormatType> fileFormatType();
+
+    Optional<Boolean> disableAvroLogicalType();
 }

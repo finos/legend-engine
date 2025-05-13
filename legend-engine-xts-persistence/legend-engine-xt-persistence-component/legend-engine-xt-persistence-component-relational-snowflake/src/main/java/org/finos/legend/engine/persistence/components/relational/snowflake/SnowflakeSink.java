@@ -167,15 +167,15 @@ public class SnowflakeSink extends AnsiSqlSink
 
     static
     {
-        CAPABILITIES = new HashSet<>();
-        CAPABILITIES.add(Capability.MERGE);
-        CAPABILITIES.add(Capability.ALIAS_IN_HAVING);
-        CAPABILITIES.add(Capability.ADD_COLUMN);
-        CAPABILITIES.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
-        CAPABILITIES.add(Capability.DATA_TYPE_LENGTH_CHANGE);
-        CAPABILITIES.add(Capability.TRANSFORM_WHILE_COPY);
-        CAPABILITIES.add(Capability.DRY_RUN);
-        CAPABILITIES.add(Capability.AVRO_DATE_TIMESTAMP_SUPPORT);
+        Set<Capability> capabilities = new HashSet<>();
+        capabilities.add(Capability.MERGE);
+        capabilities.add(Capability.ALIAS_IN_HAVING);
+        capabilities.add(Capability.ADD_COLUMN);
+        capabilities.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
+        capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
+        capabilities.add(Capability.TRANSFORM_WHILE_COPY);
+        capabilities.add(Capability.DRY_RUN);
+        CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
@@ -189,7 +189,7 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(Copy.class, new CopyVisitor());
         logicalPlanVisitorByClass.put(StagedFilesDatasetReference.class, new StagedFilesDatasetReferenceVisitor());
         logicalPlanVisitorByClass.put(StagedFilesDataset.class, new StagedFilesDatasetVisitor());
-        logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor(CAPABILITIES));
+        logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
         logicalPlanVisitorByClass.put(StagedFilesSelection.class, new StagedFilesSelectionVisitor());
         logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
         logicalPlanVisitorByClass.put(CastFunction.class, new CastFunctionVisitor());

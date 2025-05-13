@@ -1060,6 +1060,7 @@ public class BulkLoadTest
                         SnowflakeStagedFilesDatasetProperties.builder()
                                 .location("my_location")
                                 .fileFormat(StandardFileFormat.builder().formatType(FileFormatType.AVRO).build())
+                                .disableAvroLogicalType(true)
                                 .addAllFilePaths(filesList).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col6, col7, col8, col9)).build())
                 .build();
@@ -1077,7 +1078,6 @@ public class BulkLoadTest
                 .ingestRequestId("task123")
                 .ingestRunId(ingestRunId)
                 .build();
-        SnowflakeSink.get().capabilities().remove(Capability.AVRO_DATE_TIMESTAMP_SUPPORT);
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
 

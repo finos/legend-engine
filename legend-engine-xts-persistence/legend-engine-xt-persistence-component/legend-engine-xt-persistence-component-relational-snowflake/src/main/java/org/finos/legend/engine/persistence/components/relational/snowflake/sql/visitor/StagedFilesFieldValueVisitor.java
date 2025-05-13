@@ -35,13 +35,6 @@ import java.util.Set;
 public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFilesFieldValue>
 {
 
-    private Optional<Set<Capability>> capabilities;
-
-    public StagedFilesFieldValueVisitor(Set<Capability> capabilities)
-    {
-        this.capabilities = Optional.of(capabilities);
-    }
-
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, StagedFilesFieldValue current, VisitorContext context)
     {
@@ -60,7 +53,7 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
 
         if (current.fileFormatType().isPresent()
                 && current.fileFormatType().get().equals(FileFormatType.AVRO)
-                && capabilities.orElse(Sets.fixedSize.empty()).contains(Capability.AVRO_DATE_TIMESTAMP_SUPPORT))
+                && !current.disableAvroLogicalType().orElse(Boolean.FALSE))
         {
             if (current.fieldType().dataType().equals(DataType.TIMESTAMP))
             {

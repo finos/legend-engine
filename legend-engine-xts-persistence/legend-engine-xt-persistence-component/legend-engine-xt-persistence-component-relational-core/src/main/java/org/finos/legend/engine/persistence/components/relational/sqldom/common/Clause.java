@@ -71,8 +71,6 @@ public enum Clause
     EXTERNAL("EXTERNAL"),
     OPTIONS("OPTIONS"),
     DISTINCT("DISTINCT"),
-    IFF("IFF"),
-    IS_INTEGER("IS_INTEGER"),
     TO_DATE("TO_DATE"),
     TO_TIMESTAMP_NTZ("TO_TIMESTAMP_NTZ");
 
