@@ -29,7 +29,7 @@ function meta::external::function::activator::snowflakeApp::generation::generate
                            | defaultDeploymentSchema()
                           );
 
-  let context = ^meta::external::function::activator::snowflakeApp::SnowFlakeAppExecutionContext(postProcessor = meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder_SQLQuery_1__PostProcessorResult_1_);
+  let context = ^meta::external::function::activator::snowflakeApp::SnowFlakeAppExecutionContext(postProcessor = [meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder_SQLQuery_1__PostProcessorResult_1_, meta::relational::postProcessor::HandleTimestampMismatch_SQLQuery_1__PostProcessorResult_1_]);
   let contextWithEnumPushDown = $context->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM);  
 
   let plan =  meta::pure::executionPlan::executionPlan($s.function->cast(@ConcreteFunctionDefinition<Any>), $contextWithEnumPushDown, $extensions, noDebug());
