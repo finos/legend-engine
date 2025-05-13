@@ -6969,7 +6969,7 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
       ])->toOneMany()
    ))->joinStrings('_');
 
-   let maxSize = 120;  // TODO: Make this configurable. Currently set to lower than the minimum of the alias limit of all supported databases (128 in DB2).
+   let maxSize = 256;  // TODO: make this configurable
    if($uniqueName->length() > $maxSize, |$uniqueName->substring(0, $maxSize - 35) + '___' + $uniqueName->substring($maxSize - 35)->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.MD5), |$uniqueName);
 }
 
