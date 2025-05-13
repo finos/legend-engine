@@ -1,0 +1,53 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function
+  <<PCT.function>>
+  {
+      doc.doc='min returns smallest value from the list by type order'
+  }
+meta::pure::functions::collection::min<X>(values : X[1..*]):X[1]
+{
+  $values->sort()->first()->toOne();
+}
+
+function
+  <<PCT.function>>
+  {
+      doc.doc='min returns smallest value from the list by type order'
+  }
+meta::pure::functions::collection::min<X>(values : X[*]):X[0..1]
+{
+    $values->sort()->first();
+}
+
+function
+  <<PCT.function>>
+  {
+      doc.doc='min returns smallest value from the list by type order based on the supplied comp function'
+  }
+meta::pure::functions::collection::min<T>(col:T[1..*], comp:Function<{T[1],T[1]->Integer[1]}>[1]):T[1]
+{
+    $col->tail()->fold({v, m | if($comp->eval($v, $m) < 0, | $v, | $m)}, $col->at(0))
+}
+
+function <<PCT.test>> meta::pure::functions::collection::tests::min::testMin<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('a', $f->eval(|min(['a'], {x, y | $y->length() - $x->length()})));
+    assertEquals('a', $f->eval(|min(['a', 'b', 'abc', 'ab', 'def'], {x, y | $x->length() - $y->length()})));
+    assertEquals('abc', $f->eval(|min(['a', 'b', 'abc', 'ab', 'def'], {x, y | $y->length() - $x->length()})));
+    assertEquals('a', $f->eval(|min(['b', 'abc', 'a', 'ab', 'def'])));
+}
