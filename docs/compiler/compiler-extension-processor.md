@@ -7,14 +7,14 @@ public static <T extends PackageableElement> Processor<T> newProcessor(
    BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
    BiConsumer<? super T, CompileContext> secondPass,
    BiConsumer<? super T, CompileContext> thirdPass,
-   BiFunction<? super T, CompileContext, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> prerequisiteElementsPass)
+   BiFunction<? super T, CompileContext, Set<PackageableElementPointer>> prerequisiteElementsPass)
 ```
 
 ## Element Class
 Provide subclass of `PackageableElement` which is being compiled (e.g. `Database.class`).
 
 ## Prerequisite Classes
-Provide a set of prerequisite classes which your element class depends on (e.g. `[Mapping.class, PackageableConnection.class]`).
+Provide a set of prerequisite classes that your element class depends on (e.g. `[Mapping.class, PackageableConnection.class]`), which will be used to determine the order of compilation for the first and second passes.
 The compiler sorts the dependencies based on these prerequisite classes and guarantees all elements in those classes are compiled before the elements in your class.
 
 ## First Pass
@@ -34,9 +34,10 @@ Define a function that performs the following operations:
 * Introspect other elements
 
 ## Prerequisite Elements Pass
-Define a function that returns the prerequisite elements under the same element class that your element depends on.
+Define a function that returns a set of prerequisite element pointers (type and path) that your element depends on, which will be used to determine the order of compilation for the third pass.
+A good rule of thumb is that any elements that are being introspected (beyond reference resolution) should be added as prerequisite elements.
 The compiler sorts the dependencies based on these prerequisite elements and guarantees that those elements are compiled before your element.
-For instance, `MappingA` depends on `MappingB` and `MappingC`, and therefore, `MappingB` and `MappingC` must be compiled first.
+For instance, `MappingA` depends on `AssociationB` and `MappingC`, and therefore, `AssociationB` and `MappingC` must be compiled first.
 
 The compiler throws an `EngineException` if it finds circular dependencies in these elements. The following Pure grammar demonstrates an example of circular dependencies:
 
