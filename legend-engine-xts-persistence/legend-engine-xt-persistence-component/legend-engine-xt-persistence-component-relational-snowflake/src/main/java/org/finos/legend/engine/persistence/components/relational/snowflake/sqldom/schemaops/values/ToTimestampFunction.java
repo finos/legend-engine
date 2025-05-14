@@ -18,24 +18,17 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomEx
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
-import java.util.Optional;
-
-import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.*;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_PARENTHESIS;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_PARENTHESIS;
 
 public class ToTimestampFunction extends Value
 {
     private Value column;
-    private String typeInference;
-    private Optional<Long> multiplier;
-    private int scale;
 
-    public ToTimestampFunction(Value column, String typeInference, Optional<Long> multiplier, int scale, String quoteIdentifier)
+    public ToTimestampFunction(Value column, String quoteIdentifier)
     {
         super(column.getAlias(), quoteIdentifier);
         this.column = column;
-        this.typeInference = typeInference;
-        this.multiplier = multiplier;
-        this.scale = scale;
     }
 
     @Override
@@ -52,20 +45,7 @@ public class ToTimestampFunction extends Value
         builder.append(OPEN_PARENTHESIS);
         column.genSqlWithoutAlias(builder);
         builder.append("::");
-        builder.append(typeInference);
-
-        if (multiplier.isPresent())
-        {
-            builder.append(WHITE_SPACE);
-            builder.append(MULTIPLICATION);
-            builder.append(WHITE_SPACE);
-            builder.append(multiplier.get());
-        }
-
-        builder.append(COMMA);
-        builder.append(WHITE_SPACE);
-        builder.append(scale);
-
+        builder.append("VARCHAR");
         builder.append(CLOSING_PARENTHESIS);
     }
 

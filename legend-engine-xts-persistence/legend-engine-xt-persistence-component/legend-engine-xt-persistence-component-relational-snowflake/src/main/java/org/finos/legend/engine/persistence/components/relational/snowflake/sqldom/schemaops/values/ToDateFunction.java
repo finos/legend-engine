@@ -18,20 +18,18 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomEx
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.*;
 
 public class ToDateFunction extends Value
 {
     private Value column;
-    private String typeInference;
 
-    public ToDateFunction(Value column, String typeInference, String quoteIdentifier)
+    public ToDateFunction(Value column, String quoteIdentifier)
     {
         super(column.getAlias(), quoteIdentifier);
         this.column = column;
-        this.typeInference = typeInference;
     }
 
     @Override
@@ -44,9 +42,26 @@ public class ToDateFunction extends Value
     @Override
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
+        //TO_DATE(TO_TIMESTAMP_NTZ(($1::NUMBER * SEC_IN_A_DAY)::VARCHAR))
+        builder.append(Clause.TO_DATE);
+        builder.append(OPEN_PARENTHESIS);
+        builder.append(Clause.TO_TIMESTAMP_NTZ);
+        builder.append(OPEN_PARENTHESIS);
+        builder.append(OPEN_PARENTHESIS);
         column.genSqlWithoutAlias(builder);
-        builder.append("::");
-        builder.append(typeInference);
+        builder.append(COLON);
+        builder.append(COLON);
+        builder.append("NUMBER");
+        builder.append(WHITE_SPACE);
+        builder.append(MULTIPLICATION);
+        builder.append(WHITE_SPACE);
+        builder.append(TimeUnit.DAYS.toSeconds(1));
+        builder.append(CLOSING_PARENTHESIS);
+        builder.append(COLON);
+        builder.append(COLON);
+        builder.append("VARCHAR");
+        builder.append(CLOSING_PARENTHESIS);
+        builder.append(CLOSING_PARENTHESIS);
     }
 
     @Override

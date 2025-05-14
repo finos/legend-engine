@@ -432,9 +432,12 @@ public class LogicalPlanUtils
     public static StagedFilesFieldValue getStagedFilesFieldValueWithType(Dataset dataset, Field field, FieldType fieldType, boolean columnNumbersPresent, int counter)
     {
         Optional<FileFormatType> fileFormatType = Optional.empty();
+        Optional<Boolean> disableAvroLogicalType = Optional.of(Boolean.FALSE);
         if (dataset instanceof StagedFilesDataset)
         {
-            fileFormatType = ((StagedFilesDataset)dataset).stagedFilesDatasetProperties().fileFormatType();
+            StagedFilesDataset stagedDataset = ((StagedFilesDataset)dataset);
+            fileFormatType = stagedDataset.stagedFilesDatasetProperties().fileFormatType();
+            disableAvroLogicalType = stagedDataset.stagedFilesDatasetProperties().disableAvroLogicalType();
         }
         return StagedFilesFieldValue.builder()
             .columnNumber(columnNumbersPresent ? field.columnNumber().get() : counter)
@@ -444,6 +447,7 @@ public class LogicalPlanUtils
             .fieldType(fieldType)
             .fieldName(field.name())
             .fileFormatType(fileFormatType)
+            .disableAvroLogicalType(disableAvroLogicalType)
             .build();
     }
 

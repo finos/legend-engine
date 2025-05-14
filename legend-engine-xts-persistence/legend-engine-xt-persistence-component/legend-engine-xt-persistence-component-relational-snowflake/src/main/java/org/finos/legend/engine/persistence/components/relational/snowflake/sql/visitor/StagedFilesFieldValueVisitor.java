@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
+import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
@@ -25,10 +26,11 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.common.F
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
+import org.finos.legend.engine.persistence.components.util.Capability;
 
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFilesFieldValue>
 {
@@ -49,21 +51,18 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
            return new VisitorResult(null);
         }
 
-        if (current.fileFormatType().isPresent() && current.fileFormatType().get().equals(FileFormatType.AVRO))
+        if (current.fileFormatType().isPresent()
+                && current.fileFormatType().get().equals(FileFormatType.AVRO)
+                && !current.disableAvroLogicalType().orElse(Boolean.FALSE))
         {
-            if (current.fieldType().dataType().equals(DataType.TIMESTAMP) ||
-                    current.fieldType().dataType().equals(DataType.TIMESTAMP_NTZ))
+            if (current.fieldType().dataType().equals(DataType.TIMESTAMP))
             {
-                int scale = current.fieldType().scale().orElse(6); // default seconds
-                prev.push(new ToTimestampFunction(stageField, "NUMBER", Optional.empty(), scale, context.quoteIdentifier()));
+                prev.push(new ToTimestampFunction(stageField, context.quoteIdentifier()));
                 return new VisitorResult(null);
             }
             if (current.fieldType().dataType().equals(DataType.DATE))
             {
-                long secondsInADay = TimeUnit.DAYS.toSeconds(1);
-                ToTimestampFunction timestampFunction = new ToTimestampFunction(
-                        stageField, "NUMBER", Optional.of(secondsInADay), 0, context.quoteIdentifier());
-                prev.push(new ToDateFunction(timestampFunction, "DATE", context.quoteIdentifier()));
+                prev.push(new ToDateFunction(stageField, context.quoteIdentifier()));
                 return new VisitorResult(null);
             }
         }
