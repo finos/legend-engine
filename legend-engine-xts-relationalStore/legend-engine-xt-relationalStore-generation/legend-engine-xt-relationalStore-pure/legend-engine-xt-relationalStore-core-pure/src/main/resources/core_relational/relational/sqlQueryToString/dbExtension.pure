@@ -1017,6 +1017,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   average,
   averageRank,
   case,
+  cast,
   castBoolean,
   cbrt,
   ceiling,

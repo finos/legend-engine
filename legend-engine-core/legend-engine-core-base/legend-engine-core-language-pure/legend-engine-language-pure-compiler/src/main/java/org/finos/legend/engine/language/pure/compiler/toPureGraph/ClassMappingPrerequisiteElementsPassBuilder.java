@@ -91,7 +91,10 @@ public class ClassMappingPrerequisiteElementsPassBuilder implements ClassMapping
             HelperMappingBuilder.collectPrerequisiteElementsFromMappingClass(this.prerequisiteElements, classMapping.mappingClass, context);
         }
         PropertyMappingPrerequisiteElementsBuilder propertyMappingPrerequisiteElementsBuilder = new PropertyMappingPrerequisiteElementsBuilder(this.context, this.prerequisiteElements);
-        ListIterate.forEach(classMapping.propertyMappings, pm -> pm.accept(propertyMappingPrerequisiteElementsBuilder));
+        if (classMapping.propertyMappings != null)
+        {
+            ListIterate.forEach(classMapping.propertyMappings, pm -> pm.accept(propertyMappingPrerequisiteElementsBuilder));
+        }
         return this.prerequisiteElements;
     }
 

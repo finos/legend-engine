@@ -42,4 +42,6 @@ public interface StagedFilesDatasetProperties
     }
 
     Optional<FileFormatType> fileFormatType();
+
+    Optional<Boolean> disableAvroLogicalType();
 }
