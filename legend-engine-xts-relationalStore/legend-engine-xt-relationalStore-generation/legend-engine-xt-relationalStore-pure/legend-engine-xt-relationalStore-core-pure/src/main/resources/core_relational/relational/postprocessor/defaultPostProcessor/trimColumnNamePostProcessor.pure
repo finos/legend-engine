@@ -77,17 +77,17 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
                                                            u: Union[1]|$u->search($runtime),
                                                            s: SelectSQLQuery[1]|$s->search($runtime);,
                                                            s: SemiStructuredArrayFlatten[1]|$s.navigation->search($runtime)
-                                                               ]);,
+                                                          ]);,
                      tac:TableAliasColumn[1]| $tac.column->search($runtime);,
+                     tacn:TableAliasColumnName[1]| getSanitizedAndOriginalNamePair($tacn.columnName, lengthConfig($runtime));,
+                     cn:ColumnName[1]| getSanitizedAndOriginalNamePair($cn.name, lengthConfig($runtime));,
                      union: Union[1]|$union.queries->search($runtime),
                      u:UnaryOperation[1]|$u.nested->search($runtime);,
                      d: DynaFunction[1]| $d.parameters->search($runtime);,
                      b: BinaryOperation[1] |$b.left->search($runtime)->concatenate($b.right->search($runtime));,
-                     a: Alias[1] | let maxLength = lengthConfig($runtime);
-                                   if( $a.name->length()>=$maxLength,|let sanitizedName = $a.name->replace('"',''); pair(if($sanitizedName->length() > ($maxLength - 10),| $a.name->replace('"','')->substring(0,$maxLength-10),| $sanitizedName), $a.name);,|[])->concatenate($a.relationalElement->search($runtime));,
+                     a: Alias[1] | getSanitizedAndOriginalNamePair($a.name, lengthConfig($runtime))->concatenate($a.relationalElement->search($runtime));,
                      js: JoinStrings[1]| $js.strings->search($runtime)->concatenate($js.prefix->search($runtime))->concatenate($js.suffix->search($runtime))->concatenate($js.separator->search($runtime));,
-                     c: Column[1]| let maxLength = lengthConfig($runtime);
-                                   if( $c.name->length()>=$maxLength,|let sanitizedName = $c.name->replace('"',''); pair(if($sanitizedName->length() > ($maxLength - 10),| $c.name->replace('"','')->substring(0,$maxLength-10),| $sanitizedName), $c.name);,|[]);,
+                     c: Column[1]| getSanitizedAndOriginalNamePair($c.name, lengthConfig($runtime));,
                      s:SemiStructuredPropertyAccess[1] | $s.operand->concatenate($s.property)->concatenate($s.index)->search($runtime),
                      s:SemiStructuredArrayElementAccess[1] | $s.operand->concatenate($s.index)->search($runtime),
                      s:SemiStructuredArrayFlatten[1] | $s.navigation->search($runtime),
@@ -97,7 +97,22 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
             );
 }
 
-function  meta::relational::postProcessor::reAliasColumnName::search(q:RelationalTreeNode[*],runtime:Runtime[1]): Pair<String,String>[*]
+function <<access.private>> meta::relational::postProcessor::reAliasColumnName::getSanitizedAndOriginalNamePair(name:String[1], maxLength:Integer[1]):Pair<String, String>[0..1]
+{
+  if($name->length() >= $maxLength,
+    | let sanitizedName = $name->replace('"', ''); 
+      pair(
+        if($sanitizedName->length() > ($maxLength - 10),
+          | $name->replace('"', '')->substring(0, $maxLength - 10),
+          | $sanitizedName
+        ), 
+        $name
+      );,
+    | []
+  );
+}
+
+function meta::relational::postProcessor::reAliasColumnName::search(q:RelationalTreeNode[*],runtime:Runtime[1]): Pair<String,String>[*]
 {
     $q->map(a|
               let alias =  $a.alias;
@@ -129,9 +144,20 @@ function meta::relational::postProcessor::reAliasColumnName::replace(r:Relationa
 
                 v:ViewSelectSQLQuery[1] | ^$v(selectSQLQuery=$v.selectSQLQuery->replace($m)->cast(@SelectSQLQuery));,
                 u:Union[1] |  ^$u(queries = $u.queries->map(q|$q->replace($m);)->cast(@SelectSQLQuery));,
-                ta: TableAlias[1]| ^$ta(relationalElement = $ta.relationalElement->replace($m));,
+                ta:TableAlias[1]| ^$ta(relationalElement = $ta.relationalElement->replace($m));,
                 t:Table[1] |  $t;,
-                tac: TableAliasColumn[1]| let new = $m->get($tac.alias.name); let alias = $tac.alias; ^$tac(alias = ^$alias(name=if($new->isNotEmpty(),|$new->toOne(),|$alias.name)),column=$tac.column->replace($m)->cast(@Column));,
+                // TODO: Trying to replace table aliases seems redundant since we are only looking for column names. Even in the search above, we only search the column part. Keeping for now
+                tac:TableAliasColumn[1] | let new = $m->get($tac.alias.name); 
+                                          let alias = $tac.alias;
+                                          let newAlias = if($new->isNotEmpty(), | ^$alias(name = $new->toOne()), | $alias);
+                                          ^$tac(alias = $newAlias, column = $tac.column->replace($m)->cast(@Column));,
+                tacn:TableAliasColumnName[1] |  let newAliasName = $m->get($tacn.alias.name); 
+                                                let alias = $tacn.alias;
+                                                let newAlias = if($newAliasName->isNotEmpty(), | ^$alias(name = $newAliasName->toOne()), | $alias);
+                                                let newColumnName = $m->get($tacn.columnName); 
+                                                ^$tacn(alias = $newAlias, columnName = if($newColumnName->isNotEmpty(), | $newColumnName->toOne(), | $tacn.columnName));,
+                cn:ColumnName[1] |  let new = $m->get($cn.name);
+                                    ^$cn(name = if($new->isNotEmpty(), | $new->toOne(), | $cn.name));,
                 a:Alias[1] | ^$a(name = if($m->get($a.name)->isNotEmpty(),|$m->get($a.name)->toOne(),|$a.name),relationalElement=$a.relationalElement->replace($m));,
                 u:UnaryOperation[1] | ^$u(nested=replace($u.nested, $m));,
                 b:BinaryOperation[1] | ^$b(left=replace($b.left, $m), right=replace($b.right, $m));,
@@ -163,10 +189,11 @@ function meta::relational::postProcessor::reAliasColumnName::replace(r:Relationa
 {
      $r->match([
                  j:JoinTreeNode[1] |  let join = $j.join;
-                                      let replaceedJoin = ^$join(aliases=$join.aliases->map(a|pair(replace($a.first,$m)->cast(@TableAlias), replace($a.second,$m)->cast(@TableAlias))),
-                                                                      operation = $join.operation->replace($m)->cast(@Operation),
-                                                                      target=if(!$join.target->isEmpty(),|replace($join.target->toOne(),$m)->cast(@TableAlias),|[]));
-                                      ^$j(join=$replaceedJoin, alias=$j.alias->replace($m)->cast(@TableAlias), childrenData=$j.childrenData->map(c | $c->cast(@JoinTreeNode)->replace($m)));,
+                                      // TODO: traversing aliases and target is redundant as only childrenData is used for SQL string generation
+                                      let replacedJoin = ^$join(aliases = $join.aliases->map(a|pair(replace($a.first,$m)->cast(@TableAlias), replace($a.second,$m)->cast(@TableAlias))),
+                                                                operation = $join.operation->replace($m)->cast(@Operation),
+                                                                target = if(!$join.target->isEmpty(),|replace($join.target->toOne(),$m)->cast(@TableAlias),|[]));
+                                      ^$j(join=$replacedJoin, alias=$j.alias->replace($m)->cast(@TableAlias), childrenData=$j.childrenData->map(c | $c->cast(@JoinTreeNode)->replace($m)));,
                  r:RootJoinTreeNode[1] | ^$r(alias=$r.alias->replace($m)->cast(@TableAlias), childrenData=$r.childrenData->map(c | $c->cast(@JoinTreeNode)->replace($m)));
               ]);
 }
