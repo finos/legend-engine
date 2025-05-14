@@ -128,10 +128,12 @@ public class BigQueryTransactionManager
                 {
                     FieldValue value = fieldValues.get(field.getName());
                     Object objectValue;
-                    if (value.isNull()) {
+                    if (value.isNull())
+                    {
                         objectValue = null;
                     }
-                    else {
+                    else
+                    {
                         switch (field.getType().name())
                         {
                             case "BYTES":
