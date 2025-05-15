@@ -14,9 +14,8 @@
 
 package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.string;
 
+import org.finos.legend.engine.pure.code.core.functions.unclassified.base.string.AbstractTestChunk;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
-import org.finos.legend.pure.m3.tests.function.base.string.AbstractTestChunk;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
 import org.junit.BeforeClass;
@@ -26,7 +25,7 @@ public class TestChunk extends AbstractTestChunk
     @BeforeClass
     public static void setUp()
     {
-        AbstractPureTestWithCoreCompiled.setUpRuntime(getFunctionExecution(), AbstractTestChunk.getCodeStorage(), JavaModelFactoryRegistryLoader.loader());
+        setUpRuntime(getFunctionExecution(), AbstractTestChunk.getCodeStorage(), JavaModelFactoryRegistryLoader.loader());
     }
 
     protected static FunctionExecution getFunctionExecution()
