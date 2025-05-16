@@ -24,6 +24,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.pure.m3.pct.aggregate.generation.DocumentationGeneration;
 import org.finos.legend.pure.m3.pct.aggregate.model.Documentation;
 import org.finos.legend.pure.m3.pct.aggregate.model.FunctionDocumentation;
@@ -47,10 +48,12 @@ public class PCT_to_SimpleHTML
 
     public static String buildHTML(Set<String> adapterNames)
     {
+        String commitId = getCommitId();
         moduleURLs.put("grammar", "https://github.com/finos/legend-pure/tree/master/legend-pure-core/legend-pure-m3-core/src/main/resources");
         moduleURLs.put("essential", "https://github.com/finos/legend-pure/tree/master/legend-pure-core/legend-pure-m3-core/src/main/resources");
-        moduleURLs.put("standard", "https://github.com/finos/legend-engine/tree/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-base/legend-engine-pure-functions-standard/src/main/resources/");
-        moduleURLs.put("relation", "https://github.com/finos/legend-engine/tree/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure/src/main/resources");
+        moduleURLs.put("standard", String.format("https://github.com/finos/legend-engine/tree/%s/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-standard/legend-engine-pure-functions-standard-pure/src/main/resources", commitId));
+        moduleURLs.put("relation", String.format("https://github.com/finos/legend-engine/tree/%s/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure/src/main/resources", commitId));
+        moduleURLs.put("unclassified", String.format("https://github.com/finos/legend-engine/tree/%s/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-unclassified/legend-engine-pure-functions-unclassified-pure/src/main/resources", commitId));
 
         Documentation doc = DocumentationGeneration.buildDocumentation();
 
@@ -107,9 +110,9 @@ public class PCT_to_SimpleHTML
 
         return top +
                 "<BR/><BR/>\n" +
-                "    <table style=\"border-spacing:0px;width:900;text-align: center\">\n" +
+                "    <table style=\"border-spacing:20px 8px;width:900;text-align: center;max-height:70vh;overflow-y:auto\">\n" +
                 "        <tr>\n" +
-                "           <th colspan='3' style='width:100'></th>\n" +
+                "           <TH colspan='3' style='width:100'></TH>\n" +
                 addGroups(orderedAdapters) +
                 "        </tr>\n" +
                 "        <tr>\n" +
@@ -190,12 +193,12 @@ public class PCT_to_SimpleHTML
     private static String addGroups(MutableList<AdapterKey> adapterKeys)
     {
         ListMultimap<String, AdapterKey> grouped = adapterKeys.groupBy(x -> x.adapter.group);
-        return grouped.keysView().toSortedList().collect(x -> "<th colspan='" + grouped.get(x).size() + "'>" + x + "</th>").makeString("");
+        return grouped.keysView().toSortedList().collect(x -> "<TH colspan='" + grouped.get(x).size() + "'>" + x + "</TH>").makeString("");
     }
 
     private static String addHeaders(MutableList<AdapterKey> adapterKeys)
     {
-        return adapterKeys.collect(c -> c.adapter.name).collect(a -> "          <TH style='width:10'>" + a + "</TH>").makeString("\n");
+        return adapterKeys.collect(c -> c.adapter.name).collect(a -> "          <th style='width:10'>" + a + "</th>").makeString("\n");
     }
 
     public static boolean isPlatformOnly(FunctionDefinition def)
@@ -209,12 +212,19 @@ public class PCT_to_SimpleHTML
         return signature == null ? null : signature.grammarCharacter;
     }
 
-
     private static String top = "<html>\n" +
             "    <head>\n" +
             "        <style>\n" +
             "            td {\n" +
             "               text-align: center;\n" +
+            "               padding-top: 8px;\n" +
+            "            }\n" +
+            "\n" +
+            "            th {\n" +
+            "               position: sticky;\n" +
+            "               top: 0;\n" +
+            "               z-index: 1;\n" +
+            "               background: white;\n" +
             "            }\n" +
             "\n" +
             "            .tooltip-text {\n" +
@@ -257,5 +267,14 @@ public class PCT_to_SimpleHTML
             "<body>\n";
     private static String bottom =
             "</body>\n" +
+            "<footer style='font-size: 15px;'>\n" +
+            String.format("PCT results as of %s using commit <a href='https://github.com/finos/legend-engine/tree/%s'>%s</a>.\n", DeploymentStateAndVersions.sdlc.commitTime, getCommitId(), getCommitId()) +
+            "</footer>\n" +
                     "</html>";
+
+    private static String getCommitId()
+    {
+        String commitId = DeploymentStateAndVersions.sdlc.commitId;
+        return (commitId != null && !commitId.isEmpty()) ? commitId : "master";
+    }
 }

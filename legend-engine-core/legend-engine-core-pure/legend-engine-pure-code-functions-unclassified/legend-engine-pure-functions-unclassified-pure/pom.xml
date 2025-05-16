@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-functions-unclassified</artifactId>
-        <version>4.85.2-SNAPSHOT</version>
+        <version>4.85.5-SNAPSHOT</version>
     </parent>
 
     <name>Legend Pure - Base - M2 Functions - Base - Pure</name>
@@ -128,6 +128,11 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-testutils</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

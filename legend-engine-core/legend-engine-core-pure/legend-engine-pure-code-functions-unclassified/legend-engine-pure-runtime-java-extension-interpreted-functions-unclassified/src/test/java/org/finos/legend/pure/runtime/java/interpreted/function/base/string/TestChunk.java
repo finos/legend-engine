@@ -14,8 +14,8 @@
 
 package org.finos.legend.pure.runtime.java.interpreted.function.base.string;
 
+import org.finos.legend.engine.pure.code.core.functions.unclassified.base.string.AbstractTestChunk;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.function.base.string.AbstractTestChunk;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.junit.BeforeClass;
 
