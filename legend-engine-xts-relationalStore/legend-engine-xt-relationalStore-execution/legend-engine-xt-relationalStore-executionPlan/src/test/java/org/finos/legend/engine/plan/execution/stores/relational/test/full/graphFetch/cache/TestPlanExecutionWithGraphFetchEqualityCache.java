@@ -17,6 +17,11 @@ package org.finos.legend.engine.plan.execution.stores.relational.test.full.graph
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.eclipse.collections.api.factory.Sets;
+import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutionContext;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByEqualityKeys;
@@ -24,8 +29,17 @@ import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKe
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
+import org.finos.legend.engine.plan.generation.PlanGenerator;
+import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
+import org.finos.legend.engine.plan.platform.PlanPlatform;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
+import org.finos.legend.pure.generated.core_relational_relational_tests_relationalSetUp;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,6 +52,8 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.pure.generated.core_relational_java_platform_binding_legendJavaPlatformBinding_relationalLegendJavaPlatformBindingExtension.Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_;
+
 public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServer
 {
 
@@ -49,13 +65,33 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
     @Test
     public void testSimpleCacheWithNoDepth() throws IOException, JavaCompileException
     {
-        SingleExecutionPlan plan = readPlan("org/finos/legend/engine/plan/execution/stores/relational/test/cache/graphFetch//equalityCachePlanWithNoDepth.json");
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[*]\n" +
+                "{\n" +
+                "  count:Integer[1] | meta::relational::tests::model::simple::Person.all()\n" +
+                "    ->sortBy(#/meta::relational::tests::model::simple::Person/lastName!last#)\n" +
+                "    ->limit($count)\n" +
+                "    ->graphFetch(#{\n" +
+                "      meta::relational::tests::model::simple::Person {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "    ->serialize(#{\n" +
+                "      meta::relational::tests::model::simple::Person {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
         Map<String, ?> params = org.eclipse.collections.api.factory.Maps.mutable.of("count", 1);
 
         GraphFetchCacheByEqualityKeys personCache = ExecutionCacheBuilder.buildGraphFetchCacheByEqualityKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
                 "meta::relational::tests::simpleRelationalMappingInc",
-                "meta_pure_tests_model_simple_Person"
+                "meta_relational_tests_model_simple_Person"
         );
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}}";
@@ -69,12 +105,32 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
     {
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}}";
 
-        SingleExecutionPlan plan = readPlan("org/finos/legend/engine/plan/execution/stores/relational/test/cache/graphFetch//equalityCachePlanWithNoDepth.json");
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[*]\n" +
+                "{\n" +
+                "  count:Integer[1] | meta::relational::tests::model::simple::Person.all()\n" +
+                "    ->sortBy(#/meta::relational::tests::model::simple::Person/lastName!last#)\n" +
+                "    ->limit($count)\n" +
+                "    ->graphFetch(#{\n" +
+                "      meta::relational::tests::model::simple::Person {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "    ->serialize(#{\n" +
+                "      meta::relational::tests::model::simple::Person {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
 
         GraphFetchCacheByEqualityKeys personCache = ExecutionCacheBuilder.buildGraphFetchCacheByEqualityKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.SECONDS).build(),
                 "meta::relational::tests::simpleRelationalMappingInc",
-                "meta_pure_tests_model_simple_Person"
+                "meta_relational_tests_model_simple_Person"
         );
 
         PlanExecutionContext planExecutionContext = new PlanExecutionContext(plan, personCache);
@@ -114,13 +170,45 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
     @Test
     public void testSimpleCacheWithToOneComplexProperties() throws IOException, JavaCompileException
     {
-        SingleExecutionPlan plan = readPlan("org/finos/legend/engine/plan/execution/stores/relational/test/cache/graphFetch//equalityCachePlanWithToOneComplexProperties.json");
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[*]\n" +
+                "{\n" +
+                "  count:Integer[1] | meta::relational::tests::model::simple::Person.all()\n" +
+                "    ->sortBy(#/meta::relational::tests::model::simple::Person/lastName!last#)\n" +
+                "    ->limit($count)\n" +
+                "    ->graphFetch(#{\n" +
+                "      meta::relational::tests::model::simple::Person {\n" +
+                "        firstName,\n" +
+                "        lastName,\n" +
+                "        firm {\n" +
+                "          legalName,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "    ->serialize(#{\n" +
+                "      meta::relational::tests::model::simple::Person {\n" +
+                "        firstName,\n" +
+                "        lastName,\n" +
+                "        firm {\n" +
+                "          legalName,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
         Map<String, ?> params = org.eclipse.collections.api.factory.Maps.mutable.of("count", 1);
 
         GraphFetchCacheByEqualityKeys personCache = ExecutionCacheBuilder.buildGraphFetchCacheByEqualityKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
                 "meta::relational::tests::simpleRelationalMappingInc",
-                "meta_pure_tests_model_simple_Person"
+                "meta_relational_tests_model_simple_Person"
         );
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"firstName\":\"Anthony\",\"lastName\":\"Allen\",\"firm\":{\"legalName\":\"FirmA\",\"address\":{\"name\":\"New York\"}}}}";
@@ -132,13 +220,45 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
     @Test
     public void testSimpleCacheWithToOneComplexPropertiesManyObjects() throws IOException, JavaCompileException
     {
-        SingleExecutionPlan plan = readPlan("org/finos/legend/engine/plan/execution/stores/relational/test/cache/graphFetch//equalityCachePlanWithToOneComplexProperties.json");
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[*]\n" +
+                "{\n" +
+                "  count:Integer[1] | meta::relational::tests::model::simple::Person.all()\n" +
+                "    ->sortBy(#/meta::relational::tests::model::simple::Person/lastName!last#)\n" +
+                "    ->limit($count)\n" +
+                "    ->graphFetch(#{\n" +
+                "      meta::relational::tests::model::simple::Person {\n" +
+                "        firstName,\n" +
+                "        lastName,\n" +
+                "        firm {\n" +
+                "          legalName,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "    ->serialize(#{\n" +
+                "      meta::relational::tests::model::simple::Person {\n" +
+                "        firstName,\n" +
+                "        lastName,\n" +
+                "        firm {\n" +
+                "          legalName,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
         Map<String, ?> params = org.eclipse.collections.api.factory.Maps.mutable.of("count", 100);
 
         GraphFetchCacheByEqualityKeys personCache = ExecutionCacheBuilder.buildGraphFetchCacheByEqualityKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
                 "meta::relational::tests::simpleRelationalMappingInc",
-                "meta_pure_tests_model_simple_Person"
+                "meta_relational_tests_model_simple_Person"
         );
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"firstName\":\"Anthony\",\"lastName\":\"Allen\",\"firm\":{\"legalName\":\"FirmA\",\"address\":{\"name\":\"New York\"}}},{\"firstName\":\"Olivier\",\"lastName\":\"Doe\",\"firm\":{\"legalName\":\"FirmC\",\"address\":{\"name\":\"Tokyo\"}}},{\"firstName\":\"David\",\"lastName\":\"Harris\",\"firm\":{\"legalName\":\"FirmD\",\"address\":{\"name\":\"Mountain View\"}}},{\"firstName\":\"John\",\"lastName\":\"Hill\",\"firm\":{\"legalName\":\"FirmA\",\"address\":{\"name\":\"New York\"}}},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"firm\":{\"legalName\":\"FirmA\",\"address\":{\"name\":\"New York\"}}},{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\",\"firm\":{\"legalName\":\"FirmB\",\"address\":{\"name\":\"Cupertino\"}}},{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"firm\":{\"legalName\":\"FirmA\",\"address\":{\"name\":\"New York\"}}}]}";
@@ -150,13 +270,39 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
     @Test
     public void testSimpleCacheWithToManyComplexProperties() throws IOException, JavaCompileException
     {
-        SingleExecutionPlan plan = readPlan("org/finos/legend/engine/plan/execution/stores/relational/test/cache/graphFetch//equalityCachePlanWithToManyComplexProperties.json");
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[*]\n" +
+                "{\n" +
+                "  | meta::relational::tests::model::simple::Firm.all()\n" +
+                "    ->filter(x | $x.legalName == 'FirmA')\n" +
+                "    ->limit(1)\n" +
+                "    ->graphFetch(#{\n" +
+                "      meta::relational::tests::model::simple::Firm {\n" +
+                "        legalName,\n" +
+                "        employees {\n" +
+                "          firstName,\n" +
+                "          lastName\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "    ->serialize(#{\n" +
+                "      meta::relational::tests::model::simple::Firm {\n" +
+                "        legalName,\n" +
+                "        employees {\n" +
+                "          firstName,\n" +
+                "          lastName\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
         Map<String, ?> params = Collections.emptyMap();
 
         GraphFetchCacheByEqualityKeys firmCache = ExecutionCacheBuilder.buildGraphFetchCacheByEqualityKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
                 "meta::relational::tests::simpleRelationalMappingInc",
-                "meta_pure_tests_model_simple_Firm"
+                "meta_relational_tests_model_simple_Firm"
         );
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"legalName\":\"FirmA\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}]}}";
@@ -170,12 +316,38 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
     {
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"legalName\":\"FirmA\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}]}}";
 
-        SingleExecutionPlan plan = readPlan("org/finos/legend/engine/plan/execution/stores/relational/test/cache/graphFetch//equalityCachePlanWithToManyComplexProperties.json");
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[*]\n" +
+                "{\n" +
+                "  | meta::relational::tests::model::simple::Firm.all()\n" +
+                "    ->filter(x | $x.legalName == 'FirmA')\n" +
+                "    ->limit(1)\n" +
+                "    ->graphFetch(#{\n" +
+                "      meta::relational::tests::model::simple::Firm {\n" +
+                "        legalName,\n" +
+                "        employees {\n" +
+                "          firstName,\n" +
+                "          lastName\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "    ->serialize(#{\n" +
+                "      meta::relational::tests::model::simple::Firm {\n" +
+                "        legalName,\n" +
+                "        employees {\n" +
+                "          firstName,\n" +
+                "          lastName\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
 
         GraphFetchCacheByEqualityKeys personCache = ExecutionCacheBuilder.buildGraphFetchCacheByEqualityKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
                 "meta::relational::tests::simpleRelationalMappingInc",
-                "meta_pure_tests_model_simple_Person"
+                "meta_relational_tests_model_simple_Person"
         );
 
         PlanExecutionContext planExecutionContext = new PlanExecutionContext(plan, personCache);
@@ -194,13 +366,43 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
     @Test
     public void testSimpleCacheWithPrimitiveQualifiers() throws IOException, JavaCompileException
     {
-        SingleExecutionPlan plan = readPlan("org/finos/legend/engine/plan/execution/stores/relational/test/cache/graphFetch//equalityCachePlanWithPrimitiveQualifiers.json");
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[*]\n" +
+                "{\n" +
+                "  | meta::relational::tests::model::simple::Firm.all()\n" +
+                "    ->filter(x | $x.legalName == 'FirmA')\n" +
+                "    ->limit(1)\n" +
+                "    ->graphFetch(#{\n" +
+                "      meta::relational::tests::model::simple::Firm {\n" +
+                "        legalName,\n" +
+                "        averageEmployeesAge,\n" +
+                "        employees {\n" +
+                "          firstName,\n" +
+                "          lastName,\n" +
+                "          fullName(true)\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "    ->serialize(#{\n" +
+                "      meta::relational::tests::model::simple::Firm {\n" +
+                "        legalName,\n" +
+                "        averageEmployeesAge,\n" +
+                "        employees {\n" +
+                "          firstName,\n" +
+                "          lastName,\n" +
+                "          fullName(true)\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
         Map<String, ?> params = Collections.emptyMap();
 
         GraphFetchCacheByEqualityKeys firmCache = ExecutionCacheBuilder.buildGraphFetchCacheByEqualityKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
                 "meta::relational::tests::simpleRelationalMappingInc",
-                "meta_pure_tests_model_simple_Firm"
+                "meta_relational_tests_model_simple_Firm"
         );
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"legalName\":\"FirmA\",\"averageEmployeesAge()\":39.5,\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"fullName(true)\":\"Smith, Peter\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"fullName(true)\":\"Johnson, John\"},{\"firstName\":\"John\",\"lastName\":\"Hill\",\"fullName(true)\":\"Hill, John\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\",\"fullName(true)\":\"Allen, Anthony\"}]}}";
@@ -212,13 +414,51 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
     @Test
     public void testSimpleCacheWithComplexQualifiers() throws IOException, JavaCompileException
     {
-        SingleExecutionPlan plan = readPlan("org/finos/legend/engine/plan/execution/stores/relational/test/cache/graphFetch/equalityCachePlanWithComplexQualifiers.json");
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[*]\n" +
+                "{\n" +
+                "  | meta::relational::tests::model::simple::Firm.all()\n" +
+                "    ->filter(x | $x.legalName == 'FirmA')\n" +
+                "    ->limit(1)\n" +
+                "    ->graphFetch(#{\n" +
+                "      meta::relational::tests::model::simple::Firm {\n" +
+                "        legalName,\n" +
+                "        employeeByLastName('Smith') {\n" +
+                "          firstName,\n" +
+                "          lastName,\n" +
+                "          address {name}\n" +
+                "        },\n" +
+                "        employeesByCityOrManager('New York','') {\n" +
+                "          firstName,\n" +
+                "          lastName,\n" +
+                "          address {name}\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "    ->serialize(#{\n" +
+                "      meta::relational::tests::model::simple::Firm {\n" +
+                "        legalName,\n" +
+                "        employeeByLastName('Smith') {\n" +
+                "          firstName,\n" +
+                "          lastName,\n" +
+                "          address {name}\n" +
+                "        },\n" +
+                "        employeesByCityOrManager('New York','') {\n" +
+                "          firstName,\n" +
+                "          lastName,\n" +
+                "          address {name}\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
         Map<String, ?> params = Collections.emptyMap();
 
         GraphFetchCacheByEqualityKeys firmCache = ExecutionCacheBuilder.buildGraphFetchCacheByEqualityKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
                 "meta::relational::tests::simpleRelationalMappingInc",
-                "meta_pure_tests_model_simple_Firm"
+                "meta_relational_tests_model_simple_Firm"
         );
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"legalName\":\"FirmA\",\"employeeByLastName('Smith')\":{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"address\":{\"name\":\"Hoboken\"}},\"employeesByCityOrManager('New York', '')\":[{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"address\":{\"name\":\"New York\"}},{\"firstName\":\"John\",\"lastName\":\"Hill\",\"address\":{\"name\":\"New York\"}},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\",\"address\":{\"name\":\"New York\"}}]}}";
@@ -230,14 +470,52 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
     @Test
     public void testCacheKeyIdentifiers() throws IOException, JavaCompileException
     {
-        SingleExecutionPlan plan = readPlan("org/finos/legend/engine/plan/execution/stores/relational/test/cache/graphFetch/equalityCachePlanWithComplexQualifiers.json");
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[*]\n" +
+                "{\n" +
+                "  | meta::relational::tests::model::simple::Firm.all()\n" +
+                "    ->filter(x | $x.legalName == 'FirmA')\n" +
+                "    ->limit(1)\n" +
+                "    ->graphFetch(#{\n" +
+                "      meta::relational::tests::model::simple::Firm {\n" +
+                "        legalName,\n" +
+                "        employeeByLastName('Smith') {\n" +
+                "          firstName,\n" +
+                "          lastName,\n" +
+                "          address {name}\n" +
+                "        },\n" +
+                "        employeesByCityOrManager('New York','') {\n" +
+                "          firstName,\n" +
+                "          lastName,\n" +
+                "          address {name}\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "    ->serialize(#{\n" +
+                "      meta::relational::tests::model::simple::Firm {\n" +
+                "        legalName,\n" +
+                "        employeeByLastName('Smith') {\n" +
+                "          firstName,\n" +
+                "          lastName,\n" +
+                "          address {name}\n" +
+                "        },\n" +
+                "        employeesByCityOrManager('New York','') {\n" +
+                "          firstName,\n" +
+                "          lastName,\n" +
+                "          address {name}\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
         Map<String, ?> params = Collections.emptyMap();
 
         Cache<GraphFetchCacheKey, Object> guavaCache = CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build();
         GraphFetchCacheByEqualityKeys firmCache = ExecutionCacheBuilder.buildGraphFetchCacheByEqualityKeysFromGuavaCache(
                 guavaCache,
                 "meta::relational::tests::simpleRelationalMappingInc",
-                "meta_pure_tests_model_simple_Firm"
+                "meta_relational_tests_model_simple_Firm"
         );
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"legalName\":\"FirmA\",\"employeeByLastName('Smith')\":{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"address\":{\"name\":\"Hoboken\"}},\"employeesByCityOrManager('New York', '')\":[{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"address\":{\"name\":\"New York\"}},{\"firstName\":\"John\",\"lastName\":\"Hill\",\"address\":{\"name\":\"New York\"}},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\",\"address\":{\"name\":\"New York\"}}]}}";
@@ -444,5 +722,24 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
 
         System.out.println("finished inserts");
 
+    }
+
+    private SingleExecutionPlan buildPlanForFetchFunction(String fetchFunction)
+    {
+        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(fetchFunction);
+        PureModel pureModel = Compiler.compile(contextData, null, Identity.getAnonymousIdentity().getName());
+
+        return PlanGenerator.generateExecutionPlan(
+                HelperValueSpecificationBuilder.buildLambda((LambdaFunction) contextData.getElementsOfType(Function.class).get(0).body.get(0), new CompileContext.Builder(pureModel).build()),
+                (Mapping) pureModel.getExecutionSupport().getMetadata("meta::pure::mapping::Mapping", "Root::meta::relational::tests::simpleRelationalMappingInc"),
+                core_relational_relational_tests_relationalSetUp.Root_meta_external_store_relational_tests_testRuntime__Runtime_1_(pureModel.getExecutionSupport()),
+                null,
+                pureModel,
+                "vX_X_X",
+                PlanPlatform.JAVA,
+                null,
+                Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()),
+                LegendPlanTransformers.transformers
+        );
     }
 }
