@@ -115,7 +115,7 @@ import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunct
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.PureProtocol;
-import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.query.graphQL.api.format.generation.api.GraphQLGenerationService;
 import org.finos.legend.engine.external.format.jsonSchema.schema.generations.api.JSONSchemaGenerationService;
 import org.finos.legend.engine.external.format.daml.generation.api.DAMLGenerationService;
