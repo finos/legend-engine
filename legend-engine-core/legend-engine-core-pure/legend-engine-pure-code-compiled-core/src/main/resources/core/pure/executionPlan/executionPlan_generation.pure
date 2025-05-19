@@ -128,10 +128,25 @@ Class meta::pure::executionPlan::PlanSetPlaceHolder
     tdsColumns: TDSColumn[*];
 }
 
+function meta::pure::executionPlan::preprocessFunction(f:FunctionDefinition<Any>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):FunctionDefinition<Any>[1]
+{
+  let fromExpr = $f->findExpressionsForFunctionInFunctionDefinition([from_T_m__PackageableRuntime_1__T_m_, 
+                                                                     from_FunctionDefinition_1__Runtime_1__T_m_]);
+  if(!$fromExpr->isEmpty(),
+        | let runtime = $fromExpr->evaluateAndDeactivate()->map(exp | $exp.parametersValues->tail()->evaluateAndDeactivate()->filter(p | $p->instanceOf(InstanceValue))->cast(@InstanceValue).values)
+                        ->map(v | $v->match([ runtime:Runtime[1] | $runtime,
+                                              packageableRuntime:meta::pure::runtime::PackageableRuntime[1] | $packageableRuntime.runtimeValue,
+                                              any:Any[1] | []
+                                            ]));
+          if($runtime.preprocessFunction->isEmpty(), | $f, | $runtime.preprocessFunction->toOne()->eval($f, $runtime));,
+        | $f);
+}
+
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
-   let routed = $f->routeFunction($context, $extensions, $debugContext);
-   meta::pure::executionPlan::executionPlan($routed, $f, ^Mapping(package=meta::pure::executionPlan, name='dummy'), ^meta::core::runtime::Runtime(), $context, $extensions, $debugContext);
+   let preProcessedFunction = meta::pure::executionPlan::preprocessFunction($f, $context, $extensions);
+   let routed = $preProcessedFunction->routeFunction($context, $extensions, $debugContext);
+   meta::pure::executionPlan::executionPlan($routed, $preProcessedFunction, ^Mapping(package=meta::pure::executionPlan, name='dummy'), ^meta::core::runtime::Runtime(), $context, $extensions, $debugContext);
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
