@@ -130,7 +130,8 @@ Class meta::pure::executionPlan::PlanSetPlaceHolder
 
 function meta::pure::executionPlan::preprocessFunction(f:FunctionDefinition<Any>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):FunctionDefinition<Any>[1]
 {
-  let fromExpr = $f->findExpressionsForFunctionInFunctionDefinition([from_T_m__PackageableRuntime_1__T_m_, 
+  let fromExpr = $f->findExpressionsForFunctionInFunctionDefinition([from_T_m__Runtime_1__T_m_,
+                                                                     from_T_m__PackageableRuntime_1__T_m_,
                                                                      from_FunctionDefinition_1__Runtime_1__T_m_]);
   if(!$fromExpr->isEmpty(),
         | let runtime = $fromExpr->evaluateAndDeactivate()->map(exp | $exp.parametersValues->tail()->evaluateAndDeactivate()->filter(p | $p->instanceOf(InstanceValue))->cast(@InstanceValue).values)
