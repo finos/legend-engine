@@ -73,7 +73,13 @@ public class HelperDomainGrammarComposer
 
     public static String renderEnumValue(EnumValue enumValue)
     {
-        return renderAnnotations(enumValue.stereotypes, enumValue.taggedValues) + PureGrammarComposerUtility.convertIdentifier(enumValue.value);
+        return renderEnumValue(enumValue, false);
+    }
+
+    public static String renderEnumValue(EnumValue enumValue, boolean isPureGrammar)
+    {
+        return renderAnnotations(enumValue.stereotypes, enumValue.taggedValues) +
+                PureGrammarComposerUtility.convertIdentifier(enumValue.value, false, isPureGrammar);
     }
 
     public static String renderUnit(Unit unit, DEPRECATED_PureGrammarComposerCore transformer)
