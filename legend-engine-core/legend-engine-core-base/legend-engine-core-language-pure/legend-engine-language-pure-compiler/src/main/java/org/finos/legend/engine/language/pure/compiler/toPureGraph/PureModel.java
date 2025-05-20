@@ -62,11 +62,13 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.pure.generated.Package_Impl;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_PackageableElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Type_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
@@ -136,7 +138,8 @@ public class PureModel implements IPureModel
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(PureModel.class);
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
-
+    private static final Root_meta_pure_metamodel_PackageableElement_Impl NULL_ELEMENT_SENTINEL = new Root_meta_pure_metamodel_PackageableElement_Impl("Anonymous_NoCounter");
+    private static final Root_meta_pure_metamodel_type_Type_Impl NULL_TYPE_SENTINEL = new Root_meta_pure_metamodel_type_Type_Impl("Anonymous_NoCounter");
     public static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(PureModel.class.getClassLoader(), true).collectIf(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_"), CodeRepository::getName));
 
     private final CompiledExecutionSupport executionSupport;
@@ -774,7 +777,14 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement_safe(String fullPath)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.packageableElementsIndex.get(packagePrefix(fullPath));
+        String fullPathWithPrefix = packagePrefix(fullPath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.packageableElementsIndex.get(fullPathWithPrefix);
+        if (packageableElement == NULL_ELEMENT_SENTINEL)
+        {
+            // If the value returned is a null sentinel value, it means that we're already tried looking up this element and didn't find anything previously
+            // Therefore, it is safe to return null
+            return null;
+        }
         if (packageableElement != null)
         {
             return packageableElement;
@@ -803,24 +813,20 @@ public class PureModel implements IPureModel
         {
             return packageableElement;
         }
-        packageableElement = getConcreteFunctionDefinition_safe(fullPath);
-        if (packageableElement != null)
-        {
-            return packageableElement;
-        }
-        packageableElement = getStore_safe(fullPath);
-        if (packageableElement != null)
-        {
-            return packageableElement;
-        }
-        packageableElement = getMapping_safe(fullPath);
-        if (packageableElement != null)
-        {
-            return packageableElement;
-        }
 
         // For other elements search the package tree
-        return findPackageableElement(packagePrefix(fullPath));
+        packageableElement = findPackageableElement(fullPathWithPrefix);
+        if (packageableElement != null)
+        {
+            this.packageableElementsIndex.put(fullPathWithPrefix, packageableElement);
+        }
+        else
+        {
+            // If the element is not found anywhere, then we should put a null sentinel value to avoid duplicate lookups, which can be very expensive
+            this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
+            this.typesIndex.putIfAbsent(fullPathWithPrefix, NULL_TYPE_SENTINEL);
+        }
+        return packageableElement;
     }
 
     private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement findPackageableElement(String fullPath)
@@ -868,6 +874,10 @@ public class PureModel implements IPureModel
         String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
         // Search in the user graph (and cached types found subsequently in the Pure graph)
         Type type = this.typesIndex.get(fullPathWithPrefix);
+        if (type == NULL_TYPE_SENTINEL)
+        {
+            return null;
+        }
         if (type != null)
         {
             return type;
@@ -879,6 +889,11 @@ public class PureModel implements IPureModel
         {
             this.immutables.add(fullPathWithPrefix);
             this.typesIndex.put(fullPathWithPrefix, type);
+        }
+        else
+        {
+            this.typesIndex.putIfAbsent(fullPathWithPrefix, NULL_TYPE_SENTINEL);
+            this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
         }
         return type;
     }
@@ -963,13 +978,32 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction<?> getGraphFunctions(String fullPath)
     {
-        return tryGetFromMetadataAccessor("Root::" + fullPath, MetadataAccessor::getConcreteFunctionDefinition, MetadataAccessor::getNativeFunction);
+        String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction<?> packageableFunction = tryGetFromMetadataAccessor("Root::" + fullPath, MetadataAccessor::getConcreteFunctionDefinition, MetadataAccessor::getNativeFunction);
+        if (packageableFunction == NULL_ELEMENT_SENTINEL)
+        {
+            return null;
+        }
+        if (packageableFunction != null)
+        {
+            this.immutables.add(fullPathWithPrefix);
+            this.packageableElementsIndex.put(fullPathWithPrefix, packageableFunction);
+        }
+        else
+        {
+            this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
+        }
+        return packageableFunction;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation_safe(String fullPath)
     {
         String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = lookupAndCastPackageableElement(fullPathWithPrefix, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association.class);
+        if (association == NULL_ELEMENT_SENTINEL)
+        {
+            return null;
+        }
         if (association == null)
         {
             // Search for system types in the Pure graph
@@ -978,6 +1012,10 @@ public class PureModel implements IPureModel
             {
                 this.immutables.add(fullPathWithPrefix);
                 this.packageableElementsIndex.put(fullPathWithPrefix, association);
+            }
+            else
+            {
+                this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
             }
         }
         return association;
@@ -999,12 +1037,20 @@ public class PureModel implements IPureModel
     {
         String pathWithTypeReference = addPrefixToTypeReference(fullPath);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = lookupAndCastPackageableElement(pathWithTypeReference, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile.class);
+        if (profile == NULL_ELEMENT_SENTINEL)
+        {
+            return null;
+        }
         if (profile == null)
         {
             profile = tryGetFromMetadataAccessor("Root::" + pathWithTypeReference, MetadataAccessor::getProfile);
             if (profile != null)
             {
                 this.packageableElementsIndex.put(pathWithTypeReference, profile);
+            }
+            else
+            {
+                this.packageableElementsIndex.putIfAbsent(pathWithTypeReference, NULL_ELEMENT_SENTINEL);
             }
         }
         return profile;

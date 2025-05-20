@@ -18,6 +18,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+
 public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
@@ -93,6 +96,53 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "  var1: Float[1];\n" +
                 "  var2: Float[1];\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testEnumsWithPureGrammar()
+    {
+        testSectionWithPureGrammar(("Enum my::Test\n" +
+                "{\n" +
+                "  TEST,\n" +
+                "  HELLO,\n" +
+                "  360_ACT\n" +
+                "}\n"), true);
+    }
+
+    @Test
+    public void testEnumsWithSingleQuotes()
+    {
+        testSectionWithPureGrammar(("Enum my::Test\n" +
+                "{\n" +
+                "  TEST,\n" +
+                "  HELLO,\n" +
+                "  '360_ACT'\n" +
+                "}\n"), false);
+    }
+
+
+    @Test
+    public void testEnumsWithOutPureGrammar()
+    {
+        AssertionError failed_assert = assertThrows(AssertionError.class, () -> test(("Enum my::Test\n" +
+                "{\n" +
+                "  TEST,\n" +
+                "  HELLO,\n" +
+                "  360_ACT\n" +
+                "}\n")));
+
+        assertEquals("expected:<...\n" +
+                "  TEST,\n" +
+                "  HELLO,\n" +
+                "  [360_ACT]\n" +
+                "}\n" +
+                "> but was:<...\n" +
+                "  TEST,\n" +
+                "  HELLO,\n" +
+                "  ['360_ACT']\n" +
+                "}\n" +
+                ">", failed_assert.getMessage());
+
     }
 
     @Test

@@ -15,15 +15,20 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -185,6 +190,24 @@ public class TestCompilationFromGrammar
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    @Test
+    public void testCachingSearchImportsResults()
+    {
+        CompileContext context = new CompileContext.Builder(new CompileContext.Builder(new PureModel(new PureModelContextData.Builder().build(), null, DeploymentMode.PROD))
+                .withImports(Sets.immutable.with("meta::pure::precisePrimitives"))
+                .build()).withImports(Sets.immutable.with("meta::pure::precisePrimitives")).build();
+        GenericType bigInt = new GenericType(new PackageableType("BigInt"), Lists.fixedSize.empty(), Lists.fixedSize.empty(),
+                Lists.fixedSize.of(new Multiplicity(1, 1)));
+        long timeBefore = System.currentTimeMillis();
+        for (int i = 0; i < 10_000; i++)
+        {
+            context.newGenericType(bigInt);
+        }
+        long timeAfter = System.currentTimeMillis();
+        long timeTaken = timeAfter - timeBefore;
+        Assert.assertTrue("With caching in the compiler, it is expected to take no longer than 1500ms, but took: " + timeTaken, timeTaken < 1500);
     }
 
     @Test
