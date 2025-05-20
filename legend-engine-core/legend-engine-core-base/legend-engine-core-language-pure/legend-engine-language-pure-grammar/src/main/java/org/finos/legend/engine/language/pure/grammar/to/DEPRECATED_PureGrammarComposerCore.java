@@ -138,6 +138,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
      */
     private final boolean isValueSpecificationExternalParameter;
     /**
+     * This flag will notify the transformer that elements should be parsed as Pure Grammar.
+     * E.g. no quotes shall be added to enum starting with digits (310_ACT would not get converted to '310_ACT')
+     */
+    private final boolean isPureGrammar;
+    /**
      * This flag will notify the transformer that the variable being processed is in the signature of the function,
      * hence omitting the `$` symbol preceding the variable.
      */
@@ -154,6 +159,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         this.isVariableInFunctionSignature = builder.isVariableInFunctionSignature;
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
         this.isPropertyBracketExpressionModeEnabled = builder.isPropertyBracketExpressionModeEnabled;
+        this.isPureGrammar = builder.isPureGrammar;
     }
 
     public int getBaseTabLevel()
@@ -174,6 +180,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public boolean isValueSpecificationExternalParameter()
     {
         return isValueSpecificationExternalParameter;
+    }
+
+    public boolean isPureGrammar()
+    {
+        return isPureGrammar;
     }
 
     public RenderStyle getRenderStyle()
@@ -198,6 +209,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         private boolean isValueSpecificationExternalParameter = false;
         private boolean isVariableInFunctionSignature = false;
         private boolean isPropertyBracketExpressionModeEnabled = false;
+        private boolean isPureGrammar = false;
 
         private Builder()
         {
@@ -212,6 +224,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.isVariableInFunctionSignature = grammarTransformer.isVariableInFunctionSignature;
             builder.isValueSpecificationExternalParameter = grammarTransformer.isValueSpecificationExternalParameter;
             builder.isPropertyBracketExpressionModeEnabled = grammarTransformer.isPropertyBracketExpressionModeEnabled;
+            builder.isPureGrammar = grammarTransformer.isPureGrammar;
             return builder;
         }
 
@@ -223,6 +236,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.isVariableInFunctionSignature = context.isVariableInFunctionSignature();
             builder.isValueSpecificationExternalParameter = context.isValueSpecificationExternalParameter();
             builder.isPropertyBracketExpressionModeEnabled = context.isPropertyBracketExpressionModeEnabled();
+            builder.isPureGrammar = context.isPureGrammar();
             return builder;
         }
 
@@ -246,6 +260,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         public Builder withVariableInFunctionSignature()
         {
             this.isVariableInFunctionSignature = true;
+            return this;
+        }
+
+        public Builder withPureGrammar()
+        {
+            this.isPureGrammar = true;
             return this;
         }
 
@@ -337,9 +357,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(Enumeration _enum)
     {
-        return "Enum " + HelperDomainGrammarComposer.renderAnnotations(_enum.stereotypes, _enum.taggedValues) + PureGrammarComposerUtility.convertPath(_enum.getPath()) +
+        return "Enum " + HelperDomainGrammarComposer.renderAnnotations(_enum.stereotypes, _enum.taggedValues) +
+                PureGrammarComposerUtility.convertPath(_enum.getPath(), this.isPureGrammar) +
                 "\n{\n" +
-                LazyIterate.collect(_enum.values, enumValue -> getTabString() + HelperDomainGrammarComposer.renderEnumValue(enumValue)).makeString(",\n") + (_enum.values.isEmpty() ? "" : "\n") +
+                LazyIterate.collect(_enum.values, enumValue -> getTabString() + HelperDomainGrammarComposer.renderEnumValue(enumValue, this.isPureGrammar)).makeString(",\n") + (_enum.values.isEmpty() ? "" : "\n") +
                 "}";
     }
 

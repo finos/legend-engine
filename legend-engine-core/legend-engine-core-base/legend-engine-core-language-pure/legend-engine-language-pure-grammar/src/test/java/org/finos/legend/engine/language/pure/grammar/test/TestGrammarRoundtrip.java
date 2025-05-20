@@ -98,7 +98,17 @@ public class TestGrammarRoundtrip
             test(code, null, true);
         }
 
+        public static void testSectionWithPureGrammar(String code, boolean isPureGrammar)
+        {
+            test(code, null, false, RenderStyle.STANDARD, isPureGrammar);
+        }
+
         private static void test(String code, String message, boolean keepSectionIndex, RenderStyle renderStyle)
+        {
+            test(code, message, keepSectionIndex, renderStyle, false);
+        }
+
+        private static void test(String code, String message, boolean keepSectionIndex, RenderStyle renderStyle, boolean isPureGrammar)
         {
             PureModelContextData modelData = null;
             try
@@ -112,7 +122,9 @@ public class TestGrammarRoundtrip
             {
                 throw new RuntimeException(e);
             }
-            PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle).build());
+            PureGrammarComposer grammarTransformer = isPureGrammar ?
+                    PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withPureGrammar().withRenderStyle(renderStyle).build())
+            : PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle).build());
             Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(modelData));
 
             if (keepSectionIndex)

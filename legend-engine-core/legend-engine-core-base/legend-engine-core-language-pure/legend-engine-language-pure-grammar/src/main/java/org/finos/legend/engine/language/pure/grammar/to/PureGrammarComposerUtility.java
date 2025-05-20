@@ -133,8 +133,13 @@ public class PureGrammarComposerUtility
 
     public static String convertPath(String val)
     {
+        return convertPath(val, false);
+    }
+
+    public static String convertPath(String val, boolean isPureGrammar)
+    {
         return Arrays.stream(val.split(PACKAGE_SEPARATOR))
-                .map(PureGrammarComposerUtility::convertIdentifier)
+                .map(v -> convertIdentifier(v, false, isPureGrammar))
                 .collect(Collectors.joining(PACKAGE_SEPARATOR));
     }
 
@@ -145,9 +150,19 @@ public class PureGrammarComposerUtility
 
     public static String convertIdentifier(String val, boolean doubleQuotes)
     {
+        return convertIdentifier(val, doubleQuotes, false);
+    }
+
+    public static String convertIdentifier(String val, boolean doubleQuotes, boolean isPureGrammar)
+    {
         if (val == null || val.isEmpty())
         {
             return "";
+        }
+
+        if (isPureGrammar)
+        {
+            return val;
         }
         else
         {
