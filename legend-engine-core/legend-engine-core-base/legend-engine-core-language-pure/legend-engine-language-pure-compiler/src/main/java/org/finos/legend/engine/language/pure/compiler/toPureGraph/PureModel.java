@@ -320,7 +320,7 @@ public class PureModel implements IPureModel
                     this.maybeParallel(allElementsInDisjointDependencyGraph).forEach(element ->
                     {
                         String elementFullPath = buildPackageString(element._package, element.name);
-                        CompileContext context = getContext(element);
+                        CompileContext context = new CompileContext.Builder(this).withElement(element).withoutMetaImports().build();
                         Set<PackageableElementPointer> packageableElementPointers = processPrerequisiteElementsPass(element);
                         MutableSet<String> prerequisiteElementFullPaths = Sets.mutable.empty();
                         for (PackageableElementPointer packageableElementPointer : packageableElementPointers)

@@ -178,6 +178,12 @@ public class CompileContext
             return this;
         }
 
+        public Builder withoutMetaImports()
+        {
+            this.imports = this.imports.newWithoutAll(META_IMPORTS);
+            return this;
+        }
+
         public CompileContext build()
         {
             return new CompileContext(this);
