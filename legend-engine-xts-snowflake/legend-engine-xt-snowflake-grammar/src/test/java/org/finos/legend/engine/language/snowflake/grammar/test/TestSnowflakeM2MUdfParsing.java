@@ -1,4 +1,4 @@
-//  Copyright 2022 Goldman Sachs
+//  Copyright 2025 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class TestSnowflakeM2MUdfParsing extends TestGrammarParser.TestGrammarPar
                 "SnowflakeM2MUdf x::A\n" +
                 "{\n" +
                 "   applicatioName : 'sass';\n" +
-                "}\n", "PARSER error at [4:4-17]: Unexpected token 'applicatioName'. Valid alternatives: ['udfName', 'description', 'function', 'ownership', 'activationConfiguration', 'permissionScheme', 'usageRole', 'deploymentSchema', 'deploymentStage']");
+                "}\n", "PARSER error at [4:4-17]: Unexpected token 'applicatioName'. Valid alternatives: ['udfName', 'description', 'function', 'ownership', 'activationConfiguration', 'deploymentSchema', 'deploymentStage']");
     }
 
     @Test
@@ -84,21 +84,6 @@ public class TestSnowflakeM2MUdfParsing extends TestGrammarParser.TestGrammarPar
                 "   udfName : 'MyApp';\n" +
                 "   ownership : Deployment { identifier: 'pierre'};\n" +
                 "}\n", "PARSER error at [2:1-6:1]: Field 'function' is required");
-    }
-
-    @Test
-    public void testGetParserErrorWrongScheme()
-    {
-        test("###Snowflake\n" +
-                "SnowflakeM2MUdf x::A\n" +
-                "{\n" +
-                "   function : a::f():String[1];" +
-                "   udfName : 'MyApp';\n" +
-                "   permissionScheme : WHATSCHEME;\n" +
-                "   deploymentSchema : 'legend_native_schema_1';\n" +
-                "   deploymentStage : 'snowflakeStage';\n" +
-                "   ownership : Deployment { identifier: 'pierre'};\n" +
-                "}\n", "PARSER error at [5:4-33]: Unknown permission scheme 'WHATSCHEME'");
     }
 
     @Test

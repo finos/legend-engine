@@ -1,4 +1,4 @@
-//  Copyright 2022 Goldman Sachs
+//  Copyright 2025 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -34,25 +34,6 @@ public class TestSnowflakeM2MUdfRoundtrip extends TestGrammarRoundtrip.TestGramm
                 "   activationConfiguration : a::b::connection;\n" +
                 "}\n");
     }
-
-    @Test
-    public void testSnowflakeM2MUdfWithSchemeAndRole()
-    {
-        test("###Snowflake\n" +
-                "SnowflakeM2MUdf <<a::A.test>> {a::A.val = 'ok'} xx::MyApp\n" +
-                "{\n" +
-                "   udfName : 'MyUDF';\n" +
-                "   function : zxx(Integer[1]):String[1];\n" +
-                "   ownership : Deployment { identifier: 'pierre'};\n" +
-                "   deploymentSchema : 'legend_native_apps_1';\n" +
-                "   deploymentStage : 'snowflakeStage';\n" +
-                "   description : 'A super nice app!';\n" +
-                "   usageRole : 'PRIVATE';\n" +
-                "   permissionScheme : SEQUESTERED;\n" +
-                "   activationConfiguration : a::b::connection;\n" +
-                "}\n");
-    }
-
 
     @Test
     public void testSnowflakeM2MUdfMinimal()

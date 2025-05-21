@@ -1,4 +1,4 @@
-//  Copyright 2023 Goldman Sachs
+//  Copyright 2025 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.finos.legend.engine.protocol.snowflake.snowflakeApp.metamodel.Snowfla
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.metamodel.SnowflakePermissionScheme;
 import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.metamodel.SnowflakeM2MUdf;
 import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.metamodel.SnowflakeM2MUdfDeploymentConfiguration;
-import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.metamodel.SnowflakeM2MUdfPermissionScheme;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -151,23 +150,6 @@ public class SnowflakeTreeWalker
         if (descriptionContext != null)
         {
             SnowflakeM2MUdf.description = PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true);
-        }
-        SnowflakeParserGrammar.RoleContext roleContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.role(), "role", SnowflakeM2MUdf.sourceInformation);
-        if (roleContext != null)
-        {
-            SnowflakeM2MUdf.usageRole = PureGrammarParserUtility.fromGrammarString(roleContext.STRING().getText(), true);
-        }
-        SnowflakeParserGrammar.SchemeContext schemeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.scheme(), "scheme", SnowflakeM2MUdf.sourceInformation);
-        if (schemeContext != null)
-        {
-            try
-            {
-                SnowflakeM2MUdf.permissionScheme = SnowflakeM2MUdfPermissionScheme.valueOf(PureGrammarParserUtility.fromIdentifier(schemeContext.identifier()));
-            }
-            catch (Exception e)
-            {
-                throw new EngineException("Unknown permission scheme '" + PureGrammarParserUtility.fromIdentifier(schemeContext.identifier()) + "'", this.walkerSourceInformation.getSourceInformation(schemeContext), EngineErrorType.PARSER);
-            }
         }
         SnowflakeParserGrammar.DeploymentSchemaContext deploymentSchemaContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deploymentSchema(), "deploymentSchema", SnowflakeM2MUdf.sourceInformation);
         SnowflakeM2MUdf.deploymentSchema = PureGrammarParserUtility.fromGrammarString(deploymentSchemaContext.STRING().getText(), true);

@@ -11,17 +11,17 @@ identifier:     VALID_STRING | STRING |
                 SNOWFLAKE_APP | SNOWFLAKE_M2M_UDF |
                 SNOWFLAKE_APP__APPLICATION_NAME | SNOWFLAKE_M2M_UDF__UDF_NAME |
                 SNOWFLAKE_APP__CONFIGURATION | SNOWFLAKE_M2M_UDF__CONFIGURATION |
+                SNOWFLAKE_APP__USAGE_ROLE |
+                SNOWFLAKE_APP__PERMISSION |
                 SNOWFLAKE__DESCRIPTION |
                 SNOWFLAKE__FUNCTION |
                 SNOWFLAKE__OWNER |
                 SNOWFLAKE__OWNER_DEPLOYMENT |
                 SNOWFLAKE__OWNER_DEPLOYMENT_ID |
                 SNOWFLAKE__ACTIVATION|
-                SNOWFLAKE__USAGE_ROLE |
-                SNOWFLAKE__PERMISSION |
                 SNOWFLAKE__DEPLOYMENT_SCHEMA |
-                DEPLOYMENT_STAGE |
-                ACTIVATION_CONNECTION |
+                SNOWFLAKE__DEPLOYMENT_STAGE |
+                SNOWFLAKE__ACTIVATION_CONNECTION |
                 ALL |
                 LET |
                 ALL_VERSIONS |
@@ -55,8 +55,6 @@ snowflakeM2MUdf:                   SNOWFLAKE_M2M_UDF stereotypes? taggedValues? 
                                                 | function
                                                 | ownership
                                                 | activation
-                                                | role
-                                                | scheme
                                                 | deploymentSchema
                                                 | deploymentStage
                                             )*
@@ -73,9 +71,9 @@ udfName:                        SNOWFLAKE_M2M_UDF__UDF_NAME COLON STRING SEMI_CO
 
 description:                    SNOWFLAKE__DESCRIPTION COLON STRING SEMI_COLON;
 
-scheme:                         SNOWFLAKE__PERMISSION COLON identifier SEMI_COLON;
+scheme:                         SNOWFLAKE_APP__PERMISSION COLON identifier SEMI_COLON;
 
-role:                           SNOWFLAKE__USAGE_ROLE COLON STRING SEMI_COLON;
+role:                           SNOWFLAKE_APP__USAGE_ROLE COLON STRING SEMI_COLON;
 
 function:                       SNOWFLAKE__FUNCTION COLON functionIdentifier SEMI_COLON;
 
@@ -96,8 +94,8 @@ deploymentConfig:                      SNOWFLAKE_APP__CONFIGURATION qualifiedNam
                                             BRACE_CLOSE
 ;
 
-activationConnection:                   ACTIVATION_CONNECTION COLON qualifiedName SEMI_COLON
+activationConnection:                   SNOWFLAKE__ACTIVATION_CONNECTION COLON qualifiedName SEMI_COLON
 ;
 
-deploymentStage:                        DEPLOYMENT_STAGE COLON STRING SEMI_COLON
+deploymentStage:                        SNOWFLAKE__DEPLOYMENT_STAGE COLON STRING SEMI_COLON
 ;

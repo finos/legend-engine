@@ -1,4 +1,4 @@
-//  Copyright 2023 Goldman Sachs
+//  Copyright 2025 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -84,8 +84,6 @@ public class SnowflakeGrammarComposer implements PureGrammarComposerExtension
                 "   deploymentSchema : '" + udf.deploymentSchema + "';\n" +
                 "   deploymentStage : '" + udf.deploymentStage + "';\n" +
                 (udf.description == null ? "" : "   description : '" + udf.description + "';\n") +
-                (udf.usageRole == null ? "" : "   usageRole : '" + udf.usageRole + "';\n") +
-                (udf.permissionScheme == null ? "" : "   permissionScheme : " + udf.permissionScheme + ";\n") +
                 (udf.activationConfiguration == null ? "" : "   activationConfiguration : " + ((SnowflakeM2MUdfDeploymentConfiguration)udf.activationConfiguration).activationConnection.connection + ";\n") +
                 "}";
     }

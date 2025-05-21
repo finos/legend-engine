@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.finos.legend.engine.protocol.snowflake.snowflakeApp.metamodel.Snowfla
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.metamodel.SnowflakePermissionScheme;
 import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.metamodel.SnowflakeM2MUdf;
 import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.metamodel.SnowflakeM2MUdfDeploymentConfiguration;
-import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.metamodel.SnowflakeM2MUdfPermissionScheme;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
@@ -111,10 +110,8 @@ public class SnowflakeCompilerExtension implements CompilerExtension
                     ._udfName(udf.udfName)
                     ._function(func)
                     ._description(udf.description)
-                    ._usageRole(udf.usageRole)
                     ._deploymentSchema(udf.deploymentSchema)
                     ._deploymentStage(udf.deploymentStage)
-                    ._permissionScheme(udf.permissionScheme != null ? context.pureModel.getEnumValue("meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdfPermissionScheme", udf.permissionScheme.toString()) : context.pureModel.getEnumValue("meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdfPermissionScheme", SnowflakeM2MUdfPermissionScheme.DEFAULT.toString()))
                     ._ownership(new Root_meta_external_function_activator_DeploymentOwnership_Impl("")._id(((DeploymentOwner)udf.ownership).id))
                     ._activationConfiguration(udf.activationConfiguration != null ? buildDeploymentConfig((SnowflakeM2MUdfDeploymentConfiguration) udf.activationConfiguration, context) : null);
         }

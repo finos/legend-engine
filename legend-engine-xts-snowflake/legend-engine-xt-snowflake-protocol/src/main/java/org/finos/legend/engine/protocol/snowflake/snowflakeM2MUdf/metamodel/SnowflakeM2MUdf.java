@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ public class SnowflakeM2MUdf extends FunctionActivator
 {
     public String udfName;
     public String description;
-    public String usageRole;
-    public SnowflakeM2MUdfPermissionScheme permissionScheme;
     public String deploymentSchema;
     public String deploymentStage;
 }
