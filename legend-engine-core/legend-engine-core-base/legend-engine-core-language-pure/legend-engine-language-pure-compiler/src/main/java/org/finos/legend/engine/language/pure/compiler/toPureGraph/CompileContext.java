@@ -287,9 +287,9 @@ public class CompileContext
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getPackageableElement(path, sourceInformation));
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement_safe(String fullPath, SourceInformation sourceInformation)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolveUserDefinedPackageableElement_safe(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, this.pureModel::getPackageableElement_safe);
+        return this.resolve(fullPath, sourceInformation, this.pureModel::getUserDefinedPackageableElement_safe);
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type resolveType(String fullPath)

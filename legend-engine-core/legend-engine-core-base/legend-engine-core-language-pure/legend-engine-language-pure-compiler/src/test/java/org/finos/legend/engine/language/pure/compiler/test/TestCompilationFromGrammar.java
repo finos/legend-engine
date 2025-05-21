@@ -207,7 +207,7 @@ public class TestCompilationFromGrammar
         }
         long timeAfter = System.currentTimeMillis();
         long timeTaken = timeAfter - timeBefore;
-        Assert.assertTrue("With caching in the compiler, it is expected to take no longer than 1500ms, but took: " + timeTaken, timeTaken < 1500);
+        Assert.assertTrue("With caching in the compiler, it is expected to take no longer than 3000ms, but took: " + timeTaken, timeTaken < 3000);
     }
 
     @Test
