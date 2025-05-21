@@ -409,21 +409,21 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-snowflakeApp-compiler</artifactId>
+            <artifactId>legend-engine-xt-snowflake-compiler</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-snowflakeApp-grammar</artifactId>
+            <artifactId>legend-engine-xt-snowflake-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-snowflakeApp-api</artifactId>
+            <artifactId>legend-engine-xt-snowflake-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-snowflakeApp-protocol</artifactId>
+            <artifactId>legend-engine-xt-snowflake-protocol</artifactId>
         </dependency>
         <!--        DataQuality     -->
         <dependency>

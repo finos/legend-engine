@@ -1,0 +1,23 @@
+import meta::external::function::activator::*;
+import meta::external::function::activator::snowflakeM2MUdf::*;
+
+Class meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdf extends FunctionActivator
+{
+  udfName : String[1];
+  description : String[0..1];
+  deploymentSchema: String[1];
+  deploymentStage: String[1];
+
+}
+
+Class meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdfDeploymentConfiguration extends DeploymentConfiguration
+{
+  target:  meta::external::store::relational::runtime::RelationalDatabaseConnection[1];
+}
+
+Class meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdfDeploymentResult extends DeploymentResult
+{
+
+}
+
+
