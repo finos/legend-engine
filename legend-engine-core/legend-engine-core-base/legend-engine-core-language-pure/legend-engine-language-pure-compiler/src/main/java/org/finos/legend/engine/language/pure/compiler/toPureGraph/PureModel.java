@@ -65,6 +65,7 @@ import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_PackageableElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl;
@@ -138,8 +139,7 @@ public class PureModel implements IPureModel
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(PureModel.class);
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
-    private static final Root_meta_pure_metamodel_PackageableElement_Impl NULL_ELEMENT_SENTINEL = new Root_meta_pure_metamodel_PackageableElement_Impl("Anonymous_NoCounter");
-    private static final Root_meta_pure_metamodel_type_Type_Impl NULL_TYPE_SENTINEL = new Root_meta_pure_metamodel_type_Type_Impl("Anonymous_NoCounter");
+    private static final Root_meta_pure_metamodel_type_Class_Impl NULL_ELEMENT_SENTINEL = new Root_meta_pure_metamodel_type_Class_Impl("Anonymous_NoCounter");
     public static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(PureModel.class.getClassLoader(), true).collectIf(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_"), CodeRepository::getName));
 
     private final CompiledExecutionSupport executionSupport;
@@ -320,7 +320,7 @@ public class PureModel implements IPureModel
                     this.maybeParallel(allElementsInDisjointDependencyGraph).forEach(element ->
                     {
                         String elementFullPath = buildPackageString(element._package, element.name);
-                        CompileContext context = new CompileContext.Builder(this).withElement(element).withoutMetaImports().build();
+                        CompileContext context = this.getContext(element);
                         Set<PackageableElementPointer> packageableElementPointers = processPrerequisiteElementsPass(element);
                         MutableSet<String> prerequisiteElementFullPaths = Sets.mutable.empty();
                         for (PackageableElementPointer packageableElementPointer : packageableElementPointers)
@@ -334,7 +334,7 @@ public class PureModel implements IPureModel
                                 }
                                 catch (InvalidFunctionDescriptorException ignored)
                                 {
-                                    // Full path could already be an ID, and if it is not, it will be validated in the the next if-else
+                                    // Full path could already be an ID, and if it is not, it will be validated in the next if-else
                                 }
                             }
                             if (elementPaths.contains(fullPath))
@@ -343,7 +343,7 @@ public class PureModel implements IPureModel
                             }
                             else
                             {
-                                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement prerequisiteElement = context.resolvePackageableElement_safe(fullPath, packageableElementPointer.sourceInformation == null ? SourceInformation.getUnknownSourceInformation() : packageableElementPointer.sourceInformation);
+                                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement prerequisiteElement = context.resolveUserDefinedPackageableElement_safe(fullPath, packageableElementPointer.sourceInformation == null ? SourceInformation.getUnknownSourceInformation() : packageableElementPointer.sourceInformation);
                                 if (Objects.nonNull(prerequisiteElement))
                                 {
                                     String prerequisiteElementFullPath = platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(prerequisiteElement, getExecutionSupport());
@@ -775,6 +775,19 @@ public class PureModel implements IPureModel
         return packageableElement;
     }
 
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getUserDefinedPackageableElement_safe(String fullPath)
+    {
+        String fullPathWithPrefix = packagePrefix(fullPath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.packageableElementsIndex.get(fullPathWithPrefix);
+        if (packageableElement == NULL_ELEMENT_SENTINEL)
+        {
+            // If the value returned is a null sentinel value, it means that we're already tried looking up this element and didn't find anything previously
+            // Therefore, it is safe to return null
+            return null;
+        }
+        return packageableElement;
+    }
+
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement_safe(String fullPath)
     {
         String fullPathWithPrefix = packagePrefix(fullPath);
@@ -824,7 +837,7 @@ public class PureModel implements IPureModel
         {
             // If the element is not found anywhere, then we should put a null sentinel value to avoid duplicate lookups, which can be very expensive
             this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
-            this.typesIndex.putIfAbsent(fullPathWithPrefix, NULL_TYPE_SENTINEL);
+            this.typesIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
         }
         return packageableElement;
     }
@@ -874,7 +887,7 @@ public class PureModel implements IPureModel
         String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
         // Search in the user graph (and cached types found subsequently in the Pure graph)
         Type type = this.typesIndex.get(fullPathWithPrefix);
-        if (type == NULL_TYPE_SENTINEL)
+        if (type == NULL_ELEMENT_SENTINEL)
         {
             return null;
         }
@@ -892,7 +905,7 @@ public class PureModel implements IPureModel
         }
         else
         {
-            this.typesIndex.putIfAbsent(fullPathWithPrefix, NULL_TYPE_SENTINEL);
+            this.typesIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
             this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
         }
         return type;
@@ -1487,7 +1500,7 @@ public class PureModel implements IPureModel
 
     public RichIterable<? extends Type> getModelClasses()
     {
-        return this.typesIndex.valuesView().reject(t -> (t == null) || (t instanceof Root_meta_pure_metamodel_type_Class_LazyImpl) || (t instanceof Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl));
+        return this.typesIndex.valuesView().reject(t -> (t == null) || (t == NULL_ELEMENT_SENTINEL) || (t instanceof Root_meta_pure_metamodel_type_Class_LazyImpl) || (t instanceof Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl));
     }
 
     public void loadModelFromFunctionHandler(FunctionHandler f)
