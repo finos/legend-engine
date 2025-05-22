@@ -32,7 +32,7 @@
 /legend-engine-xts-rosetta/**            @finos/legend-engine-maintainers
 /legend-engine-xts-service/**            @finos/legend-engine-maintainers
 /legend-engine-xts-serviceStore/**       @finos/legend-engine-maintainers
-/legend-engine-xts-snowflakeApp/**       @finos/legend-engine-maintainers
+/legend-engine-xts-snowflake/**          @finos/legend-engine-maintainers
 /legend-engine-xts-hostedService/**      @finos/legend-engine-maintainers
 /legend-engine-xts-sql/**                @finos/legend-engine-maintainers
 /legend-engine-xts-text/**               @finos/legend-engine-maintainers

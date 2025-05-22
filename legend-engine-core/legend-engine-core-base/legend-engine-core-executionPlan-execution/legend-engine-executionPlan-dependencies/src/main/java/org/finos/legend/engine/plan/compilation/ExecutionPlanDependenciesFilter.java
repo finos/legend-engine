@@ -38,7 +38,6 @@ public class ExecutionPlanDependenciesFilter implements ClassPathFilter
     private static final List<String> LIBRARY_PACKAGE_ROOTS = Arrays.asList(
             "com.fasterxml",
             "org.eclipse.collections",
-            "org.openjdk.jol",
             "org.apache.commons",
             "org.finos.legend.pure.m4.coreinstance.primitive.date"
     );
@@ -54,7 +53,6 @@ public class ExecutionPlanDependenciesFilter implements ClassPathFilter
     {
         System.out.println(com.fasterxml.jackson.core.JsonFactory.class.getSimpleName());
         System.out.println(com.fasterxml.jackson.dataformat.xml.XmlFactory.class.getSimpleName());
-        System.out.println(org.openjdk.jol.info.ClassLayout.class.getSimpleName());
     }
 
     private static List<Class<?>> expandClass(Class<?> c)
