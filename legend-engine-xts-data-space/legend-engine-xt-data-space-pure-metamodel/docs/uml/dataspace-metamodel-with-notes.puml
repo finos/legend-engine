@@ -1,0 +1,123 @@
+@startuml DataSpace Metamodel with Notes
+
+' Class definitions
+abstract class PackageableElement {
+  +name: String
+}
+
+class DataSpace {
+  +title: String[0..1]
+  +description: String[0..1]
+}
+
+class DataSpaceExecutionContext {
+  +name: String[1]
+  +title: String[0..1]
+  +description: String[0..1]
+}
+
+class DataSpaceDiagram {
+  +title: String[1]
+  +description: String[0..1]
+}
+
+abstract class DataSpaceExecutable {
+  +title: String[1]
+  +id: String[1]
+  +description: String[0..1]
+  +executionContextKey: String[0..1]
+}
+
+class DataSpacePackageableElementExecutable {
+}
+
+class DataSpaceTemplateExecutable {
+}
+
+abstract class DataSpaceSupportInfo {
+  +documentationUrl: String[0..1]
+}
+
+class DataSpaceSupportEmail {
+  +address: String[1]
+}
+
+class DataSpaceSupportCombinedInfo {
+  +emails: String[*]
+  +website: String[0..1]
+  +faqUrl: String[0..1]
+  +supportUrl: String[0..1]
+}
+
+class Mapping
+class PackageableRuntime
+class Diagram
+class FunctionDefinition
+class EmbeddedData
+
+' Inheritance relationships
+PackageableElement <|-- DataSpace
+DataSpaceExecutable <|-- DataSpacePackageableElementExecutable
+DataSpaceExecutable <|-- DataSpaceTemplateExecutable
+DataSpaceSupportInfo <|-- DataSpaceSupportEmail
+DataSpaceSupportInfo <|-- DataSpaceSupportCombinedInfo
+
+' Associations
+DataSpace "1" *-- "1..*" DataSpaceExecutionContext : executionContexts
+DataSpace "1" *-- "1" DataSpaceExecutionContext : defaultExecutionContext
+DataSpace "1" *-- "*" DataSpaceDiagram : diagrams
+DataSpace "1" *-- "*" PackageableElement : elements
+DataSpace "1" *-- "*" DataSpaceExecutable : executables
+DataSpace "1" *-- "0..1" DataSpaceSupportInfo : supportInfo
+
+DataSpaceExecutionContext "1" --> "1" Mapping : mapping
+DataSpaceExecutionContext "1" --> "1" PackageableRuntime : defaultRuntime
+DataSpaceExecutionContext "1" --> "0..1" EmbeddedData : testData
+
+DataSpaceDiagram "1" --> "1" Diagram : diagram
+
+DataSpacePackageableElementExecutable "1" --> "1" PackageableElement : executable
+DataSpaceTemplateExecutable "1" --> "1" FunctionDefinition : query
+
+' Notes
+note top of DataSpace
+  A DataSpace is a packagable element that encapsulates 
+  execution contexts, diagrams, and executables, allowing 
+  users to organize and interact with their data models.
+end note
+
+note right of DataSpaceExecutionContext
+  Defines an execution context within a data space with
+  a mapping for data transformation, a default runtime
+  for execution, and optional test data.
+end note
+
+note right of DataSpaceDiagram
+  Associates a diagram with a data space
+  for visual representation of the data model.
+end note
+
+note left of DataSpaceExecutable
+  Base class for executables in a data space.
+  Can be either a packagable element executable
+  or a template executable with a query.
+end note
+
+note right of DataSpaceSupportInfo
+  Abstract base class for support information.
+  Can be either an email address or combined
+  information with multiple contact methods.
+end note
+
+' Layout hints
+together {
+  class DataSpacePackageableElementExecutable
+  class DataSpaceTemplateExecutable
+}
+
+together {
+  class DataSpaceSupportEmail
+  class DataSpaceSupportCombinedInfo
+}
+
+@enduml
