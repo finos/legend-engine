@@ -132,7 +132,12 @@ function meta::pure::executionPlan::preprocessFunction(f:FunctionDefinition<Any>
 {
   let fromExpr = $f->findExpressionsForFunctionInFunctionDefinition([from_T_m__Runtime_1__T_m_,
                                                                      from_T_m__PackageableRuntime_1__T_m_,
-                                                                     from_FunctionDefinition_1__Runtime_1__T_m_]);
+                                                                     from_T_m__Mapping_1__Runtime_1__T_m_,
+                                                                     from_T_m__Mapping_1__PackageableRuntime_1__T_m_,
+                                                                     from_FunctionDefinition_1__Runtime_1__T_m_,
+                                                                     from_FunctionDefinition_1__PackageableRuntime_1__T_m_,
+                                                                     from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_,
+                                                                     from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_]);
   if(!$fromExpr->isEmpty(),
         | let runtime = $fromExpr->evaluateAndDeactivate()->map(exp | $exp.parametersValues->tail()->evaluateAndDeactivate()->filter(p | $p->instanceOf(InstanceValue))->cast(@InstanceValue).values)
                         ->map(v | $v->match([ runtime:Runtime[1] | $runtime,

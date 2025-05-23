@@ -42,6 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
@@ -51,6 +52,7 @@ import org.finos.legend.engine.shared.core.extension.LegendLanguageExtension;
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
@@ -265,6 +267,11 @@ public interface CompilerExtension extends LegendLanguageExtension
     }
 
     default List<Procedure3<Set<PackageableElementPointer>, TestAssertion, CompileContext>> getExtraTestAssertionPrerequisiteElementsPassProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Procedure3<EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> getExtraPackageableRuntimeProcessors()
     {
         return Collections.emptyList();
     }
