@@ -765,6 +765,9 @@ public abstract class TestTDS
 
     private void sort(TestTDS copy, ListIterable<SortInfo> sortInfos, int start, int end, MutableList<Pair<Integer, Integer>> ranges)
     {
+        if (copy.rowCount == 0) {
+            return;
+        }
         SortInfo currentSort = sortInfos.getFirst();
         this.sortOneLevel(copy, currentSort, start, end);
         if (!sortInfos.isEmpty())
@@ -1138,7 +1141,7 @@ public abstract class TestTDS
         MutableList<Integer> missings = Lists.mutable.empty();
         while (rowLeftCurs < leftS.rowCount)
         {
-            if (!leftS.fullMatch(cols, resS, rowLeftCurs, rowResCurs))
+            if (resS.rowCount == 0 || !leftS.fullMatch(cols, resS, rowLeftCurs, rowResCurs))
             {
                 missings.add(rowLeftCurs);
                 rowLeftCurs++;
