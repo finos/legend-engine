@@ -231,6 +231,7 @@ public class HelperRuntimeBuilder
 
             visitedStores.add(HelperModelBuilder.getElementFullPath((PackageableElement) connectionStore._element(),context.pureModel.getExecutionSupport()));
         });
+        context.getCompilerExtensions().getExtraPackageableRuntimeProcessors().forEach(processor -> processor.value(engineRuntime, context, pureRuntime));
         // verify runtime mapping coverage
         checkRuntimeMappingCoverage(pureRuntime, mappings, context, engineRuntime.sourceInformation);
         return pureRuntime;
