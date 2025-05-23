@@ -105,12 +105,12 @@ abstract class ServicePostValidationRunner
         else if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureMultiExecution_Impl)
         {
             Root_meta_legend_service_metamodel_PureMultiExecution multiExecution = (Root_meta_legend_service_metamodel_PureMultiExecution) pureService._execution();
-            // Find index in service path of execution key param
-            int keyIndex = findExecutionKeyIndex(multiExecution);
+            // Check execution key param exists in service path
+            findExecutionKeyIndex(multiExecution);
 
             // Find value of execution key param
             RichIterable<?> params = paramsWithAssertion.getOne();
-            Object rawParam = params.toList().get(keyIndex);
+            Object rawParam = params.toList().get(params.size() - 1);
             String executionParamValue = (String) ((InstanceValue) ((LambdaFunction<?>) rawParam)._expressionSequence().getAny())._values().getAny();
 
             // Find execution that matches the param, then extract and instantiate query/mapping/runtime from execution
