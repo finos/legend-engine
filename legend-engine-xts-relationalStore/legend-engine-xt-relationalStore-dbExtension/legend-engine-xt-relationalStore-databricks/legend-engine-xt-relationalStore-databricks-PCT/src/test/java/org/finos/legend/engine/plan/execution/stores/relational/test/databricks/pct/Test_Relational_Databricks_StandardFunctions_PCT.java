@@ -42,6 +42,9 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
             //or
             one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "Can't find the packageable element 'ortrue'"),
 
+            //xor
+            one("meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryExpressions_Function_1__Boolean_1_", "java.sql.SQLException: [Databricks][DatabricksJDBCDriver]"),
+    
             // StD Dev
             one("meta::pure::functions::math::tests::stdDev::testFloatStdDev_Function_1__Boolean_1_", "[PARSE_SYNTAX_ERROR] Syntax error at or near '('."),
             one("meta::pure::functions::math::tests::stdDev::testIntStdDev_Function_1__Boolean_1_", "[PARSE_SYNTAX_ERROR] Syntax error at or near '('."),
