@@ -765,7 +765,8 @@ public abstract class TestTDS
 
     private void sort(TestTDS copy, ListIterable<SortInfo> sortInfos, int start, int end, MutableList<Pair<Integer, Integer>> ranges)
     {
-        if (copy.rowCount == 0) {
+        if (copy.rowCount == 0)
+        {
             return;
         }
         SortInfo currentSort = sortInfos.getFirst();
