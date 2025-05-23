@@ -189,6 +189,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='BITAND(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
+    dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='BITNOT(%s)')),
+    dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='BITOR(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
+    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='BITSHIFTLEFT(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
+    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='BITSHIFTRIGHT(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
+    dynaFnToSql('bitXor',                 $allStates,            ^ToSql(format='BITXOR(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='booland(%s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='boolor(%s)')),    
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceil(%s)')),
