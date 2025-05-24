@@ -1,0 +1,36 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> meta::pure::functions::boolean::xor(first:Boolean[1], second:Boolean[1]):Boolean[1]
+{
+   and(or($first, $second), or(!$first, !$second));
+}
+
+function <<PCT.test>> meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryTruthTable<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(false, $f->eval(|xor(true, true)));
+    assertEquals(false, $f->eval(|xor(false, false)));
+    assertEquals(true, $f->eval(|xor(true, false)));
+    assertEquals(true, $f->eval(|xor(false, true)));
+}
+
+function <<PCT.test>> meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryExpressions<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertFalse($f->eval(|xor((1 == 1), (2 != 3))));
+    assert($f->eval(|xor((1 == 2), (2 != 3))));
+    assertFalse($f->eval(|xor(true, (2 != 3))));
+    assert($f->eval(|xor((1 == 2), true)));
+}
