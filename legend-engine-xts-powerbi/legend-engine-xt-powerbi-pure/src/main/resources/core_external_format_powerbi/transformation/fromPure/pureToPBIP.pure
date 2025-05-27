@@ -1,0 +1,272 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::pure::runtime::*;
+import meta::legend::service::metamodel::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::relational::mapping::*;
+import meta::pure::extension::*;
+import meta::external::store::relational::runtime::*;
+import meta::external::powerbi::transformation::fromPure::*;
+import meta::external::powerbi::extensions::*;
+import meta::pure::generation::metamodel::*;
+import meta::external::powerbi::metamodel::*;
+import meta::pure::metamodel::dataSpace::*;
+import meta::pure::executionPlan::*;
+import meta::external::powerbi::profiles::*;
+
+Class meta::external::powerbi::transformation::fromPure::PowerBIArtifactGenerationOutput extends GenerationOutput
+{
+
+}
+
+function meta::external::powerbi::transformation::fromPure::generatePowerBIArtifacts(dataspace: DataSpace[1], extensions: meta::pure::extension::Extension[*]):PowerBIArtifactGenerationOutput[*]
+{
+  let dataspaceName=$dataspace.name->toOne('Data spaces must have a name for Power BI artifact generation.');
+  assertNotEmpty($dataspace.executables, 'Data spaces must have atleast one exectuable for Power BI artifact generation. The data space with name \"' + $dataspaceName + '\" does not have any executables.');
+  
+  let queryMode=$dataspace.stereotypes->filter(s|$s.profile==PowerBIArtifactGeneration).value->toOne('Invalid dataspace stereotype for Power BI artifact generation');
+
+  ^Project(
+    model=$dataspace->getModel($queryMode, $extensions),
+    report=$dataspaceName->getReport(),
+    metadata=$dataspaceName->getProjectMetadata()
+  )->generateArtifacts();
+}
+
+function meta::external::powerbi::transformation::fromPure::generatePowerBIArtifacts(dataspace: DataSpace[1]):PowerBIArtifactGenerationOutput[*]
+{
+  $dataspace->generatePowerBIArtifacts(getDefaultExtensions());
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getModel(dataspace:DataSpace[1], queryMode: String[1], extensions: meta::pure::extension::Extension[*]):Model[1]
+{
+  let dataspaceName=$dataspace.name->toOne();
+  ^Model(
+    name=$dataspaceName,
+    platformMetadata=$dataspaceName->getModelPlatformMetadata(),
+    definitionMetadata=getModelDefinitionMetadata(),
+    definition=$dataspace->getModelDefinition($queryMode, $extensions)
+  );
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getModelPlatformMetadata(name: String[1]):PlatformMetadata[1]
+{
+  let defaultPlatformMetadata=getDefaultPlatformMetadata();
+  ^$defaultPlatformMetadata(
+    metadata=^Metadata(
+      displayName=$name + 'SemanticModel',
+      type='SemanticModel'
+    )
+  );
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getModelDefinitionMetadata():ModelDefinitionMetadata[1]
+{
+  ^ModelDefinitionMetadata(
+    version='4.0',
+    settings=newMap([])
+  );
+}
+
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getReport(name: String[1]):Report[1]
+{
+  ^Report(
+    name=$name,
+    platformMetadata=$name->getReportPlatformMetadata(),
+    definitionMetadata=$name->getReportDefinitionMetadata()
+  );
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getProjectMetadata(name: String[1]):ProjectMetadata[1]
+{
+  ^ProjectMetadata(
+    version='1.0',
+    settings=^Map<String,Boolean>()->put('enableAutoRecovery',true),
+    artifacts=^List<ArtifactMetadata>(values=[^ArtifactMetadata(report=^ArtifactSource(path=$name + '.Report'))])
+  );
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getReportPlatformMetadata(name: String[1]):PlatformMetadata[1]
+{
+  let defaultPlatformMetadata=getDefaultPlatformMetadata();
+  ^$defaultPlatformMetadata(
+     metadata=^Metadata(
+      displayName=$name + 'Report',
+      type='Report'
+    )
+  );
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getReportDefinitionMetadata(name:String[1]):ReportDefinitionMetadata[1]
+{
+  ^ReportDefinitionMetadata(
+    version='4.0',
+    datasetReference=^Reference(byPath=^ArtifactSource(path='../' + $name + '.SemanticModel'))
+  );
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getDefaultPlatformMetadata():PlatformMetadata[1]
+{
+  ^PlatformMetadata(
+    config=^meta::external::powerbi::metamodel::Config(
+      logicalId=meta::core::runtime::generateGuid(),
+      version='2.0'
+      ),
+    schema='https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json'
+  );
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getModelDefinition(dataspace:DataSpace[1], queryMode: String[1], extensions: meta::pure::extension::Extension[*]):Definition[1]
+{
+  ^Definition(
+    database=^Database(compatibilityLevel=1550),
+    defaultDataSourceVersion=DataSourceVersion.powerBI_V3,
+    culture=Culture.en_US,
+    tables=$dataspace.executables->map(e | $e->match([
+      te: DataSpaceTemplateExecutable[1] | $te->getExecutionPlan($dataspace, $extensions)->generateTable($te.title, $dataspace->elementToPath()->getTableLineageTag($te.id), $queryMode),
+      pe: DataSpacePackageableElementExecutable[1] | $pe->getExecutionPlan($dataspace, $extensions)->generateTable($pe.title, $dataspace->elementToPath()->getTableLineageTag($pe.executable->elementToPath()), $queryMode)
+    ]);)
+  );
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getExecutionPlan(dataspaceTemplateExecutable: DataSpaceTemplateExecutable[1], dataspace: DataSpace[1], extensions: meta::pure::extension::Extension[*]): ExecutionPlan[1]
+{
+  let dataspaceExecutionContext=$dataspaceTemplateExecutable.executionContextKey->getDataSpaceExecutionContext($dataspace.executionContexts, $dataspace.defaultExecutionContext);
+
+  $dataspaceTemplateExecutable.query->executionPlan($dataspaceExecutionContext.mapping, $dataspaceExecutionContext.defaultRuntime.runtimeValue, $dataspaceExecutionContext.defaultRuntime.runtimeValue->getCustomExecutionContext($extensions), $extensions);
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getExecutionPlan(dataspacePackageableElementExecutable: DataSpacePackageableElementExecutable[1], dataspace: DataSpace[1], extensions: meta::pure::extension::Extension[*]): ExecutionPlan[1]
+{
+  let dataspaceExecutionContext=$dataspacePackageableElementExecutable.executionContextKey->getDataSpaceExecutionContext($dataspace.executionContexts, $dataspace.defaultExecutionContext);
+
+  $dataspacePackageableElementExecutable.executable->match([
+    f: PackageableFunction<Any>[1] | $f->cast(@ConcreteFunctionDefinition<Any>)->executionPlan($dataspaceExecutionContext.mapping, $dataspaceExecutionContext.defaultRuntime.runtimeValue, $dataspaceExecutionContext.defaultRuntime.runtimeValue->getCustomExecutionContext($extensions), $extensions),
+    s: Service[1] | $s->getExecutionPlan($dataspaceExecutionContext, $dataspaceExecutionContext.defaultRuntime.runtimeValue->getCustomExecutionContext($extensions), $extensions);
+  ]);
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getExecutionPlan(s: Service[1], dataSpaceExecutionContext: DataSpaceExecutionContext[1], customExecutionContext: ExecutionContext[1], extensions: meta::pure::extension::Extension[*]): ExecutionPlan[1]
+{
+  //Support only single execution services
+  assert($s.execution->instanceOf(PureSingleExecution), 'Only single execution services are supported for Power BI artifact generation. Service with pattern \"' + $s.pattern + '\" is not a single execution service.');
+
+  $s.execution->cast(@PureSingleExecution).func->executionPlan($dataSpaceExecutionContext.mapping, $dataSpaceExecutionContext.defaultRuntime.runtimeValue, $customExecutionContext, $extensions);
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getDataSpaceExecutionContext(executionContextKey: String[0..1], executionContexts: DataSpaceExecutionContext[1..*], defaultExecutionContext: DataSpaceExecutionContext[1]): DataSpaceExecutionContext[1]
+{
+  if($executionContextKey->isEmpty(), | $defaultExecutionContext, | $executionContexts->filter(ec | $ec.name->equal($executionContextKey))->last()->toOne('Invalid execution context key'));
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getCustomExecutionContext(engineRuntime : EngineRuntime[1], extensions: meta::pure::extension::Extension[*]) : ExecutionContext[1]
+{
+  let pureToPBIP_getCustomExecutionContext=$extensions->map(e|$e.moduleExtension('powerBI')->cast(@PowerBIExtension).pureToPBIP_getCustomExecutionContext);
+  assert($pureToPBIP_getCustomExecutionContext->size()->lessThan(2), 'Too many PowerBI extensions');
+
+  if($pureToPBIP_getCustomExecutionContext->isEmpty(), | ^ExecutionContext(), | $pureToPBIP_getCustomExecutionContext->toOne()->eval($engineRuntime));
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::generateTable(plan: ExecutionPlan[1], tableName:String[1], lineageTag:String[1], queryMode: String[1]):Table[1]
+{
+  $plan->validateExecutionPlan($tableName);
+  ^Table(
+    // Replacing spaces as they are not understandable in TMDL format
+    name=$tableName->replace(' ', '_'),
+    lineageTag=$lineageTag,
+    columns=$plan.rootExecutionNode.resultType->cast(@TDSResultType).tdsColumns->map(c | $c->toTableColumn($lineageTag)),
+    partition=^Partition(mode=$queryMode, source=$plan.rootExecutionNode->getPartitionSource()));
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::validateExecutionPlan(plan: ExecutionPlan[1], executableTitle: String[1]): Boolean[*]
+{
+  //Only support execution plans with TDSResultType
+  assert($plan.rootExecutionNode.resultType->instanceOf(TDSResultType), 'Only executables with TDS/Relation result types are supported for Power BI artifact generation. Executable with title \"' + $executableTitle + '\" does not have a result type of TDS.');
+
+  //Only support non-parameterized executables
+  assert($plan.rootExecutionNode.childNodes()->filter(n|$n->instanceOf(FunctionParametersValidationNode))->size()->equal(0), 'Parameterised executables are not supported for Power BI artifact generation. Executable with title \"' + $executableTitle + '\" is not supported.');
+
+  //Only support executables without local vars
+  assert($plan.rootExecutionNode.childNodes()->filter(n|$n->instanceOf(AllocationExecutionNode))->size()->equal(0), 'Executables with local vars are not supported for Power BI artifact generation. Executable with title \"' + $executableTitle + '\" is not supported.');
+  
+  //Only support execution plans with a single RelationalTdsInstantiationExecutionNode
+  assert($plan.rootExecutionNode.childNodes()->filter(n|$n->instanceOf(RelationalTdsInstantiationExecutionNode))->size()->equal(1), 'Only executables with with one relational execution node are supported for Power BI artifact generation. Executable with title \"' + $executableTitle + '\" is not supported.');
+
+  //Only support Snowflake relational database connections with a role
+  let sqlNode=$plan.rootExecutionNode->getLastSqlExecutionNodeWithSelect();
+  assert($sqlNode.connection->instanceOf(RelationalDatabaseConnection) && $sqlNode.connection->cast(@RelationalDatabaseConnection).datasourceSpecification->instanceOf(SnowflakeDatasourceSpecification), 'Only executables with a Relational database connection of type Snowflake are supported for Power BI artifact generation. Executable with title \"' + $executableTitle + '\" does not have a Snowflake connection based runtime.');
+  assertNotEmpty($sqlNode.connection->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).role, 'Only Snowflake connections with a role specified are supported for Power BI Artifact generation.');
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getDefaultExtensions(): Extension[*]
+{
+  meta::external::format::shared::externalFormatExtension()->concatenate(meta::relational::extension::relationalExtensions());
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getPartitionSource(rootExecutionNode: ExecutionNode[1]):PartitionSource[1]
+{
+  let sqlNode=$rootExecutionNode->getLastSqlExecutionNodeWithSelect();
+  ^PartitionSource(sqlQuery=$sqlNode.sqlQuery, datasourceSpecification=$sqlNode.connection->cast(@RelationalDatabaseConnection).datasourceSpecification);
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getLastSqlExecutionNodeWithSelect(rootExecutionNode: ExecutionNode[1]):SQLExecutionNode[1]
+{
+  //Select last node as the execution plan contains other session tagging SQL nodes
+  $rootExecutionNode.childNodes()->filter(n|$n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(node|$node.sqlQuery->toLower()->startsWith('select'))->last()->toOne();
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::toTableColumn(tdsColumn:TDSColumn[1], tableLineageTag: String[1]):Column[1]
+{
+  ^Column(
+    name=$tdsColumn.name, 
+    sourceColumn=$tdsColumn.name, 
+    dataType=^GenericType(rawType= $tdsColumn.type)->getPowerBIColumnType(),
+    lineageTag=$tdsColumn.name->getColumnLineageTag($tableLineageTag));
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getTableLineageTag(dataspaceElementPath:String[1], executableElementPath:String[1]): String[1]
+{
+  $dataspaceElementPath + '::' + $executableElementPath;
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getColumnLineageTag(tdsColumnName:String[1], tableLineageTag: String[1]): String[1]
+{
+  $tableLineageTag + '::' + $tdsColumnName->makeCamelCase();
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getPowerBIColumnType(genericType:GenericType[1]):meta::external::powerbi::metamodel::DataType[1]
+{
+  $genericType.rawType->match([
+                p:PrimitiveType[1] | $p->getPowerBIColumnType(),
+                e:Enumeration<Enum>[1]| meta::external::powerbi::metamodel::DataType.String
+                ]);
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getPowerBIColumnType(primitiveType:PrimitiveType[1]):meta::external::powerbi::metamodel::DataType[1]
+{
+  [
+    pair(String, meta::external::powerbi::metamodel::DataType.String),
+    pair(Date, meta::external::powerbi::metamodel::DataType.DateTime),
+    pair(DateTime, meta::external::powerbi::metamodel::DataType.DateTime),
+    pair(StrictDate, meta::external::powerbi::metamodel::DataType.DateTime),
+    pair(Boolean, meta::external::powerbi::metamodel::DataType.Boolean),
+    pair(Integer, meta::external::powerbi::metamodel::DataType.Int64),
+    pair(Float, meta::external::powerbi::metamodel::DataType.Double),
+    pair(Decimal, meta::external::powerbi::metamodel::DataType.Decimal),
+    pair(Number, meta::external::powerbi::metamodel::DataType.Int64)
+  ]->filter(t|$t.first==$primitiveType).second->toOne('Cannot find type match for primitive type: ' + $primitiveType.name->toOne());
+}
