@@ -97,7 +97,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -T2 -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }}
+          mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }}
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -111,7 +111,7 @@ jobs:
         # as the latter binds to generate-sources which runs before compile phase
         # and can cause problem with some code generators
         # See https://github.com/finos/legend-engine/pull/924
-        run: mvn -B -e -T2 -DskipTests=true deploy -P docker-snapshot,pct-cloud-test
+        run: mvn -B -e -DskipTests=true deploy -P docker-snapshot,pct-cloud-test
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4
