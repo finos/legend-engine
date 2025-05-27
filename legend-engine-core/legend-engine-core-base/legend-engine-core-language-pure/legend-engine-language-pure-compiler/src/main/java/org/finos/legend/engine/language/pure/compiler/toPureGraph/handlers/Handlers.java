@@ -1710,12 +1710,12 @@ public class Handlers
 
     private void registerMathBitwise()
     {
-        register("meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_", true, ps -> res("Number", "one"));
-        register("meta::pure::functions::math::bitNot_Integer_1__Integer_1_", true, ps -> res("Number", "one"));
-        register("meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_", true, ps -> res("Number", "one"));
-        register("meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_", true, ps -> res("Number", "one"));
-        register("meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_", true, ps -> res("Number", "one"));
+        register("meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::bitNot_Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
     }
 
     private void registerMathInequalities()
