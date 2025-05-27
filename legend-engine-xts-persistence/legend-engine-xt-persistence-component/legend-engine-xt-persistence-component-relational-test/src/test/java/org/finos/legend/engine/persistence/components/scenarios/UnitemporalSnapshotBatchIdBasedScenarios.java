@@ -169,4 +169,32 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableMultiPartitionsBasedWithoutDigest, stagingTableWithMultiPartitionsWithoutDigest, ingestMode);
     }
 
+    public TestScenario BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION_AND_DELETE_PARTITION()
+    {
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .build())
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeysMulti)).derivePartitionSpec(true).addAllPartitionSpecList(partitionSpecList()).build())
+                .build();
+        return new TestScenario(mainTableMultiPartitionsBased, stagingTableWithMultiPartitions, deletePartitionTableWithMultiplePartitions, ingestMode);
+    }
+
+    public TestScenario BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION_AND_DELETE_PARTITION_AND_NO_PARTITION_LIST()
+    {
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .build())
+                .partitioningStrategy(Partitioning.builder()
+                        .addAllPartitionFields(Arrays.asList(partitionKeysMulti))
+                        .derivePartitionSpec(true)
+                        .build())
+                .build();
+        return new TestScenario(mainTableMultiPartitionsBased, stagingTableWithMultiPartitions, deletePartitionTableWithMultiplePartitions, ingestMode);
+    }
 }

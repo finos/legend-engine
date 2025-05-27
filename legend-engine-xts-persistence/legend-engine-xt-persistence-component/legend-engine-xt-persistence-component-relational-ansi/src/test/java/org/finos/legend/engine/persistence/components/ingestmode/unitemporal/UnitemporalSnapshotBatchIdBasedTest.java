@@ -22,12 +22,12 @@ import org.finos.legend.engine.persistence.components.relational.api.GeneratorRe
 import org.finos.legend.engine.persistence.components.testcases.ingestmode.unitemporal.UnitmemporalSnapshotBatchIdBasedTestCases;
 import org.junit.jupiter.api.Assertions;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockAcquiredQuery;
-import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockInitializedQuery;
-import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.dupRowsSql;
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.*;
 import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DATA_ERROR_ROWS;
 import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DUPLICATE_ROWS;
 
@@ -240,6 +240,80 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionWithDeletePartition(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET " +
+                "sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+                "WHERE (sink.\"batch_id_out\" = 999999999) AND " +
+                "(NOT (EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage " +
+                "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" = stage.\"digest\")))) " +
+                "AND (((sink.\"biz_date\" = '2024-01-01') AND (sink.\"account_type\" = 1)) " +
+                "OR ((sink.\"biz_date\" = '2024-01-02') AND (sink.\"account_type\" = 1)) " +
+                "OR ((sink.\"biz_date\" = '2024-01-02') AND (sink.\"account_type\" = 2)))";
+
+        String expectedDeletePartitionQuery = getExpectedDeletePartitionQuery();
+
+        String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
+                "(\"id\", \"name\", \"amount\", \"account_type\", \"biz_date\", \"digest\", \"batch_id_in\", \"batch_id_out\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"account_type\",stage.\"biz_date\",stage.\"digest\"," +
+                "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999 " +
+                "FROM \"mydb\".\"staging\" as stage WHERE " +
+                "NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE " +
+                "(sink.\"batch_id_out\" = 999999999) AND " +
+                "(((sink.\"biz_date\" = '2024-01-01') AND (sink.\"account_type\" = 1)) " +
+                "OR ((sink.\"biz_date\" = '2024-01-02') AND (sink.\"account_type\" = 1)) " +
+                "OR ((sink.\"biz_date\" = '2024-01-02') AND (sink.\"account_type\" = 2))))))";
+
+        Assertions.assertEquals(Arrays.asList(AnsiTestArtifacts.expectedMainTableWithMultiPartitionsCreateQuery, getExpectedMetadataTableCreateQuery()), preActionsSql);
+        Assertions.assertEquals(Arrays.asList(expectedMilestoneQuery, expectedDeletePartitionQuery, expectedUpsertQuery), milestoningSql);
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionWithDeletePartitionWithNoPartitionList(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET sink.\"batch_id_out\" = " +
+                "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+                "WHERE (sink.\"batch_id_out\" = 999999999) AND (NOT (EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") " +
+                "AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" = stage.\"digest\")))) AND (EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage " +
+                "WHERE (sink.\"biz_date\" = stage.\"biz_date\") AND (sink.\"account_type\" = stage.\"account_type\")))";
+
+        String expectedDeletePartitionQuery = getExpectedDeletePartitionQuery();
+
+        String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"account_type\", \"biz_date\", \"digest\", \"batch_id_in\", \"batch_id_out\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"account_type\",stage.\"biz_date\",stage.\"digest\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 " +
+                "FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999 FROM \"mydb\".\"staging\" as stage " +
+                "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) " +
+                "AND ((sink.\"biz_date\" = stage.\"biz_date\") AND (sink.\"account_type\" = stage.\"account_type\")))))";
+
+        Assertions.assertEquals(Arrays.asList(AnsiTestArtifacts.expectedMainTableWithMultiPartitionsCreateQuery, getExpectedMetadataTableCreateQuery()), preActionsSql);
+        Assertions.assertEquals(Arrays.asList(expectedMilestoneQuery, expectedDeletePartitionQuery, expectedUpsertQuery), milestoningSql);
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionWithDeletePartitionWithEmptyStaging(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedDeletePartitionQuery = getExpectedDeletePartitionQuery();
+
+        Assertions.assertEquals(Arrays.asList(AnsiTestArtifacts.expectedMainTableWithMultiPartitionsCreateQuery, getExpectedMetadataTableCreateQuery()), preActionsSql);
+        Assertions.assertEquals(Collections.singletonList(expectedDeletePartitionQuery), milestoningSql);
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
     }
 
@@ -499,5 +573,13 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     protected String getExpectedDataErrorQueryWithDistinctAmount()
     {
         return AnsiTestArtifacts.dataErrorSqlWithAmount;
+    }
+
+    protected String getExpectedDeletePartitionQuery()
+    {
+        return "UPDATE \"mydb\".\"main\" as sink SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM " +
+                "batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 WHERE (sink.\"batch_id_out\" = 999999999) AND " +
+                "(EXISTS (SELECT * FROM \"mydb\".\"delete_partition\" as delete_partition_alias WHERE (sink.\"biz_date\" = delete_partition_alias.\"biz_date\") " +
+                "AND (sink.\"account_type\" = delete_partition_alias.\"account_type\")))";
     }
 }
