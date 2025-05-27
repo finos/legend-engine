@@ -1,0 +1,20 @@
+table Customer_Type_Function
+	lineageTag: spaces::dataspaceNamePlaceholder::functions::functionWithEnumOutput__TabularDataSet_1_
+	column 'Customer ID'
+		dataType: Int64
+		lineageTag: spaces::dataspaceNamePlaceholder::functions::functionWithEnumOutput__TabularDataSet_1_::customerId
+		sourceColumn: Customer ID
+		summarizeBy: none
+	column 'Customer Type'
+		dataType: String
+		lineageTag: spaces::dataspaceNamePlaceholder::functions::functionWithEnumOutput__TabularDataSet_1_::customerType
+		sourceColumn: Customer Type
+		summarizeBy: none
+	column 'IsMember'
+		dataType: Boolean
+		lineageTag: spaces::dataspaceNamePlaceholder::functions::functionWithEnumOutput__TabularDataSet_1_::isMember
+		sourceColumn: IsMember
+		summarizeBy: none
+	partition p=m
+		mode: %s
+		source=Value.NativeQuery(Snowflake.Databases("account.goldman.us-east-1.aws.privatelink.snowflakecomputing.com","warehouse",[Role="role"]){[Name="dummyDB"]}[Data], "select ""root"".CUSTOMER_ID as ""Customer ID"", ""root"".CUSTOMER_TYPE as ""Customer Type"", ""root"".CUSTOMER_BOOLEAN_FIELD as ""IsMember"" from SAMPLE_DATA.CUSTOMERS as ""root""", null, [EnableFolding=true])
