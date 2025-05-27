@@ -1,0 +1,21 @@
+{
+  "name": "core_external_format_powerbi",
+  "pattern": "(meta::external::powerbi)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core_functions_unclassified",
+    "core_functions_json",
+    "core_functions_relation",
+    "platform_dsl_mapping",
+    "platform_dsl_path",
+    "platform_dsl_store",
+    "platform_dsl_graph",
+    "core",
+    "core_generation",
+    "core_service",
+    "core_relational",
+    "core_relational_snowflake",
+    "platform_store_relational",
+    "core_data_space_metamodel"
+  ]
+}

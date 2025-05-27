@@ -1,0 +1,128 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::powerbi::metamodel::*;
+import meta::external::powerbi::transformation::fromPure::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+
+function meta::external::powerbi::transformation::fromPure::generateArtifacts(project: Project[1]):PowerBIArtifactGenerationOutput[*]
+{
+  ^PowerBIArtifactGenerationOutput(fileName=$project.report.name + '.pbip',content=$project.metadata->meta::json::toJSON(),format='json')
+  ->concatenate($project.report->generateArtifacts())
+  ->concatenate($project.model->generateArtifacts());
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::generateArtifacts(report: Report[1]):PowerBIArtifactGenerationOutput[*]
+{
+  let baseFolderPath=$report.name + '.Report/';
+  ^PowerBIArtifactGenerationOutput(content=$report.platformMetadata->meta::json::toJSON()->replace('\\\/','\/')->replace('\"schema\"','\"$schema\"'),fileName=$baseFolderPath + '.platform',format='json')
+  ->concatenate(^PowerBIArtifactGenerationOutput(content=$report.definitionMetadata->meta::json::toJSON()->replace('\\\/','\/'),fileName=$baseFolderPath + 'definition.pbir',format='json'));
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::generateArtifacts(model: Model[1]):PowerBIArtifactGenerationOutput[*]
+{
+  let baseFolderPath=$model.name + '.SemanticModel/';
+
+  ^PowerBIArtifactGenerationOutput(content=$model.definitionMetadata->meta::json::toJSON(),fileName=$baseFolderPath + 'definition.pbism',format='json')
+  ->concatenate(^PowerBIArtifactGenerationOutput(content=$model.platformMetadata->meta::json::toJSON()->replace('\\\/','\/')->replace('\"schema\"','\"$schema\"'),fileName=$baseFolderPath + '.platform',format='json'))
+  ->concatenate($model.definition->generateArtifacts($baseFolderPath));
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::generateArtifacts(definition: Definition[1], baseFolderPath: String[1]):PowerBIArtifactGenerationOutput[*]
+{
+  let definitionFolderBasePath=$baseFolderPath + 'definition/';
+
+  ^PowerBIArtifactGenerationOutput(content=$definition.database->toTMDL(),fileName=$definitionFolderBasePath + 'database.tmdl',format='tmdl')
+  ->concatenate(^PowerBIArtifactGenerationOutput(content=$definition->toTMDL(), fileName=$definitionFolderBasePath + 'model.tmdl',format='tmdl'))
+  ->concatenate(generateArtifacts($definition.culture, $definitionFolderBasePath))
+  ->concatenate(generateArtifacts($definition.tables, $definitionFolderBasePath));
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::generateArtifacts(culture: Culture[1], definitionFolderBasePath: String[1]):PowerBIArtifactGenerationOutput[1]
+{
+  let cultureFolderBasePath=$definitionFolderBasePath + 'cultures/';
+  ^PowerBIArtifactGenerationOutput(content=$culture->getCultureInfo(),fileName=$cultureFolderBasePath + $culture->toString() + '.tmdl',format='tmdl');
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::generateArtifacts(tables: Table[*], definitionFolderBasePath: String[1]):PowerBIArtifactGenerationOutput[*]
+{
+  let tablesFolderBasePath=$definitionFolderBasePath + 'tables/';
+  $tables->map(t | ^PowerBIArtifactGenerationOutput(content=$t->toTMDL(),fileName=$tablesFolderBasePath + $t.name + '.tmdl',format='tmdl'));
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::toTMDL(database: Database[1]):String[1]
+{
+  'database\n\tcompatibilitylevel: ' + $database.compatibilityLevel->toString();
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::toTMDL(definition: Definition[1]):String[1]
+{
+  let newLineTab='\n\t';
+  'model Model' + $newLineTab + 'culture: ' + $definition.culture->toString() + $newLineTab + 'defaultPowerBIDataSourceVersion: ' + $definition.defaultDataSourceVersion->toString() + $newLineTab + 'sourceQueryCulture: ' + $definition.culture->toString() + '\n' + $definition.tables->getReferencesContent($definition.culture);
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getReferencesContent(tables: Table[*], culture: Culture[1]):String[1]
+{
+  let newLine='\n';
+  $tables->map(t | 'ref table ' + $t.name)->joinStrings($newLine) + $newLine +  'ref cultureInfo ' + $culture->toString();
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getCultureInfo(culture: Culture[1]):String[1]
+{
+  'cultureInfo ' + $culture->toString() + '\n\t' + 'linguisticMetadata={ \"Version\": \"1.0.0\", \"Language\": \"' + $culture->toString()->replace('_','-') + '\" }\n\t\tcontentType: json';
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::toTMDL(table: Table[1]):String[1]
+{
+  let newLineTab='\n\t';
+  'table ' + $table.name +  $newLineTab + 'lineageTag: ' + $table.lineageTag + $newLineTab + $table.columns->map(c | $c->toTMDL())->joinStrings($newLineTab) + $newLineTab + $table.partition->toTMDL(); 
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::toTMDL(column: Column[1]):String[1]
+{
+  let newLineTabTab='\n\t\t';
+  'column \'' + $column.name + '\'' + $newLineTabTab + 'dataType: ' + $column.dataType->toString() + $newLineTabTab + 'lineageTag: ' + $column.lineageTag + $newLineTabTab + 'sourceColumn: ' + $column.sourceColumn + $newLineTabTab + 'summarizeBy: none'; 
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::toTMDL(partition: Partition[1]):String[1]
+{
+  let newLineTabTab='\n\t\t';
+  'partition p=m' + $newLineTabTab + 'mode: ' + $partition.mode + $newLineTabTab + $partition.source->toString();
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::toString(source: PartitionSource[1]):String[1]
+{
+  $source.datasourceSpecification->match([
+    sfds: SnowflakeDatasourceSpecification[1] | $sfds->toPartitionSourceString($source.sqlQuery)
+  ]);
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::toString(role: String[0..1]):String[1]
+{
+  ',[Role=\"' + $role->toOne() + '\"]';
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::toPartitionSourceString(sfds: SnowflakeDatasourceSpecification[1], sqlQuery:String[1]):String[1]
+{
+  'source=Value.NativeQuery(Snowflake.Databases(\"' + $sfds->buildSnowflakeURL() + '\",\"' + $sfds.warehouseName + '\"' + $sfds.role->toString() + '){[Name=\"' + $sfds.databaseName + '\"]}[Data], \"' + $sqlQuery->replace('\"','\"\"') + '\", null, [EnableFolding=true])';
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::buildSnowflakeURL(sfds: SnowflakeDatasourceSpecification[1]):String[1]
+{
+  if($sfds.accountType->isNotEmpty(), 
+    | if ($sfds.accountType->toOne() == SnowflakeAccountType.VPS,
+         | $sfds.accountName + '.' + $sfds.organization->toOne('VPS snowflake connections need an organization to be specified') + '.' + $sfds.region + '.' + $sfds.cloudType->toOne('VPS snowflake connections need a cloudType to be specified') + '.privatelink.snowflakecomputing.com',
+         | $sfds.accountName + '.' + $sfds.region + '.privatelink.snowflakecomputing.com'),
+    | $sfds.accountName + '.' + $sfds.region + '.' + $sfds.cloudType->toOne('VPS snowflake connections need a cloudType to be specified') + '.snowflakecomputing.com');
+}
