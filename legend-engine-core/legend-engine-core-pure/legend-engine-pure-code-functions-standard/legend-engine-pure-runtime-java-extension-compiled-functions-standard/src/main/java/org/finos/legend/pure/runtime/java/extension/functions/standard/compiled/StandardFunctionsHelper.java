@@ -104,7 +104,7 @@ public class StandardFunctionsHelper
     {
         if (n < 0 || n > 62)
         {
-            throw new IllegalArgumentException("Unsupported number of bits to shift - max bits allowed is 62");
+            throw new PureExecutionException("Unsupported number of bits to shift - max bits allowed is 62");
         }
         return arg << n;
     }
@@ -113,7 +113,7 @@ public class StandardFunctionsHelper
     {
         if (n < 0 || n > 62)
         {
-            throw new IllegalArgumentException("Unsupported number of bits to shift - max bits allowed is 62");
+            throw new PureExecutionException("Unsupported number of bits to shift - max bits allowed is 62");
         }
         return arg >> n;
     }
