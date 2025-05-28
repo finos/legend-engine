@@ -84,28 +84,12 @@ public class UnitemporalSnapshotOptimizer
         Optional<Long> stagingDatasetPartitionCount = fetchApproximatePartitionCount(datasets.stagingDataset(), partitionFields);
         boolean shouldUsePartitionSpec = shouldUsePartitionSpec(stagingDatasetPartitionCount, maxAllowedPartitionSpecFilters);
 
-        if (datasets.deletePartitionDataset().isPresent())
-        {
-            // if deletePartitionDataset is present, then only use partition spec if that also needs it
-            Optional<Long> deleteDatasetPartitionCount = fetchApproximatePartitionCount(datasets.deletePartitionDataset().get(), partitionFields);
-            shouldUsePartitionSpec = shouldUsePartitionSpec &&
-                    shouldUsePartitionSpec(deleteDatasetPartitionCount.map(deletePartitionCount -> deletePartitionCount + stagingDatasetPartitionCount.orElse(0L)),
-                            maxAllowedPartitionSpecFilters);
-        }
-
         if (!shouldUsePartitionSpec)
         {
             return new ArrayList<>();
         }
 
-        List<Map<String, Object>> partitionSpecList = new ArrayList<>(extractPartitions(executor, transformer, datasets.stagingDataset(), partitionFields, placeHolderKeyValues));
-        if (datasets.deletePartitionDataset().isPresent())
-        {
-            // Delete partitions must be extracted
-            partitionSpecList.addAll(extractPartitions(executor, transformer, datasets.deletePartitionDataset().get(), partitionFields, placeHolderKeyValues));
-        }
-
-        return partitionSpecList;
+        return extractPartitions(executor, transformer, datasets.stagingDataset(), partitionFields, placeHolderKeyValues);
     }
 
     private boolean shouldUsePartitionSpec(Optional<Long> approxCountValue, Long maxAllowedPartitionSpecFilters)
