@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+Class meta::analytics::lineage::tests::C1
+{
+  name:String[1];
+}
 
 function <<access.private>> meta::analytics::lineage::tests::testTypeParameterFn<T>(collection: T[*]):T[*]
 {
@@ -20,9 +24,9 @@ function <<access.private>> meta::analytics::lineage::tests::testTypeParameterFn
 
 function <<test.Test>> meta::analytics::lineage::tests::testFindExpression():Boolean[1]
 {
-  let exp = {|[1,2,3]->meta::analytics::lineage::tests::testTypeParameterFn()}->evaluateAndDeactivate();
+  let exp = {|meta::analytics::lineage::tests::C1.all()->meta::analytics::lineage::tests::testTypeParameterFn()}->evaluateAndDeactivate();
   let r = $exp.expressionSequence->at(0)->findExpressionsForFunctionInValueSpecification(getAll_Class_1__T_MANY_);
-  assertEmpty($r);
+  assert($r.functionName=='getAll');
  
 }
 
