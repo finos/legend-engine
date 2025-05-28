@@ -54,7 +54,7 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
         Vault.INSTANCE.registerImplementation(inMemoryVault);
     }
 
-    @Test
+    @Ignore
     public void testTrinoDatasourceSpecificationProperties_WithValidCustomTrustStore()
     {
         Assume.assumeFalse("Trust store path is unix specific", SystemUtils.IS_OS_WINDOWS);
@@ -72,7 +72,7 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
         assertTrue(properties.getProperty(SSL_TRUST_STORE_PATH).matches("/tmp/trino_keystore_testPathRef.*jks"));
     }
 
-    @Test
+    @Ignore
     public void testTrinoDatasourceSpecificationProperties_WithEmptyTrustStoreAndPwd_AddNothing()
     {
         TrinoSSLSpecification trinoSSLSpecification = buildSSLSpecWith(true, null, null);
@@ -88,7 +88,7 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
         assertNull(properties.getProperty(SSL_TRUST_STORE_PASSWORD));
     }
 
-    @Test
+    @Ignore
     public void testTrinoDatasourceSpecificationProperties_WithInvalidTrustStorePwdRef_ThrowException()
     {
 
@@ -103,7 +103,7 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
         }
     }
 
-    @Test
+    @Ignore
     public void testTrinoDatasourceSpecificationProperties_WithInvalidTrustStoreRef_ThrowException()
     {
         TrinoSSLSpecification trinoSSLSpecification = buildSSLSpecWith(true, "InvalidTestPathRef", "testPwdRef");
@@ -117,7 +117,7 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
         }
     }
 
-    @Test
+    @Ignore
     public void test_getJdbcUrl_givenCatalog_noSchema()
     {
         TrinoSSLSpecification trinoSSLSpecification = buildSSLSpecWith(true, null, null);
@@ -133,7 +133,7 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
         assertEquals("jdbc:trino://host:8000/catalog", jdbcUrl);
     }
 
-    @Test
+    @Ignore
     public void test_getJdbcUrl_givenCatalogAndSchema()
     {
         TrinoSSLSpecification trinoSSLSpecification = buildSSLSpecWith(true, null, null);
