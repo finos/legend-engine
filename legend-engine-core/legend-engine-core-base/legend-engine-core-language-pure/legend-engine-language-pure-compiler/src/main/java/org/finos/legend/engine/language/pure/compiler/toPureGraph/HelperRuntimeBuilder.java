@@ -115,7 +115,7 @@ public class HelperRuntimeBuilder
     public static Root_meta_core_runtime_EngineRuntime buildEngineRuntime(EngineRuntime engineRuntime, CompileContext context)
     {
         // convert EngineRuntime with connection as a map indexes by store to Pure runtime which only contains an array of connections
-        Root_meta_core_runtime_EngineRuntime pureRuntime = new Root_meta_core_runtime_EngineRuntime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(engineRuntime.sourceInformation), null);
+        Root_meta_core_runtime_EngineRuntime pureRuntime = new Root_meta_core_runtime_EngineRuntime_Impl("Root::meta::core::runtime::EngineRuntime", SourceInformationHelper.toM3SourceInformation(engineRuntime.sourceInformation), context.pureModel.getClass("meta::core::runtime::EngineRuntime"));
         return buildEngineRuntime(engineRuntime, pureRuntime, context);
     }
 
@@ -276,7 +276,7 @@ public class HelperRuntimeBuilder
         if (runtime instanceof LegacyRuntime)
         {
             LegacyRuntime legacyRuntime = (LegacyRuntime) runtime;
-            Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(runtime.sourceInformation), null);
+            Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(runtime.sourceInformation), context.pureModel.getClass("meta::core::runtime::Runtime"));
             ListIterate.forEach(legacyRuntime.connections, connection ->
             {
                 final Root_meta_core_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));

@@ -68,7 +68,7 @@ public class PackageableRuntimeCompilerExtension implements CompilerExtension
         Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl(packageableRuntime.name, SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
         GenericType packageableRuntimeGenericType = context.newGenericType(context.pureModel.getType("meta::pure::runtime::PackageableRuntime"));
         metamodel._classifierGenericType(packageableRuntimeGenericType);
-        Root_meta_core_runtime_EngineRuntime pureRuntime = new Root_meta_core_runtime_EngineRuntime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), context.pureModel.getClass("meta::core::runtime::Runtime"));
+        Root_meta_core_runtime_EngineRuntime pureRuntime = new Root_meta_core_runtime_EngineRuntime_Impl("Root::meta::core::runtime::EngineRuntime", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), context.pureModel.getClass("meta::core::runtime::EngineRuntime"));
         return metamodel._runtimeValue(pureRuntime);
     }
 
