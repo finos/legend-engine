@@ -1,0 +1,42 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+native function
+    <<PCT.function>>
+    {
+        doc.doc='bitwise RIGHT SHIFT operator returns a Number representing the arg Number input shifted by n bits to the RIGHT'
+    }
+meta::pure::functions::math::bitShiftRight(arg:Integer[1], n:Integer[1]):Integer[1];
+
+function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_UpTo62Bits<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals($f->eval(|bitShiftRight(0, 0)), 0);
+  assertEquals($f->eval(|bitShiftRight(1, 0)), 1);
+  assertEquals($f->eval(|bitShiftRight(1, 1)), 0);
+  assertEquals($f->eval(|bitShiftRight(9223372036854775807, 10)), 9007199254740991);
+  assertEquals($f->eval(|bitShiftRight(9223372036854775807, 20)), 8796093022207);
+  assertEquals($f->eval(|bitShiftRight(9223372036854775807, 46)), 131071);
+  assertEquals($f->eval(|bitShiftRight(9223372036854775807, 62)), 1);
+
+  assertEquals($f->eval(|bitShiftRight(5, 0)), 5);
+  assertEquals($f->eval(|bitShiftRight(25, 11)), 0);
+  assertEquals($f->eval(|bitShiftRight(1024, 5)), 32);
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_MoreThan62Bits<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertError(|$f->eval(|bitShiftRight(1, 63)), 'Unsupported number of bits to shift - max bits allowed is 62');
+}

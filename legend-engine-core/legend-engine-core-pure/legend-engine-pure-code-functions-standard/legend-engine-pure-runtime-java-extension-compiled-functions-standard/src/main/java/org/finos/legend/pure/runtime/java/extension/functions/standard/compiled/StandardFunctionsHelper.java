@@ -78,4 +78,43 @@ public class StandardFunctionsHelper
     {
         return Math.tanh(input);
     }
+
+    // BITWISE ---------------------------------------------------------------------
+    public static Long bitAnd(Long arg1, Long arg2)
+    {
+        return arg1 & arg2;
+    }
+
+    public static Long bitOr(Long arg1, Long arg2)
+    {
+        return arg1 | arg2;
+    }
+
+    public static Long bitXor(Long arg1, Long arg2)
+    {
+        return arg1 ^ arg2;
+    }
+
+    public static Long bitNot(Long arg)
+    {
+        return ~arg;
+    }
+
+    public static Long bitShiftLeft(Long arg, Long n)
+    {
+        if (n < 0 || n > 62)
+        {
+            throw new PureExecutionException("Unsupported number of bits to shift - max bits allowed is 62");
+        }
+        return arg << n;
+    }
+
+    public static Long bitShiftRight(Long arg, Long n)
+    {
+        if (n < 0 || n > 62)
+        {
+            throw new PureExecutionException("Unsupported number of bits to shift - max bits allowed is 62");
+        }
+        return arg >> n;
+    }
 }

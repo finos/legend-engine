@@ -133,7 +133,17 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
 
             // TanH
             one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "\"meta::pure::functions::math::tanh_Number_1__Float_1_ is not supported yet!\"")
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "\"meta::pure::functions::math::tanh_Number_1__Float_1_ is not supported yet!\""),
+
+            // Bitwise
+            pack("meta::pure::functions::math::tests::tbd::bitAnd", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Number' is not a subtype of 'Integer'"),
+            pack("meta::pure::functions::math::tests::tbd::bitNot", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Number' is not a subtype of 'Integer'"),
+            pack("meta::pure::functions::math::tests::tbd::bitOr", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Number' is not a subtype of 'Integer'"),
+            pack("meta::pure::functions::math::tests::tbd::bitXor", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Float' is not a subtype of 'Integer'"),
+            pack("meta::pure::functions::math::tests::tbd::bitShiftLeft", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Number' is not a subtype of 'Integer'"),
+            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Number' is not a subtype of 'Integer'"),
+            one("meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\"")
         );
 
     public static Test suite()

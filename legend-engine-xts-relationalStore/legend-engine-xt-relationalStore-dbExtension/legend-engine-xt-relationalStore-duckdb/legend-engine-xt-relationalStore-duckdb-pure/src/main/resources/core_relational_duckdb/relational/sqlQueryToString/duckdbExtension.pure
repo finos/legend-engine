@@ -81,6 +81,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
 
    newMap([
+      pair(Integer,        ^LiteralProcessor(format = 'cast(%s as BIGINT)', transform = toString_Any_1__String_1_->literalTransform())),
       pair(StrictDate,     ^LiteralProcessor(format = '%s', transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = '%s', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
       pair(Date,           ^LiteralProcessor(format = '%s', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
@@ -158,6 +159,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
+    dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(%s & %s)')),
+    dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~(%s))')),
+    dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='(%s | %s)')),
+    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='(%s << %s)')),
+    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='(%s >> %s)')),
+    dynaFnToSql('bitXor',                 $allStates,            ^ToSql(format='xor(%s, %s)')),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),   //aggregate function across rows (not and on conditions)
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),
     dynaFnToSql('castBoolean',            $allStates,            ^ToSql(format='cast(%s as boolean)')),
@@ -207,7 +214,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     // dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='parsedatetime(%s,%s)')),
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
-    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as BIGINT)')),
     // dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='legend_h2_extension_json_parse(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s IN %s)')),
     // dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_add(DAY, case when %s - DAY_OF_WEEK(%s) >= 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),

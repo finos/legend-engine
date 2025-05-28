@@ -1,0 +1,50 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+native function
+    <<PCT.function>>
+    {
+        doc.doc='bitwise NOT operator returns a Number representing the bitwise NOT of the Number input param'
+    }
+meta::pure::functions::math::bitNot(arg:Integer[1]):Integer[1];
+
+function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitNot::testBitNot_SmallNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals($f->eval(|bitNot(1)), -2);
+  assertEquals($f->eval(|bitNot(0)), -1);
+  assertEquals($f->eval(|bitNot(5)), -6);
+  assertEquals($f->eval(|bitNot(25)), -26);
+  assertEquals($f->eval(|bitNot(137)), -138);
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitNot::testBitNot_NegativeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals($f->eval(|bitNot(-1)), 0);
+  assertEquals($f->eval(|bitNot(-5)), 4);
+  assertEquals($f->eval(|bitNot(-105)), 104);
+  assertEquals($f->eval(|bitNot(-5)), 4);
+  assertEquals($f->eval(|bitNot(-25)), 24);
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitNot::testBitNot_LargeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals($f->eval(|bitNot(1000000000)), -1000000001);
+  assertEquals($f->eval(|bitNot(9223372036854775807)), '-9223372036854775808'->parseInteger());
+  assertEquals($f->eval(|bitNot(922807)), -922808);
+  assertEquals($f->eval(|bitNot(-1000000000)), 999999999);
+  assertEquals($f->eval(|bitNot('-9223372036854775808'->parseInteger())), 9223372036854775807);
+  assertEquals($f->eval(|bitNot(-922807)), 922806);
+}
