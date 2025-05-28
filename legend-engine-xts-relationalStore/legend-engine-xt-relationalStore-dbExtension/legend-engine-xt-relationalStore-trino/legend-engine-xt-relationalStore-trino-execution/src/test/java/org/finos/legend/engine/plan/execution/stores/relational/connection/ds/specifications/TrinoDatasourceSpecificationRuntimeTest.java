@@ -26,6 +26,7 @@ import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.util.Properties;
 
