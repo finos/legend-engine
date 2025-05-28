@@ -19,8 +19,8 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-import org.finos.legend.engine.pure.runtime.testConnection.CoreExternalTestConnectionCodeRepositoryProvider;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
+import org.finos.legend.pure.code.core.CoreRelationalH2PCTCodeRepositoryProvider;
 import org.finos.legend.pure.code.core.CoreUnclassifiedFunctionsCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
@@ -33,7 +33,7 @@ import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramew
 public class Test_Relational_H2_UnclassifiedFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
-    private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.H2Adapter;
+    private static final Adapter adapter = CoreRelationalH2PCTCodeRepositoryProvider.H2Adapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             //ascii
