@@ -108,13 +108,15 @@ public class IngestionUtils
             List<Map<String, Object>> metadataResults = tabularDataList.get(0).data();
             for (Map<String, Object> metadata: metadataResults)
             {
-                Timestamp ingestionTimestampUTC = (Timestamp) metadata.get(metadataDataset.batchStartTimeField());
-                Timestamp ingestionEndTimestampUTC = (Timestamp) metadata.get(metadataDataset.batchEndTimeField());
-                String batchStatus = String.valueOf(metadata.get(metadataDataset.batchStatusField()));
+                Map<String, Object> caseInsensitiveMetadata = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+                caseInsensitiveMetadata.putAll(metadata);
+                Timestamp ingestionTimestampUTC = (Timestamp) caseInsensitiveMetadata.get(metadataDataset.batchStartTimeField());
+                Timestamp ingestionEndTimestampUTC = (Timestamp) caseInsensitiveMetadata.get(metadataDataset.batchEndTimeField());
+                String batchStatus = String.valueOf(caseInsensitiveMetadata.get(metadataDataset.batchStatusField()));
                 batchStatus = batchStatus.equalsIgnoreCase(batchSuccessStatusValue)  ? IngestStatus.SUCCEEDED.name() : batchStatus;
                 IngestorResult ingestorResult = IngestorResult.builder()
-                    .batchId(retrieveValueAsLong(metadata.get(metadataDataset.tableBatchIdField())).orElseThrow(IllegalStateException::new).intValue())
-                    .putAllStatisticByName(readValueAsMap(String.valueOf(metadata.get(metadataDataset.batchStatisticsField()))))
+                    .batchId(retrieveValueAsLong(caseInsensitiveMetadata.get(metadataDataset.tableBatchIdField())).orElseThrow(IllegalStateException::new).intValue())
+                    .putAllStatisticByName(readValueAsMap(String.valueOf(caseInsensitiveMetadata.get(metadataDataset.batchStatisticsField()))))
                     .status(IngestStatus.valueOf(batchStatus))
                     .updatedDatasets(enrichedDatasets)
                     .schemaEvolutionSql(schemaEvolutionResult.schemaEvolutionSql())
@@ -542,11 +544,13 @@ public class IngestionUtils
 
         for (Map<String, Object> dataError: dataErrors)
         {
+            Map<String, Object> caseInsensitiveDataError = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            caseInsensitiveDataError.putAll(dataError);
             dataErrorList.add(DataError.builder()
                     .errorMessage(errorCategory.getDefaultErrorMessage())
                     .errorCategory(errorCategory)
-                    .errorRecord(buildErrorRecord(allFields, dataError))
-                    .putAllErrorDetails(buildErrorDetails(dataError, caseCorrectedErrorField, errorDetailsKey))
+                    .errorRecord(buildErrorRecord(allFields, caseInsensitiveDataError))
+                    .putAllErrorDetails(buildErrorDetails(caseInsensitiveDataError, caseCorrectedErrorField, errorDetailsKey))
                     .build());
         }
         return dataErrorList;

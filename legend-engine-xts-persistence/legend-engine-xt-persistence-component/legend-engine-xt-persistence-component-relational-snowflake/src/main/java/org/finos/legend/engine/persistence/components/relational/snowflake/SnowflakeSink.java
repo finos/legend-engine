@@ -113,18 +113,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Queue;
-import java.util.Set;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_ID_PATTERN;
@@ -621,10 +610,12 @@ public class SnowflakeSink extends AnsiSqlSink
                 List<Map<String, Object>> queryOperatorStatsResults = queryOperatorStats.get(0).data();
                 queryOperatorStatsResults.forEach(queryStats ->
                 {
-                    switch ((String) queryStats.get(QueryStatsLogicalPlanUtils.OPERATOR_TYPE_ALIAS))
+                    Map<String, Object> caseInsensitiveQueryStats = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+                    caseInsensitiveQueryStats.putAll(queryStats);
+                    switch ((String) caseInsensitiveQueryStats.get(QueryStatsLogicalPlanUtils.OPERATOR_TYPE_ALIAS))
                     {
                         case QueryStatsLogicalPlanUtils.EXTERNAL_SCAN_STAGE:
-                            Object externalScan = queryStats.get(QueryStatsLogicalPlanUtils.EXTERNAL_BYTES_SCANNED_ALIAS);
+                            Object externalScan = caseInsensitiveQueryStats.get(QueryStatsLogicalPlanUtils.EXTERNAL_BYTES_SCANNED_ALIAS);
                             if (externalScan != null && !String.valueOf(externalScan).isEmpty())
                             {
                                 stats.put(StatisticName.INPUT_FILES_BYTES_SCANNED, Long.parseLong(String.valueOf(externalScan)));
@@ -635,7 +626,7 @@ public class SnowflakeSink extends AnsiSqlSink
                             }
                             break;
                         case QueryStatsLogicalPlanUtils.INSERT_STAGE:
-                            Object insert = queryStats.get(QueryStatsLogicalPlanUtils.INPUT_ROWS_ALIAS);
+                            Object insert = caseInsensitiveQueryStats.get(QueryStatsLogicalPlanUtils.INPUT_ROWS_ALIAS);
                             if (insert != null && !String.valueOf(insert).isEmpty())
                             {
                                 stats.put(StatisticName.INCOMING_RECORD_COUNT, Long.parseLong(String.valueOf(insert)));
