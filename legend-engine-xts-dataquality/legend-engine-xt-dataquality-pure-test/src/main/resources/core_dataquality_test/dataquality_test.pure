@@ -246,7 +246,29 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     '         ];' +
     '      }',
           'nonEmptyDataset',
-          {|{rel|$rel->meta::external::dataquality::relationNotEmpty();}->meta::pure::functions::lang::eval(#>{meta::external::dataquality::tests::domain::db.personTable}#->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME]));}
+          {|{rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200), LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |$rel->extend(~dq_rule_name: c | 'nonEmptyDataset')}->meta::pure::functions::lang::eval(#>{meta::external::dataquality::tests::domain::db.personTable}#->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME]));}
+    )
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_relationValidation_aggregate_withLimit():Boolean[1]
+{
+  doRelationTestWithLimit('###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME]);' +
+    '        runtime: meta::external::dataquality::tests::domain::DataQualityRuntime;' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'nonEmptyDataset\';' +
+    '             description: \'dataset should not be empty\';' +
+    '             assertion: rel|$rel->meta::external::dataquality::relationNotEmpty();' +
+    '             type: AGGREGATE;' +
+    '          }' +
+    '         ];' +
+    '      }',
+          'nonEmptyDataset',
+          {|{rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200), LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |$rel->extend(~dq_rule_name: c | 'nonEmptyDataset')}->meta::pure::functions::lang::eval(#>{meta::external::dataquality::tests::domain::db.personTable}#->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME])->meta::pure::functions::relation::limit(100));},
+          100
     )
 }
 
