@@ -153,10 +153,10 @@ public class TestValidation
     public void testQueryFormattingWithPreviouslyGeneratedArtifactQuery()
     {
         SnowflakeAppContent content = new SnowflakeAppContent();
-        content.createStatement = "CREATE OR REPLACE SECURE FUNCTION %S.My_Deployment_Schema.MY_SCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"CODE\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".CODE as \"Code\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart) and \"root\".CODE = '%') $$;";
+        content.createStatement = "CREATE OR REPLACE SECURE FUNCTION %S.My_Deployment_Schema.MY_SCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"CODE\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".CODE as \"Code\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart) and \"root\".CODE = '$') $$;";
         SnowflakeAppDeploymentManager snowflakeAppDeploymentManager = new SnowflakeAppDeploymentManager();
         MutableList<String> statements = snowflakeAppDeploymentManager.generateStatements("MY_CATALOG", content);
-        String expected = "CREATE OR REPLACE SECURE FUNCTION MY_CATALOG.My_Deployment_Schema.MY_SCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"CODE\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".CODE as \"Code\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart) and \"root\".CODE = '%') $$;";
+        String expected = "CREATE OR REPLACE SECURE FUNCTION MY_CATALOG.My_Deployment_Schema.MY_SCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"CODE\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".CODE as \"Code\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart) and \"root\".CODE = '$') $$;";
         Assert.assertEquals(expected, statements.get(0));
     }
 }

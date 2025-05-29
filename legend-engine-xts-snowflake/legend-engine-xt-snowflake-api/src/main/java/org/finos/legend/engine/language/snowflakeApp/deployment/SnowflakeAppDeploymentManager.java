@@ -183,12 +183,14 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
             {
                 if (content.createStatement.matches("^CREATE OR REPLACE SECURE FUNCTION %S[\\s\\S]*"))
                 {
-                    String updatedCreateStatement = "CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}" + content.createStatement.substring(content.createStatement.indexOf('.'));
-                    content.createStatement = updatedCreateStatement;
+                    statements.add(String.format(content.createStatement, catalogName));
                 }
-                Map<String, Object> model = new HashMap<>();
-                model.put("catalogSchemaName", catalogName);
-                statements.add(FreeMarkerExecutor.process(content.createStatement, model, ""));
+                else
+                {
+                    Map<String, Object> model = new HashMap<>();
+                    model.put("catalogSchemaName", catalogName);
+                    statements.add(FreeMarkerExecutor.process(content.createStatement, model, ""));
+                }
             }
             catch (Exception e)
             {
