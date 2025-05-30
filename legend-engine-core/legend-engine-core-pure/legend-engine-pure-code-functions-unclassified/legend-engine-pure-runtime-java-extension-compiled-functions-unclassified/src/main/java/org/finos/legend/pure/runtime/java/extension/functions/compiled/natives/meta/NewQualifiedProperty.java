@@ -25,11 +25,11 @@ import java.text.MessageFormat;
 public class NewQualifiedProperty extends AbstractNative
 {
     private static final String TEMPLATE = "new " + FullJavaPaths.QualifiedProperty_Impl + "<Object>(\"NOID\")" +
-            "._classifierGenericType(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType((" + FullJavaPaths.Class + "<Object>)((CompiledExecutionSupport)es).getMetadataAccessor().getClass(\"Root::meta::pure::metamodel::function::property::QualifiedProperty\"))" +
+            "._classifierGenericType(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType((" + FullJavaPaths.Class + "<Object>)((CompiledExecutionSupport)es).getMetadataAccessor().getClass(\"meta::pure::metamodel::function::property::QualifiedProperty\"))" +
             "   ._typeArguments(Lists.immutable.of(" +
             "      new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")" +
             "         ._rawType(new " + FullJavaPaths.FunctionType_Impl + "(\"NOID\")" +
-            "            ._classifierGenericType(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType((" + FullJavaPaths.Class + "<Object>)((CompiledExecutionSupport)es).getMetadataAccessor().getClass(\"Root::meta::pure::metamodel::type::FunctionType\")))" +
+            "            ._classifierGenericType(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType((" + FullJavaPaths.Class + "<Object>)((CompiledExecutionSupport)es).getMetadataAccessor().getClass(\"meta::pure::metamodel::type::FunctionType\")))" +
             "            ._returnType({2})" +
             "            ._returnMultiplicity({3})" +
             "            ._parameters((RichIterable<? extends " + FullJavaPaths.VariableExpression + ">) (Object) CompiledSupport.toPureCollection({4}))" +

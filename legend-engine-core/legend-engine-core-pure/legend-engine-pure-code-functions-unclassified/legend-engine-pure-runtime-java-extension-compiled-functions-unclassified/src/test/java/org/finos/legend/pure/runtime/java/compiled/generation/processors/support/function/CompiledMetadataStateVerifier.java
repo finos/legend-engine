@@ -14,40 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function;
 
-import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.RuntimeVerifier;
-import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
-import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiled;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataEager;
-import org.junit.Assert;
-
-public class CompiledMetadataStateVerifier implements RuntimeVerifier.FunctionExecutionStateVerifier
+@Deprecated
+public class CompiledMetadataStateVerifier extends org.finos.legend.pure.runtime.java.compiled.runtime.CompiledMetadataStateVerifier
 {
-    private int classCacheSizeBefore;
-    private int metadataCount;
-
-    @Override
-    public void snapshotState(FunctionExecution functionExecution)
-    {
-        FunctionExecutionCompiled functionExecutionCompiled = (FunctionExecutionCompiled)functionExecution;
-
-        MetadataEager metamodel = this.getMetamodel(functionExecutionCompiled);
-        this.classCacheSizeBefore = functionExecutionCompiled.getClassCacheSize();
-        this.metadataCount = metamodel.getSize();
-    }
-
-    @Override
-    public void assertStateSame(FunctionExecution functionExecution)
-    {
-        FunctionExecutionCompiled functionExecutionCompiled = (FunctionExecutionCompiled)functionExecution;
-        MetadataEager metamodel = this.getMetamodel(functionExecutionCompiled);
-        Assert.assertEquals(this.classCacheSizeBefore, functionExecutionCompiled.getClassCacheSize());
-        Assert.assertEquals(this.metadataCount, metamodel.getSize());
-    }
-
-    private MetadataEager getMetamodel(FunctionExecutionCompiled functionExecutionCompiled)
-    {
-        CompiledProcessorSupport compiledProcessorSupport = (CompiledProcessorSupport)functionExecutionCompiled.getProcessorSupport();
-        return (MetadataEager)compiledProcessorSupport.getMetadata();
-    }
 }
