@@ -35,5 +35,6 @@
         <module>legend-engine-xt-snowflake-protocol</module>
         <module>legend-engine-xt-snowflake-pure</module>
         <module>legend-engine-xt-snowflake-generator</module>
+        <module>legend-engine-xt-snowflake-m2mudf-plan-executor</module>
     </modules>
 </project>
