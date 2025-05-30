@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::functions::math::wavgUtility::*;
+import meta::pure::functions::math::mathUtility::*;
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::mapping::*;
 import meta::external::store::relational::runtime::*;
@@ -545,7 +545,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testGroupByWithWav
                 ->groupBy(['tradeDate'],
                   [
                       agg('ID count', x | $x.getInteger('Trade ID'), y | $y->count()),
-                      agg('Trade Weighted Average', x | $x.getFloat('Quantity')->wavgRowMapper($x.getFloat('Weight')), y | $y->wavg())
+                      agg('Trade Weighted Average', x | $x.getFloat('Quantity')->rowMapper($x.getFloat('Weight')), y | $y->wavg())
                   ]
                   )
                   ->sort(asc('tradeDate'))}, $mapping, $runtime, meta::relational::extension::relationalExtensions());
@@ -576,8 +576,8 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testGroupByWithMul
                 ->groupBy(['tradeDate'],
                   [
                       agg('ID count', x | $x.getInteger('Trade ID'), y | $y->count()),
-                      agg('Trade Weighted Average', x | $x.getFloat('Quantity')->wavgRowMapper($x.getFloat('Weight')), y | $y->wavg()),
-                      agg('Trade Weighted Average1', x | $x.getFloat('Quantity')->wavgRowMapper($x.getFloat('Weight2')), y | $y->wavg())
+                      agg('Trade Weighted Average', x | $x.getFloat('Quantity')->rowMapper($x.getFloat('Weight')), y | $y->wavg()),
+                      agg('Trade Weighted Average1', x | $x.getFloat('Quantity')->rowMapper($x.getFloat('Weight2')), y | $y->wavg())
                   ]
                   )
                   ->sort(asc('tradeDate'))}, $mapping, $runtime, meta::relational::extension::relationalExtensions());
