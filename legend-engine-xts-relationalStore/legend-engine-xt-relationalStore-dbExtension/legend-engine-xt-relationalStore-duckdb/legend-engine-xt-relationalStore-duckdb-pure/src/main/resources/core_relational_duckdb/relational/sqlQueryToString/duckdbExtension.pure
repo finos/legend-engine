@@ -81,7 +81,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
 
    newMap([
-      pair(Integer,        ^LiteralProcessor(format = 'cast(%s as BIGINT)', transform = toString_Any_1__String_1_->literalTransform())),
       pair(StrictDate,     ^LiteralProcessor(format = '%s', transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = '%s', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
       pair(Date,           ^LiteralProcessor(format = '%s', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
@@ -159,12 +158,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
-    dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(%s & %s)')),
-    dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~(%s))')),
-    dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='(%s | %s)')),
-    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='(%s << %s)')),
-    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='(%s >> %s)')),
-    dynaFnToSql('bitXor',                 $allStates,            ^ToSql(format='xor(%s, %s)')),
+    dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(cast(%s as BIGINT) & cast(%s as BIGINT))')),
+    dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='~%s')),
+    dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='(cast(%s as BIGINT) | cast(%s as BIGINT))')),
+    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='(cast(%s as BIGINT) << cast(%s as BIGINT))')),
+    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='(cast(%s as BIGINT) >> cast(%s as BIGINT))')),
+    dynaFnToSql('bitXor',                 $allStates,            ^ToSql(format='xor(cast(%s as BIGINT), cast(%s as BIGINT))')),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),   //aggregate function across rows (not and on conditions)
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),
     dynaFnToSql('castBoolean',            $allStates,            ^ToSql(format='cast(%s as boolean)')),
