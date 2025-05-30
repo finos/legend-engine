@@ -1,5 +1,5 @@
 ###Relational
-Database egress::alloy::memsqlTest::stores::DemoDb
+Database demo::stores::DemoDb
 (
   Schema LEGEND_GOVERNANCE
   (
@@ -20,24 +20,24 @@ Database egress::alloy::memsqlTest::stores::DemoDb
 )
 
 ###MemSql
-MemSqlFunction egress::alloy::memsqlTest::activators::DemoMemSqlFunction
+MemSqlFunction demo::activators::DemoMemSqlFunction
 {
   functionName: 'demoFunction1';
-  function: egress::alloy::memsqlTest::functions::NativeApp_QueryFunction():TabularDataSet[1];
+  function: demo::functions::NativeApp_QueryFunction():TabularDataSet[1];
   ownership : Deployment { identifier: 'id1' };
-  activationConfiguration: egress::alloy::memsqlTest::connection::MemsqlConnection;
+  activationConfiguration: demo::connection::MemsqlConnection;
 }
 
-MemSqlFunction egress::alloy::memsqlTest::activators::DemoMemSqlFunctionWithParam
+MemSqlFunction demo::activators::DemoMemSqlFunctionWithParam
 {
   functionName: 'demoFunction2';
-  function: egress::alloy::memsqlTest::functions::NativeApp_QueryFunction(Integer[1],String[1]):TabularDataSet[1];
+  function: demo::functions::NativeApp_QueryFunction(Integer[1],String[1]):TabularDataSet[1];
   ownership : Deployment { identifier: 'id1' };
-  activationConfiguration: egress::alloy::memsqlTest::connection::MemsqlConnection;
+  activationConfiguration: demo::connection::MemsqlConnection;
 }
 
 ###Pure
-Class egress::alloy::memsqlTest::models::NativeApp
+Class demo::models::NativeApp
 {
   AppName: String[1];
   Doc: String[1];
@@ -46,9 +46,9 @@ Class egress::alloy::memsqlTest::models::NativeApp
   Version: String[1];
 }
 
-function egress::alloy::memsqlTest::functions::NativeApp_QueryFunction(): meta::pure::tds::TabularDataSet[1]
+function demo::functions::NativeApp_QueryFunction(): meta::pure::tds::TabularDataSet[1]
 {
-  egress::alloy::memsqlTest::models::NativeApp.all()->project(
+  demo::models::NativeApp.all()->project(
     [
       x|$x.AppName,
       x|$x.Query,
@@ -64,14 +64,14 @@ function egress::alloy::memsqlTest::functions::NativeApp_QueryFunction(): meta::
       'Doc'
     ]
   )->from(
-    egress::alloy::memsqlTest::mapping::DemoMapping,
-    egress::alloy::memsqlTest::runtime::memsqlRunTime
+    demo::mapping::DemoMapping,
+    demo::runtime::memsqlRunTime
   )
 }
 
-function egress::alloy::memsqlTest::functions::NativeApp_QueryFunction(nameLength: Integer[1], nameStart: String[1]): meta::pure::tds::TabularDataSet[1]
+function demo::functions::NativeApp_QueryFunction(nameLength: Integer[1], nameStart: String[1]): meta::pure::tds::TabularDataSet[1]
 {
-  egress::alloy::memsqlTest::models::NativeApp.all()->filter(
+  demo::models::NativeApp.all()->filter(
     x|($x.AppName->length() >
       $nameLength) &&
       $x.AppName->startsWith(
@@ -93,58 +93,58 @@ function egress::alloy::memsqlTest::functions::NativeApp_QueryFunction(nameLengt
       'Doc'
     ]
   )->from(
-    egress::alloy::memsqlTest::mapping::DemoMapping,
-    egress::alloy::memsqlTest::runtime::memsqlRunTime
+    demo::mapping::DemoMapping,
+    demo::runtime::memsqlRunTime
   )
 }
 
 ###Mapping
-Mapping egress::alloy::memsqlTest::mapping::DemoMapping
+Mapping demo::mapping::DemoMapping
 (
-  *egress::alloy::memsqlTest::models::NativeApp: Relational
+  *demo::models::NativeApp: Relational
   {
     ~primaryKey
     (
-      [egress::alloy::memsqlTest::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.APP_NAME
+      [demo::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.APP_NAME
     )
-    ~mainTable [egress::alloy::memsqlTest::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS
-    AppName: [egress::alloy::memsqlTest::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.APP_NAME,
-    Doc: [egress::alloy::memsqlTest::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.DESCRIPTION,
-    Query: [egress::alloy::memsqlTest::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.SQL_FRAGMENT,
-    Owner: [egress::alloy::memsqlTest::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.OWNER,
-    Version: [egress::alloy::memsqlTest::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.VERSION_NUMBER
+    ~mainTable [demo::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS
+    AppName: [demo::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.APP_NAME,
+    Doc: [demo::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.DESCRIPTION,
+    Query: [demo::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.SQL_FRAGMENT,
+    Owner: [demo::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.OWNER,
+    Version: [demo::stores::DemoDb]LEGEND_GOVERNANCE.BUSINESS_OBJECTS.VERSION_NUMBER
   }
 )
 
 ###Connection
-RelationalDatabaseConnection egress::alloy::memsqlTest::connection::MemsqlConnection
+RelationalDatabaseConnection demo::connection::MemsqlConnection
 {
-  store: egress::alloy::memsqlTest::stores::DemoDb;
+  store: demo::stores::DemoDb;
   type: MemSQL;
   specification: Static
   {
-    name: 'pwm_quantum_uat';
-    host: 'dev.memquantumd005a.mag.memsql.url.gs.com';
-    port: 3306;
+    name: 'my_connection_name';
+    host: 'my_connection_host';
+    port: 7777;
   };
   auth: MiddleTierUserNamePassword
   {
-    vaultReference: '81d02fef888a4407a987c339a603b90b';
+    vaultReference: 'abc123';
   };
 }
 
 ###Runtime
-Runtime egress::alloy::memsqlTest::runtime::memsqlRunTime
+Runtime demo::runtime::memsqlRunTime
 {
   mappings:
   [
-    egress::alloy::memsqlTest::mapping::DemoMapping
+    demo::mapping::DemoMapping
   ];
   connections:
   [
-    egress::alloy::memsqlTest::stores::DemoDb:
+    demo::stores::DemoDb:
     [
-      connection_1: egress::alloy::memsqlTest::connection::MemsqlConnection
+      connection_1: demo::connection::MemsqlConnection
     ]
   ];
 }

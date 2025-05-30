@@ -92,10 +92,7 @@ public class MemSqlFunctionTreeWalker
                 walkerSourceInformation.getSourceInformation(functionContext.functionIdentifier()));
 
         MemSqlFunctionParserGrammar.OwnershipContext ownerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.ownership(), "ownership", memSqlFunction.sourceInformation);
-        if (ownerContext != null)
-        {
-            memSqlFunction.ownership = new DeploymentOwner(PureGrammarParserUtility.fromGrammarString(ownerContext.STRING().getText(), true));
-        }
+        memSqlFunction.ownership = new DeploymentOwner(PureGrammarParserUtility.fromGrammarString(ownerContext.STRING().getText(), true));
         MemSqlFunctionParserGrammar.DescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.description(), "description", memSqlFunction.sourceInformation);
         if (descriptionContext != null)
         {
