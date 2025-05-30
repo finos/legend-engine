@@ -13,7 +13,7 @@
 // limitations under the License.
 
 
-package org.finos.legend.engine.language.memSqlFunction.generator;
+package org.finos.legend.engine.language.memsqlFunction.generator;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
@@ -62,7 +62,7 @@ public class MemSqlFunctionGenerator
                     .getFirst();
             connection   = (RelationalDatabaseConnection) Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(PackageableConnection.class))
                     .select(c -> c.getPath().equals(((org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration)protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
-            MemSqlDatasourceSpecification ds = (MemSqlDatasourceSpecification)connection.datasourceSpecification;
+//            MemSqlDatasourceSpecification ds = (MemSqlDatasourceSpecification)connection.datasourceSpecification;
 
             return new MemSqlFunctionArtifact(content.functionName, Lists.mutable.of(sqlFunctionExpression));
         }

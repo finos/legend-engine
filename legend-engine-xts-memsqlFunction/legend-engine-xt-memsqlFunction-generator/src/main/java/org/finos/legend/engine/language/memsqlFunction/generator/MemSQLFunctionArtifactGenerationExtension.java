@@ -13,7 +13,7 @@
 // limitations under the License.
 
 
-package org.finos.legend.engine.language.memSqlFunction.generator;
+package org.finos.legend.engine.language.memsqlFunction.generator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
