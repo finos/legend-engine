@@ -988,7 +988,7 @@ Class meta::relational::tests::pct::process::tests::functionReprocess::SimpleCla
 
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testConstantFunctionReprocess():Boolean[1]
 {
-  let newState = reprocess(|1+1, meta::pure::testConnection::getTestConnection(DatabaseType.H2), noDebug());
+  let newState = reprocess(|1+1, meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
   assertEquals('{|(1 + 1)->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);
