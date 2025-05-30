@@ -115,14 +115,17 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.code.core.ArrowLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.DeephavenJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.DeephavenLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.DuckDbSqlDialectTranslationPureCoreExtension;
 import org.finos.legend.pure.code.core.ElasticsearchLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.ExternalFormatJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.FlatDataJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.FlatDataLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.H2SqlDialectTranslationPureCoreExtension;
 import org.finos.legend.pure.code.core.JSONJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.JSONLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.M2MJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.MongoDBLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.PostgresSqlDialectTranslationPureCoreExtension;
 import org.finos.legend.pure.code.core.RelationalJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.RelationalLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.ServiceStoreJavaBindingLegendPureCoreExtension;
@@ -495,6 +498,9 @@ public class TestExtensions
                 .with(CoreLegendPureCoreExtension.class)
                 .with(JSONLegendPureCoreExtension.class)
                 .with(RelationalLegendPureCoreExtension.class)
+                .with(PostgresSqlDialectTranslationPureCoreExtension.class)
+                .with(DuckDbSqlDialectTranslationPureCoreExtension.class)
+                .with(H2SqlDialectTranslationPureCoreExtension.class)
                 .with(ExternalFormatJavaBindingLegendPureCoreExtension.class)
                 .with(M2MJavaBindingLegendPureCoreExtension.class)
                 .with(ServiceStoreJavaBindingLegendPureCoreExtension.class)

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::extension::*;
+import meta::pure::extension::*;
 import meta::relational::tests::pct::*;
 import meta::json::*;
 import meta::relational::mapping::*;
@@ -28,30 +30,6 @@ import meta::pure::store::*;
 import meta::pure::metamodel::relation::*;
 import meta::relational::tests::pct::process::*;
 import meta::pure::test::pct::*;
-
-function <<PCT.adapter>> {PCT.adapterName='H2'} meta::relational::tests::pct::testAdapterForRelationalWithH2Execution<X|o>(f:Function<{->X[o]}>[1]):X[o]
-{
-  meta::relational::tests::pct::testAdapterForRelationalExecution(
-      $f,
-      meta::pure::testConnection::getTestConnection(DatabaseType.H2)
-  )
-}
-
-function <<PCT.adapter>> {PCT.adapterName='DuckDB'} meta::relational::tests::pct::testAdapterForRelationalWithDuckDBExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
-{
-  meta::relational::tests::pct::testAdapterForRelationalExecution(
-      $f,
-      meta::pure::testConnection::getTestConnection(DatabaseType.DuckDB)
-  )
-}
-
-function <<PCT.adapter>> {PCT.adapterName='PostgreSQL'} meta::relational::tests::pct::testAdapterForRelationalWithPostgresExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
-{
-  meta::relational::tests::pct::testAdapterForRelationalExecution(
-      $f,
-      meta::pure::testConnection::getTestConnection(DatabaseType.Postgres)
-  )
-}
 
 function <<PCT.adapter>> {PCT.adapterName='Snowflake'} meta::relational::tests::pct::testAdapterForRelationalWithSnowflakeExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
@@ -97,12 +75,15 @@ function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Funct
 
 function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1]):X[o]
 {
+  testAdapterForRelationalExecution($f, $dbc, relationalExtensions());
+}
+
+function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], extensions:Extension[*]):X[o]
+{
     let debug = noDebug();
 
     let repocessed = $f->meta::relational::tests::pct::process::reprocess($dbc, $debug);
     let newFunction = $repocessed.first;
-
-    let extensions =  meta::relational::extension::relationalExtensions();
 
     // ----
 

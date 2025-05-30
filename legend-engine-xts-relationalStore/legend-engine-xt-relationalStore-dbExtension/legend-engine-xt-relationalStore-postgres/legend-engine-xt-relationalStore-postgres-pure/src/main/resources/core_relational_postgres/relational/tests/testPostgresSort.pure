@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::tests::sqlQueryToString::postgres::*;
 import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::mapping::*;
@@ -25,7 +26,7 @@ import meta::relational::functions::sqlstring::*;
 function <<test.Test>> meta::relational::tests::tds::postgres::testSortQuotes():Boolean[1]
 {
    DatabaseType->enumValues()->filter(e|$e-> in ([DatabaseType.Postgres]  )  )->forAll(type |
-      let query = toSQLString(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name');, simpleRelationalMapping, $type, meta::relational::extension::relationalExtensions());
+      let query = toSQLString(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name');, simpleRelationalMapping, $type, postgresExtensions());
       assertEquals('select "root".FIRSTNAME as "name", "addressTable_d#3_1_d#3_m2".NAME as "address" from personTable as "root" left outer join addressTable as "addressTable_d#3_1_d#3_m2" on ("addressTable_d#3_1_d#3_m2".ID = "root".ADDRESSID) order by "name","address" desc', $query);
    )
 }

@@ -31,5 +31,6 @@
         <module>legend-engine-xt-relationalStore-postgres-execution</module>
         <module>legend-engine-xt-relationalStore-postgres-PCT</module>
         <module>legend-engine-xt-relationalStore-postgres-pure</module>
+        <module>legend-engine-xt-relationalStore-postgres-SDT</module>
     </modules>
 </project>

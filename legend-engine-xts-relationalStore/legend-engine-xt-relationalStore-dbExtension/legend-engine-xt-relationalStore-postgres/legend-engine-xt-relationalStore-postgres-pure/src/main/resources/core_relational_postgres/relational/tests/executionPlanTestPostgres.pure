@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::tests::sqlQueryToString::postgres::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::*;
@@ -68,5 +69,5 @@ function <<test.Test>> meta::pure::executionPlan::tests::postgres::testFilterEqu
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.Postgres, $expectedPlan);
+   assertPlanGenerationForOptionalParameter(DatabaseType.Postgres, $expectedPlan, postgresExtensions());
 }

@@ -14,12 +14,11 @@
 
 package org.finos.legend.pure.code.core;
 
-import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class CoreRelationalduckdbCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreRelationalDuckDBCodeRepositoryProvider implements CodeRepositoryProvider
 {
     @Override
     public CodeRepository repository()

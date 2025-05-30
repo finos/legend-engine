@@ -13,6 +13,7 @@
 // limitations under the License.
 
 ###Pure
+import meta::relational::tests::sqlQueryToString::duckDB::*;
 import meta::core::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::extension::*;
@@ -23,12 +24,13 @@ import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::postProcessor::cteExtraction::*;
+import meta::external::store::relational::sqlDialectTranslation::duckDB::*;
 
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testCTESQLGeneration(): Boolean[1]
 {
    let func = {|Trade.all()->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])->limit(10)->filter(x | $x.getInteger('TradeID') == 100)};
    let pp = testRuntimeWithCTEPP().connectionStores->at(0).connection->cast(@DatabaseConnection).sqlQueryPostProcessors;
-   let result = toSQLString($func, simpleRelationalMapping, DatabaseType.DuckDB, []->cast(@String), $pp, ^Format(newLine='', indent=''), relationalExtensions(), noDebug());
+   let result = toSQLString($func, simpleRelationalMapping, DatabaseType.DuckDB, []->cast(@String), $pp, ^Format(newLine='', indent=''), duckDBExtensions(), noDebug());
    assertEquals(
       'WITH subquery_cte_1_1 AS (select "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root" limit 10) \n' +
       'select "subselect"."TradeID" as "TradeID", "subselect"."Quantity" as "Quantity" from subquery_cte_1_1 as "subselect" where "subselect"."TradeID" = 100',

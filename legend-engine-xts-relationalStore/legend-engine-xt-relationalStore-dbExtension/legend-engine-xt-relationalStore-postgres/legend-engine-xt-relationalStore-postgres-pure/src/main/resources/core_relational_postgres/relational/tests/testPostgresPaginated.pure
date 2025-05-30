@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::tests::sqlQueryToString::postgres::*;
 import meta::relational::tests::query::paginate::helper::*;
 import meta::json::*;
 import meta::pure::mapping::*;
@@ -30,7 +31,7 @@ function <<test.Test>> meta::relational::tests::query::function::postgres::testP
 
    let f1 = {|Person.all()->sortBy(#/Person/firstName!fn#)->paginated(1,4);};
 
-   let s3 = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+   let s3 = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, postgresExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset ${((1?number - 1?number)?number * 4?number)} limit ${4?number}', $s3);
 }
 

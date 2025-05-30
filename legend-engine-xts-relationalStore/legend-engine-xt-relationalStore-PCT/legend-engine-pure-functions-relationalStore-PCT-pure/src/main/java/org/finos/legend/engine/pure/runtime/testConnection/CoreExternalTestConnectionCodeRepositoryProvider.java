@@ -21,25 +21,10 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeR
 
 public class CoreExternalTestConnectionCodeRepositoryProvider implements CodeRepositoryProvider
 {
-    public static final Adapter H2Adapter = new Adapter(
-            "H2",
-            "Store_Relational",
-            "meta::relational::tests::pct::testAdapterForRelationalWithH2Execution_Function_1__X_o_"
-    );
-    public static final Adapter duckDBAdapter = new Adapter(
-            "DuckDB",
-            "Store_Relational",
-            "meta::relational::tests::pct::testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_"
-    );
     public static final Adapter snowflakeAdapter = new Adapter(
             "Snowflake",
             "Store_Relational",
             "meta::relational::tests::pct::testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_"
-    );
-    public static final Adapter postgresAdapter = new Adapter(
-            "Postgres",
-            "Store_Relational",
-            "meta::relational::tests::pct::testAdapterForRelationalWithPostgresExecution_Function_1__X_o_"
     );
 
     public static final Adapter databricksAdapter = new Adapter(

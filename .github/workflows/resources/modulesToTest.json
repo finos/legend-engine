@@ -34,21 +34,21 @@
       "name": "h2",
       "modules": [
         "legend-engine-xt-relationalStore-h2-PCT",
-        "legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure"
+        "legend-engine-xt-relationalStore-h2-SDT"
       ]
     },
     {
       "name": "duckdb",
       "modules": [
         "legend-engine-xt-relationalStore-duckdb-PCT",
-        "legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure"
+        "legend-engine-xt-relationalStore-duckdb-SDT"
       ]
     },
     {
       "name": "postgres",
       "modules": [
         "legend-engine-xt-relationalStore-postgres-PCT",
-        "legend-engine-xt-relationalStore-SDT-pure"
+        "legend-engine-xt-relationalStore-postgres-SDT"
       ]
     },
     {
