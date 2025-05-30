@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::profiles::*;
+import meta::external::store::relational::sqlDialectTranslation::duckDB::*;
+import meta::relational::extension::*;
+import meta::pure::extension::*;
 
-function <<test.Test>> meta::pure::functions::collection::tests::min::testMin():Boolean[1]
+function meta::relational::tests::sqlQueryToString::duckDB::duckDBExtensions(): Extension[*]
 {
-    assertEq('a', min('a', {x, y | $y->length() - $x->length()}));
-    assertEq('a', min(['a', 'b', 'abc', 'ab', 'def'], {x, y | $x->length() - $y->length()}));
-    assertEq('abc', min(['a', 'b', 'abc', 'ab', 'def'], {x, y | $y->length() - $x->length()}));
-    assertEquals('a', min(['b', 'abc', 'a', 'ab', 'def']));
+  relationalExtensions()->concatenate(duckDBSqlDialectExtension());
 }

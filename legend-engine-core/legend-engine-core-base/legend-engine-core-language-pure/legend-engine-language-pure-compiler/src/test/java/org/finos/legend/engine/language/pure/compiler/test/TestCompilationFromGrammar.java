@@ -195,9 +195,7 @@ public class TestCompilationFromGrammar
     @Test
     public void testCachingSearchImportsResults()
     {
-        CompileContext context = new CompileContext.Builder(new CompileContext.Builder(new PureModel(new PureModelContextData.Builder().build(), null, DeploymentMode.PROD))
-                .withImports(Sets.immutable.with("meta::pure::precisePrimitives"))
-                .build()).withImports(Sets.immutable.with("meta::pure::precisePrimitives")).build();
+        CompileContext context = new CompileContext.Builder(new PureModel(new PureModelContextData.Builder().build(), null, DeploymentMode.PROD)).build();
         GenericType bigInt = new GenericType(new PackageableType("BigInt"), Lists.fixedSize.empty(), Lists.fixedSize.empty(),
                 Lists.fixedSize.of(new Multiplicity(1, 1)));
         long timeBefore = System.currentTimeMillis();

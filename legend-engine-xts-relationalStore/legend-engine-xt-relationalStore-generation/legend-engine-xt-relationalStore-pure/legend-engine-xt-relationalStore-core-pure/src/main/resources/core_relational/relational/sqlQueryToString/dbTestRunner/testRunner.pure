@@ -34,7 +34,8 @@ function meta::relational::dbTestRunner::runSqlQueryTest(sqlQuery:SQLQuery[1], e
 
 function meta::relational::dbTestRunner::runSqlQueryTest(sqlQuery:SQLQuery[1], expectedResult:Literal[1..*], inputs:Pair<VarPlaceHolder, Any>[*], equalityComparator: Function<{Any[1..*],Any[1..*]->Boolean[1]}>[0..1] , testConfig:DbTestConfig[1]): Boolean[1]
 {
-  let sqlString = sqlQueryToString($sqlQuery, $testConfig.dbType, []);
+  let extensions = if($testConfig.extensions->isNotEmpty(), |$testConfig.extensions, |relationalExtensions());
+  let sqlString = sqlQueryToString($sqlQuery, $testConfig.dbType, $extensions);
 
   if($testConfig.expectedSql->isNotEmpty(),
       | assertEquals($testConfig.expectedSql->toOne(), $sqlString),
@@ -49,7 +50,7 @@ function meta::relational::dbTestRunner::runSqlQueryTest(sqlQuery:SQLQuery[1], e
           let expectedResultTypes = $expectedResult->map(e|$e->inferRelationalType())->toOneMany();
           let plan = wrapSQLStringInExecutionPlan($sqlString, $expectedResultTypes, $testConfig.dbType,$connectionStore, $inputs);
 
-          let res = executePlan($plan,relationalExtensions());
+          let res = executePlan($plan, $extensions);
 
           runDataAssertion($res, $testConfig,
                 | let areEqual = if($equalityComparator->isNotEmpty(),
@@ -157,5 +158,5 @@ function meta::relational::dbTestRunner::wrapSQLStringInExecutionPlan(sqlString:
     func={|true},
     mapping=^Mapping(name='dummyMapping'),
     rootExecutionNode=$rootExecutionNode
-    );
+  );
 }

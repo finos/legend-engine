@@ -7,6 +7,7 @@
     "core_functions_unclassified",
     "core_functions_standard",
     "core",
-    "core_relational"
+    "core_relational",
+    "core_external_store_relational_sql_dialect_translation"
   ]
 }

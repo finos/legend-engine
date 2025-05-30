@@ -31,6 +31,7 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.functionActivator.generation.FunctionActivatorArtifactGenerationExtension;
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
+import org.finos.legend.engine.generation.PowerBIArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
 import org.finos.legend.engine.language.bigqueryFunction.compiler.toPureGraph.BigQueryFunctionCompilerExtension;
 import org.finos.legend.engine.language.bigqueryFunction.grammar.from.BigQueryFunctionGrammarParserExtension;
@@ -115,14 +116,17 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.code.core.ArrowLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.DeephavenJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.DeephavenLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.DuckDbSqlDialectTranslationPureCoreExtension;
 import org.finos.legend.pure.code.core.ElasticsearchLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.ExternalFormatJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.FlatDataJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.FlatDataLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.H2SqlDialectTranslationPureCoreExtension;
 import org.finos.legend.pure.code.core.JSONJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.JSONLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.M2MJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.MongoDBLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.PostgresSqlDialectTranslationPureCoreExtension;
 import org.finos.legend.pure.code.core.RelationalJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.RelationalLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.ServiceStoreJavaBindingLegendPureCoreExtension;
@@ -495,6 +499,9 @@ public class TestExtensions
                 .with(CoreLegendPureCoreExtension.class)
                 .with(JSONLegendPureCoreExtension.class)
                 .with(RelationalLegendPureCoreExtension.class)
+                .with(PostgresSqlDialectTranslationPureCoreExtension.class)
+                .with(DuckDbSqlDialectTranslationPureCoreExtension.class)
+                .with(H2SqlDialectTranslationPureCoreExtension.class)
                 .with(ExternalFormatJavaBindingLegendPureCoreExtension.class)
                 .with(M2MJavaBindingLegendPureCoreExtension.class)
                 .with(ServiceStoreJavaBindingLegendPureCoreExtension.class)
@@ -545,7 +552,8 @@ public class TestExtensions
                 .with(OpenApiArtifactGenerationExtension.class)
                 .with(SnowflakeAppArtifactGenerationExtension.class)
                 .with(HostedServiceArtifactGenerationExtension.class)
-                .with(FunctionActivatorArtifactGenerationExtension.class);
+                .with(FunctionActivatorArtifactGenerationExtension.class)
+                .with(PowerBIArtifactGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends EntitlementServiceExtension>> getExpectedEntitlementServiceExtensions()
@@ -579,6 +587,7 @@ public class TestExtensions
                 .with("core_external_format_flatdata")
                 .with("core_external_format_json")
                 .with("core_external_format_openapi")
+                .with("core_external_format_powerbi")
                 .with("core_external_format_protobuf")
                 .with("core_external_format_xml")
                 .with("core_external_format_arrow")

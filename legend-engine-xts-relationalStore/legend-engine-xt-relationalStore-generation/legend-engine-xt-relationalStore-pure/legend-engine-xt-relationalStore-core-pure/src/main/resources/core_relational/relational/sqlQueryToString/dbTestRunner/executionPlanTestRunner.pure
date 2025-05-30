@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::extension::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::mapping::*;
@@ -20,12 +21,14 @@ import meta::pure::alloy::connections::*;
 import meta::external::store::relational::runtime::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
+
 Class meta::relational::dbTestRunner::DbTestConfig
 {
-   dbType: DatabaseType[1];
-   connection: RelationalDatabaseConnection[0..1];
-   expectedSql: String[0..1];
-   deviatesFromStandard: Boolean[0..1];
+  dbType: DatabaseType[1];
+  connection: RelationalDatabaseConnection[0..1];
+  expectedSql: String[0..1];
+  deviatesFromStandard: Boolean[0..1];
+  extensions: Extension[*];
 }
 
 function meta::relational::dbTestRunner::getTestConnection(dbType:DatabaseType[1], extensions:meta::pure::extension::Extension[*]):RelationalDatabaseConnection[0..1]
@@ -58,8 +61,9 @@ function meta::relational::dbTestRunner::findParameterizedTests(packOrFn: Any[*]
    ]));
 }
 
-function meta::relational::dbTestRunner::doSetupOnConnection(records:String[1], db:meta::relational::metamodel::Database[1], config:DbTestConfig[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
+function meta::relational::dbTestRunner::doSetupOnConnection(records:String[1], db:meta::relational::metamodel::Database[1], config:DbTestConfig[1], e:meta::pure::extension::Extension[*]):Boolean[1]
 {
+  let extensions = if($config.extensions->isNotEmpty(), |$config.extensions, |$e);
   if($config.connection->isEmpty(),
     |
         println('**** Warning **** : No connection available for given dbtype, Skipping execution of setup sqls');
@@ -70,13 +74,13 @@ function meta::relational::dbTestRunner::doSetupOnConnection(records:String[1], 
         let con = $config.connection->cast(@RelationalDatabaseConnection)->toOne();
         let connWithDb= ^ConnectionStore(connection=^$con(),element= $db);
 
-        $setupSqls->executeInRelationalDb($connWithDb,meta::relational::extension::relationalExtensions());
+        $setupSqls->executeInRelationalDb($connWithDb, $extensions);
         println('setup done');
         true;
-   )
+   );
 }
 
-function meta::relational::dbTestRunner::executeInRelationalDb(sqls:String[*], conn:ConnectionStore[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
+function <<access.private>> meta::relational::dbTestRunner::executeInRelationalDb(sqls:String[*], conn:ConnectionStore[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
   meta::legend::test::mayExecuteLegendTest
      (
@@ -93,8 +97,9 @@ function meta::relational::dbTestRunner::executeInRelationalDb(sqls:String[*], c
      );
 }
 
-function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], db:meta::relational::metamodel::Database[1], config:DbTestConfig[1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[0..1]
+function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], db:meta::relational::metamodel::Database[1], config:DbTestConfig[1], e:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[0..1]
 {
+  let extensions = if($config.extensions->isNotEmpty(), |$config.extensions, |$e);
   let pureRuntime = if($config.connection->isEmpty(),
      |
        println('**** Warning **** : No connection available for given dbtype, Skipping execution of plan');
@@ -111,7 +116,7 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
 
   if($config.connection->isEmpty(), |[],
      | let boundPlan = meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions($basicPlan);
-       let res=meta::pure::router::executePlan($boundPlan,$extensions);
+       let res = meta::pure::router::executePlan($boundPlan, $extensions);
        let values = $res.values->cast(@T);
        ^Result<T|m>(values = $values, activities= $res.activities);
   );

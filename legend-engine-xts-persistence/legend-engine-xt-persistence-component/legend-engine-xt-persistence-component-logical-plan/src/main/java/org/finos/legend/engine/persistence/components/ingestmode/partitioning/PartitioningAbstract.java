@@ -117,7 +117,7 @@ public interface PartitioningAbstract extends PartitioningStrategy
             {
                 for (String partitionKey : partitionSpec.keySet())
                 {
-                    if (!partitionFields().contains(partitionKey))
+                    if (partitionFields().stream().noneMatch(partitionKey::equalsIgnoreCase))
                     {
                         throw new IllegalStateException(String.format("Can not build Partitioning, partitionKey: [%s] not specified in partitionSpec", partitionKey));
                     }

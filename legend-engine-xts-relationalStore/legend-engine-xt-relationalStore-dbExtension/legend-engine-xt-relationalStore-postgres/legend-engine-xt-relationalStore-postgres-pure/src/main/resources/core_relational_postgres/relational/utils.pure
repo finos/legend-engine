@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::profiles::*;
+import meta::external::store::relational::sqlDialectTranslation::postgres::*;
+import meta::relational::extension::*;
+import meta::pure::extension::*;
 
-function <<test.Test>> meta::pure::functions::collection::tests::max::testMax():Boolean[1]
+function meta::relational::tests::sqlQueryToString::postgres::postgresExtensions(): Extension[*]
 {
-    assertEq('abc', max(['a', 'b', 'abc', 'ab', 'def'], {x, y | $x->length() - $y->length()}));
-    assertEq('a', max(['a', 'b', 'abc', 'ab', 'def'], {x, y | $y->length() - $x->length()}));
-    assertEq('a', max('a', {x, y | $y->length() - $x->length()}));
-    assertEquals('def', max(['a', 'b', 'def', 'abc', 'ab']));
+  relationalExtensions()->concatenate(postgresSqlDialectExtension());
 }

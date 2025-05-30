@@ -115,7 +115,8 @@ public class CompileContext
             "meta::pure::service",
             "meta::pure::tds",
             "meta::pure::tools",
-            "meta::pure::profiles"
+            "meta::pure::profiles",
+            "meta::pure::precisePrimitives"
     );
 
     public final PureModel pureModel;

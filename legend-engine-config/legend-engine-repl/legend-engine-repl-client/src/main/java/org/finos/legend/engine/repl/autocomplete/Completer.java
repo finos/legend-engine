@@ -205,7 +205,7 @@ public class Completer
     private CompletionResult processClassInstance(ClassInstance topExpression, PureModel pureModel)
     {
         Object islandExpr = topExpression.value;
-        CompletionResult result = this.extensions.collect(x -> x.extraClassInstanceProcessor(islandExpr, pureModel)).getFirst();
+        CompletionResult result = this.extensions.collect(x -> x.extraClassInstanceProcessor(islandExpr, pureModel)).select(Objects::nonNull).getFirst();
         if (result != null)
         {
             return result;

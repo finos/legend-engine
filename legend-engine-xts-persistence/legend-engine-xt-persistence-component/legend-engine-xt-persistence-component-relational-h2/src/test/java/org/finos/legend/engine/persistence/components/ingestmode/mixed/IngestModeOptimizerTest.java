@@ -165,14 +165,12 @@ public class IngestModeOptimizerTest extends BaseTest
 
         assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
 
-        // Test with staging, main and delete partition tables
+        // Test with staging, main and delete partition tables - delete partitions never come into partition spec list
         datasets = setupStagingMainAndDeletePartitionsDatasets();
         enrichedUnitempSnapshot = (UnitemporalSnapshot) unitemporalSnapshot.accept(new IngestModeOptimizer(datasets, executor, transformer));
         expectedPartitionSpec = new ArrayList<>();
         addPartitionSpec(expectedPartitionSpec, "2021-12-01");
         addPartitionSpec(expectedPartitionSpec, "2021-12-02");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-03");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-04");
 
         assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
     }
@@ -216,13 +214,39 @@ public class IngestModeOptimizerTest extends BaseTest
         addPartitionSpec(expectedPartitionSpec, "2021-12-02", "GS");
         addPartitionSpec(expectedPartitionSpec, "2021-12-02", "IBM");
         addPartitionSpec(expectedPartitionSpec, "2021-12-02", "JPMX");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-03", "AAPL");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-03", "GOOGLE");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-04", "AMZN");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-04", "META");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-05", "META");
 
         assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
+    }
+
+    @Test
+    public void testOptimizeUnitempSnapshotPartitionedWithDateAndStringAboveMaxPartitionSpecLimit() throws Exception
+    {
+        // Test with staging and main dataset
+        Datasets datasets = setupStagingAndMainDatasets();
+        UnitemporalSnapshot unitemporalSnapshot = UnitemporalSnapshot.builder()
+                .digestField(digestName)
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .dateTimeInName(batchTimeInName)
+                        .dateTimeOutName(batchTimeOutName)
+                        .build())
+                .partitioningStrategy(Partitioning.builder()
+                        .addAllPartitionFields(Arrays.asList("date", "entity"))
+                        .derivePartitionSpec(true)
+                        .maxPartitionSpecFilters(5L)
+                        .build())
+                .build();
+
+        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(H2Sink.get());
+
+        UnitemporalSnapshot enrichedUnitempSnapshot = (UnitemporalSnapshot) unitemporalSnapshot.accept(new IngestModeOptimizer(datasets, executor, transformer));
+        assertTrue(((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList().isEmpty());
+
+        // Test with staging, main and delete partition tables
+        datasets = setupStagingMainAndDeletePartitionsDatasetsMultiplePartitionsKeys();
+        enrichedUnitempSnapshot = (UnitemporalSnapshot) unitemporalSnapshot.accept(new IngestModeOptimizer(datasets, executor, transformer));
+        assertTrue(((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList().isEmpty());
     }
 
     @Test
@@ -259,49 +283,9 @@ public class IngestModeOptimizerTest extends BaseTest
         assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
 
         // Test with staging, main and delete partition tables
-        datasets = setupStagingMainAndDeletePartitionsDatasetsMultiplePartitionsKeys();
-        enrichedUnitempSnapshot = (UnitemporalSnapshot) unitemporalSnapshot.accept(new IngestModeOptimizer(datasets, executor, transformer));
-        assertTrue(((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList().isEmpty());
-    }
-
-    @Test
-    public void testOptimizeUnitempSnapshotPartitionedWithLimitNotForStagingDatasetButForDeleteDataset() throws Exception
-    {
-        // Test with staging and main dataset
-        Datasets datasets = setupStagingAndMainDatasets();
-        UnitemporalSnapshot unitemporalSnapshot = UnitemporalSnapshot.builder()
-                .digestField(digestName)
-                .transactionMilestoning(BatchIdAndDateTime.builder()
-                        .batchIdInName(batchIdInName)
-                        .batchIdOutName(batchIdOutName)
-                        .dateTimeInName(batchTimeInName)
-                        .dateTimeOutName(batchTimeOutName)
-                        .build())
-                .partitioningStrategy(Partitioning.builder()
-                        .addAllPartitionFields(Arrays.asList("date", "entity"))
-                        .derivePartitionSpec(true)
-                        .maxPartitionSpecFilters(15L)
-                        .build())
-                .build();
-
-        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(H2Sink.get());
-
-        // Test with staging, main and delete partition tables
         datasets = setupStagingMainAndLargeDeletePartitionsDatasetsMultiplePartitionsKeys();
-        UnitemporalSnapshot enrichedUnitempSnapshot = (UnitemporalSnapshot) unitemporalSnapshot.accept(new IngestModeOptimizer(datasets, executor, transformer));
-        List<Map<String, Object>> expectedPartitionSpec = new ArrayList<>();
-        addPartitionSpec(expectedPartitionSpec, "2021-12-01", "GS");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-01", "IBM");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-01", "JPM");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-02", "GS");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-02", "IBM");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-02", "JPMX");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-03", "AAPL");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-03", "GOOGLE");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-04", "AMZN");
-        addPartitionSpec(expectedPartitionSpec, "2021-12-04", "META");
-
-        assertTrue(((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList().isEmpty());
+        enrichedUnitempSnapshot = (UnitemporalSnapshot) unitemporalSnapshot.accept(new IngestModeOptimizer(datasets, executor, transformer));
+        assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
     }
 
     @Test
