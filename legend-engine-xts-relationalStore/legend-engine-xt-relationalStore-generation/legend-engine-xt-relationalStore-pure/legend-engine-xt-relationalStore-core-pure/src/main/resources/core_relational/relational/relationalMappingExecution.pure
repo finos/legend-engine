@@ -157,15 +157,18 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                        |$class->match([
                                   e : Enumeration<Any>[1] | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
                                   p : PrimitiveType[1]    | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
-                                  p : Class<Variant>[1]   | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
-                                  c : Class<Any>[1] | ^ClassResultType
-                                                      (
-                                                         genericType=^GenericType(rawType=$class),
-                                                         setImplementations = if($ext->isEmpty(),
-                                                                                 | $m->toOne('mapping missing and cannot construct return type for class: ' + $class->elementToPath())->rootClassMappingByClass($c)->toOne(),
-                                                                                 | $ext->cast(@StoreMappingRoutedValueSpecification).sets->at(0)
-                                                                              )->resolveOperation($m->toOne())
-                                                     )
+                                  c : Class<Any>[1] |
+                                    if($c == Variant,
+                                      | ^DataTypeResultType(genericType=^GenericType(rawType=$class)),
+                                      | ^ClassResultType
+                                        (
+                                              genericType=^GenericType(rawType=$class),
+                                              setImplementations = if($ext->isEmpty(),
+                                                                      | $m->toOne('mapping missing and cannot construct return type for class: ' + $class->elementToPath())->rootClassMappingByClass($c)->toOne(),
+                                                                      | $ext->cast(@StoreMappingRoutedValueSpecification).sets->at(0)
+                                                                  )->resolveOperation($m->toOne())
+                                        )
+                                    )
                                 ])
 
 

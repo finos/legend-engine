@@ -174,7 +174,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                 t:CommonTableExpressionReference[1] | $t,
       
                 tac: TableAliasColumn[1]| let new = $m->get($tac.alias.name); 
-                                          assertNotEmpty($new); 
+                                          assertNotEmpty($new, |$tac.alias.name + ' not found in ' + $m->keys()->joinStrings(', '));
                                           let alias = $tac.alias; 
                                           ^$tac(alias = ^$alias(name=$new->toOne()));,
                 tacn: TableAliasColumnName[1]|  let new = $m->get($tacn.alias.name); 

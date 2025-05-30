@@ -137,7 +137,7 @@ function meta::relational::functions::typeInference::inferRelationalType(rop: Re
 function meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1], failOnMatchFailure:Boolean[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
    $rop->match([
-      t : TableAliasColumn[1] | if($t.column.owner->isNotEmpty() && $t.column.owner->toOne()->instanceOf(View),| $t.column.owner->toOne()->cast(@View).columnMappings->filter(cm | $cm.columnName == $t.column.name)->toOne().relationalOperationElement->inferRelationalType($failOnMatchFailure), | $t.column.type),
+      t : TableAliasColumn[1] | if($t.column.owner->isNotEmpty() && $t.column.owner->toOne()->instanceOf(View),| $t.column.owner->toOne()->cast(@View).columnMappings->filter(cm | $cm.columnName == $t.column.name).relationalOperationElement->defaultIfEmpty($t.column)->toOne()->inferRelationalType($failOnMatchFailure), | $t.column.type),
       j : RelationalOperationElementWithJoin[1] | $j.relationalOperationElement->toOne()->inferRelationalType($failOnMatchFailure),
       d : DynaFunction[1] | $d->inferDynaFunctionReturnType($failOnMatchFailure),
       d : Alias[1] | $d.relationalElement->inferRelationalType($failOnMatchFailure),

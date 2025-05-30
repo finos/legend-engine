@@ -1374,6 +1374,10 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
                              ^$op(
                                  select = $state.inFilter->if(|^$opSelect(filteringOperation = $pCol),|^$opSelect(columns = $pCol))
                              );,
+                  s:SemiStructuredPropertyAccess[1] | let select = $srcOperation.select;
+                                                      let processedOperand = $state.inFilter->if(|$select.filteringOperation,|$select.columns)->toOne();
+                                                      let updatedPropertyAccess = ^$s(operand = $processedOperand);
+                                                      ^$srcOperation(select = $state.inFilter->if(|^$select(filteringOperation = $updatedPropertyAccess),|^$select(columns = $updatedPropertyAccess)));,
                   roe: RelationalOperationElement[1] |
                     let select = $srcOperation.select;
                     ^$srcOperation(select = $state.inFilter->if(|^$select(filteringOperation = $roe),|^$select(columns = $roe)));
@@ -3415,7 +3419,8 @@ function meta::relational::functions::pureToSqlQuery::isVariantInput(v: ValueSpe
       true,
     |
       $v->match([
-        fe: FunctionExpression[1] | $fe.parametersValues->at(0)->isVariantInput()
+        fe: FunctionExpression[1] | $fe.parametersValues->at(0)->isVariantInput(),
+        any: Any[1] | false
       ])
   );
 }

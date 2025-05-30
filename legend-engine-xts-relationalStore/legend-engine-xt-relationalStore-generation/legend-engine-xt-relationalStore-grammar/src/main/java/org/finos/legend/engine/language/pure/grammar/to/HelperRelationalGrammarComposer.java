@@ -417,6 +417,10 @@ public class HelperRelationalGrammarComposer
         {
             builder.append("SEMISTRUCTURED");
         }
+        else if (column.type instanceof Json)
+        {
+            builder.append("JSON");
+        }
         else
         {
             builder.append(unsupported(column.type.getClass(), "database table column type"));

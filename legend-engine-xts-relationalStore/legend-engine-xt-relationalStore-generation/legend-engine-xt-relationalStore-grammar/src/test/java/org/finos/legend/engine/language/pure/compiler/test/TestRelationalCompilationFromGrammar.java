@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hazelcast.internal.json.Json;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
@@ -29,6 +28,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.RelationalOperationElement;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Json;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.SemiStructured;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 import org.junit.Assert;
@@ -2014,6 +2014,24 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
         Database database = (Database) res.getTwo().getStore("simple::DB");
         Column column = (Column) database._schemas().detect(schema -> schema._name().equals("default"))._tables().detect(table -> table._name().equals("personTable"))._columns().detect(col -> col.getName().equals("FIRM"));
         Assert.assertTrue(column._type() instanceof SemiStructured);
+    }
+
+    @Test
+    public void testJsonColumn()
+    {
+        Pair<PureModelContextData, PureModel> res = test("###Relational\n" +
+                "Database simple::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    FIRSTNAME VARCHAR(10),\n" +
+                "    FIRM JSON\n" +
+                "  )\n" +
+                ")\n");
+
+        Database database = (Database) res.getTwo().getStore("simple::DB");
+        Column column = (Column) database._schemas().detect(schema -> schema._name().equals("default"))._tables().detect(table -> table._name().equals("personTable"))._columns().detect(col -> col.getName().equals("FIRM"));
+        Assert.assertTrue(column._type() instanceof Json);
     }
 
     @Test
