@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-testable</artifactId>
-        <version>4.87.4</version>
+        <version>4.87.5-SNAPSHOT</version>
     </parent>
     <name>Legend Engine - Testable - MFT</name>
     <artifactId>legend-engine-test-mft</artifactId>
