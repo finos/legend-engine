@@ -197,6 +197,37 @@ public class CreateTableTest
     }
 
     @Test
+    public void testCreateIcebergTableWithCAtalogSync()
+    {
+        DatasetDefinition dataset = DatasetDefinition.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumns)
+                .datasetAdditionalProperties(DatasetAdditionalProperties.builder()
+                        .tableOrigin(TableOrigin.ICEBERG)
+                        .icebergProperties(IcebergProperties.builder().externalVolume("my_ext_vol").catalog("SNOWFLAKE").baseLocation("my_location")
+                                .catalogSync("polaris").build())
+                        .build())
+                .build();
+        Operation create = Create.of(true, dataset);
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
+        RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expected = "CREATE ICEBERG TABLE IF NOT EXISTS \"my_db\".\"my_schema\".\"my_table\"" +
+                "(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_integer\" INTEGER NOT NULL UNIQUE,\"col_bigint\" BIGINT," +
+                "\"col_tinyint\" TINYINT,\"col_smallint\" SMALLINT,\"col_char\" CHAR,\"col_varchar\" VARCHAR," +
+                "\"col_string\" VARCHAR,\"col_timestamp\" TIMESTAMP,\"col_datetime\" DATETIME,\"col_date\" DATE," +
+                "\"col_real\" DOUBLE,\"col_float\" DOUBLE,\"col_decimal\" NUMBER(10,4),\"col_double\" DOUBLE," +
+                "\"col_binary\" BINARY,\"col_time\" TIME,\"col_numeric\" NUMBER(38,0),\"col_boolean\" BOOLEAN," +
+                "\"col_varbinary\" BINARY(10)) CATALOG='SNOWFLAKE', EXTERNAL_VOLUME='my_ext_vol', BASE_LOCATION='my_location', CATALOG_SYNC='polaris'";
+
+        Assertions.assertEquals(expected, list.get(0));
+    }
+
+    @Test
     public void testCreateTableWithTags()
     {
         DatasetDefinition dataset = DatasetDefinition.builder()

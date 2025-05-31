@@ -17,21 +17,26 @@ package org.finos.legend.engine.persistence.components.relational.snowflake.sqld
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 
+import java.util.Optional;
+
 public class IcebergProperties implements SqlGen
 {
     private final String catalog;
     private final String externalVolume;
     private final String baseLocation;
+    private final Optional<String> catalogSync;
 
     private static final String CATALOG = "CATALOG";
     private static final String EXTERNAL_VOLUME = "EXTERNAL_VOLUME";
     private static final String BASE_LOCATION = "BASE_LOCATION";
+    private static final String CATALOG_SYNC = "CATALOG_SYNC";
 
-    public IcebergProperties(String catalog, String externalVolume, String baseLocation)
+    public IcebergProperties(String catalog, String externalVolume, String baseLocation, Optional<String> catalogSync)
     {
         this.catalog = catalog;
         this.externalVolume = externalVolume;
         this.baseLocation = baseLocation;
+        this.catalogSync = catalogSync;
     }
 
     @Override
@@ -50,5 +55,13 @@ public class IcebergProperties implements SqlGen
         builder.append(BASE_LOCATION);
         builder.append(SqlGenUtils.ASSIGNMENT_OPERATOR);
         builder.append(SqlGenUtils.singleQuote(baseLocation));
+
+        if (catalogSync.isPresent())
+        {
+            builder.append(SqlGenUtils.COMMA + SqlGenUtils.WHITE_SPACE);
+            builder.append(CATALOG_SYNC);
+            builder.append(SqlGenUtils.ASSIGNMENT_OPERATOR);
+            builder.append(SqlGenUtils.singleQuote(catalogSync.get()));
+        }
     }
 }
