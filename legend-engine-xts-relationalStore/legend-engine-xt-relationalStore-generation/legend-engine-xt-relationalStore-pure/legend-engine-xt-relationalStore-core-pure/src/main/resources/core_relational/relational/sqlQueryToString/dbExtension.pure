@@ -416,8 +416,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           s:ViewSelectSQLQuery[1]|'('+$s.selectSQLQuery->processOperation($dbConfig, $format, $generationState, $config, $extensions)+')',
                                           t:Table[1]|$t->tableToString($dbConfig),
                                           tf:TabularFunction[1]|$tf->tabularFunctionToString($dbConfig),
-                                          js:JoinStrings[1] | $dbConfig.joinStringsProcessor($js, ^$sgc(config=^Config())),
-                                          c: RelationFunctionColumn[1] | processColumnName('"' + $c.name->toOne() + '"', $dbConfig), // columns from Relation are case sensitive
+                                          js:JoinStrings[1] | $dbConfig.joinStringsProcessor($js, ^$sgc(config=^Config())),                                          
                                           c: Column[1] | processColumnName($c.name->toOne(), $dbConfig),
                                           alias:Alias[1]|
                                                 let innerTerm = $alias.relationalElement->match([
