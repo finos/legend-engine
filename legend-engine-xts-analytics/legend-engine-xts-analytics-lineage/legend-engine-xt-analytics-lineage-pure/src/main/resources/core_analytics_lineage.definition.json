@@ -9,6 +9,7 @@
     "core_functions_json",
     "core_functions_standard",
     "core_functions_unclassified",
+    "core_functions_relation",
     "core_relational",
     "core"
   ]
