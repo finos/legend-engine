@@ -7016,7 +7016,7 @@ function meta::relational::functions::pureToSqlQuery::moveSelectQueryToSubSelect
     let cols = $select.columns->concatenate($extraColumns)->reprocessAliases($val);
     let reprocessedColumns = $cols->map(e|let res = $e->match([
                                                        t:TableAliasColumn[1] | ^Alias(name=$t.column.name, relationalElement=$t),
-                                                       a:Alias[1] | $a.relationalElement->match([t:TableAliasColumn[1] | ^$a(name=$t.column.name), o:Any[1]|$a]),
+                                                       a:Alias[1] | $a,
                                                        a:RelationalOperationElement[1] | ^Alias(name='col'+$cols->indexOf($e)->toString(), relationalElement=$a)
                                                     ]);
                                           pair($e, $res);
