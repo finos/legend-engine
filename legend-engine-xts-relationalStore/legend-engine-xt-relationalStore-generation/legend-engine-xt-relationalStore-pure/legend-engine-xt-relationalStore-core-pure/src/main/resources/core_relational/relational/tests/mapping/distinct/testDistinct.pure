@@ -52,14 +52,14 @@ function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctM
    assertEquals('name,code\n' + 'IF 1,1001\n' +  'IF 2,1002\n' + 'IF 2,1022\n', $result.values->toOne()->toCSV());
 
    //todo: could optimize to collapse the sub select back
-   assertEquals('select "root".IF_NAME as "name", "root".IF_CODE as "code" from (select distinct "account_info_1".IF_CODE as IF_CODE, "account_info_1".IF_NAME as IF_NAME from ACCOUNT_INFO as "account_info_1") as "root" order by "code"', $result->sqlRemoveFormatting());
+   assertEquals('select "root"."name" as "name", "root"."code" as "code" from (select distinct "account_info_1".IF_CODE as "code", "account_info_1".IF_NAME as "name" from ACCOUNT_INFO as "account_info_1") as "root" order by "code"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingSimpleProjectSelectOneOfTheDistinctProperties():Boolean[1]
 {
    let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/name#])->sort('name'), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('name\n' + 'IF 1\n' + 'IF 2\n' + 'IF 2\n', $result.values->toOne()->toCSV());
-   assertEquals('select "root".IF_NAME as "name" from (select distinct "account_info_1".IF_CODE as IF_CODE, "account_info_1".IF_NAME as IF_NAME from ACCOUNT_INFO as "account_info_1") as "root" order by "name"', $result->sqlRemoveFormatting());
+   assertEquals('select "root"."name" as "name" from (select distinct "account_info_1".IF_CODE as "code", "account_info_1".IF_NAME as "name" from ACCOUNT_INFO as "account_info_1") as "root" order by "name"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingSimpleProjectDistinct():Boolean[1]
@@ -67,7 +67,7 @@ function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctM
    //Distinct the projection as well as the table - double distinct!
    let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/name#])->distinct(), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('name\n' + 'IF 1\n' + 'IF 2\n', $result.values->toOne()->toCSV());
-   assertEquals('select distinct "root".IF_NAME as "name" from (select distinct "account_info_1".IF_CODE as IF_CODE, "account_info_1".IF_NAME as IF_NAME from ACCOUNT_INFO as "account_info_1") as "root"', $result->sqlRemoveFormatting());
+   assertEquals('select distinct "root"."name" as "name" from (select distinct "account_info_1".IF_CODE as "code", "account_info_1".IF_NAME as "name" from ACCOUNT_INFO as "account_info_1") as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithFilterSelectAll():Boolean[1]
@@ -81,7 +81,7 @@ function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctM
 {
    let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/name#])->sort('name'), testMappingWithFilter, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('name\n' + 'IF 1\n' + 'IF 2\n' + 'IF 2\n', $result.values->toOne()->toCSV());
-   assertEquals('select "root".IF_NAME as "name" from (select distinct "account_info_1".IF_CODE as IF_CODE, "account_info_1".IF_NAME as IF_NAME from ACCOUNT_INFO as "account_info_1" where "account_info_1".IF_TYPE = \'Type 1\') as "root" order by "name"', $result->sqlRemoveFormatting());
+   assertEquals('select "root"."name" as "name" from (select distinct "account_info_1".IF_CODE as "code", "account_info_1".IF_NAME as "name" from ACCOUNT_INFO as "account_info_1" where "account_info_1".IF_TYPE = \'Type 1\') as "root" order by "name"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithJoinSelectAll():Boolean[1]
@@ -95,7 +95,7 @@ function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctM
 {
    let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/IfName#]), testMappingWithJoin, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('IfName\n' + 'IfName1\n' + 'IfName2\n' + '\n', $result.values->toOne()->toCSV());
-   assertEquals('select "if_other_info_1".IF_OTHER_NAME as "IfName" from (select distinct "account_info_1".IF_CODE as IF_CODE, "account_info_1".IF_NAME as IF_NAME, "if_other_info_0".IF_OTHER_NAME as IF_OTHER_NAME from ACCOUNT_INFO as "account_info_1" left outer join IF_OTHER_INFO as "if_other_info_0" on ("account_info_1".IF_CODE = "if_other_info_0".IF_CODE)) as "root" left outer join IF_OTHER_INFO as "if_other_info_1" on ("root".IF_CODE = "if_other_info_1".IF_CODE)', $result->sqlRemoveFormatting());
+   assertEquals('select "root"."IfName" as "IfName" from (select distinct "account_info_1".IF_CODE as "code", "account_info_1".IF_NAME as "name", "if_other_info_0".IF_OTHER_NAME as "IfName" from ACCOUNT_INFO as "account_info_1" left outer join IF_OTHER_INFO as "if_other_info_0" on ("account_info_1".IF_CODE = "if_other_info_0".IF_CODE)) as "root" left outer join IF_OTHER_INFO as "if_other_info_1" on ("root"."code" = "if_other_info_1".IF_CODE)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::distinct::testProjectDistinctMappingWithDistinctInJoin():Boolean[1]
@@ -170,7 +170,7 @@ function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctM
    let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/name#,#/IncomeFunction/Classification/name!IfName#])->sort(['name', 'IfName']), testMappingWithCase, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('name,IfName\n' + 'IF 1,IfName1\n' + 'IF 2,IfName2\n' + 'IF 2,Unknown\n', $result.values->toOne()->toCSV());
 
-   assertEquals('select "root"."name" as "name", case when "if_other_info_0".IF_OTHER_NAME is null then \'Unknown\' else "if_other_info_0".IF_OTHER_NAME end as "IfName" from (select distinct "account_info_1".IF_CODE as IF_CODE, case when "account_info_1".IF_NAME is null then \'C\' else "account_info_1".IF_NAME end as "name" from ACCOUNT_INFO as "account_info_1") as "root" left outer join IF_OTHER_INFO as "if_other_info_0" on ("root".IF_CODE = "if_other_info_0".IF_CODE) order by "name","IfName"', $result->sqlRemoveFormatting());
+   assertEquals('select "root"."name" as "name", case when "if_other_info_0".IF_OTHER_NAME is null then \'Unknown\' else "if_other_info_0".IF_OTHER_NAME end as "IfName" from (select distinct "account_info_1".IF_CODE as "code", case when "account_info_1".IF_NAME is null then \'C\' else "account_info_1".IF_NAME end as "name" from ACCOUNT_INFO as "account_info_1") as "root" left outer join IF_OTHER_INFO as "if_other_info_0" on ("root"."code" = "if_other_info_0".IF_CODE) order by "name","IfName"', $result->sqlRemoveFormatting());
 }
 
 

@@ -50,7 +50,7 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
    assertSameElements([7900002, 7900003], $result.values.acctNum);
    assertSameElements(['YU2EF5', 'EA4GNY'], $result.values.gsn);
    assertSameElements([8, 300], $result.values.quantity);
-   assertEquals('select "root".ACC_NUM as "acctNum", "root".GSN as "gsn", "root"."quantity" as "quantity", "root".ACC_NUM, "root".PRODUCT_ID, "root".GSN from (select "trade_1".ACC_NUM as ACC_NUM, "trade_1".GSN as GSN, sum("trade_1".QTY) as "quantity", "trade_1".PRODUCT_ID as PRODUCT_ID from TRADE as "trade_1" group by "trade_1".ACC_NUM,"trade_1".PRODUCT_ID,"trade_1".GSN) as "root" where "root"."quantity" > 0', $result->sqlRemoveFormatting());
+   assertEquals('select "root"."acctNum" as "acctNum", "root"."gsn" as "gsn", "root"."quantity" as "quantity", "root".ACC_NUM, "root".PRODUCT_ID, "root".GSN from (select "trade_1".ACC_NUM as "acctNum", "trade_1".GSN as "gsn", sum("trade_1".QTY) as "quantity", "trade_1".ACC_NUM as ACC_NUM, "trade_1".PRODUCT_ID as PRODUCT_ID, "trade_1".GSN as GSN from TRADE as "trade_1" group by "trade_1".ACC_NUM,"trade_1".PRODUCT_ID,"trade_1".GSN) as "root" where "root"."quantity" > 0', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingWithFilterOnAggregateWithJoin():Boolean[1]
@@ -59,7 +59,7 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
    assertSameElements([7900003], $result.values.acctNum);
    assertSameElements(['EA4GNY'], $result.values.gsn);
    assertSameElements([300], $result.values.quantity);
-   assertEquals('select "root".ACC_NUM as "acctNum", "root".GSN as "gsn", "root"."quantity" as "quantity", "root".ACC_NUM, "root".PRODUCT_ID, "root".GSN from (select "trade_1".ACC_NUM as ACC_NUM, "trade_1".GSN as GSN, sum("trade_1".QTY) as "quantity", "trade_1".PRODUCT_ID as PRODUCT_ID from TRADE as "trade_1" group by "trade_1".ACC_NUM,"trade_1".PRODUCT_ID,"trade_1".GSN) as "root" left outer join PRODUCT as "product_0" on ("root".PRODUCT_ID = "product_0".ID) where ("root"."quantity" > 8 and "product_0".DESCRIPTION = \'Gold\')', $result->sqlRemoveFormatting());
+   assertEquals('select "root"."acctNum" as "acctNum", "root"."gsn" as "gsn", "root"."quantity" as "quantity", "root".ACC_NUM, "root".PRODUCT_ID, "root".GSN from (select "trade_1".ACC_NUM as "acctNum", "trade_1".GSN as "gsn", sum("trade_1".QTY) as "quantity", "trade_1".ACC_NUM as ACC_NUM, "trade_1".PRODUCT_ID as PRODUCT_ID, "trade_1".GSN as GSN from TRADE as "trade_1" group by "trade_1".ACC_NUM,"trade_1".PRODUCT_ID,"trade_1".GSN) as "root" left outer join PRODUCT as "product_0" on ("root".PRODUCT_ID = "product_0".ID) where ("root"."quantity" > 8 and "product_0".DESCRIPTION = \'Gold\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingWithFilterOnAggregateWithProject():Boolean[1]
@@ -68,7 +68,7 @@ function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMap
    assertEquals(1, $result.values->first().rows->size());
    assertEquals('EA4GNY',$result.values->first().rows->first()->toOne().getString('gsn'));
    assertEquals(300,$result.values->first().rows->first()->toOne().getInteger('quantity'));
-   assertEquals('select "root".GSN as "gsn", "root"."quantity" as "quantity" from (select "trade_1".ACC_NUM as ACC_NUM, "trade_1".GSN as GSN, sum("trade_1".QTY) as "quantity", "trade_1".PRODUCT_ID as PRODUCT_ID from TRADE as "trade_1" group by "trade_1".ACC_NUM,"trade_1".PRODUCT_ID,"trade_1".GSN) as "root" where (("root"."quantity" > 100 and "root"."quantity" < 1000) or "root".GSN = \'EA4GNY\')', $result->sqlRemoveFormatting());
+   assertEquals('select "root"."gsn" as "gsn", "root"."quantity" as "quantity" from (select "trade_1".ACC_NUM as "acctNum", "trade_1".GSN as "gsn", sum("trade_1".QTY) as "quantity", "trade_1".ACC_NUM as ACC_NUM, "trade_1".PRODUCT_ID as PRODUCT_ID, "trade_1".GSN as GSN from TRADE as "trade_1" group by "trade_1".ACC_NUM,"trade_1".PRODUCT_ID,"trade_1".GSN) as "root" where (("root"."quantity" > 100 and "root"."quantity" < 1000) or "root".GSN = \'EA4GNY\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::groupBy::testGroupByMappingProject():Boolean[1]
