@@ -18,8 +18,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNod
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
-import java.util.Optional;
-
 @Immutable
 @Style(
     typeAbstract = "*Abstract",
@@ -35,7 +33,4 @@ public interface IcebergPropertiesAbstract extends LogicalPlanNode
     String externalVolume();
 
     String baseLocation();
-
-    Optional<String> catalogSync();
-
 }

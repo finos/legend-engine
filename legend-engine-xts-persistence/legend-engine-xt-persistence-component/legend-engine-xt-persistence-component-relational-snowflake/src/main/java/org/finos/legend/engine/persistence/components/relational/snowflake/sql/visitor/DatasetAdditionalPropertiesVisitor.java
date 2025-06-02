@@ -44,8 +44,7 @@ public class DatasetAdditionalPropertiesVisitor extends org.finos.legend.engine.
         prev.push(new org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.common.IcebergProperties(
             icebergProperties.catalog(),
             icebergProperties.externalVolume(),
-            icebergProperties.baseLocation(),
-            icebergProperties.catalogSync()
+            icebergProperties.baseLocation()
         ));
     }
 
