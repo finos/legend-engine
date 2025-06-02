@@ -278,6 +278,7 @@ function meta::relational::functions::sqlQueryToString::debugPrint::getDynaFunct
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
+    dynaFnToSql('wavgRowMapper',          $allStates,            ^ToSql(format='wavgRowMapper(%s, %s)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('convertTimeZone',        $allStates,         ^ToSql(format='%s', transform={p:String[3] | $p->transformConvertTimeZone()}))

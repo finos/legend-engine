@@ -1175,6 +1175,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   variance,
   variancePopulation,
   varianceSample,
+  wavgRowMapper, // required for when debug is enabled
   weekOfYear,
   year
 }

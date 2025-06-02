@@ -200,7 +200,7 @@ function <<test.Test>> meta::relational::tests::projection::sybaseIQ::testDistin
 {
    let func = {|IncomeFunction.all()->project([col(c|$c.name,'name'),col(sortAsc(c|$c.IfName->toOne()),y|$y->rank(),'name2')])->distinct()}; //, testDataTypeMappingRuntime(),debug())};
    let res = toSQLString($func, testMappingWithJoin, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select distinct "root".IF_NAME as "name", rank() OVER (Order By "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2".IF_OTHER_NAME ASC) as "name2" from (select distinct "_sub_d#2".IF_CODE as IF_CODE, "_sub_d#2".IF_NAME as IF_NAME, "IF_OTHER_INFO_d#3_d#3_m3".IF_OTHER_NAME as IF_OTHER_NAME from ACCOUNT_INFO as "_sub_d#2" left outer join IF_OTHER_INFO as "IF_OTHER_INFO_d#3_d#3_m3" on ("_sub_d#2".IF_CODE = "IF_OTHER_INFO_d#3_d#3_m3".IF_CODE)) as "root" left outer join IF_OTHER_INFO as "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2" on ("root".IF_CODE = "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2".IF_CODE)',$res);
+   assertEquals('select distinct "root"."name" as "name", rank() OVER (Order By "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2".IF_OTHER_NAME ASC) as "name2" from (select distinct "_sub_d#2".IF_CODE as "code", "_sub_d#2".IF_NAME as "name", "IF_OTHER_INFO_d#3_d#3_m3".IF_OTHER_NAME as "IfName" from ACCOUNT_INFO as "_sub_d#2" left outer join IF_OTHER_INFO as "IF_OTHER_INFO_d#3_d#3_m3" on ("_sub_d#2".IF_CODE = "IF_OTHER_INFO_d#3_d#3_m3".IF_CODE)) as "root" left outer join IF_OTHER_INFO as "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2" on ("root".IF_CODE = "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2".IF_CODE)',$res);
 }
 
 
@@ -218,7 +218,7 @@ function <<test.Test>> meta::relational::tests::projection::sybaseIQ::testUsingW
    };
 
    let res = toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LASTNAME as "firstName", "root"."rank_test" as "rank_test" from (select "_subroot".LASTNAME as LASTNAME, rank() OVER (Partition By "_subroot".LASTNAME Order By "_subroot".AGE ASC) as "rank_test" from personTable as "_subroot") as "root" where "root"."rank_test" = 1',$res);
+   assertEquals('select "root"."firstName" as "firstName", "root"."rank_test" as "rank_test" from (select "_subroot".LASTNAME as "firstName", rank() OVER (Partition By "_subroot".LASTNAME Order By "_subroot".AGE ASC) as "rank_test" from personTable as "_subroot") as "root" where "root"."rank_test" = 1',$res);
 }
 
 function <<test.Test>> meta::relational::tests::projection::sybaseIQ::testQueryWithJoinUsingWindowAttributeInFilter():Boolean[1]
@@ -235,7 +235,7 @@ function <<test.Test>> meta::relational::tests::projection::sybaseIQ::testQueryW
    };
 
    let res = toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LASTNAME as "firstName", "root"."rank_test" as "rank_test" from (select "_subroot".LASTNAME as LASTNAME, rank() OVER (Partition By "_subroot".LASTNAME,"personTable_d#7_d#3_m2_d#3_m1_d#3_m2".LASTNAME Order By "_subroot".AGE ASC) as "rank_test" from personTable as "_subroot" left outer join personTable as "personTable_d#7_d#3_m2_d#3_m1_d#3_m2" on ("_subroot".MANAGERID = "personTable_d#7_d#3_m2_d#3_m1_d#3_m2".ID)) as "root" where "root"."rank_test" = 1 and "root"."rank_test" = 2',$res);
+   assertEquals('select "root"."firstName" as "firstName", "root"."rank_test" as "rank_test" from (select "_subroot".LASTNAME as "firstName", rank() OVER (Partition By "_subroot".LASTNAME,"personTable_d#7_d#3_m2_d#3_m1_d#3_m2".LASTNAME Order By "_subroot".AGE ASC) as "rank_test" from personTable as "_subroot" left outer join personTable as "personTable_d#7_d#3_m2_d#3_m1_d#3_m2" on ("_subroot".MANAGERID = "personTable_d#7_d#3_m2_d#3_m1_d#3_m2".ID)) as "root" where "root"."rank_test" = 1 and "root"."rank_test" = 2',$res);
 }
 
 function <<test.Test>> meta::relational::tests::projection::sybaseIQ::testQueryWithFilterBeforeWindowColInFilter():Boolean[1]
@@ -253,7 +253,7 @@ function <<test.Test>> meta::relational::tests::projection::sybaseIQ::testQueryW
    };
 
    let res = toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LASTNAME as "firstName", "root".FIRSTNAME as "managerFirstName", "root"."rank_test" as "rank_test" from (select "_subroot".LASTNAME as LASTNAME, "personTable_d#7_d#4_m2".FIRSTNAME as FIRSTNAME, rank() OVER (Partition By "_subroot".LASTNAME,"personTable_d#7_d#4_m2".LASTNAME Order By "_subroot".AGE ASC) as "rank_test" from personTable as "_subroot" left outer join personTable as "personTable_d#7_d#4_m2" on ("_subroot".MANAGERID = "personTable_d#7_d#4_m2".ID) where "_subroot".LASTNAME = \'Mohammed\' and "personTable_d#7_d#4_m2".FIRSTNAME = \'Scott\') as "root" where "root"."rank_test" = 2',$res);
+   assertEquals('select "root"."firstName" as "firstName", "root"."managerFirstName" as "managerFirstName", "root"."rank_test" as "rank_test" from (select "_subroot".LASTNAME as "firstName", "personTable_d#7_d#4_m2".FIRSTNAME as "managerFirstName", rank() OVER (Partition By "_subroot".LASTNAME,"personTable_d#7_d#4_m2".LASTNAME Order By "_subroot".AGE ASC) as "rank_test" from personTable as "_subroot" left outer join personTable as "personTable_d#7_d#4_m2" on ("_subroot".MANAGERID = "personTable_d#7_d#4_m2".ID) where "_subroot".LASTNAME = \'Mohammed\' and "personTable_d#7_d#4_m2".FIRSTNAME = \'Scott\') as "root" where "root"."rank_test" = 2',$res);
 }
 
 function <<test.Test>> meta::relational::tests::projection::sybaseIQ::testDynaFunctionInWindow():Boolean[1]

@@ -142,11 +142,6 @@ function meta::pure::functions::collection::dropAt<T>(collection : T[*], index :
   $collection->dropAt($index, 1);
 }
 
-function meta::pure::functions::collection::defaultIfEmpty<T>(value : T[0..1], default : T[1]) : T[1]
-{
-   if($value->isEmpty(), |$default, |$value->toOne());
-}
-
 function meta::pure::functions::collection::defaultIfEmpty<T>(collection : T[*], default : T[1..*]) : T[1..*]
 { 
    if($collection->isEmpty(), |$default, |$collection->toOneMany());
