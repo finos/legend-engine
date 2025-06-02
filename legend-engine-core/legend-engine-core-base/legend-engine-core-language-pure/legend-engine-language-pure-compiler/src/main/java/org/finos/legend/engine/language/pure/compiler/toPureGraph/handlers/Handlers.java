@@ -985,6 +985,13 @@ public class Handlers
                         "one"), ps -> Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType()), ps -> true))));
         // ----------------------------
 
+        register(
+            m(
+                m(h("meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 3)),
+                m(h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
+            )
+        );
 
         register(h("meta::pure::functions::collection::isEmpty_Any_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> matchZeroOne(ps.get(0)._multiplicity())),
                 h("meta::pure::functions::collection::isEmpty_Any_MANY__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> true));
