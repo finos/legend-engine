@@ -14,12 +14,10 @@
 
 package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.string;
 
+import org.finos.legend.engine.pure.code.core.functions.unclassified.base.string.AbstractTestEncodeUrl;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
-import org.finos.legend.pure.m3.tests.function.base.string.AbstractTestEncodeUrl;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
-import org.junit.After;
 import org.junit.BeforeClass;
 
 public class TestEncodeUrl extends AbstractTestEncodeUrl
@@ -27,13 +25,7 @@ public class TestEncodeUrl extends AbstractTestEncodeUrl
     @BeforeClass
     public static void setUp()
     {
-        AbstractPureTestWithCoreCompiled.setUpRuntime(getFunctionExecution(), JavaModelFactoryRegistryLoader.loader());
-    }
-
-    @After
-    public void cleanRuntime()
-    {
-        AbstractPureTestWithCoreCompiled.runtime.delete("fromString.pure");
+        setUpRuntime(getFunctionExecution(), JavaModelFactoryRegistryLoader.loader());
     }
 
     protected static FunctionExecution getFunctionExecution()

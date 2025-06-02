@@ -18,10 +18,13 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 
+import java.util.Optional;
+
 public class TestScenario
 {
     private Dataset mainTable;
     private Dataset stagingTable;
+    private Optional<Dataset> deletePartitionTable;
     private IngestMode ingestMode;
     private Datasets datasets;
 
@@ -29,8 +32,18 @@ public class TestScenario
     {
         this.mainTable = mainTable;
         this.stagingTable = stagingTable;
+        this.deletePartitionTable = Optional.empty();
         this.ingestMode = ingestMode;
         this.datasets = Datasets.of(mainTable, stagingTable);
+    }
+
+    public TestScenario(Dataset mainTable, Dataset stagingTable, Dataset deletePartitionTable, IngestMode ingestMode)
+    {
+        this.mainTable = mainTable;
+        this.stagingTable = stagingTable;
+        this.deletePartitionTable = Optional.of(deletePartitionTable);
+        this.ingestMode = ingestMode;
+        this.datasets = Datasets.of(mainTable, stagingTable).withDeletePartitionDataset(deletePartitionTable);
     }
 
     public TestScenario(IngestMode ingestMode)
@@ -46,6 +59,11 @@ public class TestScenario
     public Dataset getStagingTable()
     {
         return stagingTable;
+    }
+
+    public Optional<Dataset> getDeletePartitionTable()
+    {
+        return deletePartitionTable;
     }
 
     public IngestMode getIngestMode()

@@ -15,12 +15,10 @@
 package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.tracing;
 
 import io.opentracing.util.GlobalTracer;
+import org.finos.legend.engine.pure.code.core.functions.unclassified.base.tracing.AbstractTestTraceSpan;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
-import org.finos.legend.pure.m3.tests.function.base.tracing.AbstractTestTraceSpan;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
-import org.junit.After;
 import org.junit.BeforeClass;
 
 public class TestCompiledTraceSpan extends AbstractTestTraceSpan
@@ -28,14 +26,8 @@ public class TestCompiledTraceSpan extends AbstractTestTraceSpan
     @BeforeClass
     public static void setUp()
     {
-        AbstractPureTestWithCoreCompiled.setUpRuntime(getFunctionExecution(), JavaModelFactoryRegistryLoader.loader());
+        setUpRuntime(getFunctionExecution(), JavaModelFactoryRegistryLoader.loader());
         GlobalTracer.registerIfAbsent(AbstractTestTraceSpan.tracer);
-    }
-
-    @After
-    public void clearRuntime()
-    {
-        AbstractPureTestWithCoreCompiled.runtime.delete("fromString.pure");
     }
 
     protected static FunctionExecution getFunctionExecution()

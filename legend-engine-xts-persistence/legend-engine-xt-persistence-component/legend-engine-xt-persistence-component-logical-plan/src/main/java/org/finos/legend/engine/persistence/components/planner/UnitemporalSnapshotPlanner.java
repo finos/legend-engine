@@ -23,13 +23,12 @@ import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.D
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandlingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatchAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOpAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.partitioning.*;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.NoPartitioningAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.PartitioningAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.PartitioningStrategyVisitor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.In;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.*;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -49,10 +48,13 @@ import java.util.stream.Collectors;
 class UnitemporalSnapshotPlanner extends UnitemporalPlanner
 {
     private Optional<Partitioning> partitioning = Optional.empty();
+    private final Optional<Dataset> deletePartitionDataset;
 
     UnitemporalSnapshotPlanner(Datasets datasets, UnitemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
+
+        this.deletePartitionDataset = datasets.deletePartitionDataset();
 
         if (ingestMode().partitioningStrategy().isPartitioned())
         {
@@ -102,7 +104,9 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
             List<Operation> operations = new ArrayList<>();
             // Step 1: Milestone Records in main table
             operations.add(getSqlToMilestoneRows(keyValuePairs));
-            // Step 2: Insert records in main table
+            // Step 2: Delete partitions, if required
+            getSqlToDeletePartitions(keyValuePairs).map(operations::add);
+            // Step 3: Insert records in main table
             operations.add(sqlToUpsertRows());
             return LogicalPlan.of(operations);
         }
@@ -279,6 +283,31 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         return UpdateAbstract.of(mainDataset(), values, And.of(whereClause));
     }
 
+/*
+      update "table_name" as sink
+        set
+        sink."batch_id_out"  = <<BATCH_ID>> - 1
+      where
+        sink."batch_id_out" = 999999999 and
+        exists
+        (
+        sink.partitionColumns = deletePartitionStage.partitionColumns
+        )
+ */
+protected Optional<Update> getSqlToDeletePartitions(List<Pair<FieldValue, Value>> values)
+{
+    if (!deletePartitionDataset.isPresent() || !partitioning.isPresent())
+    {
+        return Optional.empty();
+    }
+
+    List<Condition> whereClause = new ArrayList<>(Collections.singletonList(openRecordCondition));
+
+    Condition partitionColumnCondition = getDeletePartitionColumnCondition();
+    whereClause.add(partitionColumnCondition);
+    return Optional.of(UpdateAbstract.of(mainDataset(), values, And.of(whereClause)));
+}
+
     /*
    update {FULLY_QUALIFIED_SINK_TABLE_NAME} set
         "batch_id_out" = {TABLE_BATCH_ID} - 1,
@@ -308,6 +337,17 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         return UpdateAbstract.of(mainDataset(), values, And.of(conditions));
     }
 
+    private Condition getDeletePartitionColumnCondition()
+    {
+        return Exists.of(
+                Selection.builder()
+                        .source(deletePartitionDataset.get())
+                        .condition(LogicalPlanUtils.getPartitionColumnsMatchCondition(mainDataset(),
+                                deletePartitionDataset.get(),
+                                partitioning.get().partitionFields().toArray(new String[0])))
+                        .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
+                        .build());
+    }
 
     private class EmptyDatasetHandler implements EmptyDatasetHandlingVisitor<LogicalPlan>
     {
@@ -331,6 +371,13 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
             List<Operation> operations = new ArrayList<>();
             if (partitioning.isPresent() && partitioning.get().partitionValuesByField().isEmpty() && partitioning.get().partitionSpecList().isEmpty())
             {
+                if (deletePartitionDataset.isPresent())
+                {
+                    Condition deletePartitionColumnCondition = getDeletePartitionColumnCondition();
+                    List<Condition> whereClause = new ArrayList<>(Collections.singletonList(openRecordCondition));
+                    whereClause.add(deletePartitionColumnCondition);
+                    operations.add(UpdateAbstract.of(mainDataset(), keyValuePairs, And.of(whereClause)));
+                }
                 return LogicalPlan.of(operations);
             }
             operations.add(sqlToMilestoneAllRows(keyValuePairs));

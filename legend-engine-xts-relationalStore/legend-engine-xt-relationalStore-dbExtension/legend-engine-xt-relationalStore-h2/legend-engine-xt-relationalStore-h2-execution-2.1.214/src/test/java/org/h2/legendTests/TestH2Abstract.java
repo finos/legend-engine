@@ -31,7 +31,7 @@ public abstract class TestH2Abstract
     {
         Class.forName("org.h2.Driver"); // Driver name
         String defaultH2Properties = ";NON_KEYWORDS=ANY,ASYMMETRIC,AUTHORIZATION,CAST,CURRENT_PATH,CURRENT_ROLE,DAY,DEFAULT,ELSE,END,HOUR,KEY,MINUTE,MONTH,SECOND,SESSION_USER,SET,SOME,SYMMETRIC,SYSTEM_USER,TO,UESCAPE,USER,VALUE,WHEN,YEAR;MODE=LEGACY";
-        String url = "jdbc:h2:~/test" + defaultH2Properties;
+        String url = "jdbc:h2:mem:test_h2" + defaultH2Properties;
         h2Conn = DriverManager.getConnection(url, "sa", "");
         System.out.println("H2 Connection Acquired....");
         h2ConnStatement = h2Conn.createStatement();

@@ -96,6 +96,7 @@ public class CompileContext
             "meta::pure::metamodel::function::property",
             "meta::pure::metamodel::extension",
             "meta::pure::metamodel::import",
+            "meta::pure::metamodel::variant",
             "meta::pure::functions::date",
             "meta::pure::functions::string",
             "meta::pure::functions::collection",
@@ -114,7 +115,8 @@ public class CompileContext
             "meta::pure::service",
             "meta::pure::tds",
             "meta::pure::tools",
-            "meta::pure::profiles"
+            "meta::pure::profiles",
+            "meta::pure::precisePrimitives"
     );
 
     public final PureModel pureModel;
@@ -286,9 +288,9 @@ public class CompileContext
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getPackageableElement(path, sourceInformation));
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvePackageableElement_safe(String fullPath, SourceInformation sourceInformation)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolveUserDefinedPackageableElement_safe(String fullPath, SourceInformation sourceInformation)
     {
-        return this.resolve(fullPath, sourceInformation, this.pureModel::getPackageableElement_safe);
+        return this.resolve(fullPath, sourceInformation, this.pureModel::getUserDefinedPackageableElement_safe);
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type resolveType(String fullPath)

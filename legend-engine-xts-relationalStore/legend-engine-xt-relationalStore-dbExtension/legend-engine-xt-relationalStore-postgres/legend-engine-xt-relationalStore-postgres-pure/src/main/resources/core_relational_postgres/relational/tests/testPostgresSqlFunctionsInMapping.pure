@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::tests::sqlQueryToString::postgres::*;
 import meta::relational::functions::sqlstring::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::relational::tests::mapping::sqlFunction::model::domain::*;
@@ -39,7 +40,7 @@ import meta::relational::runtime::authentication::*;
 function <<test.Test>> meta::relational::tests::mapping::function::postgres::testTriminNotSybaseASE():Boolean[1]{
    let sPostgre = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Postgres, postgresExtensions());
 
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sPostgre);
 }
@@ -48,7 +49,7 @@ function <<test.Test>> meta::relational::tests::mapping::function::postgres::tes
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+                                                meta::relational::runtime::DatabaseType.Postgres, postgresExtensions());
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 
 }

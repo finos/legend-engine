@@ -24,6 +24,7 @@ import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.collections.impl.utility.MapIterate;
 import org.finos.legend.engine.repl.client.Client;
+import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.pure.m3.pct.aggregate.model.Documentation;
 import org.finos.legend.pure.m3.pct.aggregate.model.FunctionDocumentation;
 import org.finos.legend.pure.m3.pct.functions.model.FunctionDefinition;
@@ -41,10 +42,13 @@ public class DocumentationHelper
 
     static
     {
+        String commitId = DeploymentStateAndVersions.sdlc.commitId;
+        String commitIdOrMaster = (commitId != null && !commitId.isEmpty()) ? commitId : "master";
         MODULE_URLS.put("grammar", "https://github.com/finos/legend-pure/tree/master/legend-pure-core/legend-pure-m3-core/src/main/resources");
         MODULE_URLS.put("essential", "https://github.com/finos/legend-pure/tree/master/legend-pure-core/legend-pure-m3-core/src/main/resources");
-        MODULE_URLS.put("standard", "https://github.com/finos/legend-engine/tree/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-base/legend-engine-pure-functions-standard/src/main/resources/");
-        MODULE_URLS.put("relation", "https://github.com/finos/legend-engine/tree/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure/src/main/resources");
+        MODULE_URLS.put("standard", String.format("https://github.com/finos/legend-engine/tree/%s/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-standard/legend-engine-pure-functions-standard-pure/src/main/resources", commitIdOrMaster));
+        MODULE_URLS.put("relation", String.format("https://github.com/finos/legend-engine/tree/%s/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure/src/main/resources", commitIdOrMaster));
+        MODULE_URLS.put("unclassified", String.format("https://github.com/finos/legend-engine/tree/%s/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-unclassified/legend-engine-pure-functions-unclassified-pure/src/main/resources", commitIdOrMaster));
     }
 
     private static final int ANSI_ATTR_WIDTH = 8;

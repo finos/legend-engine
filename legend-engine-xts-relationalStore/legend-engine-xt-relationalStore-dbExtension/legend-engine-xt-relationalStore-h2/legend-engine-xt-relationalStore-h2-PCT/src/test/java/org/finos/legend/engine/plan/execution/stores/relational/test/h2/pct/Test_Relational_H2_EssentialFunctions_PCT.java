@@ -19,8 +19,8 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-import org.finos.legend.engine.pure.runtime.testConnection.CoreExternalTestConnectionCodeRepositoryProvider;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
+import org.finos.legend.pure.code.core.CoreRelationalH2PCTCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
@@ -33,7 +33,7 @@ import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramew
 public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = PlatformCodeRepositoryProvider.essentialFunctions;
-    private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.H2Adapter;
+    private static final Adapter adapter = CoreRelationalH2PCTCodeRepositoryProvider.H2Adapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // Add
@@ -240,11 +240,6 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::math::tests::testCubeRootEval_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Function \"CBRT\" not found; SQL statement:\nselect cbrt(27) [90022-214]"),
             one("meta::pure::functions::math::tests::testCubeRoot_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Function \"CBRT\" not found; SQL statement:\nselect cbrt(0) [90022-214]"),
 
-            // Is
-            one("meta::pure::functions::boolean::tests::testIsEnum_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'is_Any_1__Any_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::boolean::tests::testIsNonPrimitive_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::boolean::is(SideClass[*],SideClass[*])'"),
-            one("meta::pure::functions::boolean::tests::testIsPrimitive_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'is_Any_1__Any_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-
             // At
             one("meta::pure::functions::collection::tests::at::testAtOtherScenario_Function_1__Boolean_1_", "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: ['a', 'b', 'c'] -> map(x:String[1] | [$x, 'z'] -> plus();) -> at(0)\""),
             one("meta::pure::functions::collection::tests::at::testAtWithVariable_Function_1__Boolean_1_", "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: ['a', 'b', 'c'] -> at(1)\""),
@@ -329,6 +324,10 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             // ParseDecimal
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"3.14159d\"; SQL statement:\nselect cast('3.14159d' as decimal(5,2)) [22018-214]"),
             one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\""),
+
+            //variant
+            one("meta::pure::functions::collection::tests::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::variant::convert::toMany'"),
+            one("meta::pure::functions::collection::tests::fold::testFold_FromVariant_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::variant::convert::toMany'"),
 
             // ParseInteger
             one("meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"9999999999999992\"; SQL statement:\nselect cast('9999999999999992' as integer) [22018-214]")

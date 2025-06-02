@@ -20,7 +20,7 @@ Database meta::relational::tests::mapping::relation::testDB
     ID INTEGER PRIMARY KEY,
     "FIRST NAME" VARCHAR(100),
     AGE INTEGER,
-    FIRMID INTEGER,
+    "FirmId" INTEGER,
     SALARY FLOAT
   )
 
@@ -76,7 +76,7 @@ Mapping meta::relational::tests::mapping::relation::simpleMapping
     ~func meta::relational::tests::mapping::relation::personFunction__Relation_1_
     firstName: 'FIRST NAME',
     age: AGE,
-    +firmId: Integer[1]: FIRMID
+    +firmId: Integer[1]: 'FirmId'
   }
 
   *Firm[firm]: Relation 
@@ -100,14 +100,14 @@ Mapping meta::relational::tests::mapping::relation::mixedMapping
     ~func meta::relational::tests::mapping::relation::personFunctionWithProject__Relation_1_
     firstName: 'FIRST NAME',
     age: AGE,
-    +firmId: Integer[1]: FIRMID
+    +firmId: Integer[1]: 'FirmId'
   }
 
   *PersonWithFirmId: Relational 
   {
     firstName: [meta::relational::tests::mapping::relation::testDB]personTable."FIRST NAME",
     age: [meta::relational::tests::mapping::relation::testDB]personTable.AGE,
-    firmId: [meta::relational::tests::mapping::relation::testDB]personTable.FIRMID
+    firmId: [meta::relational::tests::mapping::relation::testDB]personTable."FirmId"
   }
 
   *Firm[firm]: Relational 
@@ -150,7 +150,7 @@ function meta::relational::tests::mapping::relation::personFunction(): Relation<
     ->limit(5)
 }
 
-function meta::relational::tests::mapping::relation::personFunctionWithProject(): Relation<Any>[1]
+function meta::relational::tests::mapping::relation::personFunctionWithProject(): Relation<('FIRST NAME':String, AGE:Integer, 'FirmId':Integer)>[1]
 {
   PersonWithFirmId.all()
     ->filter(x|$x.age > 25)
@@ -158,10 +158,10 @@ function meta::relational::tests::mapping::relation::personFunctionWithProject()
       ~[
         'FIRST NAME':x|$x.firstName,
         AGE:x|$x.age,
-        FIRMID:x|$x.firmId
+        'FirmId':x|$x.firmId
       ]
     )
-    ->select(~['FIRST NAME', AGE, FIRMID])
+    ->select(~['FIRST NAME', AGE, 'FirmId'])
 }
 
 function meta::relational::tests::mapping::relation::firmFunction(): Relation<Any>[1]

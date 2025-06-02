@@ -48,6 +48,11 @@ public class PureGrammarComposerContext
      */
     private final boolean isValueSpecificationExternalParameter;
     /**
+     * This flag will notify the transformer that elements should be parsed as Pure Grammar.
+     * E.g. no quotes shall be added to enum starting with digits (310_ACT would not get converted to '310_ACT')
+     */
+    private final boolean isPureGrammar;
+    /**
      * This flag will notify the transformer that the variable being processed is in the signature of the function,
      * hence omitting the `$` symbol preceding the variable.
      */
@@ -73,6 +78,7 @@ public class PureGrammarComposerContext
         this.isVariableInFunctionSignature = builder.isVariableInFunctionSignature;
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
         this.isPropertyBracketExpressionModeEnabled = builder.isPropertyBracketExpressionModeEnabled;
+        this.isPureGrammar = builder.isPureGrammar;
         // extensions
         this.extensions = PureGrammarComposerExtensionLoader.extensions();
         this.extraSectionComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraSectionComposers);
@@ -98,6 +104,11 @@ public class PureGrammarComposerContext
         return isValueSpecificationExternalParameter;
     }
 
+    public boolean isPureGrammar()
+    {
+        return isPureGrammar;
+    }
+
     public RenderStyle getRenderStyle()
     {
         return renderStyle;
@@ -120,6 +131,7 @@ public class PureGrammarComposerContext
         private boolean isValueSpecificationExternalParameter = false;
         private boolean isVariableInFunctionSignature = false;
         private boolean isPropertyBracketExpressionModeEnabled = false;
+        private boolean isPureGrammar = false;
 
         private Builder()
         {
@@ -134,6 +146,7 @@ public class PureGrammarComposerContext
             builder.isVariableInFunctionSignature = composerContext.isVariableInFunctionSignature;
             builder.isValueSpecificationExternalParameter = composerContext.isValueSpecificationExternalParameter;
             builder.isPropertyBracketExpressionModeEnabled = composerContext.isPropertyBracketExpressionModeEnabled;
+            builder.isPureGrammar = composerContext.isPureGrammar;
             return builder;
         }
 
@@ -146,6 +159,7 @@ public class PureGrammarComposerContext
             builder.isVariableInFunctionSignature = DEPRECATED_context.isVariableInFunctionSignature();
             builder.isValueSpecificationExternalParameter = DEPRECATED_context.isValueSpecificationExternalParameter();
             builder.isPropertyBracketExpressionModeEnabled = DEPRECATED_context.isPropertyBracketExpressionModeEnabled();
+            builder.isPureGrammar = DEPRECATED_context.isPureGrammar();
             return builder;
         }
 
@@ -174,6 +188,12 @@ public class PureGrammarComposerContext
         public Builder withVariableInFunctionSignature()
         {
             this.isVariableInFunctionSignature = true;
+            return this;
+        }
+
+        public Builder withPureGrammar()
+        {
+            this.isPureGrammar = true;
             return this;
         }
 

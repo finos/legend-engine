@@ -21,7 +21,7 @@ import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.tests.RuntimeVerifier;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
-import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.CompiledMetadataStateVerifier;
+import org.finos.legend.pure.runtime.java.compiled.runtime.CompiledMetadataStateVerifier;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;

@@ -64,6 +64,8 @@ public class BaseTest
     protected String mainDbName = "mydb";
     protected String mainTableName = "main";
     protected String mainTableAlias = "sink";
+    protected String deletePartitionTableName = "delete_partition";
+    protected String deletePartitionTableAlias = "delete_partition_alias";
     protected String ingestRunId = "075605e3-bada-47d7-9ae9-7138f392fe22";
     protected String ingestRequestId = "123456789";
 
@@ -356,6 +358,11 @@ public class BaseTest
         .addFields(digest)
         .addFields(batchId)
         .build();
+
+    protected SchemaDefinition deletePartitionTableSchema = SchemaDefinition.builder()
+            .addFields(bizDate)
+            .addFields(accountType)
+            .build();
 
     protected SchemaDefinition stagingTableSchemaWithDigestAndVersion = SchemaDefinition.builder()
             .addFields(id)
@@ -733,6 +740,11 @@ public class BaseTest
     protected Dataset stagingTableWithBaseSchemaAndDigest = DatasetDefinition.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(stagingTableSchemaWithDigest)
+            .build();
+
+    protected Dataset deletePartitionTableWithMultiplePartitions = DatasetDefinition.builder()
+            .database(mainDbName).name(deletePartitionTableName).alias(deletePartitionTableAlias)
+            .schema(deletePartitionTableSchema)
             .build();
 
     protected Dataset stagingTableWithMultiPartitions = DatasetDefinition.builder()

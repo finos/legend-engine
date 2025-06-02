@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.85.2-SNAPSHOT</version>
+    <version>4.87.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -72,7 +72,7 @@
 
         <!-- Function Activators -->
         <module>legend-engine-xts-functionActivator</module>
-        <module>legend-engine-xts-snowflakeApp</module>
+        <module>legend-engine-xts-snowflake</module>
         <module>legend-engine-xts-bigqueryFunction</module>
         <module>legend-engine-xts-memsqlFunction</module>
         <module>legend-engine-xts-service</module>
@@ -106,7 +106,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.47.0</legend.pure.version>
+        <legend.pure.version>5.50.0</legend.pure.version>
         <legend.shared.version>0.26.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -198,7 +198,6 @@
         <mockito-core.version>4.4.0</mockito-core.version>
         <mongodb.version>3.12.8</mongodb.version>
         <opencsv.version>4.6</opencsv.version>
-        <openjdk.jol.version>0.9</openjdk.jol.version>
         <opentracing.contrib.version>0.3.0</opentracing.contrib.version>
         <opentracing.version>0.32.0</opentracing.version>
         <pac4j.jaxrs.version>3.0.0</pac4j.jaxrs.version>
@@ -782,32 +781,32 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-snowflakeApp-protocol</artifactId>
+                <artifactId>legend-engine-xt-snowflake-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-snowflakeApp-pure</artifactId>
+                <artifactId>legend-engine-xt-snowflake-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-snowflakeApp-compiler</artifactId>
+                <artifactId>legend-engine-xt-snowflake-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-snowflakeApp-grammar</artifactId>
+                <artifactId>legend-engine-xt-snowflake-grammar</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-snowflakeApp-api</artifactId>
+                <artifactId>legend-engine-xt-snowflake-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-snowflakeApp-generator</artifactId>
+                <artifactId>legend-engine-xt-snowflake-generator</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -867,7 +866,7 @@
             </dependency>
 <!--            <dependency>-->
 <!--                <groupId>org.finos.legend.engine</groupId>-->
-<!--                <artifactId>legend-engine-xt-snowflakeApp-generator</artifactId>-->
+<!--                <artifactId>legend-engine-xt-snowflake-generator</artifactId>-->
 <!--                <version>${project.version}</version>-->
 <!--            </dependency>-->
             <dependency>
@@ -1278,16 +1277,6 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-SDT-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1332,6 +1321,26 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-duckdb-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-duckdb-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-duckdb-SDT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-duckdb-protocol</artifactId>
@@ -1475,6 +1484,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgres-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-postgres-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-postgres-SDT</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -3121,22 +3140,22 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-h2-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-h2-SDT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-h2-execution-2.1.214</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-duckdb-PCT</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-postgres-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -3244,14 +3263,6 @@
                 <version>${jackson.version}</version>
             </dependency>
             <!-- JACKSON -->
-
-            <!-- OPEN JDK -->
-            <dependency>
-                <groupId>org.openjdk.jol</groupId>
-                <artifactId>jol-core</artifactId>
-                <version>${openjdk.jol.version}</version>
-            </dependency>
-            <!-- OPEN JDK -->
 
             <!-- JUNIT -->
             <dependency>

@@ -14,10 +14,9 @@
 
 package org.finos.legend.pure.runtime.java.interpreted.function.base.string;
 
+import org.finos.legend.engine.pure.code.core.functions.unclassified.base.string.AbstractTestDecodeUrl;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.function.base.string.AbstractTestDecodeUrl;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
-import org.junit.After;
 import org.junit.BeforeClass;
 
 public class TestDecodeUrl extends AbstractTestDecodeUrl
@@ -26,13 +25,6 @@ public class TestDecodeUrl extends AbstractTestDecodeUrl
     public static void setUp()
     {
         setUpRuntime(getFunctionExecution());
-    }
-
-    @After
-    public void cleanRuntime()
-    {
-        runtime.delete("fromString.pure");
-        runtime.compile();
     }
 
     protected static FunctionExecution getFunctionExecution()

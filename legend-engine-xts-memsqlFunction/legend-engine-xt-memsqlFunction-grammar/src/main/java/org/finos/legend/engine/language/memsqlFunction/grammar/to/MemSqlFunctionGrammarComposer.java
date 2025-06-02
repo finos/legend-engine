@@ -49,7 +49,7 @@ public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtensi
         return "MemSqlFunction " + renderAnnotations(app.stereotypes, app.taggedValues) + packageName + "\n" +
                 "{\n" +
                 "   functionName : '" + app.functionName + "';\n" +
-                "   function : " + app.function + ";\n" +
+                "   function : " + app.function.path + ";\n" +
                 (app.owner == null ? "" : "   owner : '" + app.owner + "';\n") +
                 (app.description == null ? "" : "   description : '" + app.description + "';\n") +
                 (app.activationConfiguration == null ? "" : "   activationConfiguration : " + ((MemSqlFunctionDeploymentConfiguration) app.activationConfiguration).activationConnection.connection + ";\n") +

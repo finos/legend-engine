@@ -19,8 +19,8 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-import org.finos.legend.engine.pure.runtime.testConnection.CoreExternalTestConnectionCodeRepositoryProvider;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
+import org.finos.legend.pure.code.core.CoreRelationalDuckDBPCTCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
@@ -33,7 +33,7 @@ import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramew
 public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = PlatformCodeRepositoryProvider.essentialFunctions;
-    private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.duckDBAdapter;
+    private static final Adapter adapter = CoreRelationalDuckDBPCTCodeRepositoryProvider.duckDBAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // Add
@@ -226,11 +226,6 @@ public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConf
             // toDecimal
             one("meta::pure::functions::math::tests::toDecimal::testIntToDecimal_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), \"\nexpected: 8D\nactual:   8.0D\""),
 
-            // Is
-            one("meta::pure::functions::boolean::tests::testIsEnum_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'is_Any_1__Any_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::boolean::tests::testIsNonPrimitive_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::boolean::is(SideClass[*],SideClass[*])'"),
-            one("meta::pure::functions::boolean::tests::testIsPrimitive_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'is_Any_1__Any_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-
             // At
             one("meta::pure::functions::collection::tests::at::testAtOtherScenario_Function_1__Boolean_1_", "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: ['a', 'b', 'c'] -> map(x:String[1] | [$x, 'z'] -> plus();) -> at(0)\""),
             one("meta::pure::functions::collection::tests::at::testAtWithVariable_Function_1__Boolean_1_", "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: ['a', 'b', 'c'] -> at(1)\""),
@@ -316,7 +311,11 @@ public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\""),
 
             // ParseInteger
-            one("meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_", "java.sql.SQLException: Conversion Error: Could not convert string '9999999999999992' to INT32\nLINE 1: select cast('9999999999999992' as integer)\n               ^")
+            one("meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_", "java.sql.SQLException: Conversion Error: Could not convert string '9999999999999992' to INT32\nLINE 1: select cast('9999999999999992' as integer)\n               ^"),
+
+            //variant
+            one("meta::pure::functions::collection::tests::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::variant::convert::toMany'"),
+            one("meta::pure::functions::collection::tests::fold::testFold_FromVariant_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::variant::convert::toMany'")
     );
 
     public static Test suite()

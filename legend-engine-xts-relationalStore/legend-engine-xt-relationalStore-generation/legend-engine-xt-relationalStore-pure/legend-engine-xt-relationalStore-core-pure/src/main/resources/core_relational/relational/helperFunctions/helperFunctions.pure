@@ -430,7 +430,7 @@ function meta::relational::mapping::transformRelationPropertyMappingsToRelationa
 {
   $propertyMappings->map(r| let relationColumnType = $r.column.classifierGenericType.typeArguments->at(1).rawType->toOne();
                             let relOpElement = ^TableAliasColumn(alias=^TableAlias(name=$classMapping.id, relationalElement=^RelationFunction(owner=$classMapping)),
-                                                                 column=^RelationFunctionColumn(column=$r.column, name=$r.column.name->toOne(), type=pureTypeToRelationalTypeMap()->get($relationColumnType)->toOne())
+                                                                 column=^RelationFunctionColumn(column=$r.column, name=addQuotesIfNecessary($r.column.name->toOne()), type=pureTypeToRelationalTypeMap()->get($relationColumnType)->toOne())
                                                                 );
                             ^RelationalPropertyMapping(
                               owner = $r.owner,
