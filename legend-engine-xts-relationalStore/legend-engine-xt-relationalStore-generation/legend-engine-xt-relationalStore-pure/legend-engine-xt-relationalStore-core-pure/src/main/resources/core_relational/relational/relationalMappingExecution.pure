@@ -104,6 +104,10 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
    let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($sq.vs); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
    let resultType = if([
                           pair(
+                              |$class == Nil,
+                              | ^DataTypeResultType( genericType=^GenericType(rawType=$class))
+                          ),
+                          pair(
                               |$class->_subTypeOf(TabularDataSet),
                               | meta::relational::mapping::TDSSelectQueryToTDSResultType($class,$query->cast(@TdsSelectSqlQuery),$exeCtx);
                           ),
