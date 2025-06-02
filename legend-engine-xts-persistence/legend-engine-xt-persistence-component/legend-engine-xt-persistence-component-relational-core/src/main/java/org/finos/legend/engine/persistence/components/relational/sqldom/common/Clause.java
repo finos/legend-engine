@@ -72,7 +72,8 @@ public enum Clause
     OPTIONS("OPTIONS"),
     DISTINCT("DISTINCT"),
     TO_DATE("TO_DATE"),
-    TO_TIMESTAMP_NTZ("TO_TIMESTAMP_NTZ");
+    TO_TIMESTAMP_NTZ("TO_TIMESTAMP_NTZ"),
+    TO_TIME("TO_TIME");
 
     private final String clause;
 

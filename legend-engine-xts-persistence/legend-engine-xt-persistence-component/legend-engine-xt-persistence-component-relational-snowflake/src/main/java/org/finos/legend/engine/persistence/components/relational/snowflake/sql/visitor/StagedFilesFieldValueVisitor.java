@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.StagedF
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.StagedFilesField;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.ToDateFunction;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.ToTimeFunction;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.ToTimestampFunction;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.FunctionName;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function;
@@ -63,6 +64,11 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
             if (current.fieldType().dataType().equals(DataType.DATE))
             {
                 prev.push(new ToDateFunction(stageField, context.quoteIdentifier()));
+                return new VisitorResult(null);
+            }
+            if (current.fieldType().dataType().equals(DataType.TIME))
+            {
+                prev.push(new ToTimeFunction(stageField, context.quoteIdentifier()));
                 return new VisitorResult(null);
             }
         }
