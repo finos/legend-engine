@@ -33,7 +33,7 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 public class Test_Relational_Spanner_VariantFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = PlatformCodeRepositoryProvider.variantFunctions;
-    private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.postgresAdapter;
+    private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.spannerAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             one("meta::pure::functions::variant::convert::tests::to::testToAny_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
