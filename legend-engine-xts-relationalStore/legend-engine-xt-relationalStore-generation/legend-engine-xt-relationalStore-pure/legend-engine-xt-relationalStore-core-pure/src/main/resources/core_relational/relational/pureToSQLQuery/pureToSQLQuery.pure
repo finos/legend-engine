@@ -599,7 +599,13 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
   let foundColumn = if($foundColumnInSelect->isEmpty(), |$tableAlias.relation()->findColumn($colFuncName), |$foundColumnInSelect);
   let colAlias = $foundColumn->toOne()->match([c:Column[1]|^TableAliasColumn(alias = $tableAlias, column = $c), a:Alias[1]|$a.relationalElement, tcn:TableAliasColumn[1]|^$tcn(alias = $tableAlias)]);
   let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
-  ^$leftSide(element = ^$operation(select=$newSelect));
+
+  let paths = $operation.select->cast(@TdsSelectSqlQuery).paths;
+  let name = $fe.propertyName->cast(@InstanceValue).values->toOne()->cast(@String);
+  let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
+  let propertyMapping = if($matchedPath->isEmpty(), |[], |$matchedPath.second.propertyMapping);
+
+  ^$leftSide(element = ^$operation(select=$newSelect), currentPropertyMapping=$propertyMapping);
 }
 
 function meta::relational::functions::pureToSqlQuery::findColumn(relation:Relation[1], name:String[1]):RelationalOperationElement[0..1]
@@ -7246,20 +7252,20 @@ function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapp
 {
     let enum = $enumWrapper->cast(@Literal).value;
     let expr = $enumPropWrapper->byPassRouterInfo()->cast(@SimpleFunctionExpression);
-
     let enumPropMapping = $currentPropertyMapping->at(0)->cast(@RelationalPropertyMapping);
 
     if ($expr.func.name == 'getEnum',
           | [],
-          | let property = $expr.func->match([
-                                      p:Property<Nil,Any|*>[1]|$p,
-                                      n:NativeFunction<Any>[1]|
-                                                                assert($n == map_T_m__Function_1__V_m_ || $n == map_T_$0_1$__Function_1__V_$0_1$_ || $n == map_T_MANY__Function_1__V_MANY_);
-                                                               let lambda = $expr.parametersValues->evaluateAndDeactivate()->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>);
-                                                               $lambda.expressionSequence->at(0)->evaluateAndDeactivate()->byPassRouterInfo()->cast(@FunctionExpression).func->cast(@Property<Nil,Any|*>);
-                                     ]);
-             assertEquals($enumPropMapping.property, $property, 'The mapping must be for the enum property');
-             );
+          | $expr.func->match([
+                              p:Property<Nil,Any|*>[1]|assertEquals($enumPropMapping.property, $p, 'The mapping must be for the enum property'),
+                              n:NativeFunction<Any>[1]|
+                                                        assert($n == map_T_m__Function_1__V_m_ || $n == map_T_$0_1$__Function_1__V_$0_1$_ || $n == map_T_MANY__Function_1__V_MANY_);
+                                                        let lambda = $expr.parametersValues->evaluateAndDeactivate()->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>);
+                                                        let property = $lambda.expressionSequence->at(0)->evaluateAndDeactivate()->byPassRouterInfo()->cast(@FunctionExpression).func->cast(@Property<Nil,Any|*>);
+                                                        assertEquals($enumPropMapping.property, $property, 'The mapping must be for the enum property');,
+                              c:meta::pure::metamodel::relation::Column<Nil,Any|1>[1]|assert($enumPropMapping.property.genericType.rawType == $enum->type(), | 'The enumeration types must match [' + $enumPropMapping.property.genericType.rawType->toOne()->toString() + ' != ' + $enum->type()->toOne()->toString() + ']')
+                            ]);
+    );
 
     let sourceVal = if ($enumPropMapping->instanceOf(SemiStructuredRelationalPropertyMapping),
                         | $enum->id(),
