@@ -1,0 +1,13 @@
+Class meta::pure::functions::math::mathUtility::RowMapper
+{
+  rowA: Number[0..1];
+  rowB: Number[0..1];
+}
+
+function meta::pure::functions::math::mathUtility::rowMapper(rowA:Number[0..1], rowB:Number[0..1]):meta::pure::functions::math::mathUtility::RowMapper[1]
+{
+  ^meta::pure::functions::math::mathUtility::RowMapper(
+    rowA= $rowA,
+    rowB= $rowB
+  )
+}
