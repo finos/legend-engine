@@ -55,6 +55,14 @@ function <<test.Test>> meta::relational::tests::mapping::union::specialUnion::te
    assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".lastName_s1 as "lastName" from PersonSet1 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\' UNION ALL select "root".lastName_s2 as "lastName" from PersonSet2 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\') as "unionalias_0"', $res);
 }
 
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::union::specialUnion::testFilteredProjectWithFrom():Boolean[1]
+{
+   let res = execute(|Person.all()->filter(p | $p.firm.legalName == 'Firm X')->project([p | $p.lastName], ['lastName'])->meta::pure::mapping::from(specialUnionMapping, testRuntime()), ^meta::pure::mapping::Mapping(), testRuntime(), relationalExtensions());
+   assertEquals(4, $res.values.rows->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright'], $res.values.rows->map(r | $r.getString('lastName')));
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".lastName_s1 as "lastName" from PersonSet1 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\' UNION ALL select "root".lastName_s2 as "lastName" from PersonSet2 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\') as "unionalias_0"', $res);
+}
+
 function <<test.Test>> meta::relational::tests::mapping::union::specialUnion::testMultiFilterProject():Boolean[1]
 {
    let res = execute(|Person.all()->filter(p | $p.lastName->startsWith('A') || $p.lastName->startsWith('T'))->filter(p | $p.firm.legalName == 'Firm X')->project([p | $p.lastName], ['lastName']), specialUnionMapping, testRuntime(), relationalExtensions());
