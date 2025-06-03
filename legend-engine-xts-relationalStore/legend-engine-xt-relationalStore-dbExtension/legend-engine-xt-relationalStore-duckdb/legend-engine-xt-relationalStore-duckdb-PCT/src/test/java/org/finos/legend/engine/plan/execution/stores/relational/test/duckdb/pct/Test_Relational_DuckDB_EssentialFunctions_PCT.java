@@ -46,9 +46,9 @@ public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference_Function_1__Boolean_1_", "\"Cannot cast a collection of size 3 to multiplicity [1]\""),
 
             // Contains
-            one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::collection::contains(CO_Firm[*],CO_Firm[*])'"),
+            one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\""),
             one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "java.sql.SQLException: Conversion Error: Unimplemented type for cast (INTEGER -> DATE)\nLINE 1: select 1 in (1, 2, 5, 2, 'a', true, DATE '2014...\n               ^"),
-            one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all(),comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"),
+            one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"),
 
             // Drop
             one("meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnEmptyList_Function_1__Boolean_1_", "\"Cast exception: SelectSQLQuery cannot be cast to TdsSelectSqlQuery\""),
@@ -309,9 +309,6 @@ public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConf
             // ParseDecimal
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "java.sql.SQLException: Conversion Error: Could not convert string \"3.14159d\" to DECIMAL(18,3)\nLINE 1: select cast('3.14159d' as decimal)\n               ^"),
             one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\""),
-
-            // ParseInteger
-            one("meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_", "java.sql.SQLException: Conversion Error: Could not convert string '9999999999999992' to INT32\nLINE 1: select cast('9999999999999992' as integer)\n               ^"),
 
             //variant
             one("meta::pure::functions::collection::tests::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::variant::convert::toMany'"),

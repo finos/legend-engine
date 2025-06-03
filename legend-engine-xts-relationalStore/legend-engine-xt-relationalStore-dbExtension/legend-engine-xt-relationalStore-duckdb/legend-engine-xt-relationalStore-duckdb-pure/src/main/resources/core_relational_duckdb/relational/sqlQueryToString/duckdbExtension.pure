@@ -158,6 +158,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
+    dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(cast(%s as BIGINT) & cast(%s as BIGINT))')),
+    dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ cast(%s as BIGINT))')),
+    dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='(cast(%s as BIGINT) | cast(%s as BIGINT))')),
+    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='(cast(%s as BIGINT) << cast(%s as BIGINT))')),
+    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='(cast(%s as BIGINT) >> cast(%s as BIGINT))')),
+    dynaFnToSql('bitXor',                 $allStates,            ^ToSql(format='xor(cast(%s as BIGINT), cast(%s as BIGINT))')),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),   //aggregate function across rows (not and on conditions)
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),
     dynaFnToSql('castBoolean',            $allStates,            ^ToSql(format='cast(%s as boolean)')),
@@ -207,7 +213,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     // dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='parsedatetime(%s,%s)')),
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
-    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as BIGINT)')),
     // dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='legend_h2_extension_json_parse(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s IN %s)')),
     // dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_add(DAY, case when %s - DAY_OF_WEEK(%s) >= 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
