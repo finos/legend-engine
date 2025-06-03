@@ -2762,3 +2762,19 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGraphFetchH2TempTab
   assertEquals('INSERT INTO "temp_table_node_0" SELECT * FROM CSVREAD(\'${csv_file_location}\');', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('Drop table if exists "temp_table_node_0";', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
+
+function <<test.Test>> meta::pure::executionPlan::tests::testTypedTDSWithEnum():Boolean[1]
+{
+   let query = {|Synonym.all()->project(~[type: x | $x.type, name : x | $x.name])};
+   let generatedPlan = executionPlan($query, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(true), meta::relational::extension::relationalExtensions());
+   let sqlQuery = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery;
+   assertEquals('select "root"."TYPE" as "type", "root"."NAME" as "name" from "productSchema"."synonymTable" as "root"', $sqlQuery);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testTypedTDSWithEnumFilter():Boolean[1]
+{
+  let query = {|Synonym.all()->project(~[type: x | $x.type])->filter(row|$row.type == meta::relational::tests::model::simple::ProductSynonymType.CUSIP)};
+  let generatedPlan = executionPlan($query, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(true), meta::relational::extension::relationalExtensions());
+  let sqlQuery = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery;
+  assertEquals('select "root"."TYPE" as "type" from "productSchema"."synonymTable" as "root" where "root"."TYPE" = \'CUSIP\'', $sqlQuery);
+}

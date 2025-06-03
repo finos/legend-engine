@@ -44,6 +44,7 @@ Class meta::pure::router::routing::RoutingState
    value           : Any[0..1];
    executionContext: meta::pure::runtime::ExecutionContext[1] = ^meta::pure::runtime::ExecutionContext();
    graphFetchFlow  : Boolean[0..1];
+   functionExpressionStack : FunctionExpression[*];
 }
 
 Class meta::pure::router::routing::PropertyMap
@@ -131,7 +132,7 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
          e:ExtendedRoutedValueSpecification[1]  | $state,
          f:FunctionRoutedValueSpecification[1]  | ^$state(value=$f.value)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug),
          r:NoSetRoutedValueSpecification[1]     | ^$state(value=$r.value)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug),
-         fe:FunctionExpression[1]               | $fe->routeFunctionExpression($state, $executionContext, $vars, $inScopeVars, $extensions, $debug),
+         fe:FunctionExpression[1]               | $fe->routeFunctionExpression(^$state(functionExpressionStack += $fe), $executionContext, $vars, $inScopeVars, $extensions, $debug),
          i:InstanceValue[1]                     | if(
                                                       [
                                                         pair(

@@ -544,11 +544,11 @@ public class PureModel implements IPureModel
 
     private void initializeMultiplicities()
     {
-        this.multiplicitiesIndex.put("zero", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::PureZero"));
-        this.multiplicitiesIndex.put("one", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::PureOne"));
-        this.multiplicitiesIndex.put("zeroone", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::ZeroOne"));
-        this.multiplicitiesIndex.put("onemany", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::OneMany"));
-        this.multiplicitiesIndex.put("zeromany", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::ZeroMany"));
+        this.multiplicitiesIndex.put("zero", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, M3Paths.PureZero));
+        this.multiplicitiesIndex.put("one", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, M3Paths.PureOne));
+        this.multiplicitiesIndex.put("zeroone", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, M3Paths.ZeroOne));
+        this.multiplicitiesIndex.put("onemany", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, M3Paths.OneMany));
+        this.multiplicitiesIndex.put("zeromany", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, M3Paths.ZeroMany));
     }
 
     private void initializePrimitiveTypes()
@@ -725,11 +725,11 @@ public class PureModel implements IPureModel
     }
 
     @SafeVarargs
-    private final <T> T tryGetFromMetadataAccessor(String id, BiFunction<? super MetadataAccessor, ? super String, ? extends T>... functions)
+    private final <T> T tryGetFromMetadataAccessor(String path, BiFunction<? super MetadataAccessor, ? super String, ? extends T>... functions)
     {
         for (BiFunction<? super MetadataAccessor, ? super String, ? extends T> function : functions)
         {
-            T result = tryGetFromMetadataAccessor(id, function);
+            T result = tryGetFromMetadataAccessor(path, function);
             if (result != null)
             {
                 return result;
@@ -738,11 +738,11 @@ public class PureModel implements IPureModel
         return null;
     }
 
-    private <T> T tryGetFromMetadataAccessor(String id, BiFunction<? super MetadataAccessor, ? super String, ? extends T> function)
+    private <T> T tryGetFromMetadataAccessor(String path, BiFunction<? super MetadataAccessor, ? super String, ? extends T> function)
     {
         try
         {
-            return function.apply(this.executionSupport.getMetadataAccessor(), id);
+            return function.apply(this.executionSupport.getMetadataAccessor(), path);
         }
         catch (Exception ignore)
         {
@@ -897,7 +897,11 @@ public class PureModel implements IPureModel
         }
 
         // Search for system types in the Pure graph
-        type = tryGetFromMetadataAccessor("Root::" + fullPath, MetadataAccessor::getClass, MetadataAccessor::getEnumeration, MetadataAccessor::getPrimitiveType, MetadataAccessor::getMeasure, MetadataAccessor::getUnit);
+        type = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getClass, MetadataAccessor::getEnumeration, MetadataAccessor::getPrimitiveType, MetadataAccessor::getMeasure, MetadataAccessor::getUnit);
+        if (type == null)
+        {
+            type = tryGetUnitByLegacyId(fullPath);
+        }
         if (type != null)
         {
             this.immutables.add(fullPathWithPrefix);
@@ -909,6 +913,25 @@ public class PureModel implements IPureModel
             this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
         }
         return type;
+    }
+
+    private Unit tryGetUnitByLegacyId(String legacyId)
+    {
+        int unitDelimiterIndex = legacyId.lastIndexOf('~');
+        if (unitDelimiterIndex != -1)
+        {
+            String measurePath = legacyId.substring(0, unitDelimiterIndex);
+            Measure measure = tryGetFromMetadataAccessor(measurePath, MetadataAccessor::getMeasure);
+            if (measure != null)
+            {
+                String unitName = legacyId.substring(unitDelimiterIndex + 1);
+                Unit canonicalUnit = measure._canonicalUnit();
+                return ((canonicalUnit != null) && unitName.equals(canonicalUnit._name())) ?
+                       canonicalUnit :
+                       measure._nonCanonicalUnits().detect(ncu -> unitName.equals(ncu._name()));
+            }
+        }
+        return null;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getClass(String fullPath)
@@ -992,7 +1015,7 @@ public class PureModel implements IPureModel
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction<?> getGraphFunctions(String fullPath)
     {
         String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction<?> packageableFunction = tryGetFromMetadataAccessor("Root::" + fullPath, MetadataAccessor::getConcreteFunctionDefinition, MetadataAccessor::getNativeFunction);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction<?> packageableFunction = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getConcreteFunctionDefinition, MetadataAccessor::getNativeFunction);
         if (packageableFunction == NULL_ELEMENT_SENTINEL)
         {
             return null;
@@ -1020,7 +1043,7 @@ public class PureModel implements IPureModel
         if (association == null)
         {
             // Search for system types in the Pure graph
-            association = tryGetFromMetadataAccessor("Root::" + fullPath, MetadataAccessor::getAssociation);
+            association = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getAssociation);
             if (association != null)
             {
                 this.immutables.add(fullPathWithPrefix);
@@ -1056,7 +1079,7 @@ public class PureModel implements IPureModel
         }
         if (profile == null)
         {
-            profile = tryGetFromMetadataAccessor("Root::" + pathWithTypeReference, MetadataAccessor::getProfile);
+            profile = tryGetFromMetadataAccessor(pathWithTypeReference, MetadataAccessor::getProfile);
             if (profile != null)
             {
                 this.packageableElementsIndex.put(pathWithTypeReference, profile);
@@ -1324,8 +1347,7 @@ public class PureModel implements IPureModel
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> getFunction(String functionName, boolean isNative)
     {
         MetadataAccessor metadataAccessor = this.executionSupport.getMetadataAccessor();
-        String metadataId = "Root::" + functionName;
-        return isNative ? metadataAccessor.getNativeFunction(metadataId) : metadataAccessor.getConcreteFunctionDefinition(metadataId);
+        return isNative ? metadataAccessor.getNativeFunction(functionName) : metadataAccessor.getConcreteFunctionDefinition(functionName);
     }
 
     public DeploymentMode getDeploymentMode()
