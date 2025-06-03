@@ -24,16 +24,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionArtifact;
-import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionContent;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.MemSqlDatasourceSpecification;
 
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
@@ -83,64 +79,6 @@ public class MemSqlFunctionGenerator
                 sqlExecutionNodes
                         .collect(Root_meta_relational_mapping_SQLExecutionNode::_sqlQuery)
                         .select(x -> !x.toLowerCase().startsWith("alter")));
-    }
-
-    private static RichIterable<String> extractSQLExpressions(Root_meta_pure_executionPlan_ExecutionPlan executionPlan)
-    {
-
-        Root_meta_pure_executionPlan_ExecutionNode node = executionPlan._rootExecutionNode();
-        return collectAllNodes(node)
-                .selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class)
-                .collect(Root_meta_relational_mapping_SQLExecutionNode::_sqlQuery)
-                .select(x -> !x.toLowerCase().startsWith("alter"));
-    }
-
-    private static String generateFunctionReturnColumns(Root_meta_pure_executionPlan_TDSResultType planResult)
-    {
-        return Lists.mutable.withAll(planResult._tdsColumns()).collect(c ->
-                c._name().replace(" ","_").replace("/","_")  + " " +  "VARCHAR(16777216)").makeString(" , ");
-    }
-
-    private static Object[] extractSQLExpressionsAndConnectionMetadata(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
-    {
-        PackageableFunction<?> function = activator._function();
-        Root_meta_pure_executionPlan_ExecutionPlan executionPlan = PlanGenerator.generateExecutionPlanAsPure((FunctionDefinition<?>) function, null, null, null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
-        Root_meta_pure_executionPlan_ExecutionNode node = executionPlan._rootExecutionNode();
-
-        RichIterable<String> expressions = collectAllNodes(node)
-                .selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class)
-                .collect(Root_meta_relational_mapping_SQLExecutionNode::_sqlQuery)
-                .select(x -> !x.toLowerCase().startsWith("alter"));
-
-        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relCOnn = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection)collectAllNodes(node).selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class)
-                .getAny()
-                ._connection();
-        Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification ds = (Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification) relCOnn._datasourceSpecification();
-        Root_meta_pure_alloy_connections_alloy_authentication_MemsqlPublicAuthenticationStrategy as = (Root_meta_pure_alloy_connections_alloy_authentication_MemsqlPublicAuthenticationStrategy) relCOnn._authenticationStrategy();
-
-        return new Object[]{expressions, ds, as};
-    }
-
-    private RelationalDatabaseConnection adaptConnection(Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification datasourceSpecification, Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification authenticationStrategy)
-    {
-        RelationalDatabaseConnection connection = new RelationalDatabaseConnection();
-
-        MemSqlDatasourceSpecification snowflakeDatasourceSpecification = new MemSqlDatasourceSpecification();
-        snowflakeDatasourceSpecification.databaseName = datasourceSpecification._databaseName();
-        snowflakeDatasourceSpecification.host = datasourceSpecification._host();
-        //snowflakeDatasourceSpecification.port = datasourceSpecification._port();
-        snowflakeDatasourceSpecification.useSsl = datasourceSpecification._useSsl();
-
-//        ReAuthe snowflakeAuthenticationStrategy = new SnowflakePublicAuthenticationStrategy();
-//        snowflakeAuthenticationStrategy.privateKeyVaultReference = authenticationStrategy._privateKeyVaultReference();
-//        snowflakeAuthenticationStrategy.passPhraseVaultReference = authenticationStrategy._passPhraseVaultReference();
-//        snowflakeAuthenticationStrategy.publicUserName = authenticationStrategy._publicUserName();
-//
-//        connection.authenticationStrategy = snowflakeAuthenticationStrategy;
-//        connection.datasourceSpecification = snowflakeDatasourceSpecification;
-//        connection.type = DatabaseType.Snowflake;
-
-        return connection;
     }
 
     private static RichIterable<Root_meta_pure_executionPlan_ExecutionNode> collectAllNodes(Root_meta_pure_executionPlan_ExecutionNode node)
