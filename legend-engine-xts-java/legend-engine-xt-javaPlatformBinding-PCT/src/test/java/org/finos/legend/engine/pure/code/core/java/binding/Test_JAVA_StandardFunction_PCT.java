@@ -146,14 +146,14 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::least::testLeast_Number_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
 
             // Bitwise
-            pack("meta::pure::functions::math::tests::tbd::bitAnd", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Number' is not a subtype of 'Integer'"),
-            pack("meta::pure::functions::math::tests::tbd::bitNot", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Number' is not a subtype of 'Integer'"),
-            pack("meta::pure::functions::math::tests::tbd::bitOr", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Number' is not a subtype of 'Integer'"),
-            pack("meta::pure::functions::math::tests::tbd::bitXor", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Float' is not a subtype of 'Integer'"),
-            pack("meta::pure::functions::math::tests::tbd::bitShiftLeft", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Number' is not a subtype of 'Integer'"),
-            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "Error in 'test::testFunction': Error in function 'test::testFunction__Integer_1_' - Type error: 'Number' is not a subtype of 'Integer'"),
-            one("meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
-            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\"")
+            pack("meta::pure::functions::math::tests::tbd::bitAnd", "\"meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
+            pack("meta::pure::functions::math::tests::tbd::bitNot",  "\"meta::pure::functions::math::bitNot_Integer_1__Integer_1_ is not supported yet!\""),
+            pack("meta::pure::functions::math::tests::tbd::bitOr", "\"meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
+            pack("meta::pure::functions::math::tests::tbd::bitXor", "\"meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_ is not supported yet!\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_", "\"meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_ is not supported yet!\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "\"meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_ is not supported yet!\"")
     );
 
     public static Test suite()
