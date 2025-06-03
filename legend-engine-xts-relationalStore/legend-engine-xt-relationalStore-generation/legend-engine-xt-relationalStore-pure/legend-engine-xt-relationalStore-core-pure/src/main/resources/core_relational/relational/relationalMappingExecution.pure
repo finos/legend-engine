@@ -230,7 +230,7 @@ function meta::relational::mapping::addEnumMapSupportFunctions(sq:meta::pure::ma
                                       |[]);
 }
 
-function meta::relational::mapping::fetchEnumFullPath(enum:EnumerationMapping<Any>[*]):String[1]
+function meta::relational::mapping::fetchEnumFullPath(enum:EnumerationMapping<Any>[1]):String[1]
 {
   $enum.parent->toOne()->elementToPath()->replace('::', '_') + '_' + $enum.name->toOne();
 }

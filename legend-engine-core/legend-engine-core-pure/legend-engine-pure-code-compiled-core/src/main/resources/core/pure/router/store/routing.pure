@@ -547,8 +547,8 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                 let newRoutingStrategy     = getRoutingStrategyFromMappingAndRuntime($currentRoutingStrategy, $fromMapping, $fromRuntime, $extensions);
                 let newState               = ^$state(routingStrategy = $newRoutingStrategy);
 
-                let processedFunction      = $fe.parametersValues->at(0)->match([v:VariableExpression[1] | meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values->cast(@FunctionExpression)->at(0),
-                                                                                 f:FunctionExpression[1] |$f])->routeFunctionExpression( $newState, $fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
+                let processedFunction      = ^$newState(value = $fe.parametersValues->at(0)->match([v:VariableExpression[1] | meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values->cast(@FunctionExpression)->at(0),
+                                                                                 f:FunctionExpression[1] |$f])->evaluateAndDeactivate())->routeValueSpecification($fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
                 let valueSpec              = $processedFunction.value;
                 let wrappedValueSpec       = $valueSpec->evaluateAndDeactivate()->match([
                                                           evs: ExtendedRoutedValueSpecification[1] | $evs,
