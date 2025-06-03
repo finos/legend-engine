@@ -1281,7 +1281,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByWithWavgAggr
                   [ x | $x.tradeDate->adjust(1, DurationUnit.DAYS)],
                   [
                     agg(x| $x.id, y|$y->count()),
-                    agg(x | $x.quantity->meta::pure::functions::math::wavgUtility::wavgRowMapper($x.weight), y | $y->wavg())
+                    agg(x | $x.quantity->meta::pure::functions::math::mathUtility::rowMapper($x.weight), y | $y->wavg())
                   ],
                   ['tradeDate', 'id count', 'Weighted Average (Trade)']
                   )
