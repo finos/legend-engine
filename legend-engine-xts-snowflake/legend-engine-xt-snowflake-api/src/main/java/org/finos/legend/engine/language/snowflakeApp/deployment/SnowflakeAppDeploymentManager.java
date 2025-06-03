@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
+import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppDeploymentTool;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
@@ -42,6 +43,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,6 +65,11 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     private String enrichDeploymentLocation(String deploymentLocation, String appName)
     {
         return deploymentLocation + String.format(deployStub, appName);
+    }
+
+    public SnowflakeAppDeploymentManager()
+    {
+
     }
 
     public SnowflakeAppDeploymentManager(SnowflakeAppDeploymentTool deploymentTool)
@@ -172,7 +179,24 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         }
         else
         {
-            statements.add(String.format(content.createStatement, catalogName));
+            try
+            {
+                if (content.createStatement.matches("^CREATE OR REPLACE SECURE FUNCTION %S[\\s\\S]*"))
+                {
+                    statements.add(String.format(content.createStatement, catalogName));
+                }
+                else
+                {
+                    Map<String, Object> model = new HashMap<>();
+                    model.put("catalogSchemaName", catalogName);
+                    statements.add(FreeMarkerExecutor.process(content.createStatement, model, ""));
+                }
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+
             if (content.grantStatement != null)
             {
                 statements.add(String.format(content.grantStatement, catalogName));

@@ -139,7 +139,7 @@ public class FreeMarkerExecutor
         return result;
     }
 
-    private static String process(String input, Map<String, ?> variableMap, String templateFunctions)
+    public static String process(String input, Map<String, ?> variableMap, String templateFunctions)
     {
         return process(input, new TemplateHashModelOverride(variableMap, templateFunctions), templateFunctions);
     }

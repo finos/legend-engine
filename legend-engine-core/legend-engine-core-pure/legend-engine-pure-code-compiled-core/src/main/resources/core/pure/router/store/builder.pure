@@ -257,7 +257,8 @@ function meta::pure::router::store::routing::build(v:ValueSpecification[1], l:Li
                                    $res->propagateVoid($res.values->filter(v|$v->instanceOf(ValueSpecification))->cast(@ValueSpecification));,
                v:VariableExpression[1]| $v,
                a:TDSRoutedValueSpecification[1]| $a->propagateVoid($a.value);,
-               s: StoreRoutedValueSpecification[1]|$s;
+               s: StoreRoutedValueSpecification[1]|$s;,
+               c:meta::pure::router::metamodel::clustering::ClusteredValueSpecification[1] | $c
              ]);
 }
 

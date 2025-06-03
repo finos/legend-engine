@@ -1,0 +1,127 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::tests::*;
+import meta::relational::extension::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::union::specialUnion::*;
+import meta::relational::tests::model::simple::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::union::specialUnion::setUp():Boolean[1]
+{
+    meta::relational::tests::mapping::union::createTablesAndFillDb();
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::specialUnion::testSimpleGetAll():Boolean[1]
+{
+   let res = execute(|Person.all(), specialUnionMapping, testRuntime(), relationalExtensions());
+   assertEquals(5, $res.values->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright', 'Roberts'], $res.values.lastName);
+   assertSameSQL('select "unionalias_0".u_type as u_type, "unionalias_0"."pk_0" as "pk_0", "unionalias_0"."lastName" as "lastName" from (select \'0\' as u_type, "root".ID as "pk_0", "root".lastName_s1 as "lastName" from PersonSet1 as "root" UNION select \'1\' as u_type, "root".ID as "pk_0", "root".lastName_s2 as "lastName" from PersonSet2 as "root") as "unionalias_0"', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::specialUnion::testFilteredGetAll():Boolean[1]
+{
+   let res = execute(|Person.all()->filter(p | $p.firm.legalName == 'Firm X'), specialUnionMapping, testRuntime(), relationalExtensions());
+   assertEquals(4, $res.values->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright'], $res.values.lastName);
+   assertSameSQL('select "unionalias_0".u_type as u_type, "unionalias_0"."pk_0" as "pk_0", "unionalias_0"."lastName" as "lastName" from (select \'0\' as u_type, "root".ID as "pk_0", "root".lastName_s1 as "lastName" from PersonSet1 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\' UNION select \'1\' as u_type, "root".ID as "pk_0", "root".lastName_s2 as "lastName" from PersonSet2 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\') as "unionalias_0"', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::specialUnion::testProject():Boolean[1]
+{
+   let res = execute(|Person.all()->project([p | $p.lastName], ['lastName']), specialUnionMapping, testRuntime(), relationalExtensions());
+   assertEquals(5, $res.values.rows->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright', 'Roberts'], $res.values.rows->map(r | $r.getString('lastName')));
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".lastName_s1 as "lastName" from PersonSet1 as "root" UNION ALL select "root".lastName_s2 as "lastName" from PersonSet2 as "root") as "unionalias_0"', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::specialUnion::testFilteredProject():Boolean[1]
+{
+   let res = execute(|Person.all()->filter(p | $p.firm.legalName == 'Firm X')->project([p | $p.lastName], ['lastName']), specialUnionMapping, testRuntime(), relationalExtensions());
+   assertEquals(4, $res.values.rows->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright'], $res.values.rows->map(r | $r.getString('lastName')));
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".lastName_s1 as "lastName" from PersonSet1 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\' UNION ALL select "root".lastName_s2 as "lastName" from PersonSet2 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\') as "unionalias_0"', $res);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::union::specialUnion::testFilteredProjectWithFrom():Boolean[1]
+{
+   let res = execute(|Person.all()->filter(p | $p.firm.legalName == 'Firm X')->project([p | $p.lastName], ['lastName'])->meta::pure::mapping::from(specialUnionMapping, testRuntime()), ^meta::pure::mapping::Mapping(), testRuntime(), relationalExtensions());
+   assertEquals(4, $res.values.rows->size());
+   assertSameElements(['Anand', 'Scott', 'Taylor', 'Wright'], $res.values.rows->map(r | $r.getString('lastName')));
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".lastName_s1 as "lastName" from PersonSet1 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\' UNION ALL select "root".lastName_s2 as "lastName" from PersonSet2 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\') as "unionalias_0"', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::specialUnion::testMultiFilterProject():Boolean[1]
+{
+   let res = execute(|Person.all()->filter(p | $p.lastName->startsWith('A') || $p.lastName->startsWith('T'))->filter(p | $p.firm.legalName == 'Firm X')->project([p | $p.lastName], ['lastName']), specialUnionMapping, testRuntime(), relationalExtensions());
+   assertEquals(2, $res.values.rows->size());
+   assertSameElements(['Anand','Taylor'], $res.values.rows->map(r | $r.getString('lastName')));
+   assertSameSQL('select "unionalias_0"."lastName" as "lastName" from (select "root".lastName_s1 as "lastName" from PersonSet1 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where ("root".lastName_s1 like \'A%\' or "root".lastName_s1 like \'T%\') and "firm_0".name = \'Firm X\' UNION ALL select "root".lastName_s2 as "lastName" from PersonSet2 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where ("root".lastName_s2 like \'A%\' or "root".lastName_s2 like \'T%\') and "firm_0".name = \'Firm X\') as "unionalias_0"', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::specialUnion::testProjectWithPostTdsOperations():Boolean[1]
+{
+   let res = execute(|Person.all()->project([p | $p.lastName], ['lastName'])->distinct()->extend(col(x:TDSRow[1] | $x.getString('lastName')->length(), 'Len'))->groupBy(['Len'], [agg('Count', x|$x.getString('lastName'), y|$y->count())]), specialUnionMapping, testRuntime(), relationalExtensions());
+   assertEquals(3, $res.values.rows->size());
+   assertEquals('5,2|6,2|7,1', $res.values.rows->map(r | $r.values->map(x | $x->toString())->joinStrings(','))->joinStrings('|'));
+   assertSameSQL('select "unionalias_0"."Len" as "Len", count("lastName") as "Count" from (select distinct "unionalias_1"."lastName" as "lastName", char_length("unionalias_1"."lastName") as "Len" from (select "root".lastName_s1 as "lastName" from PersonSet1 as "root" UNION ALL select "root".lastName_s2 as "lastName" from PersonSet2 as "root") as "unionalias_1") as "unionalias_0" group by "Len"', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::specialUnion::testFilteredProjectWithPostTdsOperations():Boolean[1]
+{
+   let res = execute(|Person.all()->filter(p | $p.firm.legalName == 'Firm X')->project([p | $p.lastName], ['lastName'])->distinct()->extend(col(x:TDSRow[1] | $x.getString('lastName')->length(), 'Len'))->groupBy(['Len'], [agg('Count', x|$x.getString('lastName'), y|$y->count())]), specialUnionMapping, testRuntime(), relationalExtensions());
+   assertEquals(2, $res.values.rows->size());
+   assertEquals('5,2|6,2', $res.values.rows->map(r | $r.values->map(x | $x->toString())->joinStrings(','))->joinStrings('|'));
+   assertSameSQL('select "unionalias_0"."Len" as "Len", count("lastName") as "Count" from (select distinct "unionalias_1"."lastName" as "lastName", char_length("unionalias_1"."lastName") as "Len" from (select "root".lastName_s1 as "lastName" from PersonSet1 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\' UNION ALL select "root".lastName_s2 as "lastName" from PersonSet2 as "root" left outer join Firm as "firm_0" on ("root".FirmID = "firm_0".ID) where "firm_0".name = \'Firm X\') as "unionalias_1") as "unionalias_0" group by "Len"', $res);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::union::specialUnion::testGroupBy():Boolean[1]
+{
+   let res = execute(|Person.all()->groupBy([p | $p.firm.legalName], [agg(p | $p.lastName, y | $y->count())], ['Firm', 'EmployeeCount']), specialUnionMapping, testRuntime(), relationalExtensions());
+   assertEquals(2, $res.values.rows->size());
+   assertEquals('Firm A,1|Firm X,4', $res.values.rows->map(r | $r.values->map(x | $x->toString())->joinStrings(','))->joinStrings('|'));
+   assertSameSQL('select "firm_0".name as "Firm", count("unionBase"."PersonSet1lastName_s1_PersonSet2lastName_s2") as "EmployeeCount" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".FirmID as FirmID_0, null as FirmID_1, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", null as FirmID_0, "root".FirmID as FirmID_1, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionBase" left outer join Firm as "firm_0" on ("unionBase".FirmID_0 = "firm_0".ID or "unionBase".FirmID_1 = "firm_0".ID) group by "Firm"', $res);
+}
+
+###Mapping
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::union::specialUnion::specialUnionMapping
+(
+  *Person: Operation
+  {
+    meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
+  }
+
+  Person[set1]: Relational
+  {
+    lastName : [myDB]PersonSet1.lastName_s1,
+    firm : [myDB]@PersonSet1Firm
+  }
+
+  Person[set2]: Relational
+  {
+    lastName : [myDB]PersonSet2.lastName_s2,
+    firm : [myDB]@PersonSet2Firm
+  }
+
+  Firm: Relational
+  {
+    legalName : [myDB]Firm.name,
+    employees[set1]:[myDB]@PersonSet1Firm,
+    employees[set2]:[myDB]@PersonSet2Firm
+  }
+)

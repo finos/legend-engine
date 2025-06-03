@@ -576,9 +576,9 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
       ix:InstanceValue[1]|
                           let i = $ix->evaluateAndDeactivate();
                           let type = $i.genericType.rawType->toOne();
-                          let hasClass = $i.values->find(x|$x->instanceOf(Class))->isNotEmpty();                          
+                          let hasClass = $i.values->find(x|$x->instanceOf(Class))->isNotEmpty();                       
                           // Nil is for Empty Sets, Any is currently for collection of primitives of different types (may create an issue if we have classes of different types)
-                          if ($type->instanceOf(Class) && $type != Any && $type != Nil && !$type->subTypeOf(Function) && $type != TDS && $type != Enumeration && $type != SortInfo,
+                          if ($type->instanceOf(Class) && !$type->subTypeOf(Function) && !$type->in([Any, Nil, TDS, Enumeration, SortInfo, meta::pure::metamodel::relation::Relation]),
                               |
                                 // Process class
                                 let values = $i.values->map(
@@ -596,7 +596,7 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
                                 (
                                   current = ^$i
                                             (
-                                              genericType = if($repro.current->genericType()->isEmpty(),|$i.genericType, |$repro.current->genericType()->first()->toOne()),
+                                              genericType = if($repro.current->isEmpty(),|$i.genericType, |$repro.current->genericType()),
                                               values = $repro.current
                                             ),
                                   mapping = $repro.mapping->first(),
@@ -637,10 +637,8 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
 
 function meta::relational::tests::pct::process::reprocessNew(values:Any[*], type:Class<Any>[1], state:ProcessingState[1]):ProcessingState[1]
 {
-    let newState = $state->merge(classesToDatabase($values, $state));      
-    ^$newState
-    (
-        current = ^SimpleFunctionExpression
+    let newState = $state->merge(classesToDatabase($values, $state));
+    let sfe = ^SimpleFunctionExpression
                   (
                     importGroup=system::imports::coreImport,
                     func = getAll_Class_1__T_MANY_,
@@ -655,7 +653,31 @@ function meta::relational::tests::pct::process::reprocessNew(values:Any[*], type
                                             values = []
                                           )
                                       ]
-                  )->evaluateAndDeactivate()
+                  )->evaluateAndDeactivate();
+    let currentSfe = $values->match([
+      noValue:Any[0]|^SimpleFunctionExpression
+                          (
+                            importGroup=system::imports::coreImport,
+                            func = meta::pure::functions::multiplicity::toOne_T_MANY__T_1_,
+                            functionName = 'toOne',
+                            genericType = ^GenericType(rawType=$type),
+                            multiplicity = PureOne,
+                            parametersValues = $sfe
+                          )->evaluateAndDeactivate();,
+      singleValue:Any[1]|^SimpleFunctionExpression
+                          (
+                            importGroup=system::imports::coreImport,
+                            func = meta::pure::functions::multiplicity::toOne_T_MANY__T_1_,
+                            functionName = 'toOne',
+                            genericType = ^GenericType(rawType=$type),
+                            multiplicity = PureOne,
+                            parametersValues = $sfe
+                          )->evaluateAndDeactivate();,
+      multipleValues:Any[*]|$sfe
+    ]);
+    ^$newState
+    (
+        current = $currentSfe
     );
 }
 

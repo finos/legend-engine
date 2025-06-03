@@ -21,6 +21,7 @@ import meta::pure::metamodel::path::*;
 import meta::pure::lineage::scanProperties::*;
 import meta::pure::graphFetch::*;
 import meta::pure::router::metamodel::*;
+import meta::pure::metamodel::relation::*;
 
 
 Class meta::pure::lineage::scanProperties::PropertyPathNode
@@ -499,7 +500,10 @@ function <<access.private>> meta::pure::lineage::scanProperties::processFunction
                   |
                     let dummyPaths = range($paramPaths->size())->map(ind | list(^DummyPropertyPathNode(id = $ind, class = meta::pure::lineage::scanProperties::DummyClass, property = getDummyProperty())->cast(@PropertyPathNode)));
 
-                    let newVars     = $f->functionType().parameters.name->zip($dummyPaths)->newMap();
+                    let newVars     = if($f->instanceOf(Column),
+                                          | $f.classifierGenericType->toOne().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns.name->zip($dummyPaths)->newMap(),
+                                          | $f->functionType().parameters.name->zip($dummyPaths)->newMap()
+                                        );
                     let allVars     = $vars->putAll($newVars)->cast(@Map<String, List<PropertyPathNode>>);
                     let expressions = $f->match([l:FunctionDefinition<Any>[1]| $l.expressionSequence, n:NativeFunction<Any>[1]| []]);
 
