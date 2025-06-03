@@ -23,7 +23,7 @@ import org.finos.legend.engine.functionActivator.validation.FunctionActivatorErr
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.functionActivator.validation.FunctionActivatorResult;
 import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionDeploymentManager;
-import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionGenerator;
+import org.finos.legend.engine.language.memsqlFunction.generator.MemSqlFunctionGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
