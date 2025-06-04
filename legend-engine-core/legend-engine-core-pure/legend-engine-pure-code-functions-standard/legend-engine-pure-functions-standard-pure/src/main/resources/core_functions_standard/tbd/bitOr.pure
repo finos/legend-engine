@@ -21,7 +21,7 @@ native function
     }
 meta::pure::functions::math::bitOr(arg1:Integer[1], arg2:Integer[1]):Integer[1];
 
-function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitOr::testBitOr_SmallNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::math::tests::bitOr::testBitOr_SmallNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals($f->eval(|bitOr(1, 0)), 1);
   assertEquals($f->eval(|bitOr(0, 0)), 0);
@@ -30,7 +30,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitOr::testBitOr_
   assertEquals($f->eval(|bitOr(137, 670)), 671);
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitOr::testBitOr_NegativeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::math::tests::bitOr::testBitOr_NegativeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals($f->eval(|bitOr(-1, 0)), -1);
   assertEquals($f->eval(|bitOr(-5, 6)), -1);
@@ -39,7 +39,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitOr::testBitOr_
   assertEquals($f->eval(|bitOr(-25, 11)), -17);
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitOr::testBitOr_LargeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::math::tests::bitOr::testBitOr_LargeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals($f->eval(|bitOr(1000000000, 0)), 1000000000);
   assertEquals($f->eval(|bitOr(9223372036854775807, 9223372036854775806)), 9223372036854775807);

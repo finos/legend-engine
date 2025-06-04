@@ -21,7 +21,7 @@ native function
     }
 meta::pure::functions::math::bitShiftLeft(arg:Integer[1], n:Integer[1]):Integer[1];
 
-function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_UpTo62Bits<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_UpTo62Bits<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals($f->eval(|bitShiftLeft(0, 0)), 0);
   assertEquals($f->eval(|bitShiftLeft(1, 0)), 1);
@@ -36,7 +36,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitShiftLeft::tes
   assertEquals($f->eval(|bitShiftLeft(1024, 5)), 32768);
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_MoreThan62Bits<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertError(|$f->eval(|bitShiftLeft(1, 63)), 'Unsupported number of bits to shift - max bits allowed is 62');
 }

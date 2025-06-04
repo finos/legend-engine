@@ -21,7 +21,7 @@ native function
     }
 meta::pure::functions::math::bitNot(arg:Integer[1]):Integer[1];
 
-function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitNot::testBitNot_SmallNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::math::tests::bitNot::testBitNot_SmallNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals($f->eval(|bitNot(1)), -2);
   assertEquals($f->eval(|bitNot(0)), -1);
@@ -30,7 +30,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitNot::testBitNo
   assertEquals($f->eval(|bitNot(137)), -138);
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitNot::testBitNot_NegativeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::math::tests::bitNot::testBitNot_NegativeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals($f->eval(|bitNot(-1)), 0);
   assertEquals($f->eval(|bitNot(-5)), 4);
@@ -39,7 +39,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitNot::testBitNo
   assertEquals($f->eval(|bitNot(-25)), 24);
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::tbd::bitNot::testBitNot_LargeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::math::tests::bitNot::testBitNot_LargeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals($f->eval(|bitNot(1000000000)), -1000000001);
   assertEquals($f->eval(|bitNot(9223372036854775807)), '-9223372036854775808'->parseInteger());

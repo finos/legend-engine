@@ -83,20 +83,17 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Parser Error: ORDER BY is not implemented for window functions!"),
 
             // CosH
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name cosh does not exist!\nDid you mean \"cos\"?\nLINE 1: select cosh(0)\n               ^"),
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name cosh does not exist!\nDid you mean \"cos\"?\nLINE 1: select cosh(-3.14)\n               ^"),
+            pack("meta::pure::functions::math::tests::trigonometry::cosh", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name cosh does not exist!\nDid you mean \"cos\"?\nLINE 1: select cosh"),
 
             // SinH
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name sinh does not exist!\nDid you mean \"sin\"?\nLINE 1: select sinh(0)\n               ^"),
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name sinh does not exist!\nDid you mean \"sin\"?\nLINE 1: select sinh(-3.14)\n               ^"),
+            pack("meta::pure::functions::math::tests::trigonometry::sinh", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name sinh does not exist!\nDid you mean \"sin\"?\nLINE 1: select sinh"),
 
             // TanH
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name tanh does not exist!\nDid you mean \"tan\"?\nLINE 1: select tanh(0)\n               ^"),
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name tanh does not exist!\nDid you mean \"tan\"?\nLINE 1: select tanh(-3.14)\n               ^"),
+            pack("meta::pure::functions::math::tests::trigonometry::tanh", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name tanh does not exist!\nDid you mean \"tan\"?\nLINE 1: select tanh"),
 
             // Bitwise
-            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
-            one("meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
 
             // And
             one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),

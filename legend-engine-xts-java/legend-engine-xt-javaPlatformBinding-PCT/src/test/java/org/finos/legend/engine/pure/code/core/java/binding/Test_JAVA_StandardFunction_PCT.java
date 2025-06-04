@@ -134,16 +134,16 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Window_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
 
             // CosH
+            pack("meta::pure::functions::math::tests::trigonometry::cosh", "\"meta::pure::functions::math::cosh_Number_1__Float_1_ is not supported yet!\""),
             one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_", "\"meta::pure::functions::math::cosh_Number_1__Float_1_ is not supported yet!\""),
 
             // SinH
+            pack("meta::pure::functions::math::tests::trigonometry::sinh", "\"meta::pure::functions::math::sinh_Number_1__Float_1_ is not supported yet!\""),
             one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_", "\"meta::pure::functions::math::sinh_Number_1__Float_1_ is not supported yet!\""),
 
             // TanH
+            pack("meta::pure::functions::math::tests::trigonometry::tanh", "\"meta::pure::functions::math::tanh_Number_1__Float_1_ is not supported yet!\""),
             one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "\"meta::pure::functions::math::tanh_Number_1__Float_1_ is not supported yet!\""),
 
             // Greatest
             one("meta::pure::functions::collection::tests::greatest::testGreatest_Empty_Function_1__Boolean_1_", "\"Cast exception: JSONNull cannot be cast to JSONObject\""),
@@ -154,14 +154,14 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::least::testLeast_Number_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
 
             // Bitwise
-            pack("meta::pure::functions::math::tests::tbd::bitAnd", "\"meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
-            pack("meta::pure::functions::math::tests::tbd::bitNot",  "\"meta::pure::functions::math::bitNot_Integer_1__Integer_1_ is not supported yet!\""),
-            pack("meta::pure::functions::math::tests::tbd::bitOr", "\"meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
-            pack("meta::pure::functions::math::tests::tbd::bitXor", "\"meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
-            one("meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_ is not supported yet!\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
-            one("meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_", "\"meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
-            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_ is not supported yet!\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
-            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "\"meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
+            pack("meta::pure::functions::math::tests::bitAnd", "\"meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
+            pack("meta::pure::functions::math::tests::bitNot",  "\"meta::pure::functions::math::bitNot_Integer_1__Integer_1_ is not supported yet!\""),
+            pack("meta::pure::functions::math::tests::bitOr", "\"meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
+            pack("meta::pure::functions::math::tests::bitXor", "\"meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_ is not supported yet!\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_", "\"meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_ is not supported yet!\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "\"meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
 
             // UUID
             one("meta::pure::functions::string::generation::tests::testGenerateGuidWithRelation_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"")

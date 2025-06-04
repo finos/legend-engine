@@ -110,27 +110,24 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: OVER is not supported for ordered-set aggregate percentile_cont"),
 
             // CosH
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function cosh(numeric) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function cosh(integer) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
+            pack("meta::pure::functions::math::tests::trigonometry::cosh", "does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
 
             // SinH
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function sinh(integer) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function sinh(numeric) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
+            pack("meta::pure::functions::math::tests::trigonometry::sinh", "does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
 
             // TanH
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function tanh(integer) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function tanh(numeric) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
+            pack("meta::pure::functions::math::tests::trigonometry::tanh", "does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8"),
 
             // Bitwise
-            pack("meta::pure::functions::math::tests::tbd::bitAnd", "\"[unsupported-api] The function 'bitAnd' (state: [Select, false]) is not supported yet\""),
-            pack("meta::pure::functions::math::tests::tbd::bitNot", "\"[unsupported-api] The function 'bitNot' (state: [Select, false]) is not supported yet\""),
-            pack("meta::pure::functions::math::tests::tbd::bitOr", "\"[unsupported-api] The function 'bitOr' (state: [Select, false]) is not supported yet\""),
-            pack("meta::pure::functions::math::tests::tbd::bitXor", "\"[unsupported-api] The function 'bitXor' (state: [Select, false]) is not supported yet\""),
-            pack("meta::pure::functions::math::tests::tbd::bitShiftLeft", "\"Execution error message mismatch.\nThe actual message was \"[unsupported-api] The function 'bitShiftLeft' (state: [Select, false]) is not supported yet\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
-            one("meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_", "\"[unsupported-api] The function 'bitShiftLeft' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "\"[unsupported-api] The function 'bitShiftRight' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"[unsupported-api] The function 'bitShiftLeft' (state: [Select, false]) is not supported yet\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
-            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"[unsupported-api] The function 'bitShiftRight' (state: [Select, false]) is not supported yet\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            pack("meta::pure::functions::math::tests::bitAnd", "\"[unsupported-api] The function 'bitAnd' (state: [Select, false]) is not supported yet\""),
+            pack("meta::pure::functions::math::tests::bitNot", "\"[unsupported-api] The function 'bitNot' (state: [Select, false]) is not supported yet\""),
+            pack("meta::pure::functions::math::tests::bitOr", "\"[unsupported-api] The function 'bitOr' (state: [Select, false]) is not supported yet\""),
+            pack("meta::pure::functions::math::tests::bitXor", "\"[unsupported-api] The function 'bitXor' (state: [Select, false]) is not supported yet\""),
+            pack("meta::pure::functions::math::tests::bitShiftLeft", "\"Execution error message mismatch.\nThe actual message was \"[unsupported-api] The function 'bitShiftLeft' (state: [Select, false]) is not supported yet\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_", "\"[unsupported-api] The function 'bitShiftLeft' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "\"[unsupported-api] The function 'bitShiftRight' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"[unsupported-api] The function 'bitShiftLeft' (state: [Select, false]) is not supported yet\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"[unsupported-api] The function 'bitShiftRight' (state: [Select, false]) is not supported yet\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
 
             // And
             one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
