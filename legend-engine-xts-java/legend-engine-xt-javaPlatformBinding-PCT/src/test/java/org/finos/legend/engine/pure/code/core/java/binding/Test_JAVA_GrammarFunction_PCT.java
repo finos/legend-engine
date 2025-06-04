@@ -78,9 +78,6 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -9223372036854775790\""),
             one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "\"meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ is not supported yet!\""),
 
-            // range
-            one("meta::pure::functions::collection::tests::range::testRange_Function_1__Boolean_1_", "Can't find a match for function 'range(?)'"),
-
             // Times
             one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\"\nexpected: 353791.470D\nactual:   353791.47\""),
             one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -2\""),

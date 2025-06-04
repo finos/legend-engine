@@ -1211,7 +1211,8 @@ public class Handlers
         );
 
         register(h("meta::pure::graphFetch::calculateSourceTree_RootGraphFetchTree_1__Mapping_1__Extension_MANY__RootGraphFetchTree_1_", false, ps -> res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> true));
-        register("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))));
+        register(m(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 3))),
+                m(h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 2))));
         register("meta::pure::functions::meta::instanceOf_Any_1__Type_1__Boolean_1_", true, ps -> res("Boolean", "one"));
         register("meta::pure::functions::collection::union_T_MANY__T_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
         register("meta::pure::functions::collection::reverse_T_m__T_m_", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()));
@@ -1242,7 +1243,8 @@ public class Handlers
         register(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_", true, ps -> res(ps.get(2)._genericType(), ps.get(2)._multiplicity()), p -> true))));
 
         register(m(m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_", true, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 3)),
-                m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 2))));
+                m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::collection::range_Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 1))));
         register("meta::pure::functions::collection::tail_T_MANY__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"));
         register("meta::pure::functions::collection::head_T_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"));
         register("meta::pure::functions::collection::oneOf_Boolean_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
@@ -1807,6 +1809,7 @@ public class Handlers
                         h("meta::pure::functions::date::max_DateTime_1__DateTime_1__DateTime_1_", false, ps -> res("DateTime", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "DateTime") && typeOne(ps.get(1), "DateTime")),
                         h("meta::pure::functions::date::max_StrictDate_1__StrictDate_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "StrictDate") && typeOne(ps.get(1), "StrictDate")),
                         h("meta::pure::functions::date::max_Date_1__Date_1__Date_1_", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date"))),
+                m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::max_T_$1_MANY$__Function_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2))),
                 m(h("meta::pure::functions::math::max_Integer_$1_MANY$__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_", false, ps -> res("Integer", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::max_Float_$1_MANY$__Float_1_", false, ps -> res("Float", "one"), ps -> typeOneMany(ps.get(0), "Float")),
@@ -1816,7 +1819,8 @@ public class Handlers
                         h("meta::pure::functions::date::max_DateTime_MANY__DateTime_$0_1$_", false, ps -> res("DateTime", "zeroOne"), ps -> typeMany(ps.get(0), "DateTime")),
                         h("meta::pure::functions::date::max_StrictDate_MANY__StrictDate_$0_1$_", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
                         h("meta::pure::functions::date::max_Date_MANY__Date_$0_1$_", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
-                        h("meta::pure::functions::collection::max_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne")))));
+                        h("meta::pure::functions::collection::max_X_$1_MANY$__X_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                        h("meta::pure::functions::collection::max_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
 
         register(m(
                 m(h("meta::pure::functions::math::min_Integer_1__Integer_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
@@ -1825,7 +1829,7 @@ public class Handlers
                         h("meta::pure::functions::date::min_DateTime_1__DateTime_1__DateTime_1_", false, ps -> res("DateTime", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "DateTime") && typeOne(ps.get(1), "DateTime")),
                         h("meta::pure::functions::date::min_StrictDate_1__StrictDate_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "StrictDate") && typeOne(ps.get(1), "StrictDate")),
                         h("meta::pure::functions::date::min_Date_1__Date_1__Date_1_", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date"))),
-
+                m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::min_T_$1_MANY$__Function_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2))),
                 m(h("meta::pure::functions::math::min_Integer_$1_MANY$__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_", false, ps -> res("Integer", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::min_Float_$1_MANY$__Float_1_", false, ps -> res("Float", "one"), ps -> typeOneMany(ps.get(0), "Float")),
@@ -1835,7 +1839,8 @@ public class Handlers
                         h("meta::pure::functions::date::min_DateTime_MANY__DateTime_$0_1$_", false, ps -> res("DateTime", "zeroOne"), ps -> typeMany(ps.get(0), "DateTime")),
                         h("meta::pure::functions::date::min_StrictDate_MANY__StrictDate_$0_1$_", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
                         h("meta::pure::functions::date::min_Date_MANY__Date_$0_1$_", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
-                        h("meta::pure::functions::collection::min_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne")))));
+                        h("meta::pure::functions::collection::min_X_$1_MANY$__X_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                        h("meta::pure::functions::collection::min_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
     }
 
     private void registerAlgebra()
