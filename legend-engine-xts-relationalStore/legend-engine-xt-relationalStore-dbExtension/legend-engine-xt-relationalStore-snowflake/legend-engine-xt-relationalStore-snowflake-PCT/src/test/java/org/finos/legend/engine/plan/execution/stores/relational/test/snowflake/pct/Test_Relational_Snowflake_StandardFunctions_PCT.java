@@ -43,11 +43,6 @@ public class Test_Relational_Snowflake_StandardFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"),
             one("meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"),
 
-            // Covariance/Correlation
-            one("meta::pure::functions::math::tests::corr::testCorr_Function_1__Boolean_1_", "\"Unused format args. [4] arguments provided to expression \"CORR(%s, %s)\"\""),
-            one("meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_", "\"Unused format args. [4] arguments provided to expression \"COVAR_POP(%s, %s)\"\""),
-            one("meta::pure::functions::math::tests::covarSample::testCovarSample_Function_1__Boolean_1_", "\"Unused format args. [4] arguments provided to expression \"COVAR_SAMP(%s, %s)\"\""),
-
             // Variance
             one("meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"),
             one("meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"),
