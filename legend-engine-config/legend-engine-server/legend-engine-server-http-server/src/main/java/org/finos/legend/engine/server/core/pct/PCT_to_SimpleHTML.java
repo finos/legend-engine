@@ -69,7 +69,7 @@ public class PCT_to_SimpleHTML
                     String id = x.functionDefinition.sourceId;
                     return id.substring(x.reportScope.filePath.length(), id.lastIndexOf("/"));
                 });
-
+        MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter = Maps.mutable.empty();
 
         // Build Tree
         TreeNode root = new TreeNode("root");
@@ -101,12 +101,13 @@ public class PCT_to_SimpleHTML
                                 }
                                 else
                                 {
-                                    row.addAll(orderedAdapters.collect(a -> writeTest(d, a)));
+                                    row.addAll(orderedAdapters.collect(a -> writeTest(d, a, testResultCountByAdapter)));
                                 }
                                 node.addChild(new TreeNode(row));
                             }
                         }
                 );
+        addSuccessfulTestRate(orderedAdapters, testResultCountByAdapter, root);
 
         return top +
                 "<BR/><BR/>\n" +
@@ -124,6 +125,22 @@ public class PCT_to_SimpleHTML
                 root.getChildren().collectWithIndex((n, i) -> addTableRow(n, "", String.valueOf(i), orderedAdapters)).makeString("\n") +
                 "\n    </table>\n<BR/><BR/><BR/>\n"
                 + bottom;
+    }
+
+    private static void addSuccessfulTestRate(MutableList<AdapterKey> orderedAdapters, MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter, TreeNode root)
+    {
+        MutableList<String> row = Lists.mutable.empty();
+        row.add("<div style='color:#AAAAAA'>" + "" + "</div>");
+        row.add("<div style='color:#AAAAAA'>" + "Successful Test Rate" + "</div>");
+        row.addAll(orderedAdapters.collect(adapterKey ->
+        {
+            TestResultCount testResultCount = testResultCountByAdapter.get(adapterKey);
+            int successfulTestCount = testResultCount.successfulTestCount;
+            int totalTestCount = testResultCount.totalTestCount;
+            String tooltipElement = "<span style='color:#FFFFFF'>" + successfulTestCount + "/" + totalTestCount + "</span>";
+            return "          <div style='color:#000000' class='hover-text'>" + (int) Math.floor((double) successfulTestCount / totalTestCount * 100) + "%<div class='tooltip-text' id='top'>" + tooltipElement + "</div>";
+        }).toList());
+        root.addChild(new TreeNode(row));
     }
 
     private static String addTableRow(TreeNode node, String tab, String id, MutableList<AdapterKey> adapters)
@@ -158,16 +175,32 @@ public class PCT_to_SimpleHTML
         return "'" + id + "', " + node.getChildren().collectWithIndex((c, i) -> printAllChildrenIds(c, id + "_" + node.getValue(), i)).makeString(", ");
     }
 
+    private static class TestResultCount
+    {
+        protected int successfulTestCount;
+        protected int totalTestCount;
 
-    private static String writeTest(FunctionDocumentation z, AdapterKey a)
+        protected TestResultCount()
+        {
+            this.successfulTestCount = 0;
+            this.totalTestCount = 0;
+        }
+    }
+
+    private static String writeTest(FunctionDocumentation z, AdapterKey a, MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter)
     {
         FunctionTestResults results = z.functionTestResults.get(a);
         if (results != null)
         {
             MutableList<TestInfo> tests = Lists.mutable.withAll(results.tests);
-            int success = tests.select(t -> t.success).size();
-            String color = success == 0 ? "#C70039" : success != tests.size() ? "#FFA500" : "#00C72B";
-            return "          <div style='color:" + color + "' class='hover-text'>" + success + "/" + tests.size() + "<div class='tooltip-text' id='top'>" + testDetail(tests) + "</div></div>";
+            int successfulTestCount = tests.select(t -> t.success).size();
+            int totalTestCount = tests.size();
+            TestResultCount testResultCount = (testResultCountByAdapter.containsKey(a)) ? testResultCountByAdapter.get(a) : new TestResultCount();
+            testResultCount.successfulTestCount += successfulTestCount;
+            testResultCount.totalTestCount += totalTestCount;
+            testResultCountByAdapter.put(a, testResultCount);
+            String color = successfulTestCount == 0 ? "#C70039" : successfulTestCount != totalTestCount ? "#FFA500" : "#00C72B";
+            return "          <div style='color:" + color + "' class='hover-text'>" + successfulTestCount + "/" + totalTestCount + "<div class='tooltip-text' id='top'>" + testDetail(tests) + "</div></div>";
         }
         else
         {
