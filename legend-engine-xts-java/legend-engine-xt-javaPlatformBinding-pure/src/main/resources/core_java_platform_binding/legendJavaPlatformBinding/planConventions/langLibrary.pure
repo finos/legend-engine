@@ -40,10 +40,26 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
          fc(new_Class_1__String_1__KeyExpression_MANY__T_1_,   processNew_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
          // ----------------- Move to Grammar when possible ------------------------
 
-         fc2(orElse_T_$0_1$__T_1__T_1_,                        {ctx,maybe,dflt | if($maybe->isCollectionsEmptyList(), |$dflt, |j_conditional($maybe->j_box()->j_ne(j_null()), $maybe, $dflt))})
+         fc2(orElse_T_$0_1$__T_1__T_1_,                                                  {ctx,maybe,dflt | $ctx->coalesce($maybe, $dflt)}),
+         fc2(meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_,                   {ctx,maybe,dflt | $ctx->coalesce($maybe, $dflt)}),
+         fc2(meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_,           {ctx,maybe,dflt | $ctx->coalesce($maybe, $dflt)}),
+         fc3(meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_,          {ctx,maybe1,maybe2,dflt | $ctx->coalesce([$maybe1, $maybe2], $dflt)}),
+         fc3(meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_,  {ctx,maybe1,maybe2,dflt | $ctx->coalesce([$maybe1, $maybe2], $dflt)}),
+         fc4(meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_, {ctx,maybe1,maybe2,maybe3,dflt | $ctx->coalesce([$maybe1, $maybe2, $maybe3], $dflt)}),
+         fc4(meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_, {ctx,maybe1,maybe2,maybe3,dflt | $ctx->coalesce([$maybe1, $maybe2, $maybe3], $dflt)})
       ]);
 
    $conventions->registerLibrary($lib);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::coalesce(ctx:FuncCoderContext[1], maybe:Code[*], dflt:Code[1]) : Code[1]
+{
+    let elseValue = if($dflt->isCollectionsEmptyList(), |j_null(), |$dflt);
+
+    if($maybe->forAll(x | $x->isCollectionsEmptyList()),
+        |$elseValue,
+        |$maybe->map(x | if($x->isCollectionsEmptyList(), |j_null(), |$x))->reverse()->fold({if, else | j_conditional($if->j_box()->j_ne(j_null()), $if, $else)}, $elseValue)
+    );
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::lang::whenSubTypeCoder(ctx:FuncCoderContext[1], collection:Code[1], exmpl:Code[1]) : Code[1]
