@@ -37,6 +37,17 @@ Class meta::relational::functions::pureToSqlQuery::metamodel::TableFunctionParam
   var: VarPlaceHolder[1];
 }
 
+Class meta::relational::functions::pureToSqlQuery::metamodel::ProcedureVariablePlaceHolder extends RelationalOperationElement
+{
+  var: VarPlaceHolder[1];
+}
+
+Class meta::relational::functions::pureToSqlQuery::metamodel::BatchFilterQueryIsolation extends meta::relational::metamodel::operation::Operation
+{
+  op: SelectSQLQuery[1];
+}
+
+
 Class meta::relational::functions::pureToSqlQuery::metamodel::RelationFunctionColumn extends Column
 {
   column: meta::pure::metamodel::relation::Column<Nil,Any|*>[1];

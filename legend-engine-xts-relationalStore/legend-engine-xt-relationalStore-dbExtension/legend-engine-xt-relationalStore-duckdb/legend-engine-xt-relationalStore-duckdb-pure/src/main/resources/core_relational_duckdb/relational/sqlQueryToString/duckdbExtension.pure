@@ -72,7 +72,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
                 createTable = translateCreateTableStatementDuckDB_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
                 loadTable = loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_,
-                createView = createView_CreateViewSQL_1__DbConfig_1__String_1_
+                createView = createView_CreateViewSQL_1__DbConfig_1__Extension_MANY__String_1_
               );
 }
 

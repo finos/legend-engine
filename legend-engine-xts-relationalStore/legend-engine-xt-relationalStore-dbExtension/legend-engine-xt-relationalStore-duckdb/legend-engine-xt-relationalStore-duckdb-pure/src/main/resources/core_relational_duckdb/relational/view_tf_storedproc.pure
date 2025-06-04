@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::extension::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::functions::sqlQueryToString::*;
@@ -28,7 +29,7 @@ function meta::relational::functions::sqlQueryToString::duckDB::buildDummyConnec
     )
 }
 
-function meta::relational::functions::sqlQueryToString::duckDB::createView(createViewSQL:CreateViewSQL[1], dbConfig:DbConfig[1]):String[1]
+function meta::relational::functions::sqlQueryToString::duckDB::createView(createViewSQL:CreateViewSQL[1], dbConfig:DbConfig[1], extensions:Extension[*]):String[1]
 {
     // Secure is not supported
     // Copy Grants is not supported
