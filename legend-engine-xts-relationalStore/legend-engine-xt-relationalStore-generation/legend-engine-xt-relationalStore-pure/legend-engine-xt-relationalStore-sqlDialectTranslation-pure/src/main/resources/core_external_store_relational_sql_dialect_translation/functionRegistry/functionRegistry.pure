@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
@@ -127,9 +129,15 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
 
     // Numeric Aggregate
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::average(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::mode(),  
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::percentileContinuous(),    
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::percentileDiscrete(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::stdDevSample(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::stdDevPopulation(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::sum(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::variancePopulation(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::varianceSample(),
+    
 
     // String
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::ascii(),
@@ -160,14 +168,12 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::aggregate::boolOr(),
 
     // Temporal
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::date(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::datePart(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::dateTrunc(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::now(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toDate(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toTimestamp(),
-
-    // Miscellaneous
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::coalesce(),  
 
     // Aggregate
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::count(),
@@ -186,16 +192,43 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::percentRank(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::rank(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::rowNumber(),
+    
+    // Conditional
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::conditional::coalesce(),  
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::conditional::greatest(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::conditional::least(),
 
     // Extension Functions
     // Numeric
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::cosh(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::sinh(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::tanh(),    
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::log10(),
-
+       
     // String
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::contains(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::decodeBase64(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::editDistance(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::encodeBase64(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::endsWith(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::jaroWinklerSimilarity(), 
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::regexpLike(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha1(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha256()
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha256(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::startsWith(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::toChar(),
 
+    // Temporal
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::convertTimeZone(),  
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::dateAdd(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::dateDiff(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::timeBucket(),
+    
+    // Window
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::window::averageRank(),   
+
+    // Miscellaneous
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::misc::parseJson()
   ]
   ->groupBy(x | $x->type()->cast(@Class<SqlFunction>))->keyValues()
   ->map({kv |

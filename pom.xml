@@ -237,7 +237,7 @@
         <google.maven.download.plugin.version>1.8.1</google.maven.download.plugin.version>
 
         <!--NPM registry -->
-        <npm.registry.url>https://registry.npmjs.org</npm.registry.url>
+        <npm.registry.url>http://npmscopes.site.gs.com</npm.registry.url>
     </properties>
 
     <scm>
@@ -2701,6 +2701,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgresSqlModel-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-postgresSqlModel-extensions-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

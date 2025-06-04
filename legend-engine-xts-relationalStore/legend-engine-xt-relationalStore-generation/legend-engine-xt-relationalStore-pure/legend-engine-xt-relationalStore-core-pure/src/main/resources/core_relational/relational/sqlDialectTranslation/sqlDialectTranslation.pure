@@ -1,0 +1,77 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::extension::*;
+import meta::relational::functions::pureToSqlQuery::union::*;
+import meta::external::query::sql::metamodel::extension::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlPlanning::*;
+import meta::pure::extension::*;
+import meta::relational::runtime::*;
+import meta::external::query::sql::metamodel::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::sqlDialectTranslation::*;
+import meta::relational::functions::toPostgresModel::*;
+
+function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], extensions:Extension[*]):String[1]
+{
+  relOpToString($r, $dbType, false, $extensions);
+}
+
+function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], pretty:Boolean[1], extensions:Extension[*]):String[1]
+{
+  relOpToString($r, $dbType, ^FormatConfig(pretty = $pretty, upperCaseKeywords = false), [], [], $extensions);
+}
+
+function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
+{
+  relOpToString($r, $dbType, false, $dbTimeZone, $quoteIdentifiers, $extensions);
+}
+
+function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], pretty:Boolean[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
+{
+  relOpToString($r, $dbType, ^FormatConfig(pretty = $pretty, upperCaseKeywords = false), $dbTimeZone, $quoteIdentifiers, $extensions);
+}
+
+function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], format:FormatConfig[1], extensions:Extension[*]):String[1]
+{
+  relOpToString($r, $dbType, $format, [], [], $extensions);
+}
+
+function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], format:FormatConfig[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
+{
+  let extraNodeProcessorsByDb = $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).sqlDialectTranslation_nodeProcessorsMapByDbType);
+  let config = ^SqlDialectTranslationConfig(
+    dbConfig = ^DbConfig(dbType = $dbType->toString(), dbTimeZone = $dbTimeZone, quoteIdentifiers = if($quoteIdentifiers->isEmpty(), | false, | $quoteIdentifiers->toOne())),
+    formatConfig = $format,
+    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(),
+    extraNodeProcessors = if($extraNodeProcessorsByDb->isNotEmpty(), | $extraNodeProcessorsByDb->toOne()->get($dbType), |[])
+  );
+  relOpToString($r, $config, $extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], config:SqlDialectTranslationConfig[1], extensions:Extension[*]):String[1]
+{
+  $r->match(
+    [
+      s:SelectSQLQuery[1]| convertSqlQuery($s, newState($extensions), $extensions),
+      r:RelationalOperationElement[1]| convertElement($r, newState($extensions))
+    ]
+  )->generateSqlDialect($config, $extensions);
+}

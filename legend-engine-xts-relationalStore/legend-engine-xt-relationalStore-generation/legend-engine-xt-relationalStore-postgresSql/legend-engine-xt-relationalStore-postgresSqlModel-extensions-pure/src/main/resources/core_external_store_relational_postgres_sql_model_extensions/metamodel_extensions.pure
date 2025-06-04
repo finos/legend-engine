@@ -1,0 +1,163 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::query::sql::metamodel::extension::*;
+
+Class meta::external::query::sql::metamodel::extension::TablePlaceholder extends meta::external::query::sql::metamodel::Relation
+{
+  <<equality.Key>> name: String[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::DecimalLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> value: Decimal[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::DateLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> value: StrictDate[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::TimestampLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> value: DateTime[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::PartialDateLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> value: Date[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::ProcessedStringLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  <<equality.Key>> value: String[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::ExistsPredicate extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> query: TableSubquery[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::AllColumnsReference extends meta::external::query::sql::metamodel::Expression
+{
+}
+
+Class meta::external::query::sql::metamodel::extension::InClauseVariablePlaceholder extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> name : String[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::VariablePlaceholder extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> name : String[1];
+  <<equality.Key>> type: String[1];
+  <<equality.Key>> isEnum: Boolean[1];
+  <<equality.Key>> multiplicityLowerBound: Integer[0..1];
+  <<equality.Key>> multiplicityUpperBound: Integer[0..1];
+}
+
+Class meta::external::query::sql::metamodel::extension::FreeMarkerOperation extends meta::external::query::sql::metamodel::Expression
+{
+  template: String[1];
+  parameters: meta::external::query::sql::metamodel::Expression[*];
+}
+
+Class meta::external::query::sql::metamodel::extension::AsOfJoin extends meta::external::query::sql::metamodel::Join
+{
+}
+
+Class meta::external::query::sql::metamodel::extension::LateralJoin extends meta::external::query::sql::metamodel::Join
+{
+}
+
+Class meta::external::query::sql::metamodel::extension::PivotedRelation extends meta::external::query::sql::metamodel::Relation
+{
+  relation: meta::external::query::sql::metamodel::Relation[1];
+  pivotColumns: meta::external::query::sql::metamodel::Expression[*];
+  aggColumns: meta::external::query::sql::metamodel::Expression[*];
+}
+
+Class meta::external::query::sql::metamodel::extension::SemiStructuredArrayFlatten extends meta::external::query::sql::metamodel::Relation
+{
+  navigation: meta::external::query::sql::metamodel::Expression[1];
+  baseTable: meta::external::query::sql::metamodel::Relation[1];
+  baseColumn: String[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::SemiStructuredArrayFlattenOutput extends meta::external::query::sql::metamodel::Expression
+{
+  flattenedRelation: AliasedRelation[1];
+  returnType: String[0..1];
+}
+
+Class meta::external::query::sql::metamodel::extension::SemiStructuredObjectNavigation extends meta::external::query::sql::metamodel::Expression
+{
+  operand: meta::external::query::sql::metamodel::Expression[1];
+  returnType: String[0..1];
+  avoidCastIfPrimitive: Boolean[0..1];
+}
+
+Class meta::external::query::sql::metamodel::extension::SemiStructuredPropertyAccess extends SemiStructuredObjectNavigation
+{
+  property: meta::external::query::sql::metamodel::Expression[1];
+  index: meta::external::query::sql::metamodel::Expression[0..1];
+}
+
+Class meta::external::query::sql::metamodel::extension::SemiStructuredArrayElementAccess extends SemiStructuredObjectNavigation
+{
+  index: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::ExtractFromSemiStructured extends meta::external::query::sql::metamodel::Expression
+{
+  baseExpression: meta::external::query::sql::metamodel::Expression[1];
+  pathNavigation: String[1];
+  parsedPathNavigation: String[*];
+  returnType: String[1];
+}
+
+Enum meta::external::query::sql::metamodel::extension::TemporalUnit
+{
+  YEAR,
+  MONTH,
+  WEEK,
+  DAY,
+  HOUR,
+  MINUTE,
+  SECOND,
+  MILLISECOND,
+  MICROSECOND
+}
+
+// MEANT FOR TEST USAGE ONLY!!!
+Class meta::external::query::sql::metamodel::extension::tests::CreateTestTable extends meta::external::query::sql::metamodel::Statement
+{
+  tableName: String[1];
+  columns: Pair<String, ColumnType>[1..*];
+  isTempTable: Boolean[1] = false;
+}
+
+Class meta::external::query::sql::metamodel::extension::tests::DropTestTable extends meta::external::query::sql::metamodel::Statement
+{
+  tableName: String[1];
+  isTempTable: Boolean[1] = false;
+}
+
+Class meta::external::query::sql::metamodel::extension::tests::InsertIntoTestTable extends meta::external::query::sql::metamodel::Statement
+{
+  tableName: String[1];
+  columns: String[1..*];
+  values: List<Literal>[1..*];
+}

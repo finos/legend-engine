@@ -51,3 +51,21 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     ]
   )  
 }
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::testSetupDataForMode(): TestSetupData[1]
+{
+  ^TestSetupData(
+    tableName = 'testTable', 
+    columns = [pair('student', 'varchar'), pair('dept', 'varchar'), pair('score', 'integer')], 
+    data = [
+      dataRow(['Alice', 'Science', 90]), 
+      dataRow(['Bob', 'Science', 88]), 
+      dataRow(['Charlie', 'Science', 85]), 
+      dataRow(['David', 'Science', 80]), 
+      dataRow(['Eve', 'Arts', 88]), 
+      dataRow(['Frank', 'Arts', 85]), 
+      dataRow(['Grace', 'Arts', 84]), 
+      dataRow(['Hannah', 'Arts', 80]),
+      dataRow(['Parker', 'Arts', 80])
+    ]
+  )  
+}

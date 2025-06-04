@@ -43,7 +43,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         %2020-01-01
       ),
       sqlFunctionTest(
-        simpleFunctionCall('to_date', [literal('21 Jan 2025'), literal('DD Mon YYYY')]),
+        simpleFunctionCall('to_date', [literal('21Jan2025'), literal('DDMonYYYY')]),
         %2025-01-21
       )
     ]

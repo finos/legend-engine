@@ -939,7 +939,7 @@ function meta::relational::functions::pureToSqlQuery::tdsQualifier(fe:FunctionEx
    assert($valid, | 'Unsupported TDSRow function:' + $fe.func.functionName->toOne());
    let res1 = findColumnInTdsFromGetter($fe, $operation.select.columns->cast(@Alias),false, $vars, $state)->toOne();
    let newQuery = if($res1 ->instanceOf(WindowColumn),| $operation.select->moveSelectQueryToSubSelect($operation.currentTreeNode,[],'root', noDebug(), $extensions),|$operation.select);
-   let newfilterCol = if($res1->instanceOf(WindowColumn),| ^TableAliasColumn(alias = $newQuery.data->toOne().alias, column = ^Column(name ='"'+$res1->cast(@WindowColumn).columnName+'"', type =^meta::relational::metamodel::datatype::Integer())),|$res1);
+   let newfilterCol = if($res1->instanceOf(WindowColumn),| ^TableAliasColumn(alias = $newQuery.data->toOne().alias, column = ^Column(name = $res1->cast(@WindowColumn).columnName->addQuotesIfNecessary(), type =^meta::relational::metamodel::datatype::Integer())),|$res1);
 
    assert(!(($funcName=='isNull' || $funcName=='isNotNull' ) && $res1->instanceOf(WindowColumn)), | 'Window Column cannot be used in '+$funcName+' function');
 
@@ -1594,15 +1594,15 @@ function meta::relational::functions::pureToSqlQuery::getUnionPropertyName(union
             let propMapping = findUnionPropertyMapping($union, $i, $property, $relationalPropertyMappings, $state, $extensions)->first();
             $propMapping.relationalOperationElement->defaultIfEmpty(^Literal(value = '__SQLNULL__'));
          );
-         '"' + $relOps->buildUniqueName(false, $extensions) + '"';
+         $relOps->buildUniqueName(false, $extensions)->addQuotesIfNecessary();
    )
 }
 
 function meta::relational::functions::pureToSqlQuery::getPropertyName(relationalElement:RelationalOperationElement[1],property:AbstractProperty<Any>[1], relationalPropertyMappings:RelationalPropertyMapping[*], extensions:Extension[*]):String[1]
 {
    $relationalElement->match(
-            [u:Union[1]| '"'+ $relationalPropertyMappings.relationalOperationElement->buildUniqueName(false, $extensions)+'"',
-             a:Any[1]|'"'+$property.name->toOne()+'"'] );
+            [u:Union[1]| $relationalPropertyMappings.relationalOperationElement->buildUniqueName(false, $extensions)->addQuotesIfNecessary(),
+             a:Any[1]|$property.name->toOne()->addQuotesIfNecessary()] );
 }
 
 function meta::relational::functions::pureToSqlQuery::findUnionPropertyMapping(union: Union[1], index: Integer[1], property: AbstractProperty<Any>[1], relationalPropertyMappings: RelationalPropertyMapping[*], state: State[1], extensions: Extension[*]): RelationalPropertyMapping[*]
@@ -2312,7 +2312,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                    ),
          currentTreeNode = $newRoot
        );,
-      |let propertyName = '"'+$transformed->map(t|if ($t.currentPropertyMapping->isEmpty(), |$t.element->cast(@SelectWithCursor).select.columns->map(c|$c->buildUniqueName(false, $extensions))->makeString('_'), |$t.currentPropertyMapping.property.name->toOne());)->removeDuplicates()->makeString('_')+'"';
+      |let propertyName = $transformed->map(t|if ($t.currentPropertyMapping->isEmpty(), |$t.element->cast(@SelectWithCursor).select.columns->map(c|$c->buildUniqueName(false, $extensions))->makeString('_'), |$t.currentPropertyMapping.property.name->toOne());)->removeDuplicates()->makeString('_')->addQuotesIfNecessary();
 
        // Build new Select
        let newSelectsWithCutNode = $transformed->map(t| let nodeToCut = $operation.select.data->toOne()->findOneNode($operation.currentTreeNode->toOne(), $t.element->cast(@SelectWithCursor).select.data->toOne());
@@ -2482,7 +2482,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::relatio
                 c|
                   let colName = $c.name->toOne();
                   let colType = $c.classifierGenericType.typeArguments->at(1).rawType->toOne();
-                  ^Alias(name='"' + $colName + '"',relationalElement=^TableAliasColumn(alias=$alias,column=^Column(name=$colName, type=$types->get($colType)->toOne())));
+                  ^Alias(name=$colName->addQuotesIfNecessary(),relationalElement=^TableAliasColumn(alias=$alias,column=^Column(name=$colName, type=$types->get($colType)->toOne())));
               );
 }
 
@@ -2939,10 +2939,19 @@ function meta::relational::functions::pureToSqlQuery::processPaginated(f:Functio
   let parents = $state.functionExpressionStack->evaluateAndDeactivate();
   assert($parents->size() == 1 || ($parents->size() == 2 && $parents->at(0)->byPassRouterInfo()->cast(@FunctionExpression)->evaluateAndDeactivate().func->in(meta::pure::graphFetch::execution::graphFetchFunctions())), 'Paginated should either be last function in TDS query or called right before graphFetch');
 
-  let processedSelect = ^$mainSelect (
-                fromRow = ^Literal(value = ^FreeMarkerOperationHolder(name='numberMultiply',parameters=[^FreeMarkerOperationHolder(name='numberSubtract', parameters=[$pageNumber, ^Literal(value='1')]),$pageSize])),
-                toRow = ^Literal(value = ^FreeMarkerOperationHolder(name='numberVariable',parameters=[$pageSize]))
-          );
+  let hasIntegerInputs = $pageNumber.value->instanceOf(Integer) && $pageSize.value->instanceOf(Integer);
+  let fromRow = if($hasIntegerInputs,
+    | ($pageNumber.value->cast(@Integer) - 1) * $pageSize.value->cast(@Integer),
+    | ^FreeMarkerOperationHolder(name = 'numberMultiply', parameters = [^FreeMarkerOperationHolder(name = 'numberSubtract', parameters = [$pageNumber, ^Literal(value='1')]), $pageSize])
+  );
+  let toRow = if($hasIntegerInputs,
+    | $pageNumber.value->cast(@Integer) * $pageSize.value->cast(@Integer),
+    | ^FreeMarkerOperationHolder(name = 'numberMultiply', parameters = [$pageNumber, $pageSize])
+  );
+  let processedSelect = ^$mainSelect(
+    fromRow = ^Literal(value = $fromRow),
+    toRow = ^Literal(value = $toRow)
+  );
 
   ^$mainQuery(
     select = $processedSelect,
@@ -3112,7 +3121,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(
 
    let windowColumn = ^Alias
                       (
-                        name='"'+$newColumnName+'"' ,
+                        name=$newColumnName->addQuotesIfNecessary(),
                         relationalElement = if ($newFlow,|$func,|^$window(func=$func->cast(@DynaFunction)))
                       );
 
@@ -3909,7 +3918,7 @@ function meta::relational::functions::pureToSqlQuery::rebuildSelectWithCursor(na
    ^SelectWithCursor(
       select = ^SelectSQLQuery(
                      columns = ^Alias(name = if($quotes,
-                                                |'"'+$newName+'"',
+                                                |$newName->addQuotesIfNecessary(),
                                                 |$newName
                                              ),
                                       relationalElement = $newQuery.select.columns->toOne()
@@ -3920,11 +3929,6 @@ function meta::relational::functions::pureToSqlQuery::rebuildSelectWithCursor(na
                ),
       currentTreeNode = $newQuery.select.data
    );
-}
-
-function meta::relational::functions::pureToSqlQuery::removeQuotes(s:String[1]):String[1]
-{
-   if ($s->startsWith('"'),|$s->substring(1,$s->length()-1),|$s);
 }
 
 function meta::relational::functions::pureToSqlQuery::getRelationalElementWithInnerJoin(viewSpecification:RelationalMappingSpecification[1], mainTable: RelationalOperationElement[1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
@@ -4993,7 +4997,7 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
                       z:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]|$z.aggSpecs->map(x|^AggContainer(name=$x.name,map=$x.map,reduce=$x.reduce));
                     ]);
 
-   let newColumns= $aggVS->map(a|^Alias(name='"'+$a.name+'"', relationalElement=processTDSMapReduce($a, $select, $noSubSelect, $subSelectAliasName, $currentPropertyMapping, $vars, $state, $context)));
+   let newColumns= $aggVS->map(a|^Alias(name=$a.name->addQuotesIfNecessary(), relationalElement=processTDSMapReduce($a, $select, $noSubSelect, $subSelectAliasName, $currentPropertyMapping, $vars, $state, $context)));
    let existingPaths = $select.paths;
    let pathInfos = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match(
                                                                                           [
@@ -5296,7 +5300,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
    let paths = $mainQuery.select->cast(@TdsSelectSqlQuery).paths;
    $cols->map(cs|
          let newElement = processTdsLambda($cs.func->cast(@FunctionDefinition<Any>).expressionSequence->at(0), $mainQuery.select.columns->cast(@Alias), false, $vars, $updatedState, $currentPropertyMapping, $paths, $context)->at(0);
-         let alias = ^Alias(name='"'+$cs.name+'"', relationalElement=$newElement);
+         let alias = ^Alias(name=$cs.name->addQuotesIfNecessary(), relationalElement=$newElement);
          let path = pair($cs.name, ^PathInformation(type=$cs.func->functionReturnType().rawType->toOne(),
                                                     relationalType = $newElement->getRelationalTypeFromRelationalPropertyMapping()));
          pair($alias,$path);
@@ -5824,7 +5828,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnProjectionsFr
 
    let relationColumns = $relationParameter.columns->cast(@Column);
    let toProjectColumns = $columnNames->map(x | $relationColumns->filter(y | $y.name == $x)->toOne());
-   let colNameGenerationFunction = {c:Column[1] | 'gen_col_projection_' + $c.name->removeQuotes()->replace(' ', '_')};
+   let colNameGenerationFunction = {c:Column[1] | 'gen_col_projection_' + $c.name->stripMatchingQuotes()->replace(' ', '_')};
 
    let queryWithAddedColumns = $query1->recursiveAddColumnsToRoot($toProjectColumns, $colNameGenerationFunction);
 
@@ -6193,7 +6197,7 @@ function meta::relational::functions::pureToSqlQuery::processPath(pa:Path<Nil,An
                                     ^$joinResult
                                     (
                                        select=^$select(
-                                          columns=if($select.columns->isEmpty(), | [], | ^Alias(name='"'+$pathName+'"',relationalElement = $select.columns->toOne()))
+                                          columns=if($select.columns->isEmpty(), | [], | ^Alias(name=$pathName->addQuotesIfNecessary(),relationalElement = $select.columns->toOne()))
                                        )
                                     );
                              );
@@ -6334,7 +6338,7 @@ function meta::relational::functions::pureToSqlQuery::getRootPrimaryKeyCols(sour
    assert($setImplPrimaryKeys->isNotEmpty(),|'Root primary key addition is only valid for classes which have PKs available.  This is not the case for Class:'+$setImpl.id->toOne());
    let setImplPrimaryKeyCols = $setImplPrimaryKeys->cast(@TableAliasColumn).column;
    let sourceColumnsNames    = $sourceColumns->cast(@Alias)->map(r|$r.relationalElement->match([t:TableAliasColumn[1] | $t.column.name, a:Any[1] | []]));
-   let keysToAdd             = $setImplPrimaryKeyCols->map(c|let columnName = $c.name; if(!$columnName->in($sourceColumnsNames), | ^Alias(name='"'+$columnName+'"', relationalElement=^TableAliasColumn(alias=$source.data.alias->toOne(), column=$c)), |[]););
+   let keysToAdd             = $setImplPrimaryKeyCols->map(c|let columnName = $c.name; if(!$columnName->in($sourceColumnsNames), | ^Alias(name=$columnName->addQuotesIfNecessary(), relationalElement=^TableAliasColumn(alias=$source.data.alias->toOne(), column=$c)), |[]););
    assertFalse($keysToAdd.name->fold({k,a| $a || $sourceColumns->cast(@Alias).name->contains($k)},false), {|'Unable to add PKs, Alias name conflict, attempting to add: '+$keysToAdd.name->makeString(',')+' to: '+$sourceColumns->cast(@Alias).name->makeString(',')});
 
    $source.data.alias->toOne().relation()->match([ t:Table[1] | pair(^List<RelationalOperationElement>(values = $keysToAdd), $source.data->toOne());,
@@ -6365,7 +6369,7 @@ function meta::relational::functions::pureToSqlQuery::processWindowColumns(cols:
                            let mapCol = $newMerge.columns->cast(@Alias)->filter(a|$a.name->startsWith('"mapFunc"')).relationalElement;
                            assert($wc.func->extractOperation()->isSupported(), | 'The function you have specified ('+ $wc.func->extractOperation().expressionSequence->cast(@FunctionExpression).functionName->toOne()+') is not supported. The supported window functions are: '+ olapFuncs()->joinStrings(',')+' .');
                            let windowFunc = $wc.func->extractOperation().expressionSequence->toOne()->processAggFn(if($wc.func->instanceOf(OlapRank),|[],|$mapCol->toOne()), $state);
-                           let windowColumn = ^Alias(name ='"'+$wc.name+'"',relationalElement =  ^meta::relational::metamodel::WindowColumn(columnName = $wc.name,func=$windowFunc->cast(@DynaFunction)->toOne(),
+                           let windowColumn = ^Alias(name =$wc.name->addQuotesIfNecessary(),relationalElement =  ^meta::relational::metamodel::WindowColumn(columnName = $wc.name,func=$windowFunc->cast(@DynaFunction)->toOne(),
                                                                                          window = ^meta::relational::metamodel::Window(partition=$partitionCol, sortBy=$sortByCols)));
                            let newMergeWithWindow = ^$newMerge(columns=[]->concatenate($windowColumn));
                            $newMergeWithWindow;
@@ -6696,7 +6700,7 @@ function meta::relational::functions::pureToSqlQuery::reAliasAndRemoveTopLevelDy
 function meta::relational::functions::pureToSqlQuery::buildSimpleSQL(result:SelectSQLQuery[1], id:String[1]):SelectSQLQuery[1]
 {
    ^SelectSQLQuery(
-      columns = ^Alias(name = '"'+$id+'"', relationalElement = $result.columns->toOne()),
+      columns = ^Alias(name = $id->addQuotesIfNecessary(), relationalElement = $result.columns->toOne()),
       data = $result.data,
       filteringOperation = $result.filteringOperation,
       savedFilteringOperation = $result.savedFilteringOperation,
@@ -7901,7 +7905,6 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::applyJo
    let sourceSelect=$inputState.select;
    let position=$inputState.position;
    let jt=if($joinTreeNode.joinType == [] || $joinTreeNode.joinType->isEmpty(),|$joinType, |$joinTreeNode.joinType->toOne());
-
    let explodeInCurrentNode = explodeInCurrentJoinOperation($joinTreeNode.join.operation);
    let appliedJoinTreeNode = if($explodeInCurrentNode, | applyJoinWithExplodeInCondition($position, $joinTreeNode, $nodeId, $jt, $reprocess, $state, $milestoningContext, $context, $extensions), | applyOneJoin($position, $joinTreeNode, $nodeId, $jt, $reprocess, $state, $milestoningContext, $context, $extensions));
 

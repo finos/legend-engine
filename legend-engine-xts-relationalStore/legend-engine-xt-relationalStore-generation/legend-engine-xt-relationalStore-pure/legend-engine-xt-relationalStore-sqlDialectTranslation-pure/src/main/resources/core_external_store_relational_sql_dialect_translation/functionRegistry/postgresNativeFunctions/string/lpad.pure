@@ -68,7 +68,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       sqlFunctionTest(
         simpleFunctionCall('lpad', [literal('abcd'), literal(4), literal('e')]),
         'abcd'
-      )
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('lpad', [literal('abcd'), literal(3), literal('e')]),
+        'abc'
+      )      
     ]
   )
 }

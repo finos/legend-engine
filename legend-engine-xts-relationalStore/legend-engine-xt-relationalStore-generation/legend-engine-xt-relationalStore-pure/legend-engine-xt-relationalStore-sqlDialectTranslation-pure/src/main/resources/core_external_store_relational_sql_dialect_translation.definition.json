@@ -6,6 +6,7 @@
     "core_functions_standard",
     "core_functions_unclassified",
     "core",
-    "core_external_store_relational_postgres_sql_model"
+    "core_external_store_relational_postgres_sql_model",
+    "core_external_store_relational_postgres_sql_model_extensions"
   ]
 }
