@@ -30,6 +30,7 @@ import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.tbd.BitShiftLeft;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.tbd.BitShiftRight;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.tbd.BitXor;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.string.generation.Guid;
 
 import java.util.List;
 
@@ -60,7 +61,10 @@ public class StandardFunctionsExtensionCompiled extends AbstractCompiledExtensio
             new BitShiftLeft(),
             new BitShiftRight(),
             new BitOr(),
-            new BitXor()
+            new BitXor(),
+
+            // String
+            new Guid()
         );
     }
 

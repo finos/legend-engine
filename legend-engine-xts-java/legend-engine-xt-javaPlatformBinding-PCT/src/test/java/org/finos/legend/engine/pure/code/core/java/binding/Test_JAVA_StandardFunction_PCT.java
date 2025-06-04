@@ -161,7 +161,10 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_ is not supported yet!\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
             one("meta::pure::functions::math::tests::tbd::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_", "\"meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
             one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_ is not supported yet!\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
-            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "\"meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_ is not supported yet!\"")
+            one("meta::pure::functions::math::tests::tbd::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "\"meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_ is not supported yet!\""),
+
+            // UUID
+            one("meta::pure::functions::string::generation::tests::testGenerateGuidWithRelation_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"")
     );
 
     public static Test suite()

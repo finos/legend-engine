@@ -21,6 +21,8 @@ import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives.date.operation.TimeBucketShared;
 
+import java.util.UUID;
+
 public class StandardFunctionsHelper
 {
     // DATE-TIME --------------------------------------------------------------
@@ -116,5 +118,10 @@ public class StandardFunctionsHelper
             throw new PureExecutionException("Unsupported number of bits to shift - max bits allowed is 62");
         }
         return arg >> n;
+    }
+
+    public static String generateGuid()
+    {
+        return UUID.randomUUID().toString();
     }
 }
