@@ -159,7 +159,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testExistsWit
 
   assertEquals(1, $results.values->at(0).rows->size());
   assertEquals('Firm A', $results.values->at(0).rows->first().values);
-  assertSameSQL('select "root".FIRM_LEGALNAME as "name" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as FIRM_LEGALNAME, "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1" left outer join (select distinct "person_firm_denorm_3".FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_3" where "person_firm_denorm_3".PERSON_LASTNAME = \'Smith\') as "person_firm_denorm_2" on ("person_firm_denorm_1".FIRM_ID = "person_firm_denorm_2".FIRM_ID) where not "person_firm_denorm_2".FIRM_ID is not null) as "root"', $results);
+  assertSameSQL('select "root"."legalName" as "name" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as "legalName", "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1" left outer join (select distinct "person_firm_denorm_3".FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_3" where "person_firm_denorm_3".PERSON_LASTNAME = \'Smith\') as "person_firm_denorm_2" on ("person_firm_denorm_1".FIRM_ID = "person_firm_denorm_2".FIRM_ID) where not "person_firm_denorm_2".FIRM_ID is not null) as "root"', $results);
 }
 
 
@@ -171,7 +171,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testExistsWit
    let runtimeWithPostProcessor = ^$runtime(connectionStores = ^$connectionStore(connection=^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel}) }])));
    let result = execute(|Firm.all()->filter(f | ! $f.employees->exists(p | $p.firstName == 'John'))->project([p|$p.legalName],['Name']), testMappingEmbeddedWithFirmDistinct, $runtimeWithPostProcessor, meta::relational::extension::relationalExtensions());
 
-   assertSameSQL('select "root".FIRM_LEGALNAME as "Name" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as FIRM_LEGALNAME, "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1" left outer join (select distinct "person_firm_denorm_3".FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_3" where "person_firm_denorm_3".PERSON_FIRSTNAME = \'John\') as "person_firm_denorm_2" on ("person_firm_denorm_1".FIRM_ID = "person_firm_denorm_2".FIRM_ID) where not "person_firm_denorm_2".FIRM_ID is not null) as "root"', $result);
+   assertSameSQL('select "root"."legalName" as "Name" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as "legalName", "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1" left outer join (select distinct "person_firm_denorm_3".FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_3" where "person_firm_denorm_3".PERSON_FIRSTNAME = \'John\') as "person_firm_denorm_2" on ("person_firm_denorm_1".FIRM_ID = "person_firm_denorm_2".FIRM_ID) where not "person_firm_denorm_2".FIRM_ID is not null) as "root"', $result);
 }
 
 

@@ -64,7 +64,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMap
                                                 )->sort('address'), testMappingEmbeddedWithFirmDistinct, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('address\n' + '1 the street\n' + '5 Park Ave\n' + '7 Palo Alto\n', $result.values->toOne()->toCSV());
-   assertEquals('select "person_firm_denorm_2".PERSON_ADDRESS_NAME as "address" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as FIRM_LEGALNAME, "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1") as "root" left outer join PERSON_FIRM_DENORM as "person_firm_denorm_2" on ("root".FIRM_ID = "person_firm_denorm_2".FIRM_ID) order by "address"', $result->sqlRemoveFormatting());
+   assertEquals('select "person_firm_denorm_2".PERSON_ADDRESS_NAME as "address" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as "legalName", "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1") as "root" left outer join PERSON_FIRM_DENORM as "person_firm_denorm_2" on ("root".FIRM_ID = "person_firm_denorm_2".FIRM_ID) order by "address"', $result->sqlRemoveFormatting());
 }
 
 
@@ -147,7 +147,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testProjectTo
    assertEquals('legalName,address\n' + 'Firm A,7 Palo Alto\n' + 'Firm X,1 the street\n' + 'Firm X,5 Park Ave\n', $result.values->toOne()->toCSV());
 
    //TODO - can optimize further to remove some self joins
-   assertEquals('select "root".FIRM_LEGALNAME as "legalName", "person_firm_denorm_2".PERSON_ADDRESS_NAME as "address" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as FIRM_LEGALNAME, "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1") as "root" left outer join PERSON_FIRM_DENORM as "person_firm_denorm_2" on ("root".FIRM_ID = "person_firm_denorm_2".FIRM_ID) order by "legalName","address"', $result->sqlRemoveFormatting());
+   assertEquals('select "root"."legalName" as "legalName", "person_firm_denorm_2".PERSON_ADDRESS_NAME as "address" from (select distinct "person_firm_denorm_1".FIRM_LEGALNAME as "legalName", "person_firm_denorm_1".FIRM_ID as FIRM_ID from PERSON_FIRM_DENORM as "person_firm_denorm_1") as "root" left outer join PERSON_FIRM_DENORM as "person_firm_denorm_2" on ("root".FIRM_ID = "person_firm_denorm_2".FIRM_ID) order by "legalName","address"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::testDenormMappingOneToManyProjectEmbeddedQualifier():Boolean[1]

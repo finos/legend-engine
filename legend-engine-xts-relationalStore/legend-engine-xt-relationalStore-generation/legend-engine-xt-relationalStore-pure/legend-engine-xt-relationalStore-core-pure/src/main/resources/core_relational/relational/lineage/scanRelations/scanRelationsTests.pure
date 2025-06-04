@@ -913,7 +913,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
 
    let expectedTree = 'root\n'+
                       '  ------> (t) personTable [ID]\n'+
-                      '    ------> (t) firmTable(equal_"joinleft_"_d"eID"_"joinright_"_d"ID") [ADDRESSID, CEOID, ID, LEGALNAME]\n';
+                      '    ------> (t) firmTable(equal_"joinleft_"_deID_"joinright_"_dID) [ADDRESSID, CEOID, ID, LEGALNAME]\n';
    assertEquals($expectedTree, $relationTree-> relationTreeAsString());
 }
 
@@ -969,7 +969,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
 
    let expectedTree = 'root\n'+
                       '  ------> (t) personTable [ID]\n'+
-                      '    ------> (t) personTable(equal_"joinleft_"_d"personID"_"joinright_"_d"ID") [ADDRESSID, AGE, FIRMID, FIRSTNAME, ID, LASTNAME, MANAGERID]\n';
+                      '    ------> (t) personTable(equal_"joinleft_"_dpersonID_"joinright_"_dID) [ADDRESSID, AGE, FIRMID, FIRSTNAME, ID, LASTNAME, MANAGERID]\n';
    assertEquals($expectedTree, $relationTree-> relationTreeAsString());
 }
 
@@ -987,7 +987,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
 
    let expectedTree = 'root\n'+
                       '  ------> (t) personTable [ADDRESSID, AGE, FIRMID, FIRSTNAME, ID, LASTNAME, MANAGERID]\n' +
-                      '    ------> (t) firmTable(equal_"joinleft_"_d#3"ID"_"joinright_"_d#3"firmID") [CEOID, ID]\n';
+                      '    ------> (t) firmTable(equal_"joinleft_"_d#3ID_"joinright_"_d#3firmID) [CEOID, ID]\n';
 
    assertEquals($expectedTree, $relationTree-> relationTreeAsString());
 }
@@ -1045,12 +1045,12 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
   let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
   let expectedTree = 'root\n'+
                       '  ------> (t) personTable [AGE, FIRSTNAME]\n'+
-                      '    ------> (t) personTable(equal_"joinleft_"_d"First_1"_"joinright_"_d"fName") [AGE, FIRSTNAME]\n'+
-                      '    ------> (t) personTable(equal_"joinleft_"_d_d0_d#3"First_2"_"joinright_"_d_d0_d#3"First_3") [AGE, FIRSTNAME]\n'+
-                      '    ------> (t) personTable(equal_"joinleft_"_d_d0_d#3_d0_d"First_1"_"joinright_"_d_d0_d#3_d0_d"First_2") [AGE, FIRSTNAME]\n'+
+                      '    ------> (t) personTable(equal_"joinleft_"_dFirst_1_"joinright_"_dfName) [AGE, FIRSTNAME]\n'+
+                      '    ------> (t) personTable(equal_"joinleft_"_d_d0_d#3First_2_"joinright_"_d_d0_d#3First_3) [AGE, FIRSTNAME]\n'+
+                      '    ------> (t) personTable(equal_"joinleft_"_d_d0_d#3_d0_dFirst_1_"joinright_"_d_d0_d#3_d0_dFirst_2) [AGE, FIRSTNAME]\n'+
                       '  ------> (t) personTable [AGE, FIRSTNAME]\n'+
-                      '    ------> (t) personTable(equal_"joinleft_"_d"First_1"_"joinright_"_d"fName") [AGE, FIRSTNAME]\n'+
-                      '    ------> (t) personTable(equal_"joinleft_"_d_d0_d#2"First_1"_"joinright_"_d_d0_d#2"First_2") [AGE, FIRSTNAME]\n';
+                      '    ------> (t) personTable(equal_"joinleft_"_dFirst_1_"joinright_"_dfName) [AGE, FIRSTNAME]\n'+
+                      '    ------> (t) personTable(equal_"joinleft_"_d_d0_d#2First_1_"joinright_"_d_d0_d#2First_2) [AGE, FIRSTNAME]\n';
 
    assertEquals($expectedTree, $relationTree-> relationTreeAsString());
 }
