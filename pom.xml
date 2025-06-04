@@ -107,7 +107,7 @@
     <properties>
         <!-- Legend -->
         <legend.pure.version>5.50.0</legend.pure.version>
-        <legend.shared.version>0.26.0</legend.shared.version>
+        <legend.shared.version>0.27.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
         <!-- SONAR -->
@@ -200,9 +200,9 @@
         <opencsv.version>4.6</opencsv.version>
         <opentracing.contrib.version>0.3.0</opentracing.contrib.version>
         <opentracing.version>0.32.0</opentracing.version>
-        <pac4j.jaxrs.version>3.0.0</pac4j.jaxrs.version>
-        <pac4j.jersey.version>3.0.0</pac4j.jersey.version>
-        <pac4j.version>3.7.0</pac4j.version>
+        <pac4j.jaxrs.version>4.0.0</pac4j.jaxrs.version>
+        <pac4j.jersey.version>4.0.0</pac4j.jersey.version>
+        <pac4j.version>4.5.8</pac4j.version>
         <prometheus.version>0.8.1</prometheus.version>
         <protobuf.java.version>3.25.3</protobuf.java.version>
         <slf4j.version>1.7.36</slf4j.version>
@@ -3404,6 +3404,13 @@
                 <groupId>org.pac4j</groupId>
                 <artifactId>pac4j-core</artifactId>
                 <version>${pac4j.version}</version>
+                <exclusions>
+                    <!-- apache-shiro is an optional dependency of pac4j-core. Explicitly excluded for scanner to avoid CVEs flagging-->
+                    <exclusion>
+                        <groupId>org.apache.shiro</groupId>
+                        <artifactId>shiro-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.pac4j</groupId>

@@ -38,7 +38,8 @@ public class SessionInfo
         this.sessionID = sessionID;
         if (this.profile != null)
         {
-            this.profile.clearSensitiveData();
+            this.profile.removeAttribute("access_token");
+            this.profile.removeAttribute("refresh_token");
         }
     }
 }
