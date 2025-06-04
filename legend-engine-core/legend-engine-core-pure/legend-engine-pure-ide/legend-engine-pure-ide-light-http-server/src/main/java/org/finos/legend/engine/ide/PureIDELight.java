@@ -31,21 +31,11 @@ public class PureIDELight extends PureIDEServer
 {
     public static void main(String[] args) throws Exception
     {
+        System.setProperty("legend.test.h2.port", "1975");
         System.setProperty("user.timezone", "GMT");
-        System.setProperty("legend.test.server.host", "127.0.0.1");
-        System.setProperty("legend.test.server.port", "9090");
-        System.setProperty("legend.test.h2.port", "9092");
-        System.setProperty("legend.test.h2.properties", "");
-        System.setProperty("legend.test.clientVersion", "vX_X_X");
-        System.setProperty("legend.test.serverVersion", "v1");
-        System.setProperty("legend.test.serializationKind", "json");
-        System.setProperty("pure.options.ExecPlan", "true");
-        System.setProperty("pure.options.PlanLocal", "true");
-        System.setProperty("pure.options.ShowLocalPlan", "true");
-        System.setProperty("user.timezone","GMT");
 
         // Uncomment to be able to run   AlloyOny test cases
-//         withAlloyServerSupport();
+        // withAlloyServerSupport();
 
         new PureIDELight().run(args.length == 0 ? new String[] {"server", "legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json"} : args);
     }
@@ -191,13 +181,6 @@ public class PureIDELight extends PureIDEServer
                 GenericCodeRepository.build(repository.getName(), repository.getAllowedPackagesPattern(), repository.getDependencies().toSet().with("pure_ide_debug")),
                 Paths.get(resourceDir + moduleName)
         );
-    }
-
-    protected MutableFSCodeStorage buildPlatform(String moduleRelativePath, String module)
-    {
-        String resourceDir = "../finos-legend-pure/" + moduleRelativePath + "/src/main/resources/";
-        String moduleName = "platform_" + module.replace("-", "_");
-        return new MutableFSCodeStorage(GenericCodeRepository.build(Paths.get(resourceDir + moduleName + ".definition.json")), Paths.get(resourceDir + moduleName));
     }
 
 }
