@@ -105,6 +105,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(current_date()) - 1), current_date())')),
     dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='dateadd(DAY, -(mod(dayofweek(%s)+5, 7)), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='TO_CHAR(RANDOM_UUID())')),   
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),

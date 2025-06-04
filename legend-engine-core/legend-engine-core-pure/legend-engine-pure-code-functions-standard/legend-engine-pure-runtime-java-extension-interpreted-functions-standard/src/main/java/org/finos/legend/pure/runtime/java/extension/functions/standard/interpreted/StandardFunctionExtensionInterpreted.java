@@ -19,6 +19,7 @@ import org.finos.legend.pure.runtime.java.extension.functions.standard.interpret
 import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.math.trigonometry.CosH;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.math.trigonometry.SinH;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.math.trigonometry.TanH;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.string.generation.Guid;
 import org.finos.legend.pure.runtime.java.interpreted.extension.BaseInterpretedExtension;
 
 public class StandardFunctionExtensionInterpreted extends BaseInterpretedExtension
@@ -32,7 +33,10 @@ public class StandardFunctionExtensionInterpreted extends BaseInterpretedExtensi
                 // Math
                 Tuples.pair("cosh_Number_1__Float_1_", CosH::new),
                 Tuples.pair("sinh_Number_1__Float_1_", SinH::new),
-                Tuples.pair("tanh_Number_1__Float_1_", TanH::new)
+                Tuples.pair("tanh_Number_1__Float_1_", TanH::new),
+
+                // String
+                Tuples.pair("generateGuid__String_1_", Guid::new)
         );
     }
 

@@ -239,6 +239,7 @@ function meta::relational::functions::sqlQueryToString::debugPrint::getDynaFunct
     dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='date_trunc(\'second\', %s)')),
     dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='date_trunc(\'hour\', %s)')),
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)')),
+    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='TO_CHAR(RANDOM_UUID())')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),

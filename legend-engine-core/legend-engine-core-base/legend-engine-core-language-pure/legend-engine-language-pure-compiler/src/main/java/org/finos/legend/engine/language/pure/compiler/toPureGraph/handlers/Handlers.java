@@ -1682,6 +1682,8 @@ public class Handlers
                 m(h("meta::pure::functions::string::decodeUrl_String_1__String_1__String_1_", true, ps -> res("String", "one"), ps -> ps.size() == 2))));
         register("meta::pure::functions::string::jaroWinklerSimilarity_String_1__String_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::string::levenshteinDistance_String_1__String_1__Integer_1_", true, ps -> res("Integer", "one"));
+
+        register("meta::pure::functions::string::generation::generateGuid__String_1_", true, ps -> res("String", "one"));
     }
 
     private void registerTrigo()
@@ -1963,7 +1965,6 @@ public class Handlers
                 h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__String_1__Byte_MANY__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeOne(ps.get(1), "String") && typeMany(ps.get(2), "Byte")),
                 h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__Binding_1__Byte_MANY__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeMany(ps.get(2), "Byte")),
                 h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__Binding_1__String_1__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeOne(ps.get(2), "String")));
-        register(h("meta::core::runtime::generateGuid__String_1_", true, ps -> res("String", "one"), ps -> true));
         register(h("meta::core::runtime::currentUserId__String_1_", true, ps -> res("String", "one"), ps -> true));
     }
 

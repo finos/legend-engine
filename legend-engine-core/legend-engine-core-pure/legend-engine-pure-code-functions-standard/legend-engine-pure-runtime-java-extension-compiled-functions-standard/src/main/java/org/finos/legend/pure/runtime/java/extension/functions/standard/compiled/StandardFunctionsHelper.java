@@ -21,6 +21,8 @@ import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives.date.operation.TimeBucketShared;
 
+import java.util.UUID;
+
 public class StandardFunctionsHelper
 {
     // DATE-TIME --------------------------------------------------------------
@@ -77,5 +79,10 @@ public class StandardFunctionsHelper
     public static double tanh(double input)
     {
         return Math.tanh(input);
+    }
+
+    public static String generateGuid()
+    {
+        return UUID.randomUUID().toString();
     }
 }

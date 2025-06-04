@@ -23,7 +23,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::runtim
   let lib = newConventionsLibrary()
     ->usesJavaPackage('java.util')
     ->addFunctionCoders([
-        fc0(meta::core::runtime::generateGuid__String_1_, {ctx | j_invoke(javaUUID(), 'randomUUID', [], javaUUID())->j_toString()})
+        fc0(meta::pure::functions::string::generation::generateGuid__String_1_, {ctx | j_invoke(javaUUID(), 'randomUUID', [], javaUUID())->j_toString()})
     ]);
 
   $conventions->registerLibrary($lib);

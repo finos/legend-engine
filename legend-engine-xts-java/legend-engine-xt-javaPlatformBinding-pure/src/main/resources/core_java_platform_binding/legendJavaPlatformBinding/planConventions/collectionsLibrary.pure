@@ -136,7 +136,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
    let args = $fe.parametersValues->evaluateAndDeactivate();
    let coll = $args->at(0)->generateJava($conventions, $debug);
 
-   let guid = meta::core::runtime::generateGuid()->replace('-','');
+   let guid = meta::pure::functions::string::generation::generateGuid()->replace('-','');
    let name = 'isDistinct'+$guid;
    let cls = javaClass(['public'], '_pure.internal.EqualityGraphFetch'+$guid);
 
@@ -176,7 +176,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
 
    let cls1 = $args->at(0)->generateJava($conventions, $debug);
    let cls2 = $args->at(1)->generateJava($conventions, $debug);
-   let guid = meta::core::runtime::generateGuid()->replace('-','');
+   let guid = meta::pure::functions::string::generation::generateGuid()->replace('-','');
 
    let name =  'isEqual'+$guid;
    let cls = javaClass(['public'], '_pure.internal.EqualityGraphFetch'+$guid);

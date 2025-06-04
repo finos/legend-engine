@@ -143,8 +143,11 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
 
             // Least
             one("meta::pure::functions::collection::tests::least::testLeast_Empty_Function_1__Boolean_1_", "\"Cast exception: JSONNull cannot be cast to JSONObject\""),
-            one("meta::pure::functions::collection::tests::least::testLeast_Number_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\"")
-        );
+            one("meta::pure::functions::collection::tests::least::testLeast_Number_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
+
+            // UUID
+            one("meta::pure::functions::string::generation::tests::testGenerateGuidWithRelation_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"")
+    );
 
     public static Test suite()
     {

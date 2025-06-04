@@ -24,6 +24,7 @@ import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.CosH;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.SinH;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.TanH;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.string.generation.Guid;
 
 import java.util.List;
 
@@ -46,7 +47,10 @@ public class StandardFunctionsExtensionCompiled extends AbstractCompiledExtensio
             // Math
             new CosH(),
             new SinH(),
-            new TanH()
+            new TanH(),
+
+            // String
+            new Guid()
         );
     }
 
