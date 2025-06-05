@@ -69,7 +69,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::percentile::testPercen
     assertEquals(3.25, $f->eval(|range(10)->map(x|$x+1)->percentile(0.75, false, true)));
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::percentile::testPercentile_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::percentile::testPercentile_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -96,7 +96,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::percentile::testPercen
                   '#', $res->sort(~id->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS

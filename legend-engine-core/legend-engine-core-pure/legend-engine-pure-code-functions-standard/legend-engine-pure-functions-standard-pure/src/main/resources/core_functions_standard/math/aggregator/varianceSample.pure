@@ -25,7 +25,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::variance::testVariance
   assertEq(4.0, $f->eval(|varianceSample([2,4,6])));
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::variance::testSimpleGroupByVarianceSample<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::variance::testSimpleGroupByVarianceSample<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -48,7 +48,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::variance::testSimpleGr
                   '#', $res->sort(~id->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::variance::testSimpleWindowVarianceSample<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::variance::testSimpleWindowVarianceSample<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS

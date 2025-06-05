@@ -37,7 +37,7 @@ function  meta::pure::functions::math::wavg(wavgRows: meta::pure::functions::mat
   meta::pure::functions::math::wavg($wavgRows.rowA, $wavgRows.rowB);
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::wavg::testSimpleGroupByWavg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::wavg::testSimpleGroupByWavg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -66,7 +66,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::wavg::testSimpleGroupB
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::wavg::testSimpleGroupByMultipleWavg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::wavg::testSimpleGroupByMultipleWavg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS

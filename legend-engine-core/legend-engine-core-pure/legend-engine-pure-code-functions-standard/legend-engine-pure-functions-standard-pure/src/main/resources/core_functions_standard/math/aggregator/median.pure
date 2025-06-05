@@ -59,7 +59,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Num
   assertEq(3.5, $f->eval(|median([5,1.0,2,8.0,3,4])));
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -90,7 +90,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Flo
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -121,7 +121,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Int
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -152,7 +152,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Num
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -187,7 +187,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Flo
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -222,7 +222,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Int
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS

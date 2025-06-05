@@ -33,7 +33,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::covarSample::testCovar
   assertEquals([], $f->eval(|covarSample([1], [])));
 }
 
-function meta::pure::functions::math::tests::covarSample::testSimpleGroupByCovarSample<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::covarSample::testSimpleGroupByCovarSample<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
 //remove the sterotype to allow pipeline to pass, the testcases should pass after fixing platform handling null value
 //1. TDS not able to accept null value, thus requiring to use extend to add null value 2. tds to String will return Integer_Min_Value instead of null value.
@@ -65,7 +65,7 @@ function meta::pure::functions::math::tests::covarSample::testSimpleGroupByCovar
                   '#', $res->sort(~id->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::covarSample::testSimpleWindowCovarSample<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::covarSample::testSimpleWindowCovarSample<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS

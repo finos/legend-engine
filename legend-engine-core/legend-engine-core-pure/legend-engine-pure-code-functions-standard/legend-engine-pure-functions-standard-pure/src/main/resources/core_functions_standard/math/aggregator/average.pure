@@ -47,7 +47,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_N
     assertEquals(3.8, $f->eval(|average([5d,1.0,2,8,3])));
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -78,7 +78,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_I
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -109,7 +109,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_F
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -140,7 +140,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_N
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -176,7 +176,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_I
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -212,7 +212,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_F
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS

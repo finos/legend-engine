@@ -44,7 +44,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Floats<Z|
     assertEquals(32.0, $f->eval(|sum([12.5,13.5,4.0,1.5,0.5])));
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::sum::testSum_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -75,7 +75,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Integers_
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::sum::testSum_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -109,7 +109,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Floats_Re
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -143,7 +143,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Numbers_R
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Integers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::sum::testSum_Integers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -179,7 +179,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Integers_
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Floats_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::sum::testSum_Floats_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -220,7 +220,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Floats_Re
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS

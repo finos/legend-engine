@@ -88,7 +88,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Numbers<Z
     assertEquals(1.0d, $f->eval(|min([4.23d, 7.345, 1.0d, 3, 4])));
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::min::testMin_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -119,7 +119,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Integers_
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::min::testMin_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -150,7 +150,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Floats_Re
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -181,7 +181,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Numbers_R
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Integers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::min::testMin_Integers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -217,7 +217,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Integers_
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Floats_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::min::testMin_Floats_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -253,7 +253,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Floats_Re
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
