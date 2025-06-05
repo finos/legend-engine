@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::extension::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::functions::sqlQueryToString::*;
@@ -22,7 +23,7 @@ function meta::relational::functions::sqlQueryToString::snowflake::buildDummyCon
 {
     ^RelationalDatabaseConnection
     (
-        type = DatabaseType.DuckDB,
+        type = DatabaseType.Snowflake,
         datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification(
                                     accountName = 'test',
                                     region = 'test',
@@ -33,7 +34,7 @@ function meta::relational::functions::sqlQueryToString::snowflake::buildDummyCon
     )
 }
 
-function meta::relational::functions::sqlQueryToString::snowflake::createView(createViewSQL:CreateViewSQL[1], dbConfig:DbConfig[1]):String[1]
+function meta::relational::functions::sqlQueryToString::snowflake::createView(createViewSQL:CreateViewSQL[1], dbConfig:DbConfig[1],  extensions:Extension[*]):String[1]
 {
     'Create or Replace ' +
     if($createViewSQL.secure, |'SECURE ',|'') +
@@ -44,4 +45,40 @@ function meta::relational::functions::sqlQueryToString::snowflake::createView(cr
     ' as ' +
     $createViewSQL.generatedSQL +
     ';'
+}
+
+function meta::relational::functions::sqlQueryToString::snowflake::createProcedure(createProc:CreateProcedureSQL[1], dbConfig:DbConfig[1], extensions:Extension[*]):String[1]
+{
+    'CREATE OR REPLACE ' +
+    if($createProc.secure, |'SECURE ',|'') +
+    'PROCEDURE ' +
+    if($createProc.schemaName->isEmpty(),|'',|$createProc.schemaName->toOne() + '.') +
+    $createProc.name +
+    +'('+ $createProc.parameters+ ')'+ 
+    +'\nRETURNS TABLE('+ $createProc.return+ ')\nLANGUAGE SQL'+
+    if($createProc.copyGrants, |' COPY GRANTS',|'') +
+    '\nAS $$\n' +
+    ' DECLARE\n    ' +
+    $createProc.declarations->map(v| $v.name+ ' '+ $v.type->toOne())->joinStrings('',';\n   ', ';') +
+    '\n BEGIN\n'+
+    '   '+$createProc.declarations->map(v| $v->meta::relational::functions::sqlQueryToString::processOperation($dbConfig.dbType, $extensions))->joinStrings('',';\n   ',';') +
+    '\n   finalResult := ('+ $createProc.generatedSQL+ ');'+
+    '\n RETURN\n    TABLE(finalResult);'+
+    '\n END\n'+
+    '$$;'
+}
+
+function meta::relational::functions::sqlQueryToString::snowflake::createFunction(createFunc:CreateFunctionSQL[1], dbConfig:DbConfig[1], extensions:Extension[*]):String[1]
+{
+    'CREATE OR REPLACE ' +
+    if($createFunc.secure, |'SECURE ',|'') +
+    'Function ' +
+    if($createFunc.schemaName->isEmpty(),|'',|$createFunc.schemaName->toOne() + '.') +
+    $createFunc.name +
+    +'('+ $createFunc.parameters+ ')'+ 
+    +'\nRETURNS TABLE('+ $createFunc.return+ ')\nLANGUAGE SQL'+
+    if($createFunc.copyGrants, |' COPY GRANTS',|'') +
+    '\nAS $$\n' +
+     $createFunc.generatedSQL+
+    ' $$;'
 }

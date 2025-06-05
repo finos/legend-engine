@@ -152,7 +152,7 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                                     r:Runtime[1]|'^meta::core::runtime::Runtime('+
                                                   'connectionStores='+$r.connectionStores->map(s|'^meta::core::runtime::ConnectionStore(connection='+$s.connection->printConnection($configuration)+', element='+$s.element->match([x:String[1]|$x,x:Store[1]|$x->elementToPath()])+')')->makeString(',')+
                                                   ')',
-                                    s:RelationElementAccessor<Any>[1]|'RelationElementAccessor('+$s->genericType().rawType.name->toOne()+')',
+                                    s:RelationElementAccessor<Any>[1]|'RelationElementAccessor('+$s->genericType().rawType.name->toOne()+')';,
                                     a:Any[1] | $a->toRepresentation()
                                   ])->toOneMany()
                             )
