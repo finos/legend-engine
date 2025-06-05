@@ -297,45 +297,48 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildObjectTypeDefinition(c: Class<Any>[1], isExtended: Boolean[1], pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[1], excludeDynamicFilter: Boolean[1]): TypeSystemDefinition[*]
 {
-  let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
-  let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars($pureTypeToGraphQLScalarOverride);
-  let isQueryClass = $c->hasGraphQLStereotype('Query');
-  let temporalStereotypes = $c->getTemporalStereotypes();
-  let extended = if($isExtended, | [$c.name], | []);
-  $nonBuiltInScalars
-    ->concatenate(
-      ^ObjectTypeDefinition(
-        name = $c.name->toOne(),
-        implements = $extended->concatenate($c->hierarchicalAllGeneralizations()->map(g | $g.name))->map(n | $n->toInterfaceTypeName()),
-        directives = $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))->concatenate(buildHierarchyDirective($c, false)),
-        fields = $props
-                    ->map(p |
-                      ^FieldDefinition
-                      (
-                        name = $p.name->toOne(),
-                        type = buildObjectTypeCompatibleTypeReference($p->functionReturnType(), $p->functionReturnMultiplicity(), $pureTypeToGraphQLScalarOverride),
-                        argumentDefinitions = 
-                          if ($p->instanceOf(QualifiedProperty),
-                            | 
-                              $p->functionType().parameters->evaluateAndDeactivate()->tail()->map(pa |
-                                    ^InputValueDefinition
-                                    (
-                                      name = $pa.name,
-                                      type = buildInputTypeCompatibleTypeReference($pa.genericType, $pa.multiplicity, $pureTypeToGraphQLScalarOverride)
-                                    )
-                                ),
-                            | 
-                              []
-                          )->concatenate(
-                            if(
-                              $isQueryClass && !$excludeDynamicFilter,
-                              | generatedArgumentDefinitons($p),
-                              | []
-                            )
+  if ($c->isAbstract(), 
+    | [],
+    | let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
+      let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars($pureTypeToGraphQLScalarOverride);
+      let isQueryClass = $c->hasGraphQLStereotype('Query');
+      let temporalStereotypes = $c->getTemporalStereotypes();
+      let extended = if($isExtended, | [$c], | []);
+      $nonBuiltInScalars
+        ->concatenate(
+          ^ObjectTypeDefinition(
+            name = $c.name->toOne(),
+            implements = $extended->concatenate($c->hierarchicalAllGeneralizations())->map(n | if($n->isAbstract(), | $n.name->toOne(), | $n.name->toOne()->toInterfaceTypeName())),
+            directives = $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))->concatenate(buildHierarchyDirective($c, false)),
+            fields = $props
+                        ->map(p |
+                          ^FieldDefinition
+                          (
+                            name = $p.name->toOne(),
+                            type = buildObjectTypeCompatibleTypeReference($p->functionReturnType(), $p->functionReturnMultiplicity(), $pureTypeToGraphQLScalarOverride),
+                            argumentDefinitions = 
+                              if ($p->instanceOf(QualifiedProperty),
+                                | 
+                                  $p->functionType().parameters->evaluateAndDeactivate()->tail()->map(pa |
+                                        ^InputValueDefinition
+                                        (
+                                          name = $pa.name,
+                                          type = buildInputTypeCompatibleTypeReference($pa.genericType, $pa.multiplicity, $pureTypeToGraphQLScalarOverride)
+                                        )
+                                    ),
+                                | 
+                                  []
+                              )->concatenate(
+                                if(
+                                  $isQueryClass && !$excludeDynamicFilter,
+                                  | generatedArgumentDefinitons($p),
+                                  | []
+                                )
+                              )
                           )
-                      )
-                    )
-      ));
+                        )
+          ));
+  );
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::generatedArgumentDefinitons(c: AbstractProperty<Any>[1]): InputValueDefinition[*]
@@ -351,8 +354,8 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
 
   let temporalStereotypes = $c->getTemporalStereotypes();
   ^InterfaceTypeDefinition(
-    name = $c.name->toOne()->toInterfaceTypeName(),
-    implements = $c->hierarchicalAllGeneralizations()->map(g | $g.name)->map(n | $n->toInterfaceTypeName()),
+    name = if($c->isAbstract(), | $c.name->toOne(), | $c.name->toOne()->toInterfaceTypeName()),
+    implements = $c->hierarchicalAllGeneralizations()->map(n | if($n->isAbstract(), | $n.name->toOne(), | $n.name->toOne()->toInterfaceTypeName())),
     directives = $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))->concatenate(buildHierarchyDirective($c, false)),
     fields = $props
                 ->map(p |
@@ -385,7 +388,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
     |
       let primitives = purePrimitivesToAllGraphQLScalarTypes($pureTypeToGraphQLScalarOverride)->newMap();
       let foundPrimitiveName = $primitives->get($type.rawType->toOne());
-      let fName = if($foundPrimitiveName->isEmpty(), | $type.rawType.name,| $foundPrimitiveName->toOne());
+      let fName = if($foundPrimitiveName->isEmpty(), | $type.rawType.name, | $foundPrimitiveName->toOne());
   )->toOne();
 }
 
