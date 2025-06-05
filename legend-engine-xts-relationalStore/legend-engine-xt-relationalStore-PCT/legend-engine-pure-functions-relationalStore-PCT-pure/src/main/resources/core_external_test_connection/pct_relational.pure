@@ -120,17 +120,17 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
               $x.first.values;,
             | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
               // processResult
-              if ($resultType->toOne()->instanceOf(PrimitiveType),
-                | let preResultFinal = $res.result.rows->at(0).values->at(0);
+              if ($resultType->toOne()->instanceOf(PrimitiveType) || $resultType == Nil,
+                | let preResultFinal = $res.result.rows->head().values->head();
                   let resultFinal =
                     if ([
-                          pair(|$preResultFinal == TDSNull, |[]),
-                          pair(|$resultType->toOne()->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toString())),
-                          pair(|$resultType->toOne()->subTypeOf(Date), |buildDate($preResultFinal->toString())),
-                          pair(|$resultType->toOne()->subTypeOf(Decimal), |$preResultFinal->cast(@Number)->toDecimal()),
-                          pair(|$resultType->toOne()->subTypeOf(Integer), |$preResultFinal->cast(@Number)->round()),
-                          pair(|$resultType->toOne()->subTypeOf(Float), |$preResultFinal->cast(@Number)->toFloat()),
-                          pair(|$resultType->toOne()->subTypeOf(Number), |$preResultFinal->cast(@Number))
+                          pair(|$preResultFinal->isEmpty() || $preResultFinal == TDSNull, |[]),
+                          pair(|$resultType->toOne()->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toOne()->toString())),
+                          pair(|$resultType->toOne()->subTypeOf(Date), |buildDate($preResultFinal->toOne()->toString())),
+                          pair(|$resultType->toOne()->subTypeOf(Decimal), |$preResultFinal->toOne()->cast(@Number)->toDecimal()),
+                          pair(|$resultType->toOne()->subTypeOf(Integer), |$preResultFinal->toOne()->cast(@Number)->round()),
+                          pair(|$resultType->toOne()->subTypeOf(Float), |$preResultFinal->toOne()->cast(@Number)->toFloat()),
+                          pair(|$resultType->toOne()->subTypeOf(Number), |$preResultFinal->toOne()->cast(@Number))
                         ],
                       | $preResultFinal->toOne()
                     );

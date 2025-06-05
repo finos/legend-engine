@@ -987,6 +987,22 @@ public class Handlers
                         "one"), ps -> Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType()), ps -> true))));
         // ----------------------------
 
+        register(
+            m(
+                m(
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 2 && isOne(ps.get(1)._multiplicity())),
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 2)
+                ),
+                m(
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 3 && isOne(ps.get(2)._multiplicity())),
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 3)
+                ),
+                m(
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 4 && isOne(ps.get(3)._multiplicity())),
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 4)
+                )
+            )
+        );
 
         register(h("meta::pure::functions::collection::isEmpty_Any_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> matchZeroOne(ps.get(0)._multiplicity())),
                 h("meta::pure::functions::collection::isEmpty_Any_MANY__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> true));
