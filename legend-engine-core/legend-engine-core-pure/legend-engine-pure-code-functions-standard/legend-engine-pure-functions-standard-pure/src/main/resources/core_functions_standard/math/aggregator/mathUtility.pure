@@ -11,3 +11,15 @@ function meta::pure::functions::math::mathUtility::rowMapper(rowA:Number[0..1], 
     rowB= $rowB
   )
 }
+
+Class meta::pure::functions::math::wavgUtility::WavgRowMapper extends meta::pure::functions::math::mathUtility::RowMapper
+{
+}
+
+function meta::pure::functions::math::wavgUtility::wavgRowMapper(quantity:Number[0..1], weight:Number[0..1]):meta::pure::functions::math::wavgUtility::WavgRowMapper[1]
+{
+  ^meta::pure::functions::math::wavgUtility::WavgRowMapper(
+    rowA= $quantity,
+    rowB= $weight
+  )
+}

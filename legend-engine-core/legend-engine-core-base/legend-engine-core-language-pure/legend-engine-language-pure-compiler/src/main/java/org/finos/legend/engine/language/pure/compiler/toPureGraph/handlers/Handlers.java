@@ -1959,9 +1959,10 @@ public class Handlers
         );
 
         register(m(m(h("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))),
-                m(h("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
+                m(h("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> ps.size() == 1))));
 
-        register(h("meta::pure::functions::math::mathUtility::rowMapper_Number_$0_1$__Number_$0_1$__RowMapper_1_", false, ps -> res("meta::pure::functions::math::mathUtility::RowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")));
+        register(m(m(h("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", false, ps -> res("meta::pure::functions::math::wavgUtility::WavgRowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number"))),
+                m(h("meta::pure::functions::math::mathUtility::rowMapper_Number_$0_1$__Number_$0_1$__RowMapper_1_", false, ps -> res("meta::pure::functions::math::mathUtility::RowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")))));
 
         register(h("meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_", false, ps -> res("Number", "one")));
 
@@ -3003,6 +3004,7 @@ public class Handlers
         map.put("meta::pure::functions::math::corr_Number_MANY__Number_MANY__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::corr_RowMapper_MANY__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_mathUtility_RowMapper").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::mathUtility::rowMapper_Number_$0_1$__Number_$0_1$__RowMapper_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchZeroOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchZeroOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_mathUtility_RowMapper").contains(ps.get(0)._genericType()._rawType()._name())); 
         map.put("meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(1)._genericType()._rawType()._name()));
