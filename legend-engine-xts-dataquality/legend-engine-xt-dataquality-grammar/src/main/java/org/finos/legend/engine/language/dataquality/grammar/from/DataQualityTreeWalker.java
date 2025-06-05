@@ -57,6 +57,7 @@ import java.util.stream.Collectors;
 public class DataQualityTreeWalker
 {
     private static final String RELATION_ROW_LEVEL_VAL_TYPE = "ROW_LEVEL";
+    private static final String RELATION_AGG_LEVEL_VAL_TYPE = "AGGREGATE";
     private final CharStream input;
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
@@ -366,17 +367,16 @@ public class DataQualityTreeWalker
         DataQualityParserGrammar.ValidationTypeContext validationTypeContext = PureGrammarParserUtility.validateAndExtractOptionalField(validationContext.validationType(),
                 "type",
                 sourceInformation);
-        relationValidation.type = this.visitValidationType(validationTypeContext);
+        if (Objects.nonNull(validationTypeContext))
+        {
+            relationValidation.type = this.visitValidationType(validationTypeContext);
+        }
 
         return relationValidation;
     }
 
     private String visitValidationType(DataQualityParserGrammar.ValidationTypeContext validationTypeContext)
     {
-        if (Objects.isNull(validationTypeContext))
-        {
-            return RELATION_ROW_LEVEL_VAL_TYPE;
-        }
         if (Objects.nonNull(validationTypeContext.validationTypeVal().VALIDATION_TYPE_ROW()))
         {
             return validationTypeContext.validationTypeVal().VALIDATION_TYPE_ROW().getText();
