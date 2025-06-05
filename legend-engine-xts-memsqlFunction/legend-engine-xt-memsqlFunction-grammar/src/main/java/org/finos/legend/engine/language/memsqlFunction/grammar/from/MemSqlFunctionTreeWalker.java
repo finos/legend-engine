@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.MemSqlFunctionParserGrammar;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
@@ -90,11 +91,8 @@ public class MemSqlFunctionTreeWalker
                 functionContext.functionIdentifier().getText(),
                 walkerSourceInformation.getSourceInformation(functionContext.functionIdentifier()));
 
-        MemSqlFunctionParserGrammar.OwnerContext ownerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.owner(), "owner", memSqlFunction.sourceInformation);
-        if (ownerContext != null)
-        {
-            memSqlFunction.owner = PureGrammarParserUtility.fromGrammarString(ownerContext.STRING().getText(), true);
-        }
+        MemSqlFunctionParserGrammar.OwnershipContext ownerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.ownership(), "ownership", memSqlFunction.sourceInformation);
+        memSqlFunction.ownership = new DeploymentOwner(PureGrammarParserUtility.fromGrammarString(ownerContext.STRING().getText(), true));
         MemSqlFunctionParserGrammar.DescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.description(), "description", memSqlFunction.sourceInformation);
         if (descriptionContext != null)
         {

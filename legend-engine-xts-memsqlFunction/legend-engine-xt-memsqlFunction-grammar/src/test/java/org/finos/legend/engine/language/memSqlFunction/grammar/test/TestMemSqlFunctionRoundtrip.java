@@ -27,6 +27,7 @@ public class TestMemSqlFunctionRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "{\n" +
                 "   functionName : 'demoFunction';\n" +
                 "   function : zxx(Integer[1]):String[1];\n" +
+                "   ownership : Deployment { identifier: 'testDeployment' };\n" +
                 "   description : 'Its a single store function!';\n" +
                 "   activationConfiguration : a::b::connection;\n" +
                 "}\n");
@@ -40,6 +41,7 @@ public class TestMemSqlFunctionRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "{\n" +
                 "   functionName : 'demoFunction';\n" +
                 "   function : zxx(Integer[1]):String[1];\n" +
+                "   ownership : Deployment { identifier: 'testDeployment' };\n" +
                 "}\n");
     }
 }
