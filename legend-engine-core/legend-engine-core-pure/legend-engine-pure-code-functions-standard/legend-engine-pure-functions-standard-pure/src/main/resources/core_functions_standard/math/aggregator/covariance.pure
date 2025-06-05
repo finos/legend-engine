@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.runtime;
+import meta::pure::test::pct::*;
 
-import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNativeFunctionGeneric;
-
-public class Guid extends AbstractNativeFunctionGeneric
+function <<PCT.function>> meta::pure::functions::math::covariance(numbersA:Number[*], numbersB:Number[*], count:Integer[1], isBiasCorrected: Boolean[1]):Number[0..1]
 {
-    public Guid()
-    {
-        super("FunctionsGen.guid", new Class[]{}, "generateGuid__String_1_");
-    }
+  if($count == 0 || ($isBiasCorrected && ($count <= 1)), |[], | ($numbersA->zip($numbersB)->map(p | $p.first * $p.second)->sum() - sum($numbersA)*sum($numbersB)/$count)/($count- if ($isBiasCorrected, |1, |0)))
 }

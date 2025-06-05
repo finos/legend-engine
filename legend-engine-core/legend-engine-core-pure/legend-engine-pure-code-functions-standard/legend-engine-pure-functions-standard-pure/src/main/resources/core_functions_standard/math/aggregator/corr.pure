@@ -1,0 +1,107 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> meta::pure::functions::math::corr(numbersA:Number[*], numbersB:Number[*]):Number[0..1]
+{
+  if( covarPopulation($numbersA, $numbersB)->equal([]),
+  | [],
+  | covarPopulation($numbersA, $numbersB)->toOne() / (stdDevPopulation($numbersA) * stdDevPopulation($numbersB))
+  )
+ 
+}
+
+function  meta::pure::functions::math::corr(covarRows: meta::pure::functions::math::mathUtility::RowMapper[*]):Number[0..1]
+{
+  corr($covarRows.rowA, $covarRows.rowB);
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::corr::testCorr<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(1.0, $f->eval(|corr([1, 2], [10, 20])));
+  assertEquals(-1.0, $f->eval(|corr([1, 2], [30, 10])));
+  assertEqWithinTolerance(0.4999999999999999432630891679087138, $f->eval(|corr([1, 3.0, 6.0], [10, -20, 30]))->toOne(), 0.00000000001);
+  assertEquals([], $f->eval(|corr([1], [])));
+}
+
+function meta::pure::functions::math::tests::corr::testSimpleGroupByCorr<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+//remove the sterotype to allow pipeline to pass, the testcases should pass after fixing platform handling null value
+//1. TDS not able to accept null value, thus requiring to use extend to add null value 2. tds to String will return Integer_Min_Value instead of null value.
+// +---+-------+-------+
+// | K |     V |    V2 |
+// |---+-------+-------|
+// | 1 | 10.00 |  NULL |
+// | 2 | 10.00 | 11.00 |
+// | 2 | 20.00 | 22.00 |
+// | 2 | 25.00 |  NULL |
+// | 2 | 30.00 | 35.00 |
+// +---+-------+-------+
+// +---+--------------+
+// | K |  CORR(V, V2) |
+// |---+--------------|
+// | 1 |         NULL |
+// | 2 | 0.9988445981 |
+// +---+--------------+
+    let expr = {
+                |#TDS
+                  id, valA
+                  1, 10.0
+                  2, 10.0
+                  2, 20.0
+                  2, 25.0
+                  2, 30.0
+                  #->extend(~valB:c|if( $c.id == 1 || $c.valA == 25.0,
+                  |[],
+                  | if($c.valA == 30.0,
+                      |35.0,
+                      |$c.valA->toOne()+$c.valA->toOne()/10
+                  
+                  )
+                    )
+                    )->groupBy(~[id], ~[newCol : x | meta::pure::functions::math::mathUtility::rowMapper($x.valA->cast(@Number), $x.valB->cast(@Number)) : y | $y->corr()]);
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,newCol\n'+
+                  '   1,[]\n'+
+                  '   2,0.9988445981121533\n'+
+                  '#', $res->sort(~id->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::corr::testSimpleWindowCorr<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, valA, valB
+                  1, 1, 10
+                  1, 2, 20
+                  2, 2, 40
+                  2, 4, 15
+                #->extend(over(~id), ~newCol:{p,w,r|meta::pure::functions::math::mathUtility::rowMapper($r.valA, $r.valB)}:y|$y->corr())
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,valA,valB,newCol\n'+
+                  '   1,1,10,1.0\n'+
+                  '   1,2,20,1.0\n'+
+                  '   2,2,40,-1.0\n'+
+                  '   2,4,15,-1.0\n'+
+                  '#', $res->sort([~id->ascending(), ~valA->ascending()])->toString());
+}

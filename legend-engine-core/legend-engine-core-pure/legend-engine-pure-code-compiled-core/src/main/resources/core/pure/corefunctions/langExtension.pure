@@ -24,7 +24,7 @@ function meta::pure::functions::boolean::isFalse(value:Boolean[0..1]):Boolean[1]
 
 function meta::pure::functions::lang::orElse<T>(maybe:T[0..1], dflt:T[1]):T[1]
 {
-    if($maybe->isEmpty(), |$dflt, |$maybe->toOne());
+    meta::pure::functions::flow::coalesce($maybe, $dflt);
 }
 
 function meta::pure::functions::lang::mayRemoveOverride<T>(value:T[0..1]):T[0..1]

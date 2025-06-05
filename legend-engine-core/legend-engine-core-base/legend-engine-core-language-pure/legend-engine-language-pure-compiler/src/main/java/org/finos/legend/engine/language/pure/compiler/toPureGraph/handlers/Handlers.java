@@ -850,6 +850,7 @@ public class Handlers
         registerAggregations();
         registerStdDeviations();
         registerVariance();
+        registerCovariance();
         registerTrigo();
         registerStrings();
         registerDates();
@@ -986,6 +987,22 @@ public class Handlers
                         "one"), ps -> Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType()), ps -> true))));
         // ----------------------------
 
+        register(
+            m(
+                m(
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 2 && isOne(ps.get(1)._multiplicity())),
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 2)
+                ),
+                m(
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 3 && isOne(ps.get(2)._multiplicity())),
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 3)
+                ),
+                m(
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 4 && isOne(ps.get(3)._multiplicity())),
+                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 4)
+                )
+            )
+        );
 
         register(h("meta::pure::functions::collection::isEmpty_Any_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> matchZeroOne(ps.get(0)._multiplicity())),
                 h("meta::pure::functions::collection::isEmpty_Any_MANY__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> true));
@@ -1210,7 +1227,8 @@ public class Handlers
         );
 
         register(h("meta::pure::graphFetch::calculateSourceTree_RootGraphFetchTree_1__Mapping_1__Extension_MANY__RootGraphFetchTree_1_", false, ps -> res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> true));
-        register("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))));
+        register(m(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 3))),
+                m(h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 2))));
         register("meta::pure::functions::meta::instanceOf_Any_1__Type_1__Boolean_1_", true, ps -> res("Boolean", "one"));
         register("meta::pure::functions::collection::union_T_MANY__T_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
         register("meta::pure::functions::collection::reverse_T_m__T_m_", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()));
@@ -1241,7 +1259,8 @@ public class Handlers
         register(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_", true, ps -> res(ps.get(2)._genericType(), ps.get(2)._multiplicity()), p -> true))));
 
         register(m(m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_", true, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 3)),
-                m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 2))));
+                m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::collection::range_Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 1))));
         register("meta::pure::functions::collection::tail_T_MANY__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"));
         register("meta::pure::functions::collection::head_T_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"));
         register("meta::pure::functions::collection::oneOf_Boolean_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
@@ -1683,6 +1702,8 @@ public class Handlers
                 m(h("meta::pure::functions::string::decodeUrl_String_1__String_1__String_1_", true, ps -> res("String", "one"), ps -> ps.size() == 2))));
         register("meta::pure::functions::string::jaroWinklerSimilarity_String_1__String_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::string::levenshteinDistance_String_1__String_1__Integer_1_", true, ps -> res("Integer", "one"));
+
+        register("meta::pure::functions::string::generation::generateGuid__String_1_", true, ps -> res("String", "one"));
     }
 
     private void registerTrigo()
@@ -1804,6 +1825,7 @@ public class Handlers
                         h("meta::pure::functions::date::max_DateTime_1__DateTime_1__DateTime_1_", false, ps -> res("DateTime", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "DateTime") && typeOne(ps.get(1), "DateTime")),
                         h("meta::pure::functions::date::max_StrictDate_1__StrictDate_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "StrictDate") && typeOne(ps.get(1), "StrictDate")),
                         h("meta::pure::functions::date::max_Date_1__Date_1__Date_1_", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date"))),
+                m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::max_T_$1_MANY$__Function_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2))),
                 m(h("meta::pure::functions::math::max_Integer_$1_MANY$__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_", false, ps -> res("Integer", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::max_Float_$1_MANY$__Float_1_", false, ps -> res("Float", "one"), ps -> typeOneMany(ps.get(0), "Float")),
@@ -1813,7 +1835,8 @@ public class Handlers
                         h("meta::pure::functions::date::max_DateTime_MANY__DateTime_$0_1$_", false, ps -> res("DateTime", "zeroOne"), ps -> typeMany(ps.get(0), "DateTime")),
                         h("meta::pure::functions::date::max_StrictDate_MANY__StrictDate_$0_1$_", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
                         h("meta::pure::functions::date::max_Date_MANY__Date_$0_1$_", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
-                        h("meta::pure::functions::collection::max_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne")))));
+                        h("meta::pure::functions::collection::max_X_$1_MANY$__X_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                        h("meta::pure::functions::collection::max_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
 
         register(m(
                 m(h("meta::pure::functions::math::min_Integer_1__Integer_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
@@ -1822,7 +1845,7 @@ public class Handlers
                         h("meta::pure::functions::date::min_DateTime_1__DateTime_1__DateTime_1_", false, ps -> res("DateTime", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "DateTime") && typeOne(ps.get(1), "DateTime")),
                         h("meta::pure::functions::date::min_StrictDate_1__StrictDate_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "StrictDate") && typeOne(ps.get(1), "StrictDate")),
                         h("meta::pure::functions::date::min_Date_1__Date_1__Date_1_", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date"))),
-
+                m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::min_T_$1_MANY$__Function_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2))),
                 m(h("meta::pure::functions::math::min_Integer_$1_MANY$__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_", false, ps -> res("Integer", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::min_Float_$1_MANY$__Float_1_", false, ps -> res("Float", "one"), ps -> typeOneMany(ps.get(0), "Float")),
@@ -1832,7 +1855,8 @@ public class Handlers
                         h("meta::pure::functions::date::min_DateTime_MANY__DateTime_$0_1$_", false, ps -> res("DateTime", "zeroOne"), ps -> typeMany(ps.get(0), "DateTime")),
                         h("meta::pure::functions::date::min_StrictDate_MANY__StrictDate_$0_1$_", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
                         h("meta::pure::functions::date::min_Date_MANY__Date_$0_1$_", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
-                        h("meta::pure::functions::collection::min_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne")))));
+                        h("meta::pure::functions::collection::min_X_$1_MANY$__X_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                        h("meta::pure::functions::collection::min_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
     }
 
     private void registerAlgebra()
@@ -1935,9 +1959,9 @@ public class Handlers
         );
 
         register(m(m(h("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))),
-                m(h("meta::pure::functions::math::wavg_WavgRowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::wavgUtility::WavgRowMapper")))));
+                m(h("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
 
-        register(h("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", false, ps -> res("meta::pure::functions::math::wavgUtility::WavgRowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")));
+        register(h("meta::pure::functions::math::mathUtility::rowMapper_Number_$0_1$__Number_$0_1$__RowMapper_1_", false, ps -> res("meta::pure::functions::math::mathUtility::RowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")));
 
         register(h("meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_", false, ps -> res("Number", "one")));
 
@@ -1960,6 +1984,18 @@ public class Handlers
         register("meta::pure::functions::math::varianceSample_Number_MANY__Number_1_", false, ps -> res("Number", "one"));
     }
 
+    private void registerCovariance()
+    {
+        register(m(m(h("meta::pure::functions::math::covarPopulation_Number_MANY__Number_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number"))),
+                m(h("meta::pure::functions::math::covarPopulation_RowMapper_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
+
+        register(m(m(h("meta::pure::functions::math::covarSample_Number_MANY__Number_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number"))),
+                m(h("meta::pure::functions::math::covarSample_RowMapper_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
+
+        register(m(m(h("meta::pure::functions::math::corr_Number_MANY__Number_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number"))),
+                m(h("meta::pure::functions::math::corr_RowMapper_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
+    }
+
     private void registerJson()
     {
         register(m(m(h("meta::json::toJSON_Any_MANY__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 1)),
@@ -1974,7 +2010,6 @@ public class Handlers
                 h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__String_1__Byte_MANY__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeOne(ps.get(1), "String") && typeMany(ps.get(2), "Byte")),
                 h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__Binding_1__Byte_MANY__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeMany(ps.get(2), "Byte")),
                 h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__Binding_1__String_1__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeOne(ps.get(2), "String")));
-        register(h("meta::core::runtime::generateGuid__String_1_", true, ps -> res("String", "one"), ps -> true));
         register(h("meta::core::runtime::currentUserId__String_1_", true, ps -> res("String", "one"), ps -> true));
     }
 
@@ -2481,7 +2516,7 @@ public class Handlers
         map.put("cov_function_KeyExpression", Sets.mutable.with("KeyExpression", "Nil"));
         map.put("cov_Float", Sets.mutable.with("Float", "Float4", "Double", "Nil"));
         map.put("cov_Decimal", Sets.mutable.with("Decimal", "Numeric", "Nil"));
-        map.put("cov_wavgUtility_WavgRowMapper", Sets.mutable.with("WavgRowMapper", "Nil"));
+        map.put("cov_mathUtility_RowMapper", Sets.mutable.with("RowMapper", "Nil"));
         map.put("cov_relation_Relation", Sets.mutable.with("Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor", "TDSRelationAccessor", "Nil"));
         map.put("cov_relation_ColSpec", Sets.mutable.with("ColSpec", "Nil"));
         map.put("cov_relation__Window", Sets.mutable.with("_Window", "Nil"));
@@ -2961,9 +2996,15 @@ public class Handlers
         map.put("meta::pure::functions::math::variancePopulation_Number_MANY__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::varianceSample_Number_MANY__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Boolean").contains(ps.get(1)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchZeroOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::covarPopulation_Number_MANY__Number_MANY__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::covarPopulation_RowMapper_MANY__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_mathUtility_RowMapper").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::covarSample_Number_MANY__Number_MANY__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::covarSample_RowMapper_MANY__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_mathUtility_RowMapper").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::corr_Number_MANY__Number_MANY__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::corr_RowMapper_MANY__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_mathUtility_RowMapper").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::mathUtility::rowMapper_Number_$0_1$__Number_$0_1$__RowMapper_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchZeroOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::math::wavg_WavgRowMapper_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_wavgUtility_WavgRowMapper").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_mathUtility_RowMapper").contains(ps.get(0)._genericType()._rawType()._name())); 
         map.put("meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::bitNot_Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(1)._genericType()._rawType()._name()));
