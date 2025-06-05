@@ -51,7 +51,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForSnowflake_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
-      tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor_String_1__String_1__String_1_,
+      tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor_String_1__String_1__FunctionParameter_MANY__String_1_,
+      variableDeclarationProcessor = variableDeclarationProcessor_VariableDeclaration_1__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForSnowflake_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinProcessor = meta::relational::functions::sqlQueryToString::snowflake::processJoinForSnowflake_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinStringsProcessor = processJoinStringsOperationForSnowflake_JoinStrings_1__SqlGenerationContext_1__String_1_,
@@ -103,9 +104,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     );
 }
 
-function meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor(schema:String[1], functionName: String[1]):String[1]
+function meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor(schema:String[1], functionName: String[1], params: FunctionParameter[*]):String[1]
 {
-   'table('+ if($schema=='', | $functionName,| $schema+'.'+$functionName) + '())';
+   'table('+ if($schema=='', | $functionName,| $schema+'.'+$functionName) + '('+ $params->map(p|$p.name)->joinStrings(', ')+ '))';
 }
 
 function meta::relational::functions::sqlQueryToString::snowflake::schemaIdentifierToString(identifier:String[1], dbConfig: DbConfig[1]):String[1]
@@ -132,8 +133,10 @@ function meta::relational::functions::sqlQueryToString::snowflake::getDDLCommand
                 createTable = translateCreateTableStatementForSnowflake_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementForSnowflake_DropTableSQL_1__DbConfig_1__String_1_,
                 loadTable = loadValuesToDbTableForSnowflake_LoadTableSQL_1__DbConfig_1__String_MANY_,
-                createView = createView_CreateViewSQL_1__DbConfig_1__String_1_
-              );
+                createView = createView_CreateViewSQL_1__DbConfig_1__Extension_MANY__String_1_,
+                createProcedure = createProcedure_CreateProcedureSQL_1__DbConfig_1__Extension_MANY__String_1_ ,             
+                 createFunction = createFunction_CreateFunctionSQL_1__DbConfig_1__Extension_MANY__String_1_              
+                );
 }
 
 function meta::relational::functions::sqlQueryToString::snowflake::processTempTableNameSnowflake(tempTableName: String[1], dc: meta::external::store::relational::runtime::DatabaseConnection[1]): String[1]
@@ -357,10 +360,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]
 {
-  assert($r->instanceOf(TableFunctionParamPlaceHolder), 'sqlQueryToString for relational element ' + $r->type().name->toOne() + ' has not been implemented yet for snowflake');
   $r->match([
-    t: TableFunctionParamPlaceHolder[1] | $t.var->replaceVarPlaceHolderForAppGeneration($sgc)
-  ]);
+    t: TableFunctionParamPlaceHolder[1] | $t.var->replaceVarPlaceHolderForAppGeneration($sgc),
+    t: ProcedureVariablePlaceHolder[1] | $t.var->replaceProcedurevariable($sgc),
+    r: RelationalOperationElement[1] | 'sqlQueryToString for relational element ' + $r->type().name->toOne() + ' has not been implemented yet for snowflake'
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::variableDeclarationProcessor(v:VariableDeclaration[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  $v.name + ' := (' + $v.value->match([
+                        l: Literal[1] | $l.value,
+                        r: RelationalOperationElement[1]| $r->processOperation($sgc)
+                      ])->cast(@String) + ')'
 }
 
 function <<access.private>>  meta::relational::functions::sqlQueryToString::snowflake::replaceVarPlaceHolderForAppGeneration(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
@@ -370,6 +382,14 @@ function <<access.private>>  meta::relational::functions::sqlQueryToString::snow
 
   $v.name;
 }
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::snowflake::replaceProcedurevariable(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
+{
+  assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
+  assertFalse($v->isCollectionPlaceHolder() || $v->isOptionalPlaceHolder(), 'only variables of multiplicity one can be used');
+  ':'+$v.name;
+}
+
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredObjectNavigationForSnowflake(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
 {
