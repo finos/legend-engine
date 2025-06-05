@@ -75,7 +75,7 @@ public class TestMemSqlFunctionGenerator
     @Test
     public void testNoParamActivator()
     {
-        MemSqlFunctionArtifact artifact = generateForActivator("egress::alloy::memsqlTest::activators::DemoMemSqlFunction", this.pureModel);
+        MemSqlFunctionArtifact artifact = generateForActivator("demo::activators::DemoMemSqlFunction", this.pureModel);
         String expected = "DEMOFUNCTION1() RETURNS TABLE AS RETURN select `root`.APP_NAME as `App Name`, `root`.SQL_FRAGMENT as `Query`, `root`.OWNER as `Owner`, `root`.VERSION_NUMBER as `Version`, `root`.DESCRIPTION as `Doc` from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as `root`;";
         Assert.assertEquals(expected, ((MemSqlFunctionContent)artifact.content).sqlExpressions.get(0));
     }
@@ -83,7 +83,7 @@ public class TestMemSqlFunctionGenerator
     @Test
     public void testParamActivator()
     {
-        MemSqlFunctionArtifact artifact = generateForActivator("egress::alloy::memsqlTest::activators::DemoMemSqlFunctionWithParam", this.pureModel);
+        MemSqlFunctionArtifact artifact = generateForActivator("demo::activators::DemoMemSqlFunctionWithParam", this.pureModel);
         String expected = "DEMOFUNCTION2(nameLength INT,nameStart VARCHAR(255)) RETURNS TABLE AS RETURN select `root`.APP_NAME as `App Name`, `root`.SQL_FRAGMENT as `Query`, `root`.OWNER as `Owner`, `root`.VERSION_NUMBER as `Version`, `root`.DESCRIPTION as `Doc` from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as `root` where (char_length(`root`.APP_NAME) > nameLength and `root`.APP_NAME like 'nameStar%');";
         Assert.assertEquals(expected, ((MemSqlFunctionContent)artifact.content).sqlExpressions.get(0));
     }
