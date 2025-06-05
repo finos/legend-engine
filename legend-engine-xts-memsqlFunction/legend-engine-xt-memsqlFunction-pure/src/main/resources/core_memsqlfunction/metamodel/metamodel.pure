@@ -4,7 +4,6 @@ Class meta::external::function::activator::memSqlFunction::MemSqlFunction extend
 {
   functionName : String[1];
   description : String[0..1];
-  owner : String[0..1];
 }
 
 Class meta::external::function::activator::memSqlFunction::MemSqlFunctionDeploymentConfiguration extends DeploymentConfiguration
@@ -22,5 +21,4 @@ Class meta::protocols::pure::vX_X_X::metamodel::function::activator::memSqlFunct
 {
   functionName : String[1];
   description : String[0..1];
-  owner : String[0..1];
 }

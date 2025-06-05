@@ -14,6 +14,8 @@ identifier:     VALID_STRING | STRING |
                 MEMSQL_FUNCTION__FUNCTION |
                 MEMSQL_FUNCTION__OWNER |
                 MEMSQL_FUNCTION__ACTIVATION|
+                MEMSQL_FUNCTION__DEPLOYMENT |
+                MEMSQL_FUNCTION__DEPLOYMENT_ID |
                 CONFIGURATION| DEPLOYMENT_STAGE
                 | ACTIVATION_CONNECTION |
                 ALL |
@@ -33,7 +35,7 @@ memSqlFunction:               MEMSQL_FUNCTION stereotypes? taggedValues? qualifi
                                                 functionName
                                                 | description
                                                 | function
-                                                | owner
+                                                | ownership
                                                 | activation
                                             )*
                                         BRACE_CLOSE;
@@ -49,7 +51,11 @@ description:                    MEMSQL_FUNCTION__DESCRIPTION COLON STRING SEMI_C
 
 function:                       MEMSQL_FUNCTION__FUNCTION COLON functionIdentifier SEMI_COLON;
 
-owner :                         MEMSQL_FUNCTION__OWNER COLON STRING SEMI_COLON;
+ownership :                         MEMSQL_FUNCTION__OWNER COLON
+                                    MEMSQL_FUNCTION__DEPLOYMENT
+                                         BRACE_OPEN
+                                             MEMSQL_FUNCTION__DEPLOYMENT_ID COLON STRING
+                                         BRACE_CLOSE SEMI_COLON;
 
 activation:                     MEMSQL_FUNCTION__ACTIVATION COLON qualifiedName SEMI_COLON ;
 

@@ -20,6 +20,7 @@ import org.finos.legend.engine.code.core.CoreFunctionActivatorCodeRepositoryProv
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunction;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
@@ -69,7 +70,7 @@ public class MemSqlFunctionCompilerExtension implements CompilerExtension
                     ._functionName(memSqlFunction.functionName)
                     ._function(func)
                     ._description(memSqlFunction.description)
-                    ._owner(memSqlFunction.owner)
+                    ._ownership(new Root_meta_external_function_activator_DeploymentOwnership_Impl("")._id(((DeploymentOwner)memSqlFunction.ownership).id))
                     ._activationConfiguration(memSqlFunction.activationConfiguration != null ? buildDeploymentConfig((MemSqlFunctionDeploymentConfiguration) memSqlFunction.activationConfiguration, context) : null);
         }
         catch (Exception e)

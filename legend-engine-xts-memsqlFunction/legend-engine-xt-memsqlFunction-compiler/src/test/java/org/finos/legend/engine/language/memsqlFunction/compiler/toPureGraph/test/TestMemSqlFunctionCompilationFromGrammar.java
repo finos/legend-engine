@@ -30,13 +30,14 @@ public class TestMemSqlFunctionCompilationFromGrammar extends TestCompilationFro
                 "{" +
                 "   functionName : 'name';\n" +
                 "   function : a::f():String[1];" +
+                "   ownership : Deployment { identifier: 'testDeployment' };" +
                 "}\n";
     }
 
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:32]: Duplicated element 'anything::Name'";
+        return "COMPILATION error at [5:1-7:91]: Duplicated element 'anything::Name'";
     }
 
     @Test
@@ -49,6 +50,7 @@ public class TestMemSqlFunctionCompilationFromGrammar extends TestCompilationFro
                         "{" +
                         "   functionName : 'name';\n" +
                         "   function : a::f():String[1];" +
+                        "   ownership : Deployment { identifier: 'testDeployment' };" +
                         "}\n", null);
     }
 
@@ -62,6 +64,7 @@ public class TestMemSqlFunctionCompilationFromGrammar extends TestCompilationFro
                         "{" +
                         "   functionName : 'name';\n" +
                         "   function : a::fz():String[1];" +
-                        "}\n", " at [3:1-5:33]: Error in 'app::pack::MyApp': org.finos.legend.engine.shared.core.operational.errorManagement.EngineException: Can't find the packageable element 'a::fz__String_1_'");
+                        "   ownership : Deployment { identifier: 'testDeployment' };" +
+                        "}\n", " at [3:1-5:92]: Error in 'app::pack::MyApp': org.finos.legend.engine.shared.core.operational.errorManagement.EngineException: Can't find the packageable element 'a::fz__String_1_'");
     }
 }
