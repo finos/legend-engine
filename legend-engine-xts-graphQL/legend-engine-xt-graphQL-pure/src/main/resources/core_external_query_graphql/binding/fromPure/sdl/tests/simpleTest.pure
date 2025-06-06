@@ -67,6 +67,34 @@ Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Clas
   strictDate: StrictDate[1];
 }
 
+Class <<typemodifiers.abstract>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::TopType
+{
+  float: Float[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::AbstractClass extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::TopType
+{
+  string: String[1];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::SpecializationOfAbstractClass extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::AbstractClass
+{
+  integer: Integer[1];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::ClassWithSpecializationOfAbstractClassAsProperty
+{
+  boolean: Boolean[1];
+  abstractClass: AbstractClass[1];
+}
+
+Class <<GraphQL.Query>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::QueryAbstract
+{
+  allAbstractClass(){AbstractClass.all()->first()}:AbstractClass[0..1];
+  allSpecializationOfAbstractClass(){SpecializationOfAbstractClass.all()->first()}:SpecializationOfAbstractClass[0..1];
+  allClassWithSpecializationOfAbstractClassAsProperty(){ClassWithSpecializationOfAbstractClassAsProperty.all()->first()}:ClassWithSpecializationOfAbstractClassAsProperty[0..1];
+}
+
 Class <<GraphQL.Mutation>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::MutationPrimitive
 {
   // Dummy implementation
@@ -833,6 +861,45 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     'schema {\n' +
     '  query : QueryHierarchy\n' +
     '  mutation : MutationHierarchy\n' +
+    '}',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testAbstractTypes():Boolean[1]
+{
+  let res = typesToGraphQLStringWithoutDynamicFilter([ClassWithSpecializationOfAbstractClassAsProperty, SpecializationOfAbstractClass, AbstractClass, QueryAbstract, TopType]);
+
+  assertEquals(
+    'interface AbstractClass implements TopType {\n' +
+    '  string: String!\n' +
+    '  float: Float!\n' +
+    '}\n' + 
+    '\n' +
+    'type ClassWithSpecializationOfAbstractClassAsProperty {\n' +
+    '  boolean: Boolean!\n' +
+    '  abstractClass: AbstractClass!\n' +
+    '}\n' +
+    '\n' +
+    'type QueryAbstract {\n' +
+    '  allAbstractClass: AbstractClass\n' +
+    '  allSpecializationOfAbstractClass: SpecializationOfAbstractClass\n' +
+    '  allClassWithSpecializationOfAbstractClassAsProperty: ClassWithSpecializationOfAbstractClassAsProperty\n' +
+    '}\n' +
+    '\n' +
+    'type SpecializationOfAbstractClass implements AbstractClass & TopType @extends(class: "AbstractClass") {\n' +
+    '  integer: Int!\n' +
+    '  string: String!\n' +
+    '  float: Float!\n' +
+    '}\n' +
+    '\n' +
+    'interface TopType {\n' +
+    '  float: Float!\n' +
+    '}\n' +
+    '\n' +
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT\n' +
+    '\n' +
+    'schema {\n' +
+    '  query : QueryAbstract\n' +
     '}',
     $res);
 }
