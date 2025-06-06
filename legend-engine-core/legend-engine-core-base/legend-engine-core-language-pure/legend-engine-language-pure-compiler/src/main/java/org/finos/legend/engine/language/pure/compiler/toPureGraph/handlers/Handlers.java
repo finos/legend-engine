@@ -1961,8 +1961,9 @@ public class Handlers
         register(m(m(h("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))),
                 m(h("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> ps.size() == 1))));
 
-        register(m(m(h("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", false, ps -> res("meta::pure::functions::math::wavgUtility::WavgRowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number"))),
-                m(h("meta::pure::functions::math::mathUtility::rowMapper_Number_$0_1$__Number_$0_1$__RowMapper_1_", false, ps -> res("meta::pure::functions::math::mathUtility::RowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")))));
+        register(h("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", false, ps -> res("meta::pure::functions::math::wavgUtility::WavgRowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")));
+
+        register(h("meta::pure::functions::math::mathUtility::rowMapper_Number_$0_1$__Number_$0_1$__RowMapper_1_", false, ps -> res("meta::pure::functions::math::mathUtility::RowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")));
 
         register(h("meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_", false, ps -> res("Number", "one")));
 
