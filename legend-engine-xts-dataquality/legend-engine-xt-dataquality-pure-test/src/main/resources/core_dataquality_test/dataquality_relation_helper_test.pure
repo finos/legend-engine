@@ -86,3 +86,22 @@ function <<test.Test>> meta::external::dataquality::tests::rowCountEqual():Boole
    $rel->meta::external::dataquality::rowCountEqual(3)->assert();
 }
 
+function <<test.Test>> meta::external::dataquality::tests::assertRelationEmptyWhenEmpty():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+
+              #;
+
+   $rel->meta::external::dataquality::assertRelationEmpty(~[val]);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::assertRelationNotEmptyWhenNotEmpty():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                123, name
+              #;
+
+   $rel->meta::external::dataquality::assertRelationNotEmpty();
+}
