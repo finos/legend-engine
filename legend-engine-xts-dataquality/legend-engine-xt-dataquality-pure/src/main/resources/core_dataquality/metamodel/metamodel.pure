@@ -65,5 +65,5 @@ Class meta::external::dataquality::RelationValidation
   name: String[1];
   description: String[0..1];
   assertion: LambdaFunction<Any>[1];
-  type: String[1];
+  type: String[0..1];
 }

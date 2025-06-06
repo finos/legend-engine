@@ -144,8 +144,51 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "   {\n" +
                 "     name: 'testValidation';\n" +
                 "     description: 'test validation';\n" +
-                "     assertion: rel|$rel->size() > 0;\n" +
+                "     assertion: rel|$rel->relationNotEmpty();\n" +
                 "     type: AGGREGATE;\n" +
+                "    }\n" +
+                "   ];\n" +
+                "}\n");
+
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "   validations: [\n" +
+                "   {\n" +
+                "     name: 'testValidation';\n" +
+                "     description: 'test validation';\n" +
+                "     assertion: rel|$rel->relationNotEmpty();\n" +
+                "    }\n" +
+                "   ];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testRelationValidation_query_params()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "   query: name: String[1]|#>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "   validations: [\n" +
+                "   {\n" +
+                "     name: 'testValidation';\n" +
+                "     description: 'test validation';\n" +
+                "     assertion: {name: String[1], rel|$rel->relationNotEmpty()};\n" +
+                "    }\n" +
+                "   ];\n" +
+                "}\n");
+
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "   query: {name: String[1], businessDate: Date[1]|#>{my::Store.myTable}#->filter(c|$c.name == 'ok')};\n" +
+                "   validations: [\n" +
+                "   {\n" +
+                "     name: 'testValidation';\n" +
+                "     description: 'test validation';\n" +
+                "     assertion: {businessDate: Date[1], rel|$rel->relationNotEmpty()};\n" +
                 "    }\n" +
                 "   ];\n" +
                 "}\n");
