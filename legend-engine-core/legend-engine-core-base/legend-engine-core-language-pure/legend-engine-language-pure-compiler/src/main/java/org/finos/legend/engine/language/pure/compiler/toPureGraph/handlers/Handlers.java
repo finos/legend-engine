@@ -1959,7 +1959,9 @@ public class Handlers
         );
 
         register(m(m(h("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))),
-                m(h("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
+                m(h("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> ps.size() == 1))));
+
+        register(h("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", false, ps -> res("meta::pure::functions::math::wavgUtility::WavgRowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")));
 
         register(h("meta::pure::functions::math::mathUtility::rowMapper_Number_$0_1$__Number_$0_1$__RowMapper_1_", false, ps -> res("meta::pure::functions::math::mathUtility::RowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")));
 
@@ -2517,6 +2519,7 @@ public class Handlers
         map.put("cov_Float", Sets.mutable.with("Float", "Float4", "Double", "Nil"));
         map.put("cov_Decimal", Sets.mutable.with("Decimal", "Numeric", "Nil"));
         map.put("cov_mathUtility_RowMapper", Sets.mutable.with("RowMapper", "Nil"));
+        map.put("cov_wavgUtility_WavgRowMapper", Sets.mutable.with("WavgRowMapper", "RowMapper", "Nil"));
         map.put("cov_relation_Relation", Sets.mutable.with("Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor", "TDSRelationAccessor", "Nil"));
         map.put("cov_relation_ColSpec", Sets.mutable.with("ColSpec", "Nil"));
         map.put("cov_relation__Window", Sets.mutable.with("_Window", "Nil"));
@@ -3003,8 +3006,9 @@ public class Handlers
         map.put("meta::pure::functions::math::corr_Number_MANY__Number_MANY__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::corr_RowMapper_MANY__Number_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_mathUtility_RowMapper").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::mathUtility::rowMapper_Number_$0_1$__Number_$0_1$__RowMapper_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchZeroOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchZeroOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_Number").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_Number").contains(ps.get(1)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_mathUtility_RowMapper").contains(ps.get(0)._genericType()._rawType()._name())); 
+        map.put("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_wavgUtility_WavgRowMapper").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::bitNot_Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(1)._genericType()._rawType()._name()));
