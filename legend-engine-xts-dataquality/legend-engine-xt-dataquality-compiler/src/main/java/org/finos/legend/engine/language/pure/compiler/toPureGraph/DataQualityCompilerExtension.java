@@ -86,12 +86,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers.SelectColInference;
+
 public class DataQualityCompilerExtension implements CompilerExtension
 {
 
     private static final String RELATION_ROW_LEVEL_VAL_TYPE = "ROW_LEVEL";
     private static final String RELATION_ASSERTION_INPUT_PARAM = "rel";
-    private static final ImmutableSet<String> ASSERTION_END_PERMITTED_FUNC_NAMES = Sets.immutable.of("relationEmpty", "relationNotEmpty");
+    private static final ImmutableSet<String> ASSERTION_END_PERMITTED_FUNC_NAMES = Sets.immutable.of("assertRelationEmpty", "assertRelationNotEmpty");
 
     @Override
     public MutableList<String> group()
@@ -263,7 +265,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         if (!(assertion._expressionSequence().getLast() instanceof  Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) || !ASSERTION_END_PERMITTED_FUNC_NAMES.contains(((Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) assertion._expressionSequence().getLast())._functionName))
         {
-            throw new EngineException("Assertion should end in either relationEmpty or relationNotEmpty functions", relationalValidation.assertion.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Assertion should end in either assertRelationEmpty or assertRelationNotEmpty functions", relationalValidation.assertion.sourceInformation, EngineErrorType.COMPILATION);
         }
     }
 
@@ -492,6 +494,8 @@ public class DataQualityCompilerExtension implements CompilerExtension
                 Lists.mutable.with(
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::relationEmpty_Relation_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 1 && handlers.typeOne(ps.get(0), "Relation")))),
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::relationNotEmpty_Relation_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 1 && handlers.typeOne(ps.get(0), "Relation")))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.grp(SelectColInference, handlers.h("meta::external::dataquality::assertRelationEmpty_Relation_1__ColSpecArray_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> true))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::assertRelationNotEmpty_Relation_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 1 && handlers.typeOne(ps.get(0), "Relation")))),
                         // row count
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountGreaterThan_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.mutable.with("Number", "Integer", "Float", "Decimal"))))),
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountGreaterThanEqual_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.mutable.with("Number", "Integer", "Float", "Decimal"))))),
