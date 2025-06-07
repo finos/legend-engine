@@ -1,0 +1,325 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::query::sql::metamodel::extension::*;
+import meta::external::query::sql::metamodel::extension::tests::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::decimalLiteralNodeProcessor_default(): NodeProcessor<DecimalLiteral>[1]
+{
+  nodeProcessor(
+    DecimalLiteral,
+    {sqlDialect, d, state, config | 
+      $d.value->toString()
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::dateLiteralNodeProcessor_default(): NodeProcessor<DateLiteral>[1]
+{
+  nodeProcessor(
+    DateLiteral,
+    {sqlDialect, d, state, config |
+      // TODO: use keyword() instead
+      'DATE \'' + $d.value->convertDateToSqlString($config.dbConfig.dbTimeZone) + '\''
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::timestampLiteralNodeProcessor_default(): NodeProcessor<TimestampLiteral>[1]
+{
+  nodeProcessor(
+    TimestampLiteral,
+    {sqlDialect, t, state, config |
+      // TODO: use keyword() instead
+      'TIMESTAMP \'' + $t.value->convertDateToSqlString($config.dbConfig.dbTimeZone) + '\''
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::partialDateLiteralNodeProcessor_default(): NodeProcessor<PartialDateLiteral>[1]
+{
+  nodeProcessor(
+    PartialDateLiteral,
+    {sqlDialect, d, state, config |
+      // TODO: use keyword() instead 
+      'DATE \'' + $d.value->convertDateToSqlString($config.dbConfig.dbTimeZone) + '\''
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processedStringLiteralNodeProcessor_default(): NodeProcessor<ProcessedStringLiteral>[1]
+{
+  nodeProcessor(
+    ProcessedStringLiteral,
+    {sqlDialect, s, state, config | $s.value->addQuotes($sqlDialect)},
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::createTestTableProcessor_default(): NodeProcessor<CreateTestTable>[1]
+{
+  nodeProcessor(
+    CreateTestTable,
+    {sqlDialect, c, state, config |
+      $sqlDialect->keyword('create', $state, $config) +
+      if($c.isTempTable, | ' ' + $sqlDialect->keyword('temporary', $state, $config) + ' ', |' ') +
+      $sqlDialect->keyword('table', $state, $config) + ' ' +
+      $sqlDialect->executeIdentifierProcessor($c.tableName, $config.dbConfig.quoteIdentifiers, $state, $config) +
+      ' (' + $state.separatorIfPretty(1, $config) +
+      $c.columns->map(c|$sqlDialect->executeIdentifierProcessor($c.first, $config.dbConfig.quoteIdentifiers, $state, $config) + ' ' + $c.second.name)->joinStrings(',' + $state.separator(1, $config)) + $state.separatorIfPretty(0, $config) +
+      ')';
+    }
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::dropTestTableProcessor_default(): NodeProcessor<DropTestTable>[1]
+{
+  nodeProcessor(
+    DropTestTable,
+    {sqlDialect, d, state, config |
+      $sqlDialect->keyword('drop', $state, $config) + ' ' + $sqlDialect->keyword('table', $state, $config) + ' ' + 
+      $sqlDialect->keyword('if', $state, $config) + ' ' + $sqlDialect->keyword('exists', $state, $config) + ' ' +
+      $sqlDialect->executeIdentifierProcessor($d.tableName, $config.dbConfig.quoteIdentifiers, $state, $config)
+    }
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::insertIntoTestTableProcessor_default(): NodeProcessor<InsertIntoTestTable>[1]
+{
+  nodeProcessor(
+    InsertIntoTestTable,
+    {sqlDialect, i, state, config |
+      let sep0 = $state.separator(0, $config);
+
+      $sqlDialect->keyword('insert', $state, $config) + ' ' + $sqlDialect->keyword('into', $state, $config) + ' ' + $sqlDialect->executeIdentifierProcessor($i.tableName, $config.dbConfig.quoteIdentifiers, $state, $config) + $sep0 +
+      '(' + $i.columns->map(c| $sqlDialect->executeIdentifierProcessor($c, $config.dbConfig.quoteIdentifiers, $state, $config))->joinStrings(', ') + ')' +
+      $sep0 + $sqlDialect->keyword('values', $state, $config) + $sep0 +
+      $i.values->map(row|$row->rowMapper($sqlDialect, $state, $config))->joinStrings(',' +  $sep0);
+    }
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::rowMapper(row: List<Any>[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  $row.values->map(v| $sqlDialect->executeNodeProcessor($v->cast(@Literal), $state, $config))->joinStrings('(', ', ', ')') ;
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::existsPredicateProcessor_default(): NodeProcessor<ExistsPredicate>[1]
+{
+  nodeProcessor(
+    ExistsPredicate,
+    {sqlDialect, e, state, config |
+      $sqlDialect->keyword('exists', $state, $config) + $sqlDialect->executeNodeProcessor($e.query, $state, $config);
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::allColumnsReferenceNodeProcessor_default(): NodeProcessor<AllColumnsReference>[1]
+{
+  nodeProcessor(
+    AllColumnsReference,
+    {sqlDialect, a, state, config | 
+      '*';
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForStartsWith(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  processorForStartsWith($f, [], $sqlDialect, $state, $config);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForStartsWith(f:FunctionCall[1], escape:String[0..1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  processorForStringMatch($f, '%s%%', $escape, $sqlDialect, $state, $config);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForEndsWith(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  processorForEndsWith($f, [], $sqlDialect, $state, $config);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForEndsWith(f:FunctionCall[1], escape:String[0..1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  processorForStringMatch($f, '%%%s', $escape, $sqlDialect, $state, $config);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForContains(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  processorForContains($f, [], $sqlDialect, $state, $config);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForContains(f:FunctionCall[1], escape:String[0..1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let arg = $f.arguments->at(1)->match(
+    [
+      s:StringLiteral[1]| processorForStringMatch($f, '%%%s%%', $escape, $sqlDialect, $state, $config),
+      v:VariablePlaceholder[1]| processorForStringMatch($f, '%%%s%%', $escape, $sqlDialect, $state, $config),
+      e:meta::external::query::sql::metamodel::Expression[1]| 
+          let predicate = ^FunctionCall(name = ^QualifiedName(parts = 'concat'), arguments = [literal('%%'), $e, literal('%%')])->inferTypes($config.functionRegistry);
+          $f.arguments->at(0)->processAsLikePredicate($predicate, $escape, $sqlDialect, $state, $config);
+    ]
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForStringMatch(f:FunctionCall[1], format:String[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  processorForStringMatch($f, $format, [], $sqlDialect, $state, $config)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForStringMatch(f:FunctionCall[1], format:String[1], escape:String[0..1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let arg = $f.arguments->at(1)->match(
+    [
+      s: StringLiteral[1]| $sqlDialect->executeNodeProcessor($s, $state, $config)->removeQuotes($sqlDialect)->escapeLikePattern_default(),
+      v: VariablePlaceholder[1]| $sqlDialect->executeNodeProcessor($v, $state, $config)->removeQuotes($sqlDialect)
+    ]
+  );
+  let pattern = ^ProcessedStringLiteral(value = $format->format($arg));
+  $f.arguments->at(0)->processAsLikePredicate($pattern, $escape, $sqlDialect, $state, $config);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processAsLikePredicate(value:meta::external::query::sql::metamodel::Expression[1], pattern:meta::external::query::sql::metamodel::Expression[1], escape:String[0..1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let likePredicate = ^LikePredicate(pattern = $pattern, value = $value, escape = $escape->map(e | ^StringLiteral(value = $e)));
+  $sqlDialect->executeNodeProcessor($likePredicate, $state, $config);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::tablePlaceholderProcessor_default(): NodeProcessor<TablePlaceholder>[1]
+{
+  nodeProcessor(
+    TablePlaceholder,
+    {sqlDialect, t, state, config | '(${' + $t.name + '})'},
+    {n: TablePlaceholder[1] | true}
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::inClauseVariablePlaceholderProcessor_default(): NodeProcessor<InClauseVariablePlaceholder>[1]
+{
+  nodeProcessor(
+    InClauseVariablePlaceholder,
+    {sqlDialect, i, state, config | '${' + $i.name + '}'},
+    {n: InClauseVariablePlaceholder[1] | true}
+  ); 
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::variablePlaceholderProcessor_default(): NodeProcessor<VariablePlaceholder>[1]
+{
+  nodeProcessor(
+    VariablePlaceholder,
+    {sqlDialect, v, state, config | 
+      let type = $v.type;
+      let isPossibleDateTimeType = ['Date', 'DateTime', 'StrictDate']->contains($type);
+      let resolvedPlaceHolder = $v.name;
+      let dbTimeZone = $config.dbConfig.dbTimeZone;
+      let possiblyApplyDateTzFunction = if($isPossibleDateTimeType,| processDatePlaceHolder($resolvedPlaceHolder, $dbTimeZone),| $resolvedPlaceHolder);
+      let replacePairs = if($type == 'String', | pair('\'', $sqlDialect.literalQuoteConfig.escape), | []->cast(@Pair<String, String>));
+      let info = $sqlDialect.variablePlaceholderPrefixSuffixMap->get($type)->defaultIfEmpty(pair('', ''))->toOne();
+      let prefix = $info.first;
+      let suffix = $info.second;
+      if($v->isCollectionPlaceHolder(),
+        | if($resolvedPlaceHolder == $possiblyApplyDateTzFunction,
+            | '${renderCollection('+ $resolvedPlaceHolder + ' \",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + if($replacePairs->isEmpty(), |'{} ', |$replacePairs->map(kv | '\"' + $kv.first + '\" : \"' + $kv.second + '\" ')->joinStrings('{', ', ', '} ')) + placeHolderDefaultValue() +')}',
+            | '${renderCollectionWithTz('+ $resolvedPlaceHolder + ' "['+ $dbTimeZone->toOne() + ']" ' + '\",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}'
+          ),
+        | if($v->isOptionalPlaceHolder(),
+            | if($v.isEnum->isTrue(), 
+                |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"\'\" \"\'\" {} '+ placeHolderDefaultValue()+')}',
+                |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"' + $prefix + '\" \"'+ $suffix + '\" ' + if($replacePairs->isEmpty(), |'{} ', |$replacePairs->map(kv | '\"' + $kv.first + '\" : \"' + $kv.second + '\"')->joinStrings('{', ', ', '} ')) + placeHolderDefaultValue()+')}'
+              ),
+            | if($v.isEnum->isTrue(),
+                |$prefix + '\'${' + $possiblyApplyDateTzFunction + '}\'' + $suffix,
+                |$prefix + '${' + $possiblyApplyDateTzFunction + if($replacePairs->isEmpty(), |'', |$replacePairs->map(kv | '?replace(\"' + $kv.first + '\", \"' + $kv.second + '\")')->joinStrings()) + '}' + $suffix;
+              )
+          )
+      );
+    },
+    {n: VariablePlaceholder[1] | true}
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::processDatePlaceHolder(dateParameter:String[1], dbTimeZone:String[0..1]): String[1]
+{
+  let isNonSystemTz = $dbTimeZone->isNotEmpty() && !meta::pure::functions::date::systemDefaultTimeZones()->contains($dbTimeZone->toOne());
+  if($isNonSystemTz,
+    | 'GMTtoTZ( "[' + $dbTimeZone->toOne() + ']" ' + $dateParameter + ')',
+    | $dateParameter
+  );
+}
+
+function<<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::isOptionalPlaceHolder(v:VariablePlaceholder[1]):Boolean[1]
+{
+  $v.multiplicityLowerBound->isNotEmpty() && ($v.multiplicityLowerBound->toOne() == 0);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::isCollectionPlaceHolder(v:VariablePlaceholder[1]):Boolean[1]
+{
+  $v.multiplicityLowerBound->isNotEmpty() && ($v.multiplicityLowerBound->toOne() == 0) && $v.multiplicityUpperBound->isEmpty();
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::placeHolderDefaultValue():String[1]
+{
+  '\"null\"';
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::freeMarkerOperationProcessor_default(): NodeProcessor<FreeMarkerOperation>[1]
+{
+  nodeProcessor(
+    FreeMarkerOperation,
+    {sqlDialect, f, state, config | 
+      let processedParams = $f.parameters->map(p | $p->match([
+        f:FreeMarkerOperation[1]    | $sqlDialect->executeNodeProcessor($f, ^$state(nestedFreeMarkerOperation = true), $config),
+        s:StringLiteral[1]          | $s.value,
+        s:ProcessedStringLiteral[1] | $s.value;,
+        n:Node[1]                   | '\'' + $sqlDialect->executeNodeProcessor($n, ^$state(nestedFreeMarkerOperation = false), $config)->replace('\'', '\\\'') + '\'';
+      ]));
+
+      if($state.nestedFreeMarkerOperation,
+        | format($f.template, $processedParams),
+        | if($f.template->contains('enumMap_') || $f.template->startsWith('equalEnumOperationSelector') || $f.template->startsWith('number'),
+          | '${' + format($f.template, $processedParams) + '}',
+          | '(${' + format($f.template, $processedParams) + '})'
+        )
+      );
+    },
+    {n: FreeMarkerOperation[1] | true}
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::mapToDBUnitType(unit:String[1], sqlDialect:SqlDialect[1]):String[1]
+{
+  let unitWithoutQuotes = $unit->removeQuotes($sqlDialect);
+  [
+    pair(TemporalUnit.YEAR->toString(), 'year'),
+    pair(TemporalUnit.MONTH->toString(), 'month'),
+    pair(TemporalUnit.WEEK->toString(), 'week'),
+    pair(TemporalUnit.DAY->toString(), 'day'),
+    pair(TemporalUnit.HOUR->toString(), 'hour'),
+    pair(TemporalUnit.MINUTE->toString(), 'minute'),
+    pair(TemporalUnit.SECOND->toString(), 'second'),
+    pair(TemporalUnit.MILLISECOND->toString(), 'millisecond'),
+    pair(TemporalUnit.MICROSECOND->toString(), 'microsecond')
+  ]->filter(p | $p.first == $unitWithoutQuotes->toUpper()).second->toOne('Unit not found: ' + $unitWithoutQuotes);
+}

@@ -1,3 +1,4 @@
+import meta::relational::extension::*;
 import meta::relational::metamodel::relation::*;
 import meta::pure::extension::*;
 import meta::relational::metamodel::join::*;
@@ -63,7 +64,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::loadValuesToDbTableForH2(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
 {
-  if($l.absolutePathToFile->isNotEmpty(),| 'INSERT INTO ' + $l.table->tableToString($dbConfig) + ' SELECT * FROM CSVREAD(\''+$l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + '\');'
+  if($l.absolutePathToFile->isNotEmpty(),| 'INSERT INTO ' + $l.table->tableToString($dbConfig) + ' SELECT * FROM CSVREAD(\''+$l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, relationalExtensions()) + '\');'
                               ,| $l->meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault($dbConfig))
 }
 

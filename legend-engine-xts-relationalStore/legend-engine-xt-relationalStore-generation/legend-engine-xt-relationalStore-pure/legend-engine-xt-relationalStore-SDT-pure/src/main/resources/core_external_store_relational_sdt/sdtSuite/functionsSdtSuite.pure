@@ -16,18 +16,22 @@ import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sdt::framework::*;
+import meta::external::store::relational::sdt::suite::functions::*;
 
 function <<SDT.test>> meta::external::store::relational::sdt::suite::functions::functionsSdtTests(): SqlDialectTest[*]
 {
-  meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()->values()->map({sf |
-    let functionName = $sf.name->joinStrings('.');
-    let tests = $sf.tests;
-    let testCount = $tests->size();
-    $testCount->range()->map(i| let test = $tests->at($i);
-                                let functionCallsInQuery = nodeCollector($test.query)->filter(n | $n->instanceOf(FunctionCall))->cast(@FunctionCall);
-                                assert($functionCallsInQuery->map(f|$f.name.parts->joinStrings('.'))->contains($functionName), 'SqlFunctionTest query at index ' + toString($i) + ' for function "' + $functionName + '" doesn\'t contain a call to ' + $functionName + '!');
-                                let testId = 'FuncTests - ' + $functionName + '(' + toString($i) + '/' + toString($testCount-1) + ')';
-                                $test->testConfigForSqlFunctionTest($testId);
-                            );
-  });
+  sqlFunctionRegistry()->values()->map(f | functionSdtTests($f));
+}
+
+function meta::external::store::relational::sdt::suite::functions::functionSdtTests(function:SqlFunction[1]): SqlDialectTest[*]
+{
+  let functionName = $function.name->joinStrings('.');
+  let testCount = $function.tests->size();
+  $testCount->range()->map(i| 
+    let test = $function.tests->at($i);
+    let functionCallsInQuery = nodeCollector($test.query)->filter(n | $n->instanceOf(FunctionCall))->cast(@FunctionCall);
+    assert($functionCallsInQuery->map(f|$f.name.parts->joinStrings('.'))->contains($functionName), 'SqlFunctionTest query at index ' + toString($i) + ' for function "' + $functionName + '" doesn\'t contain a call to ' + $functionName + '!');
+    let testId = 'FuncTests - ' + $functionName + '(' + toString($i) + '/' + toString($testCount-1) + ')';
+    $test->testConfigForSqlFunctionTest($testId);
+  );
 }

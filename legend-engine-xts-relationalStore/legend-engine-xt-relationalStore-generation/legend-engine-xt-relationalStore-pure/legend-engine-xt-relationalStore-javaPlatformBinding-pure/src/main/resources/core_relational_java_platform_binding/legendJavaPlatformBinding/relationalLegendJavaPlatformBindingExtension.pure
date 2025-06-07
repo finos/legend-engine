@@ -157,17 +157,16 @@ function meta::relational::executionPlan::platformBinding::legendJava::relationa
 
 function meta::relational::executionPlan::platformBinding::legendJava::relationalExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::format::shared::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
 {
-   [
-      meta::relational::extension::relationalExtension(),
-      meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - InMemory, Relational, ExternalFormatCore, ' + $externalFormatDescriptors->map(fd | 'ExternalFormat' + $fd.externalFormatContract.id)->joinStrings(', '), [
-         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
-            meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
-            meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension(),
-            meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
-            meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension($externalFormatDescriptors)
-         ])
-      ]) 
-   ]  
+  meta::relational::extension::relationalExtensions()->concatenate(
+    meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - InMemory, Relational, ExternalFormatCore, ' + $externalFormatDescriptors->map(fd | 'ExternalFormat' + $fd.externalFormatContract.id)->joinStrings(', '), [
+        meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+          meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
+          meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension(),
+          meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
+          meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension($externalFormatDescriptors)
+        ])
+    ]) 
+  )
 }
 
 function meta::relational::executionPlan::platformBinding::legendJava::relationalExtensionJavaPlatformBinding(): Extension[1]

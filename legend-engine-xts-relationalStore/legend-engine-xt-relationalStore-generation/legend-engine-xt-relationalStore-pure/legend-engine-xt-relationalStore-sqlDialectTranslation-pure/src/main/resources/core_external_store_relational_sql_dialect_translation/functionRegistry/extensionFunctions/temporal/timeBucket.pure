@@ -1,0 +1,52 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class {sqlFunctionInfo.initializer = 'timeBucket'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::TimeBucket extends ExtensionSqlFunction
+[
+  $this.name == 'time_bucket'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::timeBucket(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::TimeBucket
+  (
+    name = 'time_bucket',
+    documentation = 'Truncate Date/Timestamp to a grid of width from an offset.',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractTemporalSqlType, AbstractIntegerSqlType, AbstractStringSqlType],
+        returnType = AbstractTemporalSqlType
+      )
+    ],
+    tests = [
+      sqlFunctionTest(
+        simpleFunctionCall('time_bucket', [cast(literal('1992-04-20'), 'DATE'), literal(10) , literal(DurationUnit.DAYS->toString())]),
+         %1992-04-15T00:00:00.000000000+0000
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('time_bucket', [cast(literal('2024-01-31 23:22:09'), 'TIMESTAMP'), literal(2) , literal(DurationUnit.HOURS->toString())]),
+         %2024-01-31T22:00:00.000000000+0000
+      )      
+    ]
+  )
+}
+

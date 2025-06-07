@@ -1,0 +1,561 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::functions::toPostgresModel::tests::TestDb
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    FIRMID INTEGER,
+    ADDRESSID INTEGER
+  )
+
+  Table firmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100)
+  )
+
+  Table addressTable
+  (
+    ID INT PRIMARY KEY, 
+    NAME VARCHAR(200),
+    STREETID VARCHAR(100) 
+  )
+
+  Schema testSchema (
+    Table personTable1
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      FIRMID INTEGER,
+      ADDRESSID INTEGER
+    )
+  )
+
+  Join Firm_Person(firmTable.ID = personTable.FIRMID)
+  Join Address_Person(addressTable.ID = personTable.ADDRESSID)
+)
+
+###Mapping
+import meta::relational::functions::toPostgresModel::tests::*;
+
+Mapping meta::relational::functions::toPostgresModel::tests::TestMapping
+(
+  Person: Relational
+  {
+    scope([TestDb])
+    (
+      id: personTable.ID,
+      firm: @Firm_Person,
+      address: @Address_Person
+    )
+  }
+)
+
+###Pure
+import meta::external::query::sql::metamodel::extension::*;
+import meta::relational::mapping::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::join::*;
+import meta::pure::router::clustering::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::external::query::sql::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::functions::sqlDialectTranslation::*;
+import meta::relational::functions::toPostgresModel::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::functions::toPostgresModel::tests::*;
+
+Class meta::relational::functions::toPostgresModel::tests::Person
+{
+  id: Integer[1];
+  firm: Firm[1];
+  address: Address[1];
+}
+
+Class meta::relational::functions::toPostgresModel::tests::Firm
+{
+  id: Integer[1];
+  legalName: String[1];
+}
+
+Class meta::relational::functions::toPostgresModel::tests::Address
+{
+  id: Integer[1];
+  name: String[1];
+}
+
+Enum meta::relational::functions::toPostgresModel::tests::TestEnum
+{
+  foo
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::tests::getTable(table:String[1]):meta::relational::metamodel::relation::Table[1]
+{
+  TestDb.schemas.tables->filter(t|$t.name == $table)->toOne();
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::tests::getColumn(table:String[1], column:String[1]):TableAliasColumnName[1]
+{
+  ^TableAliasColumnName(alias = ^TableAlias(name = 'root', relationalElement = getTable($table)), columnName = $column);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::tests::assertConversion(expected:Node[1], input:RelationalOperationElement[1]):Boolean[1]
+{
+  let actual = convertElement($input, newState());
+  assertEquals($expected, $actual);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::tests::assertConversion(expected:Node[1], input:RelationalOperationElement[1], state:ModelConversionState[1]):Boolean[1]
+{
+  assertEquals($expected, convertElement($input, $state));
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertTableAliasColumn(): Boolean[1]
+{
+  let table = getTable('firmTable');
+  let tac = ^TableAliasColumn(alias = ^TableAlias(name = 'root', relationalElement = $table), column = $table.columns->at(0)->cast(@Column));
+  assertConversion(^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])), $tac);
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertTableAliasColumnName(): Boolean[1]
+{
+  assertConversion(^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])), getColumn('firmTable', 'ID'));
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertColumnName(): Boolean[1]
+{
+  assertConversion(^QualifiedNameReference(name = ^QualifiedName(parts = 'ID')), ^ColumnName(name = 'ID'));
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertVarPlaceHolder(): Boolean[1]
+{
+  assertConversion(^InClauseVariablePlaceholder(name = 'ID'), ^VarPlaceHolder(name = 'ID', type = String));
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertVarSetPlaceHolder(): Boolean[1]
+{
+  assertConversion(^TablePlaceholder(name = 'ID'), ^VarSetPlaceHolder(varName = 'ID'));
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertVarCrossSetPlaceHolder(): Boolean[1]
+{
+  let crossSetImplementation = ^CrossSetImplementation(targetStore = TestDb, varName = 'ID', root = true, class = Person, parent = TestMapping, id = 'setId');
+  assertConversion(^TablePlaceholder(name = 'ID'), ^VarCrossSetPlaceHolder(varName = 'ID', schema = TestDb.schemas->first()->toOne(), crossSetImplementation = $crossSetImplementation, name = 'NAME'));
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertWindowColumn(): Boolean[1]
+{
+  let window = ^meta::relational::metamodel::Window(
+    partition = [getColumn('personTable', 'ID')], 
+    sortBy = ^SortByInfo(sortByElement = getColumn('personTable', 'ADDRESSID'), sortDirection = meta::relational::metamodel::SortDirection.ASC)
+  );
+  let windowColumn = ^WindowColumn(columnName = 'window', window = $window, func = ^DynaFunction(name = 'denseRank', parameters = []));
+
+  let expected = ^FunctionCall(
+    distinct = false, 
+    name = ^QualifiedName(parts = 'dense_rank'), 
+    window = ^meta::external::query::sql::metamodel::Window(
+      orderBy = ^SortItem(
+        sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ADDRESSID'])),
+        ordering = SortItemOrdering.ASCENDING,
+        nullOrdering = SortItemNullOrdering.UNDEFINED
+      ),
+      partitions = [
+        ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID']))
+      ]
+    )
+  );
+
+  assertConversion($expected, $windowColumn);
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertTabularFunction(): Boolean[1]
+{
+  let schema = TestDb.schemas->filter(s|$s.name == 'default')->toOne();
+
+  let expected = ^TableFunction(
+    functionCall = ^FunctionCall(
+      name = ^QualifiedName(parts = ['default', 'ID'])
+    )
+  );
+
+  assertConversion($expected, ^TabularFunction(schema = $schema, name = 'ID'));
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertDynaFnToLogicalExpression(): Boolean[1]
+{
+  let function = ^DynaFunction(
+    name = 'and', 
+    parameters = [
+      ^DynaFunction(name = 'greaterThan', parameters = [^meta::relational::metamodel::Literal(value = 101), ^meta::relational::metamodel::Literal(value = 102)]), 
+      ^meta::relational::metamodel::Literal(value = false)
+    ]
+  );
+
+  let expected = ^LogicalBinaryExpression(
+    type = LogicalBinaryType.AND,
+    left = ^ComparisonExpression(
+      operator = ComparisonOperator.GREATER_THAN, 
+      left = ^IntegerLiteral(value = 101), 
+      right = ^IntegerLiteral(value = 102)
+    ), 
+    right = ^BooleanLiteral(value = false)
+  );
+
+  assertConversion($expected, $function);
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertDynaFnToFunctionCall(): Boolean[1]
+{
+  assertConversion(^FunctionCall(name = ^QualifiedName(parts = 'sin')), ^DynaFunction(name = 'sin', parameters = []));
+
+  let function1 = ^DynaFunction(
+    name = 'ltrim', 
+    parameters = [
+      getColumn('firmTable', 'ID'), 
+      ^meta::relational::metamodel::Literal(value = ' ')
+    ]
+  );
+
+  let expected1 = ^FunctionCall(
+    name = ^QualifiedName(parts = 'ltrim'),
+    arguments = [
+      ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])),
+      ^StringLiteral(value = ' ')
+    ]
+  );
+
+  assertConversion($expected1, $function1);
+
+  let function2 = ^DynaFunction(
+    name = 'firstDayOfWeek', 
+    parameters = [
+      ^DynaFunction(
+        name = 'convertDate', 
+        parameters = [
+          getColumn('firmTable', 'ID'),
+          ^meta::relational::metamodel::Literal(value = 'YYYY-MM-DD')
+        ]
+      )
+    ]
+  );
+
+  let expected2 = ^Cast(
+    expression = ^FunctionCall(
+      name = ^QualifiedName(parts = 'date_trunc'),
+      arguments = [
+        ^StringLiteral(value = 'week'),
+        ^FunctionCall(
+          name = ^QualifiedName(parts = 'to_date'),
+          arguments = [
+            ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])),
+            ^StringLiteral(value = 'YYYY-MM-DD')
+          ]
+        )
+      ]
+    ), 
+    type = ^ColumnType(name = 'date')
+  );
+
+  assertConversion($expected2, $function2);
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertDynaFnToPredicate(): Boolean[1]
+{
+  assertConversion(^IsNullPredicate(value = ^StringLiteral(value = 'YYYY-MM-DD')), ^DynaFunction(name = 'isNull', parameters = ^meta::relational::metamodel::Literal(value = 'YYYY-MM-DD')));
+
+  let function = ^DynaFunction(
+    name = 'in', 
+    parameters = [
+      getColumn('firmTable', 'ID'),
+      ^LiteralList(values = [^meta::relational::metamodel::Literal(value = 1), ^meta::relational::metamodel::Literal(value = 2)])
+    ]
+  );
+
+  let expected = ^InPredicate(
+    value = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])), 
+    valueList = ^InListExpression(
+      values = [^IntegerLiteral(value = 1), ^IntegerLiteral(value = 2)]
+    )
+  );
+
+  assertConversion($expected, $function);
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertAlias(): Boolean[1]
+{
+  let alias1 = ^Alias(relationalElement = getTable('firmTable'), name = 'root');
+  let expected1 = ^AliasedRelation(
+    alias = '"root"',
+    relation = ^meta::external::query::sql::metamodel::Table(name=^QualifiedName(parts=['firmTable']))
+  );
+  assertConversion($expected1, $alias1);
+
+  let alias2 = ^Alias(relationalElement = getColumn('firmTable', 'ID'), name = 'col');
+  let expected2 = ^SingleColumn(
+    alias = 'col',
+    expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID']))
+  );
+  let state = newState();
+  assertConversion($expected2, $alias2, ^$state(processingSelect = true, isRootSelect = false, processingFilter = false));
+
+  let alias3 = ^Alias(relationalElement = ^meta::relational::metamodel::Literal(value = '123'), name = 'col');
+  let expected3 = ^SingleColumn(
+    alias = 'col',
+    expression = ^StringLiteral(value = '123')
+  );
+  assertConversion($expected3, $alias3, ^$state(processingSelect = true, isRootSelect = false, processingFilter = false));
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertLiteral(): Boolean[1]
+{
+  assertConversion(^StringLiteral(value = 'hello'),   ^meta::relational::metamodel::Literal(value = 'hello'));
+  assertConversion(^IntegerLiteral(value = 123),      ^meta::relational::metamodel::Literal(value = 123));
+  assertConversion(^BooleanLiteral(value = false),    ^meta::relational::metamodel::Literal(value = false));
+  assertConversion(^DoubleLiteral(value = 1.23),      ^meta::relational::metamodel::Literal(value = 1.23));
+  assertConversion(^DateLiteral(value = %2025-01-01), ^meta::relational::metamodel::Literal(value = %2025-01-01));
+  assertConversion(^TimestampLiteral(value = %2025-01-01T00:00:00), ^meta::relational::metamodel::Literal(value = %2025-01-01T00:00:00));
+  assertConversion(^StringLiteral(value = 'foo'), ^meta::relational::metamodel::Literal(value = TestEnum.foo));
+  assertInstanceOf(convertElement(^meta::relational::metamodel::Literal(value = ^SQLNull()), newState()), NullLiteral);
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertLiteralList(): Boolean[1]
+{
+  let literalList = ^LiteralList(values = [^meta::relational::metamodel::Literal(value = 'hello'), ^meta::relational::metamodel::Literal(value = 123)]);
+  let expected = ^InListExpression(values = [^StringLiteral(value = 'hello'), ^IntegerLiteral(value = 123)]);
+  assertConversion($expected, $literalList);
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertCommonTableExpressionReference():Boolean[1]
+{
+  assertConversion(^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'cte')), ^CommonTableExpressionReference(name = 'cte'));
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::tests::getJoinTreeNode(class:Class<Any>[1], propertyName:String[1]):JoinTreeNode[1]
+{
+  let classMapping = rootClassMappingByClass(TestMapping, $class)->toOne()->cast(@InstanceSetImplementation);
+  let propertyMapping = propertyMappingsByPropertyName($classMapping, $propertyName)->cast(@RelationalPropertyMapping);
+  $propertyMapping.relationalOperationElement->cast(@RelationalOperationElementWithJoin).joinTreeNode->toOne();
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertJoinTreeNode(): Boolean[1]
+{
+  let firmJoinTree = getJoinTreeNode(Person, 'firm');
+  let addressJoinTree = getJoinTreeNode(Person, 'address');
+  let root = ^RootJoinTreeNode(
+    alias = ^TableAlias(relationalElement = getTable('personTable'), name = 'root'),
+    childrenData = [$firmJoinTree, $addressJoinTree]
+  );
+
+  let expected = ^meta::external::query::sql::metamodel::Join(
+    type = meta::external::query::sql::metamodel::JoinType.LEFT,
+    left = ^meta::external::query::sql::metamodel::Join(
+      type = meta::external::query::sql::metamodel::JoinType.LEFT,
+      left = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'personTable'))),
+      right = ^AliasedRelation(alias = '"firmTable"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'firmTable'))),
+      criteria = ^JoinOn(
+        expression = ^ComparisonExpression(
+          left = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"firmTable"', 'ID'])),
+          operator = ComparisonOperator.EQUAL,
+          right = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"personTable"', 'FIRMID']))
+        )
+      )
+    ),
+    right = ^AliasedRelation(alias = '"addressTable"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'addressTable'))),
+    criteria = ^JoinOn(
+      expression = ^ComparisonExpression(
+        left = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"addressTable"', 'ID'])),
+        operator = ComparisonOperator.EQUAL,
+        right = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"personTable"', 'ADDRESSID']))
+      )
+    )
+  );
+
+  assertConversion($expected, $root);
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertSelectSQLQuery(): Boolean[1]
+{
+  let aggCol = ^DynaFunction(name = 'joinStrings', parameters = [getColumn('firmTable', 'LEGALNAME'), ^meta::relational::metamodel::Literal(value = ', ')]);
+  let nestedQuery = ^SelectSQLQuery(
+    distinct = false,
+    columns = ^Alias(relationalElement = $aggCol, name = 'nameConcat'),
+    data = ^RootJoinTreeNode(alias = ^TableAlias(relationalElement = getTable('firmTable'), name = 'root')),
+    groupBy = getColumn('firmTable', 'ID'), 
+    havingOperation = ^DynaFunction(name = 'notEqual', parameters = [getColumn('firmTable', 'ID'),  ^meta::relational::metamodel::Literal(value = 2)])
+  );
+  let joinTreeNode = getJoinTreeNode(Person, 'firm');
+  let nestedJoinTreeNode = ^$joinTreeNode(alias = ^TableAlias(relationalElement = $nestedQuery, name = 'nested'));
+  let query = ^SelectSQLQuery(
+    distinct = true,
+    columns = getColumn('personTable', 'NAME'),
+    data = ^RootJoinTreeNode(
+      alias = ^TableAlias(relationalElement = getTable('personTable'), name = 'root'),
+      childrenData = [$nestedJoinTreeNode]
+    ),
+    filteringOperation = ^DynaFunction(name = 'equal', parameters = [getColumn('personTable', 'NAME'),  ^meta::relational::metamodel::Literal(value = 'David')]),
+    orderBy = ^OrderBy(column = getColumn('personTable', 'NAME'), direction = meta::relational::metamodel::SortDirection.DESC),
+    fromRow = ^meta::relational::metamodel::Literal(value = 2),
+    toRow = ^meta::relational::metamodel::Literal(value = 5)
+  );
+
+  let expected = ^QuerySpecification(
+    select = ^Select(distinct = true, selectItems = ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'NAME'])))),
+    from = ^meta::external::query::sql::metamodel::Join(
+      left = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'personTable'))),
+      right = ^AliasedRelation(
+        alias = '"nested"', 
+        relation = ^TableSubquery(
+          query = ^Query(
+            queryBody = ^QuerySpecification(
+              select = ^Select(
+                distinct = false,
+                selectItems = ^SingleColumn(alias = 'nameConcat', expression = ^FunctionCall(distinct = false, name = ^QualifiedName(parts = 'string_agg'), arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'LEGALNAME'])), ^StringLiteral(value = ', ')]))
+              ),
+              from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'firmTable'))),
+              groupBy = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])),
+              having = ^ComparisonExpression(left = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])), operator = ComparisonOperator.NOT_EQUAL, right = ^IntegerLiteral(value = 2))
+            )
+          )
+        )
+      ),
+      type = meta::external::query::sql::metamodel::JoinType.LEFT,
+      criteria = ^JoinOn(expression = ^ComparisonExpression(left = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"firmTable"', 'ID'])), operator = ComparisonOperator.EQUAL, right = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"personTable"', 'FIRMID']))))
+    ),
+    where = ^ComparisonExpression(left = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'NAME'])), operator = ComparisonOperator.EQUAL, right = ^StringLiteral(value = 'David')),
+    orderBy = ^SortItem(sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'NAME'])), ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.UNDEFINED),
+    limit = ^IntegerLiteral(value = 5),
+    offset = ^IntegerLiteral(value = 2)
+  );
+
+  assertConversion($expected, $query);
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertSelectSQLQueryWithCTE(): Boolean[1]
+{
+  let query = ^SelectSQLQuery(
+    commonTableExpressions = ^meta::relational::metamodel::relation::CommonTableExpression(
+      name = 'cte', 
+      sqlQuery = ^SelectSQLQuery(
+        columns = ^Alias(relationalElement = getColumn('firmTable', 'ID'), name = 'ID'),
+        data = ^RootJoinTreeNode(alias = ^TableAlias(relationalElement = getTable('firmTable'), name = 'root'))
+      )
+    ),
+    columns = ^TableAliasColumnName(alias = ^TableAlias(relationalElement = ^CommonTableExpressionReference(name = 'cte'), name = 'root'), columnName = 'ID'),
+    data = ^RootJoinTreeNode(alias = ^TableAlias(relationalElement = ^CommonTableExpressionReference(name = 'cte'), name = 'root'))
+  );
+
+  let expected = ^Query(
+    with = ^With(
+      withQueries = ^meta::external::query::sql::metamodel::WithQuery(
+        name = 'cte',
+        query = ^Query(
+          queryBody = ^QuerySpecification(
+            select = ^Select(selectItems = ^SingleColumn(alias = 'ID', expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
+            from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'firmTable')))
+          )   
+        )
+      )
+    ),
+    queryBody = ^QuerySpecification(
+      select = ^Select(selectItems = ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
+      from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'cte')))
+    )
+  );
+  assertEquals($expected, convertSqlQuery($query, newState()));
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertUnion(): Boolean[1]
+{
+  let query = ^meta::relational::metamodel::relation::Union(
+    queries = [
+      ^SelectSQLQuery(
+        columns = ^Alias(relationalElement = getColumn('personTable', 'ID'), name = 'ID'),
+        data = ^RootJoinTreeNode(
+          alias = ^TableAlias(relationalElement = getTable('personTable'), name = 'root')
+        )
+      ),
+      ^SelectSQLQuery(
+        columns = ^Alias(relationalElement = getColumn('personTable1', 'ID'), name = 'ID'),
+        data = ^RootJoinTreeNode(
+          alias = ^TableAlias(relationalElement = getTable('personTable1'), name = 'root')
+        )
+      )
+    ]
+  );
+  
+  let expected = ^TableSubquery(
+    query = ^Query(
+      queryBody = ^meta::external::query::sql::metamodel::Union(
+        left = ^QuerySpecification(
+          select = ^Select(selectItems = ^SingleColumn(alias = 'ID', expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
+          from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'personTable')))
+        ),
+        right = ^QuerySpecification(
+          select = ^Select(selectItems = ^SingleColumn(alias = 'ID', expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
+          from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = ['testSchema', 'personTable1'])))
+        ),
+        distinct = true
+      )
+    )
+  );
+  
+  assertConversion($expected, $query);
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertJoinStrings(): Boolean[1]
+{
+  let js1 = ^JoinStrings(strings =  getColumn('firmTable', 'ID'));
+  let expected1 = ^FunctionCall(
+    name = ^QualifiedName(parts = 'string_agg'),
+    arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])), ^StringLiteral(value = '')]
+  );
+  assertConversion($expected1, $js1);
+
+  let js2 = ^JoinStrings(strings = getColumn('firmTable', 'ID'), separator = ^meta::relational::metamodel::Literal(value = ','));
+  let expected2 = ^FunctionCall(
+    name = ^QualifiedName(parts = 'string_agg'),
+    arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])), ^StringLiteral(value = ',')]
+  );
+  assertConversion($expected2, $js2);
+
+  let js3 = ^JoinStrings(
+    strings = [^meta::relational::metamodel::Literal(value = '1'), ^meta::relational::metamodel::Literal(value = '2')], 
+    separator = ^meta::relational::metamodel::Literal(value = ','),
+    prefix = ^meta::relational::metamodel::Literal(value = 's'),
+    suffix = ^meta::relational::metamodel::Literal(value = 'e')
+  );
+  let expected3 = ^FunctionCall(
+    name = ^QualifiedName(parts = 'concat'),
+    arguments = [
+      ^StringLiteral(value = 's'),
+      ^StringLiteral(value = '1'),
+      ^StringLiteral(value = ','),
+      ^StringLiteral(value = '2'),
+      ^StringLiteral(value = 'e')
+    ]
+  );
+  assertConversion($expected3, $js3);
+}
+
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertTable(): Boolean[1]
+{
+  assertConversion(^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'firmTable')), getTable('firmTable'));
+  assertConversion(^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = ['testSchema', 'personTable1'])), getTable('personTable1'));
+}

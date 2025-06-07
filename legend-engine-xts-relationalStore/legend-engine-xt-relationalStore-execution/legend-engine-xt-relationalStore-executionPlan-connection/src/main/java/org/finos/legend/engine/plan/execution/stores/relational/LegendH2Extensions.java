@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.apache.commons.text.similarity.LevenshteinDistance;
@@ -49,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 
 @SuppressWarnings("unused")
 public class LegendH2Extensions
@@ -136,6 +138,40 @@ public class LegendH2Extensions
         return string == null ? null : new String(Base64.decodeBase64(string));
     }
 
+    public static String legend_h2_extension_lpad(String str, Integer i, String padStr)
+    {
+        if (str == null)
+        {
+            return null;
+        }
+        if (padStr == null || padStr.isEmpty())
+        {
+            return str;
+        }
+        if (str.length() > i)
+        {
+            return str.substring(0, i);
+        }
+        return StringUtils.leftPad(str, i, padStr);
+    }
+
+    public static String legend_h2_extension_rpad(String str, Integer i, String padStr)
+    {
+        if (str == null)
+        {
+            return null;
+        }
+        if (padStr == null || padStr.isEmpty())
+        {
+            return str;
+        }
+        if (str.length() > i)
+        {
+            return str.substring(0, i);
+        }
+        return StringUtils.rightPad(str, i, padStr);
+    }
+
     public static String legend_h2_extension_base64_encode(String string)
     {
         return string == null ? null : Base64.encodeBase64URLSafeString(string.getBytes(StandardCharsets.UTF_8));
@@ -144,6 +180,21 @@ public class LegendH2Extensions
     public static String legend_h2_extension_reverse_string(String string)
     {
         return string == null ? null : new StringBuilder(string).reverse().toString();
+    }
+
+    public static String legend_h2_extension_hash_md5(String string) 
+    {
+        return string == null ? null : DigestUtils.md5Hex(string);
+    }
+
+    public static String legend_h2_extension_hash_sha1(String string) 
+    {
+        return string == null ? null : DigestUtils.sha1Hex(string);
+    }
+
+    public static String legend_h2_extension_hash_sha256(String string)
+    {
+        return string == null ? null : DigestUtils.sha256Hex(string);
     }
 
     public static String legend_h2_extension_split_part(String string, String token, Integer part)
@@ -318,24 +369,22 @@ public class LegendH2Extensions
         }
     }
 
-    public static Value legend_h2_extension_edit_distance(Value string1, Value string2)
+    public static Integer legend_h2_extension_edit_distance(String string1, String string2)
     {
-        if (string1 == ValueNull.INSTANCE || string2 == ValueNull.INSTANCE)
+        if (string1 == null || string2 == null)
         {
-            return ValueNull.INSTANCE;
+            return null;
         }
-
-        return ValueInteger.get(new LevenshteinDistance().apply(string1.getString(), string2.getString()));
+        return new LevenshteinDistance().apply(string1, string2);
     }
 
-    public static Value legend_h2_extension_jaro_winkler_similarity(Value string1, Value string2)
+    public static Double legend_h2_extension_jaro_winkler_similarity(String string1, String string2)
     {
-        if (string1 == ValueNull.INSTANCE || string2 == ValueNull.INSTANCE)
+        if (string1 == null || string2 == null)
         {
-            return ValueNull.INSTANCE;
+            return null;
         }
-
-        return ValueDouble.get(new JaroWinklerSimilarity().apply(string1.getString(), string2.getString()));
+        return new JaroWinklerSimilarity().apply(string1, string2);
     }
 
     public static Value legend_h2_extension_convertTimeZone(Value string1, Value string2)

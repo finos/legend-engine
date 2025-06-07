@@ -1,0 +1,82 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::extension::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sdt::framework::*;
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::literals::integerLiteral(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^IntegerLiteral(value = 123),
+    123,
+    'IntegerLiteral'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::literals::longLiteral(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^LongLiteral(value = 123),
+    123,
+    'LongLiteral'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::literals::doubleLiteral(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^DoubleLiteral(value = 123.4),
+    123.4,
+    'DoubleLiteral'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::literals::stringLiteral(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^StringLiteral(value = 'abc'),
+    'abc',
+    'IntegerLiteral'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::literals::booleanLiteral(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^BooleanLiteral(value = false),
+    false,
+    'BooleanLiteral'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::literals::dateLiteral(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^DateLiteral(value = %2025-01-01),
+    %2025-01-01,
+    'DateLiteral'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::literals::timestampLiteral(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^TimestampLiteral(value = %2025-01-01T12:34:56.789),
+    %2025-01-01T12:34:56.789000000,
+    'TimestampLiteral'
+  )
+}

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::store::relational::sqlDialectTranslation::tests::metamodel::*;
-import meta::external::store::relational::sqlDialectTranslation::metamodel::*;
+import meta::external::query::sql::metamodel::extension::tests::*;
+import meta::external::query::sql::metamodel::extension::*;
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
@@ -252,7 +252,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   assertEquals('111 ^ 112', $dialect->executeNodeProcessor($e6, $state, $config));
 
   assertEquals('101 + 102 + 101 + 102', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e1, type = ArithmeticType.ADD), $state, $config));
-  assertEquals('101 + 102 - 103 - 104', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e2, type = ArithmeticType.SUBTRACT), $state, $config));
+  assertEquals('(101 + 102) - (103 - 104)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e2, type = ArithmeticType.SUBTRACT), $state, $config));
   assertEquals('(101 + 102) * (103 - 104)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e2, type = ArithmeticType.MULTIPLY), $state, $config));
   assertEquals('(105 * 106) / (107 / 108)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e3, right = $e4, type = ArithmeticType.DIVIDE), $state, $config));
   assertEquals('(101 + 102) * (107 / 108)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e4, type = ArithmeticType.MULTIPLY), $state, $config));

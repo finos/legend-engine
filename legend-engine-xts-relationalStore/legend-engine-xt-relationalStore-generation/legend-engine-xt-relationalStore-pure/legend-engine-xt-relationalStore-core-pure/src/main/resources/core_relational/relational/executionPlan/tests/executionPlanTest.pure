@@ -1508,8 +1508,9 @@ function <<test.Test>> meta::pure::executionPlan::tests::testRoutingContextBuild
                                                                                                   {f:Function<Any>[1], fe:FunctionExpression[1], state:meta::pure::router::routing::RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
                                                                                                     meta::pure::router::routing::routeFunctionExpressionFunctionDefinition($f, $fe, $state, ^meta::pure::runtime::ExecutionContext(), $vars, $inScopeVars, $extensions, $debug);
                                                                                                   }));
-  let extensions = meta::relational::extension::relationalExtensions()->toOne();
-  let updatedExtensions = ^$extensions(availableStores = $extensions.availableStores->filter(s | $s.id != $relationalStoreContract.id)->concatenate($updatedRelationalStoreContract));
+  let relationalExtension = meta::relational::extension::relationalExtensions()->filter(e|$e.type == 'relational')->toOne();
+  let otherExtensions = meta::relational::extension::relationalExtensions()->filter(e|$e.type != 'relational');
+  let updatedExtensions = $otherExtensions->concatenate(^$relationalExtension(availableStores = $relationalExtension.availableStores->filter(s | $s.id != $relationalStoreContract.id)->concatenate($updatedRelationalStoreContract)));
 
   let result = executionPlan({|Person.all()->project([col(p|$p.firstName, '"firstName"', 'doc1'), col(p|$p.lastName, 'lastName')])->withContext();}, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), $updatedExtensions);
 

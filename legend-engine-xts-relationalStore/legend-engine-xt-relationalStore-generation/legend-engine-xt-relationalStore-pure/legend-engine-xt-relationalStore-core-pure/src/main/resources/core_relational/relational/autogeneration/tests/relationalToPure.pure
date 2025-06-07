@@ -4,7 +4,7 @@ import meta::pure::functions::asserts::*;
 
 function <<test.Test>> meta::relational::transform::autogen::tests::testClassesAssociationsAndMappingFromDatabase():Boolean[1]
 {
-   let extensions = meta::relational::extension::relationalExtension();
+   let extensions = meta::relational::extension::relationalExtensions();
    let expected = ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData
    (
      _type = 'data',
