@@ -18,14 +18,14 @@ import meta::pure::test::pct::*;
 native function <<PCT.function, functionType.SideEffectFunction>> meta::pure::functions::string::generation::generateGuid():String[1];
 
 
-function <<PCT.test>> meta::pure::functions::string::generation::tests::testGenerateGuid<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::string::generation::tests::generateGuid::testGenerateGuid<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   assertNotEmpty($f->eval(| meta::pure::functions::string::generation::generateGuid()))
 }
 
 
 
-function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::string::generation::tests::testGenerateGuidWithRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::string::generation::tests::generateGuid::testGenerateGuidWithRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                | #TDS

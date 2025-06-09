@@ -836,12 +836,15 @@ Class meta::relational::tests::pct::process::PropertyColumnMapping
 
 function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1], db:Database[1], schema:Schema[1], mapping:Mapping[1]):ClassTableMapping[1]
 {
+  let rand = random() * 10000000;
+  let tableName = $class.name->toOne() + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString();
+
   let map = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
   let properties = $class.properties->filter(p|$p->isPrimitiveValueProperty());                
   let cols = $properties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=$map->get($p->functionReturnType().rawType->toOne())->toOne())));
   let idCol = ^Column(name='_pureId', type=^meta::relational::metamodel::datatype::Integer());
-  let table = ^Table(name=$class.name->toOne(), schema=$schema, primaryKey=$idCol, columns=$idCol->concatenate($cols.column));
-  let tableAlias = ^TableAlias(database=$db, name=$table.name, relationalElement = $table);
+  let table = ^Table(name=$tableName, schema=$schema, primaryKey=$idCol, columns=$idCol->concatenate($cols.column));
+  let tableAlias = ^TableAlias(database=$db, name=$class.name->toOne(), relationalElement = $table);
 
 
   let set = ^RootRelationalInstanceSetImplementation
