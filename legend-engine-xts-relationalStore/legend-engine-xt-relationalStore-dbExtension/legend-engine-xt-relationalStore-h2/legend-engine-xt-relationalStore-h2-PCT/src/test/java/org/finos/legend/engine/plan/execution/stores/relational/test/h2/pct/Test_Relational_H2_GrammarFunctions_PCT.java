@@ -37,13 +37,13 @@ public class Test_Relational_H2_GrammarFunctions_PCT extends PCTReportConfigurat
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // And
-            one("meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Division by zero: \"12.0\"; SQL statement:\nselect (false and ((1.0 * 12) / 0) > 0)"),
+            one("meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Division by zero: \"12.0\"; SQL statement:\nselect false and ((1.0 * 12) / 0) > 0"),
 
             // Not
             one("meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_", "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)\""),
 
             // Or
-            one("meta::pure::functions::boolean::tests::conjunctions::or::testShortCircuitSimple_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Division by zero: \"12.0\"; SQL statement:\nselect (true or ((1.0 * 12) / 0) > 0)"),
+            one("meta::pure::functions::boolean::tests::conjunctions::or::testShortCircuitSimple_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Division by zero: \"12.0\"; SQL statement:\nselect true or ((1.0 * 12) / 0) > 0"),
 
             // Eq
             one("meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\""),
@@ -100,17 +100,16 @@ public class Test_Relational_H2_GrammarFunctions_PCT extends PCTReportConfigurat
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4D\""),
             one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"-9223372036854775718\""),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\""),
-            one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"1\" for parameter \"columnIndex\" [90008-214]"),
 
             // Plus
             one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6D\""),
 
-            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"9223372036854775807\"; SQL statement:\nselect (9223372036854775807 + 3 + (4 + 5) + 7) [22003-214]"),
+            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"9223372036854775807\"; SQL statement:\nselect 9223372036854775807 + 3 + 4 + 5 + 7 [22003-214]"),
             one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\""),
 
             // Times
             one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\"\nexpected: 353791.470D\nactual:   353791.47\""),
-            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"2\"; SQL statement:\nselect (2 * 9223372036854775807) [22003-214]"),
+            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"2\"; SQL statement:\nselect 2 * 9223372036854775807 [22003-214]"),
 
             // Plus (String)
             one("meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),

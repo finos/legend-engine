@@ -112,7 +112,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n'+
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, current_timestamp())\n'+
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(day, -1, now())\n'+
    '      connection = TestDatabaseConnection(type = "H2")\n'+
    '    )\n'+
    '  )\n'+
@@ -188,7 +188,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n' +
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, current_timestamp())\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(day, -1, now())\n' +
    '      connection = TestDatabaseConnection(type = "H2")\n' +
    '    )\n' +
    '  )\n' +
@@ -398,7 +398,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n'+
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, current_timestamp())\n'+
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(day, -1, now())\n'+
    '      connection = TestDatabaseConnection(type = "H2")\n'+
    '    )\n'+
    '  )\n'+
@@ -503,7 +503,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n' +
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, current_timestamp())\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(day, -1, now())\n' +
    '      connection = TestDatabaseConnection(type = "H2")\n' +
    '    )\n' +
    '  )\n' +
@@ -605,7 +605,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n'+
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, DATE\'2005-10-10\')\n'+
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(day, -1, DATE\'2005-10-10\')\n'+
    '      connection = TestDatabaseConnection(type = "H2")\n'+
    '    )\n'+
    '  )\n'+
@@ -709,7 +709,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n' +
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, DATE\'2005-10-10\')\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(day, -1, DATE\'2005-10-10\')\n' +
    '      connection = TestDatabaseConnection(type = "H2")\n' +
    '    )\n' +
    '  )\n' +

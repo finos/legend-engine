@@ -148,7 +148,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectAndP
    assertEquals('Peter|5|10,John|4|8,John|4|8,Anthony|7|14,Fabrice|7|14,Oliver|6|12,David|5|10',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first_name", char_length("root".FIRSTNAME) as "name_length", (char_length("root".FIRSTNAME) * 2) as "double_name_length" from personTable as "root"',
+   assertEquals('select "root".FIRSTNAME as "first_name", char_length("root".FIRSTNAME) as "name_length", char_length("root".FIRSTNAME) * 2 as "double_name_length" from personTable as "root"',
       $result->sqlRemoveFormatting());
 }
 
@@ -188,7 +188,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectOnMu
    assertEquals('Peter|Smith|10,John|Johnson|11,John|Hill|8,Anthony|Allen|12,Fabrice|Roberts|14,Oliver|Hill|10,David|Harris|11',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", (char_length("root".FIRSTNAME) + char_length("root".LASTNAME)) as "combined_length" from personTable as "root"',
+   assertEquals('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", char_length("root".FIRSTNAME) + char_length("root".LASTNAME) as "combined_length" from personTable as "root"',
       $result->sqlRemoveFormatting());
 }
 
@@ -302,7 +302,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testHourFunctio
 
    assertEqualsH2Compatible(
     'select "root".FIRSTNAME as "firstName", hour(\'2016-08-10 08:55:00.0\') as "hour" from personTable as "root"',
-    'select "root".FIRSTNAME as "firstName", hour(TIMESTAMP\'2016-08-10 08:55:00.0\') as "hour" from personTable as "root"',
+    'select "root".FIRSTNAME as "firstName", extract(hour from TIMESTAMP\'2016-08-10 08:55:00.0\') as "hour" from personTable as "root"',
     $result->sqlRemoveFormatting()
    );
 }
@@ -328,7 +328,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectEnum
    assertEquals('Peter|true,John|true,John|true,Anthony|true,Fabrice|true,Oliver|true,David|true',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "firstName", dateadd(DAY, 1, current_timestamp()) > current_timestamp() as "tomorrowGreaterThanToday" from personTable as "root"',
+   assertEquals('select "root".FIRSTNAME as "firstName", dateadd(day, 1, now()) > now() as "tomorrowGreaterThanToday" from personTable as "root"',
       $result->sqlRemoveFormatting());
 }
 
@@ -354,7 +354,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
    assertEquals('Peter|true,John|true,John|true,Anthony|true,Fabrice|true,Oliver|true,David|true',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "firstName", dateadd(DAY, 1, current_timestamp()) > current_timestamp() as "tomorrowGreaterThanToday" from personTable as "root"',
+   assertEquals('select "root".FIRSTNAME as "firstName", dateadd(day, 1, now()) > now() as "tomorrowGreaterThanToday" from personTable as "root"',
       $result->sqlRemoveFormatting());
 }
 
@@ -376,7 +376,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testFilterAfter
    assertEquals('',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "subselect"."age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" where "subselect"."age" > 25',
+   assertEquals('select "subselect"."age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root" order by "age" asc) as "subselect" where "subselect"."age" > 25',
       $result->sqlRemoveFormatting());
 }
 
@@ -396,7 +396,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testFilterAfter
 
    //We can't assert the expected result values because they are undefined (because there is no sort before the limit)
 
-   assertEquals('select "subselect"."age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root") as "subselect" where "subselect"."age" > 25 order by "age"',
+   assertEquals('select "subselect"."age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root") as "subselect" where "subselect"."age" > 25 order by "age" asc',
       $result->sqlRemoveFormatting());
 }
 
@@ -420,7 +420,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testSortAfterLi
    assertEquals('22,22,12',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "subselect"."age" as "age" from (select top 3 "subselect"."age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" order by "age" desc) as "subselect" order by "age" desc',
+   assertEquals('select "subselect"."age" as "age" from (select top 3 "subselect"."age" as "age" from (select top 3 "root".AGE as "age" from personTable as "root" order by "age" asc) as "subselect" order by "age" desc) as "subselect" order by "age" desc',
       $result->sqlRemoveFormatting());
 }
 
@@ -460,7 +460,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testSliceAfterL
    assertEquals('',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "subselect"."age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" offset 2 rows fetch next 98 rows only',
+   assertEquals('select "subselect"."age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age" asc) as "subselect" offset 2 rows fetch next 98 rows only',
       $result->sqlRemoveFormatting());
 }
 
@@ -481,7 +481,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterS
    assertEquals('22,22',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 100 "subselect"."age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" offset 1 rows fetch next 2 rows only) as "subselect"',
+   assertEquals('select top 100 "subselect"."age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" asc offset 1 rows fetch next 2 rows only) as "subselect"',
       $result->sqlRemoveFormatting());
 }
 
@@ -502,7 +502,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testDropAfterLi
    assertEquals('22,23,32',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "subselect"."age" as "age" from (select top 5 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" offset 2 rows',
+   assertEquals('select "subselect"."age" as "age" from (select top 5 "root".AGE as "age" from personTable as "root" order by "age" asc) as "subselect" offset 2 rows',
       $result->sqlRemoveFormatting());
 }
 
@@ -523,7 +523,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterD
    assertEquals('22,23,32,34,35',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 5 "subselect"."age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" offset 2 rows) as "subselect"',
+   assertEquals('select top 5 "subselect"."age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" asc offset 2 rows) as "subselect"',
       $result->sqlRemoveFormatting());
 }
 
@@ -544,7 +544,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testTakeAfterLi
    assertEquals('12,22',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 5 "subselect"."age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age") as "subselect"',
+   assertEquals('select top 5 "subselect"."age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age" asc) as "subselect"',
       $result->sqlRemoveFormatting());
 }
 
@@ -565,7 +565,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterT
    assertEquals('12,22',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 5 "subselect"."age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age") as "subselect"',
+   assertEquals('select top 5 "subselect"."age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age" asc) as "subselect"',
       $result->sqlRemoveFormatting());
 }
 
@@ -586,7 +586,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testOptionalLim
    assertEquals('12,22,22,23,32,34,35',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".AGE as "age" from personTable as "root" order by "age"',
+   assertEquals('select "root".AGE as "age" from personTable as "root" order by "age" asc',
       $result->sqlRemoveFormatting());
 }
 
@@ -606,7 +606,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testOptionalLim
    assertEquals('12',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 1 "root".AGE as "age" from personTable as "root" order by "age"',
+   assertEquals('select top 1 "root".AGE as "age" from personTable as "root" order by "age" asc',
       $result->sqlRemoveFormatting());
 }
 
@@ -770,7 +770,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testGetNumber()
    assertEquals('32,34,35',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".AGE as "age" from personTable as "root" where "root".AGE > 25 order by "age"',
+   assertEquals('select "root".AGE as "age" from personTable as "root" where "root".AGE > 25 order by "age" asc',
       $result->sqlRemoveFormatting());
 }
 

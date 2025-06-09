@@ -76,7 +76,7 @@ function <<test.Test>> meta::external::store::relational::modelJoins::test::test
 {
   let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
   let xstoreResult = executionPlan($query, XStoreTradesMapping_withConstantDouble, getXStoreRuntime(),meta::relational::extension::relationalExtensions());
-  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".ENTITY_ID_FK = "legalentity_view_0".ENTITY_ID and "root".value = 1 and (2 <> "root".value OR "root".value is null) and 1 = 1)', 
+  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".ENTITY_ID_FK = "legalentity_view_0".ENTITY_ID and "root".value = 1 and (2 <> "root".value or "root".value is null) and 1 = 1)', 
                $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
@@ -84,14 +84,14 @@ function <<test.Test>> meta::external::store::relational::modelJoins::test::test
 {
   let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
   let xstoreResult = executionPlan($query, XStoreTradesMapping_withConstantString, getXStoreRuntime(),meta::relational::extension::relationalExtensions());
-  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".ENTITY_ID_FK = "legalentity_view_0".ENTITY_ID and "root".ENTITY_ID_FK = \'foo\' and (\'bar\' <> "root".ENTITY_ID_FK OR "root".ENTITY_ID_FK is null))',                               $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".ENTITY_ID_FK = "legalentity_view_0".ENTITY_ID and "root".ENTITY_ID_FK = \'foo\' and (\'bar\' <> "root".ENTITY_ID_FK or "root".ENTITY_ID_FK is null))',                               $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
 function <<test.Test>> meta::external::store::relational::modelJoins::test::testJoinWithConstantDate():Boolean[1]
 {
   let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
   let xstoreResult = executionPlan($query, XStoreTradesMapping_withConstantDate, getXStoreRuntime(),meta::relational::extension::relationalExtensions());
-  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".ENTITY_ID_FK = "legalentity_view_0".ENTITY_ID and "root".date = DATE\'2024-01-01\' and (DATE\'2024-01-01\' <> "root".date OR "root".date is null))',
+  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".ENTITY_ID_FK = "legalentity_view_0".ENTITY_ID and "root".date = DATE\'2024-01-01\' and (DATE\'2024-01-01\' <> "root".date or "root".date is null))',
                $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 

@@ -17,14 +17,13 @@ import meta::relational::mapping::*;
 
 function meta::relational::functions::asserts::assertSameSQL(sqlString:String[1],result:Result<Any|*>[1]):Boolean[1]
 {
-  assertEquals($sqlString, $result->sqlRemoveFormatting());
+  meta::relational::functions::asserts::assertSameSQL($sqlString, $result->sqlRemoveFormatting());
 }
 
 function meta::relational::functions::asserts::assertSameSQL(sqlString:String[1],result:String[1]):Boolean[1]
 {
   assertEquals($sqlString, $result);
 }
-
 
 function meta::relational::functions::asserts::sqlContains(subString:String[1],result:Result<Any|*>[1]):Boolean[1]
 {

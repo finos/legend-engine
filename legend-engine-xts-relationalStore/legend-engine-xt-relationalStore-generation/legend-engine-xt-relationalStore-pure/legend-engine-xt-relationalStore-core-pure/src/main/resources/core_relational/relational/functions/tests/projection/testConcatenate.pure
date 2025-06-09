@@ -73,7 +73,7 @@ function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQuer
    let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let actualResult = $actualQuery.values->at(0).rows->map(r|$r.values->makeString(','));
 
-   let expectedQuery = 'select "unionalias_0"."id" as "id", "unionalias_0"."name" as "name", "unionalias_0"."type" as "type" from (select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root") as "unionalias_0"';
+   let expectedQuery = 'select "unionalias_0"."id" as "id", "unionalias_0"."name" as "name", "unionalias_0"."type" as "type" from (select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" union all select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" union all select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root") as "unionalias_0"';
    let expectedResult = ['1,name1,type1', '2,name2,type2', '3,name3,type3', '4,name1,type1', '5,name2,type2', '1,name1,type1', '2,name2,type2', '3,name3,type3', '4,name1,type1', '5,name2,type2', '1,name1,type1', '2,name2,type2', '3,name3,type3', '4,name1,type1', '5,name2,type2'];
 
    assertSameSQL($expectedQuery, $actualQuery);
@@ -91,7 +91,7 @@ function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQuer
    let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let actualResult = $actualQuery.values->at(0).rows->map(r|$r.values->makeString(','));
 
-   let expectedQuery = 'select "unionalias_0"."id" as "id", "unionalias_0"."name" as "name", "unionalias_0"."type" as "type" from (select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name1\' UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name2\' UNION ALL select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name3\') as "unionalias_0"';
+   let expectedQuery = 'select "unionalias_0"."id" as "id", "unionalias_0"."name" as "name", "unionalias_0"."type" as "type" from (select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name1\' union all select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name2\' union all select "root".id as "id", "root".name as "name", "root".type as "type" from ProductTable as "root" where "root".name = \'name3\') as "unionalias_0"';
    let expectedResult = ['1,name1,type1', '4,name1,type1', '2,name2,type2', '5,name2,type2', '3,name3,type3'];
 
    assertSameSQL($expectedQuery, $actualQuery);
@@ -110,7 +110,7 @@ function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQuer
    let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let actualResult = $actualQuery.values->at(0)->sort(['type','count']).rows->map(r|$r.values->makeString(','));
 
-   let expectedQuery = 'select "unionalias_0"."type" as "type", "unionalias_0"."count" as "count" from (select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type") as "unionalias_0"';
+   let expectedQuery = 'select "unionalias_0"."type" as "type", "unionalias_0"."count" as "count" from (select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type" union all select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type" union all select "root".type as "type", count("root".id) as "count" from ProductTable as "root" group by "type") as "unionalias_0"';
    let expectedResult = ['type1,2', 'type1,2', 'type1,2', 'type2,2', 'type2,2', 'type2,2', 'type3,1', 'type3,1', 'type3,1'];
 
    assertSameSQL($expectedQuery, $actualQuery);
@@ -128,7 +128,7 @@ function <<test.Test>> meta::relational::tests::projection::concatenate::tdsQuer
    let actualQuery = execute($concatLambda, ProductMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let actualResult = $actualQuery.values->at(0).rows->map(r|$r.values->makeString(','));
 
-   let expectedQuery = 'select "unionalias_0"."type" as "type", "unionalias_0"."count" as "count" from (select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name1\' group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name2\' group by "type" UNION ALL select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name3\' group by "type") as "unionalias_0"';
+   let expectedQuery = 'select "unionalias_0"."type" as "type", "unionalias_0"."count" as "count" from (select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name1\' group by "type" union all select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name2\' group by "type" union all select "root".type as "type", count("root".id) as "count" from ProductTable as "root" where "root".name = \'name3\' group by "type") as "unionalias_0"';
    let expectedResult = ['type1,2', 'type2,2', 'type3,1'];
 
    assertSameSQL($expectedQuery, $actualQuery);
