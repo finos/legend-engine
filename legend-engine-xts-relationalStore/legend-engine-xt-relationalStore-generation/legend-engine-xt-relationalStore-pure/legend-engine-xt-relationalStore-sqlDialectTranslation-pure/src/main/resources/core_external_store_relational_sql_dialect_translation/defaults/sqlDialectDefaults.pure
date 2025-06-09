@@ -91,6 +91,9 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::fin
         | fail('Unhandled arithemtic expression type: ' + $a.type->toString()); SqlOperatorTypes_default.OTHER_NATIVE_USER_DEFINED_OPERATOR;
       );
     },
+    {a: BitwiseBinaryExpression[1] | SqlOperatorTypes_default.OTHER_NATIVE_USER_DEFINED_OPERATOR},
+    {a: BitwiseNotExpression[1] | SqlOperatorTypes_default.OTHER_NATIVE_USER_DEFINED_OPERATOR},
+    {a: BitwiseShiftExpression[1] | SqlOperatorTypes_default.OTHER_NATIVE_USER_DEFINED_OPERATOR},
     {q: QualifiedNameReference[1] | SqlOperatorTypes_default.DOT},
     {i: IsNullPredicate[1] | SqlOperatorTypes_default.IS_CHECK},
     {i: IsNotNullPredicate[1] | SqlOperatorTypes_default.IS_CHECK},

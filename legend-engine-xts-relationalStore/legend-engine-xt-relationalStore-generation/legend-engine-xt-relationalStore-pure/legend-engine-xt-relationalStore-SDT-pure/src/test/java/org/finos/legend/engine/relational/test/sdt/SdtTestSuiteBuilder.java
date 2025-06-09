@@ -45,12 +45,13 @@ public class SdtTestSuiteBuilder
             "meta::external::store::relational::sdt::suite"
     );
 
-    public static Test buildSdtTestSuite(String dbType, Function<CompiledExecutionSupport, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Function<CompiledExecutionSupport, PureMap> expectedErrorsFunc)
+    public static Test buildSdtTestSuite(String dbType, Function<CompiledExecutionSupport, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc)
     {
         final CompiledExecutionSupport es = getClassLoaderExecutionSupport();
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions = extensionsFunc.apply(es);
-        PureMap expectedErrors = expectedErrorsFunc.apply(es);
         TestSuite suite = new TestSuite();
+        Root_meta_external_store_relational_sqlDialectTranslation_SqlDialect sqlDialect = core_external_store_relational_sql_dialect_translation_sqlDialectTranslator.Root_meta_external_store_relational_sqlDialectTranslation_fetchSqlDialectForDbType_String_1__Extension_MANY__SqlDialect_1_(dbType, extensions, es);
+        PureMap expectedErrors = sqlDialect._expectedSqlDialectTestErrors();
         SDT_TEST_PACKAGES.forEach(pkg ->
         {
             RichIterable<? extends ConcreteFunctionDefinition<?>> sdtTestInPackage = Root_meta_external_store_relational_sdt_framework_collectSDTTestsInPackage_String_1__ConcreteFunctionDefinition_MANY_(pkg, es);

@@ -1,0 +1,71 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sdt::framework::*;
+import meta::external::query::sql::metamodel::extension::*;
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::bitwiseOperation::and(): SqlDialectTest[1]
+{
+  testConfigForSimpleExpression(
+    ^BitwiseBinaryExpression(left = ^IntegerLiteral(value = 8), right = ^IntegerLiteral(value = 4), operator = BitwiseBinaryOperator.AND),
+    0,
+    'BitwiseBinaryOperation - and'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::bitwiseOperation::or(): SqlDialectTest[1]
+{
+  testConfigForSimpleExpression(
+    ^BitwiseBinaryExpression(left = ^IntegerLiteral(value = 8), right = ^IntegerLiteral(value = 4), operator = BitwiseBinaryOperator.OR),
+    12,
+    'BitwiseBinaryOperation - or'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::bitwiseOperation::xor(): SqlDialectTest[1]
+{
+  testConfigForSimpleExpression(
+    ^BitwiseBinaryExpression(left = ^IntegerLiteral(value = 6), right = ^IntegerLiteral(value = 4), operator = BitwiseBinaryOperator.XOR),
+    2,
+    'BitwiseBinaryOperation - xor'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::bitwiseOperation::not(): SqlDialectTest[1]
+{
+  testConfigForSimpleExpression(
+    ^BitwiseNotExpression(expression = ^IntegerLiteral(value = 10)),
+    -11,
+    'BitwiseBinaryOperation - not'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::bitwiseOperation::shiftLeft(): SqlDialectTest[1]
+{
+  testConfigForSimpleExpression(
+    ^BitwiseShiftExpression(value = ^IntegerLiteral(value = 12), shift = ^IntegerLiteral(value = 2), direction = BitwiseShiftDirection.LEFT),
+    48,
+    'BitwiseBinaryOperation - shiftLeft'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::bitwiseOperation::shiftRight(): SqlDialectTest[1]
+{
+  testConfigForSimpleExpression(
+    ^BitwiseShiftExpression(value = ^IntegerLiteral(value = 34), shift = ^IntegerLiteral(value = 2), direction = BitwiseShiftDirection.RIGHT),
+    8,
+    'BitwiseBinaryOperation - shiftRight'
+  )
+}

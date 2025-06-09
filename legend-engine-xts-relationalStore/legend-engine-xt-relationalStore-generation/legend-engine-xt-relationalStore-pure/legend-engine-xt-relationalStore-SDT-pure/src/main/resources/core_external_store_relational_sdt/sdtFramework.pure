@@ -223,7 +223,7 @@ function meta::external::store::relational::sdt::framework::runSdtTestsInIDE(tes
         $sdtConfigs->size()->range()->map({i |
           let sdtTest = $sdtConfigs->at($i);
           let dbType = $dialect.dbType;
-          let excluded = $ext.expectedFunctionTestErrorsByDialect->get($dbType)->toOne()->get($sdtTest.identifier)->isNotEmpty();
+          let excluded = $dialect.expectedSqlDialectTestErrors->get($sdtTest.identifier)->isNotEmpty();
           if ($excluded,
             | print(if(!$debug.debug, |'', | $debug.space + '[' + $dbType + '] Excluding SDT Test - ' + $sdtTest.identifier + '\n')),
             | print(if(!$debug.debug, |'', | $debug.space + '[' + $dbType + '] Running SDT Test - ' + $sdtTest.identifier + '\n'));

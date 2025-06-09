@@ -28,8 +28,7 @@ public class Test_DuckDB_SDT extends TestSuite
     {
         return SdtTestSuiteBuilder.buildSdtTestSuite(
                 "DuckDB",
-                es -> Lists.immutable.of(Root_meta_external_store_relational_sqlDialectTranslation_duckDB_duckDBSqlDialectExtension__Extension_1_(es)),
-                core_external_store_relational_sql_dialect_translation_duckdb_duckDBSqlDialect::Root_meta_external_store_relational_sqlDialectTranslation_duckDB_duckDBFunctionTestsExpectedErrors__Map_1_
+                es -> Lists.immutable.of(Root_meta_external_store_relational_sqlDialectTranslation_duckDB_duckDBSqlDialectExtension__Extension_1_(es))
         );
     }
 }

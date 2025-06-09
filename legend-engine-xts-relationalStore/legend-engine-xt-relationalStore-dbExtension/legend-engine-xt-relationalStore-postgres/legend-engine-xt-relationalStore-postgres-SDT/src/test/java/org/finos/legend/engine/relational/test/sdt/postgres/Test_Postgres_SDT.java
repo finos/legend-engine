@@ -28,8 +28,7 @@ public class Test_Postgres_SDT extends TestSuite
     {
         return SdtTestSuiteBuilder.buildSdtTestSuite(
                 "Postgres",
-                es -> Lists.immutable.of(Root_meta_external_store_relational_sqlDialectTranslation_postgres_postgresSqlDialectExtension__Extension_1_(es)),
-                core_external_store_relational_sql_dialect_translation_postgres_postgresSqlDialect::Root_meta_external_store_relational_sqlDialectTranslation_postgres_postgresFunctionTestsExpectedErrors__Map_1_
+                es -> Lists.immutable.of(Root_meta_external_store_relational_sqlDialectTranslation_postgres_postgresSqlDialectExtension__Extension_1_(es))
         );
     }
 }
