@@ -37,7 +37,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testNoRoutingWhe
    let result = execute(|Person.all()->filter(p|($p.firstName == 'John' && $p.lastName == 'Johnson') || $p.lastName == 'Allen')->mapNestedInUserFunction(e|$e.lastName), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertSameElements(['Allen', 'Johnson'], $result.values);
-   assertEquals('select "root".LASTNAME from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\')', $result->sqlRemoveFormatting());
+   assertEquals('select "root".LASTNAME from personTable as "root" where ("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\'', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 8. Routing not supported yet
@@ -46,7 +46,7 @@ function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::query::routi
    let result = execute(|Person.all()->filter(p|($p.firstName == 'John' && $p.lastName == 'Johnson') || $p.lastName == 'Allen').lastName->makeString(', '), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Johnson, Allen', $result.values);
-   assertEquals('select "root".LASTNAME from personTable as "root" where (("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\')', $result->sqlRemoveFormatting());
+   assertEquals('select "root".LASTNAME from personTable as "root" where ("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\') or "root".LASTNAME = \'Allen\'', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 8. Routing not supported yet
@@ -372,7 +372,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testCompositionI
   let result = executeInternal(|firmProjected()->addFilter());
   assertSize($result.values, 1);
   assertEquals(['John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
-  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where ("persontable_0".FIRSTNAME not in (\'Peter\', \'Oliver\') OR "persontable_0".FIRSTNAME is null)', $result->sqlRemoveFormatting());
+  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where not "persontable_0".FIRSTNAME in (\'Peter\', \'Oliver\') or "persontable_0".FIRSTNAME is null', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::routing::testCompositionInUnion():Boolean[1]
@@ -380,7 +380,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testCompositionI
   let result = executeInternal(|firmProjected()->addFilter()->concatenate(firmGetAll()->project(getColumns())));
   assertSize($result.values, 1);
   assertEquals(['John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Elena', 'David', 'No address', ^TDSNull(), 'Peter', 'John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
-  assertEquals('select "unionalias_0"."firstName" as "firstName" from (select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where ("persontable_0".FIRSTNAME not in (\'Peter\', \'Oliver\') OR "persontable_0".FIRSTNAME is null) UNION ALL select "persontable_1".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID)) as "unionalias_0"', $result->sqlRemoveFormatting());
+  assertEquals('select "unionalias_0"."firstName" as "firstName" from (select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where not "persontable_0".FIRSTNAME in (\'Peter\', \'Oliver\') or "persontable_0".FIRSTNAME is null union all select "persontable_1".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID)) as "unionalias_0"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::routing::testCompositionInGroupBy():Boolean[1]
@@ -412,7 +412,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testCompositionI
   let result = executeInternal(|firmProjected()->filter(x|$x.getString('firstName')->length()->plusOne() > 5));
   assertSize($result.values, 1);
   assertEquals(['Peter', 'Anthony', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address'], $result.values->at(0).rows.values);
-  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where (char_length("persontable_0".FIRSTNAME) + 1) > 5', $result->sqlRemoveFormatting());
+  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where char_length("persontable_0".FIRSTNAME) + 1 > 5', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::routing::testCompositionInMultiStatementPureExpressions():Boolean[1]

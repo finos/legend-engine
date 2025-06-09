@@ -67,7 +67,7 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
 
 
    assertEquals('name,type\n' + 'Product 1,5 years\n' + 'Product 2,5 years\n', $result.values->toOne()->toCSV());
-   assertEquals('select "root".PRODUCT_NAME as "name", "root".BOND_TYPE as "type" from PRODUCT_DENORM as "root" where ("root".BOND_TYPE like \'5%\' and "root".BOND_DETAILS like \'Bond%\')', $result->sqlRemoveFormatting());
+   assertEquals('select "root".PRODUCT_NAME as "name", "root".BOND_TYPE as "type" from PRODUCT_DENORM as "root" where "root".BOND_TYPE like \'5%\' and "root".BOND_DETAILS like \'Bond%\'', $result->sqlRemoveFormatting());
   }
 
 
@@ -83,7 +83,7 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
    assertEquals('Bond Type,Profit\n' + '5 years,10.0\n' + '7 weeks,1.0\n', $result.values->toOne()->toCSV());
    assertEqualsH2Compatible(
     'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then 5.0 else 1.0 end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"',
-    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"',
+    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then cast(5.0 as float) else cast(1.0 as float) end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"',
     $result->sqlRemoveFormatting()
   );
  }
@@ -100,7 +100,7 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
    assertEquals('Bond Type,sum\n' + '5 years,10.0\n' + '7 weeks,1.0\n', $result.values->toOne()->toCSV());
    assertEqualsH2Compatible(
     'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"',
-    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"',
+    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then cast(5.0 as float) else cast(1.0 as float) end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"',
     $result->sqlRemoveFormatting()
   );
  }

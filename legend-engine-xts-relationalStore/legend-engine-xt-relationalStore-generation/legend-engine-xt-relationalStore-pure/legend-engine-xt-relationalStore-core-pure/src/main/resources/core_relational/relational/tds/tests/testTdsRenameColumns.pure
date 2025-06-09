@@ -61,7 +61,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
    assertEquals('Anthony|1,David|1,Fabrice|1,John|2,Oliver|1,Peter|1',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "persontable_0"."firstName" as "First Name", "persontable_0"."count" as "People Count" from (select "root".FIRSTNAME as "firstName", count(*) as "count" from personTable as "root" group by "firstName" order by "firstName") as "persontable_0"',
+   assertEquals('select "persontable_0"."firstName" as "First Name", "persontable_0"."count" as "People Count" from (select "root".FIRSTNAME as "firstName", count(*) as "count" from personTable as "root" group by "firstName" order by "firstName" asc) as "persontable_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -83,7 +83,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
    assertEquals('Anthony,Anthony,David,David,Fabrice,Fabrice,John,John,John,John,Oliver,Oliver,Peter,Peter',
       $result.values->sort(asc('First Name')).rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."firstName" as "First Name" from (select "unionalias_1"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName" from personTable as "root" UNION ALL select "root".FIRSTNAME as "firstName" from personTable as "root") as "unionalias_1") as "unionalias_0"',
+   assertEquals('select "unionalias_0"."firstName" as "First Name" from (select "unionalias_1"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName" from personTable as "root" union all select "root".FIRSTNAME as "firstName" from personTable as "root") as "unionalias_1") as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 

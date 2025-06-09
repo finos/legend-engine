@@ -132,5 +132,5 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sybaseIQ::
       testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals([%2003-07-12T00:00:00.000000000+0000, %2003-07-13T00:00:00.000000000+0000], $result.values->at(0).rows.values);
-   meta::relational::functions::asserts::assertSameSQL('select dateadd(DAY, -7, "root".dateTime) as "Dt" from dataTable as "root"', $result);
+   meta::relational::functions::asserts::assertSameSQL('select dateadd(day, -7, "root".dateTime) as "Dt" from dataTable as "root"', $result);
 }

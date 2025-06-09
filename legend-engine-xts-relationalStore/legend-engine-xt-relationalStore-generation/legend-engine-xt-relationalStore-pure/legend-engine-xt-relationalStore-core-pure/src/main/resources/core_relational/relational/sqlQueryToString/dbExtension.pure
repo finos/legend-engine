@@ -364,29 +364,50 @@ function meta::relational::functions::sqlQueryToString::ddlSqlQueryToString(ddlS
                          d:DropTableSQL[1]| $dbConfig.translateDropTable($d)])
 }
 
+function meta::relational::functions::sqlQueryToString::useDialectTranslation(r:RelationalOperationElement[1], dbType:DatabaseType[1]):Boolean[1]
+{
+  $dbType->in([DatabaseType.H2]) && (!$r->instanceOf(SQLQuery) || $r->instanceOf(SelectSQLQuery));
+}
+
 function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
 {
-   sqlQueryToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, ^Format(newLine='', indent=''), $extensions);
+  if(useDialectTranslation($sqlQuery, $dbType),
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, $extensions),
+    | sqlQueryToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, ^Format(newLine='', indent=''), $extensions)
+  )
 }
 
 function meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
 {
-   sqlQueryToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, ^Format(newLine='\n', indent='\t'), $extensions);
+  if(useDialectTranslation($sqlQuery, $dbType),
+    // TODO: Use pretty format processing here. Skipping for now as it leads to lots of SQL assert diffs.
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, $extensions),
+    | sqlQueryToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, ^Format(newLine='\n', indent='\t'), $extensions);
+  );
 }
 
 function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], format:Format[1], extensions:Extension[*]):String[1]
 {
-   processOperation($sqlQuery, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), $format, ^Config(), $extensions);
+  if(useDialectTranslation($sqlQuery, $dbType),
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, $extensions),
+    | processOperation($sqlQuery, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), $format, ^Config(), $extensions)
+  );
 }
 
 function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], extensions:Extension[*]):String[1]
 {
-   processOperation($relationalOperationElement, createDbConfig($dbType, []), ^Format(newLine='', indent=''), ^Config(), $extensions);
+  if(useDialectTranslation($relationalOperationElement, $dbType),
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($relationalOperationElement, $dbType, $extensions),
+    | processOperation($relationalOperationElement, createDbConfig($dbType, []), ^Format(newLine='', indent=''), ^Config(), $extensions);
+  );
 }
 
 function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
 {
-   processOperation($relationalOperationElement, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), ^Format(newLine='', indent=''), ^Config(), $extensions);
+  if(useDialectTranslation($relationalOperationElement, $dbType),
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($relationalOperationElement, $dbType, false, $dbTimeZone, $quoteIdentifiers, $extensions),
+    | processOperation($relationalOperationElement, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), ^Format(newLine='', indent=''), ^Config(), $extensions);
+  );
 }
 
 function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], config:Config[1], extensions:Extension[*]):String[1]

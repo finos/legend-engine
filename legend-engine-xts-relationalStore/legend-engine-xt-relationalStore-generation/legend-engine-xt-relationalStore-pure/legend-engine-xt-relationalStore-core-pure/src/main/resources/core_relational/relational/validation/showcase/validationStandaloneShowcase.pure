@@ -60,21 +60,8 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
 
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultipleConstraints():Boolean[1]
 {
-   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty', 'validLocation'], meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "unionalias_0"."CONSTRAINT_ID" as "CONSTRAINT_ID", '+
-                         '"unionalias_0"."ENFORCEMENT_LEVEL" as "ENFORCEMENT_LEVEL", '+
-                         '"unionalias_0"."MESSAGE" as "MESSAGE", '+
-                         '"unionalias_0"."ID" as "ID" '+
-                 'from ('+
-                    'select \'etiNotEmpty\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'External Trade ID is not valid\' as "MESSAGE", "root".ID as "ID" '+
-                    'from tradeTable as "root" '+
-                    'where not "root".ETI is not null '+
-                    'UNION ALL '+
-                    'select \'validLocation\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'\' as "MESSAGE", "root".ID as "ID" '+
-                    'from tradeTable as "root" '+
-                    'where ("root".LOCATION not in (\'Asia\', \'EMEA\', \'Americas\') OR "root".LOCATION is null)'+
-                 ') as "unionalias_0"', $validationResult);
-
+   let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty', 'validLocation'], meta::relational::extension::relationalExtensions());   
+   assertSameSQL('select "unionalias_0"."CONSTRAINT_ID" as "CONSTRAINT_ID", "unionalias_0"."ENFORCEMENT_LEVEL" as "ENFORCEMENT_LEVEL", "unionalias_0"."MESSAGE" as "MESSAGE", "unionalias_0"."ID" as "ID" from (select \'etiNotEmpty\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'External Trade ID is not valid\' as "MESSAGE", "root".ID as "ID" from tradeTable as "root" where not "root".ETI is not null union all select \'validLocation\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'\' as "MESSAGE", "root".ID as "ID" from tradeTable as "root" where not "root".LOCATION in (\'Asia\', \'EMEA\', \'Americas\') or "root".LOCATION is null) as "unionalias_0"', $validationResult);
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'etiNotEmpty,Error,External Trade ID is not valid,2\n'+
                 'validLocation,Error,,3\n'+
@@ -84,19 +71,7 @@ function <<test.Test>> meta::relational::validation::showcase::standalone::valid
 function <<test.Test>> meta::relational::validation::showcase::standalone::validateMultiplesConstraintWithConstraintInformation():Boolean[1]
 {
    let validationResult = validate({|Trade.all()}, validationShowcaseMapping, getRuntime(), ['etiNotEmpty', 'validLocation'], getConstraintsContextInformation(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "unionalias_0"."CONSTRAINT_ID" as "CONSTRAINT_ID", '+
-                         '"unionalias_0"."ENFORCEMENT_LEVEL" as "ENFORCEMENT_LEVEL", '+
-                         '"unionalias_0"."MESSAGE" as "MESSAGE", '+
-                         '"unionalias_0"."ID" as "ID" '+
-                 'from ('+
-                    'select \'etiNotEmpty\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'External Trade ID is not valid\' as "MESSAGE", "root".ID as "ID" '+
-                    'from tradeTable as "root" '+
-                    'where not "root".ETI is not null '+
-                    'UNION ALL '+
-                    'select \'validLocation\' as "CONSTRAINT_ID", \'Warn\' as "ENFORCEMENT_LEVEL", \'Location is not known\' as "MESSAGE", "root".ID as "ID" '+
-                    'from tradeTable as "root" '+
-                    'where ("root".LOCATION not in (\'Asia\', \'EMEA\', \'Americas\') OR "root".LOCATION is null)'+
-                 ') as "unionalias_0"', $validationResult);
+   assertSameSQL('select "unionalias_0"."CONSTRAINT_ID" as "CONSTRAINT_ID", "unionalias_0"."ENFORCEMENT_LEVEL" as "ENFORCEMENT_LEVEL", "unionalias_0"."MESSAGE" as "MESSAGE", "unionalias_0"."ID" as "ID" from (select \'etiNotEmpty\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'External Trade ID is not valid\' as "MESSAGE", "root".ID as "ID" from tradeTable as "root" where not "root".ETI is not null union all select \'validLocation\' as "CONSTRAINT_ID", \'Warn\' as "ENFORCEMENT_LEVEL", \'Location is not known\' as "MESSAGE", "root".ID as "ID" from tradeTable as "root" where not "root".LOCATION in (\'Asia\', \'EMEA\', \'Americas\') or "root".LOCATION is null) as "unionalias_0"', $validationResult);
 
    assertEquals('CONSTRAINT_ID,ENFORCEMENT_LEVEL,MESSAGE,ID\n'+
                 'etiNotEmpty,Error,External Trade ID is not valid,2\n'+

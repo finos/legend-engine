@@ -156,7 +156,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "" "" {} "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "" "" {} "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')})\n'+
                      '      connection = DatabaseConnection(type = "H2")\n'+
                      '    )\n'+
                      '  )\n'+
@@ -179,7 +179,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '    (\n'+
                   '      type = TDS[(Name, String, VARCHAR(200), "")]\n'+
                   '      resultColumns = [("Name", VARCHAR(200))]\n'+
-                  '      sql = select "root".NAME as "Name" from addressTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalStreet![], \'"root".STREET = ${varPlaceHolderToString(optionalStreet![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".STREET is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalStreet![], \'${varPlaceHolderToString(optionalStreet![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")} = "root".STREET\', \'"root".STREET is null\')}))\n'+
+                  '      sql = select "root".NAME as "Name" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalStreet![], \'"root".STREET = ${varPlaceHolderToString(optionalStreet![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".STREET is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalStreet![], \'${varPlaceHolderToString(optionalStreet![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")} = "root".STREET\', \'"root".STREET is null\')})\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
@@ -625,7 +625,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThan
                      '    (\n'+
                      '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
                      '      resultColumns = [("firstName", VARCHAR(200))]\n'+
-                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")} is not null) and "root".AGE > ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")} is not null) and "root".AGE <= ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")}))\n'+
+                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where "root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")} is not null and "root".AGE > ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")} and "root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")} is not null and "root".AGE <= ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")}\n'+
                      '      connection = DatabaseConnection(type = "H2")\n'+
                      '    )\n'+
                      '  )\n'+
@@ -648,7 +648,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testLessThanGreaterThan
                      '    (\n'+
                      '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
                      '      resultColumns = [("firstName", VARCHAR(200))]\n'+
-                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")} is not null) and "root".AGE < ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")} is not null) and "root".AGE >= ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")}))\n'+
+                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where "root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")} is not null and "root".AGE < ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")} and "root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")} is not null and "root".AGE >= ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")}\n'+
                      '      connection = DatabaseConnection(type = "H2")\n'+
                      '    )\n'+
                      '  )\n'+
@@ -1012,7 +1012,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::inheritance():Boolean[1
                 '         as meta::relational::tests::model::inheritance::RoadVehicle\n'+
                 '  resultSizeRange = *\n'+
                 '  resultColumns = [(u_type, INT), ("pk_0_0", INT), ("pk_0_1", INT), ("id", INT), ("wheelCount", INT), ("description", INT), ("engineType", INT)]\n'+
-                '  sql = select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id", "unionBase"."wheelCount" as "wheelCount", "unionBase"."description" as "description", "unionBase"."engineType" as "engineType" from (select \'0\' as u_type, "root".ID as "pk_0_0", null as "pk_0_1", "root".ID as "id", "root".db_bic_wheelCount as "wheelCount", "root".b_Description as "description", null as "engineType" from Bicycle as "root" UNION ALL select \'1\' as u_type, null as "pk_0_0", "root".ID as "pk_0_1", "root".ID as "id", "root".db_car_wheelCount as "wheelCount", "root".c_Description as "description", "root".engineType as "engineType" from Car as "root") as "unionBase"\n'+
+                '  sql = select "unionBase".u_type as u_type, "unionBase"."pk_0_0" as "pk_0_0", "unionBase"."pk_0_1" as "pk_0_1", "unionBase"."id" as "id", "unionBase"."wheelCount" as "wheelCount", "unionBase"."description" as "description", "unionBase"."engineType" as "engineType" from (select \'0\' as u_type, "root".ID as "pk_0_0", null as "pk_0_1", "root".ID as "id", "root".db_bic_wheelCount as "wheelCount", "root".b_Description as "description", null as "engineType" from Bicycle as "root" union all select \'1\' as u_type, null as "pk_0_0", "root".ID as "pk_0_1", "root".ID as "id", "root".db_car_wheelCount as "wheelCount", "root".c_Description as "description", "root".engineType as "engineType" from Car as "root") as "unionBase"\n'+
                 '  connection = TestDatabaseConnection(type = "H2")\n'+
                 ')\n', $result->planToString(meta::relational::extension::relationalExtensions()));
 }
@@ -1064,7 +1064,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::simpleExpressionWithMul
                 '             as meta::relational::tests::model::simple::Person\n' +
                 '      resultSizeRange = *\n' +
                 '      resultColumns = [(\"pk_0\", INT), (\"firstName\", VARCHAR(200)), (\"age\", INT), (\"lastName\", VARCHAR(200))]\n' +
-                '      sql = select \"root\".ID as \"pk_0\", \"root\".FIRSTNAME as \"firstName\", \"root\".AGE as \"age\", \"root\".LASTNAME as \"lastName\" from personTable as \"root\" where (\"root\".FIRSTNAME = \'${var?replace("\'", "\'\'")}\' and (\"root\".AGE is not null and \"root\".AGE > ${age}))\n' +
+                '      sql = select \"root\".ID as \"pk_0\", \"root\".FIRSTNAME as \"firstName\", \"root\".AGE as \"age\", \"root\".LASTNAME as \"lastName\" from personTable as \"root\" where \"root\".FIRSTNAME = \'${var?replace("\'", "\'\'")}\' and \"root\".AGE is not null and \"root\".AGE > ${age}\n' +
                 '      connection = TestDatabaseConnection(type = \"H2\")\n' +
                 '    )\n' +
                 '  )\n' +
@@ -1225,7 +1225,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithOpenVari
       '    (\n'+
       '      type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
       '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", "")]\n'+
-      '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else CAST(0.0 AS FLOAT) end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") group by "Sales Division"\n'+
+      '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else cast(0.0 as float) end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") group by "Sales Division"\n'+
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
       '  )\n'+
@@ -1340,7 +1340,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithTwoOpenV
       '    (\n'+
       '      type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
       '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", "")]\n'+
-      '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else CAST(0.0 AS FLOAT) end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > DATE\'${startDate}\' and "calendar_0"."date" <= TIMESTAMP\'${reportEndDate.date}\') group by "Sales Division"\n'+
+      '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else cast(0.0 as float) end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where "calendar_0"."date" > DATE\'${startDate}\' and "calendar_0"."date" <= TIMESTAMP\'${reportEndDate.date}\' group by "Sales Division"\n'+
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
       '  )\n'+
@@ -1378,8 +1378,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::testMapWithOpenVariable
       '    (\n'+
       '      type = Integer\n'+
       '      resultSizeRange = *\n'+
-      '      resultColumns = [(("firmtable_1".aggCol + ${a}), "")]\n'+
-      '      sql = select ("firmtable_1".aggCol + ${a}) from firmTable as "root" left outer join (select "firmtable_1".ID as ID, count(*) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)\n'+
+      '      resultColumns = [("firmtable_1".aggCol + ${a}, "")]\n'+
+      '      sql = select "firmtable_1".aggCol + ${a} from firmTable as "root" left outer join (select "firmtable_1".ID as ID, count(*) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)\n'+
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
       '  )\n'+
@@ -1538,8 +1538,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::testMapWithOpenVariable
                 '(\n'+
                 '  type = Integer\n'+
                 '  resultSizeRange = *\n'+
-                '  resultColumns = [(("firmtable_1".aggCol + 10), "")]\n'+
-                '  sql = select ("firmtable_1".aggCol + 10) from firmTable as "root" left outer join (select "firmtable_1".ID as ID, count(*) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)\n'+
+                '  resultColumns = [("firmtable_1".aggCol + 10, "")]\n'+
+                '  sql = select "firmtable_1".aggCol + 10 from firmTable as "root" left outer join (select "firmtable_1".ID as ID, count(*) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)\n'+
                 '  connection = TestDatabaseConnection(type = "H2")\n'+
                 ')\n',$result->planToString(meta::relational::extension::relationalExtensions()));
 
@@ -1667,7 +1667,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::withPlatform():Boolean[
                 '      type = String\n' +
                 '      resultSizeRange = *\n'+
                 '      resultColumns = [("root".LASTNAME, VARCHAR(200))]\n'+
-                '      sql = select \"root\".LASTNAME from personTable as \"root\" where ((\"root\".FIRSTNAME = \'John\' and \"root\".LASTNAME = \'Johnson\') or \"root\".LASTNAME = \'Allen\')\n' +
+                '      sql = select \"root\".LASTNAME from personTable as \"root\" where (\"root\".FIRSTNAME = \'John\' and \"root\".LASTNAME = \'Johnson\') or \"root\".LASTNAME = \'Allen\'\n' +
                 '      connection = TestDatabaseConnection(type = "H2")\n'+
                 '    )\n' +
                 '  )\n' +
@@ -2038,7 +2038,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariabl
    let rlnNodeSQL = $rlnNode.sqlQuery;
    assertEqualsH2Compatible(
     'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, \'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, \'${bd}\')) where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'',
-    'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, TIMESTAMP\'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, TIMESTAMP\'${bd}\')) where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'',
+    'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(day, 1, TIMESTAMP\'${bd}\') and "productclassificationtable_0".thru_z > dateadd(day, 1, TIMESTAMP\'${bd}\')) where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'',
     $rlnNodeSQL
    );
 }
@@ -2051,7 +2051,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariabl
    let rlnNodeSQL = $rlnNode.sqlQuery;
    assertEqualsH2Compatible(
     'select "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, \'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, \'${bd}\')) left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= dateadd(DAY, 1, \'${bd}\') and "productexchangetable_1".thru_z > dateadd(DAY, 1, \'${bd}\')) as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'',
-    'select "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, TIMESTAMP\'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, TIMESTAMP\'${bd}\')) left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= dateadd(DAY, 1, TIMESTAMP\'${bd}\') and "productexchangetable_1".thru_z > dateadd(DAY, 1, TIMESTAMP\'${bd}\')) as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'',
+    'select "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(day, 1, TIMESTAMP\'${bd}\') and "productclassificationtable_0".thru_z > dateadd(day, 1, TIMESTAMP\'${bd}\')) left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= dateadd(day, 1, TIMESTAMP\'${bd}\') and "productexchangetable_1".thru_z > dateadd(day, 1, TIMESTAMP\'${bd}\')) as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'',
     $rlnNodeSQL
    );
 }
@@ -2071,7 +2071,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionSimp
       '(\n'+
       '  type = TDS[(legalName, String, VARCHAR(8192), ""), (Firm Instance Count, Integer, INT, "")]\n'+
       '  resultColumns = [("legalName", VARCHAR(200)), ("Firm Instance Count", "")]\n'+
-      '  sql = select "root".name as "legalName", count("root".name) OVER (Partition By "root".name ) as "Firm Instance Count" from Firm as "root"\n'+
+      '  sql = select "root".name as "legalName", count("root".name) over (partition by "root".name) as "Firm Instance Count" from Firm as "root"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
       ')\n';
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
@@ -2096,7 +2096,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionDeep
       '(\n'+
       '  type = TDS[(firstName, String, VARCHAR(8192), ""), (lastName, String, VARCHAR(8192), "")]\n'+
       '  resultColumns = [("firstName", ""), ("lastName", "")]\n'+
-      '  sql = select concat(substring("root".fullname, 0, LOCATE(\' \', "root".fullname)), \'XX\') as "firstName", concat(substring("root".fullname, (LOCATE(\' \', "root".fullname) + 1), char_length("root".fullname)), \'ZZ\') as "lastName" from SPerson as "root"\n'+
+      '  sql = select concat(substring("root".fullname, 0, locate(\' \', "root".fullname)), \'XX\') as "firstName", concat(substring("root".fullname, locate(\' \', "root".fullname) + 1, char_length("root".fullname)), \'ZZ\') as "lastName" from SPerson as "root"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
       ')\n';
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
@@ -2116,7 +2116,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionJoin
       '(\n'+
       '  type = TDS[(legalName, String, VARCHAR(8192), ""), (lastName, String, VARCHAR(8192), "")]\n'+
       '  resultColumns = [("legalName", VARCHAR(200)), ("lastName", "")]\n'+
-      '  sql = select "root".name as "legalName", substring("person_0".fullname, (LOCATE(\' \', "person_0".fullname) + 1), char_length("person_0".fullname)) as "lastName" from Firm as "root" left outer join Person as "person_0" on ("person_0".firm = "root".name)\n'+
+      '  sql = select "root".name as "legalName", substring("person_0".fullname, locate(\' \', "person_0".fullname) + 1, char_length("person_0".fullname)) as "lastName" from Firm as "root" left outer join Person as "person_0" on ("person_0".firm = "root".name)\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
       ')\n';
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
@@ -2138,7 +2138,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionAgg(
       '(\n'+
       '  type = TDS[(FirstName, String, VARCHAR(8192), ""), (PersonCount, Integer, INT, "")]\n'+
       '  resultColumns = [("FirstName", ""), ("PersonCount", "")]\n'+
-      '  sql = select substring("root".fullname, 0, LOCATE(\' \', "root".fullname)) as "FirstName", count(substring("root".fullname, (LOCATE(\' \', "root".fullname) + 1), char_length("root".fullname))) as "PersonCount" from SPerson as "root" group by "FirstName"\n'+
+      '  sql = select substring("root".fullname, 0, locate(\' \', "root".fullname)) as "FirstName", count(substring("root".fullname, locate(\' \', "root".fullname) + 1, char_length("root".fullname))) as "PersonCount" from SPerson as "root" group by "FirstName"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
       ')\n';
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
@@ -2166,7 +2166,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionMult
       '(\n'+
       '  type = TDS[(FirstName, String, VARCHAR(8192), ""), (PersonCount, Integer, INT, ""), (PersonCountViaSize, Integer, INT, "")]\n'+
       '  resultColumns = [("FirstName", ""), ("PersonCount", ""), ("PersonCountViaSize", "")]\n'+
-      '  sql = select substring("root".fullname, 0, LOCATE(\' \', "root".fullname)) as "FirstName", count(substring("root".fullname, (LOCATE(\' \', "root".fullname) + 1), char_length("root".fullname))) as "PersonCount", count(substring("root".fullname, 0, LOCATE(\' \', "root".fullname))) as "PersonCountViaSize" from SPerson as "root" group by "FirstName"\n'+
+      '  sql = select substring("root".fullname, 0, locate(\' \', "root".fullname)) as "FirstName", count(substring("root".fullname, locate(\' \', "root".fullname) + 1, char_length("root".fullname))) as "PersonCount", count(substring("root".fullname, 0, locate(\' \', "root".fullname))) as "PersonCountViaSize" from SPerson as "root" group by "FirstName"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
       ')\n';
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
@@ -2522,7 +2522,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFla
                 '(\n'+
                 '  type = TDS[(name, String, VARCHAR(200), "")]\n'+
                 '  resultColumns = [("name", VARCHAR(200))]\n'+
-                '  sql = select "root"."NAME" as "name" from "productSchema"."productTable" as "root" order by "name"\n'+
+                '  sql = select "root"."NAME" as "name" from "productSchema"."productTable" as "root" order by "name" asc\n'+
                 '  connection = TestDatabaseConnection(type = "H2")\n'+
                 ')\n', $result->planToString(meta::relational::extension::relationalExtensions()));
 }

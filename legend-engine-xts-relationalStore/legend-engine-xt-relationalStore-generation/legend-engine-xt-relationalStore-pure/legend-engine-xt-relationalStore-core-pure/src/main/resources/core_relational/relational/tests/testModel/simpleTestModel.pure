@@ -72,7 +72,7 @@ Class meta::relational::tests::model::simple::Firm extends EntityWithAddress
     }:Person[0..1];
 
     employeesWithAddressNameSorted(name:String[1]){
-       $this.employees->filter(e|$e.address.name->toOne()->trim() == $name)->sortBy(#/Person/lastName#).lastName->joinStrings('')
+       $this.employees->filter(e|$e.address.name->toOne()->trim() == $name)->sortBy(#/Person/lastName#).lastName->joinStrings(',')
     }:String[0..1];
 
     nickName : String[0..1];

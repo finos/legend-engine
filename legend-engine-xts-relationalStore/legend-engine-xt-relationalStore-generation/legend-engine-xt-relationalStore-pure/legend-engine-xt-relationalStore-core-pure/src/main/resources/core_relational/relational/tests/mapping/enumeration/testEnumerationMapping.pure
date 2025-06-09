@@ -389,7 +389,7 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testTds
   assertSameElements(['no', 'yes', 'no'], $result.values.rows.values);
   let tds = $result.values->at(0);
   assertSize($tds.rows, 3);
-  assertSameSQL('select case when ("root".type not in (\'FTC\', \'FTO\') OR "root".type is null) then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
+  assertSameSQL('select case when not "root".type in (\'FTC\', \'FTO\') or "root".type is null then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsProjectWithEnumToStringEqualityComparison():Boolean[1]
