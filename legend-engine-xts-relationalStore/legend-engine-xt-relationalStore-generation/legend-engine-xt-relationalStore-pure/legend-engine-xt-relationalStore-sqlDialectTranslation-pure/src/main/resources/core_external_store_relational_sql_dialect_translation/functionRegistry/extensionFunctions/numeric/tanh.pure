@@ -1,0 +1,59 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class {sqlFunctionInfo.initializer = 'tanh'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::Tanh extends ExtensionSqlFunction
+[
+  $this.name == 'tanh'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::tanh(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::Tanh
+  (
+    name = 'tanh',
+    documentation = 'Returns the hyperbolic cosine for a given number.',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = AbstractNumericSqlType,
+        returnType = DoubleSqlType
+      )
+    ],
+    tests = [
+      sqlFunctionTest(
+        simpleFunctionCall('tanh', literal(0)),
+        0.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('tanh', literal(pi()/2)),
+        0.91715234
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('tanh', literal(-1*pi())),
+        -0.99627208
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('tanh', literal(1.447080)),
+        0.89511398
+      )
+    ]
+  )
+}

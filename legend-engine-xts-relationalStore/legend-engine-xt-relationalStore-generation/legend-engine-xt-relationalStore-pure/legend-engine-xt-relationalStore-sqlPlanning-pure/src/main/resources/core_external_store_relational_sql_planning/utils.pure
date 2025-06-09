@@ -167,5 +167,5 @@ function meta::external::store::relational::sqlPlanning::utils::printDebugQuery(
                                       formatConfig = ^FormatConfig(pretty = $pretty, upperCaseKeywords = true), 
                                       functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()
                                     );
-  $query->generateSqlDialectForStatement($sqlDialectTranslationConfig, $extensions);
+  $query->generateSqlDialect($sqlDialectTranslationConfig, $extensions);
 }

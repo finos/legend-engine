@@ -15,6 +15,10 @@
     "core_functions_relation",
     "core_functions_unclassified",
     "core_service",
-    "core"
+    "core",
+    "core_external_store_relational_postgres_sql_model",
+    "core_external_store_relational_postgres_sql_model_extensions",
+    "core_external_store_relational_sql_dialect_translation",
+    "core_external_store_relational_sql_dialect_translation_h2"
   ]
 }

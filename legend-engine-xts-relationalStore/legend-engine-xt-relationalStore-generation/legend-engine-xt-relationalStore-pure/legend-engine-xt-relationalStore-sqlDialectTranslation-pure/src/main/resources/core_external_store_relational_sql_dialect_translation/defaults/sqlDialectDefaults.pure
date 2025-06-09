@@ -17,8 +17,8 @@ import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
-import meta::external::store::relational::sqlDialectTranslation::metamodel::*;
-import meta::external::store::relational::sqlDialectTranslation::tests::metamodel::*;
+import meta::external::query::sql::metamodel::extension::*;
+import meta::external::query::sql::metamodel::extension::tests::*;
 
 Enum meta::external::store::relational::sqlDialectTranslation::defaults::SqlOperatorTypes_default
 {
@@ -129,24 +129,30 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::ope
   $operatorPrecedenceOrder->zip($operatorPrecedenceOrder->size()->range())->newMap();
 }
 
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::isQuoted(identifier: String[1]): Boolean[1]
+{
+  $identifier->startsWith('"') && $identifier->endsWith('"');
+}
+
 function meta::external::store::relational::sqlDialectTranslation::defaults::identifierProcessor_default(): IdentifierProcessor[1]
 {
   identifierProcessor
   (
     {sqlDialect, identifier, shouldQuote, state, config |
-      if ($shouldQuote || $identifier->toLower()->in($sqlDialect.keywords->map(k|$k->toLower())),
-          | if ($sqlDialect.quoteConfig->isEmpty(),
-                | // Quoting configuration unknown. Hence returning the identifier as is
-                  $identifier,
-                | let quoteCfg = $sqlDialect.quoteConfig->toOne();
-                  $quoteCfg.start + $identifier->replace($quoteCfg.end, $quoteCfg.escape) + $quoteCfg.end;
-            ),
-          | $identifier
-      )
+      let isQuoted = $identifier->isQuoted();
+      if ($shouldQuote || $identifier->toLower()->in($sqlDialect.keywords->map(k|$k->toLower())) || $isQuoted,
+        | if ($sqlDialect.identifierQuoteConfig->isEmpty(),
+          | // Quoting configuration unknown. Hence returning the identifier as is
+            $identifier,
+          | let quoteCfg = $sqlDialect.identifierQuoteConfig->toOne();
+            let unquotedIdentifier = if($isQuoted, | $identifier->substring(1, $identifier->length()-1), | $identifier);
+            $quoteCfg.start + $unquotedIdentifier->replace($quoteCfg.end, $quoteCfg.escape) + $quoteCfg.end;
+          ),
+        | $identifier
+      );
     }
   )
 }
-
 function meta::external::store::relational::sqlDialectTranslation::defaults::integerLiteralNodeProcessor_default():  NodeProcessor<IntegerLiteral>[1]
 {
   nodeProcessor(
@@ -163,10 +169,16 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::str
   nodeProcessor(
     StringLiteral,
     {sqlDialect, s, state, config | 
-      '\'' + $s.value->replace('\'', '\'\'') + '\''
+      $s.value->handleStringValue($sqlDialect);
     },
     {n | true}
   )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::handleStringValue(s: String[1], sqlDialect: SqlDialect[1]): String[1]
+{
+  let quoteConfig = $sqlDialect.literalQuoteConfig;
+  $quoteConfig.start + $s->replace($quoteConfig.end, $quoteConfig.escape) + $quoteConfig.end;
 }
 
 function meta::external::store::relational::sqlDialectTranslation::defaults::booleanLiteralNodeProcessor_default(): NodeProcessor<BooleanLiteral>[1]
@@ -197,28 +209,6 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::dou
     DoubleLiteral,
     {sqlDialect, d, state, config | 
       $d.value->toString()
-    },
-    {n | true}
-  )
-}
-
-function meta::external::store::relational::sqlDialectTranslation::defaults::dateLiteralNodeProcessor_default(): NodeProcessor<DateLiteral>[1]
-{
-  nodeProcessor(
-    DateLiteral,
-    {sqlDialect, d, state, config |
-      'DATE \'' + $d.value->convertDateToSqlString($config.dbConfig.dbTimeZone) + '\''
-    },
-    {n | true}
-  )
-}
-
-function meta::external::store::relational::sqlDialectTranslation::defaults::timestampLiteralNodeProcessor_default(): NodeProcessor<TimestampLiteral>[1]
-{
-  nodeProcessor(
-    TimestampLiteral,
-    {sqlDialect, t, state, config |
-      'TIMESTAMP \'' + $t.value->convertDateToSqlString($config.dbConfig.dbTimeZone) + '\''
     },
     {n | true}
   )
@@ -481,8 +471,8 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::inL
     {sqlDialect, l, state, config |
       let sep0 = $state.separatorIfPretty(0, $config);
       let sep1 = $state.separatorIfPretty(1, $config);
-      let whenClauses = $l.values->map(v | $sqlDialect->executeNodeProcessor($v, [], $state->increaseLevel(), $config))->joinStrings(',' + $state.separator(1, $config));
-      '(' + $sep1 + $whenClauses + $sep0 + ')';
+      let values = $l.values->map(v | $sqlDialect->executeNodeProcessor($v, [], $state->increaseLevel(), $config))->joinStrings(',' + $state.separator(1, $config));
+      '(' + $sep1 + $values + $sep0  + ')';
     },
     {n | true}
   )
@@ -509,6 +499,25 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::ext
     },
     {n | true}
   )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::likePredicateProcessor_default(): NodeProcessor<LikePredicate>[1]
+{
+  nodeProcessor(
+    LikePredicate,
+    {sqlDialect, l, state, config |
+      $sqlDialect->executeNodeProcessor($l.value, $state, $config) + ' '  + $sqlDialect->keyword('like', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($l.pattern, $state, $config) + 
+      $l.escape->executeIfNotEmptyElseReturnEmptyString({|
+        ' '  + $sqlDialect->keyword('escape', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($l.escape->toOne(), $l, $state, $config)
+      })
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::escapeLikePattern_default(pattern:String[1]): String[1]
+{
+  $pattern->replace('_', '\\_')->replace('%', '\\%');
 }
 
 function meta::external::store::relational::sqlDialectTranslation::defaults::betweenPredicateProcessor_default(): NodeProcessor<BetweenPredicate>[1]
@@ -652,17 +661,25 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::joi
       let isNaturalJoin = $j.criteria->isNotEmpty() && $j.criteria->toOne()->instanceOf(NaturalJoin);
       
       $left + $sep0 + if($isNaturalJoin, | $sqlDialect->keyword('natural', $state, $config) + ' ', | '') + $type +
-      $sep1 + $right +
-      if ($j.criteria->isNotEmpty() && (!$isNaturalJoin),
-          | $sep1 + $sqlDialect->keyword('on', $state, $config) + ' ' +
-            $j.criteria->toOne()->match([
-              o: JoinOn[1] | '(' + $sqlDialect->executeNodeProcessor($o.expression, $state, $config)  + ')',
-              a: Any[*] | failWithMessage('Unhandled join criteria: ' + $a->class()->elementToPath())
-            ]),
-          | ''
-      );
+      $sep1 + $right + $j.criteria->joinCriteriaProcessor_default($sqlDialect, $state, $config);
     }
   )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::joinCriteriaProcessor_default(jc:JoinCriteria[0..1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let sep0 = $state.separator(0, $config);
+  let sep1 = $state.separator(1, $config);
+
+  let isNaturalJoin = $jc->isNotEmpty() && $jc->toOne()->instanceOf(NaturalJoin);
+  if($jc->isNotEmpty() && (!$isNaturalJoin),
+    | $sep1 + $sqlDialect->keyword('on', $state, $config) + ' ' +
+      $jc->toOne()->match([
+        o: JoinOn[1] | '(' + $sqlDialect->executeNodeProcessor($o.expression, $state, $config)  + ')';,
+        a: Any[*] | failWithMessage('Unhandled join criteria: ' + $a->class()->elementToPath())
+      ]),
+    | ''
+  );
 }
 
 function meta::external::store::relational::sqlDialectTranslation::defaults::selectProcessor_default(): NodeProcessor<Select>[1]
@@ -807,15 +824,6 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::tab
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::defaults::tablePlaceholderProcessor_default(): NodeProcessor<TablePlaceholder>[1]
-{
-  nodeProcessor(
-    TablePlaceholder,
-    {sqlDialect, t, state, config | '(${' + $t.name + '})'},
-    {n: TablePlaceholder[1] | true}
-  );
-}
-
 function meta::external::store::relational::sqlDialectTranslation::defaults::functionCallProcessor_default(): NodeProcessor<FunctionCall>[1]
 {
   nodeProcessor(
@@ -829,88 +837,57 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::fun
   );
 }
 
-function meta::external::store::relational::sqlDialectTranslation::defaults::createTestTableProcessor_default(): NodeProcessor<CreateTestTable>[1]
+function meta::external::store::relational::sqlDialectTranslation::defaults::trimProcessor_default(): NodeProcessor<Trim>[1]
 {
   nodeProcessor(
-    CreateTestTable,
-    {sqlDialect, c, state, config |
-      $sqlDialect->keyword('create', $state, $config) +
-      if($c.isTempTable, | ' ' + $sqlDialect->keyword('temporary', $state, $config) + ' ', |' ') +
-      $sqlDialect->keyword('table', $state, $config) + ' ' +
-      $sqlDialect->executeIdentifierProcessor($c.tableName, $config.dbConfig.quoteIdentifiers, $state, $config) +
-      ' (' + $state.separatorIfPretty(1, $config) +
-      $c.columns->map(c|$sqlDialect->executeIdentifierProcessor($c.first, $config.dbConfig.quoteIdentifiers, $state, $config) + ' ' + $c.second.name)->joinStrings(',' + $state.separator(1, $config)) + $state.separatorIfPretty(0, $config) +
-      ')';
-    }
-  );
+    Trim,
+    {sqlDialect, t, state, config |
+      $sqlDialect->keyword('trim', $state, $config) + '(' + $sqlDialect->keyword($t.mode.name->toLower(), $state, $config) +  if($t.characters->isEmpty(), |'',|' '+ $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)) +' ' + $sqlDialect->keyword('from', $state, $config) + ' '
+      + $sqlDialect->executeNodeProcessor($t.value, $state, $config) +')'
+    },
+    {n | true}
+  )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::defaults::dropTestTableProcessor_default(): NodeProcessor<DropTestTable>[1]
-{
-  nodeProcessor(
-    DropTestTable,
-    {sqlDialect, d, state, config |
-      $sqlDialect->keyword('drop', $state, $config) + ' ' + $sqlDialect->keyword('table', $state, $config) + ' ' + 
-      $sqlDialect->keyword('if', $state, $config) + ' ' + $sqlDialect->keyword('exists', $state, $config) + ' ' +
-      $sqlDialect->executeIdentifierProcessor($d.tableName, $config.dbConfig.quoteIdentifiers, $state, $config)
-    }
-  );
-}
-
-function meta::external::store::relational::sqlDialectTranslation::defaults::insertIntoTestTableProcessor_default(): NodeProcessor<InsertIntoTestTable>[1]
-{
-  nodeProcessor(
-    InsertIntoTestTable,
-    {sqlDialect, i, state, config |
-      let sep0 = $state.separator(0, $config);
-
-      $sqlDialect->keyword('insert', $state, $config) + ' ' + $sqlDialect->keyword('into', $state, $config) + ' ' + $sqlDialect->executeIdentifierProcessor($i.tableName, $config.dbConfig.quoteIdentifiers, $state, $config) + $sep0 +
-      '(' + $i.columns->map(c| $sqlDialect->executeIdentifierProcessor($c, $config.dbConfig.quoteIdentifiers, $state, $config))->joinStrings(', ') + ')' +
-      $sep0 + $sqlDialect->keyword('values', $state, $config) + $sep0 +
-      $i.values->map(row|$row->rowMapper($sqlDialect, $state, $config))->joinStrings(',' +  $sep0);
-    }
-  );
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::rowMapper(row: List<Any>[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  $row.values->map(v| $sqlDialect->executeNodeProcessor($v->cast(@Literal), $state, $config))->joinStrings('(', ', ', ')') ;
-}
-
-function meta::external::store::relational::sqlDialectTranslation::defaults::regexpPattern(regexOperator:String[1]):String[1]
+function meta::external::store::relational::sqlDialectTranslation::defaults::regexpLikePattern(regexOperator:String[1]):String[1]
 {
   '%s ' + $regexOperator + ' \'' + '^%s$' +'\''
 }
 
-function meta::external::store::relational::sqlDialectTranslation::defaults::transformRegexpParams(params: String[*]):String[*]
+function meta::external::store::relational::sqlDialectTranslation::defaults::transformRegexpParams(params: String[*], sqlDialect:SqlDialect[1]):String[*]
 {
-  let regExpression = $params->at(1)->removeQuotes();
+  let regExpression = $params->at(1)->removeQuotes($sqlDialect);
   $params->at(0)->concatenate($regExpression);
 }
 
-function meta::external::store::relational::sqlDialectTranslation::defaults::removeQuotes(s:String[1]):String[1]
+function meta::external::store::relational::sqlDialectTranslation::defaults::isQuoted(s:String[1], sqlDialect:SqlDialect[1]):Boolean[1]
 {
-  if($s->startsWith('\'') && $s->endsWith('\''),
+  let quoteConfig = $sqlDialect.literalQuoteConfig;
+  $s->startsWith($quoteConfig.start) && $s->endsWith($quoteConfig.end);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::removeQuotes(s:String[1], sqlDialect:SqlDialect[1]):String[1]
+{
+  let quoteConfig = $sqlDialect.literalQuoteConfig;
+  if($s->isQuoted($sqlDialect),
     | $s->substring(1, $s->length()-1),
     | $s
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::addQuotes(s:String[1], sqlDialect:SqlDialect[1]):String[1]
+{
+  let quoteConfig = $sqlDialect.literalQuoteConfig;
+  if($s->isQuoted($sqlDialect),
+    | $s,
+    | $quoteConfig.start + $s + $quoteConfig.end
   );
 }
 
 function meta::external::store::relational::sqlDialectTranslation::defaults::processorForRegexpLike(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  regexpPattern('~')->format($processedArgs->transformRegexpParams());
-}
-
-function meta::external::store::relational::sqlDialectTranslation::defaults::trimProcessor_default(): NodeProcessor<Trim>[1]
-{
-  nodeProcessor(
-    Trim,
-    {sqlDialect, t, state, config |
-      $sqlDialect->keyword('trim', $state, $config) + '(' + $sqlDialect->keyword($t.mode.name, $state, $config) +  if($t.characters->isEmpty(), |'',|' '+ $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)) +' ' + $sqlDialect->keyword('from', $state, $config) + ' '
-      + $sqlDialect->executeNodeProcessor($t.value, $state, $config) +')'
-    }
-  )
+  regexpLikePattern('~')->format($processedArgs->transformRegexpParams($sqlDialect));
 }
 
 function meta::external::store::relational::sqlDialectTranslation::defaults::convertDateToSqlString(date:Date[1], dbTimeZone:String[0..1]):String[1]
@@ -928,4 +905,3 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::con
     )
   );
 }
-

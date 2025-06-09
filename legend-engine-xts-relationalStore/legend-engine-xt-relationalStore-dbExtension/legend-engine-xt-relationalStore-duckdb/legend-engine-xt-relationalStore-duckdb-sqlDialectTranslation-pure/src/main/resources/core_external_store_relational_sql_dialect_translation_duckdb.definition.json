@@ -3,17 +3,11 @@
   "pattern": "(meta::external::store::relational::sqlDialectTranslation::duckDB)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_dsl_store",
-    "platform_dsl_mapping",
-    "platform_dsl_path",
-    "platform_dsl_graph",
-    "platform_dsl_diagram",
-    "platform_store_relational",
     "core_functions_standard",
     "core_functions_unclassified",
-    "core_functions_json",
     "core",
     "core_external_store_relational_postgres_sql_model",
+    "core_external_store_relational_postgres_sql_model_extensions",
     "core_external_store_relational_sql_dialect_translation"
   ]
 }

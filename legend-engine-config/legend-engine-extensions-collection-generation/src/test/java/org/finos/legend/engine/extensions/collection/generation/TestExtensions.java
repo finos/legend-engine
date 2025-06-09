@@ -591,6 +591,7 @@ public class TestExtensions
                 .with("core_external_query_graphql")
                 .with("core_external_query_graphql_metamodel")
                 .with("core_external_store_relational_postgres_sql_model")
+                .with("core_external_store_relational_postgres_sql_model_extensions")
                 .with("core_external_compiler")
                 .with("core_external_language_daml")
                 .with("core_external_language_haskell")

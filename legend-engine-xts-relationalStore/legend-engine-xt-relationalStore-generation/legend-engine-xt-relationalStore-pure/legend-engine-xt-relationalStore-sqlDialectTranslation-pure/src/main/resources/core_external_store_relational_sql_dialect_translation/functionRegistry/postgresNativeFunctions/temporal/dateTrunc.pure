@@ -39,35 +39,35 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('date_trunc', [literal('day'), cast(literal('2025-01-01'), 'DATE')]),
+        simpleFunctionCall('date_trunc', [literal('day'), literal(%2025-01-01)]),
         %2025-01-01T00:00:00.000000000+0000
       ),
       sqlFunctionTest(
-        simpleFunctionCall('date_trunc', [literal('day'), cast(literal('2025-01-01 12:00:00'), 'TIMESTAMP')]),
+        simpleFunctionCall('date_trunc', [literal('day'), literal(%2025-01-01T12:00:00)]),
         %2025-01-01T00:00:00.000000000+0000
       ),
       sqlFunctionTest(
-        simpleFunctionCall('date_trunc', [literal('month'), cast(literal('2025-01-31'), 'DATE')]),
+        simpleFunctionCall('date_trunc', [literal('month'), literal(%2025-01-31)]),
         %2025-01-01T00:00:00.000000000+0000
       ),
       sqlFunctionTest(
-        simpleFunctionCall('date_trunc', [literal('year'), cast(literal('2025-12-31'), 'DATE')]),
+        simpleFunctionCall('date_trunc', [literal('year'), literal(%2025-12-31)]),
         %2025-01-01T00:00:00.000000000+0000
       ),
       sqlFunctionTest(
-        simpleFunctionCall('date_trunc', [literal('second'), cast(literal('2025-01-01 12:34:56.789'), 'TIMESTAMP')]),
+        simpleFunctionCall('date_trunc', [literal('second'), literal(%2025-01-01T12:34:56.789)]),
         %2025-01-01T12:34:56.000000000+0000
       ),
       sqlFunctionTest(
-        simpleFunctionCall('date_trunc', [literal('hour'), cast(literal('2025-01-01 12:34:56.789'), 'TIMESTAMP')]),
+        simpleFunctionCall('date_trunc', [literal('hour'), literal(%2025-01-01T12:34:56.789)]),
         %2025-01-01T12:00:00.000000000+0000
       ),
       sqlFunctionTest(
-        simpleFunctionCall('date_trunc', [literal('minute'), cast(literal('2025-01-01 12:34:56.789'), 'TIMESTAMP')]),
+        simpleFunctionCall('date_trunc', [literal('minute'), literal(%2025-01-01T12:34:56.789)]),
         %2025-01-01T12:34:00.000000000+0000
       ),
       sqlFunctionTest(
-        simpleFunctionCall('date_trunc', [literal('millisecond'), cast(literal('2025-01-01 12:34:56.789'), 'TIMESTAMP')]),
+        simpleFunctionCall('date_trunc', [literal('millisecond'), literal(%2025-01-01T12:34:56.789)]),
         %2025-01-01T12:34:56.789000000+0000
       )
     ]

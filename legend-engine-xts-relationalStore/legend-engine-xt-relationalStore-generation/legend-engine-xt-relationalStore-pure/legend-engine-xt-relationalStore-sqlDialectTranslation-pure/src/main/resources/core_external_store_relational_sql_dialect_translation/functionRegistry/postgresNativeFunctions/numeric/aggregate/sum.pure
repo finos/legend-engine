@@ -35,8 +35,8 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       ^SqlFunctionVariation
       (
         parameterTypes = AbstractIntegerSqlType,
-        returnType = BigIntSqlType
-      ),     
+        returnType = AbstractNumericSqlType
+      ),
       ^SqlFunctionVariation
       (
         parameterTypes = DoubleSqlType,

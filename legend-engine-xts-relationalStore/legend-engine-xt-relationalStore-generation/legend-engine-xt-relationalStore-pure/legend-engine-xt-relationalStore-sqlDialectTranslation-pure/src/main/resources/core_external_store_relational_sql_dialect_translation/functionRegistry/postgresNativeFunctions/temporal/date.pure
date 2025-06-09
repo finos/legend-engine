@@ -18,33 +18,37 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class {sqlFunctionInfo.initializer = 'coalesce'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::Coalesce extends PostgresNativeSqlFunction
+Class {sqlFunctionInfo.initializer = 'date'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::Date extends PostgresNativeSqlFunction
 [
-  $this.name == 'coalesce'
+  $this.name == 'date'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::coalesce(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::date(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::Coalesce
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::Date
   (
-    name = 'coalesce',
-    documentation = 'Returns the first non-null argument. Null is returned only if all arguments are null.',
+    name = 'date',
+    documentation = 'Truncates the given date/timestamp to just the date part.',
     variations = [
-      ^VariadicSqlFunctionVariation
+      ^SqlFunctionVariation
       (
-        parameterTypes = SqlType,
-        returnType = SqlType
-      )
+        parameterTypes = [AbstractTemporalSqlType],
+        returnType = DateSqlType
+      )    
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('coalesce', [^NullLiteral(), literal('Hello'), literal('2'), literal('World')]),
-        'Hello'
+        simpleFunctionCall('date', literal(%2025-01-01T12:00:00)),
+        %2025-01-01
       ),
       sqlFunctionTest(
-        simpleFunctionCall('coalesce', [^NullLiteral(), ^NullLiteral(), literal('There!')]),
-        'There!'
+        simpleFunctionCall('date', literal(%2025-01-01T12:00:00.123+0400)),
+        %2025-01-01
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('date', literal(%2025-01-01)),
+        %2025-01-01
       )
     ]
   )
