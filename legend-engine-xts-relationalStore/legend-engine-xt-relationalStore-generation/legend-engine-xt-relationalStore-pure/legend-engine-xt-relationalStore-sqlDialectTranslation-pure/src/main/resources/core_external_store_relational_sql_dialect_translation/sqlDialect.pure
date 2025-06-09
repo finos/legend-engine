@@ -35,6 +35,7 @@ Class meta::external::store::relational::sqlDialectTranslation::SqlDialect
 
   // For testing
   initSqlStatementsForTests: String[*];
+  expectedSqlDialectTestErrors: Map<String, String>[1];
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::NodeProcessor<T> // T extends Node

@@ -80,7 +80,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   
 }
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionTest(functionCall: FunctionCall[1], result: Any[*]): SqlFunctionTest[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionTest(functionCall: Node[1], result: Any[*]): SqlFunctionTest[1]
 {
   ^SqlFunctionTest
   (
@@ -129,6 +129,9 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
 
     // Numeric Aggregate
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::average(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::correlation(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::covariancePopulation(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::covarianceSample(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::mode(),  
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::percentileContinuous(),    
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::percentileDiscrete(),
@@ -217,6 +220,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha256(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::startsWith(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::toChar(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::uuidV4(),
 
     // Temporal
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::convertTimeZone(),  

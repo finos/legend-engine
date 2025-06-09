@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::query::sql::metamodel::extension::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
@@ -53,7 +54,8 @@ function meta::external::store::relational::sqlDialectTranslation::snowflake::sn
     // For testing
     initSqlStatementsForTests = [
       'USE SCHEMA DEMO_DB.PUBLIC'
-    ]
+    ],
+    expectedSqlDialectTestErrors = snowflakeExpectedSqlDialectTestErrors()
   )
 }
 
@@ -66,14 +68,13 @@ function meta::external::store::relational::sqlDialectTranslation::snowflake::sn
       ^SqlDialectTranslationModuleExtension
       (
         module = sqlDialectTranslationModuleExtensionName(),
-        extraSqlDialects = snowflakeSqlDialect(),
-        expectedFunctionTestErrorsByDialect = pair('Snowflake', snowflakeFunctionTestsExpectedErrors())->newMap()
+        extraSqlDialects = snowflakeSqlDialect()
       )
     ]
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeFunctionTestsExpectedErrors(): Map<String, String>[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeExpectedSqlDialectTestErrors(): Map<String, String>[1]
 {
   [
     pair(
@@ -128,7 +129,7 @@ function meta::external::store::relational::sqlDialectTranslation::snowflake::sn
       'FuncTests - mode(0/1)',
       'Expected - {"columnNames":["result"],"rows":[{"values":[88]}]}\n' +
       'Actual - {"columnNames":["result"],"rows":[{"values":[80]}]}'
-    ) 
+    )
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -220,7 +221,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     betweenPredicateProcessor_default(),
     functionCallProcessor_default(),
     subQueryExpressionProcessor_default(),
-    trimProcessor_default()
+    trimProcessor_default(),
+    bitwiseBinaryExpressionNodeProcessorForSnowflake(),
+    bitwiseNotExpressionNodeProcessorForSnowflake(),
+    bitwiseShiftExpressionNodeProcessorForSnowflake()
   ]
 }
 
@@ -435,6 +439,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     // Numeric Aggregate
     pair(Average, simpleFunctionProcessor('avg')),
     pair(Sum, simpleFunctionProcessor('sum')),
+    pair(Correlation, simpleFunctionProcessor('corr')),
+    pair(CovarianceSample, simpleFunctionProcessor('covar_samp')),
+    pair(CovariancePopulation, simpleFunctionProcessor('covar_pop')),
     pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
     pair(VarianceSample, simpleFunctionProcessor('var_samp')),
     pair(StdDevSample, simpleFunctionProcessor('stddev_samp')),
@@ -506,6 +513,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     // Numeric
     pair(Log10, argTransformFunctionProcessor('log', {n:Node[*]| literal(10)->concatenate($n)})),
     pair(Cosh, simpleFunctionProcessor('cosh')),
+
     // String
     pair(RegexpLike, customFunctionProcessor(processorForRegExpLikeSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Sha1, simpleFunctionProcessor('sha1')),
@@ -518,7 +526,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(StartsWith, simpleFunctionProcessor('startswith')),
     pair(EndsWith, simpleFunctionProcessor('endswith')),
     pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    
+    pair(UuidV4, simpleFunctionProcessor('uuid_string')),
+
     // Temporal
     pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DateAdd, customFunctionProcessor(processorForDateAdd_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -527,8 +536,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
     // Miscellaneous
     pair(ParseJson, simpleFunctionProcessor('parse_json'))
-
-
   ])
 }
 
@@ -642,6 +649,56 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   let params = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   $sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'time_slice', $params, $f, $state, $config), 'timestamp', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::bitwiseBinaryExpressionNodeProcessorForSnowflake(): NodeProcessor<BitwiseBinaryExpression>[1]
+{
+  nodeProcessor(
+    BitwiseBinaryExpression,
+    {sqlDialect, b, state, config |
+      let leftExpr = $sqlDialect->executeNodeProcessor($b.left, $b, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($b.right, $b, $state, $config);
+      let func = if(
+        [
+          pair(| $b.operator == BitwiseBinaryOperator.AND, | 'bitand'),
+          pair(| $b.operator == BitwiseBinaryOperator.OR, | 'bitor'),
+          pair(| $b.operator == BitwiseBinaryOperator.XOR, | 'bitxor')
+        ],
+        | failWithMessage('Unhandled bitwise binary operator type: ' + $b.operator->toString())
+      );
+      generateFunctionCallWithArgs($sqlDialect, $func, [$leftExpr, $rightExpr], $state, $config);
+    }
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::bitwiseNotExpressionNodeProcessorForSnowflake(): NodeProcessor<BitwiseNotExpression>[1]
+{
+  nodeProcessor(
+    BitwiseNotExpression,
+    {sqlDialect, b, state, config |
+      let expr =  $sqlDialect->executeNodeProcessor($b.expression, $b, $state, $config);
+      generateFunctionCallWithArgs($sqlDialect, 'bitnot', [$expr], $state, $config);
+    }
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::bitwiseShiftExpressionNodeProcessorForSnowflake(): NodeProcessor<BitwiseShiftExpression>[1]
+{
+  nodeProcessor(
+    BitwiseShiftExpression,
+    {sqlDialect, b, state, config |
+      let value = $sqlDialect->executeNodeProcessor($b.value, $b, $state, $config);
+      let shiftUnits = $sqlDialect->executeNodeProcessor($b.shift, $b, $state, $config);
+      let func = if(
+        [
+          pair(| $b.direction == BitwiseShiftDirection.LEFT, | 'bitshiftleft'),
+          pair(| $b.direction == BitwiseShiftDirection.RIGHT, | 'bitshiftright')
+        ],
+        | failWithMessage('Unhandled bitwise shift direction: ' + $b.direction->toString())
+      );
+      generateFunctionCallWithArgs($sqlDialect, $func, [$value, $shiftUnits], $state, $config);
+    }
+  )
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::dateFormatSpecifierForSnowflake(f:String[1]): String[1]

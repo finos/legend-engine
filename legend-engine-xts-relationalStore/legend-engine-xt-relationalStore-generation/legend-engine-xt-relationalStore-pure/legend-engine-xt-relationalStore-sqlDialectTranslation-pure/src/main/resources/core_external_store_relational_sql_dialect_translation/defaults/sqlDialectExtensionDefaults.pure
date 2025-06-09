@@ -76,6 +76,57 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::pro
   )
 }
 
+function meta::external::store::relational::sqlDialectTranslation::defaults::bitwiseBinaryExpressionNodeProcessor_default(): NodeProcessor<BitwiseBinaryExpression>[1]
+{
+  nodeProcessor(
+    BitwiseBinaryExpression,
+    {sqlDialect, b, state, config |
+      let leftExpr = $sqlDialect->executeNodeProcessor($b.left, $b, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($b.right, $b, $state, $config);
+      let operator = if(
+        [
+          pair(| $b.operator == BitwiseBinaryOperator.AND, | '&'),
+          pair(| $b.operator == BitwiseBinaryOperator.OR, | '|'),
+          pair(| $b.operator == BitwiseBinaryOperator.XOR, | '#')
+        ],
+        | failWithMessage('Unhandled bitwise binary operator type: ' + $b.operator->toString())
+      );
+
+      $leftExpr + ' ' + $operator + ' ' + $rightExpr;
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::bitwiseNotExpressionNodeProcessor_default(): NodeProcessor<BitwiseNotExpression>[1]
+{
+  nodeProcessor(
+    BitwiseNotExpression,
+    {sqlDialect, b, state, config |
+      '~ ' + $sqlDialect->executeNodeProcessor($b.expression, $b, $state, $config);
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::bitwiseShiftExpressionNodeProcessor_default(): NodeProcessor<BitwiseShiftExpression>[1]
+{
+  nodeProcessor(
+    BitwiseShiftExpression,
+    {sqlDialect, b, state, config |
+      let value = $sqlDialect->executeNodeProcessor($b.value, $b, $state, $config);
+      let shiftUnits = $sqlDialect->executeNodeProcessor($b.shift, $b, $state, $config);
+      let operator = if(
+        [
+          pair(| $b.direction == BitwiseShiftDirection.LEFT, | '<<'),
+          pair(| $b.direction == BitwiseShiftDirection.RIGHT, | '>>')
+        ],
+        | failWithMessage('Unhandled bitwise binary shift direction: ' + $b.direction->toString())
+      );
+
+      $value + ' ' + $operator + ' ' + $shiftUnits;
+    }
+  )
+}
+
 function meta::external::store::relational::sqlDialectTranslation::defaults::createTestTableProcessor_default(): NodeProcessor<CreateTestTable>[1]
 {
   nodeProcessor(
@@ -129,7 +180,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::exi
   nodeProcessor(
     ExistsPredicate,
     {sqlDialect, e, state, config |
-      $sqlDialect->keyword('exists', $state, $config) + $sqlDialect->executeNodeProcessor($e.query, $state, $config);
+      $sqlDialect->keyword('exists', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($e.query, $state, $config);
     },
     {n | true}
   )

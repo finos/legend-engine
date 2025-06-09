@@ -20,38 +20,41 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class {sqlFunctionInfo.initializer = 'varianceSample'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::VarianceSample extends PostgresNativeSqlFunction
+Class {sqlFunctionInfo.initializer = 'covariancePopulation'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::CovariancePopulation extends PostgresNativeSqlFunction
 [
-  $this.name == 'var_samp'
+  $this.name == 'covar_pop'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::varianceSample(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::covariancePopulation(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::VarianceSample
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::CovariancePopulation
   (
-    name = 'var_samp',
-    documentation = 'Returns the sample variance of the input values (square of the sample standard deviation)',
+    name = 'covar_pop',
+    documentation = 'Returns the population covariance of the input values',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = DoubleSqlType,
+        parameterTypes = [DoubleSqlType, DoubleSqlType],
         returnType = DoubleSqlType
       ),
       ^SqlFunctionVariation
       (
-        parameterTypes = AbstractNumericSqlType,
+        parameterTypes = [AbstractNumericSqlType, AbstractNumericSqlType],
         returnType = AbstractNumericSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        testSetupDataForStatistics(),        
-        // SELECT var_samp(temperature) AS result FROM testTable ORDER BY result ASC NULLS LAST
+        testSetupDataForCorrelation(),
+        // SELECT covar_pop(num1, num2) AS result FROM testTable ORDER BY result ASC NULLS LAST
         simpleAggFunctionCall(
           ^FunctionCall(
-            name = ^QualifiedName(parts = 'var_samp'), 
-            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'temperature'))]
+            name = ^QualifiedName(parts = 'covar_pop'), 
+            arguments = [
+              ^QualifiedNameReference(name = ^QualifiedName(parts = 'num1')), 
+              ^QualifiedNameReference(name = ^QualifiedName(parts = 'num2'))
+            ]
           ),
           'testTable',
           []
@@ -59,7 +62,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         ^TestExpectedResult(
           columns = ['result'], 
           data = [
-            list([215.108])
+            list([50.0])
           ]
         )
       )

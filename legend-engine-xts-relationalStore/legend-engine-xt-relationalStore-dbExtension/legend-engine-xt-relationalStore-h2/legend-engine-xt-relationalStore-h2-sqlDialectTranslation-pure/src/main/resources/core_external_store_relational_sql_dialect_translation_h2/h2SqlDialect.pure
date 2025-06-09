@@ -51,7 +51,8 @@ function meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDial
     expressionPrecedenceComparator = h2ExpressionPrecedenceComparator(),
     keywords = h2Keywords(),
     functionProcessorMap = h2FunctionProcessorMap(),
-    variablePlaceholderPrefixSuffixMap = h2VariablePlaceholderPrefixSuffixMap()
+    variablePlaceholderPrefixSuffixMap = h2VariablePlaceholderPrefixSuffixMap(),
+    expectedSqlDialectTestErrors = h2ExpectedSqlDialectTestErrors()
   )
 }
 
@@ -64,14 +65,13 @@ function meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDial
       ^SqlDialectTranslationModuleExtension
       (
         module = sqlDialectTranslationModuleExtensionName(),
-        extraSqlDialects = h2SqlDialect(),
-        expectedFunctionTestErrorsByDialect = pair('H2', h2FunctionTestsExpectedErrors())->newMap()
+        extraSqlDialects = h2SqlDialect()
       )
     ]
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::h2::h2FunctionTestsExpectedErrors(): Map<String, String>[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2ExpectedSqlDialectTestErrors(): Map<String, String>[1]
 {
   [
     pair(
@@ -202,7 +202,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     semiStructuredPropertyAccessProcessorForH2(),
     semiStructuredArrayElementAccessProcessorForH2(),
     semiStructuredArrayFlattenOutputProcessorForH2(),
-    extractFromSemiStructuredProcessorForH2()
+    extractFromSemiStructuredProcessorForH2(),
+    bitwiseBinaryExpressionNodeProcessorForH2(),
+    bitwiseNotExpressionNodeProcessorForH2(),
+    bitwiseShiftExpressionNodeProcessorForH2()
   ]
 }
 
@@ -314,6 +317,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Sum, simpleFunctionProcessor('sum')),
     pair(Average, simpleFunctionProcessor('avg')),
     pair(Count, simpleFunctionProcessor('count')),
+    pair(Correlation, simpleFunctionProcessor('corr')),
+    pair(CovarianceSample, simpleFunctionProcessor('covar_samp')),
+    pair(CovariancePopulation, simpleFunctionProcessor('covar_pop')),
     pair(VarianceSample, simpleFunctionProcessor('var_samp')),
     pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
     pair(StdDevSample, simpleFunctionProcessor('stddev_samp')),
@@ -361,6 +367,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(StartsWith, customFunctionProcessor(processorForStartsWith_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(EndsWith, customFunctionProcessor(processorForEndsWith_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Contains, customFunctionProcessor(processorForContains_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(UuidV4, customFunctionProcessor(processorForUuidV4_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
     // Boolean
     pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -509,6 +516,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   generateFunctionCallWithArgs($sqlDialect, 'regexp_replace', $regexArgs, $state, $config);
 }
 
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForUuidV4(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  $sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'random_uuid', [], $state, $config), 'varchar', $state, $config)
+}
+
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::isNumeric(s:String[1]): Boolean[1]
 {
   // Not exact
@@ -606,6 +618,56 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   )
 }
 
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::bitwiseBinaryExpressionNodeProcessorForH2(): NodeProcessor<BitwiseBinaryExpression>[1]
+{
+  nodeProcessor(
+    BitwiseBinaryExpression,
+    {sqlDialect, b, state, config |
+      let leftExpr = $sqlDialect->executeNodeProcessor($b.left, $b, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($b.right, $b, $state, $config);
+      let func = if(
+        [
+          pair(| $b.operator == BitwiseBinaryOperator.AND, | 'bitand'),
+          pair(| $b.operator == BitwiseBinaryOperator.OR, | 'bitor'),
+          pair(| $b.operator == BitwiseBinaryOperator.XOR, | 'bitxor')
+        ],
+        | failWithMessage('Unhandled bitwise binary operator type: ' + $b.operator->toString())
+      );
+      generateFunctionCallWithArgs($sqlDialect, $func, [$leftExpr, $rightExpr], $state, $config);
+    }
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::bitwiseNotExpressionNodeProcessorForH2(): NodeProcessor<BitwiseNotExpression>[1]
+{
+  nodeProcessor(
+    BitwiseNotExpression,
+    {sqlDialect, b, state, config |
+      let expr =  $sqlDialect->executeNodeProcessor($b.expression, $b, $state, $config);
+      generateFunctionCallWithArgs($sqlDialect, 'bitnot', [$expr], $state, $config);
+    }
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::bitwiseShiftExpressionNodeProcessorForH2(): NodeProcessor<BitwiseShiftExpression>[1]
+{
+  nodeProcessor(
+    BitwiseShiftExpression,
+    {sqlDialect, b, state, config |
+      let value = $sqlDialect->executeNodeProcessor($b.value, $b, $state, $config);
+      let shiftUnits = $sqlDialect->executeNodeProcessor($b.shift, $b, $state, $config);
+      let func = if(
+        [
+          pair(| $b.direction == BitwiseShiftDirection.LEFT, | 'lshift'),
+          pair(| $b.direction == BitwiseShiftDirection.RIGHT, | 'rshift')
+        ],
+        | failWithMessage('Unhandled bitwise shift direction: ' + $b.direction->toString())
+      );
+      generateFunctionCallWithArgs($sqlDialect, $func, [$value, $shiftUnits], $state, $config);
+    }
+  )
+}
+
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::querySpecificationProcessorForH2(): NodeProcessor<QuerySpecification>[1]
 {
   nodeProcessor(
@@ -670,7 +732,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
                 $sep0 + $sqlDialect->keyword('fetch next', $state, $config) + ' ' + $size + ' ' + $sqlDialect->keyword('rows only', $state, $config);
               });
           });
-
       );
     }
   )
@@ -771,17 +832,17 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     {sqlDialect, e, state, config | 
       let baseExpression = $sqlDialect->executeNodeProcessor($e.baseExpression, $state, $config);
       let relationalPropertyAccess = $e.parsedPathNavigation->fold({property,relational | $relational->semiStructuredPathAccessForH2($property)}, $baseExpression);
-
+      let returnType = $e.returnType->toLower();
       let castTo = if(
         [
-          pair(| $e.returnType->in(['CHAR', 'VARCHAR', 'STRING']),  | 'varchar'),
-          pair(| $e.returnType->in(['DATETIME', 'TIMESTAMP']),      | 'timestamp'),
-          pair(| $e.returnType == 'DATE',                           | 'date'),
-          pair(| $e.returnType == 'BOOLEAN',                        | 'boolean'),
-          pair(| $e.returnType == 'FLOAT',                          | 'float'),
-          pair(| $e.returnType == 'INTEGER',                        | 'integer')
+          pair(| $returnType->in(['char', 'varchar', 'string']),  | 'varchar'),
+          pair(| $returnType->in(['datetime', 'timestamp']),      | 'timestamp'),
+          pair(| $returnType == 'date',                           | 'date'),
+          pair(| $returnType == 'boolean',                        | 'boolean'),
+          pair(| $returnType == 'float',                          | 'float'),
+          pair(| $returnType == 'integer',                        | 'integer')
         ],
-        | $e.returnType
+        | $returnType
       );
 
       format('cast(%s as %s)', [$relationalPropertyAccess, $castTo]);
