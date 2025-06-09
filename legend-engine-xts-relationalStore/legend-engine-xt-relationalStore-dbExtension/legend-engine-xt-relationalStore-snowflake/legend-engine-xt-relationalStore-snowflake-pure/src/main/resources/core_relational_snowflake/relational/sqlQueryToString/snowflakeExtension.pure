@@ -206,6 +206,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeSnowflake()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='to_char(%s)')),
     dynaFnToSql('contains',               $allStates,            ^ToSql(format='contains(%s,%s)', transform={p:String[2]|$p})),
+    dynaFnToSql('date',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformDateConstructionForSnowflake()})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSnowflake(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='DAYOFMONTH(%s)')),
@@ -318,6 +319,18 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
    let timestampFormat = $params->at(1);
    'to_timestamp('+$params->at(0)+','+$timestampFormat+')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformDateConstructionForSnowflake(params:String[*]):String[1]
+{
+   let paramsSize = $params->size();
+   assert($paramsSize != 3 || $paramsSize != 6,'Incorrect number of parameters for date construction! The correct usage is either date(<year>, <month>, <day>) or date(<year>, <month>, <day>, <hour>, <minute>, <second>)');
+   if ($paramsSize == 3,
+      |'DATE_FROM_PARTS(' + $params->joinStrings(',') + ')',
+      |let secondParam = $params->at(5)->parseDecimal();
+       let second = $secondParam->floor();
+       let nanoseconds = ($secondParam - $second) * 1000000000;
+       'TIMESTAMP_FROM_PARTS(' + $params->take(5)->joinStrings(',') + ',' + $second->toString() + ',' + $nanoseconds->toString() + ')';);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::dateFormatsSnowFlake():String[*]

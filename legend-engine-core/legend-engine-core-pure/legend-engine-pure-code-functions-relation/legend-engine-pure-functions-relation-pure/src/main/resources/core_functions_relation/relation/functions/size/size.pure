@@ -50,7 +50,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testSimpleSi
     assertEquals(3, $res);
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::size::testGroupBySize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::size::testGroupBySize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -74,7 +74,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testGroupByS
     assertEquals(6, $res);
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
                 let t = #TDS
@@ -99,7 +99,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testGroupByS
     assertEquals(6, $res);
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::size::testWindowSize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::size::testWindowSize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -157,7 +157,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testComparis
     assertEquals(true, $res);
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::size::testSize_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::size::testSize_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -188,7 +188,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testSize_Rel
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::size::testSize_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::size::testSize_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
