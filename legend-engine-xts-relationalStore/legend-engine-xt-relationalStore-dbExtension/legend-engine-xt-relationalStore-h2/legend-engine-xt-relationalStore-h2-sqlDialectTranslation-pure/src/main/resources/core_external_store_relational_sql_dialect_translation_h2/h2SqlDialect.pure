@@ -723,14 +723,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
           $querySpec.offset->executeIfNotEmptyElseReturnEmptyString({|
             $sep0 + $sqlDialect->keyword('offset', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($querySpec.offset->toOne(), $state->increaseLevel(), $config) + ' ' + $sqlDialect->keyword('rows', $state, $config) +
             $querySpec.limit->executeIfNotEmptyElseReturnEmptyString({|
-                let limit = $querySpec.limit->toOne()->extractLimitOffsetValue($sqlDialect, $state, $config);
-                let offset = $querySpec.offset->toOne()->extractLimitOffsetValue($sqlDialect, $state, $config);
-                let size = if($limit->instanceOf(Integer) && $offset->instanceOf(Integer),
-                  | ($limit->cast(@Integer) - $offset->cast(@Integer))->toString(),
-                  | format('%s - %s', [$limit, $offset])
-                );
-                $sep0 + $sqlDialect->keyword('fetch next', $state, $config) + ' ' + $size + ' ' + $sqlDialect->keyword('rows only', $state, $config);
-              });
+              $sep0 + $sqlDialect->keyword('fetch next', $state, $config) + ' ' + 
+              $sqlDialect->executeNodeProcessor($querySpec.limit->toOne(), $state->increaseLevel(), $config) +
+              ' ' + $sqlDialect->keyword('rows only', $state, $config);
+            });
           });
       );
     }

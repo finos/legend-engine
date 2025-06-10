@@ -123,13 +123,29 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
     groupBy = $s.groupBy->map(g|$g->convertElementToExpression($newState)),
     orderBy = convertOrderBy($s.orderBy, $newState),
     having  = $s.havingOperation->convertOptionalElementToExpression($newState),
-    limit   = $s.toRow->convertOptionalElementToExpression($newState),
+    limit   = convertLimit($s, $newState),
     offset  = $s.fromRow->convertOptionalElementToExpression($newState)
   );
 
   if($state.isRootSelect,
     | $query,
     | ^TableSubquery(query = ^Query(queryBody = $query))
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertLimit(s:SelectSQLQuery[*], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Expression[0..1]
+{
+  let fromRow = $s.fromRow->convertOptionalElementToExpression($state);
+  let toRow = $s.toRow->convertOptionalElementToExpression($state);
+  if($toRow->isEmpty(),
+    | [],
+    | if($fromRow->isEmpty(),
+        | $toRow->toOne(),
+        | if($fromRow->toOne()->instanceOf(IntegerLiteral) && $toRow->toOne()->instanceOf(IntegerLiteral),
+          | ^IntegerLiteral(value = $toRow->toOne()->cast(@IntegerLiteral).value - $fromRow->toOne()->cast(@IntegerLiteral).value),
+          | ^ArithmeticExpression(type = ArithmeticType.SUBTRACT, left = $toRow->toOne(), right = $fromRow->toOne())
+        )
+      )
   );
 }
 
