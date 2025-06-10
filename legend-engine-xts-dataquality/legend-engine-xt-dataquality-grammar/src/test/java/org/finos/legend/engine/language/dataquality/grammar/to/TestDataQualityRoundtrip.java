@@ -144,7 +144,7 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "   {\n" +
                 "     name: 'testValidation';\n" +
                 "     description: 'test validation';\n" +
-                "     assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "     assertion: rel|$rel->relationNotEmpty();\n" +
                 "     type: AGGREGATE;\n" +
                 "    }\n" +
                 "   ];\n" +
@@ -158,7 +158,7 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "   {\n" +
                 "     name: 'testValidation';\n" +
                 "     description: 'test validation';\n" +
-                "     assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "     assertion: rel|$rel->relationNotEmpty();\n" +
                 "    }\n" +
                 "   ];\n" +
                 "}\n");
@@ -175,7 +175,7 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "   {\n" +
                 "     name: 'testValidation';\n" +
                 "     description: 'test validation';\n" +
-                "     assertion: {name: String[1], rel|$rel->assertRelationNotEmpty()};\n" +
+                "     assertion: {name: String[1], rel|$rel->relationNotEmpty()};\n" +
                 "    }\n" +
                 "   ];\n" +
                 "}\n");
@@ -188,7 +188,7 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "   {\n" +
                 "     name: 'testValidation';\n" +
                 "     description: 'test validation';\n" +
-                "     assertion: {businessDate: Date[1], rel|$rel->assertRelationNotEmpty()};\n" +
+                "     assertion: {businessDate: Date[1], rel|$rel->relationNotEmpty()};\n" +
                 "    }\n" +
                 "   ];\n" +
                 "}\n");

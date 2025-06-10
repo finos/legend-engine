@@ -18,6 +18,17 @@ import meta::pure::test::pct::*;
 import meta::external::dataquality::*;
 import meta::pure::metamodel::relation::*;
 
+
+function meta::external::dataquality::relationEmpty<T>(rel:Relation<T>[1], message: String[1]):Boolean[1]
+{
+  $rel->meta::external::dataquality::assertRelationEmpty($message);
+}
+
+function meta::external::dataquality::assertRelationEmpty<T>(rel:Relation<T>[1], message: String[1]):Boolean[1]
+{
+  assert($rel->meta::pure::functions::relation::size() > 0, $message)
+}
+
 function <<PCT.function>> meta::external::dataquality::relationEmpty<T>(rel:Relation<T>[1]):Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() == 0;
@@ -54,15 +65,6 @@ function <<PCT.function>> meta::external::dataquality::rowCountEqual<T>(rel: Rel
   $rel->meta::pure::functions::relation::size() == $equalTo;
 }
 
-function meta::external::dataquality::assertRelationEmpty<T,Z>(rel:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1]):Boolean[1]
-{
-  assert($rel->meta::pure::functions::relation::size() == 0, $rel->select($cols)->toString());
-}
-
-function meta::external::dataquality::assertRelationNotEmpty<T>(rel:Relation<T>[1]):Boolean[1]
-{
-  assert($rel->meta::pure::functions::relation::size() > 0);
-}
 
 // todo: fix compilation for below helper function
 // function meta::external::dataquality::columnValuesUnique<Q,V>(rel: Relation<Q>[1], column:ColSpec<V>[1]): Boolean[1]

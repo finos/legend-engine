@@ -212,7 +212,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      {\n" +
                 "         name: 'nonEmptyDataset';\n" +
                 "         description: 'dataset cannot be empty';\n" +
-                "         assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "         assertion: rel|$rel->relationNotEmpty();\n" +
                 "      }\n" +
                 "    ];\n" +
                 "}");
@@ -227,7 +227,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      {\n" +
                 "         name: 'nonEmptyDataset';\n" +
                 "         description: 'dataset cannot be empty';\n" +
-                "         assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "         assertion: rel|$rel->relationNotEmpty();\n" +
                 "      }\n" +
                 "    ];\n" +
                 "}");
@@ -241,7 +241,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      {\n" +
                 "         name: 'nonEmptyDataset';\n" +
                 "         description: 'dataset cannot be empty';\n" +
-                "         assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "         assertion: rel|$rel->relationNotEmpty();\n" +
                 "         type: AGGREGATE;\n" +
                 "      }\n" +
                 "    ];\n" +
@@ -256,7 +256,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      {\n" +
                 "         name: 'nonEmptyDataset';\n" +
                 "         description: 'dataset cannot be empty';\n" +
-                "         assertion: {firstName:String[1], rel| $rel->assertRelationNotEmpty()};\n" +
+                "         assertion: {firstName:String[1], rel| $rel->relationNotEmpty()};\n" +
                 "         type: AGGREGATE;\n" +
                 "      }\n" +
                 "    ];\n" +
@@ -275,7 +275,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      {\n" +
                 "         name: 'nonEmptyDataset';\n" +
                 "         description: 'dataset cannot be empty';\n" +
-                "         assertion: {firstName:String[1], rel| $rel->assertRelationNotEmpty()};\n" +
+                "         assertion: {firstName:String[1], rel| $rel->relationNotEmpty()};\n" +
                 "         type: AGGREGATE;\n" +
                 "      }\n" +
                 "    ];\n" +
@@ -290,10 +290,10 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      {\n" +
                 "         name: 'nonEmptyDataset';\n" +
                 "         description: 'dataset cannot be empty';\n" +
-                "         assertion: {firstName, rel| $rel->assertRelationNotEmpty()};\n" +
+                "         assertion: {firstName, rel| $rel->relationNotEmpty()};\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [111:36-67]: Invalid parameter specified on assertion - firstName. Please validate that it is exactly the same as query parameters(name/type/multiplicity)");
+                "}", "COMPILATION error at [111:36-61]: Invalid parameter specified on assertion - firstName. Please validate that it is exactly the same as query parameters(name/type/multiplicity)");
 
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
@@ -304,7 +304,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      {\n" +
                 "         name: 'nonEmptyDataset';\n" +
                 "         description: 'dataset cannot be empty';\n" +
-                "         assertion: {lastName:String[1], rel| $rel->assertRelationNotEmpty()};\n" +
+                "         assertion: {lastName:String[1], rel| $rel->relationNotEmpty()};\n" +
                 "      }\n" +
                 "    ];\n" +
                 "}", "COMPILATION error at [111:22-39]: Invalid parameter specified on assertion - lastName. Please validate that it is exactly the same as query parameters(name/type/multiplicity)");
@@ -318,10 +318,10 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      {\n" +
                 "         name: 'nonEmptyDataset';\n" +
                 "         description: 'dataset cannot be empty';\n" +
-                "         assertion: {firstName:String[1] | $rel->assertRelationNotEmpty()};\n" +
+                "         assertion: {firstName:String[1] | $rel->relationNotEmpty()};\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [111:42-73]: Assertion param 'rel' is missing!");
+                "}", "COMPILATION error at [111:42-67]: Assertion param 'rel' is missing!");
     }
 
     @Test
@@ -354,7 +354,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         assertion: rel|$rel->filter(r|$r.FIRSTNAME->isNotEmpty());\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [111:24-66]: Assertion should end in either assertRelationEmpty or assertRelationNotEmpty functions");
+                "}", "COMPILATION error at [111:24-66]: Assertion should end in either relationEmpty or relationNotEmpty functions");
     }
 
 
