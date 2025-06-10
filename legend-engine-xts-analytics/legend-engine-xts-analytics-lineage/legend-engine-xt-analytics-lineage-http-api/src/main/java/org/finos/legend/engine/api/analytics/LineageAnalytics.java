@@ -184,7 +184,7 @@ public class LineageAnalytics
         {
             PureModel pureModel = this.modelManager.loadModel(lineageAnalyticsInput.model, lineageAnalyticsInput.clientVersion, identity, null);
             LambdaFunction function = HelperValueSpecificationBuilder.buildLambda(lineageAnalyticsInput.function.body, lineageAnalyticsInput.function.parameters, pureModel.getContext());
-            Root_meta_analytics_lineage_ReportLineage reportLineage = core_analytics_lineage_fullAnalytics.Root_meta_analytics_lineage_buildReportLineage_ValueSpecification_1__Mapping_1__ReportLineage_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification) function._expressionSequence().getFirst(), pureModel.getMapping(lineageAnalyticsInput.mapping), pureModel.getExecutionSupport());
+            Root_meta_analytics_lineage_ReportLineage reportLineage = core_analytics_lineage_fullAnalytics.Root_meta_analytics_lineage_buildReportLineage_ValueSpecification_1__Mapping_$0_1$__ReportLineage_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification) function._expressionSequence().getFirst(), pureModel.getMapping(lineageAnalyticsInput.mapping), pureModel.getExecutionSupport());
             LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.LINEAGE_REPORT_LINEAGE_STOP, System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(identity.getName(), org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(reportLineage, pureModel.getExecutionSupport()));
         }

@@ -1,0 +1,60 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::relation::*;
+import meta::pure::store::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::router::metamodel::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::metamodel::relation::*;
+import meta::analytics::lineage::scanRelationAccessor::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+
+
+function meta::analytics::lineage::scanRelationAccessor::extractRelationElementAccessor(vs: ValueSpecification[*], debug:DebugContext[1]):RelationElementAccessor<Any>[*]
+{
+  print(if($debug.debug,|$debug.space+'>>> extractRelationElementAccessor: ' + ' \n',|''));
+  let res = $vs->map( v | $v ->match([
+                fe: FunctionExpression[1]                | $fe.parametersValues->evaluateAndDeactivate()->at(0)->cast(@ValueSpecification)->extractRelationElementAccessor($debug);,
+                i:  InstanceValue[1]                     | $i.values->evaluateAndDeactivate()->map( v |
+                                                                $v->match([
+                                                                    r: RelationElementAccessor<Any>[1] | $r,
+                                                                    a: Any[1]                          | [];
+                                                              ])),
+                a: Any[*]                                | print(if($debug.debug,|$debug.space+' Unknown type' + ' \n',|'')); [];
+            ]));
+  $res;
+}
+
+
+function meta::pure::lineage::scanRelationAccessor::propertyTree::buildRelationAccessorPropertyTree(columns:meta::relational::metamodel::Column[*]):PropertyPathTree[1]
+{
+   let filteredColumnLists = $columns->filter(c|$c->isNotEmpty());
+   let propertyTree = ^PropertyPathTree(display='root',
+                                        value='root',
+                                        children = $filteredColumnLists->map(c | ^PropertyPathTree(display=$c.name->toOne(), value=$c))
+                                       );
+}
+
+
+function meta::analytics::lineage::scanRelationAccessor::scanRelationAccessorColumns(vs: Any[1], r: RelationElementAccessor<Any>[*]):meta::relational::metamodel::Column[*]
+{
+  $vs->match([
+              f:FunctionDefinition<Any>[1]             | $f.expressionSequence->evaluateAndDeactivate()->map(e|$e->scanRelationAccessorColumns($r)),
+              fe:FunctionExpression[1]                 | $fe.func->evaluateAndDeactivate()->scanRelationAccessorColumns($r),
+              i:InstanceValue[1]                       | $i.values->evaluateAndDeactivate()->map(a|$a->scanRelationAccessorColumns($r)),
+              p:Column<Nil,Any|*>[1]                   | $r.sourceElement->cast(@Table).columns->cast(@meta::relational::metamodel::Column)->filter(rac|$rac.name == $p.name),
+              a:Any[*]                                 | [];
+            ]);
+}
