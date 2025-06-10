@@ -17,7 +17,7 @@ import meta::pure::metamodel::relation::*;
 
 native function <<PCT.function>> meta::pure::functions::relation::nth<T>(w:Relation<T>[1], f:_Window<T>[1], r:T[1], offset:Integer[1]):T[0..1];
 
-function <<PCT.test>> meta::pure::functions::relation::tests::nth::testOLAPWithPartitionAndOrderNthWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::nth::testOLAPWithPartitionAndOrderNthWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -53,7 +53,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::nth::testOLAPWithP
 }
 
 
-function <<PCT.test>> meta::pure::functions::relation::tests::nth::testOLAPWithPartitionAndOrderNthWindow2<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::nth::testOLAPWithPartitionAndOrderNthWindow2<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS

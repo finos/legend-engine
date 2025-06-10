@@ -23,7 +23,7 @@ native function <<PCT.function>> meta::pure::functions::relation::groupBy<T,Z,K,
 
 native function <<PCT.function>> meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1];
 
-function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -55,7 +55,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpl
                   '#', $resSorted->sort(~grp->ascending())->select(~[grp, newColSorted])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
                 let t = #TDS
@@ -89,7 +89,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpl
 }
 
 
-function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|#TDS
                   id, grp, name
@@ -120,7 +120,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpl
                   '#',  $resSorted->sort(~grp->ascending())->select(~[grp, newColSorted])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
                 let t = #TDS
@@ -153,7 +153,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpl
                   '#', $resSorted->sort(~grp->ascending())->select(~[grp, newColSorted])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -185,7 +185,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpl
                   '#', $resSorted->sort(~grp->ascending())->select(~[grp, YoCol, newColSorted])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
                 let t = #TDS
@@ -218,7 +218,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpl
                   '#', $resSorted->sort(~grp->ascending())->select(~[grp, YoCol, newColSorted])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 { 
     let expr = {
                 |#TDS
@@ -251,7 +251,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpl
 }
 
 
-function <<PCT.test>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
                 let t = #TDS
