@@ -194,7 +194,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::round::tes
 {
     let result = execute(|SqlFunctionDemo.all()->project([s | $s.float1Round ], ['round']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1,2], $result.values->at(0).rows.values);
-    println($result->sql());
     assertEquals('select cast(round("root".float1) as bigint) as "round" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
@@ -407,7 +406,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToFl
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToFloat::testFilter():Boolean[1]
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.string2Float == 123.456)->project([s | $s.string2Float], ['string2Float']),  testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
-    println($result.values);
     assertEqWithinTolerance(123.456, $result.values->cast(@TabularDataSet).rows.values->at(0)->cast(@Float), 0.001);
     //assertEquals('select cast("root".string1 as float) as "string2Date" from testDataTable as "root" where cast("root".string1 as float) = 123.456',$result->sqlRemoveFormatting());
 }
@@ -491,7 +489,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
 
    let result = execute(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat], ['convertToDateUserDefinedFormat']),
                                                            testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
-   println($result.values->meta::json::toJSON());
    assertEquals('select cast(parsedatetime(concat(\'01\', "root".stringUserDefinedDateFormat), \'ddMMMyyyy\') as date) as "convertToDateUserDefinedFormat" from dataTable as "root"',$result->sqlRemoveFormatting());
    assertEquals([%1995-11-01, %1995-11-01], $result.values->at(0).rows.values);
 }

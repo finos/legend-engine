@@ -1238,7 +1238,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByIsDistinct()
              simpleRelationalMapping,
              meta::external::store::relational::tests::testRuntime(),
              meta::relational::extension::relationalExtensions());
-   println($result->sqlRemoveFormatting());
+
    assertEquals(['Firm X|3|4|false|4|4|true', 'Firm C|1|1|true|1|1|true', 'Firm B|1|1|true|1|1|true', 'Firm A|1|1|true|1|1|true'], $result.values.rows->map(r|$r.values->makeString('|')));
    assertSameSQL('select "root".LEGALNAME as "LegalName", count(distinct("persontable_0".FIRSTNAME)) as "FirstNameDistinctCount", count("persontable_0".FIRSTNAME) as "FirstNameCount", count(distinct("persontable_0".FIRSTNAME)) = count("persontable_0".FIRSTNAME) as "IsDistinctFirstName", count(distinct("persontable_0".LASTNAME)) as "LastNameDistinctCount", count("persontable_0".LASTNAME) as "LastNameCount", count(distinct("persontable_0".LASTNAME)) = count("persontable_0".LASTNAME) as "IsDistinctLastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) group by "LegalName" order by "LegalName" desc', $result);
 }
