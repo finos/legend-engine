@@ -500,6 +500,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DatePart, simpleFunctionProcessor('date_part')),
     pair(Now, simpleFunctionProcessor('now')),
+    pair(MakeDate, simpleFunctionProcessor('make_date')),
+    pair(MakeTimestamp, simpleFunctionProcessor('make_timestamp')),
     pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::Date, customFunctionProcessor(processorForDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),

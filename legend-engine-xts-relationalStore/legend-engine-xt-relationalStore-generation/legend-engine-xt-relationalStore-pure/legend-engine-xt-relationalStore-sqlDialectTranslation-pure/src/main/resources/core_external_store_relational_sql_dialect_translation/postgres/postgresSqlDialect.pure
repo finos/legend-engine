@@ -517,6 +517,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::Date, simpleFunctionProcessor('date')),
     ToDate->nativeFunctionMapEntry(),
     ToTimestamp->nativeFunctionMapEntry(),
+    MakeDate->nativeFunctionMapEntry(),
+    MakeTimestamp->nativeFunctionMapEntry(),
     pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DateAdd, customFunctionProcessor(processorForDateAdd_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),

@@ -140,7 +140,6 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::sum(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::variancePopulation(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::varianceSample(),
-    
 
     // String
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::ascii(),
@@ -174,6 +173,8 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::date(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::datePart(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::dateTrunc(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::makeDate(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::makeTimestamp(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::now(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toDate(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toTimestamp(),

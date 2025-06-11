@@ -529,6 +529,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(UuidV4, simpleFunctionProcessor('uuid_string')),
 
     // Temporal
+    pair(MakeDate, simpleFunctionProcessor('date_from_parts')),
+    pair(MakeTimestamp,customFunctionProcessor(processorForMakeTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DateAdd, customFunctionProcessor(processorForDateAdd_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ConvertTimeZone, customFunctionProcessor(processorForConvertTimeZone_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -598,6 +600,15 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   let dateTruncCall = simpleFunctionProcessor('date_trunc').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
   $sqlDialect->generateCast($dateTruncCall, 'TIMESTAMP', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForMakeTimestamp(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let secondsParam = $processedArgs->at(5)->parseDecimal();
+  let seconds = $secondsParam->floor();
+  let nanoseconds = ($secondsParam - $seconds) * 1000000000;
+  $sqlDialect->generateFunctionCallWithArgs('timestamp_from_parts', $processedArgs->take(5)->concatenate([$seconds->toString(), $nanoseconds->toString()]), [], $state, $config);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForToDate(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]

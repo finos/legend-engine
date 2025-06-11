@@ -313,6 +313,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('indexOf',                   functionCall('strpos')),
     pair('position',                  {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('strpos', $p->reverse())}),
     pair('datePart',                  functionCall('date')),
+    pair('date',                      {p:meta::external::query::sql::metamodel::Expression[*]| makeDateConverter($p)}),
     pair('year',                      datePartCall('year')),
     pair('month',                     datePartCall('month')),
     pair('monthNumber',               datePartCall('month')),
@@ -331,7 +332,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('parseFloat',                castExpression('float')),
     pair('parseDecimal',              castExpression('decimal(5,2)')),
     pair('parseInteger',              castExpression('integer')),
-    pair('parseBoolean',               castExpression('boolean')),
+    pair('parseBoolean',              castExpression('boolean')),
     pair('toString',                  castExpression('varchar')),
     pair('toFloat',                   castExpression('float')),
     pair('toDecimal',                 castExpression('decimal')),
@@ -545,6 +546,15 @@ function <<access.private>> meta::relational::functions::toPostgresModel::recent
   let recentDayInt = ^IntegerLiteral(value = $recentDay->cast(@StringLiteral).value->mapToDBDayOfWeekNumber());
   functionCall('dateadd', [$dateVal, ^SearchedCaseExpression(whenClauses = [^WhenClause(operand = ^ComparisonExpression(operator = $co, left = ^ArithmeticExpression(type = ArithmeticType.SUBTRACT, left = $recentDayInt, right = functionCall('date_part', [^StringLiteral(value='dow'), $dateVal])), right = ^IntegerLiteral(value=0)), result = ^ArithmeticExpression(type = ArithmeticType.SUBTRACT,left = ^ArithmeticExpression(type = ArithmeticType.SUBTRACT, 
   left = $recentDayInt, right = functionCall('date_part', [^StringLiteral(value='dow'), $dateVal])), right = ^IntegerLiteral(value=7)))], defaultValue = ^ArithmeticExpression(type = ArithmeticType.SUBTRACT, left = $recentDayInt, right = functionCall('date_part', [^StringLiteral(value='dow'), $dateVal]))), ^StringLiteral(value='DAY')]);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::makeDateConverter(p:meta::external::query::sql::metamodel::Expression[*]):FunctionCall[1]
+{
+  assert($p->size() != 3 || $p->size() != 6, 'Incorrect number of parameters for date construction! The correct usage is either date(<year>, <month>, <day>) or date(<year>, <month>, <day>, <hour>, <minute>, <second>)');
+  if($p->size() == 3,
+    | functionCall('make_date', $p),
+    | functionCall('make_timestamp', $p)
+  );
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::percentileConverter(p:meta::external::query::sql::metamodel::Expression[*]):FunctionCall[1]

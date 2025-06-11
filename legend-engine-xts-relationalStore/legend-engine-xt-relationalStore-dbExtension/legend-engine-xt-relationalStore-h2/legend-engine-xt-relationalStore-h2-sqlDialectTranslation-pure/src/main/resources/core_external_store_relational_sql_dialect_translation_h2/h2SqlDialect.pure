@@ -96,8 +96,19 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(
       'FuncTests - parseJson(0/0)',
       'Execution error at ??, "Unhandled SQL data type (java.sql.Types): 2000, column: 1 RESULT JAVA_OBJECT"'
+    ),
+    pair(
+      'FuncTests - make_date(0/0)',
+      'H2 SQL Dialect does not support the function - make_date'
+    ),
+    pair(
+      'FuncTests - make_timestamp(0/1)',
+      'H2 SQL Dialect does not support the function - make_timestamp'
+    ),
+    pair(
+      'FuncTests - make_timestamp(1/1)',
+      'H2 SQL Dialect does not support the function - make_timestamp'
     )
-
   ]->newMap()->cast(@Map<String, String>)
 }
 
