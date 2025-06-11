@@ -209,26 +209,26 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
                     "  mod(AbstractIntegerSqlType, AbstractIntegerSqlType):AbstractIntegerSqlType,\n" +
                     "  mod(DoubleSqlType, DoubleSqlType):DoubleSqlType,\n" +
                     "  mod(AbstractNumericSqlType, AbstractNumericSqlType):AbstractNumericSqlType\n" +
-                    "]\""),
-            one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
+                    "]\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\"", AdapterQualifier.needsInvestigation),
 
             // Rem
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\""),
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\""),
-            one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14\""),
-            one("meta::pure::functions::math::tests::rem::testRemWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\""),
+            one("meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::rem::testRemWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "\"No matched function in function registry for - mod(IntegerSqlType, DoubleSqlType, IntegerSqlType).\n" +
                     "Available variations for that function - [\n" +
                     "  mod(AbstractIntegerSqlType, AbstractIntegerSqlType):AbstractIntegerSqlType,\n" +
                     "  mod(DoubleSqlType, DoubleSqlType):DoubleSqlType,\n" +
                     "  mod(AbstractNumericSqlType, AbstractNumericSqlType):AbstractNumericSqlType\n" +
-                    "]\""),
+                    "]\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "\"No matched function in function registry for - mod(IntegerSqlType, IntegerSqlType, IntegerSqlType).\n" +
                     "Available variations for that function - [\n" +
                     "  mod(AbstractIntegerSqlType, AbstractIntegerSqlType):AbstractIntegerSqlType,\n" +
                     "  mod(DoubleSqlType, DoubleSqlType):DoubleSqlType,\n" +
                     "  mod(AbstractNumericSqlType, AbstractNumericSqlType):AbstractNumericSqlType\n" +
-                    "]\""),
+                    "]\"", AdapterQualifier.unsupportedFeature),
 
             // Round
             one("meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp_Function_1__Boolean_1_", "\"\nexpected: -16\nactual:   -17\"", AdapterQualifier.needsInvestigation),
