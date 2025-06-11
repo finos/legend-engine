@@ -629,21 +629,28 @@ function meta::pure::functions::meta::simpleToString(obj : Any[1]) : String[1]
 
 function meta::pure::functions::meta::stringToDataType(dt : String[1]) : DataType[1]
 {
-   let prim = newMap(
-      [
-         pair('Boolean',Boolean),
-         pair('StrictDate',StrictDate),
-         pair('Number',Number),
-         pair('String',String),
-         pair('LatestDate',LatestDate),
-         pair('Float',Float),
-         pair('DateTime',DateTime),
-         pair('Date',Date),
-         pair('Integer',Integer),
-         pair('Decimal', Decimal)
-      ]
-   )->get($dt);
-   if ($prim->isEmpty(),|$dt->pathToElement()->cast(@Enumeration<Any>),|$prim->toOne());
+  let element = $dt->pathToElement();
+  if($element->instanceOf(PrimitiveType),
+    {| if ($element->isExtendedPrimitiveType(),
+      |$element->cast(@Type)->bypassExtendedPrimitives()->cast(@DataType),
+      |$element->cast(@DataType))
+    },
+    | $element->cast(@Enumeration<Any>));
+}
+
+function meta::pure::functions::meta::isExtendedPrimitiveType(type: Any[1]): Boolean[1]
+{
+  $type->instanceOf(meta::pure::metamodel::type::PrimitiveType) && ($type->cast(@meta::pure::metamodel::type::PrimitiveType).extended == true)
+}
+
+function meta::pure::functions::meta::bypassExtendedPrimitives (type: meta::pure::metamodel::type::Type[1]): meta::pure::metamodel::type::Type[1]
+{
+  if ($type->isExtendedPrimitiveType(),
+    |
+      $type->generalizations()->find(t | !$t->isExtendedPrimitiveType())->toOne(),
+    |
+      $type
+  );
 }
 
 function meta::pure::functions::meta::multiplicitySubsumes(subsuming:Multiplicity[1], subsumed:Multiplicity[1]) :Boolean[1]

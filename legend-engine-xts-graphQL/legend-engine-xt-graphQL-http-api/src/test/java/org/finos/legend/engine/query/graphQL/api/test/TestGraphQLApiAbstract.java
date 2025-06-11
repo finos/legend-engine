@@ -90,7 +90,10 @@ public abstract class TestGraphQLApiAbstract
                 buildPMCDMetadataHandler("/projects/org.finos.legend.graphql/models/versions/2.0.1/pureModelContextData","/org/finos/legend/engine/query/graphQL/api/test/Project4_Version_2.0.1.pure",new Protocol("pure", PureClientVersions.production),new PureModelContextPointer()),
 
                 buildPMCDMetadataHandler("/api/projects/Project5/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project5_Workspace1.pure"),
-                buildJsonHandler("/api/projects/Project5/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]]")
+                buildJsonHandler("/api/projects/Project5/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]]"),
+
+                buildPMCDMetadataHandler("/api/projects/ExtendedPrimitivesProject/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/ExtendedPrimitivesProject_Workspace1.pure"),
+                buildJsonHandler("/api/projects/ExtendedPrimitivesProject/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]")
         });
         server.setHandler(handlerCollection);
         server.start();
