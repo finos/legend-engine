@@ -15,6 +15,12 @@
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.navigation.function.Function;
+import org.finos.legend.pure.m3.navigation.generictype.GenericType;
+import org.finos.legend.pure.m3.navigation.relation._RelationType;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -140,5 +146,24 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "   []" +
                         "}"
         );
+    }
+
+    @Test
+    public void testMerge()
+    {
+        PureModel pureModel = test(
+                "###Pure\n" +
+                        "function test::func1():meta::pure::metamodel::relation::Relation<(num:Number[1], other:Varchar(222))>[0..1]\n" +
+                        "{\n" +
+                        "   [];\n" +
+                        "}\n" +
+                        "function test::func2():meta::pure::metamodel::relation::Relation<(num:Number[1], other:Varchar(222))>[0..1]\n" +
+                        "{\n" +
+                        "   [];\n" +
+                        "}"
+        ).getTwo();
+        FunctionType fType1 = (FunctionType) Function.computeFunctionType(pureModel.getPackageableElement("test::func1__Relation_$0_1$_"), pureModel.getExecutionSupport().getProcessorSupport());
+        FunctionType fType2 = (FunctionType) Function.computeFunctionType(pureModel.getPackageableElement("test::func2__Relation_$0_1$_"), pureModel.getExecutionSupport().getProcessorSupport());
+        Assert.assertEquals("(num:Number[1], other:Varchar(222))", GenericType.print(_RelationType.merge(fType1._returnType()._typeArguments().getFirst(), fType2._returnType()._typeArguments().getFirst(), true, pureModel.getExecutionSupport().getProcessorSupport()), pureModel.getExecutionSupport().getProcessorSupport()));
     }
 }
