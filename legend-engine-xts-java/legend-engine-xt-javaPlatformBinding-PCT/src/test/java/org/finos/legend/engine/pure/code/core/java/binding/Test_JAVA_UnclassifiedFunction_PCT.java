@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.code.core.CoreJavaPlatformBindingCodeRepositoryProvider;
 import org.finos.legend.pure.code.core.CoreUnclassifiedFunctionsCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
+import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
@@ -32,18 +33,18 @@ public class Test_JAVA_UnclassifiedFunction_PCT extends PCTReportConfiguration
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             //ascii
-            pack("meta::pure::functions::string::tests::ascii", "meta::pure::functions::string::ascii_String_1__Integer_1_ is not supported yet!"),
+            pack("meta::pure::functions::string::tests::ascii", "meta::pure::functions::string::ascii_String_1__Integer_1_ is not supported yet!", AdapterQualifier.unsupportedFeature),
 
             //char
-            pack("meta::pure::functions::string::tests::char", "meta::pure::functions::string::char_Integer_1__String_1_ is not supported yet!"),
+            pack("meta::pure::functions::string::tests::char", "meta::pure::functions::string::char_Integer_1__String_1_ is not supported yet!", AdapterQualifier.unsupportedFeature),
 
             // coalesce
-            one("meta::pure::functions::flow::test::coalesce::coalesce_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)"),
-            one("meta::pure::functions::flow::test::coalesce::coalesce2_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)"),
-            one("meta::pure::functions::flow::test::coalesce::coalesce3_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)"),
+            one("meta::pure::functions::flow::test::coalesce::coalesce_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::flow::test::coalesce::coalesce2_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::flow::test::coalesce::coalesce3_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)", AdapterQualifier.needsInvestigation),
 
             //repeatString
-            one("meta::pure::functions::string::tests::repeatstring::testRepeatStringNoString_Function_1__Boolean_1_", "error: incompatible types: no instance(s) of type variable(s) T exist so that java.util.List<T> conforms to java.lang.String")
+            one("meta::pure::functions::string::tests::repeatstring::testRepeatStringNoString_Function_1__Boolean_1_", "error: incompatible types: no instance(s) of type variable(s) T exist so that java.util.List<T> conforms to java.lang.String", AdapterQualifier.needsInvestigation)
         );
 
     public static Test suite()
