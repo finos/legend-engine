@@ -166,4 +166,44 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
         FunctionType fType2 = (FunctionType) Function.computeFunctionType(pureModel.getPackageableElement("test::func2__Relation_$0_1$_"), pureModel.getExecutionSupport().getProcessorSupport());
         Assert.assertEquals("(num:Number[1], other:Varchar(222))", GenericType.print(_RelationType.merge(fType1._returnType()._typeArguments().getFirst(), fType2._returnType()._typeArguments().getFirst(), true, pureModel.getExecutionSupport().getProcessorSupport()), pureModel.getExecutionSupport().getProcessorSupport()));
     }
+
+    @Test
+    public void testExtendOverWithWrongSortCompilerFeedback()
+    {
+        test(
+                "###Pure\n" +
+                        "Class test::Person{name : String[1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Person.all()->project(~[mycol:x|$x.name])->extend(over(~mycol,[~mycol]->descending()), ~newCol:x|$x.mycol:y|$y->count())\n" +
+                        "}", "COMPILATION error at [4:82-91]: Can't infer the type of the function parameter within over"
+        );
+    }
+
+    @Test
+    public void testExtendOverWithWrongSortFuncCompilerFeedback()
+    {
+        test(
+                "###Pure\n" +
+                        "Class test::Person{name : String[1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Person.all()->project(~[mycol:x|$x.name])->extend(over(~mycol, ~mycol->desceeending()), ~newCol:x|$x.mycol:y|$y->count())\n" +
+                        "}", "COMPILATION error at [4:81-92]: Can't resolve the builder for function 'desceeending' - stack:[Function 'test::f__Any_MANY_' Third Pass, Applying extend, Applying over, Applying desceeending]"
+        );
+    }
+
+    @Test
+    public void testExtendOverCompilerFeedback()
+    {
+        test(
+                "###Pure\n" +
+                        "Class test::Person{name : String[1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Person.all()->project(~[mycol:x|$x.name])->extend(over('www'), ~newCol:x|$x.mycol:y|$y->count())\n" +
+                        "}",
+                "COMPILATION error at [4:60-63]: Can't find a match for function 'over(String[1])'"
+        );
+    }
 }

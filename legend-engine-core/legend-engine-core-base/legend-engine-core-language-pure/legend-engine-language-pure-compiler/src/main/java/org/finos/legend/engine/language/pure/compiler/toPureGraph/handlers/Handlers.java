@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
-import org.eclipse.collections.api.LazyIterable;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -52,6 +51,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.clas
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
@@ -226,7 +226,7 @@ public class Handlers
                 func.parameters.forEach(x ->
                 {
                     processColumn(x, gt, cc);
-                    processSort(x, gt, cc, cc.pureModel.getExecutionSupport().getProcessorSupport());
+                    processSort(x, gt, cc, valueSpecificationBuilder, cc.pureModel.getExecutionSupport().getProcessorSupport());
                 });
             }
             ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
@@ -536,33 +536,59 @@ public class Handlers
         GenericType gt = firstProcessedParameter._genericType();
         if (taxoMap.get("cov_relation_Relation").contains(gt._rawType().getName()))
         {
-            processSort(parameters.get(1), gt, cc, processorSupport);
+            processSort(parameters.get(1), gt, cc, valueSpecificationBuilder, processorSupport);
         }
         return Lists.mutable.with(firstProcessedParameter, parameters.get(1).accept(valueSpecificationBuilder));
     };
 
-    private static void processSort(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification parameter, GenericType gt, CompileContext cc, ProcessorSupport processorSupport)
+    private static void processSort(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification parameter, GenericType gt, CompileContext cc, ValueSpecificationBuilder valueSpecificationBuilder, ProcessorSupport processorSupport)
     {
         RelationType<?> type = (RelationType<?>) gt._typeArguments().getFirst()._rawType();
 
-        if (parameter instanceof AppliedFunction)
+        if (checkColumn(parameter))
         {
-            processAscendingDescending((AppliedFunction) parameter, type, cc, processorSupport);
+            processAscendingDescending((AppliedFunction) parameter, type, cc, valueSpecificationBuilder, processorSupport);
             ColSpec column = (ColSpec) ((ClassInstance) ((AppliedFunction) parameter).parameters.get(0)).value;
             Column<?, ?> foundColumn = findColumn(type, column, processorSupport);
             column.genericType = CompileContext.convertGenericType(_Column.getColumnType(foundColumn));
         }
         else if (parameter instanceof Collection)
         {
-            ListIterate.forEach(((Collection) parameter).values, c -> processAscendingDescending((AppliedFunction) c, type, cc, processorSupport));
+            ListIterate.forEach(((Collection) parameter).values, c -> processAscendingDescending((AppliedFunction) c, type, cc, valueSpecificationBuilder, processorSupport));
+        }
+        else if (!(parameter instanceof ClassInstance))
+        {
+            try
+            {
+                parameter.accept(valueSpecificationBuilder);
+            }
+            catch (Exception e)
+            {
+                throw new EngineException("Can't infer the type of the function parameter within over", parameter.sourceInformation, EngineErrorType.COMPILATION);
+            }
         }
     }
 
-    private static void processAscendingDescending(AppliedFunction af, RelationType<?> type, CompileContext cc, ProcessorSupport processorSupport)
+    private static boolean checkColumn(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification vs)
     {
-        ColSpec column = (ColSpec) ((ClassInstance) af.parameters.get(0)).value;
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?> foundColumn = findColumn(type, column, processorSupport);
-        column.genericType = CompileContext.convertGenericType(_Column.getColumnType(foundColumn));
+        return vs instanceof AppliedFunction &&
+                ((AppliedFunction) vs).parameters.size() == 1 &&
+                ((AppliedFunction) vs).parameters.get(0) instanceof ClassInstance &&
+                ((ClassInstance) ((AppliedFunction) vs).parameters.get(0)).value instanceof ColSpec;
+    }
+
+    private static void processAscendingDescending(AppliedFunction af, RelationType<?> type, CompileContext cc, ValueSpecificationBuilder valueSpecificationBuilder, ProcessorSupport processorSupport)
+    {
+        if (checkColumn(af))
+        {
+            ColSpec column = (ColSpec) ((ClassInstance) af.parameters.get(0)).value;
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?> foundColumn = findColumn(type, column, processorSupport);
+            column.genericType = CompileContext.convertGenericType(_Column.getColumnType(foundColumn));
+        }
+        else
+        {
+            af.accept(valueSpecificationBuilder);
+        }
     }
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?> findColumn(RelationType<?> type, ColSpec colSpec, ProcessorSupport processorSupport)
@@ -988,20 +1014,20 @@ public class Handlers
         // ----------------------------
 
         register(
-            m(
                 m(
-                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 2 && isOne(ps.get(1)._multiplicity())),
-                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 2)
-                ),
-                m(
-                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 3 && isOne(ps.get(2)._multiplicity())),
-                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 3)
-                ),
-                m(
-                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 4 && isOne(ps.get(3)._multiplicity())),
-                        h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 4)
+                        m(
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 2 && isOne(ps.get(1)._multiplicity())),
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 2)
+                        ),
+                        m(
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 3 && isOne(ps.get(2)._multiplicity())),
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 3)
+                        ),
+                        m(
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 4 && isOne(ps.get(3)._multiplicity())),
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 4)
+                        )
                 )
-            )
         );
 
         register(h("meta::pure::functions::collection::isEmpty_Any_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> matchZeroOne(ps.get(0)._multiplicity())),
@@ -1234,11 +1260,11 @@ public class Handlers
         register("meta::pure::functions::collection::reverse_T_m__T_m_", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()));
         register(
                 m(
-                    m(h("meta::pure::functions::date::add_StrictDate_1__Duration_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> typeOne(ps.get(1), "Duration") && typeOne(ps.get(0), "StrictDate"))),
-                    m(
-                            m(h("meta::pure::functions::collection::add_T_MANY__T_1__T_$1_MANY$_", true, ps -> res(ps.get(0)._genericType(), "oneMany"), ps -> ps.size() == 2)),
-                            m(h("meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_", true, ps -> res(ps.get(0)._genericType(), "oneMany"), ps -> ps.size() == 3))
-                    )
+                        m(h("meta::pure::functions::date::add_StrictDate_1__Duration_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> typeOne(ps.get(1), "Duration") && typeOne(ps.get(0), "StrictDate"))),
+                        m(
+                                m(h("meta::pure::functions::collection::add_T_MANY__T_1__T_$1_MANY$_", true, ps -> res(ps.get(0)._genericType(), "oneMany"), ps -> ps.size() == 2)),
+                                m(h("meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_", true, ps -> res(ps.get(0)._genericType(), "oneMany"), ps -> ps.size() == 3))
+                        )
                 )
         );
 
@@ -1949,9 +1975,9 @@ public class Handlers
                 h("meta::pure::functions::math::sum_Number_MANY__Number_1_", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")));
 
         register(h("meta::pure::functions::math::median_Float_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
-                 h("meta::pure::functions::math::median_Integer_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
-                 h("meta::pure::functions::math::median_Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))
-                );
+                h("meta::pure::functions::math::median_Integer_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::median_Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))
+        );
 
         register(h("meta::pure::functions::math::mode_Float_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
                 h("meta::pure::functions::math::mode_Integer_MANY__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
