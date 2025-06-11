@@ -15,6 +15,9 @@
 package org.finos.legend.engine.server.core.pct;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.list.ListMultimap;
@@ -22,7 +25,6 @@ import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
-import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.pure.m3.pct.aggregate.generation.DocumentationGeneration;
@@ -30,6 +32,7 @@ import org.finos.legend.pure.m3.pct.aggregate.model.Documentation;
 import org.finos.legend.pure.m3.pct.aggregate.model.FunctionDocumentation;
 import org.finos.legend.pure.m3.pct.functions.model.FunctionDefinition;
 import org.finos.legend.pure.m3.pct.functions.model.Signature;
+import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterKey;
 import org.finos.legend.pure.m3.pct.reports.model.FunctionTestResults;
 import org.finos.legend.pure.m3.pct.reports.model.TestInfo;
@@ -42,11 +45,11 @@ public class PCT_to_SimpleHTML
 
     public static void main(String[] args) throws Exception
     {
-        String html = buildHTML(Sets.mutable.of(args));
+        String html = buildHTML(Sets.mutable.of(args), Sets.mutable.of());
         Shared.writeStringToTarget("./target", "ok.html", html);
     }
 
-    public static String buildHTML(Set<String> adapterNames)
+    public static String buildHTML(Set<String> adapterNames, Set<String> adapterQualifiers)
     {
         String commitId = getCommitId();
         moduleURLs.put("grammar", "https://github.com/finos/legend-pure/tree/master/legend-pure-core/legend-pure-m3-core/src/main/resources");
@@ -101,7 +104,7 @@ public class PCT_to_SimpleHTML
                                 }
                                 else
                                 {
-                                    row.addAll(orderedAdapters.collect(a -> writeTest(d, a, testResultCountByAdapter)));
+                                    row.addAll(orderedAdapters.collect(a -> writeTest(d, a, testResultCountByAdapter, adapterQualifiers)));
                                 }
                                 node.addChild(new TreeNode(row));
                             }
@@ -130,15 +133,22 @@ public class PCT_to_SimpleHTML
     private static void addSuccessfulTestRate(MutableList<AdapterKey> orderedAdapters, MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter, TreeNode root)
     {
         MutableList<String> row = Lists.mutable.empty();
-        row.add("<div style='color:#AAAAAA'>" + "" + "</div>");
+        row.add("<div style='color:#AAAAAA'></div>");
         row.add("<div style='color:#AAAAAA'>" + "Successful Test Rate" + "</div>");
         row.addAll(orderedAdapters.collect(adapterKey ->
         {
             TestResultCount testResultCount = testResultCountByAdapter.get(adapterKey);
-            int successfulTestCount = testResultCount.successfulTestCount;
-            int totalTestCount = testResultCount.totalTestCount;
-            String tooltipElement = "<span style='color:#FFFFFF'>" + successfulTestCount + "/" + totalTestCount + "</span>";
-            return "          <div style='color:#000000' class='hover-text'>" + (int) Math.floor((double) successfulTestCount / totalTestCount * 100) + "%<div class='tooltip-text' id='top'>" + tooltipElement + "</div>";
+            int successfulTestCount = testResultCount == null ? 0 : testResultCount.successfulTestCount;
+            int totalTestCount = testResultCount == null ? 0 : testResultCount.totalTestCount;
+            if (totalTestCount > 0)
+            {
+                String tooltipElement = "<span style='color:#FFFFFF'>" + successfulTestCount + "/" + totalTestCount + "</span>";
+                return "          <div style='color:#000000' class='hover-text'>" + (int) Math.floor((double) successfulTestCount / totalTestCount * 100) + "%<div class='tooltip-text' id='top'>" + tooltipElement + "</div>";
+            }
+            else
+            {
+                return "          <div style='color:#AAAAAA'>&empty;</div>";
+            }
         }).toList());
         root.addChild(new TreeNode(row));
     }
@@ -187,12 +197,16 @@ public class PCT_to_SimpleHTML
         }
     }
 
-    private static String writeTest(FunctionDocumentation z, AdapterKey a, MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter)
+    private static String writeTest(FunctionDocumentation z, AdapterKey a, MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter, Set<String> adapterQualifiers)
     {
         FunctionTestResults results = z.functionTestResults.get(a);
         if (results != null)
         {
-            MutableList<TestInfo> tests = Lists.mutable.withAll(results.tests);
+            MutableList<TestInfo> tests = Lists.mutable.withAll(results.tests).select(t -> hasAdapterQualifier(t, adapterQualifiers));
+            if (tests.isEmpty())
+            {
+                return "          <div style='color:#AAAAAA'>&empty;</div>";
+            }
             int successfulTestCount = tests.select(t -> t.success).size();
             int totalTestCount = tests.size();
             TestResultCount testResultCount = (testResultCountByAdapter.containsKey(a)) ? testResultCountByAdapter.get(a) : new TestResultCount();
@@ -202,10 +216,7 @@ public class PCT_to_SimpleHTML
             String color = successfulTestCount == 0 ? "#C70039" : successfulTestCount != totalTestCount ? "#FFA500" : "#00C72B";
             return "          <div style='color:" + color + "' class='hover-text'>" + successfulTestCount + "/" + totalTestCount + "<div class='tooltip-text' id='top'>" + testDetail(tests) + "</div></div>";
         }
-        else
-        {
-            return "          <div style='color:#AAAAAA'>&empty;</div>";
-        }
+        return "          <div style='color:#AAAAAA'>&empty;</div>";
     }
 
     private static String testDetail(MutableList<TestInfo> tests)
@@ -243,6 +254,17 @@ public class PCT_to_SimpleHTML
     {
         Signature signature = ListIterate.detect(def.signatures, x -> x.grammarCharacter != null);
         return signature == null ? null : signature.grammarCharacter;
+    }
+
+    private static boolean hasAdapterQualifier(TestInfo test, Set<String> adapterQualifiers)
+    {
+        if (adapterQualifiers.isEmpty())
+        {
+            return !test.qualifiers.contains(AdapterQualifier.unsupportedFeature) && !test.qualifiers.contains(AdapterQualifier.assertErrorMismatch);
+        }
+
+        return adapterQualifiers.contains("all") || test.qualifiers.stream().anyMatch(x -> adapterQualifiers.contains(x.toLowerCase()));
+
     }
 
     private static String top = "<html>\n" +
