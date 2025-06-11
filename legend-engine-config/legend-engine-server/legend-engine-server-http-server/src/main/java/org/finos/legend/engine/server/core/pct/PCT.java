@@ -36,7 +36,7 @@ public class PCT
     @Path("html")
     @ApiOperation(value = "PCT report in HTML")
     @Produces(MediaType.TEXT_HTML)
-    public Response htmlPCT(@QueryParam("adapter") Set<String> adapterKeys, @QueryParam("qualifiers") Set<String> adapterQualifiers)    // adapterQualifiers - if empty will default to greener report, all will give all adapters, can have additional qualifiers for specific adapters to be included
+    public Response htmlPCT(@QueryParam("adapter") Set<String> adapterKeys, @QueryParam("qualifiers") Set<String> adapterQualifiers)
     {
         return Response.status(200).type(MediaType.TEXT_HTML).entity(PCT_to_SimpleHTML.buildHTML(adapterKeys, adapterQualifiers)).build();
     }
