@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.server.core.pct;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.list.ListMultimap;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
@@ -33,6 +35,7 @@ import org.finos.legend.pure.m3.pct.aggregate.model.FunctionDocumentation;
 import org.finos.legend.pure.m3.pct.functions.model.FunctionDefinition;
 import org.finos.legend.pure.m3.pct.functions.model.Signature;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
+import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterKey;
 import org.finos.legend.pure.m3.pct.reports.model.FunctionTestResults;
 import org.finos.legend.pure.m3.pct.reports.model.TestInfo;
@@ -73,6 +76,7 @@ public class PCT_to_SimpleHTML
                     return id.substring(x.reportScope.filePath.length(), id.lastIndexOf("/"));
                 });
         MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter = Maps.mutable.empty();
+        MutableSet<String> usedAdapterQualifiers = getUsedAdapterQualifiers(adapterQualifiers);
 
         // Build Tree
         TreeNode root = new TreeNode("root");
@@ -104,13 +108,14 @@ public class PCT_to_SimpleHTML
                                 }
                                 else
                                 {
-                                    row.addAll(orderedAdapters.collect(a -> writeTest(d, a, testResultCountByAdapter, adapterQualifiers)));
+                                    row.addAll(orderedAdapters.collect(a -> writeTest(d, a, testResultCountByAdapter, usedAdapterQualifiers)));
                                 }
                                 node.addChild(new TreeNode(row));
                             }
                         }
                 );
         addSuccessfulTestRate(orderedAdapters, testResultCountByAdapter, root);
+        addUsedAdapterQualifiers(usedAdapterQualifiers, root);
 
         return top +
                 "<BR/><BR/>\n" +
@@ -150,6 +155,17 @@ public class PCT_to_SimpleHTML
                 return "          <div style='color:#AAAAAA'>&empty;</div>";
             }
         }).toList());
+        root.addChild(new TreeNode(row));
+    }
+
+    private static void addUsedAdapterQualifiers(MutableSet<String> usedAdapterQualifiers, TreeNode root)
+    {
+        MutableList<String> row = Lists.mutable.empty();
+        row.add("<div style='color:#000000'></div>");
+        row.add("<div style='color:#000000'>" + "Applied adapter qualifiers" + "</div>");
+        usedAdapterQualifiers.stream().forEach(qualifier ->
+                row.add("          <div style='color:#000000'>" + qualifier + "</div>")
+        );
         root.addChild(new TreeNode(row));
     }
 
@@ -197,12 +213,12 @@ public class PCT_to_SimpleHTML
         }
     }
 
-    private static String writeTest(FunctionDocumentation z, AdapterKey a, MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter, Set<String> adapterQualifiers)
+    private static String writeTest(FunctionDocumentation z, AdapterKey a, MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter, MutableSet<String> usedAdapterQualifiers)
     {
         FunctionTestResults results = z.functionTestResults.get(a);
         if (results != null)
         {
-            MutableList<TestInfo> tests = Lists.mutable.withAll(results.tests).select(t -> hasAdapterQualifier(t, adapterQualifiers));
+            MutableList<TestInfo> tests = Lists.mutable.withAll(results.tests).select(t -> t.qualifiers.isEmpty() || t.qualifiers.stream().anyMatch(usedAdapterQualifiers::contains));
             if (tests.isEmpty())
             {
                 return "          <div style='color:#AAAAAA'>&empty;</div>";
@@ -256,15 +272,23 @@ public class PCT_to_SimpleHTML
         return signature == null ? null : signature.grammarCharacter;
     }
 
-    private static boolean hasAdapterQualifier(TestInfo test, Set<String> adapterQualifiers)
+    public static MutableSet<String> getUsedAdapterQualifiers(Set<String> adapterQualifiers)
     {
+        MutableSet<String> usedAdapterQualifiers = Sets.mutable.empty();
         if (adapterQualifiers.isEmpty())
         {
-            return !test.qualifiers.contains(AdapterQualifier.unsupportedFeature) && !test.qualifiers.contains(AdapterQualifier.assertErrorMismatch);
+            usedAdapterQualifiers.addAll(Arrays.stream(AdapterQualifier.values()).filter(x -> x != AdapterQualifier.unsupportedFeature && x != AdapterQualifier.assertErrorMismatch).map(AdapterQualifier::toString).collect(Collectors.toSet()));
+        }
+        else if (adapterQualifiers.contains("all"))
+        {
+            usedAdapterQualifiers.addAll(Arrays.stream(AdapterQualifier.values()).map(AdapterQualifier::toString).collect(Collectors.toSet()));
+        }
+        else
+        {
+            usedAdapterQualifiers.addAll(adapterQualifiers.stream().map(String::toLowerCase).collect(Collectors.toSet()));
         }
 
-        return adapterQualifiers.contains("all") || test.qualifiers.stream().anyMatch(x -> adapterQualifiers.contains(x.toLowerCase()));
-
+        return usedAdapterQualifiers;
     }
 
     private static String top = "<html>\n" +
