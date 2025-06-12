@@ -53,8 +53,8 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::o
 
 function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eqIgnoreCase::createEqualIgnoreCase(left: ValueSpecification[1], right: ValueSpecification[1]): SimpleFunctionExpression[1]
 {
-  assertEquals($left.genericType.rawType, String, '_eqIgnoreCase shall only be used on String properties');
-  assertEquals(
+  assert($left.genericType.rawType == String || $left.genericType.rawType->toOne()->subTypeOf(String), '_eqIgnoreCase shall only be used on String properties');
+  assertBothTypesShareCommonSupertype(
     $left.genericType.rawType, 
     $right.genericType.rawType, 
     'Incorrect type of value provided for "' + $left->cast(@SimpleFunctionExpression).func->cast(@AbstractProperty<Any>).name->toOne() + '".' + 

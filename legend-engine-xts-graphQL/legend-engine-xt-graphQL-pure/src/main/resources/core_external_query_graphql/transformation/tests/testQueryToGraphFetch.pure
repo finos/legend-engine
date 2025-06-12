@@ -262,6 +262,27 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
                 '}}#', $graphFetch);
 }
 
+Primitive meta::external::query::graphQL::transformation::queryToPure::tests::model::Varchar extends String
+Primitive meta::external::query::graphQL::transformation::queryToPure::tests::model::TinyInt extends Integer
+Primitive meta::external::query::graphQL::transformation::queryToPure::tests::model::Float4 extends Float
+
+Primitive meta::external::query::graphQL::transformation::queryToPure::tests::model::Name extends Varchar
+Primitive meta::external::query::graphQL::transformation::queryToPure::tests::model::Age extends TinyInt
+
+Class meta::external::query::graphQL::transformation::queryToPure::tests::model::Person_ExtendedPrimitives
+{
+  firstName: Name[1];
+  middleName: Name[0..1];
+  lastName: Name[1];
+  age: Age[1];
+  phone: TinyInt[1];
+  zipcode: String[1];
+  bankBalance: Float4[1];
+  dateOfBirth: Date[1];
+  fullName() {$this.firstName + ' ' + $this.lastName}: String[1];
+  isSeniorCitizen() {$this.age > 60}: Boolean[1];
+}
+
 Class meta::external::query::graphQL::transformation::queryToPure::tests::model::Person
 {
   firstName: String[1];
@@ -326,11 +347,54 @@ Class meta::external::query::graphQL::transformation::queryToPure::tests::model:
   firms() {Firm.all()}: Firm[*];
 }
 
+Class meta::external::query::graphQL::transformation::queryToPure::tests::model::Query_ExtendedPrimitives
+{
+  personByVariousProps(names:String[*], phone: Integer[1], isSeniorCitizen: Boolean[1], zipcode: String[1], minBalance: Float[1], maxBalance: Float[1])
+  {
+    Person_ExtendedPrimitives.all()->filter(
+      p | $p.fullName->in($names) 
+          && $p.phone == $phone 
+          && $p.isSeniorCitizen == $isSeniorCitizen 
+          && $p.zipcode == $zipcode
+          && $p.bankBalance->greaterThan($minBalance)
+          && $p.bankBalance->lessThan($maxBalance)
+    )
+  }: Person_ExtendedPrimitives[*];
+
+  personByName(name: String[1]){Person_ExtendedPrimitives.all()->filter(p|$p.fullName == $name)->first()}: Person_ExtendedPrimitives[0..1];
+
+  persons() {Person_ExtendedPrimitives.all()}: Person_ExtendedPrimitives[*];
+
+  personsPaginated(pageNumber: Integer[1]) {Person_ExtendedPrimitives.all()->sortBy(#/Person_ExtendedPrimitives/fullName#)->paginated($pageNumber, 1)}: Person_ExtendedPrimitives[*];
+
+  personsWithSlice(limit: Integer[1],offset: Integer[1]) {let end = $limit + $offset; Person_ExtendedPrimitives.all()->sortBy(#/Person_ExtendedPrimitives/fullName#)->slice($offset,$end);}: Person_ExtendedPrimitives[*];
+
+  personsWithLimit(limit: Integer[1]) {Person_ExtendedPrimitives.all()->sortBy(#/Person_ExtendedPrimitives/fullName#)->limit($limit)}: Person_ExtendedPrimitives[*];
+
+  personsWithDrop(offset: Integer[1]) {Person_ExtendedPrimitives.all()->sortBy(#/Person_ExtendedPrimitives/fullName#)->drop($offset)}: Person_ExtendedPrimitives[*];
+
+  personsWithTake(take: Integer[1]) {Person_ExtendedPrimitives.all()->sortBy(#/Person_ExtendedPrimitives/fullName#)->take($take)}: Person_ExtendedPrimitives[*];
+
+  firms() {Firm.all()}: Firm[*];
+}
+
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithOneParamToGraphFetch():Boolean[1]
 {
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByName(name:"John Doe") { firstName lastName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
   assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
+               '    personByName($name) {\n' +
+               '        firstName, \n'+
+               '        lastName\n'+
+               '    }\n' +
+               '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithOneParamToGraphFetchUsingExtendedPrimitives():Boolean[1]
+{
+  let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByName(name:"John Doe") { firstName lastName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query_ExtendedPrimitives);
+  assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query_ExtendedPrimitives {\n' +
                '    personByName($name) {\n' +
                '        firstName, \n'+
                '        lastName\n'+

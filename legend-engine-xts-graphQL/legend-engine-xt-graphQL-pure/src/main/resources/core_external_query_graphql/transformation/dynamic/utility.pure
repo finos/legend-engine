@@ -32,6 +32,7 @@ import meta::external::query::graphQL::transformation::queryToPure::dynamic::met
 import meta::pure::graphFetch::*;
 import meta::pure::functions::lang::*;
 import meta::pure::functions::multiplicity::*;
+import meta::pure::functions::meta::*;
 
 function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::nodesToString(node: Node[*], fieldName: String[1]): String[1]
 {
@@ -172,4 +173,12 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::u
 function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::simpleType(type:Type[0..1]): Type[0..1]
 {
    if ($type == Float || $type == Integer || $type == Decimal, |Number, |$type);
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::assertBothTypesShareCommonSupertype(type1: meta::pure::metamodel::type::Type[0..1], type2: meta::pure::metamodel::type::Type[0..1], message:String[1]): Boolean[1]
+{
+  if($type1 == Enumeration || $type2 == Enumeration,
+    | assertEquals($type1, $type2, $message),
+    | assertEquals($type1->toOne()->bypassExtendedPrimitives (), $type2->toOne()->bypassExtendedPrimitives (), $message)
+  )
 }
