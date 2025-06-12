@@ -15,6 +15,12 @@
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.navigation.function.Function;
+import org.finos.legend.pure.m3.navigation.generictype.GenericType;
+import org.finos.legend.pure.m3.navigation.relation._RelationType;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -139,6 +145,65 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "{\n" +
                         "   []" +
                         "}"
+        );
+    }
+
+    @Test
+    public void testMerge()
+    {
+        PureModel pureModel = test(
+                "###Pure\n" +
+                        "function test::func1():meta::pure::metamodel::relation::Relation<(num:Number[1], other:Varchar(222))>[0..1]\n" +
+                        "{\n" +
+                        "   [];\n" +
+                        "}\n" +
+                        "function test::func2():meta::pure::metamodel::relation::Relation<(num:Number[1], other:Varchar(222))>[0..1]\n" +
+                        "{\n" +
+                        "   [];\n" +
+                        "}"
+        ).getTwo();
+        FunctionType fType1 = (FunctionType) Function.computeFunctionType(pureModel.getPackageableElement("test::func1__Relation_$0_1$_"), pureModel.getExecutionSupport().getProcessorSupport());
+        FunctionType fType2 = (FunctionType) Function.computeFunctionType(pureModel.getPackageableElement("test::func2__Relation_$0_1$_"), pureModel.getExecutionSupport().getProcessorSupport());
+        Assert.assertEquals("(num:Number[1], other:Varchar(222))", GenericType.print(_RelationType.merge(fType1._returnType()._typeArguments().getFirst(), fType2._returnType()._typeArguments().getFirst(), true, pureModel.getExecutionSupport().getProcessorSupport()), pureModel.getExecutionSupport().getProcessorSupport()));
+    }
+
+    @Test
+    public void testExtendOverWithWrongSortCompilerFeedback()
+    {
+        test(
+                "###Pure\n" +
+                        "Class test::Person{name : String[1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Person.all()->project(~[mycol:x|$x.name])->extend(over(~mycol,[~mycol]->descending()), ~newCol:x|$x.mycol:y|$y->count())\n" +
+                        "}", "COMPILATION error at [4:82-91]: Can't infer the type of the function parameter within over"
+        );
+    }
+
+    @Test
+    public void testExtendOverWithWrongSortFuncCompilerFeedback()
+    {
+        test(
+                "###Pure\n" +
+                        "Class test::Person{name : String[1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Person.all()->project(~[mycol:x|$x.name])->extend(over(~mycol, ~mycol->desceeending()), ~newCol:x|$x.mycol:y|$y->count())\n" +
+                        "}", "COMPILATION error at [4:81-92]: Can't resolve the builder for function 'desceeending' - stack:[Function 'test::f__Any_MANY_' Third Pass, Applying extend, Applying over, Applying desceeending]"
+        );
+    }
+
+    @Test
+    public void testExtendOverCompilerFeedback()
+    {
+        test(
+                "###Pure\n" +
+                        "Class test::Person{name : String[1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Person.all()->project(~[mycol:x|$x.name])->extend(over('www'), ~newCol:x|$x.mycol:y|$y->count())\n" +
+                        "}",
+                "COMPILATION error at [4:60-63]: Can't find a match for function 'over(String[1])'"
         );
     }
 }
