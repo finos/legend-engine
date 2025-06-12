@@ -35,7 +35,6 @@ import org.finos.legend.pure.m3.pct.aggregate.model.FunctionDocumentation;
 import org.finos.legend.pure.m3.pct.functions.model.FunctionDefinition;
 import org.finos.legend.pure.m3.pct.functions.model.Signature;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
-import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterKey;
 import org.finos.legend.pure.m3.pct.reports.model.FunctionTestResults;
 import org.finos.legend.pure.m3.pct.reports.model.TestInfo;
