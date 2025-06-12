@@ -1,1 +1,2 @@
 org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifactGenerationExtension
+org.finos.legend.engine.language.snowflakeM2MUdf.generator.SnowflakeM2MUdfArtifactGenerationExtension

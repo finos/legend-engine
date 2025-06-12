@@ -25,7 +25,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 
 public class ArtifactGenerationExtensionLoader
 {
-    public static final String EXTENSION_KEY_REGEX = "^[a-zA-Z_\\-]+$";
+    public static final String EXTENSION_KEY_REGEX = "^[a-zA-Z_0-9\\-]+$";
 
     public static List<ArtifactGenerationExtension> extensions()
     {
