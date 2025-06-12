@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-daml</artifactId>
-        <version>4.88.8-SNAPSHOT</version>
+        <version>4.88.8</version>
     </parent>
 
     <artifactId>legend-engine-xt-daml-http-api</artifactId>
