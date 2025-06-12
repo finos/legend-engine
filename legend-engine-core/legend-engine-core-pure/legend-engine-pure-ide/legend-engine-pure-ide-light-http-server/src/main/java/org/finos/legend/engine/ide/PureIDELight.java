@@ -76,6 +76,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-persistence/legend-engine-xt-persistence-pure", "persistence"))
                 .with(this.buildCore("legend-engine-xts-functionActivator/legend-engine-xt-functionActivator-pure", "function_activator"))
                 .with(this.buildCore("legend-engine-xts-snowflake/legend-engine-xt-snowflake-pure", "snowflake"))
+                .with(this.buildCore("legend-engine-xts-snowflake/legend-engine-xt-snowflake-pure-test", "snowflake_test"))
                 .with(this.buildCore("legend-engine-xts-bigqueryFunction/legend-engine-xt-bigqueryFunction-pure", "bigqueryfunction"))
                 .with(this.buildCore("legend-engine-xts-hostedService/legend-engine-xt-hostedService-pure", "hostedservice"))
                 .with(this.buildCore("legend-engine-xts-functionJar/legend-engine-xt-functionJar-pure", "functionjar"))

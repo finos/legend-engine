@@ -19,43 +19,79 @@ import meta::pure::mapping::*;
 import meta::external::function::activator::snowflakeApp::tests::*;
 import meta::external::function::activator::snowflakeApp::tests::model::simple::*;
 
+function meta::external::function::activator::snowflakeApp::tests::checkSnowflakeAppGrammar(function:String[1],  expected:String[1]): Boolean[1]
+{
+  let model = readFile('/core_snowflake_test/core_snowflakeapp/showcase/showcaseElements.txt')->toOne();
+
+  let grammar = '###Snowflake\n' +
+                'SnowflakeApp meta::external::function::activator::snowflakeApp::tests::FirstApp\n' +
+                '{\n' +
+                '  applicationName : \'App1\';\n' +
+                '  ownership : Deployment { identifier : \'12345\' };\n' +
+                '  description : \'bla bla\';\n' +
+                '  activationConfiguration : meta::external::function::activator::snowflakeApp::tests::MyConnection;\n' + $function + '}\n' + $model;
+
+  let elements = meta::legend::compileLegendGrammar($grammar);
+
+  let x = $elements->filter(f | $f->instanceOf(SnowflakeApp))->cast(@SnowflakeApp)->toOne();
+
+  assertEquals($x->generateFullArtifact().createQuery, $expected);
+}
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunction():Boolean[1]
 {
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'haha\' $$;';
-  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction__TabularDataSet_1_, $expected);
+
+  let function = '  function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction():TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithParams():Boolean[1]
 {
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("age" INTEGER) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where ("root".AGE is not null and "root".AGE > age) $$;';
-  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithParams_Integer_1__TabularDataSet_1_, $expected);
+
+  let function = '  function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithParams(Integer[1]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithStringParams():Boolean[1]
 {
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("firstName" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = firstName $$;';
-  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithStringParams_String_1__TabularDataSet_1_, $expected);
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithStringParams(String[1]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testEnumPushDownWithFilter():Boolean[1]
 {
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"GENDER" VARCHAR,"GENDERFROMINT" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", case when "root".GENDER = \'male\' then \'M\' when "root".GENDER in (\'female\', \'Female\') then \'F\' else null end as "Gender", case when "root".GENDER2 = 1 then \'M\' when "root".GENDER2 = 2 then \'F\' else null end as "GenderFromInt" from personTable as "root" where "root".GENDER = \'male\' $$;';
-  assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumPushDown__TabularDataSet_1_, $expected);
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumPushDown():TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeHardCoded():Boolean[1]
 {
   // the time zone info in the connection should be ignored in the generated sql
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = \'2024-02-27 16:21:53\'::timestamp $$;';
-  assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeHardCoded__TabularDataSet_1_, $expected);
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeHardCoded():TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeParam():Boolean[1]
 {
   // the time zone info in the connection should be ignored in the generated sql
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("asOf" TIMESTAMP) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = asOf $$;';
-  assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeParam_DateTime_1__TabularDataSet_1_, $expected);
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeParam(DateTime[1]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
 }
 
 
@@ -63,32 +99,47 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 {
   // the time zone info in the connection should be ignored in the generated sql
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"LASTUPDATED" TIMESTAMP) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", cast("root".LAST_UPDATED as TIMESTAMP) as "lastUpdated" from personTable as "root" $$;';
-  assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithTimestamp__TabularDataSet_1_, $expected);
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithTimestamp():TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
 }
 
 // not supported yet
 function <<test.Test, test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParams():Boolean[1]
 {
   let expected = '';
-  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParams_Integer_MANY__TabularDataSet_1_, $expected);
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParams(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithEnumParams():Boolean[1]
 {
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("gender" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where gender = case when "root".GENDER = \'male\' then \'M\' when "root".GENDER in (\'female\', \'Female\') then \'F\' else null end $$;';
-  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam_Gender_1__TabularDataSet_1_, $expected);
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam(Gender[1]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testInputDataTypes():Boolean[1]
 {
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("str" VARCHAR,"int" INTEGER,"bool" BOOLEAN,"dt" TIMESTAMP) RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", case when "root".boolean is null then null else case when "root".boolean = 1 then true else false end end as "Boolean", "root"."DATE" as "Date", cast("root".dateTime as TIMESTAMP) as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
-  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::testReturnType_String_1__Integer_1__Boolean_1__DateTime_1__TabularDataSet_1_, $expected);
+
+  let function = 'function : meta::external::function::activator::snowflakeApp::tests::testReturnType(String[1], Integer[1], Boolean[1], DateTime[1]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testReturnDataTypes():Boolean[1]
 {
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", case when "root".boolean is null then null else case when "root".boolean = 1 then true else false end end as "Boolean", "root"."DATE" as "Date", cast("root".dateTime as TIMESTAMP) as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
-  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::testDataType__TabularDataSet_1_, $expected);
+
+  let function = 'function : meta::external::function::activator::snowflakeApp::tests::testDataType():TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
 }
 
 //function <<test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testUdtfOnUdtf():Any[*]
