@@ -8,7 +8,7 @@
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF Aas rNY KIND, either express or implied.
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
@@ -51,6 +51,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     ]
   )  
 }
+
 function meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::testSetupDataForMode(): TestSetupData[1]
 {
   ^TestSetupData(
@@ -66,6 +67,20 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       dataRow(['Grace', 'Arts', 84]), 
       dataRow(['Hannah', 'Arts', 80]),
       dataRow(['Parker', 'Arts', 80])
+    ]
+  )  
+}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::testSetupDataForCorrelation(): TestSetupData[1]
+{
+  ^TestSetupData(
+    tableName = 'testTable', 
+    columns = [pair('student', 'varchar'), pair('num1', 'integer'), pair('num2', 'integer')], 
+    data = [
+      dataRow(['Alice', 10, 11]), 
+      dataRow(['Bob', 20, 22]), 
+      dataRow(['Charlie', 30, 35]), 
+      dataRow(['David', 40, 20])
     ]
   )  
 }

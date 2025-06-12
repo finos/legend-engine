@@ -157,7 +157,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
    let func = {|Trade.all()->filter(x | $x.id == 100)->project([x|$x.id, x|$x.quantity, x|$x.latestEventDate], ['TradeID', 'Quantity', 'LatestEventDate'])};
    let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
    assertSameSQL(
-      'WITH subquery_cte_1_1 AS (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" where "root".trade_id = 100 group by "root".trade_id) ' +
+      'with subquery_cte_1_1 as (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" where "root".trade_id = 100 group by "root".trade_id) ' +
       'select "root".ID as "TradeID", "root".quantity as "Quantity", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "LatestEventDate" from tradeTable as "root" left outer join subquery_cte_1_1 as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id = 100) where "root".ID = 100',
       $result
    );
@@ -170,7 +170,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
    let func = {|Trade.all()->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])->limit(10)->filter(x | $x.getInteger('TradeID') == 100)};
    let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
    assertSameSQL(
-     'WITH subquery_cte_1_1 AS (select top 10 "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root") ' +
+     'with subquery_cte_1_1 as (select top 10 "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root") ' +
      'select "subselect"."TradeID" as "TradeID", "subselect"."Quantity" as "Quantity" from subquery_cte_1_1 as "subselect" where "subselect"."TradeID" = 100',
       $result
    );
@@ -183,8 +183,8 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
    let func = {|Trade.all()->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])->limit(10)->filter(x | $x.getInteger('TradeID') < 100)->limit(5)->filter(x | $x.getInteger('TradeID') < 50)};
    let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
    assertSameSQL(
-     'WITH subquery_cte_2_1 AS (select top 10 "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root"), ' +
-     'subquery_cte_1_1 AS (select top 5 "subselect"."TradeID" as "TradeID", "subselect"."Quantity" as "Quantity" from subquery_cte_2_1 as "subselect" where "subselect"."TradeID" < 100) ' +
+     'with subquery_cte_2_1 as (select top 10 "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root"), ' +
+     'subquery_cte_1_1 as (select top 5 "subselect"."TradeID" as "TradeID", "subselect"."Quantity" as "Quantity" from subquery_cte_2_1 as "subselect" where "subselect"."TradeID" < 100) ' +
      'select "subselect"."TradeID" as "TradeID", "subselect"."Quantity" as "Quantity" from subquery_cte_1_1 as "subselect" where "subselect"."TradeID" < 50',
       $result
    );
@@ -204,9 +204,9 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
    };
    let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
    assertSameSQL(
-     'WITH subquery_cte_2_1 AS (select "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root"), ' +
-     'subquery_cte_2_2 AS (select "root".ID as "TradeID", "producttable_0".NAME as "ProductName" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID)), ' +
-     'subquery_cte_1_1 AS (select "tradetable_1"."TradeID" as "TradeID", "tradetable_1"."Quantity" as "Quantity", "tradetable_3"."ProductName" as "ProductName" from subquery_cte_2_1 as "tradetable_1" inner join subquery_cte_2_2 as "tradetable_3" on ("tradetable_1"."TradeID" = "tradetable_3"."TradeID")) ' +
+     'with subquery_cte_2_1 as (select "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root"), ' +
+     'subquery_cte_2_2 as (select "root".ID as "TradeID", "producttable_0".NAME as "ProductName" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID)), ' +
+     'subquery_cte_1_1 as (select "tradetable_1"."TradeID" as "TradeID", "tradetable_1"."Quantity" as "Quantity", "tradetable_3"."ProductName" as "ProductName" from subquery_cte_2_1 as "tradetable_1" inner join subquery_cte_2_2 as "tradetable_3" on ("tradetable_1"."TradeID" = "tradetable_3"."TradeID")) ' +
      'select "tradetable_0"."TradeID" as "TradeID", "tradetable_0"."Quantity" as "Quantity", "tradetable_0"."ProductName" as "ProductName" from subquery_cte_1_1 as "tradetable_0"',
       $result
    );
@@ -225,10 +225,10 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
    };
    let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
    assertSameSQL(
-     'WITH subquery_cte_3_1 AS (select top 10 "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root"), ' +
-     'subquery_cte_2_1 AS (select "subselect"."TradeID" as "TradeID", "subselect"."Quantity" as "Quantity" from subquery_cte_3_1 as "subselect" where "subselect"."TradeID" < 100), ' +
-     'subquery_cte_2_2 AS (select "root".ID as "TradeID", "producttable_0".NAME as "ProductName" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID)), ' +
-     'subquery_cte_1_1 AS (select "tradetable_1"."TradeID" as "TradeID", "tradetable_1"."Quantity" as "Quantity", "tradetable_4"."ProductName" as "ProductName" from subquery_cte_2_1 as "tradetable_1" inner join subquery_cte_2_2 as "tradetable_4" on ("tradetable_1"."TradeID" = "tradetable_4"."TradeID")) ' +
+     'with subquery_cte_3_1 as (select top 10 "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root"), ' +
+     'subquery_cte_2_1 as (select "subselect"."TradeID" as "TradeID", "subselect"."Quantity" as "Quantity" from subquery_cte_3_1 as "subselect" where "subselect"."TradeID" < 100), ' +
+     'subquery_cte_2_2 as (select "root".ID as "TradeID", "producttable_0".NAME as "ProductName" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID)), ' +
+     'subquery_cte_1_1 as (select "tradetable_1"."TradeID" as "TradeID", "tradetable_1"."Quantity" as "Quantity", "tradetable_4"."ProductName" as "ProductName" from subquery_cte_2_1 as "tradetable_1" inner join subquery_cte_2_2 as "tradetable_4" on ("tradetable_1"."TradeID" = "tradetable_4"."TradeID")) ' +
      'select "tradetable_0"."TradeID" as "TradeID", "tradetable_0"."Quantity" as "Quantity", "tradetable_0"."ProductName" as "ProductName" from subquery_cte_1_1 as "tradetable_0"',
       $result
    );
@@ -243,7 +243,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
    };
    let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
    assertSameSQL(
-     'WITH subquery_cte_1_1 AS (select "persontable_2".FIRMID as FIRMID, "persontable_2".FIRSTNAME as FIRSTNAME from personTable as "persontable_2" where "persontable_2".LASTNAME = \'Smith\') ' +
+     'with subquery_cte_1_1 as (select "persontable_2".FIRMID as FIRMID, "persontable_2".FIRSTNAME as FIRSTNAME from personTable as "persontable_2" where "persontable_2".LASTNAME = \'Smith\') ' +
      'select "firmtable_0".LEGALNAME as "Legal Name", "persontable_1".FIRSTNAME as "Employee Name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join subquery_cte_1_1 as "persontable_1" on ("firmtable_0".ID = "persontable_1".FIRMID)',
       $result
    );

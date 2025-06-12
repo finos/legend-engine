@@ -126,7 +126,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
 	assertEquals(
     'SELECT "root".* FROM db.schema.table_a AS "root" INNER JOIN db.schema.table_b AS "t_b" ON (101 < 102) WHERE 103 < 104 ' +
     'GROUP BY "root".c1, "root".c2 HAVING c1 IS NOT NULL ' +
-    'ORDER BY c1 DESC NULLS FIRST, c2 ASC NULLS LAST OFFSET 5 ROWS FETCH NEXT 5 ROWS ONLY',
+    'ORDER BY c1 DESC NULLS FIRST, c2 ASC NULLS LAST OFFSET 5 ROWS FETCH NEXT 10 ROWS ONLY',
     $dialect->executeNodeProcessor($q8, $state, $config)
   );
 

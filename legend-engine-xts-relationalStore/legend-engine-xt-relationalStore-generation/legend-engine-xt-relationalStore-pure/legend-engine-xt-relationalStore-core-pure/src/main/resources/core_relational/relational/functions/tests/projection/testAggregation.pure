@@ -88,7 +88,7 @@ function <<test.Test>> meta::relational::tests::projection::aggregation::testSub
    assertSameElements(['Firm A 1.0', 'Firm B 16.0', 'Firm C 1.0', 'Firm X 2.25'], $result.values.rows->map(r|$r.getString('a')+' '+$r.getFloat('b')->toString()));
    assertEqualsH2Compatible(
     'select "root".LEGALNAME as "a", "firmtable_1".aggCol as "b" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then ((1.0 * "persontable_0".AGE) / 2) else 1.0 end) as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
-    'select "root".LEGALNAME as "a", "firmtable_1".aggCol as "b" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then ((1.0 * "persontable_0".AGE) / 2) else CAST(1.0 AS FLOAT) end) as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
+    'select "root".LEGALNAME as "a", "firmtable_1".aggCol as "b" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then (1.0 * "persontable_0".AGE) / 2 else cast(1.0 as float) end) as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
     $result->sqlRemoveFormatting()
    );
 }
@@ -106,7 +106,7 @@ function <<test.Test>> meta::relational::tests::projection::aggregation::testSub
 
    assertSize($result.values.rows, 4);
    assertSameElements(['Firm C David', 'Firm X Peter^John^John^Anthony', 'Firm A Fabrice', 'Firm B Oliver'], $result.values.rows->map(r|$r.getString('legalName')+' '+$r.getString('employeesFirstNamePerFirm')));
-   assertEquals('select "root".LEGALNAME as "legalName", "firmtable_1".aggCol as "employeesFirstNamePerFirm" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, group_concat("persontable_0".FIRSTNAME separator \'^\' ) as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".LEGALNAME as "legalName", "firmtable_1".aggCol as "employeesFirstNamePerFirm" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, listagg("persontable_0".FIRSTNAME, \'^\') as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationWithJoinStringsOrderBy():Boolean[1]
@@ -122,7 +122,7 @@ function <<test.Test>> meta::relational::tests::projection::aggregation::testSub
 
    assertSize($result.values.rows, 4);
    assertSameElements(['Firm A Fabrice', 'Firm B Oliver', 'Firm C David', 'Firm X Anthony^John^John^Peter'], $result.values.rows->map(r|$r.getString('legalName')+' '+$r.getString('employeesFirstNamePerFirm')));
-   assertEquals('select "root".LEGALNAME as "legalName", "firmtable_1".aggCol as "employeesFirstNamePerFirm" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, group_concat("firmtable_2".FIRSTNAME separator \'^\' ) as aggCol from (select "firmtable_3".ID, "persontable_0".FIRSTNAME from firmTable as "firmtable_3" left outer join personTable as "persontable_0" on ("firmtable_3".ID = "persontable_0".FIRMID) order by "persontable_0".LASTNAME) as "firmtable_2" group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".LEGALNAME as "legalName", "firmtable_1".aggCol as "employeesFirstNamePerFirm" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, listagg("firmtable_2".FIRSTNAME, \'^\') as aggCol from (select "firmtable_3".ID, "persontable_0".FIRSTNAME from firmTable as "firmtable_3" left outer join personTable as "persontable_0" on ("firmtable_3".ID = "persontable_0".FIRMID) order by "persontable_0".LASTNAME asc) as "firmtable_2" group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationWithDeepAndOverlap():Boolean[1]
@@ -141,7 +141,7 @@ function <<test.Test>> meta::relational::tests::projection::aggregation::testSub
    let result = execute($l, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertSameElements(['Firm A Roberts 4', 'Firm X Allen 4', 'Firm X Smith 4', 'Firm X Johnson 4', 'Firm X Hill 4', 'Firm C Harris 3', 'Firm B Hill 4'], $result.values.rows->map(r|$r.getString('a')+' '+$r.getString('b')+' '+$r.getInteger('c')->toString()));
-   assertEquals('select "root".LEGALNAME as "a", "persontable_0".LASTNAME as "b", (2 + "persontable_1".aggCol) as "c" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join (select "persontable_2".ID as ID, count("locationtable_0".PLACE) as aggCol from personTable as "persontable_2" left outer join locationTable as "locationtable_0" on ("persontable_2".ID = "locationtable_0".PERSONID) group by "persontable_2".ID) as "persontable_1" on ("persontable_0".ID = "persontable_1".ID)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".LEGALNAME as "a", "persontable_0".LASTNAME as "b", 2 + "persontable_1".aggCol as "c" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join (select "persontable_2".ID as ID, count("locationtable_0".PLACE) as aggCol from personTable as "persontable_2" left outer join locationTable as "locationtable_0" on ("persontable_2".ID = "locationtable_0".PERSONID) group by "persontable_2".ID) as "persontable_1" on ("persontable_0".ID = "persontable_1".ID)', $result->sqlRemoveFormatting());
 }
 
 
@@ -156,7 +156,7 @@ function <<test.Test>> meta::relational::tests::projection::aggregation::testSub
    let result = execute({|Firm.all()->project($cols)}, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertSameElements(['Firm A Roberts 4', 'Firm X Allen 4', 'Firm X Smith 4', 'Firm X Johnson 4', 'Firm X Hill 4', 'Firm C Harris 3', 'Firm B Hill 4'], $result.values.rows->map(r|$r.getString('a')+' '+$r.getString('b')+' '+$r.getInteger('c')->toString()));
-   assertEquals('select "root".LEGALNAME as "a", "persontable_0".LASTNAME as "b", (2 + "persontable_1".aggCol) as "c" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join (select "persontable_2".ID as ID, count("locationtable_0".PLACE) as aggCol from personTable as "persontable_2" left outer join locationTable as "locationtable_0" on ("persontable_2".ID = "locationtable_0".PERSONID) group by "persontable_2".ID) as "persontable_1" on ("persontable_0".ID = "persontable_1".ID)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".LEGALNAME as "a", "persontable_0".LASTNAME as "b", 2 + "persontable_1".aggCol as "c" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join (select "persontable_2".ID as ID, count("locationtable_0".PLACE) as aggCol from personTable as "persontable_2" left outer join locationTable as "locationtable_0" on ("persontable_2".ID = "locationtable_0".PERSONID) group by "persontable_2".ID) as "persontable_1" on ("persontable_0".ID = "persontable_1".ID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationWithDeep():Boolean[1]

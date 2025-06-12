@@ -50,6 +50,38 @@ Class meta::external::query::sql::metamodel::extension::ExistsPredicate extends 
   <<equality.Key>> query: TableSubquery[1];
 }
 
+Class meta::external::query::sql::metamodel::extension::BitwiseBinaryExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> left: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> right: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> operator: BitwiseBinaryOperator[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::BitwiseNotExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> expression: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::extension::BitwiseShiftExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> shift: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> direction: meta::external::query::sql::metamodel::BitwiseShiftDirection[1];
+}
+
+Enum meta::external::query::sql::metamodel::BitwiseBinaryOperator
+{
+  AND,
+  OR,
+  XOR
+}
+
+Enum meta::external::query::sql::metamodel::BitwiseShiftDirection
+{
+  LEFT,
+  RIGHT
+}
+
 Class meta::external::query::sql::metamodel::extension::AllColumnsReference extends meta::external::query::sql::metamodel::Expression
 {
 }

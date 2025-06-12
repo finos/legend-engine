@@ -169,9 +169,7 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
 
             // JoinStrings
             one("meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsSingleString_Function_1__Boolean_1_", "\"\nexpected: '[a]'\nactual:   '['\""),
-            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsUsingGenericArrow_Function_1__Boolean_1_", "\"\nexpected: '[a,b,c]'\nactual:   '[,a,b,c,]'\""),
-            one("meta::pure::functions::string::tests::joinStrings::testJoinStrings_Function_1__Boolean_1_", "\"\nexpected: '[a,b,c]'\nactual:   '[,a,b,c,]'\""),
+            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsSingleString_Function_1__Boolean_1_", "\"\nexpected: '[a]'\nactual:   'a'\""),
 
             //Format
             one("meta::pure::functions::string::tests::format::testFormatBoolean_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
@@ -208,7 +206,12 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_", "\"\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'\""),
 
             // Mod
-            one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
+            one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"No matched function in function registry for - mod(IntegerSqlType, IntegerSqlType, IntegerSqlType).\n" +
+                    "Available variations for that function - [\n" +
+                    "  mod(AbstractIntegerSqlType, AbstractIntegerSqlType):AbstractIntegerSqlType,\n" +
+                    "  mod(DoubleSqlType, DoubleSqlType):DoubleSqlType,\n" +
+                    "  mod(AbstractNumericSqlType, AbstractNumericSqlType):AbstractNumericSqlType\n" +
+                    "]\""),
             one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
 
             // Rem
@@ -216,8 +219,18 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\""),
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14\""),
             one("meta::pure::functions::math::tests::rem::testRemWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\""),
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
-            one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
+            one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "\"No matched function in function registry for - mod(IntegerSqlType, DoubleSqlType, IntegerSqlType).\n" +
+                    "Available variations for that function - [\n" +
+                    "  mod(AbstractIntegerSqlType, AbstractIntegerSqlType):AbstractIntegerSqlType,\n" +
+                    "  mod(DoubleSqlType, DoubleSqlType):DoubleSqlType,\n" +
+                    "  mod(AbstractNumericSqlType, AbstractNumericSqlType):AbstractNumericSqlType\n" +
+                    "]\""),
+            one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "\"No matched function in function registry for - mod(IntegerSqlType, IntegerSqlType, IntegerSqlType).\n" +
+                    "Available variations for that function - [\n" +
+                    "  mod(AbstractIntegerSqlType, AbstractIntegerSqlType):AbstractIntegerSqlType,\n" +
+                    "  mod(DoubleSqlType, DoubleSqlType):DoubleSqlType,\n" +
+                    "  mod(AbstractNumericSqlType, AbstractNumericSqlType):AbstractNumericSqlType\n" +
+                    "]\""),
 
             // Round
             one("meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp_Function_1__Boolean_1_", "\"\nexpected: -16\nactual:   -17\""),
@@ -226,10 +239,6 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             // ToDecimal
             one("meta::pure::functions::math::tests::toDecimal::testDecimalToDecimal_Function_1__Boolean_1_", "\"\nexpected: 3.8D\nactual:   4D\""),
             one("meta::pure::functions::math::tests::toDecimal::testDoubleToDecimal_Function_1__Boolean_1_", "\"\nexpected: 3.8D\nactual:   4D\""),
-
-            // CubeRoot
-            one("meta::pure::functions::math::tests::testCubeRootEval_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Function \"CBRT\" not found; SQL statement:\nselect cbrt(27) [90022-214]"),
-            one("meta::pure::functions::math::tests::testCubeRoot_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Function \"CBRT\" not found; SQL statement:\nselect cbrt(0) [90022-214]"),
 
             // At
             one("meta::pure::functions::collection::tests::at::testAtOtherScenario_Function_1__Boolean_1_", "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: ['a', 'b', 'c'] -> map(x:String[1] | [$x, 'z'] -> plus();) -> at(0)\""),
@@ -245,18 +254,18 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::collection::tests::removeDuplicatesBy::testRemoveDuplicatesByPrimitive_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
 
             //Date
-            one("meta::pure::functions::date::tests::testAdjustByDaysBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(DAY, 12345678912, DATE'2016-02-29') [90008-214]"),
-            one("meta::pure::functions::date::tests::testAdjustByHoursBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(HOUR, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"),
+            one("meta::pure::functions::date::tests::testAdjustByDaysBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(day, 12345678912, DATE'2016-02-29') [90008-214]"),
+            one("meta::pure::functions::date::tests::testAdjustByHoursBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(hour, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"),
             one("meta::pure::functions::date::tests::testAdjustByMicrosecondsBigNumber_Function_1__Boolean_1_", "\"\nexpected: %2021-06-21T09:37:37.4990000+0000\nactual:   %2021-06-21T09:37:37.499+0000\""),
-            one("meta::pure::functions::date::tests::testAdjustByMinutesBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(MINUTE, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"),
-            one("meta::pure::functions::date::tests::testAdjustBySecondsBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(SECOND, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"),
+            one("meta::pure::functions::date::tests::testAdjustByMinutesBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(minute, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"),
+            one("meta::pure::functions::date::tests::testAdjustBySecondsBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(second, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"),
             one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::lang::eval(?)'"),
-            one("meta::pure::functions::date::tests::testDateFromDay_Function_1__Boolean_1_", "[unsupported-api] The function 'date' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::date::tests::testDateFromDay_Function_1__Boolean_1_", "\"H2 SQL Dialect does not support the function - make_date\""),
             one("meta::pure::functions::date::tests::testDateFromHour_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::date::tests::testDateFromMinute_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::date::tests::testDateFromMonth_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Date_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::date::tests::testDateFromSecond_Function_1__Boolean_1_", "[unsupported-api] The function 'date' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::date::tests::testDateFromSubSecond_Function_1__Boolean_1_", "[unsupported-api] The function 'date' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::date::tests::testDateFromSecond_Function_1__Boolean_1_", "\"H2 SQL Dialect does not support the function - make_timestamp\""),
+            one("meta::pure::functions::date::tests::testDateFromSubSecond_Function_1__Boolean_1_", "\"H2 SQL Dialect does not support the function - make_timestamp\""),
             one("meta::pure::functions::date::tests::testDateFromYear_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'date_Integer_1__Date_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::date::tests::testHasDay_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasDay_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::date::tests::testHasHour_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasHour_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
@@ -267,8 +276,8 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::date::tests::testHasSubsecondWithAtLeastPrecision_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasSubsecondWithAtLeastPrecision_Date_1__Integer_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::date::tests::testHasSubsecond_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasSubsecond_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_", "Date has no day: 2012-03"),
-            one("meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"9600000000\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(MONTH, 9600000000, DATE'2016-02-29') [90008-214]"),
-            one("meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(WEEK, 12345678912, DATE'2016-02-29') [90008-214]"),
+            one("meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"9600000000\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(month, 9600000000, DATE'2016-02-29') [90008-214]"),
+            one("meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(week, 12345678912, DATE'2016-02-29') [90008-214]"),
             one("meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\""),
             one("meta::pure::functions::date::tests::testDateDiffWeeks_Function_1__Boolean_1_", "\"\nexpected: 0\nactual:   -1\""),
             one("meta::pure::functions::date::tests::testDateDiffYears_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\""),
@@ -302,15 +311,12 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::string::tests::indexOf::testFromIndex_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'indexOf_String_1__String_1__Integer_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::string::tests::indexOf::testSimple_Function_1__Boolean_1_", "\"\nexpected: 4\nactual:   5\""),
 
-            // ParseBoolean
-            one("meta::pure::functions::string::tests::parseBoolean::testParseFalse_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseBoolean' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::string::tests::parseBoolean::testParseTrue_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseBoolean' (state: [Select, false]) is not supported yet\""),
-
             // ParseDate
-            one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T00:00:00.000000\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T00:00:00.000000','yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]') as timestamp) [90014-214]"),
-            one("meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T10:01:35.231-0500\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231-0500','yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]') as timestamp) [90014-214]"),
-            one("meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T10:01:35.231Z\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231Z','yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]') as timestamp) [90014-214]"),
-            one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T10:01:35.231\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231','yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]') as timestamp) [90014-214]"),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T00:00:00.000000\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T00:00:00.000000', 'yyyy-MM-dd HH:mm:ss') as timestamp)"),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T00:00:00.000000\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T00:00:00.000000', 'yyyy-MM-dd HH:mm:ss') as timestamp)"),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T10:01:35.231Z\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231Z', 'yyyy-MM-dd HH:mm:ss') as timestamp)"),
+            one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T10:01:35.231\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231', 'yyyy-MM-dd HH:mm:ss') as timestamp)"),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T10:01:35.231-0500\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231-0500', 'yyyy-MM-dd HH:mm:ss') as timestamp)"),
 
             // ParseDecimal
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"3.14159d\"; SQL statement:\nselect cast('3.14159d' as decimal(5,2)) [22018-214]"),

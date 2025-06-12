@@ -2717,6 +2717,8 @@ function meta::external::query::sql::transformation::queryToPure::tests::toCharT
       meta::relational::functions::database::executeInDb($sql, $runtime.connectionStores->at(0), false);
       )->size();  // NO NOT REMOVE: size called to inhibit lazy evaluation ensuring the map is activated;
 
+  meta::relational::functions::database::executeInDb('CREATE ALIAS IF NOT EXISTS legend_h2_extension_lpad FOR "org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_lpad";', $runtime.connectionStores->at(0), false);
+  meta::relational::functions::database::executeInDb('CREATE ALIAS IF NOT EXISTS legend_h2_extension_rpad FOR "org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_rpad";', $runtime.connectionStores->at(0), false);
 
   if ($compareLambda,
     |
@@ -3577,7 +3579,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::testEnu
 
   let sql = $plan.rootExecutionNode->cast(@meta::relational::mapping::RelationalTdsInstantiationExecutionNode).executionNodes->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
 
-  assertEquals('select 1 as "one", "root".enum as "enum" from flat as "root" where ("root".enum = \'V1\' or "root".enum in (\'V1\', \'V2\'))', $sql);
+  assertEquals('select 1 as "one", "root".enum as "enum" from flat as "root" where "root".enum = \'V1\' or "root".enum in (\'V1\', \'V2\')', $sql);
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPlanGenerationAndTransform():Boolean[1]

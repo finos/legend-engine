@@ -75,7 +75,7 @@ public class TestArrowQueries
             LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(input.function.body, input.function.parameters, model.getContext());
             MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.with(core_pure_binding_extension.Root_meta_external_format_shared_externalFormatExtension__Extension_1_(model.getExecutionSupport()));
             extensions.add(Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionJavaPlatformBinding__Extension_1_(model.getExecutionSupport()));
-            extensions.add(core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtension__Extension_1_(model.getExecutionSupport()));
+            extensions.addAllIterable(core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_(model.getExecutionSupport()));
             extensions.add(Root_meta_external_format_arrow_extension_arrowFormatExtension__Extension_1_(model.getExecutionSupport()));
             SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(lambda, model.getMapping("relationalMapping::TradeAccountRelationalMapping"), runtime, null, model, "vX_X_X", PlanPlatform.JAVA, "test", extensions, LegendPlanTransformers.transformers);
             RelationalStoreExecutor relationalStoreExecutor = new RelationalStoreExecutorBuilder().build();

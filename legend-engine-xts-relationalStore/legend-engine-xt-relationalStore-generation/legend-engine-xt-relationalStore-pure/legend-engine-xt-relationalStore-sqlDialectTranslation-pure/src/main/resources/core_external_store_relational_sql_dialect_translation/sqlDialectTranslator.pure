@@ -28,7 +28,6 @@ Class meta::external::store::relational::sqlDialectTranslation::SqlDialectTransl
 ]
 {
   extraSqlDialects: SqlDialect[*];
-  expectedFunctionTestErrorsByDialect: Map<String, Map<String, String>>[1];
 }
 
 function meta::external::store::relational::sqlDialectTranslation::sqlDialectTranslationModuleExtensionName(): String[1]

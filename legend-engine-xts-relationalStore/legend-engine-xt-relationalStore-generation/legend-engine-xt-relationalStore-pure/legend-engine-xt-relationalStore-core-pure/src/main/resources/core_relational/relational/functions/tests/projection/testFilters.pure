@@ -38,7 +38,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::greaterThan:
    let result = execute(|Person.all()->filter(p|$p.age > 30)->project([#/Person/firstName#, #/Person/age#]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements([32, 34, 35, 'David', 'Fabrice', 'Oliver'], $result.values.rows.values);
-   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where ("root".AGE is not null and "root".AGE > 30)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where "root".AGE is not null and "root".AGE > 30', $result->sqlRemoveFormatting());
 }
 
 
@@ -88,7 +88,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::isolation::t
     let result = execute(|Firm.all()->project([f|$f.legalName, f|$f.address.name],['legalName','addressName']), meta::relational::tests::mapping::join::model::mapping::chainedJoinsInner, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
     let tds = $result.values->at(0);
     assertEquals(['Firm X, UK', 'Firm X, Europe', 'Firm X, Europe', 'Firm X, Europe', 'Firm A, Europe', 'Firm B, Europe', 'Firm C, Europe'],$tds.rows->map(r|$r.values->makeString(', ')));
-    assertEquals('select "root".LEGALNAME as "legalName", case when ("firmpersonbridgetable_0".ADDRESSID = 1 or "addresstable_0".ID = 1) then \'UK\' else \'Europe\' end as "addressName" from firmTable as "root" left outer join (select "firmpersonbridgetable_1".FIRM_ID as FIRM_ID, "persontable_0".ADDRESSID as ADDRESSID from firmPersonBridgeTable as "firmpersonbridgetable_1" inner join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_1".PERSON_ID)) as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".FIRM_ID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());
+    assertEquals('select "root".LEGALNAME as "legalName", case when "firmpersonbridgetable_0".ADDRESSID = 1 or "addresstable_0".ID = 1 then \'UK\' else \'Europe\' end as "addressName" from firmTable as "root" left outer join (select "firmpersonbridgetable_1".FIRM_ID as FIRM_ID, "persontable_0".ADDRESSID as ADDRESSID from firmPersonBridgeTable as "firmpersonbridgetable_1" inner join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_1".PERSON_ID)) as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".FIRM_ID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());
 }
 
 // Filters having no table alias like 'Smith' = 'Smith'

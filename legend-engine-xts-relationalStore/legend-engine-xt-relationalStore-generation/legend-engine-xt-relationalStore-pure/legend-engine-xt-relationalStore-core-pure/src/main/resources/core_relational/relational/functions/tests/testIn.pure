@@ -132,7 +132,7 @@ function <<test.Test>> meta::relational::tests::query::filter::in::testNotIn():B
    let result = execute(|Person.all()->filter(p|!$p.firstName->in(['John', 'Peter'])), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 9);
    assertSameElements(['Allen', 'Hill', 'Harris', 'New York', 'Firm B', 'Roberts', 'Smith', 'York', 'no Firm'], $result.values->map(p|$p.lastName));
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where not "root".FIRSTNAME in (\'John\', \'Peter\') or "root".FIRSTNAME is null', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::in::testNotContains():Boolean[1]
@@ -140,7 +140,7 @@ function <<test.Test>> meta::relational::tests::query::filter::in::testNotContai
    let result = execute(|Person.all()->filter(p|!['John', 'Peter']->contains($p.firstName)), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 9);
    assertSameElements(['Allen', 'Hill', 'Harris', 'New York', 'Firm B', 'Roberts', 'Smith', 'York', 'no Firm'], $result.values->map(p|$p.lastName));
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where not "root".FIRSTNAME in (\'John\', \'Peter\') or "root".FIRSTNAME is null', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::in::testContainsOnToManyProperty():Boolean[1]
@@ -148,7 +148,7 @@ function <<test.Test>> meta::relational::tests::query::filter::in::testContainsO
    let result = execute(|Firm.all()->filter(f|$f.employees.firstName->contains('John')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Firm X', $result.values->toOne().legalName);
-   assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where exists(select 1 from personTable as "persontable_0" where "persontable_0".FIRSTNAME = \'John\' and "root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where exists (select 1 from personTable as "persontable_0" where "persontable_0".FIRSTNAME = \'John\' and "root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::in::testContainsOnToOneProperty():Boolean[1]
@@ -176,7 +176,6 @@ function <<test.Test>> meta::relational::tests::query::filter::in::testInWithNeg
 function <<test.Test>> meta::relational::tests::query::filter::in::testConsistencyWithNulls():Boolean[1]
 {
    let allResult = execute(|Address.all(), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
-   println($allResult->size());
 
    let inResult = execute(|Address.all()->filter(a | $a.street->in(['Infinite Loop', 'West Street'])), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
@@ -198,7 +197,6 @@ function <<test.Test>> meta::relational::tests::query::filter::in::testConsisten
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter::in::testConsistencyWithNullsInJoin():Boolean[1]
 {
    let allResult = execute(|Person.all(), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
-   println($allResult->size());
 
    let eqResult = execute(|Person.all()->filter(a | $a.manager.lastName->in(['Johnson'])), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
@@ -211,7 +209,6 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter
    let notEqResult2 = execute(|Person.all(), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values->filter(a | ($a.manager->isEmpty() || !$a.manager.lastName->in(['Johnson'])));
 
    assertEquals($notEqResult->size(), $notEqResult2->size());
-
    assertEquals($allResult->size(), $eqResult->size() + $notEqResult->size());
    assertEquals($allResult->size(), $eqResult2->size() + $notEqResult2->size());
 }
@@ -363,7 +360,6 @@ function <<test.ToFix, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::
                            Trade.all()->filter(t|$t.settlementDateTime->in($validTimes))
                                       ->project([x | $x.id], ['TradeId']);},
                          simpleRelationalMapping, testRuntime('Israel'), meta::relational::extension::relationalExtensions());
-                         println($result);
    assertSize($result.values->cast(@TabularDataSet).rows, 5);
    assertSameElements([1, 2, 3, 4, 5], $result.values->cast(@TabularDataSet).rows.getNumber('TradeId')->sort());
    assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());
@@ -375,7 +371,6 @@ function <<test.ToFix, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::
                            Trade.all()->filter(t|$t.settlementDateTime->in($validTimes))
                                       ->project([x | $x.id], ['TradeId']);},
                          simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-                         println($result);
    assertSize($result.values->cast(@TabularDataSet).rows, 5);
    assertSameElements([1, 2, 3, 4, 5], $result.values->cast(@TabularDataSet).rows.getNumber('TradeId')->sort());
    assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());

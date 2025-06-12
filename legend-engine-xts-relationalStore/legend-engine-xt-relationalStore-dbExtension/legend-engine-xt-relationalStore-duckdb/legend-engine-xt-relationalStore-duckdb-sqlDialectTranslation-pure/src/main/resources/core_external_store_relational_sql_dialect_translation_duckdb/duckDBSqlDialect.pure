@@ -49,7 +49,8 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
     expressionPrecedenceComparator = duckDBExpressionPrecedenceComparator(),
     keywords = duckDBKeywords(),
     functionProcessorMap = duckDBFunctionProcessorMap(),
-    variablePlaceholderPrefixSuffixMap = duckDBVariablePlaceholderPrefixSuffixMap()
+    variablePlaceholderPrefixSuffixMap = duckDBVariablePlaceholderPrefixSuffixMap(),
+    expectedSqlDialectTestErrors = duckDBExpectedSqlDialectTestErrors()
   )
 }
 
@@ -62,14 +63,13 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
       ^SqlDialectTranslationModuleExtension
       (
         module = sqlDialectTranslationModuleExtensionName(),
-        extraSqlDialects = duckDBSqlDialect(),
-        expectedFunctionTestErrorsByDialect = pair('DuckDB', duckDBFunctionTestsExpectedErrors())->newMap()
+        extraSqlDialects = duckDBSqlDialect()
       )
     ]
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBFunctionTestsExpectedErrors(): Map<String, String>[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBExpectedSqlDialectTestErrors(): Map<String, String>[1]
 {
   [
     pair('FuncTests - sha1(0/1)', 'DuckDB SQL Dialect does not support the function - sha1'),
@@ -230,7 +230,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     allColumnsReferenceNodeProcessor_default(),
     inClauseVariablePlaceholderProcessor_default(),
     variablePlaceholderProcessor_default(),
-    freeMarkerOperationProcessor_default()
+    freeMarkerOperationProcessor_default(),
+    bitwiseBinaryExpressionNodeProcessorForDuckDB(),
+    bitwiseNotExpressionNodeProcessor_default(),
+    bitwiseShiftExpressionNodeProcessor_default()
   ]
 }
 
@@ -444,6 +447,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Sum, simpleFunctionProcessor('sum')),
     pair(Average, simpleFunctionProcessor('avg')),
     pair(Count, simpleFunctionProcessor('count')),
+    pair(Correlation, simpleFunctionProcessor('corr')),
+    pair(CovarianceSample, simpleFunctionProcessor('covar_samp')),
+    pair(CovariancePopulation, simpleFunctionProcessor('covar_pop')),
     pair(VarianceSample, simpleFunctionProcessor('var_samp')),
     pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
     pair(StdDevSample, simpleFunctionProcessor('stddev_samp')),
@@ -480,6 +486,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(StrPos, simpleFunctionProcessor('strpos')),
     pair(StringAgg, simpleFunctionProcessor('string_agg')),
     pair(Concat, simpleFunctionProcessor('concat')),
+    pair(UuidV4, customFunctionProcessor(processorForUuidV4DuckDB_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(StartsWith, customFunctionProcessor(processorForStartsWithDuckDB_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(EndsWith, customFunctionProcessor(processorForEndsWithDuckDB_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Contains, customFunctionProcessor(processorForContainsDuckDB_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -493,6 +500,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DatePart, simpleFunctionProcessor('date_part')),
     pair(Now, simpleFunctionProcessor('now')),
+    pair(MakeDate, simpleFunctionProcessor('make_date')),
+    pair(MakeTimestamp, simpleFunctionProcessor('make_timestamp')),
     pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::Date, customFunctionProcessor(processorForDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -514,6 +523,12 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Mode, simpleFunctionProcessor('mode'))
     
   ])
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForUuidV4DuckDB(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let dateTrunc = simpleFunctionProcessor('gen_random_uuid').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($dateTrunc, 'varchar', $state, $config);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForStartsWithDuckDB(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
@@ -599,7 +614,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   let intervalString='INTERVAL '+$processedArgs->at(1) +' '+$processedArgs->at(2)->removeQuotes($sqlDialect);
-  let dateAddCall = generateFunctionCallWithArgs($sqlDialect, 'date_add', [$processedArgs->at(0),$intervalString->removeQuotes($sqlDialect)], [], $state, $config) ;
+  let dateAddCall = generateFunctionCallWithArgs($sqlDialect, 'date_add', [$processedArgs->at(0),$intervalString->removeQuotes($sqlDialect)], [], $state, $config);
   let dateUnit = $processedArgs->at(2)->removeQuotes($sqlDialect);
   if($dateUnit == 'DAY' || $dateUnit == 'MONTH' || $dateUnit == 'YEAR' || $dateUnit == 'WEEK' ,
     |$sqlDialect->generateCast($dateAddCall, 'date', $state, $config),
@@ -648,6 +663,26 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       $t.value->convertDateToSqlStringForDuckDB($config.dbConfig.dbTimeZone)
     },
     {n | true}
+  )
+}
+
+// Overridden because xor is handled differently
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::bitwiseBinaryExpressionNodeProcessorForDuckDB(): NodeProcessor<BitwiseBinaryExpression>[1]
+{
+  nodeProcessor(
+    BitwiseBinaryExpression,
+    {sqlDialect, b, state, config |
+      let leftExpr = $sqlDialect->executeNodeProcessor($b.left, $b, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($b.right, $b, $state, $config);
+      if(
+        [
+          pair(| $b.operator == BitwiseBinaryOperator.AND, | $leftExpr + ' & ' + $rightExpr;),
+          pair(| $b.operator == BitwiseBinaryOperator.OR, | $leftExpr + ' | ' + $rightExpr),
+          pair(| $b.operator == BitwiseBinaryOperator.XOR, | generateFunctionCallWithArgs($sqlDialect, 'xor', [$leftExpr, $rightExpr], $state, $config))
+        ],
+        | failWithMessage('Unhandled bitwise binary operator type: ' + $b.operator->toString()); '';
+      );
+    }
   )
 }
 

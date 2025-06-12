@@ -48,7 +48,8 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
     expressionPrecedenceComparator = postgresExpressionPrecedenceComparator(),
     keywords = postgresKeywords(),
     functionProcessorMap = postgresFunctionProcessorMap(),
-    variablePlaceholderPrefixSuffixMap = postgresVariablePlaceholderPrefixSuffixMap()
+    variablePlaceholderPrefixSuffixMap = postgresVariablePlaceholderPrefixSuffixMap(),
+    expectedSqlDialectTestErrors = postgresExpectedSqlDialectTestErrors()
   );
 }
 
@@ -61,14 +62,13 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
       ^SqlDialectTranslationModuleExtension
       (
         module = sqlDialectTranslationModuleExtensionName(),
-        extraSqlDialects = postgresSqlDialect(),
-        expectedFunctionTestErrorsByDialect = pair('Postgres', postgresFunctionTestsExpectedErrors())->newMap()
+        extraSqlDialects = postgresSqlDialect()
       )
     ]
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::postgres::postgresFunctionTestsExpectedErrors(): Map<String, String>[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresExpectedSqlDialectTestErrors(): Map<String, String>[1]
 {
   [
     pair(
@@ -253,7 +253,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     allColumnsReferenceNodeProcessor_default(),
     inClauseVariablePlaceholderProcessor_default(),
     variablePlaceholderProcessor_default(),
-    freeMarkerOperationProcessor_default()
+    freeMarkerOperationProcessor_default(),
+    bitwiseBinaryExpressionNodeProcessor_default(),
+    bitwiseNotExpressionNodeProcessor_default(),
+    bitwiseShiftExpressionNodeProcessor_default()
   ]
 }
 
@@ -454,6 +457,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     Sum->nativeFunctionMapEntry(),
     Average->nativeFunctionMapEntry(),
     Count->nativeFunctionMapEntry(),
+    Correlation->nativeFunctionMapEntry(),
+    CovarianceSample->nativeFunctionMapEntry(),
+    CovariancePopulation->nativeFunctionMapEntry(),
     VarianceSample->nativeFunctionMapEntry(),
     VariancePopulation->nativeFunctionMapEntry(),
     StdDevSample->nativeFunctionMapEntry(),
@@ -497,6 +503,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Contains, customFunctionProcessor(processorForContains_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(EncodeBase64, customFunctionProcessor(processorForEncode_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DecodeBase64, customFunctionProcessor(processorForDecode_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(UuidV4, customFunctionProcessor(processorForUuidV4_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
     // Boolean
     pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -510,6 +517,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::Date, simpleFunctionProcessor('date')),
     ToDate->nativeFunctionMapEntry(),
     ToTimestamp->nativeFunctionMapEntry(),
+    MakeDate->nativeFunctionMapEntry(),
+    MakeTimestamp->nativeFunctionMapEntry(),
     pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DateAdd, customFunctionProcessor(processorForDateAdd_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -577,6 +586,12 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   let decodeCall = $sqlDialect->generateFunctionCallWithArgs('decode', [$processedArgs->at(0), '\'base64\''], [], $state, $config);
   $sqlDialect->generateFunctionCallWithArgs('convert_from', [$decodeCall, '\'utf8\''], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForUuidV4(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let uuid = simpleFunctionProcessor('gen_random_uuid').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($uuid, 'varchar', $state, $config);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForConvertTimeZone(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]

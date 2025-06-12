@@ -26,7 +26,7 @@ function <<test.Test>> meta::relational::tests::query::openvariables::testGroupO
    let result = execute(|Person.all()->filter(p|$p.firstName == $other && ($p.lastName == $var || $p.lastName == 'Allen')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Johnson', $result.values->toOne().lastName);
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME = \'John\' and ("root".LASTNAME = \'Johnson\' or "root".LASTNAME = \'Allen\'))', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\' and ("root".LASTNAME = \'Johnson\' or "root".LASTNAME = \'Allen\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::openvariables::testExistsOpenVariable():Boolean[1]
@@ -56,5 +56,5 @@ function <<test.Test>> meta::relational::tests::query::openvariables::testExists
    let result = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == $var1 || $e.lastName == $var2)), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 3);
    assertSameElements(['Firm A', 'Firm C', 'Firm X'], $result.values.legalName);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where ("persontable_1".LASTNAME = \'Roberts\' or "persontable_1".LASTNAME = \'Smith\')) as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".LASTNAME = \'Roberts\' or "persontable_1".LASTNAME = \'Smith\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result);
 }

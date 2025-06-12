@@ -440,7 +440,7 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
     ),
     where = ^ComparisonExpression(left = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'NAME'])), operator = ComparisonOperator.EQUAL, right = ^StringLiteral(value = 'David')),
     orderBy = ^SortItem(sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'NAME'])), ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.UNDEFINED),
-    limit = ^IntegerLiteral(value = 5),
+    limit = ^IntegerLiteral(value = 3),
     offset = ^IntegerLiteral(value = 2)
   );
 

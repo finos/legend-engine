@@ -28,8 +28,7 @@ public class Test_Snowflake_SDT extends TestSuite
     {
         return SdtTestSuiteBuilder.buildSdtTestSuite(
                 "Snowflake",
-                es -> Lists.immutable.of(Root_meta_external_store_relational_sqlDialectTranslation_snowflake_snowflakeSqlDialectExtension__Extension_1_(es)),
-                core_external_store_relational_sql_dialect_translation_snowflake_snowflakeSqlDialect::Root_meta_external_store_relational_sqlDialectTranslation_snowflake_snowflakeFunctionTestsExpectedErrors__Map_1_
+                es -> Lists.immutable.of(Root_meta_external_store_relational_sqlDialectTranslation_snowflake_snowflakeSqlDialectExtension__Extension_1_(es))
         );
     }
 }
