@@ -125,7 +125,7 @@ function meta::pure::alloy::connections::tableMapperPostProcessor(sql:SQLQuery[1
    let schemaMappers = $params->filter(p | $p->instanceOf(meta::pure::alloy::connections::SchemaNameMapper))->cast(@meta::pure::alloy::connections::SchemaNameMapper);
 
    let processedMappers = meta::pure::alloy::connections::postProcessTablesFn($tableMappers, $schemaMappers);
-   let result = meta::relational::postProcessor::transform($sql, $processedMappers);
+   let result = meta::relational::postProcessor::transformNonCached($sql, $processedMappers);
    ^meta::relational::mapping::PostProcessorResult(query = $result->cast(@SQLQuery));
 }
 
