@@ -31,6 +31,8 @@ import java.util.Properties;
 
 public class PostgresTestConnectionIntegration implements TestConnectionIntegration, TestServerResource
 {
+    private static final int DEFAULT_STARTUP_ATTEMPTS = 3;
+
     @Override
     public MutableList<String> group()
     {
@@ -93,6 +95,7 @@ public class PostgresTestConnectionIntegration implements TestConnectionIntegrat
 
         long start = System.currentTimeMillis();
         this.postgreSQLContainer.withInitScript("postgres/init.sql");
+        this.postgreSQLContainer.withStartupAttempts(DEFAULT_STARTUP_ATTEMPTS);
         this.postgreSQLContainer.start();
         String containerHost = this.postgreSQLContainer.getHost();
         int containerPort = this.postgreSQLContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT);

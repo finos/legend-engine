@@ -37,9 +37,12 @@ import org.testcontainers.utility.DockerImageName;
 
 public class SpannerTestConnectionIntegration implements TestConnectionIntegration, TestServerResource
 {
+    private static final int DEFAULT_STARTUP_ATTEMPTS = 3;
+
     public SpannerEmulatorContainer spannerContainerEmulator = new SpannerEmulatorContainer(
             DockerImageName.parse(System.getProperty("legend.engine.testcontainer.registry", "gcr.io") + "/cloud-spanner-emulator/emulator")
-            .asCompatibleSubstituteFor("gcr.io/cloud-spanner-emulator/emulator"));
+            .asCompatibleSubstituteFor("gcr.io/cloud-spanner-emulator/emulator")
+    ).withStartupAttempts(DEFAULT_STARTUP_ATTEMPTS);
 
     private Spanner spanner;
     private final String PCT_SPANNER_PROJECT_ID = "legend-spanner-pct-testing";
