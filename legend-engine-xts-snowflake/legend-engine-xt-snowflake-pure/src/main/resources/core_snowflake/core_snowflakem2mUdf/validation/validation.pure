@@ -1,0 +1,15 @@
+import meta::pure::runtime::*;
+import meta::analytics::lineage::*;
+import meta::external::function::activator::snowflakeM2MUdf::generation::*;
+
+function meta::external::function::activator::snowflakeM2MUdf::generation::validateParameters(f:Function<Any>[1]):String[0..1]
+{
+  let params = $f->functionType().parameters->evaluateAndDeactivate();
+  if($params->size()!=1 || $params->at(0).multiplicity!=PureOne || $params->at(0).genericType.rawType->toOne()!=String, | ['SnowflakeM2MUdf function activator should have a single parameter with String type of multiplicity 1'], | []);
+}
+
+function meta::external::function::activator::snowflakeM2MUdf::generation::validateReturnType(f:Function<Any>[1]):String[0..1]
+{
+  let functionType = $f->functionType();
+  if($functionType.returnMultiplicity!=PureOne || $functionType.returnType.rawType!=String, | ['SnowflakeM2MUdf function activator return type should be String of multiplicity 1'], | []);
+}

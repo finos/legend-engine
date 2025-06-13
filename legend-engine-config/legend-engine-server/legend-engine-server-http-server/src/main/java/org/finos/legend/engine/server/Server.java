@@ -83,6 +83,7 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppService;
+import org.finos.legend.engine.language.snowflakeM2MUdf.api.SnowflakeM2MUdfService;
 import org.finos.legend.engine.plan.execution.stores.deephaven.plugin.DeephavenStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.deephaven.plugin.DeephavenStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.deephaven.plugin.DeephavenStoreExecutorConfiguration;
@@ -116,6 +117,7 @@ import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDe
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.PureProtocol;
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.deployment.SnowflakeM2MUdfDeploymentConfiguration;
 import org.finos.legend.engine.query.graphQL.api.format.generation.api.GraphQLGenerationService;
 import org.finos.legend.engine.external.format.jsonSchema.schema.generations.api.JSONSchemaGenerationService;
 import org.finos.legend.engine.external.format.daml.generation.api.DAMLGenerationService;
@@ -215,6 +217,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(HostedServiceDeploymentConfiguration.class, "hostedServiceConfig"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(SnowflakeAppDeploymentConfiguration.class, "snowflakeAppConfig"));
+        bootstrap.getObjectMapper().registerSubtypes(new NamedType(SnowflakeM2MUdfDeploymentConfiguration.class, "snowflakeM2MUdfConfig"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(BigQueryFunctionDeploymentConfiguration.class, "bigQueryFunctionConfig"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(MemSqlFunctionDeploymentConfiguration.class, "memsqlFunctionConfig"));
     }
@@ -389,7 +392,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ExecutePlanLegacy(planExecutor));
 
         // Function Activator
-        environment.jersey().register(new FunctionActivatorAPI(modelManager, Lists.mutable.empty(), Lists.mutable.with(new SnowflakeAppService(planExecutor), new HostedServiceService(),new MemSqlFunctionService(planExecutor)), routerExtensions));
+        environment.jersey().register(new FunctionActivatorAPI(modelManager, Lists.mutable.empty(), Lists.mutable.with(new SnowflakeAppService(planExecutor),  new SnowflakeM2MUdfService(planExecutor, (version) -> String.format("https://repo.maven.apache.org/maven2/org/finos/legend/engine/legend-engine-xt-snowflake-m2mudf-plan-executor/%S/legend-engine-xt-snowflake-m2mudf-plan-executor-%S-shaded.jar", version, version)), new HostedServiceService(),new MemSqlFunctionService(planExecutor)), routerExtensions));
 
         // GraphQL
         environment.jersey().register(new GraphQLGrammar());

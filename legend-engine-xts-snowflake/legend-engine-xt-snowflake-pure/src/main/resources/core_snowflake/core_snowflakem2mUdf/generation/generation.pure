@@ -1,0 +1,8 @@
+import meta::analytics::lineage::*;
+import meta::external::function::activator::snowflakeM2MUdf::generation::*;
+
+function meta::external::function::activator::snowflakeM2MUdf::generation::computeLineage(s: meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdf[1], extensions:meta::pure::extension::Extension[*]): String[1]
+{
+  let fullAnalytics  = meta::external::function::activator::lineage::computeLineage($s.function, $extensions);
+  meta::alloy::metadataServer::alloyToJSON($fullAnalytics);
+}

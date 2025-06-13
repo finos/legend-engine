@@ -88,7 +88,7 @@ public class TestValidation
         Response response = api.list(null);
         System.out.println(response.getEntity().toString());
         List<FunctionActivatorInfo> info = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(response.getEntity().toString(), new TypeReference<List<FunctionActivatorInfo>>(){});
-        Assert.assertEquals(1, info.size());
+        Assert.assertEquals(2, info.size());
         Assert.assertEquals("Snowflake App", info.get(0).name);
         Assert.assertEquals("Create a SnowflakeApp that can activate the function in Snowflake. It then can be used in SQL expressions and be shared with other accounts", info.get(0).description);
         Assert.assertEquals("meta::protocols::pure::vX_X_X::metamodel::function::activator::snowflakeApp::SnowflakeApp", info.get(0).configuration.topElement);

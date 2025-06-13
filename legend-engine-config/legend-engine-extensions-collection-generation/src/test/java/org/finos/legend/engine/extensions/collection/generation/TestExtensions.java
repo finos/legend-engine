@@ -92,6 +92,7 @@ import org.finos.legend.engine.language.snowflake.compiler.toPureGraph.Snowflake
 import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifactGenerationExtension;
 import org.finos.legend.engine.language.snowflake.grammar.from.SnowflakeGrammarParserExtension;
 import org.finos.legend.engine.language.snowflake.grammar.to.SnowflakeGrammarComposer;
+import org.finos.legend.engine.language.snowflakeM2MUdf.generator.SnowflakeM2MUdfArtifactGenerationExtension;
 import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParserExtension;
 import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
@@ -550,6 +551,7 @@ public class TestExtensions
                 .with(SearchDocumentArtifactGenerationExtension.class)
                 .with(OpenApiArtifactGenerationExtension.class)
                 .with(SnowflakeAppArtifactGenerationExtension.class)
+                .with(SnowflakeM2MUdfArtifactGenerationExtension.class)
                 .with(HostedServiceArtifactGenerationExtension.class)
                 .with(FunctionActivatorArtifactGenerationExtension.class);
     }

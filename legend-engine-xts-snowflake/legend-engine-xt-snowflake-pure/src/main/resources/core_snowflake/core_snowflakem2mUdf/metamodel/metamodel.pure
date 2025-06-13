@@ -7,7 +7,6 @@ Class meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdf exte
   description : String[0..1];
   deploymentSchema: String[1];
   deploymentStage: String[1];
-
 }
 
 Class meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdfDeploymentConfiguration extends DeploymentConfiguration
@@ -20,4 +19,10 @@ Class meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdfDeplo
 
 }
 
-
+// This section needs to be code generated from the section above
+Class meta::protocols::pure::vX_X_X::metamodel::function::activator::snowflakeM2MUdf::SnowflakeM2MUdf extends meta::protocols::pure::vX_X_X::metamodel::function::activator::FunctionActivator
+{
+  applicationName : String[1];
+  description : String[0..1];
+  owner : String[0..1];
+}
