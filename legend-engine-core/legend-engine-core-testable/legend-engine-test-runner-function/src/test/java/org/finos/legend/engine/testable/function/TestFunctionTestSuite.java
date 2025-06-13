@@ -186,6 +186,26 @@ public class TestFunctionTestSuite
         Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
     }
 
+    @Test
+    public void testRelationFunctionTest()
+    {
+        List<TestResult> relationFunctionTestResults = executeFunctionTest("legend-testable-function-test-relation.pure", "model::RelationQuery__Relation_1_");
+        Assert.assertEquals(1, relationFunctionTestResults.size());
+        Assert.assertTrue(relationFunctionTestResults.get(0) instanceof TestExecuted);
+        TestExecuted testExecuted = (TestExecuted) relationFunctionTestResults.get(0);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+    }
+
+    @Test
+    public void testModelRelationFunctionTest()
+    {
+        List<TestResult> modelRelationFunctionTestResults = executeFunctionTest("legend-testable-function-test-relation.pure", "model::RelationQuery__Relation_1_");
+        Assert.assertEquals(1, modelRelationFunctionTestResults.size());
+        Assert.assertTrue(modelRelationFunctionTestResults.get(0) instanceof TestExecuted);
+        TestExecuted testExecuted = (TestExecuted) modelRelationFunctionTestResults.get(0);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+    }
+
     private List<TestResult> executeFunctionTest(String grammar, String fullPath)
     {
         FunctionTestableRunnerExtension functionTestableRunnerExtension = new FunctionTestableRunnerExtension();
