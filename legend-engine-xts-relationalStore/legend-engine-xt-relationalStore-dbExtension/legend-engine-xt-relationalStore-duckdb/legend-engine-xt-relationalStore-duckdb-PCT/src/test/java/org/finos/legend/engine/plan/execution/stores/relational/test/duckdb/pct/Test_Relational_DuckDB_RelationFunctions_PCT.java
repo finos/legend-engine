@@ -23,6 +23,7 @@ import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import org.finos.legend.pure.code.core.CoreRelationalDuckDBPCTCodeRepositoryProvider;
 import org.finos.legend.pure.code.core.RelationCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
+import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
@@ -36,9 +37,9 @@ public class Test_Relational_DuckDB_RelationFunctions_PCT extends PCTReportConfi
     private static final Adapter adapter = CoreRelationalDuckDBPCTCodeRepositoryProvider.duckDBAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: Values list \"subselect\" does not have a column named \"2011__|__newCol\""),
-            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: Values list \"subselect\" does not have a column named \"2011__|__newCol\""),
-            one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: Values list \"subselect\" does not have a column named \"2000__|__newCol\"")
+            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: Values list \"subselect\" does not have a column named \"2011__|__newCol\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: Values list \"subselect\" does not have a column named \"2011__|__newCol\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: Values list \"subselect\" does not have a column named \"2000__|__newCol\"", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()
