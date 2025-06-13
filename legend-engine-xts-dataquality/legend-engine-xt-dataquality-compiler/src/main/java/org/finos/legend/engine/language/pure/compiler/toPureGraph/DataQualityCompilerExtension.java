@@ -47,7 +47,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree;
@@ -193,7 +192,6 @@ public class DataQualityCompilerExtension implements CompilerExtension
                     LambdaFunction<?> relationValidationQuery = buildDataqualityRelationValidationQuery(dataqualityRelationValidation, compileContext);
                     metamodel._query(relationValidationQuery);
                     metamodel._validations(buildDataQualityRelationValidations(dataqualityRelationValidation.validations, dataqualityRelationValidation.query, relationValidationQuery, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext));
-                    metamodel._runtime(buildRelationValidationRuntime(dataqualityRelationValidation.runtime, relationValidationQuery, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext));
                     metamodel._validate(true, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext.getExecutionSupport());
                 },
                 this::dataQualityRelationValidationPrerequisiteElementsPass
@@ -206,18 +204,18 @@ public class DataQualityCompilerExtension implements CompilerExtension
         ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(compileContext, prerequisiteElements);
         dataqualityRelationValidation.query.accept(valueSpecificationPrerequisiteElementsPassBuilder);
         ListIterate.forEach(dataqualityRelationValidation.validations, validation -> validation.assertion.accept(valueSpecificationPrerequisiteElementsPassBuilder));
-        if (Objects.nonNull(dataqualityRelationValidation.runtime))
-        {
-            prerequisiteElements.add(dataqualityRelationValidation.runtime);
-        }
         return prerequisiteElements;
     }
 
     private LambdaFunction<?> buildDataqualityRelationValidationQuery(DataqualityRelationValidation dataqualityRelationValidation, CompileContext compileContext)
     {
+        if (dataqualityRelationValidation.query.body.size() > 1)
+        {
+            throw new EngineException("Multiline lambda is not supported.", dataqualityRelationValidation.query.sourceInformation, EngineErrorType.COMPILATION);
+        }
         LambdaFunction<?> relationQuery = HelperValueSpecificationBuilder.buildLambda(dataqualityRelationValidation.query, compileContext);
         String relationQueryReturnType = getLambdaFunctionRawReturnTypeName(relationQuery);
-        if (!"Relation".equals(relationQueryReturnType))
+        if (!(relationQuery._expressionSequence().getLast() instanceof  Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) && !"Relation".equals(relationQueryReturnType))
         {
             throw new EngineException("Relation expected from lambda", dataqualityRelationValidation.query.sourceInformation, EngineErrorType.COMPILATION);
         }
@@ -237,6 +235,10 @@ public class DataQualityCompilerExtension implements CompilerExtension
         if (!allValidationNames.add(relationalValidation.name))
         {
             throw new EngineException("Duplicated validation '" + relationalValidation.name + "'", EngineErrorType.COMPILATION);
+        }
+        if (relationalValidation.assertion.body.size() > 1)
+        {
+            throw new EngineException("Multiline lambda is not supported.", relationalValidation.assertion.sourceInformation, EngineErrorType.COMPILATION);
         }
         if (RELATION_ROW_LEVEL_VAL_TYPE.equals(relationalValidation.type))
         {
@@ -477,15 +479,6 @@ public class DataQualityCompilerExtension implements CompilerExtension
         return propertyGraphFetchTree.alias != null ? propertyGraphFetchTree.alias : propertyGraphFetchTree.property;
     }
 
-
-    private RichIterable<? extends Root_meta_core_runtime_Runtime> buildRelationValidationRuntime(PackageableElementPointer runtime, LambdaFunction<?> relationValidationQuery, SourceInformation toM3SourceInformation, CompileContext compileContext)
-    {
-        if (Objects.isNull(runtime))
-        {
-            return Lists.immutable.empty();
-        }
-        return Lists.immutable.of(compileContext.resolveRuntime(runtime.path, runtime.sourceInformation));
-    }
 
     @Override
     public List<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> getExtraFunctionExpressionBuilderRegistrationInfoCollectors()
