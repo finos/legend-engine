@@ -336,7 +336,8 @@ function meta::external::function::activator::hostedService::validator::allowedR
   [
     TabularDataSet,
     String,
-    Byte
+    Byte,
+    meta::pure::metamodel::relation::Relation
   ]
 }
 
