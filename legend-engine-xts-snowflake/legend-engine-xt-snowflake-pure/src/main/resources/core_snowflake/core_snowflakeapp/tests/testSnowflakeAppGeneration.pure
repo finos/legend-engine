@@ -1,0 +1,41 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::function::activator::snowflakeApp::generation::*;
+import meta::external::function::activator::*;
+import meta::external::function::activator::snowflakeApp::*;
+import meta::pure::mapping::*;
+import meta::external::function::activator::snowflakeApp::tests::*;
+import meta::external::function::activator::snowflakeApp::tests::model::simple::*;
+
+
+function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], expected: String[1]): Boolean[1]
+{
+  meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction($function, $expected, []);
+}
+
+function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], expected: String[1], extensions:meta::pure::extension::Extension[*]): Boolean[1]
+{
+  let app =  ^SnowflakeApp
+   (
+      applicationName = 'App1',
+      ownership = ^DeploymentOwnership(id = 'owner1'),
+      description = 'bla bla',
+      activationConfiguration = defaultConfig(),
+      function = $function
+   );
+
+  let generatedQuery = if($extensions->isNotEmpty(),| $app->generateArtifact($extensions),|$app->generateArtifact());  
+  assertEquals($expected, $generatedQuery);
+}

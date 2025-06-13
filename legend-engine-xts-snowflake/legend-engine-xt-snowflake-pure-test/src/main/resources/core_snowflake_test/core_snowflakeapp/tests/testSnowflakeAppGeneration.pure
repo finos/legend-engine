@@ -1,4 +1,5 @@
-// Copyright 2024 Goldman Sachs
+
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -148,7 +149,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 //  let func = $result->filter(f|$f->instanceOf(ConcreteFunctionDefinition))
 //    ->cast(@ConcreteFunctionDefinition<Any>)->filter(c| $c.name=='FetchChildrenViaSelfJoin__TabularDataSet_1_')->toOne();
 //  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"ID" INTEGER,"CHILDREN/AGE" INTEGER,"CHILDREN/ID" INTEGER,"CHILDREN/FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".firstname as "Firstname", "root".id as "Id", "parentandchildren_1".age as "Children/Age", "parentandchildren_1".id as "Children/Id", "parentandchildren_1".firstname as "Children/Firstname" from table(Org.ParentAndChildren()) as "root" left outer join table(Org.ParentAndChildren()) as "parentandchildren_1" on ("root".parentId = "parentandchildren_1".id) $$;';
-//  meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction($func, $expected);
+//  meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifact($func, $expected);
 //}
 
 function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction():TabularDataSet[1]
@@ -211,12 +212,12 @@ function meta::external::function::activator::snowflakeApp::tests::simpleRelatio
     ->from(simpleRelationalMapping, testRuntimeWithTimeZone(dbInc))
 }
 
-function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], expected: String[1]): Boolean[1]
+function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifact(function: PackageableFunction<Any>[1], expected: String[1]): Boolean[1]
 {
-  meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction($function, $expected, []);
+  meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifact($function, $expected, []);
 }
 
-function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], expected: String[1], extensions:meta::pure::extension::Extension[*]): Boolean[1]
+function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifact(function: PackageableFunction<Any>[1], expected: String[1], extensions:meta::pure::extension::Extension[*]): Boolean[1]
 {
   let app =  ^SnowflakeApp
    (
