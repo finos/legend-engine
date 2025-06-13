@@ -21,10 +21,6 @@ import meta::external::function::activator::snowflakeApp::tests::*;
 import meta::external::function::activator::snowflakeApp::*;
 import meta::external::function::activator::*;
 
-function meta::external::function::activator::snowflakeApp::tests::defaultConfig():SnowflakeDeploymentConfiguration[1]
-{
-  ^SnowflakeDeploymentConfiguration(target = testRelationalConnection().connection->cast(@RelationalDatabaseConnection) );
-}
 
 function meta::external::function::activator::snowflakeApp::tests::simpleApp():Any[*]
 {
