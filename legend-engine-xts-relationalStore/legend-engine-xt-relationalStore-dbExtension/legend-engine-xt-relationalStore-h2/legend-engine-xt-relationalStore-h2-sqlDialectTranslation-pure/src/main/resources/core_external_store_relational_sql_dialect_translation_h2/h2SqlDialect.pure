@@ -96,10 +96,6 @@ function meta::external::store::relational::sqlDialectTranslation::h2::h2Functio
     pair(
       'FuncTests - parseJson(0/0)',
       'Execution error at ??, "Unhandled SQL data type (java.sql.Types): 2000, column: 1 RESULT JAVA_OBJECT"'
-    ),
-    pair(
-      'Offset - Limit',
-      'Execution error at ??'
     )
 
   ]->newMap()->cast(@Map<String, String>)
