@@ -26,7 +26,6 @@ identifier:                             VALID_STRING | STRING
                                         | VALIDATION_TYPE
                                         | VALIDATION_TYPE_ROW
                                         | VALIDATION_TYPE_AGG
-                                        | RELATION_RUNTIME
 ;
 
 
@@ -119,7 +118,6 @@ relationValidationDefinition:           DATAQUALITYRELATIONVALIDATION stereotype
                                              (
                                                  relationFunc
                                                  | validations
-                                                 | relationRuntime
                                              )*
                                         BRACE_CLOSE
 ;
@@ -146,6 +144,4 @@ validationAssertion:                   VALIDATION_ASSERTION COLON combinedExpres
 validationType:                        VALIDATION_TYPE COLON validationTypeVal SEMI_COLON
 ;
 validationTypeVal:                     VALIDATION_TYPE_ROW | VALIDATION_TYPE_AGG
-;
-relationRuntime:                       RELATION_RUNTIME COLON runtime SEMI_COLON
 ;

@@ -88,7 +88,6 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
         return "DataQualityRelationValidation " + renderAnnotations(dataqualityRelationValidation.stereotypes, dataqualityRelationValidation.taggedValues) + packageName + "\n" +
                 "{\n" +
                 "   query: " + renderRelationQuery(dataqualityRelationValidation, context) +
-                (Objects.isNull(dataqualityRelationValidation.runtime) ? "" : "   runtime: " + dataqualityRelationValidation.runtime.path + ";\n") +
                 "   validations: " + renderValidations(dataqualityRelationValidation.validations, context) +
                 "}";
     }
