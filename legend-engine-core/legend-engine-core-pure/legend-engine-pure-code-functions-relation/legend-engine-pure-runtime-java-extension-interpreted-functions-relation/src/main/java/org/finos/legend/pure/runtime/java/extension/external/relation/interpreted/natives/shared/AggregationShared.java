@@ -78,15 +78,15 @@ public abstract class AggregationShared extends Shared
         }
         else if (type == _Package.getByUserPath("Integer", processorSupport))
         {
-            int[] finalRes = new int[size];
+            long[] finalRes = new long[size];
             performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
-            return new ColumnValue(name, DataType.INT, finalRes);
+            return new ColumnValue(name, DataType.LONG, finalRes);
         }
         else if (type == _Package.getByUserPath("Float", processorSupport) || type == _Package.getByUserPath("Number", processorSupport))
         {
             double[] finalRes = new double[size];
             performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
-            return new ColumnValue(name, DataType.FLOAT, finalRes);
+            return new ColumnValue(name, DataType.DOUBLE, finalRes);
         }
         else
         {

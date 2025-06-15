@@ -45,9 +45,9 @@ public class ColumnValue
     public String toString()
     {
         MutableList<String> res;
-        if (type == DataType.INT)
+        if (type == DataType.LONG)
         {
-            int[] val = (int[]) result;
+            long[] val = (long[]) result;
             res = extracted(i -> String.valueOf(val[i]), val.length);
         }
         else if (type == DataType.STRING)

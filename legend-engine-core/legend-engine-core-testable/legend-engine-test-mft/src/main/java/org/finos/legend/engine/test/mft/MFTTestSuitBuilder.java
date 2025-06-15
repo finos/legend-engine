@@ -16,6 +16,7 @@
 
 package org.finos.legend.engine.test.mft;
 
+import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracerFactory;
 import io.opentracing.util.GlobalTracer;
 import java.lang.reflect.Field;
@@ -76,7 +77,8 @@ public class MFTTestSuitBuilder extends PureTestBuilder
         // NOTE: mock out the global tracer for test
         // See https://github.com/opentracing/opentracing-java/issues/170
         // See https://github.com/opentracing/opentracing-java/issues/364
-        GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
+        Tracer tracer = NoopTracerFactory.create();
+        GlobalTracer.registerIfAbsent(tracer);
         //TODO: Clean up error management to handle expected errors
         try
         {

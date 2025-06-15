@@ -1,0 +1,171 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::semistructured::match::*;
+import meta::pure::test::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::relational::tests::semistructured::match::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let csv =
+        'ORDER_SCHEMA\n' +
+        'ORDER_TABLE\n' +
+        'ORDERID, ORDERNAME, CUSTOMER\n' +
+        '1,Order1,"{\\"customerId\\": \\"Customer1\\", \\"customerAddress\\": {\\"@type\\":\\"BillingAddress\\",\\"name\\": \\"A1\\",\\"billAddress\\":\\"B1\\"},\\"transactionDetails\\": {\\"payment\\":{\\"@type\\":\\"CashOnDeliveryPayment\\",\\"paymentId\\": \\"P1\\",\\"amountToBePaid\\": 200}}}"\n' +
+        '2,Order2,"{\\"customerId\\": \\"Customer2\\", \\"customerAddress\\": {\\"@type\\":\\"BillingAddress\\",\\"name\\": \\"A2\\",\\"billAddress\\":\\"B2\\"},\\"transactionDetails\\": {\\"payment\\":{\\"@type\\":\\"CashOnDeliveryPayment\\",\\"paymentId\\": \\"P2\\",\\"amountToBePaid\\": 180}}}"\n' +
+        '3,Order3,"{\\"customerId\\": \\"Customer3\\", \\"customerAddress\\": {\\"@type\\":\\"BillingAddress\\",\\"name\\": \\"A3\\",\\"billAddress\\":\\"B3\\"},\\"transactionDetails\\": {\\"payment\\":{\\"@type\\":\\"CashOnDeliveryPayment\\",\\"paymentId\\": \\"P3\\",\\"amountToBePaid\\": 290}}}"\n' +
+        '4,Order4,"{\\"customerId\\": \\"Customer4\\", \\"customerAddress\\": {\\"name\\": \\"A4\\"},\\"transactionDetails\\": {\\"payment\\":{\\"@type\\":\\"PrepaidPayment\\",\\"paymentId\\": \\"P4\\",\\"amountPaid\\": 150}}}"\n' +
+        '6,Order6,"{\\"customerId\\": \\"Customer6\\", \\"customerAddress\\": {\\"@type\\":\\"ShippingAddress\\",\\"name\\": \\"A6\\",\\"shipAddress\\":\\"S2\\"},\\"transactionDetails\\": {\\"payment\\":{\\"@type\\":\\"PrepaidPayment\\",\\"paymentId\\": \\"P6\\",\\"amountPaid\\": 120}}}"\n' +
+        '5,Order5,"{\\"customerId\\": \\"Customer5\\", \\"customerAddress\\": {\\"@type\\":\\"ShippingAddress\\",\\"name\\": \\"A5\\",\\"shipAddress\\":\\"S1\\"},\\"transactionDetails\\": {\\"payment\\":{\\"@type\\":\\"PrepaidPayment\\",\\"paymentId\\": \\"P5\\",\\"amountPaid\\": 185}}}"\n' +
+        '7,Order7,"{\\"customerId\\": \\"Customer7\\", \\"customerAddress\\": {\\"@type\\":\\"ShippingAddress\\",\\"name\\": \\"A7\\",\\"shipAddress\\":\\"S3\\"},\\"transactionDetails\\": {\\"payment\\":{\\"@type\\":\\"WalletPrepaidPayment\\",\\"paymentId\\": \\"P7\\",\\"amountPaid\\": 180,\\"walletTransactionAmount\\":200}}}"\n' +
+        '8,Order8,"{\\"customerId\\": \\"Customer8\\", \\"customerAddress\\": {\\"@type\\":\\"ShippingAddress\\",\\"name\\": \\"A8\\",\\"shipAddress\\":\\"S4\\"},\\"transactionDetails\\": {\\"payment\\":{\\"@type\\":\\"CardPrepaidPayment\\",\\"paymentId\\": \\"P8\\",\\"amountPaid\\": 160, \\"cardTransactionAmount\\":190}}}"\n' +
+        '9,Order9,"{\\"customerId\\": \\"Customer9\\", \\"customerAddress\\": {\\"@type\\":\\"CustomerAddress\\", \\"name\\": \\"A9\\"},\\"transactionDetails\\": {\\"payment\\":{\\"@type\\":\\"PrepaidPayment\\",\\"paymentId\\": \\"P4\\",\\"amountPaid\\": 150}}}"\n' +
+        '10,Order10,"{\\"customerId\\": \\"Customer10\\", \\"customerAddress\\": {\\"@type\\":\\"CustomerAddress\\", \\"name\\": \\"A10\\", \\"defaultAddress\\": \\"Default Customer Address\\"},\\"transactionDetails\\": {\\"payment\\":{\\"@type\\":\\"PrepaidPayment\\",\\"paymentId\\": \\"P4\\",\\"amountPaid\\": 150}}}"\n'
+        ;
+
+
+  let model = '/core_relational/relational/tests/semistructured/model/semiStructuredMatching.legend';
+
+  let m = 'match::mapping::H2Mapping';
+  let s = 'match::store::H2DB';
+
+   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchComplexProperty(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'match::semiStructuredMatchComplexProperty__TabularDataSet_1_',
+    'Customer Address\n' +
+    'B1\n' +
+    'B2\n' +
+    'B3\n' +
+    'Default Address\n' +
+    'S2\n' +
+    'S1\n' +
+    'S3\n' +
+    'S4\n' +
+    'Default Address\n' +
+    'Default Address\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithDifferentMultiplicities(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'match::semiStructuredMatchWithDifferentMultiplicities__TabularDataSet_1_',
+    'Customer Address\n' +
+    'B1\n' +
+    'B2\n' +
+    'B3\n' +
+    '\n' +
+    'S2\n' +
+    'S1\n' +
+    'S3\n' +
+    'S4\n' +
+    '\n' +
+    'Default Customer Address\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithMultipleProject(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'match::semiStructuredMatchWithMultipleProject__TabularDataSet_1_',
+    'Customer Address,Order Price\n' +
+    'B1,200\n' +
+    'B2,180\n' +
+    'B3,290\n' +
+    ',150\n' +
+    'S2,120\n' +
+    'S1,185\n' +
+    'S3,180\n' +
+    'S4,160\n' +
+    ',150\n' +
+    ',150\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithComplexFilter(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'match::semiStructuredMatchWithComplexFilter__TabularDataSet_1_',
+    'Customer Address\n' +
+    'B2\n' +
+    '\n' +
+    'S2\n' +
+    'S1\n' +
+    'S3\n' +
+    'S4\n' +
+    '\n' +
+    '\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithVariableAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'match::semiStructuredMatchWithVariableAccess__TabularDataSet_1_',
+    'Max Amount Flag\n' +
+    'false\n' +
+    'true\n' +
+    'false\n' +
+    'true\n' +
+    'true\n' +
+    'true\n' +
+    'true\n' +
+    'true\n' +
+    'true\n' +
+    'true\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchMultilevel(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'match::semiStructuredMatchMultilevel__TabularDataSet_1_',
+    'Amount\n' +
+    '200\n' +
+    '180\n' +
+    '290\n' +
+    '150\n' +
+    '120\n' +
+    '185\n' +
+    '200\n' +
+    '190\n' +
+    '150\n' +
+    '150\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithMultipleProjectUsingCol(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'match::semiStructuredMatchWithMultipleProjectUsingCol__TabularDataSet_1_',
+    'Customer Address,Order Price\n' +
+    'B1,200\n' +
+    'B2,180\n' +
+    'B3,290\n' +
+    ',150\n' +
+    'S2,120\n' +
+    'S1,185\n' +
+    'S3,180\n' +
+    'S4,160\n' +
+    ',150\n' +
+    ',150\n'
+  );
+}

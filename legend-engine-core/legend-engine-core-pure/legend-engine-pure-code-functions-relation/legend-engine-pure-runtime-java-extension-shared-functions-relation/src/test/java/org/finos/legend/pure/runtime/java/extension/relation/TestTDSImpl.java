@@ -37,12 +37,6 @@ public class TestTDSImpl extends TestTDS
     }
 
     @Override
-    public Object getValue(String columnName, int rowNum)
-    {
-        return null;
-    }
-
-    @Override
     public Object getValueAsCoreInstance(String columnName, int rowNum)
     {
         return null;

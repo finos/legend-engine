@@ -25,7 +25,8 @@ public class ExecutionExtensionInterpreted extends BaseInterpretedExtension
     public ExecutionExtensionInterpreted()
     {
         super(Lists.mutable.with(
-                Tuples.pair("execute_String_1__Pair_MANY__String_1_", LegendExecute::new)
+                Tuples.pair("execute_String_1__Pair_MANY__String_1_", LegendExecute::new),
+                Tuples.pair("execute_String_1__Pair_MANY__String_1__String_1_", LegendExecute::new)
         ));
     }
 

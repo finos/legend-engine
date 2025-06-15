@@ -111,6 +111,7 @@ public class CompileContext
             "meta::pure::functions::test",
             "meta::pure::functions::multiplicity",
             "meta::pure::functions::relation",
+            "meta::pure::metamodel::relation",
             "meta::pure::router",
             "meta::pure::service",
             "meta::pure::tds",

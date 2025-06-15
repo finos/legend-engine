@@ -26,7 +26,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
 
 
   let result = execute(|BondDetail.all()->project([p| $p.type, p | $p.issuer.name ,p | $p.issuer.address.name], ['type', 'i','a'])
-                        , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),debug());
+                        , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
 
  assertEquals('type,i,a\n' + '5 years,issuer1,addressi1\n' + '5 years,issuer2,addressi2\n' + '7 weeks,issuer3,addressi3\n', $result.values->toOne()->toCSV());
  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i", "root".ISSUER_ADDRESS_NAME as "a" from PRODUCT_DENORM as "root"', $result);

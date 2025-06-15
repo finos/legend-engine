@@ -57,10 +57,11 @@ public class LegendExecute extends NativeFunction
     {
         CoreInstance planAsJson = params.get(0);
         CoreInstance vars = params.get(1);
+        String format = params.size() == 3 ? Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport).getName() : null;
 
         String planAsJsonValue = Instance.getValueForMetaPropertyToOneResolved(planAsJson, M3Properties.values, processorSupport).getName();
         Map<String, Object> planVars = this.pureToPlanVariables(vars, processorSupport);
-        String result = org.finos.legend.engine.pure.runtime.execution.shared.LegendExecute.doExecute(planAsJsonValue, planVars, functionExpressionCallStack);
+        String result = org.finos.legend.engine.pure.runtime.execution.shared.LegendExecute.doExecute(planAsJsonValue, planVars, format, functionExpressionCallStack);
         return ValueSpecificationBootstrap.newStringLiteral(this.repository, result, processorSupport);
     }
 

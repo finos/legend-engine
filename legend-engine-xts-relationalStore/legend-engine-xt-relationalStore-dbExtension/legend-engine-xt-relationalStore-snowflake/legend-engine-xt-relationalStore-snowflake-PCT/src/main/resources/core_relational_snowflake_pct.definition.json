@@ -1,0 +1,15 @@
+{
+  "name": "core_relational_snowflake_pct",
+  "pattern": "(meta::relational::tests::pct::snowflake)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_store",
+    "platform_store_relational",
+    "core",
+    "core_functions_unclassified",
+    "core_functions_standard",
+    "core_external_compiler",
+    "core_relational",
+    "core_external_test_connection"
+  ]
+}

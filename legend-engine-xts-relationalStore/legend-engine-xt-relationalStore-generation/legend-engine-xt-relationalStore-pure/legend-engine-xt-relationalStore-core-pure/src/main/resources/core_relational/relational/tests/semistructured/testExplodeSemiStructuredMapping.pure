@@ -1,0 +1,437 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::semistructured::explode::*;
+import meta::pure::test::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::relational::tests::semistructured::explode::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  semiStructuredExecute_SimpleMapping($conn, $func, $expected);
+  semiStructuredExecute_ViewMapping($conn, $func, $expected);
+}
+
+function meta::relational::tests::semistructured::explode::semiStructuredExecute_SimpleMapping(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let model = '/core_relational/relational/tests/semistructured/model/explodeSemiStructuredMapping.legend';
+
+  let t1_simple = 
+    'Semistructured\n' +
+    'Blocks\n' +
+    'id,account,blockData\n' +
+    '1,a1,"{\\"status\\": \\"fulfilled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t1\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o1\\"}]}"\n' +
+    '2,a1,"{\\"status\\": \\"cancelled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t2\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o2\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o1\\"}]}"\n' +
+    '3,a2,"{\\"status\\": \\"fulfilled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t3\\"}, {\\"tag\\": \\"trade\\", \\"tagId\\": \\"t4\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o3\\"}]}"\n' +
+    '4,a2,"{\\"status\\": \\"accepted\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t5\\"}, {\\"tag\\": \\"trade\\", \\"tagId\\": \\"t6\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o4\\"}]}"\n' +
+    '5,a1,"{\\"status\\": \\"fulfilled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t7\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o5\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o6\\"}]}"\n' +
+    '6,a3,"{\\"status\\": \\"rejected\\", \\"relatedEntities\\": []}"\n'
+  ; 
+
+  let t2_simple = 
+    'Semistructured\n' +
+    'Trades\n' +
+    'id,status,tradeSummary\n' +
+    't1,accepted,"{\\"identifier\\": \\"i1\\", \\"execQuantity\\": 100, \\"execPrice\\": 100, \\"side\\": \\"SELL\\"}"\n' +
+    't2,rejected,"{\\"identifier\\": \\"i2\\", \\"execQuantity\\": 100, \\"execPrice\\": 10, \\"side\\": \\"BUY\\"}"\n' +
+    't3,accepted,"{\\"identifier\\": \\"i3\\", \\"execQuantity\\": 100, \\"execPrice\\": 100, \\"side\\": \\"BUY\\"}"\n' +
+    't4,accepted,"{\\"identifier\\": \\"i3\\", \\"execQuantity\\": 100, \\"execPrice\\": 105, \\"side\\": \\"BUY\\"}"\n' +
+    't5,accepted,"{\\"identifier\\": \\"i1\\", \\"execQuantity\\": 70, \\"execPrice\\": 100, \\"side\\": \\"SELL\\"}"\n' +
+    't6,rejected,"{\\"identifier\\": \\"i1\\", \\"execQuantity\\": 80, \\"execPrice\\": 90, \\"side\\": \\"SELL\\"}"\n' +
+    't7,accepted,"{\\"identifier\\": \\"i4\\", \\"execQuantity\\": 60, \\"execPrice\\": 50, \\"side\\": \\"SELL\\"}"\n' +
+    't8,invalid,"{\\"identifier\\": \\"i4\\", \\"execQuantity\\": 60, \\"execPrice\\": 50, \\"side\\": \\"SELL\\"}"\n'
+  ;
+
+  let t3_simple =
+    'Semistructured\n' +
+    'Orders\n' +
+    'id,identifier,quantity,side,price\n' +
+    'o1,i1,100,SELL,100\n' +
+    'o2,i2,100,BUY,10\n' +
+    'o3,i3,200,BUY,100\n' +
+    'o4,i1,150,SELL,100\n' +
+    'o5,i4,60,SELL,50\n' +
+    'o6,i4,60,SELL,50\n'
+  ;
+
+  let t4_simple =
+    'Semistructured\n' +
+    'Product\n' +
+    'product,identifier,version\n' +
+    'p1,i1,v1\n' +
+    'p2,i2,v1\n' +
+    'p3,i3,v1\n' +
+    'p1,i4,v1\n'
+  ; 
+
+  let csv1 = [$t1_simple, $t2_simple, $t3_simple, $t4_simple];
+  let m1 = 'simple::mapping::semistructured';
+  let s1 = 'simple::store::semistructured';
+
+  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv1, $model, $func, $m1, $s1, $expected);
+}
+
+function meta::relational::tests::semistructured::explode::semiStructuredExecute_ViewMapping(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let model = '/core_relational/relational/tests/semistructured/model/explodeSemiStructuredMapping.legend';
+
+  let t1_view = 
+    'Semistructured\n' +
+    'AllBlocksVersions\n' +
+    'id,version,account,blockData\n' +
+    '1,1,a1,"{\\"status\\": \\"placed\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t1\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o1\\"}]}"\n' +
+    '1,2,a1,"{\\"status\\": \\"accepted\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t1\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o1\\"}]}"\n' +
+    '1,3,a1,"{\\"status\\": \\"fulfilled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t1\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o1\\"}]}"\n' +
+    '2,1,a1,"{\\"status\\": \\"placed\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t2\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o2\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o1\\"}]}"\n' +
+    '2,2,a1,"{\\"status\\": \\"cancelled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t2\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o2\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o1\\"}]}"\n' +
+    '3,1,a2,"{\\"status\\": \\"fulfilled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t3\\"}, {\\"tag\\": \\"trade\\", \\"tagId\\": \\"t4\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o3\\"}]}"\n' +
+    '3,2,a2,"{\\"status\\": \\"fulfilled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t3\\"}, {\\"tag\\": \\"trade\\", \\"tagId\\": \\"t4\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o3\\"}]}"\n' +
+    '4,1,a2,"{\\"status\\": \\"accepted\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t5\\"}, {\\"tag\\": \\"trade\\", \\"tagId\\": \\"t6\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o4\\"}]}"\n' +
+    '5,1,a1,"{\\"status\\": \\"fulfilled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t7\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o5\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o6\\"}]}"\n' +
+    '6,1,a3,"{\\"status\\": \\"rejected\\", \\"relatedEntities\\": []}"\n'
+  ; 
+
+  let t2_view = 
+    'Semistructured\n' +
+    'TradesTable\n' +
+    'id,status,tradeSummary\n' +
+    't1,accepted,"{\\"identifier\\": \\"i1\\", \\"execQuantity\\": 100, \\"execPrice\\": 100, \\"side\\": \\"SELL\\"}"\n' +
+    't2,rejected,"{\\"identifier\\": \\"i2\\", \\"execQuantity\\": 100, \\"execPrice\\": 10, \\"side\\": \\"BUY\\"}"\n' +
+    't3,accepted,"{\\"identifier\\": \\"i3\\", \\"execQuantity\\": 100, \\"execPrice\\": 100, \\"side\\": \\"BUY\\"}"\n' +
+    't4,accepted,"{\\"identifier\\": \\"i3\\", \\"execQuantity\\": 100, \\"execPrice\\": 105, \\"side\\": \\"BUY\\"}"\n' +
+    't5,accepted,"{\\"identifier\\": \\"i1\\", \\"execQuantity\\": 70, \\"execPrice\\": 100, \\"side\\": \\"SELL\\"}"\n' +
+    't6,rejected,"{\\"identifier\\": \\"i1\\", \\"execQuantity\\": 80, \\"execPrice\\": 90, \\"side\\": \\"SELL\\"}"\n' +
+    't7,accepted,"{\\"identifier\\": \\"i4\\", \\"execQuantity\\": 60, \\"execPrice\\": 50, \\"side\\": \\"SELL\\"}"\n' +
+    't8,invalid,"{\\"identifier\\": \\"i4\\", \\"execQuantity\\": 60, \\"execPrice\\": 50, \\"side\\": \\"SELL\\"}"\n'
+  ;
+
+  let t3_view =
+    'Semistructured\n' +
+    'Orders\n' +
+    'id,identifier,quantity,side,price\n' +
+    'o1,i1,100,SELL,100\n' +
+    'o2,i2,100,BUY,10\n' +
+    'o3,i3,200,BUY,100\n' +
+    'o4,i1,150,SELL,100\n' +
+    'o5,i4,60,SELL,50\n' +
+    'o6,i4,60,SELL,50\n'
+  ;
+
+  let t4_view =
+    'Semistructured\n' +
+    'Product\n' +
+    'product,identifier,version\n' +
+    'p1,i1,v1\n' +
+    'p2,i2,v1\n' +
+    'p3,i3,v1\n' +
+    'p1,i4,v1\n'
+  ; 
+
+  let csv2 = [$t1_view, $t2_view, $t3_view, $t4_view];
+  let m2 = 'view::mapping::semistructured';
+  let s2 = 'view::store::semistructured';
+
+  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv2, $model, $func, $m2, $s2, $expected);    
+}
+
+function meta::relational::tests::semistructured::explode::semiStructuredExecute_ExtractAndExplodeMapping(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let model = '/core_relational/relational/tests/semistructured/model/explodeSemiStructuredMapping.legend';
+
+  let t1_simple = 
+    'Semistructured\n' +
+    'Blocks\n' +
+    'id,account,blockData\n' +
+    '1,a1,"{\\"status\\": \\"fulfilled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t1\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o1\\"}]}"\n' +
+    '2,a1,"{\\"status\\": \\"cancelled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t2\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o2\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o1\\"}]}"\n' +
+    '3,a2,"{\\"status\\": \\"fulfilled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t3\\"}, {\\"tag\\": \\"trade\\", \\"tagId\\": \\"t4\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o3\\"}]}"\n' +
+    '4,a2,"{\\"status\\": \\"accepted\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t5\\"}, {\\"tag\\": \\"trade\\", \\"tagId\\": \\"t6\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o4\\"}]}"\n' +
+    '5,a1,"{\\"status\\": \\"fulfilled\\", \\"relatedEntities\\": [{\\"tag\\": \\"trade\\", \\"tagId\\": \\"t7\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o5\\"}, {\\"tag\\": \\"order\\", \\"tagId\\": \\"o6\\"}]}"\n' +
+    '6,a3,"{\\"status\\": \\"rejected\\", \\"relatedEntities\\": []}"\n'
+  ; 
+
+  let t2_simple = 
+    'Semistructured\n' +
+    'Trades\n' +
+    'id,status,tradeSummary\n' +
+    't1,accepted,"{\\"identifier\\": \\"i1\\", \\"execQuantity\\": 100, \\"execPrice\\": 100, \\"side\\": \\"SELL\\"}"\n' +
+    't2,rejected,"{\\"identifier\\": \\"i2\\", \\"execQuantity\\": 100, \\"execPrice\\": 10, \\"side\\": \\"BUY\\"}"\n' +
+    't3,accepted,"{\\"identifier\\": \\"i3\\", \\"execQuantity\\": 100, \\"execPrice\\": 100, \\"side\\": \\"BUY\\"}"\n' +
+    't4,accepted,"{\\"identifier\\": \\"i3\\", \\"execQuantity\\": 100, \\"execPrice\\": 105, \\"side\\": \\"BUY\\"}"\n' +
+    't5,accepted,"{\\"identifier\\": \\"i1\\", \\"execQuantity\\": 70, \\"execPrice\\": 100, \\"side\\": \\"SELL\\"}"\n' +
+    't6,rejected,"{\\"identifier\\": \\"i1\\", \\"execQuantity\\": 80, \\"execPrice\\": 90, \\"side\\": \\"SELL\\"}"\n' +
+    't7,accepted,"{\\"identifier\\": \\"i4\\", \\"execQuantity\\": 60, \\"execPrice\\": 50, \\"side\\": \\"SELL\\"}"\n' +
+    't8,invalid,"{\\"identifier\\": \\"i4\\", \\"execQuantity\\": 60, \\"execPrice\\": 50, \\"side\\": \\"SELL\\"}"\n'
+  ;
+
+  let t3_simple =
+    'Semistructured\n' +
+    'Orders\n' +
+    'id,identifier,quantity,side,price\n' +
+    'o1,i1,100,SELL,100\n' +
+    'o2,i2,100,BUY,10\n' +
+    'o3,i3,200,BUY,100\n' +
+    'o4,i1,150,SELL,100\n' +
+    'o5,i4,60,SELL,50\n' +
+    'o6,i4,60,SELL,50\n'
+  ;
+
+  let t4_simple =
+    'Semistructured\n' +
+    'Product\n' +
+    'product,identifier,version\n' +
+    'p1,i1,v1\n' +
+    'p2,i2,v1\n' +
+    'p3,i3,v1\n' +
+    'p1,i4,v1\n'
+  ; 
+
+  let csv1 = [$t1_simple, $t2_simple, $t3_simple, $t4_simple];
+  let m1 = 'simple::mapping::semistructuredWithExtractAndExplode';
+  let s1 = 'simple::store::semistructured';
+
+  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv1, $model, $func, $m1, $s1, $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testCanProperlyMixExtractAndExplode(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute_ExtractAndExplodeMapping($conn,
+    'simple::query::blockAndAssociatedTradeStatus__TabularDataSet_1_',
+    'Id,Trades/Status\n' +
+    '1,\n' +
+    '2,\n' +
+    '4,\n' +
+    '3,\n' +
+    '5,\n' +
+    '6,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testSimplePrimitivePropertiesProjectExplodeSource(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getOrdersForBlock__TabularDataSet_1_',
+    'Id,Account,Orders/Id,Orders/Identifier,Orders/Price\n' +
+    '1,a1,o1,i1,100.0\n' +
+    '2,a1,o1,i1,100.0\n' +
+    '2,a1,o2,i2,10.0\n' +
+    '3,a2,o3,i3,100.0\n' +
+    '4,a2,o4,i1,100.0\n' +
+    '5,a1,o5,i4,50.0\n' +
+    '5,a1,o6,i4,50.0\n' +
+    '6,a3,,,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testSimplePrimitivePropertiesProjectExplodeTarget(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getBlockForTrade__TabularDataSet_1_',
+    'Id,Status,Block/Id,Block/Account\n' +
+    't1,accepted,1,a1\n' +
+    't2,rejected,2,a1\n' +
+    't3,accepted,3,a2\n' +
+    't4,accepted,3,a2\n' +
+    't5,accepted,4,a2\n' +
+    't6,rejected,4,a2\n' +
+    't7,accepted,5,a1\n' +
+    't8,invalid,,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testComplexProjectFlattenedAndExplodedPropertiesInProject(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getOrdersAndRelatedEntitiesForBlock__TabularDataSet_1_',
+    'Id,Entity Tag,Entity Tag Id,Orders/Id\n' +
+    '1,trade,t1,o1\n' +
+    '1,order,o1,o1\n' +
+    '2,trade,t2,o1\n' +
+    '2,trade,t2,o2\n' +
+    '2,order,o2,o1\n' +
+    '2,order,o2,o2\n' +
+    '2,order,o1,o2\n' +
+    '2,order,o1,o1\n' +
+    '3,trade,t3,o3\n' +
+    '3,trade,t4,o3\n' +
+    '3,order,o3,o3\n' +
+    '4,trade,t5,o4\n' +
+    '4,trade,t6,o4\n' +
+    '4,order,o4,o4\n' +
+    '5,trade,t7,o5\n' +
+    '5,trade,t7,o6\n' +
+    '5,order,o5,o5\n' +
+    '5,order,o5,o6\n' +
+    '5,order,o6,o5\n' +
+    '5,order,o6,o6\n' +
+    '6,,,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testComplexProjectMultiplePropertiesToExplodeInProject(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getTradesAndOrdersInBlock__TabularDataSet_1_',
+    'Id,Account,Orders/Id,Orders/Identifier,Trades/Id,Trades/Status\n' +
+    '1,a1,o1,i1,t1,accepted\n' +
+    '2,a1,o1,i1,t2,rejected\n' +
+    '2,a1,o2,i2,t2,rejected\n' +
+    '3,a2,o3,i3,t3,accepted\n' +
+    '3,a2,o3,i3,t4,accepted\n' +
+    '4,a2,o4,i1,t5,accepted\n' +
+    '4,a2,o4,i1,t6,rejected\n' +
+    '5,a1,o5,i4,t7,accepted\n' +
+    '5,a1,o6,i4,t7,accepted\n' +
+    '6,a3,,,,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testSimplePrimitivePropertiesProjectWithFilterOnSource(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getTradesForNonCancelledBlocks__TabularDataSet_1_',
+    'Id,Account,Trades/Id,Trades/Status\n' +
+    '1,a1,t1,accepted\n' +
+    '3,a2,t3,accepted\n' +
+    '3,a2,t4,accepted\n' +
+    '4,a2,t5,accepted\n' +
+    '4,a2,t6,rejected\n' +
+    '5,a1,t7,accepted\n' +
+    '6,a3,,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testSimplePrimitivePropertiesProjectWithFilterOnTarget(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getNonCancelledBlocksForTrades__TabularDataSet_1_',
+    'Id,Status,Block/Id,Block/Account\n' +
+    't1,accepted,1,a1\n' +
+    't3,accepted,3,a2\n' +
+    't4,accepted,3,a2\n' +
+    't5,accepted,4,a2\n' +
+    't6,rejected,4,a2\n' +
+    't7,accepted,5,a1\n' +
+    't8,invalid,,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testProjectWithExplodedPropertyAccessOnlyInFilter(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getNonCancelledBlocksForTradesNoProject__TabularDataSet_1_',
+    'Id,Status\n' +
+    't1,accepted\n' +
+    't3,accepted\n' +
+    't4,accepted\n' +
+    't5,accepted\n' +
+    't6,rejected\n' +
+    't7,accepted\n' +
+    't8,invalid\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testFilterOnExplodedPropertyFilteringInsideProject(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getBigBuyOrdersInBlock__TabularDataSet_1_',
+    'Block/Id,Block/Account,Big Buy Orders,Orders/Id\n' +
+    '1,a1,,o1\n' +
+    '2,a1,o2,o1\n' +
+    '2,a1,o2,o2\n' +
+    '3,a2,o3,o3\n' +
+    '4,a2,,o4\n' +
+    '5,a1,,o5\n' +
+    '5,a1,,o6\n' +
+    '6,a3,,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testAggregationAggregateExplodedPropertyUsingGroupBy(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getTradeVolumeInBlock__TabularDataSet_1_',
+    'Id,Account,quantity\n' +
+    '1,a1,100\n' +
+    '2,a1,100\n' +
+    '3,a2,200\n' +
+    '4,a2,150\n' +
+    '5,a1,60\n' +
+    '6,a3,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testAggregationAggregateExplodedPropertyInsideProject(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getTotalBuyOrderVolumeInBlock__TabularDataSet_1_',
+    'Id,Account,Buy Order\n' +
+    '1,a1,\n' +
+    '2,a1,100\n' +
+    '3,a2,200\n' +
+    '4,a2,\n' +
+    '5,a1,\n' +
+    '6,a3,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testSimpleJoinChainOneJoin(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getAccountForOrders__TabularDataSet_1_',
+    'Id,Account,Block/Id\n' +
+    'o1,a1,1\n' +
+    'o1,a1,2\n' +
+    'o2,a1,2\n' +
+    'o3,a2,3\n' +
+    'o4,a2,4\n' +
+    'o5,a1,5\n' +
+    'o6,a1,5\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testJoinChainMultipleJoinsSingleExplode(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getProductsForOrdersInBlock__TabularDataSet_1_',
+    'Product,Id\n' +
+    'p1,1\n' +
+    'p1,2\n' +
+    'p2,2\n' +
+    'p3,3\n' +
+    'p1,4\n' +
+    'p1,5\n' +
+    'p1,5\n' +
+    ',6\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::explode::testJoinChainMultipleJoinsMultipleExplode(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'simple::query::getRelatedTradesForOrder__TabularDataSet_1_',
+    'Id,Trade Id\n' +
+    'o1,t1\n' +
+    'o1,t2\n' +
+    'o2,t2\n' +
+    'o3,t3\n' +
+    'o3,t4\n' +
+    'o4,t5\n' +
+    'o4,t6\n' +
+    'o5,t7\n' +
+    'o6,t7\n'
+  );
+}

@@ -99,8 +99,8 @@ public class Project extends Shared
                 }
                 if (type == _Package.getByUserPath("Integer", processorSupport))
                 {
-                    colResType = DataType.INT;
-                    colRes = vals.stream().mapToInt(x -> (Integer) x).toArray();
+                    colResType = DataType.LONG;
+                    colRes = vals.stream().mapToLong(x -> ((Number) x).longValue()).toArray();
                 }
                 if (type == _Package.getByUserPath("Float", processorSupport))
                 {

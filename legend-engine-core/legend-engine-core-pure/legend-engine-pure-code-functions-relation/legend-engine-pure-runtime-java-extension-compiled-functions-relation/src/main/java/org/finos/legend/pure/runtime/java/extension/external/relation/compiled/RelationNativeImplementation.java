@@ -20,7 +20,6 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
@@ -318,9 +317,9 @@ public class RelationNativeImplementation
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> res.add((String) val));
                 return new ColumnValue(colFuncSpecTrans.newColName, DataType.STRING, res.toArray(new String[0]));
             case "Integer":
-                int[] resultInt = new int[(int) size];
-                extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultInt[i] = (int) (long) val));
-                return new ColumnValue(colFuncSpecTrans.newColName, DataType.INT, resultInt, nulls);
+                long[] resultLong = new long[(int) size];
+                extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultLong[i] = (long) val));
+                return new ColumnValue(colFuncSpecTrans.newColName, DataType.LONG, resultLong, nulls);
             case "Double":
             case "Float":
                 double[] resultDouble = new double[(int) size];
@@ -521,16 +520,16 @@ public class RelationNativeImplementation
                 }
                 case "Integer":
                 {
-                    int[] finalResInt = new int[size];
-                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (o, j) -> finalResInt[j] = (int) (long) o, true);
-                    existing.addColumn(aggColSpecTrans.newColName, DataType.INT, finalResInt);
+                    long[] finalResLong = new long[size];
+                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (o, j) -> finalResLong[j] = (long) o, true);
+                    existing.addColumn(aggColSpecTrans.newColName, DataType.LONG, finalResLong);
                     break;
                 }
                 case "Float":
                 {
                     double[] finalResDouble = new double[size];
                     performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (o, j) -> finalResDouble[j] = (double) o, true);
-                    existing.addColumn(aggColSpecTrans.newColName, DataType.FLOAT, finalResDouble);
+                    existing.addColumn(aggColSpecTrans.newColName, DataType.DOUBLE, finalResDouble);
                     break;
                 }
             }
@@ -607,16 +606,16 @@ public class RelationNativeImplementation
                     columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.STRING, finalRes));
                     break;
                 case "Integer":
-                    int[] finalResInt = new int[size];
-                    performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (o, j) -> finalResInt[j] = (int) (long) o, compress);
-                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.INT, finalResInt));
+                    long[] finalResLong = new long[size];
+                    performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (o, j) -> finalResLong[j] = (long) o, compress);
+                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.LONG, finalResLong));
                     break;
                 case "Double":
                 case "Float":
                 case "Number":
                     double[] finalResDouble = new double[size];
                     performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (o, j) -> finalResDouble[j] = (double) o, compress);
-                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.FLOAT, finalResDouble));
+                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.DOUBLE, finalResDouble));
                     break;
                 default:
                     throw new RuntimeException(aggColSpecTrans.reduceType + " is not supported yet!");
@@ -699,7 +698,7 @@ public class RelationNativeImplementation
                         one.addColumn(namesL.get(i), DataType.STRING, li.toArray(new String[0]));
                         break;
                     case "Integer":
-                        one.addColumn(namesL.get(i), DataType.INT, toInt(li));
+                        one.addColumn(namesL.get(i), DataType.LONG, toLong(li));
                         break;
                     case "Double":
                     case "Float":
@@ -721,13 +720,13 @@ public class RelationNativeImplementation
         return new TDSContainer(pre.drop(1).injectInto(pre.get(0), (a, b) -> (TestTDSCompiled) a.concatenate(b)), ps);
     }
 
-    public static Object toInt(RichIterable<?> li)
+    public static Object toLong(RichIterable<?> li)
     {
-        int[] result = new int[li.size()];
+        long[] result = new long[li.size()];
         int i = 0;
         for (Object o : li)
         {
-            result[i++] = (int) (long) o;
+            result[i++] = (long) o;
         }
         return result;
     }

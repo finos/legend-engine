@@ -53,7 +53,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testSingleWindowW
                             ->olapGroupBy(['firstName'],desc('lastName'),y|$y->denseRank(),'rank')
                              ->sort('rank')
    };
-   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions(),debug());
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions(), noDebug());
    assertEquals('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age", "subselect"."rank" as "rank" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", dense_rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME DESC) as "rank" from personTable as "root") as "subselect" order by "rank"',$result);
 }
 

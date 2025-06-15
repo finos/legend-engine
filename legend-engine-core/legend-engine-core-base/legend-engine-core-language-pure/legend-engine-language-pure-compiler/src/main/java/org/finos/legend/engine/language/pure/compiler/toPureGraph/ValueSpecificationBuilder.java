@@ -605,7 +605,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                     AbstractProperty<?> property = HelperModelBuilder.getAppliedProperty(this.context, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) a.currentClass, Optional.empty(), ((PropertyPathElement) b).property);
                     GenericType genericType = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_functionReturnType_Function_1__GenericType_1_(property, this.context.pureModel.getExecutionSupport());
                     MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.PathElement> result = a.result;
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.PropertyPathElement ppe = new Root_meta_pure_metamodel_path_PropertyPathElement_Impl("", SourceInformationHelper.toM3SourceInformation(b.sourceInformation), null);
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.PropertyPathElement ppe = new Root_meta_pure_metamodel_path_PropertyPathElement_Impl("", SourceInformationHelper.toM3SourceInformation(b.sourceInformation), this.context.pureModel.getType("meta::pure::metamodel::path::PropertyPathElement"));
                     RichIterable<ValueSpecification> params = ListIterate.collect(((PropertyPathElement) b).parameters, p -> p.accept(this));
                     result.add(ppe._property(property)._parameters(params));
                     return new TypeAndList(genericType._rawType(), result);

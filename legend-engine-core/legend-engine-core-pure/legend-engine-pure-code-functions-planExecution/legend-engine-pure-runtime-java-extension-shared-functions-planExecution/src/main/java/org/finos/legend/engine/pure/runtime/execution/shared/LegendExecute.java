@@ -35,8 +35,10 @@ public class LegendExecute
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(LegendExecute.class);
 
-    public static String doExecute(String jsonPlan, Map<String, Object> variables, MutableStack<CoreInstance> functionExpressionCallStack)
+    public static String doExecute(String jsonPlan, Map<String, Object> variables, String serializationFormatName, MutableStack<CoreInstance> functionExpressionCallStack)
     {
+        SerializationFormat serializationFormat = serializationFormatName == null ? SerializationFormat.defaultFormat : SerializationFormat.valueOf(serializationFormatName);
+
         // create plan executor
         PlanExecutor planExecutor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(true);
 
@@ -57,12 +59,12 @@ public class LegendExecute
             if (result instanceof StreamingResult)
             {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                ((StreamingResult) result).stream(outputStream, SerializationFormat.defaultFormat);
-                return outputStream.toString();
+                ((StreamingResult) result).stream(outputStream, serializationFormat);
+                return outputStream.toString().replace("\r\n", "\n");
             }
             else if (result instanceof ConstantResult)
             {
-                return ((ConstantResult) result).stream().toString();
+                return ((ConstantResult) result).stream().toString().replace("\r\n", "\n");
             }
             else
             {

@@ -252,7 +252,7 @@ function <<test.Test>> meta::relational::tests::map::testSubAggregationMultiLeve
    assertEquals('Smith,Johnson,Hill,Allen,Roberts,Hill,Harris', $result2.values);
    assertEquals('select group_concat("persontable_0".LASTNAME ) from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result2->sqlRemoveFormatting());
 
-   let result3 = execute(|Firm.all()->map(f|$f.employees->sortBy(#/Person/lastName#).lastName->joinStrings()), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),debug());
+   let result3 = execute(|Firm.all()->map(f|$f.employees->sortBy(#/Person/lastName#).lastName->joinStrings()), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
 
    assertSize($result3.values, 4);
    assertEquals(['Allen,Hill,Johnson,Smith', 'Roberts', 'Hill', 'Harris'], $result3.values);

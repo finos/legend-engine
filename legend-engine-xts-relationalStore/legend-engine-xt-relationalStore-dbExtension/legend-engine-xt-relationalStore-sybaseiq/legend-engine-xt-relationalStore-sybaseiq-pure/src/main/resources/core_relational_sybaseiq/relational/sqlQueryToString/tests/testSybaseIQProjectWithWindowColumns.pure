@@ -198,7 +198,7 @@ function <<test.Test>>meta::relational::tests::projection::sybaseIQ::testProject
 
 function <<test.Test>> meta::relational::tests::projection::sybaseIQ::testDistinctWithWindowColumn():Boolean[1]
 {
-   let func = {|IncomeFunction.all()->project([col(c|$c.name,'name'),col(sortAsc(c|$c.IfName->toOne()),y|$y->rank(),'name2')])->distinct()}; //, testDataTypeMappingRuntime(),debug())};
+   let func = {|IncomeFunction.all()->project([col(c|$c.name,'name'),col(sortAsc(c|$c.IfName->toOne()),y|$y->rank(),'name2')])->distinct()}; //, testDataTypeMappingRuntime(), noDebug())};
    let res = toSQLString($func, testMappingWithJoin, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select distinct "root".IF_NAME as "name", rank() OVER (Order By "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2".IF_OTHER_NAME ASC) as "name2" from (select distinct "_sub_d#2".IF_CODE as IF_CODE, "_sub_d#2".IF_NAME as IF_NAME, "IF_OTHER_INFO_d#3_d#3_m3".IF_OTHER_NAME as IF_OTHER_NAME from ACCOUNT_INFO as "_sub_d#2" left outer join IF_OTHER_INFO as "IF_OTHER_INFO_d#3_d#3_m3" on ("_sub_d#2".IF_CODE = "IF_OTHER_INFO_d#3_d#3_m3".IF_CODE)) as "root" left outer join IF_OTHER_INFO as "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2" on ("root".IF_CODE = "IF_OTHER_INFO_d#3_d#3_m3_d#2_m2".IF_CODE)',$res);
 }

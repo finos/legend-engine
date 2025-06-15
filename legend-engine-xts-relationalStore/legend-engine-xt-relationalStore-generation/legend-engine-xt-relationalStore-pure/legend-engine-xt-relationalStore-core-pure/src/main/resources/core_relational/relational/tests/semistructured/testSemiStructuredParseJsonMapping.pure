@@ -1,0 +1,59 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::semistructured::parseJson::*;
+import meta::pure::test::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::relational::tests::semistructured::parseJson::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let csv = 
+        'PERSON_SCHEMA\n' +
+        'PERSON_TABLE_VARCHAR\n' +
+        'ID, FIRSTNAME, LASTNAME, FIRM_DETAILS, MANAGERID\n' +
+        '1,Peter,Smith,"{\\"legalName\\": \\"Firm X\\", \\"address\\": {\\"name\\": \\"A1\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"s1\\"}, {\\"lineno\\": 2, \\"city\\": \\"c1\\"}, {\\"lineno\\": 3, \\"state\\": \\"s1\\"}]}}",2\n' +
+        '2,John,Johnson,"{\\"legalName\\": \\"Firm X\\", \\"address\\": {\\"name\\": \\"A1\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"s1\\"}, {\\"lineno\\": 2, \\"city\\": \\"c1\\"}, {\\"lineno\\": 3, \\"state\\": \\"s1\\"}]}}",4\n' +
+        '3,John,Hill,"{\\"legalName\\": \\"Firm X\\", \\"address\\": {\\"name\\": \\"A1\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"s1\\"}, {\\"lineno\\": 2, \\"city\\": \\"c1\\"}, {\\"lineno\\": 3, \\"state\\": \\"s1\\"}]}}",2\n' +
+        '4,Anthony,Allen,"{\\"legalName\\": \\"Firm X\\", \\"address\\": {\\"name\\": \\"A1\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"s1\\"}, {\\"lineno\\": 2, \\"city\\": \\"c1\\"}, {\\"lineno\\": 3, \\"state\\": \\"s1\\"}]}}",null\n' +
+        '5,Fabrice,Roberts,"{\\"legalName\\": \\"Firm A\\", \\"address\\": {\\"name\\": \\"A2\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"s2\\"}, {\\"lineno\\": 2, \\"city\\": \\"c2\\"}]}}",null\n' +
+        '6,Oliver,Hill,"{\\"legalName\\": \\"Firm B\\", \\"address\\": {\\"name\\": \\"A3\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"s3\\"}]}}",7\n' +
+        '7,David,Harris,"{\\"legalName\\": \\"Firm B\\", \\"address\\": {\\"name\\": \\"A3\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"s3\\"}]}}",null\n' +
+        '8,UNKNOWN,UNKNOWN,,\n';
+
+  let model = '/core_relational/relational/tests/semistructured/model/semiStructuredParseJsonMapping.legend';
+  
+  let m = 'parseJson::mapping::SnowflakeMapping';
+  let s = 'parseJson::store::SnowflakeDB';
+
+   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::parseJson::testParseJsonInMapping(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'parseJson::parseJsonInMapping__TabularDataSet_1_',
+    'First Name,Firm Name,Manager Firm Legal Name,Manager Manager Firm Legal Name,Manager Manager Firm Legal Name Dup1,Manager Manager Firm Legal Name Dup2\n' +
+    'Peter,Firm X,Firm X,Firm X,Firm X,Firm X\n' +
+    'John,Firm X,Firm X,,,\n' +
+    'John,Firm X,Firm X,Firm X,Firm X,Firm X\n' +
+    'Anthony,Firm X,,,,\n' +
+    'Fabrice,Firm A,,,,\n' +
+    'Oliver,Firm B,Firm B,,,\n' +
+    'David,Firm B,,,,\n' +
+    'UNKNOWN,,,,,\n'
+  );
+}

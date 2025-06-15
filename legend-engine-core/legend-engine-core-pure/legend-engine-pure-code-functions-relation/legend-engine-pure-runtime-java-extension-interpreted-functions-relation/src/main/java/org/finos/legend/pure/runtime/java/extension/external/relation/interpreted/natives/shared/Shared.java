@@ -57,7 +57,7 @@ public abstract class Shared extends NativeFunction
         }
         return value instanceof TDSCoreInstance ?
                 ((TDSCoreInstance) value).getTDS() :
-                new TestTDSInterpreted(readCsv((value.getValueForMetaPropertyToOne("csv")).getName()), repository, processorSupport);
+                new TestTDSInterpreted(TestTDS.readCsv((value.getValueForMetaPropertyToOne("csv")).getName()), repository, processorSupport);
     }
 
     public RelationType<?> getRelationType(ListIterable<? extends CoreInstance> params, int i)
@@ -68,34 +68,5 @@ public abstract class Shared extends NativeFunction
     public static CoreInstance getReturnGenericType(Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, ProcessorSupport processorSupport)
     {
         return GenericType.makeTypeArgumentAsConcreteAsPossible(functionExpressionCallStack.peek().getValueForMetaPropertyToOne("genericType"), resolvedTypeParameters.get(0), resolvedMultiplicityParameters.get(0), processorSupport);
-    }
-
-
-    public static CsvReader.Result readCsv(String csv)
-    {
-        try
-        {
-            return CsvReader.read(CsvSpecs.csv(), new ByteArrayInputStream(csv.getBytes()), makeMySinkFactory());
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static SinkFactory makeMySinkFactory()
-    {
-        return SinkFactory.arrays(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                Long.MIN_VALUE,
-                Long.MIN_VALUE);
     }
 }

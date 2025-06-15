@@ -158,7 +158,7 @@ function <<test.ToFix>> meta::relational::tests::tds::tabletds::testSimpleConcat
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
       ,
       simpleRelationalMapping,
-      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),debug());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
 
    let tds = $result.values->toOne()->sort([asc('lastName')]);
 

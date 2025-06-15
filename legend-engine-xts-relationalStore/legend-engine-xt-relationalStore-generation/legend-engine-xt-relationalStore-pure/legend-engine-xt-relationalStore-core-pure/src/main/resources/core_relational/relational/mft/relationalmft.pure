@@ -93,7 +93,7 @@ function   meta::relational::mft::relationalExecuteWrapperExecuteSimple(paramete
                                 $parameters.expectedErrorMessage->toOne()
                                 
                                 );,
-              |   let result = ^ExecuteResult<Any>(result =execute($fn,$parameters.mapping,$parameters.runtime, relationalExtensions(), debug()));
+              |   let result = ^ExecuteResult<Any>(result =execute($fn,$parameters.mapping,$parameters.runtime, relationalExtensions(), noDebug()));
                   meta::relational::mft::assertExecute($result, $parameters->toOne());
           );
   
