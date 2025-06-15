@@ -438,7 +438,7 @@ public class PureModel implements IPureModel
 
     private <T> Stream<T> maybeParallel(Stream<T> stream)
     {
-        if (Thread.currentThread() instanceof ForkJoinWorkerThread)
+        if (this.pureModelProcessParameter.getForkJoinPool() != null)
         {
             return stream.parallel();
         }

@@ -23,12 +23,12 @@ import org.finos.legend.pure.m2.inlinedsl.tds.M2TDSPaths;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
-import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 
 
@@ -69,52 +69,9 @@ public class TestTDSCompiled extends TestTDS
         return new TestTDSCompiled(columnOrdered, columnType, rows);
     }
 
-    public Object getValue(String columnName, int rowNum)
-    {
-        return this.getValueAsCoreInstance(columnName, rowNum);
-    }
-
     public Object getValueAsCoreInstance(String columnName, int rowNum)
     {
-        Object dataAsObject = dataByColumnName.get(columnName);
-        boolean[] isNull = (boolean[]) isNullByColumn.get(columnName);
-        Object result;
-        switch (columnType.get(columnName))
-        {
-            case INT:
-            {
-                int[] data = (int[]) dataAsObject;
-                int value = data[rowNum];
-                result = !isNull[rowNum] ? (long) value : null;
-                break;
-            }
-            case CHAR:
-            {
-                char[] data = (char[]) dataAsObject;
-                result = !isNull[rowNum] ? "" + data[rowNum] : null;
-                break;
-            }
-            case STRING:
-            {
-                String[] data = (String[]) dataAsObject;
-                result = data[rowNum];
-                break;
-            }
-            case FLOAT:
-            case DOUBLE:
-            {
-                double[] data = (double[]) dataAsObject;
-                result = !isNull[rowNum] ? Double.valueOf(data[rowNum]) : null;
-                break;
-            }
-            case DATETIME_AS_LONG:
-                PureDate[] data = (PureDate[]) dataAsObject;
-                result = data[rowNum];
-                break;
-            default:
-                throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported in getValue");
-        }
-        return result;
+        return this.getValue(columnName, rowNum);
     }
 
     public GenericType getClassifierGenericType()
@@ -159,16 +116,16 @@ public class TestTDSCompiled extends TestTDS
     {
         switch (dataType)
         {
-            case INT:
-                return "Integer";
+            case LONG:
+                return M3Paths.Integer;
+            case BOOLEAN_AS_BYTE:
+                return M3Paths.Boolean;
             case STRING:
-            case CHAR:
-                return "String";
-            case FLOAT:
+                return M3Paths.String;
             case DOUBLE:
-                return "Float";
+                return M3Paths.Float;
             case DATETIME_AS_LONG:
-                return "Date";
+                return M3Paths.Date;
         }
         throw new RuntimeException("To Handle " + dataType);
     }

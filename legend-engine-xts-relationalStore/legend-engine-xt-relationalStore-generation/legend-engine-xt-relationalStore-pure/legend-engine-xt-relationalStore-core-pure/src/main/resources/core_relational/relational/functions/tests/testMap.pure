@@ -252,7 +252,7 @@ function <<test.Test>> meta::relational::tests::map::testSubAggregationMultiLeve
    assertEquals('Smith,Johnson,Hill,Allen,Roberts,Hill,Harris', $result2.values);
    assertEquals('select listagg("persontable_0".LASTNAME, \',\') from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result2->sqlRemoveFormatting());
 
-   let result3 = execute(|Firm.all()->map(f|$f.employees->sortBy(#/Person/lastName#).lastName->joinStrings(',')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),debug());
+   let result3 = execute(|Firm.all()->map(f|$f.employees->sortBy(#/Person/lastName#).lastName->joinStrings(',')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),noDebug());
 
    assertSize($result3.values, 4);
    assertEquals(['Allen,Hill,Johnson,Smith', 'Roberts', 'Hill', 'Harris'], $result3.values);
@@ -283,7 +283,7 @@ function <<test.Test>> meta::relational::tests::map::testSubAggregationUsingIf()
    assertSameElements([1.0, 1.0, 2.25, 16.0], $result.values);
    assertEqualsH2Compatible(
     'select "firmtable_1".aggCol from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then ((1.0 * "persontable_0".AGE) / 2) else 1.0 end) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
-    'select "firmtable_1".aggCol from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then (1.0 * "persontable_0".AGE) / 2 else cast(1.0 as float) end) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
+    'select "firmtable_1".aggCol from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then (1.0 * "persontable_0".AGE) / 2 else cast(1.0 as float) end) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)',
     $result->sqlRemoveFormatting()
    );
 }
@@ -295,7 +295,7 @@ function <<test.Test>> meta::relational::tests::map::testSubAggregationAverageIn
    assertSameElements([39.5, 64.0, 68.0, 70.0], $result.values);
    assertEqualsH2Compatible(
     'select ("firmtable_1".aggCol * 2.0) from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * "persontable_0".AGE) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
-    'select "firmtable_1".aggCol * cast(2.0 as float) from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * "persontable_0".AGE) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
+    'select "firmtable_1".aggCol * cast(2.0 as float) from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * "persontable_0".AGE) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)',
     $result->sqlRemoveFormatting()
    );
 }

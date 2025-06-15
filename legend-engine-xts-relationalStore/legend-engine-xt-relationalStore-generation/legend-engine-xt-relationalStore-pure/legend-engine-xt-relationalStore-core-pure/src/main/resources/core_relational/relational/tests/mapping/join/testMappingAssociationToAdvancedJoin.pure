@@ -296,6 +296,6 @@ function <<test.ToFix>> meta::relational::tests::mapping::join::testRelationalOp
 
 function <<test.Test, test.ToFix>> meta::relational::tests::mapping::join::testIsNotEmptyCheckWithoutRowExplosion():Boolean[1]
 {
-   let result = execute(|Firm.all()->filter(x | $x.employees->isNotEmpty()), advancedRelationalMapping4, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), debug());
+   let result = execute(|Firm.all()->filter(x | $x.employees->isNotEmpty()), advancedRelationalMapping4, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
    assertEquals(['Firm X'], $result.values.legalName);
 }

@@ -1,0 +1,284 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::semistructured::flattening::*;
+import meta::pure::test::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::relational::tests::semistructured::flattening::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let csv =
+        'PERSON_SCHEMA\n' +
+        'PERSON_TABLE\n' +
+        'ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID\n' +
+        '1,Peter,Smith,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A1\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"S1\\"}, {\\"lineno\\": 2, \\"city\\": \\"C1\\"}]}, {\\"name\\": \\"A11\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"S1\\"}, {\\"lineno\\": 2, \\"city\\": \\"C2\\"}]}]}",2\n' +
+        '2,John,Johnson,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A2\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"S2\\"}, {\\"lineno\\": 2, \\"city\\": \\"C2\\"}]}, {\\"name\\": \\"A22\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"S1\\"}, {\\"lineno\\": 2, \\"city\\": \\"C3\\"}]}]}",4\n' +
+        '3,John,Hill,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A3\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"S3\\"}, {\\"lineno\\": 2, \\"city\\": \\"C1\\"}]}, {\\"name\\": \\"A32\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"S1\\"}, {\\"lineno\\": 2, \\"city\\": \\"C1\\"}]}]}",2\n' +
+        '4,Anthony,Allen,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A4\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"S1\\"}, {\\"lineno\\": 2, \\"city\\": \\"C3\\"}]}]}",\n' +
+        '5,Fabrice,Roberts,"{\\"legalName\\": \\"Firm A\\", \\"otherNames\\": [\\"O3\\", \\"O4\\"], \\"addresses\\": [{\\"name\\": \\"A5\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"S4\\"}, {\\"lineno\\": 2, \\"city\\": \\"C2\\"}]}, {\\"name\\": \\"A52\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"S1\\"}, {\\"lineno\\": 2, \\"city\\": \\"C4\\"}]}]}",\n' +
+        '6,Oliver,Hill,"{\\"legalName\\": \\"Firm B\\", \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"addresses\\": [{\\"name\\": \\"A6\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"S5\\"}, {\\"lineno\\": 2, \\"city\\": \\"C4\\"}]}]}",7\n' +
+        '7,David,Harris,"{\\"legalName\\": \\"Firm B\\", \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"addresses\\": [{\\"name\\": \\"A7\\", \\"lines\\": [{\\"lineno\\": 1, \\"street\\": \\"S1\\"}, {\\"lineno\\": 2, \\"city\\": \\"C1\\"}]}]}",\n'
+        ;
+
+  let model = '/core_relational/relational/tests/semistructured/model/semiStructuredFlattening.legend';
+
+  let m = 'flatten::mapping::H2Mapping';
+  let s = 'flatten::store::H2DB';
+
+   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFlattening(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredPrimitivePropertyFlattening__TabularDataSet_1_',
+    'First Name,Firm Name,Firm Other Name\n' +
+    'Peter,Firm X,O1\n' +
+    'Peter,Firm X,O2\n' +
+    'John,Firm X,O1\n' +
+    'John,Firm X,O2\n' +
+    'John,Firm X,O1\n' +
+    'John,Firm X,O2\n' +
+    'Anthony,Firm X,O1\n' +
+    'Anthony,Firm X,O2\n' +
+    'Fabrice,Firm A,O3\n' +
+    'Fabrice,Firm A,O4\n' +
+    'Oliver,Firm B,O5\n' +
+    'Oliver,Firm B,O6\n' +
+    'David,Firm B,O5\n' +
+    'David,Firm B,O6\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyFlattening(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredComplexPropertyFlattening__TabularDataSet_1_',
+    'First Name,Firm Name,Firm Address Name\n' +
+    'Peter,Firm X,A1\n' +
+    'Peter,Firm X,A11\n' +
+    'John,Firm X,A2\n' +
+    'John,Firm X,A22\n' +
+    'John,Firm X,A3\n' +
+    'John,Firm X,A32\n' +
+    'Anthony,Firm X,A4\n' +
+    'Fabrice,Firm A,A5\n' +
+    'Fabrice,Firm A,A52\n' +
+    'Oliver,Firm B,A6\n' +
+    'David,Firm B,A7\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyArrayIndexing(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredPrimitivePropertyArrayIndexing__TabularDataSet_1_',
+    'First Name,Firm Name,Firm Other Name 0,Firm Other Name 2\n' +
+    'Peter,Firm X,O1,\n' +
+    'John,Firm X,O1,\n' +
+    'John,Firm X,O1,\n' +
+    'Anthony,Firm X,O1,\n' +
+    'Fabrice,Firm A,O3,\n' +
+    'Oliver,Firm B,O5,\n' +
+    'David,Firm B,O5,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyArrayIndexing(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredComplexPropertyArrayIndexing__TabularDataSet_1_',
+    'First Name,Firm Name,Firm Address 0 Name,Firm Address 2 Name\n' +
+    'Peter,Firm X,A1,\n' +
+    'John,Firm X,A2,\n' +
+    'John,Firm X,A3,\n' +
+    'Anthony,Firm X,A4,\n' +
+    'Fabrice,Firm A,A5,\n' +
+    'Oliver,Firm B,A6,\n' +
+    'David,Firm B,A7,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyFlatteningFollowedBySubType(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredComplexPropertyFlatteningFollowedBySubType__TabularDataSet_1_',
+    'First Name,Firm Name,Firm Address Line 0 Line No\n' +
+    'Peter,Firm X,1\n' +
+    'Peter,Firm X,1\n' +
+    'John,Firm X,1\n' +
+    'John,Firm X,1\n' +
+    'John,Firm X,1\n' +
+    'John,Firm X,1\n' +
+    'Anthony,Firm X,1\n' +
+    'Fabrice,Firm A,1\n' +
+    'Fabrice,Firm A,1\n' +
+    'Oliver,Firm B,1\n' +
+    'David,Firm B,1\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyArrayIndexingFollowedBySubType(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredComplexPropertyArrayIndexingFollowedBySubType__TabularDataSet_1_',
+    'First Name,Firm Name,Firm Address 0 Line 0 Line No\n' +
+    'Peter,Firm X,1\n' +
+    'John,Firm X,1\n' +
+    'John,Firm X,1\n' +
+    'Anthony,Firm X,1\n' +
+    'Fabrice,Firm A,1\n' +
+    'Oliver,Firm B,1\n' +
+    'David,Firm B,1\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFiltering(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredPrimitivePropertyFiltering__TabularDataSet_1_',
+    'First Name,Firm Name\n'
+  );
+}
+
+function <<paramTest.Ignore>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFilteringInProject(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredPrimitivePropertyFilteringInProject__TabularDataSet_1_',
+    'col\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredSubAggregation(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredSubAggregation__TabularDataSet_1_',
+    'First Name,Firm Name,Firm Address Names\n' +
+    'Peter,Firm X,A1;A11\n' +
+    'John,Firm X,A2;A22\n' +
+    'John,Firm X,A3;A32\n' +
+    'Anthony,Firm X,A4\n' +
+    'Fabrice,Firm A,A5;A52\n' +
+    'Oliver,Firm B,A6\n' +
+    'David,Firm B,A7\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredSubAggregationDeep(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredSubAggregationDeep__TabularDataSet_1_',
+    'First Name,Firm Name,Firm Address Line No Sum\n' +
+    'Peter,Firm X,6\n' +
+    'John,Firm X,6\n' +
+    'John,Firm X,6\n' +
+    'Anthony,Firm X,3\n' +
+    'Fabrice,Firm A,6\n' +
+    'Oliver,Firm B,3\n' +
+    'David,Firm B,3\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredMultiLevelFlatten(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredMultiLevelFlattening__TabularDataSet_1_',
+    'First Name,Firm Name,Firm Address Name Line No\n' +
+    'Peter,Firm X,1\n' +
+    'Peter,Firm X,2\n' +
+    'Peter,Firm X,1\n' +
+    'Peter,Firm X,2\n' +
+    'John,Firm X,1\n' +
+    'John,Firm X,2\n' +
+    'John,Firm X,1\n' +
+    'John,Firm X,2\n' +
+    'John,Firm X,1\n' +
+    'John,Firm X,2\n' +
+    'John,Firm X,1\n' +
+    'John,Firm X,2\n' +
+    'Anthony,Firm X,1\n' +
+    'Anthony,Firm X,2\n' +
+    'Fabrice,Firm A,1\n' +
+    'Fabrice,Firm A,2\n' +
+    'Fabrice,Firm A,1\n' +
+    'Fabrice,Firm A,2\n' +
+    'Oliver,Firm B,1\n' +
+    'Oliver,Firm B,2\n' +
+    'David,Firm B,1\n' +
+    'David,Firm B,2\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredMultiFlatten(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredMultiFlatten__TabularDataSet_1_',
+    'First Name,Firm Address Name,Firm Address Line 0 No,Firm Other Name\n' +
+    'Peter,A1,1,O1\n' +
+    'Peter,A1,1,O2\n' +
+    'Peter,A11,1,O1\n' +
+    'Peter,A11,1,O2\n' +
+    'John,A2,1,O1\n' +
+    'John,A2,1,O2\n' +
+    'John,A22,1,O1\n' +
+    'John,A22,1,O2\n' +
+    'John,A3,1,O1\n' +
+    'John,A3,1,O2\n' +
+    'John,A32,1,O1\n' +
+    'John,A32,1,O2\n' +
+    'Anthony,A4,1,O1\n' +
+    'Anthony,A4,1,O2\n' +
+    'Fabrice,A5,1,O3\n' +
+    'Fabrice,A5,1,O4\n' +
+    'Fabrice,A52,1,O3\n' +
+    'Fabrice,A52,1,O4\n' +
+    'Oliver,A6,1,O5\n' +
+    'Oliver,A6,1,O6\n' +
+    'David,A7,1,O5\n' +
+    'David,A7,1,O6\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredMultiLevelFlattenMerging(conn: Connection[1]): Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredMultiLevelFlattenMerging__TabularDataSet_1_',
+    'First Name,Firm Address Name,Firm Address Line No,Firm Address Street,Firm Address City\n' +
+    'Peter,A1,1,S1,\n' +
+    'Peter,A1,2,,C1\n' +
+    'Peter,A11,1,S1,\n' +
+    'Peter,A11,2,,C2\n' +
+    'John,A2,1,S2,\n' +
+    'John,A2,2,,C2\n' +
+    'John,A22,1,S1,\n' +
+    'John,A22,2,,C3\n' +
+    'John,A3,1,S3,\n' +
+    'John,A3,2,,C1\n' +
+    'John,A32,1,S1,\n' +
+    'John,A32,2,,C1\n' +
+    'Anthony,A4,1,S1,\n' +
+    'Anthony,A4,2,,C3\n' +
+    'Fabrice,A5,1,S4,\n' +
+    'Fabrice,A5,2,,C2\n' +
+    'Fabrice,A52,1,S1,\n' +
+    'Fabrice,A52,2,,C4\n' +
+    'Oliver,A6,1,S5,\n' +
+    'Oliver,A6,2,,C4\n' +
+    'David,A7,1,S1,\n' +
+    'David,A7,2,,C1\n'
+  );
+}
