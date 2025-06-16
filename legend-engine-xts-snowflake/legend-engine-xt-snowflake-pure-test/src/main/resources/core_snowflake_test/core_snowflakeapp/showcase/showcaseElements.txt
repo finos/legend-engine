@@ -1,12 +1,11 @@
 
+###Pure
 import meta::external::function::activator::snowflakeApp::tests::*;
 import meta::external::function::activator::snowflakeApp::tests::model::simple::*;
 import meta::core::runtime::*;
 import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::metamodel::*;
-import meta::external::function::activator::snowflakeApp::*;
-
 
 Class meta::external::function::activator::snowflakeApp::tests::model::simple::PersonX
 {
@@ -39,11 +38,6 @@ function meta::external::function::activator::snowflakeApp::tests::testRuntimeWi
     testRuntime(testDatabaseConnection($db, '+0530'));
 }
 
-function meta::external::function::activator::snowflakeApp::tests::defaultConfig():SnowflakeDeploymentConfiguration[1]
-{
-  ^SnowflakeDeploymentConfiguration(target = testRelationalConnection().connection->cast(@RelationalDatabaseConnection) );
-}
-
 function meta::external::function::activator::snowflakeApp::tests::testRelationalConnection():ConnectionStore[1]
 {
   ^ConnectionStore(
@@ -71,12 +65,10 @@ function <<access.private>> meta::external::function::activator::snowflakeApp::t
     ));
 }
 
-
 ###Mapping
 
 import meta::external::function::activator::snowflakeApp::tests::model::simple::*;
 import meta::external::function::activator::snowflakeApp::tests::*;
-
 
 Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelationalMapping
 (
@@ -111,8 +103,6 @@ Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelation
     }
 )
 
-
-
 Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelationalMapping2
 (
 
@@ -133,6 +123,17 @@ Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelation
 
 )
 
+###Connection  
+RelationalDatabaseConnection meta::external::function::activator::snowflakeApp::tests::MyConnection
+{
+    store: meta::external::function::activator::snowflakeApp::tests::dbInc;
+    type: Snowflake;
+    specification: LocalH2
+    {
+      testDataSetupSqls: [];
+    };
+    auth: DefaultH2;
+}
 
 ###Relational
 Database meta::external::function::activator::snowflakeApp::tests::dbInc
@@ -201,5 +202,4 @@ Database meta::external::function::activator::snowflakeApp::tests::dbInc
     Join Person_Manager(personTable.MANAGERID = {target}.ID)
     Join location_PlaceOfInterest(locationTable.ID  = placeOfInterestTable.locationID)
     Join Person_OtherFirm(personTable.FIRMID = otherFirmTable.ID)
-
 )
