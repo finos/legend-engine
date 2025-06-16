@@ -21,10 +21,6 @@ function <<meta::pure::profiles::test.TestCollection>> meta::relational::tests::
     'snowflake',
     meta::pure::testConnection::getTestConnection(DatabaseType.Snowflake),
     [],
-    {fn | !$fn->in([
-            meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBindingAndFilter_Connection_1__Boolean_1_, // Invalid argument types for function 'GET': (VARCHAR(134217728), VARCHAR(8))
-            meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_ // Invalid argument types for function 'GET': (VARCHAR(134217728), VARCHAR(8))
-        ])
-    }
+    []
   );
 }

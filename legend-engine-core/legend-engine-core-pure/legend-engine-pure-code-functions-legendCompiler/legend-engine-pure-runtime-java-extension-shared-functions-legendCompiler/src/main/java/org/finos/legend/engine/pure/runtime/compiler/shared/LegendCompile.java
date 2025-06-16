@@ -16,18 +16,11 @@ package org.finos.legend.engine.pure.runtime.compiler.shared;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinWorkerThread;
-import java.util.concurrent.TimeUnit;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
@@ -48,34 +41,12 @@ import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 
 public class LegendCompile
 {
-    private static final Cache<String, MutableList<PackageableElement>> cache = CacheBuilder.newBuilder().expireAfterAccess(5, TimeUnit.MINUTES).build();
-
     public static MutableList<PackageableElement> doCompile(String code, Metadata metadata)
-    {
-        try
-        {
-            return cache.get(code, () -> internalCompile(code, metadata));
-        }
-        catch (ExecutionException e)
-        {
-            throw (RuntimeException) e.getCause();
-        }
-    }
-
-    public static MutableList<PackageableElement> internalCompile(String code, Metadata metadata)
     {
         // Parse
         PureModelContextData data = PureGrammarParser.newInstance().parseModel(code);
-
-        ForkJoinPool pool = null;
-        if (Thread.currentThread() instanceof ForkJoinWorkerThread)
-        {
-            pool = ((ForkJoinWorkerThread) Thread.currentThread()).getPool();
-        }
-        PureModelProcessParameter processParameter = PureModelProcessParameter.newBuilder().withPackagePrefix("").withForkJoinPool(pool).build();
-
         // Compile
-        PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), metadata, processParameter);
+        PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), "", metadata);
         // Extract Compiled created elements
         return extractCreatedElementFromCompiledGraph(data, pm);
     }

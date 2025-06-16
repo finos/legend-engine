@@ -239,17 +239,15 @@ public class LegendH2Extensions
             {
                 for (Object r: resultSet)
                 {
-                    try
+                    if (!(r instanceof HashMap))
                     {
-                        Object o = ((HashMap)(r)).get(property);
-                        if (o != null)
-                        {
-                            res.add(o);
-                        }
+                        continue;
                     }
-                    catch (Exception e)
+
+                    Object o = ((HashMap) r).get(property);
+                    if (o != null)
                     {
-                        e.printStackTrace(); // don't stop execution
+                        res.add(o);
                     }
                 }
             }
@@ -259,15 +257,12 @@ public class LegendH2Extensions
             int index = (int) pathToExtract;
             for (Object r: resultSet)
             {
-                try
+                if (!(r instanceof ArrayList) || index < 0 || index >= ((ArrayList) r).size())
                 {
-                    res.add(((ArrayList)(r)).get(index));
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
+                    continue;
                 }
 
+                res.add(((ArrayList) r).get(index));
             }
         }
         return res;
