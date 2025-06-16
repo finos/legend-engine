@@ -143,22 +143,6 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      }\n" +
                 "    ];\n" +
                 "}");
-
-        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
-                "###DataQualityValidation\n" +
-                "DataQualityRelationValidation meta::external::dataquality::Validation\n" +
-                "{\n" +
-                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME);\n" +
-                "    runtime: meta::dataquality::DataQualityRuntime;\n" +
-                "    validations: [\n" +
-                "      {\n" +
-                "         name: 'validFirstName';\n" +
-                "         description: 'First name cannot be empty';\n" +
-                "         assertion: row|$row.FIRSTNAME->isNotEmpty();\n" +
-                "         type: ROW_LEVEL;\n" +
-                "      }\n" +
-                "    ];\n" +
-                "}");
     }
 
     @Test
@@ -182,7 +166,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
-    public void testRelationValidation_noRuntime()
+    public void testRelationValidation_absentRuntime()
     {
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
@@ -197,7 +181,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         type: ROW_LEVEL;\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", " at [104:1-115:1]: Error in 'meta::external::dataquality::Validation': Execution error at (resource: lines:104c1-115c1), \"Constraint :[mustHaveOneRuntime] violated in the Class DataQualityRelationValidation\"");
+                "}", " at [104:1-115:1]: Error in 'meta::external::dataquality::Validation': Execution error at (resource: lines:104c1-115c1), \"Constraint :[mustEndWithRuntime] violated in the Class DataQualityRelationValidation\"");
     }
 
     @Test
@@ -221,8 +205,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "###DataQualityValidation\n" +
                 "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
                 "{\n" +
-                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME);\n" +
-                "    runtime: meta::dataquality::DataQualityRuntime;\n" +
+                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->from(meta::dataquality::DataQualityRuntime);\n" +
                 "    validations: [\n" +
                 "      {\n" +
                 "         name: 'nonEmptyDataset';\n" +
@@ -261,6 +244,42 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      }\n" +
                 "    ];\n" +
                 "}");
+    }
+
+    @Test
+    public void testRelationValidation_MultilineQuery()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: {|let l = #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime); $l->select(~FIRSTNAME);};\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "COMPILATION error at [106:13-161]: Multiline lambda is not supported.");
+    }
+
+    @Test
+    public void testRelationValidation_MultilineAssertion()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: {|let l = #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime); $l->select(~FIRSTNAME);};\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: {rel|let isEmpty = $rel->assertRelationNotEmpty(); isEmpty;};\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "COMPILATION error at [106:13-161]: Multiline lambda is not supported.");
     }
 
     @Test
