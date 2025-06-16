@@ -39,7 +39,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       )
     ),
     ^TestResult(columnNames = ['result'], rows = [^TestResultRow(values = 'John'), ^TestResultRow(values = 'Jenny'), ^TestResultRow(values = 'Jessie')]),
-    'Select - Single Column'
+    'SQLStructureTests - Select_Single_Column'
   );
 }
 
@@ -67,7 +67,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       )
     ),
     ^TestResult(columnNames = ['id', 'Employee Name'], rows = [^TestResultRow(values = [1, 'John']), ^TestResultRow(values = [2, 'Jenny']), ^TestResultRow(values = [3, 'Jessie'])]),
-    'Select - Multi Column'
+    'SQLStructureTests - Select_Multi_Column'
   );
 }
 
@@ -87,7 +87,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       )
     ),
     ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [1, 'John', 'Engg']), ^TestResultRow(values = [2, 'Jenny', 'Finance']), ^TestResultRow(values = [3, 'Jessie', 'Engg'])]),
-    'Select - All Columns'
+    'SQLStructureTests - Select_All_Columns'
   );
 }
 
@@ -110,7 +110,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       )
     ),
     ^TestResult(columnNames = ['unique_depts'], rows = [^TestResultRow(values = ['Engg']), ^TestResultRow(values = ['Finance'])]),
-    'Select - Distinct Values'
+    'SQLStructureTests - Select_Distinct_Values'
   );
 }
 
@@ -134,7 +134,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       limit = literal(2)
     ),
     ^TestResult(columnNames = ['id', 'name'], rows = [^TestResultRow(values = [1, 'John']), ^TestResultRow(values = [2, 'Jenny'])]),
-    'Select - Limit'
+    'SQLStructureTests - Limit'
   );
 }
 
@@ -162,7 +162,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       ]
     ),
     ^TestResult(columnNames = ['dept', 'name'], rows = [^TestResultRow(values = ['Engg', 'John']), ^TestResultRow(values = ['Engg', 'Jessie']), ^TestResultRow(values = ['Finance', 'Jenny'])]),
-    'SortBy - Multiple Columns'
+    'SQLStructureTests - SortBy'
   );
 }
 
@@ -182,7 +182,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       offset = literal(2)
     ),
     ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [3, 'Jessie', 'Engg'])]),
-    'Offset - Limit'
+    'SQLStructureTests - Offset'
   );
 }
 
@@ -197,7 +197,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       where = ^ComparisonExpression(left = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')), right = literal(2), operator = ComparisonOperator.EQUAL)
     ),
     ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [2, 'Jenny', 'Finance'])]),
-    'SQL Element - Where'
+    'SQLStructureTests - Where'
   );
 }
 
@@ -220,7 +220,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
         nullOrdering = SortItemNullOrdering.LAST)
     ),
     ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [1, 'John', 'Engg']), ^TestResultRow(values = [2, 'Jenny', 'Finance']), ^TestResultRow(values = [3, 'Jessie', 'Engg'])]),
-    'SQL Element - GroupBy'
+    'SQLStructureTests - GroupBy'
   );
 }
 
@@ -244,7 +244,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
         nullOrdering = SortItemNullOrdering.LAST)
     ),
     ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [1, 'John', 'Engg']), ^TestResultRow(values = [3, 'Jessie', 'Engg'])]),
-    'SQL Element - Having'
+    'SQLStructureTests - Having'
   );
 }
 
@@ -253,7 +253,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
   testConfigForJoin(
     JoinType.INNER,
     ^TestResult(columnNames = ['emp_id', 'emp_name', 'dept_head_count'], rows = [^TestResultRow(values = [1, 'John', 46]), ^TestResultRow(values = [2, 'Jenny', 32]), ^TestResultRow(values = [3, 'Jessie', 46])]),
-    'Join - Inner'
+    'SQLStructureTests - Join_Inner'
   )
 }
 
@@ -262,7 +262,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
   testConfigForJoin(
     JoinType.LEFT,
     ^TestResult(columnNames = ['emp_id', 'emp_name', 'dept_head_count'], rows = [^TestResultRow(values = [1, 'John', 46]), ^TestResultRow(values = [2, 'Jenny', 32]), ^TestResultRow(values = [3, 'Jessie', 46]), ^TestResultRow(values = [4, 'James', null()])]),
-    'Join - Left'
+    'SQLStructureTests - Join_Left'
   )
 }
 
@@ -271,7 +271,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
   testConfigForJoin(
     JoinType.RIGHT,
     ^TestResult(columnNames = ['emp_id', 'emp_name', 'dept_head_count'], rows = [^TestResultRow(values = [1, 'John', 46]), ^TestResultRow(values = [2, 'Jenny', 32]), ^TestResultRow(values = [3, 'Jessie', 46]), ^TestResultRow(values = [null(), null(), 12]), ^TestResultRow(values = [null(), null(), 27])]),
-    'Join - Right'
+    'SQLStructureTests - Join_Right'
   )
 }
 
@@ -284,7 +284,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       ^TestResultRow(values = [2, 'Jenny', 12]), ^TestResultRow(values = [2, 'Jenny', 27]), ^TestResultRow(values = [2, 'Jenny', 32]), ^TestResultRow(values = [2, 'Jenny', 46]),
       ^TestResultRow(values = [3, 'Jessie', 12]), ^TestResultRow(values = [3, 'Jessie', 27]), ^TestResultRow(values = [3, 'Jessie', 32]), ^TestResultRow(values = [3, 'Jessie', 46]),
       ^TestResultRow(values = [4, 'James', 12]), ^TestResultRow(values = [4, 'James', 27]), ^TestResultRow(values = [4, 'James', 32]), ^TestResultRow(values = [4, 'James', 46])]),
-    'Join - Cross'
+    'SQLStructureTests - Join_Cross'
   )
 }
 
@@ -293,7 +293,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
   testConfigForUnion(
     false,
     ^TestResult(columnNames = ['student'], rows = [^TestResultRow(values = ['Alex']), ^TestResultRow(values = ['Alex']), ^TestResultRow(values = ['Alex']), ^TestResultRow(values = ['Alex'])]),
-    'SQL Element - Union All'
+    'SQLStructureTests - Union_All'
   )
 }
 
@@ -302,7 +302,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
   testConfigForUnion(
     true,
     ^TestResult(columnNames = ['student'], rows = [^TestResultRow(values = ['Alex'])]),
-    'SQL Element - Union'
+    'SQLStructureTests - Union'
   )
 }
 
