@@ -21,8 +21,6 @@ native function <<PCT.function>> meta::pure::functions::relation::select<T,Z>(r:
 
 native function <<PCT.function>> meta::pure::functions::relation::select<T>(r:Relation<T>[1]):Relation<T>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::select<T>(r:T[m]):Relation<T>[1];
-
 function <<PCT.test>> meta::pure::functions::relation::tests::select::testMultiColsSelectShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
