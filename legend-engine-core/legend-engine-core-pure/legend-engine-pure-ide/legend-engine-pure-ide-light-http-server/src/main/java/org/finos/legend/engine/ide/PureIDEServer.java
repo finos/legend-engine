@@ -41,6 +41,7 @@ import org.finos.legend.engine.ide.api.find.FindPureFile;
 import org.finos.legend.engine.ide.api.find.FindTextPreview;
 import org.finos.legend.engine.ide.api.source.UpdateSource;
 import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.engine.server.core.pct.PCT;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
@@ -114,6 +115,8 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
         environment.jersey().register(new Suggestion(pureSession));
 
         environment.jersey().register(new Service(pureSession));
+
+        environment.jersey().register(new PCT());
 
         enableCors(environment);
 
