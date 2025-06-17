@@ -1,0 +1,29 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::runtime::*;
+import meta::analytics::lineage::*;
+import meta::external::function::activator::snowflakeM2MUdf::generation::*;
+
+function meta::external::function::activator::snowflakeM2MUdf::generation::validateParameters(f:Function<Any>[1]):String[0..1]
+{
+  let params = $f->functionType().parameters->evaluateAndDeactivate();
+  if($params->size()!=1 || $params->at(0).multiplicity!=PureOne || $params->at(0).genericType.rawType->toOne()!=String, | ['SnowflakeM2MUdf function activator should have a single parameter with String type of multiplicity 1'], | []);
+}
+
+function meta::external::function::activator::snowflakeM2MUdf::generation::validateReturnType(f:Function<Any>[1]):String[0..1]
+{
+  let functionType = $f->functionType();
+  if($functionType.returnMultiplicity!=PureOne || $functionType.returnType.rawType!=String, | ['SnowflakeM2MUdf function activator return type should be String of multiplicity 1'], | []);
+}
