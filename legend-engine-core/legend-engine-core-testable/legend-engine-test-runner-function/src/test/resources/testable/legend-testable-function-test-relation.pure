@@ -1,0 +1,138 @@
+###Data
+Data data::RelationalData
+{
+  Relational
+  #{
+    default.PersonTable:
+      'id,firstName,lastName\n'+
+      '1,John,Doe\n'+
+      '2,Nicole,Smith\n'+
+      '3,Time,Smith\n';
+  }#
+}
+
+
+###Relational
+Database store::TestDB
+(
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+)
+
+
+###Pure
+import meta::pure::precisePrimitives::*;
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+
+function model::RelationModelQuery(): meta::pure::metamodel::relation::Relation<('first name':String, 'last name':String)>[1]
+{
+  model::Person.all()
+
+    ->project(~[
+        'first name': x | $x.firstName,
+        'last name': x | $x.lastName
+    ])
+->from(
+    execution::RelationalMapping,
+    execution::Runtime
+  )
+}
+{
+  testSuite_1
+  (
+    store::TestDB:
+        Relational
+        #{
+          default.PersonTable:
+            'id,firstName,lastName\n'+
+            '1,I\'m John,"Doe, Jr"\n'+
+            '2,Nicole,Smith\n'+
+            '3,Time,Smith\n';
+        }#;
+    test_1 | RelationModelQuery() => (JSON) '[ {\n  "first name" : "I\'m John",\n  "last name" : "Doe, Jr"\n}, {\n  "first name" : "Nicole",\n  "last name" : "Smith"\n}, {\n  "first name" : "Time",\n  "last name" : "Smith"\n} ]';
+  )
+}
+
+function model::RelationQuery(): meta::pure::metamodel::relation::Relation<(firstName:Varchar(200), lastName:Varchar(200))>[1]
+{
+  #>{store::TestDB.PersonTable}#->select(
+    ~[
+       firstName,
+       lastName
+     ]
+  )->from(
+    execution::Runtime
+  )
+}
+{
+  testSuite_1
+  (
+    store::TestDB:
+        Relational
+        #{
+          default.PersonTable:
+            'id,firstName,lastName\n'+
+            '1,I\'m John,"Doe, Jr"\n'+
+            '2,Nicole,Smith\n'+
+            '3,Time,Smith\n';
+        }#;
+    test_1 | RelationQuery() => (JSON) '[ {\n  "firstName" : "I\'m John",\n  "lastName" : "Doe, Jr"\n}, {\n  "firstName" : "Nicole",\n  "lastName" : "Smith"\n}, {\n  "firstName" : "Time",\n  "lastName" : "Smith"\n} ]';
+  )
+}
+
+###Mapping
+Mapping execution::RelationalMapping
+(
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]PersonTable.id
+    )
+    ~mainTable [store::TestDB]PersonTable
+    firstName: [store::TestDB]PersonTable.firstName,
+    lastName: [store::TestDB]PersonTable.lastName
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::MyConnection
+{
+  store: store::TestDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'Drop table if exists PersonTable;\nCreate Table PersonTable(id INT, lastName VARCHAR(200), firstName VARCHAR(200));\nInsert into PersonTable (id, lastName, firstName) values (1, \'John\', \'Doe\');\nInsert into PersonTable (id, lastName, firstName) values (2, \'Tim\', \'Smith\');\nInsert into PersonTable (id, lastName, firstName) values (3, \'Nicole\', \'Doe\');\n\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime execution::Runtime
+{
+  mappings:
+  [
+    execution::RelationalMapping
+  ];
+  connections:
+  [
+    store::TestDB:
+    [
+      connection_1: model::MyConnection
+    ]
+  ];
+}
