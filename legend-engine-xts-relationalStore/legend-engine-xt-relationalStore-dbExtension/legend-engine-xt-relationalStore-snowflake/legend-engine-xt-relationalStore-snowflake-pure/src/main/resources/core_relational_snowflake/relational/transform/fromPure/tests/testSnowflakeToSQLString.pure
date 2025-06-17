@@ -106,7 +106,7 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQ
           col(t|$t.quantity->toFloat(), 'float')
         ]), simpleRelationalMapping, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
 
-    assertEquals('select to_decimal("root".quantity,38,8) as "decimal", to_double("root".quantity) as "float" from tradeTable as "root"', $result);
+    assertEquals('select to_decimal("root".quantity, \'TM9\') as "decimal", to_double("root".quantity) as "float" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testTrim():Boolean[1]

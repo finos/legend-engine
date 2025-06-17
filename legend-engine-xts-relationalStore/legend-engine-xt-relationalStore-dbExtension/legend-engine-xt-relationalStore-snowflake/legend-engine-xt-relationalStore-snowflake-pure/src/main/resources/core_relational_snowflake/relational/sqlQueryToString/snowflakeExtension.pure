@@ -565,11 +565,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 {
   // https://docs.snowflake.com/en/sql-reference/functions/to_decimal
   let parts = $param->split('.');
-  let scale = if($parts->size() == 1,
-                | 0,
-                | max(0, min(37 - $parts->at(0)->length(), $parts->at(1)->length()))
-              );
-  format('to_decimal(%s,%s,%s)', [$param,38,$scale]);
+  if ($parts->at(0)->isDigit(),
+      | if ($parts->size() == 1,
+        | format('to_decimal(%s)', [$param]);,
+        | let scale = max(0, min(37 - $parts->at(0)->length(), $parts->at(1)->length()));
+          format('to_decimal(%s,%s,%s)', [$param,38,$scale]);
+      ),
+      | format('to_decimal(%s, \'TM9\')', [$param]);
+  );
 }
 
 
