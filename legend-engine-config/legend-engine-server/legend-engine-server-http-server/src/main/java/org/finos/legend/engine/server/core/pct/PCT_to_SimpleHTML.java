@@ -14,8 +14,9 @@
 
 package org.finos.legend.engine.server.core.pct;
 
+import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
@@ -45,11 +46,11 @@ public class PCT_to_SimpleHTML
 
     public static void main(String[] args) throws Exception
     {
-        String html = buildHTML(Sets.mutable.of(args), Sets.mutable.of());
+        String html = buildHTML(Sets.mutable.of(args), Sets.mutable.of(), false);
         Shared.writeStringToTarget("./target", "ok.html", html);
     }
 
-    public static String buildHTML(Set<String> adapterNames, Set<String> adapterQualifiers)
+    public static String buildHTML(Set<String> adapterNames, Set<String> adapterQualifiers, boolean skipFunctionsWithoutTest)
     {
         String commitId = getCommitId();
         moduleURLs.put("grammar", "https://github.com/finos/legend-pure/tree/master/legend-pure-core/legend-pure-m3-core/src/main/resources");
@@ -67,6 +68,12 @@ public class PCT_to_SimpleHTML
 
         // Organize by source
         MutableListMultimap<String, FunctionDocumentation> ordered = Lists.mutable.withAll(doc.functionsDocumentation)
+                .select(x -> !skipFunctionsWithoutTest || orderedAdapters.stream()
+                                 .map(x.functionTestResults::get)
+                                 .filter(Objects::nonNull)
+                                 .flatMap(result -> result.tests.stream())
+                                 .anyMatch(t -> hasAdapterQualifier(t, adapterQualifiers))
+                )
                 .groupBy(x ->
                 {
                     String id = x.functionDefinition.sourceId;
@@ -93,7 +100,7 @@ public class PCT_to_SimpleHTML
                                 MutableList<String> row = Lists.mutable.empty();
                                 row.add("<div style='color:#AAAAAA'>" + d.reportScope.module + "</div>");
                                 row.add(printFuncName(d));
-                                if (!d.functionDefinition.signatures.isEmpty() && d.functionDefinition.signatures.get(0).platformOnly)
+                                if (!d.functionDefinition.signatures.isEmpty() && d.functionDefinition.signatures.get(0).platformOnly && adapterQualifiers.isEmpty())
                                 {
                                     row.add("          <div style='color:#00C72B' class='hover-text'>" + d.functionDefinition.testCount + "<div class='tooltip-text' id='top'>Executed outside of PCT</div></div>");
                                     for (int i = 0; i < orderedAdapters.size() - 1; i++)
@@ -260,10 +267,10 @@ public class PCT_to_SimpleHTML
     {
         if (adapterQualifiers.isEmpty())
         {
-            return !test.qualifiers.contains(AdapterQualifier.unsupportedFeature) && !test.qualifiers.contains(AdapterQualifier.assertErrorMismatch);
+            return !test.qualifiers.contains(AdapterQualifier.unsupportedFeature.name()) && !test.qualifiers.contains(AdapterQualifier.assertErrorMismatch.name());
         }
 
-        return adapterQualifiers.contains("all") || test.qualifiers.stream().anyMatch(x -> adapterQualifiers.contains(x.toLowerCase()));
+        return adapterQualifiers.contains("all") || !Collections.disjoint(test.qualifiers, adapterQualifiers);
 
     }
 

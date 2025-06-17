@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import java.net.URI;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -121,6 +122,8 @@ public class PCT
                 "    <select id='qualifier' name='qualifier' multiple>\n" +
                 qualifiers +
                 "    </select>\n" +
+                "    <input type='checkbox' id='skipWithoutTests' name='skipWithoutTests' checked />\n" +
+                "    <label for='skipWithoutTests' style='margin-left: 0.5em;'>Skip functions without tests</label>\n" +
                 "  </form>\n" +
                 " </div>\n" +
                 "\n" +
@@ -132,30 +135,58 @@ public class PCT
                 "    const adapterSelect = document.getElementById('adapter');\n" +
                 "    const qualifierSelect = document.getElementById('qualifier');\n" +
                 "    const resultFrame = document.getElementById('resultFrame');\n" +
+                "    const skipWithoutTestsCheckbox = document.getElementById('skipWithoutTests');" +
                 "\n" +
                 "    function getSelectedValues(selectElement) {\n" +
                 "      return Array.from(selectElement.selectedOptions).map(opt => opt.value);\n" +
                 "    }\n" +
                 "\n" +
+                "    function loadSelectionsFromURL() {\n" +
+                "      const params = new URLSearchParams(window.location.search);\n" +
+                "\n" +
+                "      // Set group selection\n" +
+                "      const groups = params.getAll('adapter');\n" +
+                "      for (const option of adapterSelect.options) {\n" +
+                "        option.selected = groups.includes(option.value);\n" +
+                "      }\n" +
+                "\n" +
+                "      // Set qualifier selection\n" +
+                "      const qualifiers = params.getAll('qualifier');\n" +
+                "      for (const option of qualifierSelect.options) {\n" +
+                "        option.selected = qualifiers.includes(option.value);\n" +
+                "      }\n" +
+                "\n" +
+                "      // Set checkbox\n" +
+                "      skipWithoutTestsCheckbox.checked = params.get('skipFunctionsWithoutTest') === 'true' || params.get('skipFunctionsWithoutTest') === null;\n" +
+                "    }\n" +
+                "\n" +
                 "    async function fetchAndUpdate() {\n" +
                 "      const adapters = getSelectedValues(adapterSelect);\n" +
                 "      const qualifiers = getSelectedValues(qualifierSelect);\n" +
+                "      const skipWithoutTests = skipWithoutTestsCheckbox.checked;\n" +
                 "\n" +
                 "      const params = new URLSearchParams();\n" +
                 "      adapters.forEach(g => params.append('adapter', g));\n" +
                 "      qualifiers.forEach(q => params.append('qualifier', q));\n" +
+                "      if (skipWithoutTests) {\n" +
+                "        params.append('skipFunctionsWithoutTest', 'true');\n" +
+                "      }" +
                 "\n" +
                 "      const query = params.toString();\n" +
                 String.format("      const url = query ? `%s?${query}` : `%s`;\n", path, path) +
                 "\n" +
                 "      resultFrame.src = url;\n" +
+                "      const newURL = query ? `?${query}` : location.pathname;\n" +
+                "      history.replaceState(null, '', newURL);\n" +
                 "    }\n" +
                 "\n" +
                 "    // Auto-refresh on change\n" +
                 "    adapterSelect.addEventListener('change', fetchAndUpdate);\n" +
                 "    qualifierSelect.addEventListener('change', fetchAndUpdate);\n" +
+                "    skipWithoutTestsCheckbox.addEventListener('change', fetchAndUpdate);\n" +
                 "\n" +
                 "    // Initial fetch on page load\n" +
+                "    loadSelectionsFromURL();\n" +
                 "    fetchAndUpdate();\n" +
                 "  </script>\n" +
                 "</body>\n" +
@@ -168,9 +199,9 @@ public class PCT
     @Path("html")
     @ApiOperation(value = "PCT report in HTML")
     @Produces(MediaType.TEXT_HTML)
-    public Response htmlPCT(@QueryParam("adapter") Set<String> adapterKeys, @QueryParam("qualifier") Set<String> adapterQualifiers)    // adapterQualifiers - if empty will default to greener report, all will give all adapters, can have additional qualifiers for specific adapters to be included
+    public Response htmlPCT(@QueryParam("adapter") Set<String> adapterKeys, @QueryParam("qualifier") Set<String> adapterQualifiers, @QueryParam("skipFunctionsWithoutTest") @DefaultValue("true") boolean skipFunctionsWithoutTest)
     {
-        return Response.status(200).type(MediaType.TEXT_HTML).entity(PCT_to_SimpleHTML.buildHTML(adapterKeys, adapterQualifiers)).build();
+        return Response.status(200).type(MediaType.TEXT_HTML).entity(PCT_to_SimpleHTML.buildHTML(adapterKeys, adapterQualifiers, skipFunctionsWithoutTest)).build();
     }
 
     @GET
