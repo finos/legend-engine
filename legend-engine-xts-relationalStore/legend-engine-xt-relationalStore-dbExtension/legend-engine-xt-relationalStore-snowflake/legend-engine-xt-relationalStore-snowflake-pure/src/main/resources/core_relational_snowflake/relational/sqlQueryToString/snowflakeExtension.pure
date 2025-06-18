@@ -571,7 +571,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
         | let scale = max(0, min(37 - $parts->at(0)->length(), $parts->at(1)->length()));
           format('to_decimal(%s,%s,%s)', [$param,38,$scale]);
       ),
-      | format('to_decimal(%s, \'TM9\')', [$param]);
+      | format('to_decimal(to_varchar(%s), \'TM9\', 38, 19)', [$param]);
   );
 }
 
