@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.88.9-SNAPSHOT</version>
+        <version>4.88.9</version>
     </parent>
 
     <artifactId>legend-engine-xts-functionJar</artifactId>
