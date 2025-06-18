@@ -258,6 +258,13 @@
         </dependency>
         <!-- LOG -->
 
+        <!-- METRICS -->
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient</artifactId>
+        </dependency>
+        <!-- METRICS -->
+
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>

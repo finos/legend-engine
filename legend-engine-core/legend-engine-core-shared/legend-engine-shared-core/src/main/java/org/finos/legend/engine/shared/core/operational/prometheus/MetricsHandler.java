@@ -324,7 +324,7 @@ public class MetricsHandler
      * @param exception the original exception to be analysed that has occurred in execution.
      * @return a pair of values corresponding to the exceptionLabel and category labels in the Counter.
      */
-    private static synchronized ExceptionLabelValues getCounterLabelValues(Throwable exception)
+    public static synchronized ExceptionLabelValues getCounterLabelValues(Throwable exception)
     {
         int categorisationDepthLimit = 5;
         ExceptionLabelValues exceptionLabelValues = new ExceptionLabelValues(getExceptionClass(exception), ExceptionCategory.UNKNOWN_ERROR);
@@ -465,7 +465,7 @@ public class MetricsHandler
      * @param exception is the exception to be pretty printed
      * @return pretty print formatted exception string
      */
-    private static String exceptionToPrettyString(Exception exception)
+    public static String exceptionToPrettyString(Exception exception)
     {
         String name = exception.getClass().getSimpleName();
         String message = exception.getMessage();
@@ -487,7 +487,7 @@ public class MetricsHandler
     /**
      * Class to represent a tuple of label values to be used in the Error Prometheus Counter.
      */
-    private static class ExceptionLabelValues
+    public static class ExceptionLabelValues
     {
         /**
          * exceptionLabel label value for the prometheus error counter
