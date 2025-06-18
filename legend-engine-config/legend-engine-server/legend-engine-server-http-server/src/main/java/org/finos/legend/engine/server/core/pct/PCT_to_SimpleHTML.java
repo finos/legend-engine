@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -255,7 +256,7 @@ public class PCT_to_SimpleHTML
         }
         else
         {
-            return f.signatures.stream().map(x -> "<td style='text-align: left;'>" + x.simple.substring(x.simple.indexOf(f.name + "(")) + "</td>" + "<td style='text-align: left;'>" + (x.documentation != null ? x.documentation : "") + "</td>" ).collect(Collectors.joining("<tr></tr>", "<table style='width:1000; table-layout: fixed;'><tr>\n", "</tr></table>"));
+            return f.signatures.stream().map(x -> "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.simple.substring(x.simple.indexOf(f.name + "("))) + "</td>" + "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.documentation != null ? x.documentation : "") + "</td>" ).collect(Collectors.joining("<tr></tr>", "<table style='width:1000; table-layout: fixed;'><tr>\n", "</tr></table>"));
         }
     }
 
