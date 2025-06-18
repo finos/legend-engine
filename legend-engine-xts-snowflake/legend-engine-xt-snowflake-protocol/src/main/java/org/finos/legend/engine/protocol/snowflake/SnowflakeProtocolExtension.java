@@ -29,6 +29,8 @@ import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.Snowfl
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppContent;
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.metamodel.SnowflakeApp;
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.deployment.SnowflakeM2MUdfArtifact;
+import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.deployment.SnowflakeM2MUdfContent;
 import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.metamodel.SnowflakeM2MUdf;
 import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.metamodel.SnowflakeM2MUdfDeploymentConfiguration;
 
@@ -70,6 +72,15 @@ public class SnowflakeProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(DeploymentConfiguration.class)
                         .withSubtype(SnowflakeM2MUdfDeploymentConfiguration.class, "snowflakeM2MUdfDeploymentConfiguration")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentConfiguration.class)
+                        .withSubtype(org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.deployment.SnowflakeM2MUdfDeploymentConfiguration.class, "snowflakeM2MUdfDeploymentConfig")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorArtifact.class)
+                        .withSubtype(SnowflakeM2MUdfArtifact.class, "snowflakeM2MUdfArtifact")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentContent.class)
+                        .withSubtype(SnowflakeM2MUdfContent.class, "snowflakeM2MUdfDeploymentContent")
                         .build()
         ));
     }
@@ -78,6 +89,6 @@ public class SnowflakeProtocolExtension implements PureProtocolExtension
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
         return Maps.mutable.with(SnowflakeApp.class, "meta::external::function::activator::snowflakeApp::SnowflakeApp",
-                                 SnowflakeM2MUdf.class, "meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdf");
+                SnowflakeM2MUdf.class, "meta::external::function::activator::snowflakeM2MUdf::SnowflakeM2MUdf");
     }
 }

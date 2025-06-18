@@ -2,7 +2,7 @@
   <configuration default="false" name="Server External" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="org.finos.legend.engine.server.Server" />
     <module name="legend-engine-server-http-server" />
-    <option name="PROGRAM_PARAMETERS" value="server $USER_HOME$/deployment/legend-local/engine_config.json" />
+    <shortenClasspath name="ARGS_FILE" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="org.finos.legend.engine.server.*" />
