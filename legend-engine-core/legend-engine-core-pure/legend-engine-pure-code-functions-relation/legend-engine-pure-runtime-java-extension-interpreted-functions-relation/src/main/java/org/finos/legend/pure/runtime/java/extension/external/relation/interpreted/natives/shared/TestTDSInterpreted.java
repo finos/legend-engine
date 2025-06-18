@@ -78,11 +78,6 @@ public class TestTDSInterpreted extends TestTDS
         return new TestTDSInterpreted(columnOrdered, columnType, rows, this.modelRepository, this.processorSupport);
     }
 
-    public Object getValue(String columnName, int rowNum)
-    {
-        return this.getValueAsCoreInstance(columnName, rowNum).getValueForMetaPropertyToOne("values").getName();
-    }
-
     public CoreInstance getValueAsCoreInstance(String columnName, int rowNum)
     {
         Object dataAsObject = dataByColumnName.get(columnName);
@@ -90,21 +85,15 @@ public class TestTDSInterpreted extends TestTDS
         {
             throw new RuntimeException("The column " + columnName + " can't be found in the TDS");
         }
-        boolean[] isNull = (boolean[]) isNullByColumn.get(columnName);
+        boolean[] isNull = isNullByColumn.get(columnName);
         CoreInstance result;
         switch (columnType.get(columnName))
         {
-            case INT:
+            case LONG:
             {
-                int[] data = (int[]) dataAsObject;
-                int value = data[rowNum];
+                long[] data = (long[]) dataAsObject;
+                long value = data[rowNum];
                 result = !isNull[rowNum] ? newIntegerLiteral(modelRepository, value, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Integer, processorSupport), processorSupport), true, processorSupport);
-                break;
-            }
-            case CHAR:
-            {
-                char[] data = (char[]) dataAsObject;
-                result = !isNull[rowNum] ? newStringLiteral(modelRepository, "" + data[rowNum], processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.String, processorSupport), processorSupport), true, processorSupport);
                 break;
             }
             case STRING:
@@ -114,7 +103,12 @@ public class TestTDSInterpreted extends TestTDS
                 result = value != null ? newStringLiteral(modelRepository, value, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.String, processorSupport), processorSupport), true, processorSupport);
                 break;
             }
-            case FLOAT:
+            case BOOLEAN_AS_BYTE:
+            {
+                boolean[] data = (boolean[]) dataAsObject;
+                result = !isNull[rowNum] ? newBooleanLiteral(modelRepository, data[rowNum], processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Float, processorSupport), processorSupport), true, processorSupport);
+                break;
+            }
             case DOUBLE:
             {
                 double[] data = (double[]) dataAsObject;

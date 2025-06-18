@@ -164,7 +164,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function meta::relational::functions::sqlQueryToString::snowflake::translateCreateTableStatementForSnowflake(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[1]
 {
-   if($c.isTempTable->isTrue(),| 'CREATE TEMPORARY TABLE ' + $c.table->tableToString($dbConfig) + '('+ $c.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextDefault($c.type),
+   if($c.isTempTable->isTrue(),| 'CREATE TEMPORARY TABLE ' + $c.table->tableToString($dbConfig) + '('+ $c.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextSnowflake($c.type),
                                                                                                                                           r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]))->joinStrings(',') + ');'
                               ,| $c->meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault($dbConfig))
 
@@ -178,7 +178,29 @@ function meta::relational::functions::sqlQueryToString::snowflake::loadValuesToD
                                  let copyIntoCommand = 'COPY INTO ' + $l.table->tableToString($dbConfig)->toOne() + ' FROM @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE' + $l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + ' file_format = (type= CSV field_optionally_enclosed_by= \'"\');';
                                  let dropStage = 'DROP STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE';
                                  [$createStage, $loadTempTableCommand, $copyIntoCommand, $dropStage];
-                              ,| $l->meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault($dbConfig))
+                              ,| $l->insertValuesToDbTableForSnowflake($dbConfig))
+}
+
+function meta::relational::functions::sqlQueryToString::snowflake::insertValuesToDbTableForSnowflake(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+  if($loadTableSQL.parsedData.values->isEmpty(),
+    |[],
+    |
+      let insertStatement = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+              + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+              +')\n';
+      $loadTableSQL.parsedData.values->map(row | 'select ' + $row.values->convertValuesToCsvForSnowflake($loadTableSQL.columnsToLoad.type))->joinStrings($insertStatement, '\nUNION ALL\n', '\n;');
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::convertValuesToCsvForSnowflake(strs : String[*], types : Any[*]): String[1]
+{
+  range($types->size())->map(x |
+    let literalStr = $strs->at($x)->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($types->at($x));
+    $types->at($x)->match([
+      s:meta::relational::metamodel::datatype::SemiStructured[*] | 'PARSE_JSON(%s)'->format($literalStr),
+      a:Any[1] | $literalStr
+    ]);)->makeString(', ');
 }
 
 function meta::relational::functions::sqlQueryToString::snowflake::translateDropTableStatementForSnowflake(d:DropTableSQL[1], dbConfig: DbConfig[1]) : String[1]
@@ -667,3 +689,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   ]
 }
 
+function meta::relational::functions::sqlQueryToString::snowflake::getColumnTypeSqlTextSnowflake(type: meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+    $type->match([
+       s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARIANT',
+       a : meta::relational::metamodel::datatype::DataType[1] | $a->getColumnTypeSqlTextDefault()
+    ]);
+}

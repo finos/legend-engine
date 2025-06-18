@@ -159,7 +159,6 @@ public class TestRelationalMiddleTierPlanExecutionAuthorizer
 
         JsonNode expectedTree = objectMapper.readTree(expectedResultJSON);
         JsonNode actualTree = objectMapper.readTree(actualResultJSON);
-        System.out.println(actualResultJSON);;
         assertEquals(expectedTree, actualTree);
     }
 

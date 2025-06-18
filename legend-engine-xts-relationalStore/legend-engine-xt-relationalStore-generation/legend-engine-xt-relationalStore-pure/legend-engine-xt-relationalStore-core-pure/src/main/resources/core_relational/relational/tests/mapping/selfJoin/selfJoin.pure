@@ -70,7 +70,7 @@ function <<test.Test>> meta::relational::tests::mapping::selfJoin::testSelfJoinP
                                             ['orgName',
                                              '3rd parent',
                                              '4th parent',
-                                             'dyna operation']), meta::relational::tests::mapping::selfJoin::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions(), debug());
+                                             'dyna operation']), meta::relational::tests::mapping::selfJoin::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
    let tds = $result.values->at(0);
 
    assertEquals('select "root".name as "orgName", "orgtable_3".name as "3rd parent", "orgtable_4".name as "4th parent", "orgtable_4".name is null and "orgtable_3".name is null as "dyna operation" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id) left outer join orgTable as "orgtable_3" on ("orgtable_2".parentId = "orgtable_3".id) left outer join orgTable as "orgtable_4" on ("orgtable_3".parentId = "orgtable_4".id)', $result->sqlRemoveFormatting());

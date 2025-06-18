@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
-import org.finos.legend.engine.plan.execution.stores.relational.test.semiStructured.AbstractTestSemiStructured;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -100,7 +99,7 @@ public class TestExecutionPlanWithWrite extends AlloyTestServer
 
     private String readContent(String resourcePath)
     {
-        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(Objects.requireNonNull(AbstractTestSemiStructured.class.getResourceAsStream(resourcePath)))))
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(Objects.requireNonNull(TestExecutionPlanWithWrite.class.getResourceAsStream(resourcePath)))))
         {
             return buffer.lines().collect(Collectors.joining("\n"));
         }

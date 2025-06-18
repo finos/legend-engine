@@ -856,7 +856,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
   let p0 = $params->at(0)->processOperation($newSgc);
   let p1 = $params->at(1)->cast(@Literal).value->cast(@String);
   assert($p1->matches(extractFromSemiStructuredPathRegex()), 'path specfication must follow regex: ' + extractFromSemiStructuredPathRegex());
-  let p2 = $params->at(2)->cast(@Literal).value->cast(@String);
+  let p2 = $params->at(2)->cast(@Literal).value->cast(@String)->toUpper();
   let supportedTypes = ['BOOLEAN', 'CHAR', 'VARCHAR', 'STRING', 'INTEGER', 'DECIMAL', 'FLOAT', 'DATE', 'DATETIME', 'TIMESTAMP'];
   assertContains($supportedTypes, $p2, $p2 + ' must be one of ' + $supportedTypes->joinStrings(', '));
   let processedParams = $result.toSql.transform->toOne()->eval([$p0, $p1, $p2]);

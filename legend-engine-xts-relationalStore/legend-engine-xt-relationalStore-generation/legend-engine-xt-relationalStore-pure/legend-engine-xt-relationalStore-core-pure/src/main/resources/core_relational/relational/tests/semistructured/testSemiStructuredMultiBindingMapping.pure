@@ -1,0 +1,89 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::semistructured::multiBinding::*;
+import meta::pure::test::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::relational::tests::semistructured::multiBinding::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let csv =
+        'PERSON_SCHEMA\n' +
+        'PERSON_TABLE\n' +
+        'ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,ADDRESS_DETAILS,MANAGERID\n' +
+        '1,Peter,Smith,"{\\"legalName\\": \\"Firm X\\", \\"employeeCount\\": 4, \\"mnc\\": true, \\"estDate\\": \\"2010-03-04\\", \\"lastUpdate\\": \\"2022-01-16T01:00:00\\", \\"entityType\\":\\"Organization\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"address\\": {\\"name\\": \\"A1\\", \\"street\\": \\"S1\\", \\"lines\\": [{\\"details\\": \\"D1\\"}, {\\"details\\": \\"D2\\"}, {\\"details\\": \\"D3\\"}]}}","{\\"name\\": \\"A4\\", \\"street\\": \\"S4\\", \\"lines\\": [{\\"details\\": \\"D7\\"}]}",2\n' +
+        '2,John,Johnson,"{\\"legalName\\": \\"Firm X\\", \\"employeeCount\\": 4, \\"mnc\\": true, \\"estDate\\": \\"2010-03-04\\", \\"lastUpdate\\": \\"2022-01-16T01:00:00\\", \\"entityType\\":\\"Organization\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"address\\": {\\"name\\": \\"A1\\", \\"street\\": \\"S1\\", \\"lines\\": [{\\"details\\": \\"D1\\"}, {\\"details\\": \\"D2\\"}, {\\"details\\": \\"D3\\"}]}}","{\\"name\\": \\"A5\\", \\"street\\": \\"S5\\", \\"lines\\": [{\\"details\\": \\"D8\\"}]}",4\n' +
+        '3,John,Hill,"{\\"legalName\\": \\"Firm X\\", \\"employeeCount\\": 4, \\"mnc\\": true, \\"estDate\\": \\"2010-03-04\\", \\"lastUpdate\\": \\"2022-01-16T01:00:00\\", \\"entityType\\":\\"Organization\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"address\\": {\\"name\\": \\"A1\\", \\"street\\": \\"S1\\", \\"lines\\": [{\\"details\\": \\"D1\\"}, {\\"details\\": \\"D2\\"}, {\\"details\\": \\"D3\\"}]}}","{\\"name\\": \\"A6\\", \\"street\\": \\"S6\\", \\"lines\\": [{\\"details\\": \\"D9\\"}, {\\"details\\": \\"D10\\"}]}",2\n' +
+        '4,Anthony,Allen,"{\\"legalName\\": \\"Firm X\\", \\"employeeCount\\": 4, \\"mnc\\": true, \\"estDate\\": \\"2010-03-04\\", \\"lastUpdate\\": \\"2022-01-16T01:00:00\\", \\"entityType\\":\\"Organization\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"address\\": {\\"name\\": \\"A1\\", \\"street\\": \\"S1\\", \\"lines\\": [{\\"details\\": \\"D1\\"}, {\\"details\\": \\"D2\\"}, {\\"details\\": \\"D3\\"}]}}","{\\"name\\": \\"A7\\", \\"street\\": \\"S7\\", \\"lines\\": [{\\"details\\": \\"D11\\"}]}",\n' +
+        '5,Fabrice,Roberts,"{\\"legalName\\": \\"Firm A\\", \\"employeeCount\\": 1, \\"mnc\\": false, \\"estDate\\": \\"2012-11-13\\", \\"lastUpdate\\": \\"2022-02-14T03:00:00\\", \\"otherNames\\": [\\"O3\\", \\"O4\\"], \\"address\\": {\\"name\\": \\"A2\\", \\"lines\\": [{\\"details\\": \\"D4\\"}, {\\"details\\": \\"D5\\"}]}}","{\\"name\\": \\"A8\\", \\"street\\": \\"S8\\", \\"lines\\": [{\\"details\\": \\"D12\\"}]}",\n' +
+        '6,Oliver,Hill,"{\\"legalName\\": \\"Firm B\\", \\"employeeCount\\": 2, \\"mnc\\": true, \\"estDate\\": \\"2017-7-7\\", \\"lastUpdate\\": \\"2022-9-01T06:00:00\\", \\"entityType\\":\\"Company\\", \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"address\\": {\\"name\\": \\"A3\\", \\"street\\": \\"S2\\", \\"lines\\": [{\\"details\\": \\"D5\\"},{\\"details\\": \\"D6\\"}]}}","{\\"name\\": \\"A9\\", \\"street\\": \\"S9\\"}",7\n' +
+        '7,David,Harris,"{\\"legalName\\": \\"Firm B\\", \\"employeeCount\\": 2, \\"mnc\\": true, \\"estDate\\": \\"2017-7-7\\", \\"lastUpdate\\": \\"2022-9-01T06:00:00\\", \\"entityType\\":\\"Company\\", \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"address\\": {\\"name\\": \\"A3\\", \\"lines\\": [{\\"details\\": \\"D5\\"},{\\"details\\": \\"D6\\"}]}}","{\\"name\\": \\"A10\\", \\"street\\": \\"S10\\", \\"lines\\": [{\\"details\\": \\"D13\\"}]}",\n'
+
+        ;
+
+  let model = '/core_relational/relational/tests/semistructured/model/semiStructuredMultiBindingMapping.legend';
+
+  let m = 'multiBinding::mapping::H2Mapping';
+  let s = 'multiBinding::store::H2DB';
+
+   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::multiBinding::testSemiStructuredPropertyAccessFromSingleBindingMapping(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'multiBinding::semiStructuredPropertyAccessFromSingleBindingMapping__TabularDataSet_1_',
+    'First Name,Address Name\n' +
+    'Peter,A4\n' +
+    'John,A5\n' +
+    'John,A6\n' +
+    'Anthony,A7\n' +
+    'Fabrice,A8\n' +
+    'Oliver,A9\n' +
+    'David,A10\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::multiBinding::testSemiStructuredPropertyAccessFromMultipleBindingMapping(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'multiBinding::semiStructuredPropertyAccessFromMultipleBindingMapping__TabularDataSet_1_',
+    'First Name,Firm Legal Name,Address Name\n' +
+    'Peter,Firm X,A4\n' +
+    'John,Firm X,A5\n' +
+    'John,Firm X,A6\n' +
+    'Anthony,Firm X,A7\n' +
+    'Fabrice,Firm A,A8\n' +
+    'Oliver,Firm B,A9\n' +
+    'David,Firm B,A10\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::multiBinding::testSemiStructuredRelOpWithJoinPropertyAccessFromMultipleBindingMapping(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'multiBinding::semiStructuredRelOpWithJoinPropertyAccessFromMultipleBindingMapping__TabularDataSet_1_',
+    'First Name,Firm Legal Name,Address Name,Manager Firm Legal Name\n' +
+    'Peter,Firm X,A4,Firm X\n' +
+    'John,Firm X,A5,Firm X\n' +
+    'John,Firm X,A6,Firm X\n' +
+    'Anthony,Firm X,A7,\n' +
+    'Fabrice,Firm A,A8,\n' +
+    'Oliver,Firm B,A9,Firm B\n' +
+    'David,Firm B,A10,\n'
+  );
+}

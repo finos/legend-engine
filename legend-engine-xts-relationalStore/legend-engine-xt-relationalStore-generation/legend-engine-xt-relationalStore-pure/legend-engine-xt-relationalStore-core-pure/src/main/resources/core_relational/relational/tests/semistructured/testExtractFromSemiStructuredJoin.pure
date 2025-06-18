@@ -1,0 +1,67 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::semistructured::join::*;
+import meta::pure::test::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::relational::tests::semistructured::join::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let t1 = 
+        'PERSON_SCHEMA\n' +
+        'PERSON_TABLE\n' +
+        'ID,FIRSTNAME,LASTNAME,FIRM\n' +
+        '1,Peter,Smith,{\\"ID\\": 1}\n' +
+        '2,John,Johnson,{\\"ID\\": 1}\n' +
+        '3,John,Hill,{\\"ID\\": 1}\n' +
+        '4,Anthony,Allen,{\\"ID\\": 1}\n' +
+        '5,Fabrice,Roberts,{\\"ID\\": 2}\n' +
+        '6,Oliver,Hill,{\\"ID\\": 3}\n' +
+        '7,David,Harris,{\\"ID\\": 3}\n';
+
+  let t2 = 
+        'FIRM_SCHEMA\n' +
+        'FIRM_TABLE\n' +
+        'FIRM_DETAILS\n' +
+        '"{\\"ID\\": 1, \\"legalName\\": \\"Firm X\\", \\"employeeCount\\": 4, \\"mnc\\": true, \\"dates\\": {\\"estDate\\": \\"2010-03-04\\", \\"lastUpdate\\": \\"2022-01-16T01:00:00\\"}, \\"entity\\": {\\"entityType\\":\\"O\\"}, \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"address\\": {\\"name\\": \\"A1\\", \\"street\\": \\"S1\\", \\"lines\\": [{\\"details\\": \\"D1\\"}, {\\"details\\": \\"D2\\"}, {\\"details\\": \\"D3\\"}]}}"\n' +
+        '"{\\"ID\\": 2, \\"legalName\\": \\"Firm A\\", \\"employeeCount\\": 1, \\"mnc\\": false, \\"dates\\": {\\"estDate\\": \\"2012-11-13\\", \\"lastUpdate\\": \\"2022-02-14T03:00:00\\"}, \\"entity\\": {\\"entityType\\":\\"O\\"}, \\"otherNames\\": [\\"O3\\", \\"O4\\"], \\"address\\": {\\"name\\": \\"A2\\", \\"lines\\": [{\\"details\\": \\"D4\\"}, {\\"details\\": \\"D5\\"}]}}"\n' +
+        '"{\\"ID\\": 3, \\"legalName\\": \\"Firm B\\", \\"employeeCount\\": 2, \\"mnc\\": true, \\"dates\\": {\\"estDate\\": \\"2017-7-7\\", \\"lastUpdate\\": \\"2022-9-01T06:00:00\\"}, \\"entity\\": {\\"entityType\\":\\"C\\"}, \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"address\\": {\\"name\\": \\"A3\\", \\"lines\\": [{\\"details\\": \\"D5\\"},{\\"details\\": \\"D6\\"}]}}"\n';
+
+  let csv = [$t1, $t2];
+
+  let model = '/core_relational/relational/tests/semistructured/model/extractFromSemiStructuredJoin.legend';
+
+  let m = 'join::mapping::H2Mapping';
+  let s = 'join::store::H2DB';
+
+   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::join::testJoinOnSemiStructuredProperty(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'join::testJoinOnSemiStructuredProperty__TabularDataSet_1_',
+    'First Name,Last Name,Firm/Legal Name\n' +
+    'Peter,Smith,Firm X\n' +
+    'John,Johnson,Firm X\n' +
+    'John,Hill,Firm X\n' +
+    'Anthony,Allen,Firm X\n' +
+    'Fabrice,Roberts,Firm A\n' +
+    'Oliver,Hill,Firm B\n' +
+    'David,Harris,Firm B\n'
+  );
+}

@@ -38,7 +38,6 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::stri
     
     let res =  $f->eval($expr);
 
-    $res->toString()->println();
     assertEquals($res->columns()->size(), 3);
     assertEquals($res->columns()->at(2).name, 'uid');
     assertEquals([true, true], $res->map(r| $r.uid->isNotEmpty()));

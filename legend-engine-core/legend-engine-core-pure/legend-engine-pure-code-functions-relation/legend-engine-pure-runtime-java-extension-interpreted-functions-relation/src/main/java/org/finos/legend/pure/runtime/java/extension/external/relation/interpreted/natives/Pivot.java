@@ -124,9 +124,9 @@ public class Pivot extends Shared
                     String type;
                     switch (c.getTwo())
                     {
-                        case FLOAT:
+                        case BOOLEAN_AS_BYTE:
                         {
-                            type = M3Paths.Float;
+                            type = M3Paths.Boolean;
                             break;
                         }
                         case DOUBLE:
@@ -134,12 +134,11 @@ public class Pivot extends Shared
                             type = M3Paths.Decimal;
                             break;
                         }
-                        case INT:
+                        case LONG:
                         {
                             type = M3Paths.Integer;
                             break;
                         }
-                        case CHAR:
                         case STRING:
                         {
                             type = M3Paths.String;
@@ -180,16 +179,16 @@ public class Pivot extends Shared
         }
         if (type == _Package.getByUserPath("Integer", processorSupport))
         {
-            int[] finalRes = new int[size];
+            long[] finalRes = new long[size];
             performAggregation(sorted, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, size, parameters, mapFVarContext, reduceFVarContext);
-            resType = DataType.INT;
+            resType = DataType.LONG;
             _finalRes = finalRes;
         }
         if (type == _Package.getByUserPath("Float", processorSupport))
         {
             double[] finalRes = new double[size];
             performAggregation(sorted, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, size, parameters, mapFVarContext, reduceFVarContext);
-            resType = DataType.FLOAT;
+            resType = DataType.DOUBLE;
             _finalRes = finalRes;
         }
         return tds == null ? sorted.getOne()._distinct(sorted.getTwo()).addColumn(name, resType, _finalRes) : tds.addColumn(name, resType, _finalRes);
