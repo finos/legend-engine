@@ -329,3 +329,4 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   // pct databricks does not support constraint on tables until we get unity catalog enabled...
   translateCreateTableStatementDefault(^$createTableSQL(applyConstraints = false), $dbConfig);
 }
+
