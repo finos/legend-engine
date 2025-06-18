@@ -17,6 +17,7 @@ package org.finos.legend.engine.server.core.pct;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
@@ -100,6 +101,7 @@ public class PCT_to_SimpleHTML
                                 MutableList<String> row = Lists.mutable.empty();
                                 row.add("<div style='color:#AAAAAA'>" + d.reportScope.module + "</div>");
                                 row.add(printFuncName(d));
+                                row.add(printFuncSignatures(d));
                                 if (!d.functionDefinition.signatures.isEmpty() && d.functionDefinition.signatures.get(0).platformOnly && adapterQualifiers.isEmpty())
                                 {
                                     row.add("          <div style='color:#00C72B' class='hover-text'>" + d.functionDefinition.testCount + "<div class='tooltip-text' id='top'>Executed outside of PCT</div></div>");
@@ -123,13 +125,14 @@ public class PCT_to_SimpleHTML
                 "<BR/><BR/>\n" +
                 "    <table style=\"border-spacing:20px 8px;width:900;text-align: center;max-height:70vh;overflow-y:auto\">\n" +
                 "        <tr>\n" +
-                "           <TH colspan='3' style='width:100'></TH>\n" +
+                "           <TH colspan='5' style='width:100'></TH>\n" +
                 addGroups(orderedAdapters) +
                 "        </tr>\n" +
                 "        <tr>\n" +
                 "           <th style='width:100'></th>\n" +
                 "           <th style='width:10'>Group</th>\n" +
                 "           <th style='width:200'>Function</th>\n" +
+                "           <th style='width:200'>Signatures & Documentation</th>\n" +
                 addHeaders(orderedAdapters) + "\n" +
                 "        </tr>\n" +
                 root.getChildren().collectWithIndex((n, i) -> addTableRow(n, "", String.valueOf(i), orderedAdapters)).makeString("\n") +
@@ -140,6 +143,7 @@ public class PCT_to_SimpleHTML
     private static void addSuccessfulTestRate(MutableList<AdapterKey> orderedAdapters, MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter, TreeNode root)
     {
         MutableList<String> row = Lists.mutable.empty();
+        row.add("<div style='color:#AAAAAA'></div>");
         row.add("<div style='color:#AAAAAA'></div>");
         row.add("<div style='color:#AAAAAA'>" + "Successful Test Rate" + "</div>");
         row.addAll(orderedAdapters.collect(adapterKey ->
@@ -239,6 +243,20 @@ public class PCT_to_SimpleHTML
         String color = isPlatformOnly(f) ? "color:#DDDDDD;" : f.name == null ? "color:#79d6db" : "color:#000000;";
         String character = getGrammarCharacter(f);
         return (character != null ? "<span style='color:#34eb92'>" + character + "&nbsp;&nbsp;</span>" : "") + "<a href='" + moduleURLs.get(module) + f.sourceId + "' style='" + color + "'>" + (f.name == null ? "composition-tests" : f.name) + "</a>";
+    }
+
+    private static String printFuncSignatures(FunctionDocumentation functionDocumentation)
+    {
+        FunctionDefinition f = functionDocumentation.functionDefinition;
+
+        if (f.signatures.isEmpty())
+        {
+            return "";
+        }
+        else
+        {
+            return f.signatures.stream().map(x -> "<td style='text-align: left;'>" + x.simple.substring(x.simple.indexOf(f.name + "(")) + "</td>" + "<td style='text-align: left;'>" + (x.documentation != null ? x.documentation : "") + "</td>" ).collect(Collectors.joining("<tr></tr>", "<table style='width:1000; table-layout: fixed;'><tr>\n", "</tr></table>"));
+        }
     }
 
     private static String addGroups(MutableList<AdapterKey> adapterKeys)
