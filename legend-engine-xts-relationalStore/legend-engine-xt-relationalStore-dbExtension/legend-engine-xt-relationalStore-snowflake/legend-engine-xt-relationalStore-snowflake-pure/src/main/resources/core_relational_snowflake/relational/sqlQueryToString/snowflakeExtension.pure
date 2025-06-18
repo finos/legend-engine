@@ -263,7 +263,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='split_part(%s, %s, %s)')),
     dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='TIME_SLICE(%s)', transform={p:String[3]|$p->at(0) + ', ' + constructInterval($p->at(2), $p->at(1))})),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
-    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='to_decimal(%s)')),
+    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='%s', transform={p:String[1]|$p->transformToDecimalSnowflake()})),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='to_double(%s)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s' , transform={p:String[2] | $p->transformToTimestampSnowflake()})),
@@ -561,7 +561,19 @@ function meta::relational::functions::sqlQueryToString::snowflake::constructInte
    $i + ', ' + $interval;
 }
 
-
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformToDecimalSnowflake(param:String[1]):String[1]
+{
+  // https://docs.snowflake.com/en/sql-reference/functions/to_decimal
+  let parts = $param->split('.');
+  if ($parts->at(0)->isDigit(),
+      | if ($parts->size() == 1,
+        | format('to_decimal(%s)', [$param]);,
+        | let scale = max(0, min(37 - $parts->at(0)->length(), $parts->at(1)->length()));
+          format('to_decimal(%s,%s,%s)', [$param,38,$scale]);
+      ),
+      | format('to_decimal(%s, 38, 19)', [$param]);
+  );
+}
 
 
 
