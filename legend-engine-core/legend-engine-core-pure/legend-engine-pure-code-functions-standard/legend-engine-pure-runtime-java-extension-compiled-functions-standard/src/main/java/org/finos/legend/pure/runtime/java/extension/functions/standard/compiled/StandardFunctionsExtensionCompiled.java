@@ -24,6 +24,13 @@ import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.CosH;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.SinH;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.math.trigonometry.TanH;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.tbd.BitAnd;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.tbd.BitNot;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.tbd.BitOr;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.tbd.BitShiftLeft;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.tbd.BitShiftRight;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.tbd.BitXor;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.string.generation.Guid;
 
 import java.util.List;
 
@@ -46,7 +53,18 @@ public class StandardFunctionsExtensionCompiled extends AbstractCompiledExtensio
             // Math
             new CosH(),
             new SinH(),
-            new TanH()
+            new TanH(),
+
+            // Bitwise
+            new BitAnd(),
+            new BitNot(),
+            new BitShiftLeft(),
+            new BitShiftRight(),
+            new BitOr(),
+            new BitXor(),
+
+            // String
+            new Guid()
         );
     }
 

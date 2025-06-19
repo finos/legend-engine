@@ -1,0 +1,986 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::extension::*;
+import meta::relational::functions::pureToSqlQuery::union::*;
+import meta::external::query::sql::metamodel::extension::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlPlanning::*;
+import meta::pure::extension::*;
+import meta::relational::runtime::*;
+import meta::external::query::sql::metamodel::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::toPostgresModel::*;
+
+Class meta::relational::functions::toPostgresModel::ModelConversionState
+{
+  isRootSelect: Boolean[1];
+  processingSelect: Boolean[1];
+  processingFilter: Boolean[1];
+  extensions: Extension[*];
+  dynaFunctionConverterMap: Map<String, Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>>[1];
+}
+
+function meta::relational::functions::toPostgresModel::newState():ModelConversionState[1]
+{
+  ^ModelConversionState(isRootSelect = true, processingSelect = false, processingFilter = false, extensions = [], dynaFunctionConverterMap = getDynaFunctionConverterMap());
+}
+
+function meta::relational::functions::toPostgresModel::newState(extensions: Extension[*]):ModelConversionState[1]
+{
+  ^ModelConversionState(isRootSelect = true, processingSelect = false, processingFilter = false, extensions = $extensions, dynaFunctionConverterMap = getDynaFunctionConverterMap());
+}
+
+function meta::relational::functions::toPostgresModel::convertSqlQuery(select:SelectSQLQuery[1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Query[1]
+{
+  convertSqlQuery($select, $state, [])
+}
+
+function meta::relational::functions::toPostgresModel::convertSqlQuery(select:SelectSQLQuery[1], state:ModelConversionState[1], extensions: Extension[*]):meta::external::query::sql::metamodel::Query[1]
+{
+  let withQueries = $select.commonTableExpressions->map(e| ^WithQuery(name = $e.name->toIdentifier(), query = $e.sqlQuery->convertSqlQuery(newState($extensions))));
+  let with = if($withQueries->isNotEmpty(), | ^With(withQueries = $withQueries), | []);
+  ^Query(with = $with, queryBody = $select->convertElement($state)->cast(@QuerySpecification));
+}
+
+function meta::relational::functions::toPostgresModel::convertElement(r:RelationalOperationElement[1], state:ModelConversionState[1]):Node[1]
+{
+  $r->match(
+    $state.extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).sqlDialectTranslation_nodeConverters)->map(f | $f->eval($state))->concatenate(
+      [
+        d:DynaFunction[1]|                    convertDynaFunction($d, $state);,
+        v:VarPlaceHolder[1]|                  ^InClauseVariablePlaceholder(name = $v.name);,
+        v:VarSetPlaceHolder[1]|               ^TablePlaceholder(name = $v.varName);,
+        v:VarCrossSetPlaceHolder[1]|          ^TablePlaceholder(name = $v.varName);,
+        s:ViewSelectSQLQuery[1]|              $s.selectSQLQuery->convertElement($state);,
+        t:TableAliasColumn[1]|                convertColumn([convertTableAliasName($t.alias), $t.column.name], $state);,
+        t:TableAliasColumnName[1]|            convertColumn([convertTableAliasName($t.alias), $t.columnName->toOne()], $state);,
+        c:ColumnName[1]|                      convertColumn($c.name, $state);,
+        c:Column[1]|                          convertColumn($c.name, $state);,
+        r:RootJoinTreeNode[1]|                convertJoinTreeNode($r, $state);,
+        a:Alias[1]|                           convertAlias($a, $state);,
+        w:WindowColumn[1]|                    convertWindowColumn($w, $state);,
+        s:SelectSQLQuery[1]|                  convertSelectSQLQuery($s, $state);,
+        tf:TabularFunction[1]|                ^TableFunction(functionCall = functionCall($tf.schema.name->concatenate($tf.name), []));,
+        l:LiteralList[1]|                     ^InListExpression(values = $l.values->map(v|$v->convertElementToExpression($state)));,
+        f:FreeMarkerOperationHolder[1]|       convertFreeMarkerOperationHolder($f, $state);,
+        t:TableFunctionParamPlaceHolder[1] |  fail('SQL Dialect translation for TableFunctionParamPlaceHolder not supported yet!'); literal(1);,
+        js:meta::relational::metamodel::operation::JoinStrings[1]|                    convertJoinStrings($js, $state);,
+        u:meta::relational::metamodel::relation::UnionAll[1]|                         convertUnion($u, $state, false);,
+        u:meta::relational::metamodel::relation::Union[1]|                            convertUnion($u, $state, true);,
+        t:meta::relational::metamodel::relation::Table[1]|                            convertTable($t, $state);,
+        l:meta::relational::metamodel::Literal[1]|                                    convertLiteral($l, $state);,
+        s:meta::relational::metamodel::relation::SemiStructuredArrayFlatten[1]|       convertSemiStructuredArrayFlatten($s, $state);,
+        s:meta::relational::metamodel::relation::SemiStructuredArrayFlattenOutput[1]| convertSemiStructuredArrayFlattenOutput($s, $state);,
+        s:meta::relational::metamodel::operation::SemiStructuredObjectNavigation[1]|  convertSemiStructuredObjectNavigation($s, $state);,
+        c:meta::relational::metamodel::relation::CommonTableExpressionReference[1]|   ^meta::external::query::sql::metamodel::Table(name = qualifiedName($c.name));
+      ]
+    )->toOneMany()
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertSelectSQLQuery(s:SelectSQLQuery[1], state:ModelConversionState[1]):Node[1]
+{
+  let newState = ^$state(isRootSelect = false);
+
+  let from = if($s.data->isNotEmpty(), 
+    | let from = $s.data->toOne()->convertElement($newState)->cast(@meta::external::query::sql::metamodel::Relation);
+      
+      if($s.pivot->isNotEmpty() && $from->isNotEmpty(),
+        | ^PivotedRelation(
+            relation = $from->toOne(),
+            pivotColumns = $s.pivot.pivotColumns->map(p|$p->convertElementToExpression($newState)),
+            aggColumns = $s.pivot.aggColumns->map(p|$p->convertElementToExpression($newState))
+          ),
+        | $from
+      );,
+    | []
+  );
+  
+  let query = ^QuerySpecification(
+    select  = ^Select(
+                distinct = if($s.distinct->isNotEmpty(), |$s.distinct->toOne(), |false), 
+                selectItems = if($s.columns->isEmpty(), | ^AllColumns(), | $s.columns->map(c|$c->convertElement(^$newState(processingSelect = true))->match([s:SelectItem[1] | $s, e: meta::external::query::sql::metamodel::Expression[1] | ^SingleColumn(expression = $e)])))
+              ),
+    from    = $from,
+    where   = $s.filteringOperation->convertOptionalElementToExpression(^$newState(processingFilter = true)),
+    groupBy = $s.groupBy->map(g|$g->convertElementToExpression($newState)),
+    orderBy = convertOrderBy($s.orderBy, $newState),
+    having  = $s.havingOperation->convertOptionalElementToExpression($newState),
+    limit   = convertLimit($s, $newState),
+    offset  = $s.fromRow->convertOptionalElementToExpression($newState)
+  );
+
+  if($state.isRootSelect,
+    | $query,
+    | ^TableSubquery(query = ^Query(queryBody = $query))
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertLimit(s:SelectSQLQuery[*], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Expression[0..1]
+{
+  let fromRow = $s.fromRow->convertOptionalElementToExpression($state);
+  let toRow = $s.toRow->convertOptionalElementToExpression($state);
+  if($toRow->isEmpty(),
+    | [],
+    | if($fromRow->isEmpty(),
+        | $toRow->toOne(),
+        | if($fromRow->toOne()->instanceOf(IntegerLiteral) && $toRow->toOne()->instanceOf(IntegerLiteral),
+          | ^IntegerLiteral(value = $toRow->toOne()->cast(@IntegerLiteral).value - $fromRow->toOne()->cast(@IntegerLiteral).value),
+          | ^ArithmeticExpression(type = ArithmeticType.SUBTRACT, left = $toRow->toOne(), right = $fromRow->toOne())
+        )
+      )
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertOrderBy(orderBy:OrderBy[*], state:ModelConversionState[1]):SortItem[*]
+{
+  $orderBy->map(o|^SortItem(sortKey = $o.column->convertElementToExpression($state),
+                            ordering = $o.direction->convertSortDirection(),
+                            nullOrdering = SortItemNullOrdering.UNDEFINED
+                          ));
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertSortDirection(s:meta::relational::metamodel::SortDirection[0..1]):SortItemOrdering[1]
+{
+  let sourceSortDirection = $s->defaultIfEmpty(meta::relational::metamodel::SortDirection.ASC)->toOne();
+  let sortOrderingMap = [
+    pair(meta::relational::metamodel::SortDirection.ASC, SortItemOrdering.ASCENDING),
+    pair(meta::relational::metamodel::SortDirection.DESC, SortItemOrdering.DESCENDING)
+  ]->newMap();
+  $sortOrderingMap->get($sourceSortDirection)->toOne();
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertColumn(nameParts:String[*], state:ModelConversionState[1]):Node[1]
+{
+  let reference = ^QualifiedNameReference(name = qualifiedName($nameParts));
+  if($state.processingSelect, | ^SingleColumn(expression = $reference), | $reference);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertJoinTreeNode(r:RelationalTreeNode[1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Relation[1]
+{
+  let orderedNodes = $r->preOrderTraversal();
+  let relations = $orderedNodes->map(n|$n.alias->convertElement($state))->cast(@meta::external::query::sql::metamodel::Relation);
+  let zipped = $orderedNodes->tail()->cast(@JoinTreeNode)->zip($relations->tail());
+  $zipped->fold(
+    {z,a| 
+      let kvs = [
+        ^KeyValue(key = 'left', value = $a), 
+        ^KeyValue(key = 'right', value = $z.second), 
+        ^KeyValue(key = 'type', value = $z.first.joinType->convertJoinType()), 
+        ^KeyValue(key = 'criteria', value = ^JoinOn(expression = $z.first.join.operation->convertElementToExpression($state)))
+      ];
+
+      if(
+        [
+          pair(|$z.first.join->instanceOf(meta::relational::metamodel::join::AsOfJoin), | dynamicNew(meta::external::query::sql::metamodel::extension::AsOfJoin, $kvs)),
+          pair(|$z.first.lateral->isTrue(), | dynamicNew(meta::external::query::sql::metamodel::extension::LateralJoin, $kvs))
+        ],
+        | dynamicNew(meta::external::query::sql::metamodel::Join, $kvs)
+      )->cast(@meta::external::query::sql::metamodel::Join);
+    }, 
+    $relations->first()->toOne()
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::preOrderTraversal(r:RelationalTreeNode[1]):RelationalTreeNode[*]
+{
+  $r->concatenate($r->children()->map(c|$c->preOrderTraversal()))
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertJoinType(joinType:meta::relational::metamodel::join::JoinType[0..1]):meta::external::query::sql::metamodel::JoinType[1]
+{
+  let sourceJoinType = $joinType->defaultIfEmpty(meta::relational::metamodel::join::JoinType.LEFT_OUTER)->toOne();
+  [
+    pair(meta::relational::metamodel::join::JoinType.LEFT_OUTER, meta::external::query::sql::metamodel::JoinType.LEFT),
+    pair(meta::relational::metamodel::join::JoinType.RIGHT_OUTER, meta::external::query::sql::metamodel::JoinType.RIGHT),
+    pair(meta::relational::metamodel::join::JoinType.INNER, meta::external::query::sql::metamodel::JoinType.INNER),
+    pair(meta::relational::metamodel::join::JoinType.FULL_OUTER, meta::external::query::sql::metamodel::JoinType.FULL)
+  ]->newMap()->get($sourceJoinType)->toOne();
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertDynaFunction(d:DynaFunction[1], state:ModelConversionState[1]):Node[1]
+{
+  if(
+    [
+      pair(| $d.name == 'exists',                 | ^ExistsPredicate(query = $d.parameters->toOne()->convertElement($state)->cast(@TableSubquery))),
+      pair(| $d.name == 'not',                    | convertNot($d, $state)),
+      pair(| isFunctionWithDistinct($d, $state),  | convertFunctionWithDistinct($d, $state)),
+      pair(| isEqualsFromFilter($d, $state),      | convertEqualFromFilter($d, $state)),
+      pair(| $d->instanceOf(UnionOrJoin),         | convertDynaFunction($d.parameters->reverse()->orFilters($state.extensions)->toOne()->cast(@DynaFunction), $state)),
+      pair(| $d.name == 'extractFromSemiStructured', | convertExtractFromSemiStructured($d, $state))
+    ],
+    | 
+      let params = $d.parameters->map(p|$p->convertElementToExpression($state));
+      $state.dynaFunctionConverterMap->get($d.name)->toOne('Couldn\'t find DynaFunction to Postgres model translation for ' + $d.name + '().')->eval($params);
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::getDynaFunctionConverterMap():Map<String, Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>>[1]
+{
+  let dynaFunctionConverters = [
+    pair('and',                       binaryExpression(LogicalBinaryType.AND)),
+    pair('or',                        binaryExpression(LogicalBinaryType.OR)),
+    pair('equal',                     comparisonExpression(ComparisonOperator.EQUAL)),
+    pair('notEqual',                  comparisonExpression(ComparisonOperator.NOT_EQUAL)),
+    pair('notEqualAnsi',              comparisonExpression(ComparisonOperator.NOT_EQUAL)),
+    pair('lessThan',                  comparisonExpression(ComparisonOperator.LESS_THAN)),
+    pair('lessThanEqual',             comparisonExpression(ComparisonOperator.LESS_THAN_OR_EQUAL)),
+    pair('greaterThan',               comparisonExpression(ComparisonOperator.GREATER_THAN)),
+    pair('greaterThanEqual',          comparisonExpression(ComparisonOperator.GREATER_THAN_OR_EQUAL)),
+    pair('bitAnd',                    bitwiseBinaryExpression(BitwiseBinaryOperator.AND)),
+    pair('bitOr',                     bitwiseBinaryExpression(BitwiseBinaryOperator.OR)),
+    pair('bitXor',                    bitwiseBinaryExpression(BitwiseBinaryOperator.XOR)),
+    pair('bitNot',                    {p:meta::external::query::sql::metamodel::Expression[*]| ^BitwiseNotExpression(expression = $p->at(0))}),
+    pair('bitShiftLeft',              {p:meta::external::query::sql::metamodel::Expression[*]| ^BitwiseShiftExpression(value = $p->at(0), shift = $p->at(1), direction = BitwiseShiftDirection.LEFT)}),
+    pair('bitShiftRight',             {p:meta::external::query::sql::metamodel::Expression[*]| ^BitwiseShiftExpression(value = $p->at(0), shift = $p->at(1), direction = BitwiseShiftDirection.RIGHT)}),
+    pair('abs',                       functionCall('abs')),
+    pair('mod',                       functionCall('mod')),
+    pair('cbrt',                      functionCall('cbrt')),
+    pair('ceiling',                   {p:meta::external::query::sql::metamodel::Expression[*]| castExpression(functionCall('ceiling', $p), 'bigint')}),
+    pair('floor',                     {p:meta::external::query::sql::metamodel::Expression[*]| castExpression(functionCall('floor', $p), 'bigint')}),
+    pair('sign',                      functionCall('sign')),
+    pair('exp',                       functionCall('exp')),
+    pair('log',                       functionCall('ln')),
+    pair('sqrt',                      functionCall('sqrt')),
+    pair('acos',                      functionCall('acos')),
+    pair('asin',                      functionCall('asin')),
+    pair('atan',                      functionCall('atan')),
+    pair('atan2',                     functionCall('atan2')),
+    pair('cos',                       functionCall('cos')),
+    pair('cot',                       functionCall('cot')),
+    pair('sin',                       functionCall('sin')),
+    pair('tan',                       functionCall('tan')),
+    pair('denseRank',                 functionCall('dense_rank')),
+    pair('left',                      functionCall('left')),
+    pair('right',                     functionCall('right')),
+    pair('lpad',                      functionCall('lpad')),
+    pair('rpad',                      functionCall('rpad')),
+    pair('ltrim',                     functionCall('ltrim')),
+    pair('rtrim',                     functionCall('rtrim')),
+    pair('trim',                      {p:meta::external::query::sql::metamodel::Expression[*]| ^Trim(value = $p->at(0), characters = if($p->size() == 1, |[], |$p->at(1)), mode = TrimMode.BOTH)}),
+    pair('ascii',                     functionCall('ascii')),
+    pair('coalesce',                  functionCall('coalesce')),
+    pair('concat',                    functionCall('concat')),
+    pair('joinStrings',               functionCall('string_agg')),
+    pair('now',                       functionCall('now')),
+    pair('log10',                     functionCall('log10')),
+    pair('firstDayOfMonth',           dateTruncCall('month', true)),
+    pair('firstDayOfQuarter',         dateTruncCall('quarter', true)),
+    pair('firstDayOfThisMonth',       {p:meta::external::query::sql::metamodel::Expression[*]| dateTruncCall('month', true, functionCall('now', []))}),
+    pair('firstDayOfThisQuarter',     {p:meta::external::query::sql::metamodel::Expression[*]| dateTruncCall('quarter', true, functionCall('now', []))}),
+    pair('firstDayOfThisYear',        {p:meta::external::query::sql::metamodel::Expression[*]| dateTruncCall('year', true, functionCall('now', []))}),
+    pair('firstDayOfWeek',            dateTruncCall('week', true)),
+    pair('firstDayOfYear',            dateTruncCall('year', true)),
+    pair('firstHourOfDay',            dateTruncCall('day', true)),
+    pair('firstMillisecondOfSecond',  dateTruncCall('second', false)),
+    pair('firstMinuteOfHour',         dateTruncCall('hour', false)),
+    pair('firstSecondOfMinute',       dateTruncCall('minute', false)),
+    pair('in',                        {p:meta::external::query::sql::metamodel::Expression[*]| ^InPredicate(value = $p->at(0), valueList = $p->at(1)->match([i:InListExpression[1]| $i, s:SubqueryExpression[1]|$s, a:meta::external::query::sql::metamodel::Expression[*]| ^InListExpression(values = $a)]))}),
+    pair('isNull',                    {p:meta::external::query::sql::metamodel::Expression[*]| ^IsNullPredicate(value = $p->toOne())}),
+    pair('isNotNull',                 {p:meta::external::query::sql::metamodel::Expression[*]| ^IsNotNullPredicate(value = $p->toOne())}),
+    pair('isEmpty',                   {p:meta::external::query::sql::metamodel::Expression[*]| ^IsNullPredicate(value = $p->toOne())}),
+    pair('isNotEmpty',                {p:meta::external::query::sql::metamodel::Expression[*]| ^IsNotNullPredicate(value = $p->toOne())}),
+    pair('isNumeric',                 {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('regexp_like', $p->concatenate(literal('[-]?[0-9]+(\\.[0-9]+)?')))}),
+    pair('isAlphaNumeric',            {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('regexp_like', $p->concatenate(literal('[a-zA-Z0-9]*')))}),
+    pair('startsWith',                functionCall('startswith')),
+    pair('endsWith',                  functionCall('endswith')),
+    pair('contains',                  functionCall('contains')),
+    pair('matches',                   functionCall('regexp_like')),
+    pair('sqlFalse',                  {p:meta::external::query::sql::metamodel::Expression[*]| literal(false)}),
+    pair('sqlTrue',                   {p:meta::external::query::sql::metamodel::Expression[*]| literal(true)}),
+    pair('convertDate',               {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_date', if($p->size() == 1, | $p->concatenate(literal('YYYY-MM-DD')), | $p))}),
+    pair('convertDateTime',           {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_timestamp', if($p->size() == 1, | $p->concatenate(literal('YYYY-MM-DD HH24:MI:SS')), | $p))}),
+    pair('group',                     {p:meta::external::query::sql::metamodel::Expression[*]| $p->toOne()}),
+    pair('repeatString',              functionCall('repeat')),
+    pair('replace',                   functionCall('replace')),
+    pair('indexOf',                   functionCall('strpos')),
+    pair('position',                  {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('strpos', $p->reverse())}),
+    pair('datePart',                  functionCall('date')),
+    pair('date',                      {p:meta::external::query::sql::metamodel::Expression[*]| makeDateConverter($p)}),
+    pair('year',                      datePartCall('year')),
+    pair('month',                     datePartCall('month')),
+    pair('monthNumber',               datePartCall('month')),
+    pair('quarter',                   datePartCall('quarter')),
+    pair('quarterNumber',             datePartCall('quarter')),
+    pair('dayOfMonth',                datePartCall('day')),
+    pair('dayOfYear',                 datePartCall('doy')),
+    pair('dayOfWeekNumber',           {p:meta::external::query::sql::metamodel::Expression[*]| dayOfWeekNumber($p)}),
+    pair('weekOfYear',                datePartCall('week')),    
+    pair('second',                    datePartCall('second')),
+    pair('minute',                    datePartCall('minute')),
+    pair('hour',                      datePartCall('hour')),
+    pair('dateDiff',                  {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('datediff', [$p->at(2)->cast(@StringLiteral)->convertDurationUnit(), $p->at(0), $p->at(1)])}),
+    pair('castBoolean',               castExpression('boolean')),
+    pair('convertVarchar128',         castExpression('varchar(128)')),
+    pair('parseFloat',                castExpression('float')),
+    pair('parseDecimal',              castExpression('decimal(5,2)')),
+    pair('parseInteger',              castExpression('integer')),
+    pair('parseBoolean',              castExpression('boolean')),
+    pair('toString',                  castExpression('varchar')),
+    pair('toFloat',                   castExpression('float')),
+    pair('toDecimal',                 castExpression('decimal')),
+    pair('char',                      functionCall('chr')),
+    pair('md5',                       functionCall('md5')),
+    pair('today',                     {p:meta::external::query::sql::metamodel::Expression[*]| castExpression(functionCall('now', $p), 'date')}),
+    pair('round',                     {p:meta::external::query::sql::metamodel::Expression[*]| if($p->size() == 1, | castExpression(functionCall('round', $p), 'bigint'), | functionCall('round', $p))}),
+    pair('reverseString',             functionCall('reverse')),
+    pair('length',                    functionCall('char_length')),
+    pair('toTimestamp',               {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_timestamp', if($p->size() == 1, | $p->concatenate(literal('YYYY-MM-DD HH:MI:SS')), | $p))}),
+    pair('sha1',                      functionCall('sha1')),
+    pair('sha256',                    functionCall('sha256')),
+    pair('splitPart',                 functionCall('split_part')),
+    pair('substring',                 functionCall('substring')),
+    pair('monthName',                 {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_char', $p->concatenate(literal('Month')))}),
+    pair('dayOfWeek',                 {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_char', $p->concatenate(literal('Day')))}),
+    pair('parseDate',                 {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_timestamp', if($p->size() == 1, | $p->concatenate(literal('YYYY-MM-DD HH:MI:SS')), | $p))}),
+    pair('adjust',                    {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('dateadd', [$p->at(0), $p->at(1), $p->at(2)->cast(@StringLiteral)->convertDurationUnit()])}),
+    pair('toLower',                   functionCall('lower')),
+    pair('toUpper',                   functionCall('upper')),
+    pair('rem',                       functionCall('mod')),
+    pair('if',                        caseExpression()),
+    pair('case',                      caseExpression()),
+    pair('times',                     arithmeticExpression(ArithmeticType.MULTIPLY)),
+    pair('plus',                      {p:meta::external::query::sql::metamodel::Expression[*]| if($p->size() == 1, | functionCall('sum', $p), | arithmeticExpression(ArithmeticType.ADD, $p))}),
+    pair('add',                       arithmeticExpression(ArithmeticType.ADD)),
+    pair('sub',                       arithmeticExpression(ArithmeticType.SUBTRACT)),
+    pair('minus',                     {p:meta::external::query::sql::metamodel::Expression[*]| if($p->size() == 1, | ^NegativeExpression(value = $p->at(0)), | arithmeticExpression(ArithmeticType.SUBTRACT, $p))}),
+    pair('divide',                    arithmeticExpression(ArithmeticType.DIVIDE)),
+    pair('divideRound',               {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('round', [arithmeticExpression(ArithmeticType.DIVIDE, $p), $p->at(2)])}),
+    pair('sum',                       functionCall('sum')),
+    pair('pow',                       functionCall('power')),
+    pair('sqlNull',                   {p:meta::external::query::sql::metamodel::Expression[*]| ^NullLiteral()}),
+    pair('isDistinct',                {p:meta::external::query::sql::metamodel::Expression[*]| let count = functionCall('count', $p); ^ComparisonExpression(left = ^$count(distinct = true), operator = ComparisonOperator.EQUAL, right = $count);}),
+    pair('count',                     {p:meta::external::query::sql::metamodel::Expression[*]| if($p->isNotEmpty(), | functionCall('count', $p), | functionCall('count', ^AllColumnsReference()))}),
+    pair('size',                      functionCall('count')),
+    pair('max',                       functionCall('max')),
+    pair('min',                       functionCall('min')),
+    pair('stdDevSample',              functionCall('stddev_samp')),
+    pair('stdDevPopulation',          functionCall('stddev_pop')),
+    pair('booland',                   functionCall('bool_and')),
+    pair('boolor',                    functionCall('bool_or')),
+    pair('cumulativeDistribution',    functionCall('cume_dist')),
+    pair('corr',                      functionCall('corr')),
+    pair('covarSample',               functionCall('covar_samp')),
+    pair('covarPopulation',           functionCall('covar_pop')),
+    pair('varianceSample',            functionCall('var_samp')),
+    pair('variancePopulation',        functionCall('var_pop')),
+    pair('least',                     functionCall('least')),
+    pair('greatest',                  functionCall('greatest')),
+    pair('first',                     functionCall('first_value')),
+    pair('last',                      functionCall('last_value')),
+    pair('nth',                       functionCall('nth_value')),
+    pair('lead',                      functionCall('lead')),
+    pair('lag',                       functionCall('lag')),
+    pair('ntile',                     functionCall('ntile')),
+    pair('percentRank',               functionCall('percent_rank')),
+    pair('rank',                      functionCall('rank')),
+    pair('average',                   {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('avg', ^ArithmeticExpression(type = ArithmeticType.MULTIPLY, left = ^DecimalLiteral(value = 1.0d), right = $p->at(0)))}),
+    pair('mostRecentDayOfWeek',       {p:meta::external::query::sql::metamodel::Expression[*]| if($p->size() == 1, | recentDayOfWeek(castExpression(functionCall('now', []), 'date'), $p->at(0), ComparisonOperator.GREATER_THAN), | recentDayOfWeek($p->at(0), $p->at(1), ComparisonOperator.GREATER_THAN))}),
+    pair('previousDayOfWeek',         {p:meta::external::query::sql::metamodel::Expression[*]| if($p->size() == 1, | recentDayOfWeek(castExpression(functionCall('now', []), 'date'), $p->at(0), ComparisonOperator.GREATER_THAN_OR_EQUAL), | recentDayOfWeek($p->at(0), $p->at(1), ComparisonOperator.GREATER_THAN_OR_EQUAL))}),
+    pair('rowNumber',                 functionCall('row_number')),
+    pair('variance',                  {p:meta::external::query::sql::metamodel::Expression[*]| if($p->last()==true, | functionCall('var_samp', $p), | functionCall('var_pop', $p))}),
+    pair('averageRank',               functionCall('average_rank')),
+    pair('toOne',                     {p:meta::external::query::sql::metamodel::Expression[*]| $p->toOne()}),
+    pair('parseJson',                 functionCall('parseJson')),
+    pair('levenshteinDistance',       functionCall('edit_distance')),
+    pair('timeBucket',                functionCall('time_bucket')),
+    pair('percentile',                {p:meta::external::query::sql::metamodel::Expression[*]| percentileConverter($p)}),
+    pair('cosh',                      functionCall('cosh')),
+    pair('jaroWinklerSimilarity',     functionCall('jarowinkler_similarity')),
+    pair('convertTimeZone',           functionCall('convert_timezone')),
+    pair('encodeBase64',              functionCall('encode_base64')),
+    pair('decodeBase64',              functionCall('decode_base64')),
+    pair('generateGuid',              functionCall('uuid')),
+    pair('median',                    {p:meta::external::query::sql::metamodel::Expression[*]| medianConverter($p)}),
+    pair('mode',                      {p:meta::external::query::sql::metamodel::Expression[*]| modeConverter($p)}),
+    pair('sinh',                      functionCall('sinh')),
+    pair('tanh',                      functionCall('tanh'))
+  ];
+
+  let supportedDynaFuncs = meta::relational::functions::sqlQueryToString::DynaFunctionRegistry->enumValues().name;
+
+  $dynaFunctionConverters
+    ->groupBy(x | $x.first)
+    ->keyValues()
+    ->map(kv | 
+      assert($kv.second.values->size() == 1, | 'Multiple DynaFunction to Postgres model converters found for - ' + $kv.first);
+      assert($supportedDynaFuncs->contains($kv.first), 'Dyna Function [' + $kv.first + '] is not registered in meta::relational::functions::sqlQueryToString::DynaFunctionRegistry');
+    );
+  
+  $dynaFunctionConverters->newMap();
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::caseExpression():Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>[1]
+{
+  {p:meta::external::query::sql::metamodel::Expression[*]| 
+    let numClauses = (($p->size() - 1) / 2)->floor();
+    let whenClauses = range($numClauses)->map(i | ^WhenClause(operand = $p->at(2 * $i), result = $p->at(2 * $i + 1)));
+    ^SearchedCaseExpression(whenClauses = $whenClauses, defaultValue = $p->last()->toOne());
+  };
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::binaryExpression(l:LogicalBinaryType[1]):Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>[1]
+{
+  {p:meta::external::query::sql::metamodel::Expression[*]| $l->binaryExpression($p)}
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::binaryExpression(l:LogicalBinaryType[1], p:meta::external::query::sql::metamodel::Expression[*]):meta::external::query::sql::metamodel::Expression[1]
+{
+  $p->tail()->fold({e,a| ^LogicalBinaryExpression(type = $l, left = $a, right = $e)}, $p->at(0))
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::comparisonExpression(co:ComparisonOperator[1]):Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>[1]
+{
+  {p:meta::external::query::sql::metamodel::Expression[*]| comparisonExpression($co, $p->at(0), $p->at(1))};
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::comparisonExpression(co:ComparisonOperator[1], left:meta::external::query::sql::metamodel::Expression[1], right:meta::external::query::sql::metamodel::Expression[1]):ComparisonExpression[1]
+{
+  ^ComparisonExpression(operator = $co, left = $left, right = $right);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::arithmeticExpression(type:ArithmeticType[1]):Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>[1]
+{
+  {p:meta::external::query::sql::metamodel::Expression[*]| arithmeticExpression($type, $p)};
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::arithmeticExpression(type:ArithmeticType[1], arguments:meta::external::query::sql::metamodel::Expression[*]):meta::external::query::sql::metamodel::Expression[1]
+{
+  if($type == ArithmeticType.DIVIDE, 
+    | ^ArithmeticExpression(
+        type = ArithmeticType.DIVIDE, 
+        left = ^ArithmeticExpression(type = ArithmeticType.MULTIPLY, left = ^DecimalLiteral(value = 1.0d), right = $arguments->at(0)), 
+        right = $arguments->at(1)
+      ),
+    | $arguments->tail()->fold({e,a| ^ArithmeticExpression(type = $type, left = $a, right = $e)}, $arguments->at(0))
+  )
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::bitwiseBinaryExpression(b:BitwiseBinaryOperator[1]):Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>[1]
+{
+  {p:meta::external::query::sql::metamodel::Expression[*]| ^BitwiseBinaryExpression(left = $p->at(0), right = $p->at(1), operator = $b)};
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::functionCall(parts:String[*]):Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>[1]
+{
+  {p:meta::external::query::sql::metamodel::Expression[*]| functionCall($parts, $p)};
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::functionCall(parts:String[*], arguments:meta::external::query::sql::metamodel::Expression[*]):FunctionCall[1]
+{
+  ^FunctionCall(name = $parts->qualifiedName(), arguments = $arguments);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::datePartCall(datePart:String[1]):Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>[1]
+{
+  {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('date_part', literal($datePart)->concatenate($p))};
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::castExpression(targetType:String[1]):Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>[1]
+{
+  {p:meta::external::query::sql::metamodel::Expression[*]| castExpression($p->at(0), $targetType)};
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::castExpression(e:meta::external::query::sql::metamodel::Expression[1], targetType:String[1]):Cast[1]
+{
+  ^Cast(expression=$e, type=^ColumnType(name = $targetType));
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::dateTruncCall(datePart:String[1], castToDate:Boolean[1]):Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>[1]
+{
+  {p:meta::external::query::sql::metamodel::Expression[*]| dateTruncCall($datePart, $castToDate, $p->toOne())};
+}
+ 
+function <<access.private>> meta::relational::functions::toPostgresModel::dateTruncCall(datePart:String[1], castToDate:Boolean[1], date:meta::external::query::sql::metamodel::Expression[1]):Node[1]
+{
+  let dateTruncCall = functionCall('date_trunc', literal($datePart)->concatenate($date));
+  if($castToDate,
+    | ^Cast(expression = $dateTruncCall, type = ^ColumnType(name = 'date')),
+    | $dateTruncCall
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::dayOfWeekNumber(args:meta::external::query::sql::metamodel::Expression[*]):Node[1]
+{
+  let firstDay = if($args->size() > 1, | $args->at(1)->cast(@StringLiteral).value, | []);
+  assert($firstDay->isEmpty() || $firstDay->toOne()->in(['Monday', 'Sunday']), 'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week. ' + if($firstDay->isNotEmpty(), | 'Found ' + $firstDay->toOne() + ' instead.', | ''));
+  
+  if($firstDay->isEmpty() || $firstDay == 'Sunday',
+    | functionCall('date_part', literal('dow')->concatenate($args->at(0))), 
+    | functionCall('date_part', literal('isodow')->concatenate($args->at(0)))
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::mapToDBDayOfWeekNumber(day:String[1]):Integer[1]
+{
+   [
+      pair(DayOfWeek.Monday->toString(), 2),
+      pair(DayOfWeek.Tuesday->toString(), 3),
+      pair(DayOfWeek.Wednesday->toString(), 4),
+      pair(DayOfWeek.Thursday->toString(), 5),
+      pair(DayOfWeek.Friday->toString(), 6),
+      pair(DayOfWeek.Saturday->toString(), 7),
+      pair(DayOfWeek.Sunday->toString(), 1)
+   ]->filter(p | $p.first == $day).second->toOne();
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::recentDayOfWeek(dateVal : meta::external::query::sql::metamodel::Expression[1], recentDay : meta::external::query::sql::metamodel::Expression[1], co : ComparisonOperator[1]):meta::external::query::sql::metamodel::Node[1]
+{
+  let recentDayInt = ^IntegerLiteral(value = $recentDay->cast(@StringLiteral).value->mapToDBDayOfWeekNumber());
+  functionCall('dateadd', [$dateVal, ^SearchedCaseExpression(whenClauses = [^WhenClause(operand = ^ComparisonExpression(operator = $co, left = ^ArithmeticExpression(type = ArithmeticType.SUBTRACT, left = $recentDayInt, right = functionCall('date_part', [^StringLiteral(value='dow'), $dateVal])), right = ^IntegerLiteral(value=0)), result = ^ArithmeticExpression(type = ArithmeticType.SUBTRACT,left = ^ArithmeticExpression(type = ArithmeticType.SUBTRACT, 
+  left = $recentDayInt, right = functionCall('date_part', [^StringLiteral(value='dow'), $dateVal])), right = ^IntegerLiteral(value=7)))], defaultValue = ^ArithmeticExpression(type = ArithmeticType.SUBTRACT, left = $recentDayInt, right = functionCall('date_part', [^StringLiteral(value='dow'), $dateVal]))), ^StringLiteral(value='DAY')]);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::makeDateConverter(p:meta::external::query::sql::metamodel::Expression[*]):FunctionCall[1]
+{
+  assert($p->size() != 3 || $p->size() != 6, 'Incorrect number of parameters for date construction! The correct usage is either date(<year>, <month>, <day>) or date(<year>, <month>, <day>, <hour>, <minute>, <second>)');
+  if($p->size() == 3,
+    | functionCall('make_date', $p),
+    | functionCall('make_timestamp', $p)
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::percentileConverter(p:meta::external::query::sql::metamodel::Expression[*]):FunctionCall[1]
+{
+  let ascending = if($p->size() > 2, | $p->at(2)->cast(@BooleanLiteral).value, | true);
+  let continuous = if($p->size() > 3, | $p->at(3)->cast(@BooleanLiteral).value, | true);
+  ^FunctionCall(
+    name = if($continuous, | qualifiedName('percentile_cont'), | qualifiedName('percentile_disc')),
+    arguments = $p->at(1),
+    group = ^meta::external::query::sql::metamodel::Group(
+      orderBy = [
+        ^SortItem(
+          sortKey = $p->at(0),
+          ordering = if($ascending, | SortItemOrdering.ASCENDING, | SortItemOrdering.DESCENDING), 
+          nullOrdering = SortItemNullOrdering.UNDEFINED
+        )
+      ]
+    )    
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::medianConverter(p:meta::external::query::sql::metamodel::Expression[*]):FunctionCall[1]
+{
+  ^FunctionCall(
+    name = qualifiedName('percentile_cont'),
+    arguments = literal(0.5),
+    group = ^meta::external::query::sql::metamodel::Group(
+      orderBy = [
+        ^SortItem(
+          sortKey = $p->at(0),
+          ordering = SortItemOrdering.ASCENDING, 
+          nullOrdering = SortItemNullOrdering.UNDEFINED
+        )
+      ]
+    )    
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::modeConverter(p:meta::external::query::sql::metamodel::Expression[*]):FunctionCall[1]
+{
+  ^FunctionCall(
+    name = qualifiedName('mode'),
+    arguments = [],
+    group = ^meta::external::query::sql::metamodel::Group(
+      orderBy = [
+        ^SortItem(
+          sortKey = $p->at(0),
+          ordering = SortItemOrdering.ASCENDING, 
+          nullOrdering = SortItemNullOrdering.UNDEFINED
+        )
+      ]
+    )    
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertDurationUnit(unit:StringLiteral[1]):StringLiteral[1]
+{
+  let convertedUnit = [
+    pair(DurationUnit.YEARS->toString(), TemporalUnit.YEAR->toString()),
+    pair(DurationUnit.MONTHS->toString(), TemporalUnit.MONTH->toString()),
+    pair(DurationUnit.WEEKS->toString(), TemporalUnit.WEEK->toString()),
+    pair(DurationUnit.DAYS->toString(), TemporalUnit.DAY->toString()),
+    pair(DurationUnit.HOURS->toString(), TemporalUnit.HOUR->toString()),
+    pair(DurationUnit.MINUTES->toString(), TemporalUnit.MINUTE->toString()),
+    pair(DurationUnit.SECONDS->toString(), TemporalUnit.SECOND->toString()),
+    pair(DurationUnit.MILLISECONDS->toString(), TemporalUnit.MILLISECOND->toString()),
+    pair(DurationUnit.MICROSECONDS->toString(), TemporalUnit.MICROSECOND->toString())
+  ]->filter(p | $p.first == $unit.value).second->toOne('Postgres conversion for DurationUnit not found: ' + $unit.value);
+
+  ^StringLiteral(value = $convertedUnit);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::isEqualsFromFilter(d:DynaFunction[1], state:ModelConversionState[1]):Boolean[1]
+{
+  $d.name == 'equal' && $state.processingFilter && $d.parameters->forAll(p | $p->instanceOf(TableAliasColumn) && $p->cast(@TableAliasColumn).column.nullable != false);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::isFunctionWithDistinct(d:DynaFunction[1], state:ModelConversionState[1]):Boolean[1]
+{
+  ($d.parameters->size() > 0) && $d.parameters->at(0)->instanceOf(DynaFunction) && ($d.parameters->at(0)->cast(@DynaFunction).name == 'distinct');
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertFunctionWithDistinct(d:DynaFunction[1], state:ModelConversionState[1]): Node[1]
+{
+  let newFunction = ^DynaFunction(name = $d.name, parameters = $d.parameters->at(0)->cast(@DynaFunction).parameters->concatenate($d.parameters->tail()));
+  let converted = $newFunction->convertElement($state)->cast(@FunctionCall);
+  ^$converted(distinct = true);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertEqualFromFilter(d:DynaFunction[1], state:ModelConversionState[1]):Node[1]
+{
+  let params = $d.parameters->map(p|$p->convertElementToExpression($state));
+  let left = $params->at(0);
+  let right = $params->at(1);
+  binaryExpression(
+    LogicalBinaryType.OR,
+    [
+      comparisonExpression(ComparisonOperator.EQUAL, $left, $right),
+      binaryExpression(
+        LogicalBinaryType.AND,
+        [
+          ^IsNullPredicate(value = $left),
+          ^IsNullPredicate(value = $right)
+        ]
+      )
+    ]
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertNot(func:DynaFunction[1], state:ModelConversionState[1]):Node[1]
+{
+  let parameter = $func.parameters->at(0);
+  $parameter->match([
+    d: DynaFunction[1]| 
+      let functionName = $d.name;
+      if($functionName == 'equal', 
+        | $d->processNotEqual($state),
+        | if($functionName == 'in', 
+            | $d->processNotIn($state),
+            | if($d->isAndOr() || $d->isNot(), 
+                | ^NotExpression(value = $d->convertElementToExpression($state)),
+                | ^NotExpression(value = $d->convertElementToExpression($state)) // TODO: Wrap potentially boolean operation
+              );
+          );
+      );,
+    r: RelationalOperationElement[1]| ^NotExpression(value = $r->convertElementToExpression($state)) // TODO: Wrap potentially boolean operation
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::processNotEqual(d:DynaFunction[1], state:ModelConversionState[1]):Node[1]
+{
+  let params = $d.parameters->map(p|$p->convertElementToExpression($state));
+  let left = $params->at(0);
+  let right = $params->at(1);
+  let expr = comparisonExpression(ComparisonOperator.NOT_EQUAL, $left, $right);
+  if($left->isLiteral() && $right->isLiteral(),
+    | $expr,
+    | if(!$left->isLiteral() && ($right->isLiteral() || $right->instanceOf(FreeMarkerOperation)),
+        | binaryExpression(LogicalBinaryType.OR, [$expr, ^IsNullPredicate(value = $left)]),
+        | if (($left->isLiteral() || $left->instanceOf(FreeMarkerOperationHolder)) && !$right->isLiteral(),
+            | binaryExpression(LogicalBinaryType.OR, [$expr, ^IsNullPredicate(value = $right)]),
+            | let leftIsNull  = binaryExpression(LogicalBinaryType.AND, [^IsNullPredicate(value = $left),    ^IsNotNullPredicate(value = $right)]);
+              let rightIsNull = binaryExpression(LogicalBinaryType.AND, [^IsNotNullPredicate(value = $left), ^IsNullPredicate(value = $right)]);
+              binaryExpression(LogicalBinaryType.OR, [$expr, $leftIsNull, $rightIsNull]);
+          )
+      )
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::isLiteral(n:Node[1]):Boolean[1]
+{
+  $n->instanceOf(meta::external::query::sql::metamodel::Literal) && !$n->instanceOf(NullLiteral);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::processNotIn(d:DynaFunction[1], state:ModelConversionState[1]):Node[1]
+{
+  let value = $d.parameters->at(0)->convertElementToExpression($state);
+  ^LogicalBinaryExpression(type = LogicalBinaryType.OR, left = ^NotExpression(value = $d->convertElementToExpression($state)), right = ^IsNullPredicate(value = $value));
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::isAndOr(func:DynaFunction[1]):Boolean[1]
+{
+  $func.name == 'and' || $func.name == 'or';
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::isNot(func:DynaFunction[1]):Boolean[1]
+{
+  $func.name == 'not';
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertAlias(a:Alias[1], state:ModelConversionState[1]):Node[1]
+{
+  $a.relationalElement->convertElement($state)->match(
+    [
+      r:meta::external::query::sql::metamodel::Relation[1]| ^AliasedRelation(alias = convertTableAliasName($a), relation = $r),
+      c:SingleColumn[1]| ^SingleColumn(expression = $c.expression, alias = $a.name->toIdentifier());,
+      e:meta::external::query::sql::metamodel::Expression[1]| ^SingleColumn(expression = $e, alias = $a.name->toIdentifier());
+    ]
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertTableAliasName(a:Alias[1]):String[1]
+{
+  $a.name->toIdentifier()->quoteIdentifier();
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertWindowColumn(w:WindowColumn[1], state:ModelConversionState[1]):Node[1]
+{
+  let func = $w.func->convertElement($state)->cast(@FunctionCall);
+  let partitions = $w.window.partition->map(p|$p->convertElementToExpression($state));
+  let orderBy = $w.window.sortBy->map(s|^SortItem(sortKey = $s.sortByElement->convertElementToExpression($state),
+                                                  ordering = $s.sortDirection->convertSortDirection(),
+                                                  nullOrdering = SortItemNullOrdering.UNDEFINED
+                                                ));
+  let window = ^meta::external::query::sql::metamodel::Window(partitions = $partitions, orderBy = $orderBy);
+  ^$func(window = $window);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::isEmptyStringLiteral(r:RelationalOperationElement[1]):Boolean[1]
+{
+  $r->instanceOf(meta::relational::metamodel::Literal) 
+  && $r->cast(@meta::relational::metamodel::Literal).value->instanceOf(String)
+  && $r->cast(@meta::relational::metamodel::Literal).value->cast(@String) == ''
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertJoinStringsArg(arg:RelationalOperationElement[0..1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Expression[0..1]
+{
+  $arg->map(r | if($r->isEmptyStringLiteral(), | [], | $r->convertElementToExpression($state)))
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertJoinStrings(js:meta::relational::metamodel::operation::JoinStrings[1], state:ModelConversionState[1]):Node[1]
+{
+  let strings = $js.strings->map(j|$j->convertElementToExpression($state));
+  let prefix = $js.prefix->convertJoinStringsArg($state);
+  let suffix = $js.suffix->convertJoinStringsArg($state);
+  let separator = $js.separator->convertJoinStringsArg($state);
+
+  if($strings->size() == 1,
+    | functionCall('string_agg', [$strings->at(0), $separator->defaultIfEmpty(literal(''))->toOne()]),
+    | let stringsWithSeparators = if($separator->isNotEmpty(), 
+        | $strings->init()->map(s|[$s, $separator->toOne()])->concatenate($strings->last()), 
+        | $strings
+      );
+      functionCall('concat', $prefix->concatenate($stringsWithSeparators)->concatenate($suffix));
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertTable(t:meta::relational::metamodel::relation::Table[1], state:ModelConversionState[1]):Node[1]
+{
+  let schemaName = if($t.schema.name == 'default', | [], | $t.schema.name);
+  ^meta::external::query::sql::metamodel::Table(name = qualifiedName($schemaName->concatenate($t.name)));
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertUnion(u:meta::relational::metamodel::relation::Union[1], state:ModelConversionState[1], distinct:Boolean[1]):meta::external::query::sql::metamodel::Relation[1]
+{
+  let newQueries = $u.queries->map(q|$q->convertElement(newState($state.extensions)))->cast(@meta::external::query::sql::metamodel::Relation);
+  ^TableSubquery(query = ^Query(queryBody = $newQueries->tail()->fold({q,a|^meta::external::query::sql::metamodel::Union(left = $a, right = $q, distinct = $distinct)}, $newQueries->first()->toOne())->cast(@meta::external::query::sql::metamodel::Union)));
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertLiteral(l:meta::relational::metamodel::Literal[1], state:ModelConversionState[1]):Node[1]
+{
+  $l.value->match(
+    [
+      s:String[1]|                    $s->literal(),
+      i:Integer[1]|                   $i->literal(),
+      f:Float[1]|                     $f->literal(),
+      d:Decimal[1]|                   $d->literal(),
+      n:Number[1]|                    $n->toString()->literal(),
+      b:Boolean[1]|                   $b->literal(),
+      s:StrictDate[1]|                $s->literal(),
+      d:DateTime[1]|                  $d->literal(),
+      d:Date[1]|                      $d->literal(),
+      e:Enum[1]|                      $e->toString()->literal(),
+      n:SQLNull[1]|                   ^NullLiteral(),
+      v:VarPlaceHolder[1]|            $v->convertVarPlaceHolder(),
+      f:FreeMarkerOperationHolder[1]| $f->convertFreeMarkerOperationHolder($state)
+    ]
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertFreeMarkerOperationHolder(fmoh:FreeMarkerOperationHolder[1], state:ModelConversionState[1]):Node[1]
+{
+  let template = getFreeMarkerOperationTemplate($fmoh.name);
+  assert($template->isNotEmpty() || $fmoh.name->contains('enumMap_'), $fmoh.name + 'freeMarker Operation is not supported!');
+  let resolvedTemplate = if($template->isEmpty(), |$fmoh.name + '(%s)', |$template->toOne());
+  let processedParams = $fmoh.parameters->map(p | 
+    $p->match([
+      f:FreeMarkerOperationHolder[1] |            $f->convertFreeMarkerOperationHolder($state);,
+      l:meta::relational::metamodel::Literal[1] | $l.value->match([
+                                                    v:VarPlaceHolder[1] | ^StringLiteral(value = if($v->isOptionalPlaceHolder(), |$v.name + '![]', |$v.name));,
+                                                    a:Any[1]            | $l->convertElement($state);
+                                                  ]),
+      r:RelationalOperationElement[1]|            $r->convertElement($state);
+    ])
+  )->cast(@meta::external::query::sql::metamodel::Expression);
+  ^FreeMarkerOperation(template = $resolvedTemplate, parameters = $processedParams);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::isOptionalPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
+{
+  $v.multiplicity->isNotEmpty() && eq($v.multiplicity->toOne()->meta::pure::functions::meta::getLowerBound(), 0);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::isCollectionPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
+{
+  $v.multiplicity->isNotEmpty() && $v.multiplicity == ZeroMany;
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::getFreeMarkerOperationTemplate(name:String[1]):String[0..1]
+{
+  [
+    pair('variableCollectionSize', 'collectionSize(%s)'),
+    pair('optionalVarPlaceHolderOpSelector', 'optionalVarPlaceHolderOperationSelector(%s, %s, %s)'),
+    pair('equalEnumOpSelector', 'equalEnumOperationSelector(%s, %s, %s)'),
+    pair('numberAdd', '(%s?number + %s?number)'),
+    pair('numberMultiply', '(%s?number * %s?number)'),
+    pair('numberSubtract', '(%s?number - %s?number)'),
+    pair('numberVariable', '%s?number')
+  ]->newMap()->get($name);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertVarPlaceHolder(v:VarPlaceHolder[1]):Node[1]
+{
+  let type = $v->getVariableType();
+
+  let noPropertyPath = $v.propertyPath->isEmpty();
+  let optionalHandler = if($v->isOptionalPlaceHolder() && $noPropertyPath, | '![]', | '');
+  let placeHolderWithPath = $v.name + if($noPropertyPath,|'',|'.') + $v.propertyPath->map(p|$p.name)->joinStrings('.');
+  let resolvedPlaceHolder = if($type == String,
+                              | $placeHolderWithPath->replace('\'', '\\\''),
+                              | $placeHolderWithPath
+                            ) + $optionalHandler;
+
+  ^VariablePlaceholder(name = $resolvedPlaceHolder, type = $type.name->toOne(), isEnum = $type->instanceOf(Enumeration), multiplicityLowerBound = $v.multiplicity.lowerBound.value, multiplicityUpperBound = $v.multiplicity.upperBound.value);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::getVariableType(v:VarPlaceHolder[1]):Type[1]
+{
+  if ($v.propertyPath->isNotEmpty(),
+    | $v.propertyPath->last().genericType.rawType->toOne(),
+    | $v.type
+  );
+}
+
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertSemiStructuredArrayFlatten(s:meta::relational::metamodel::relation::SemiStructuredArrayFlatten[1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::extension::SemiStructuredArrayFlatten[1]
+{
+  let rootTableAndColumnName = $s->meta::relational::functions::pureToSqlQuery::findTableForColumnInAlias([]);
+
+  ^meta::external::query::sql::metamodel::extension::SemiStructuredArrayFlatten(
+    navigation = $s.navigation->convertElementToExpression($state),
+    baseTable = $rootTableAndColumnName.first->convertElement($state)->cast(@meta::external::query::sql::metamodel::Relation),
+    baseColumn = $rootTableAndColumnName.second
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertSemiStructuredArrayFlattenOutput(s:meta::relational::metamodel::relation::SemiStructuredArrayFlattenOutput[1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::extension::SemiStructuredArrayFlattenOutput[1]
+{
+  ^meta::external::query::sql::metamodel::extension::SemiStructuredArrayFlattenOutput(
+    flattenedRelation = $s.tableAliasColumn.alias->convertElement($state)->cast(@AliasedRelation),
+    returnType = $s.returnType->getTypeName()
+  )
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertSemiStructuredObjectNavigation(s:meta::relational::metamodel::operation::SemiStructuredObjectNavigation[1], state:ModelConversionState[1]):Node[1]
+{
+  $s->match(
+    [
+      s:meta::relational::metamodel::operation::SemiStructuredPropertyAccess[1]| 
+        ^meta::external::query::sql::metamodel::extension::SemiStructuredPropertyAccess(
+          operand = $s.operand->convertElementToExpression($state),
+          returnType = $s.returnType->getTypeName(),
+          property = $s.property->convertElementToExpression($state),
+          index = $s.index->convertOptionalElementToExpression($state),
+          avoidCastIfPrimitive = $s.avoidCastIfPrimitive
+        ),
+      s:meta::relational::metamodel::operation::SemiStructuredArrayElementAccess[1]| 
+        ^meta::external::query::sql::metamodel::extension::SemiStructuredArrayElementAccess(
+          operand = $s.operand->convertElementToExpression($state),
+          returnType = $s.returnType->getTypeName(),
+          index = $s.index->convertElementToExpression($state),
+          avoidCastIfPrimitive = $s.avoidCastIfPrimitive
+        )
+    ]
+  )
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::getTypeName(type:Type[0..1]):String[0..1]
+{
+  $type->map(t|if($t->instanceOf(Enumeration), | 'Enumeration', | $t.name))
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertExtractFromSemiStructured(d:DynaFunction[1], state:ModelConversionState[1]):ExtractFromSemiStructured[1]
+{
+  let pathNavigation = $d.parameters->at(1)->getStringLiteralValue($state);
+
+  ^ExtractFromSemiStructured(
+    baseExpression = $d.parameters->at(0)->convertElementToExpression($state), 
+    pathNavigation = $pathNavigation, 
+    parsedPathNavigation = $pathNavigation->meta::relational::functions::sqlQueryToString::parseSemiStructuredPathNavigation(), 
+    returnType = $d.parameters->at(2)->getStringLiteralValue($state)
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::getStringLiteralValue(r:RelationalOperationElement[1], state:ModelConversionState[1]):String[1]
+{
+  $r->convertElement($state)->cast(@StringLiteral).value
+}
+
+function meta::relational::functions::toPostgresModel::convertElementToExpression(r:RelationalOperationElement[1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Expression[1]
+{
+  let converted = $r->convertElement($state);
+  $converted->match([
+    s:SingleColumn[1]| if($s.alias->isNotEmpty(), | ^QualifiedNameReference(name = qualifiedName($s.alias->toOne())), | $s.expression),
+    e:meta::external::query::sql::metamodel::Expression[1]| $e,
+    t:TableSubquery[1]| ^SubqueryExpression(query = $t.query)
+  ]);
+}
+
+function meta::relational::functions::toPostgresModel::convertOptionalElementToExpression(r:RelationalOperationElement[*], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Expression[0..1]
+{
+  if($r->isNotEmpty(), |$r->toOne()->convertElementToExpression($state), |[]);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::qualifiedName(parts:String[*]):QualifiedName[1]
+{
+  ^QualifiedName(parts = $parts->toIdentifier());
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::toIdentifier(identifiers:String[*]):String[*]
+{
+  $identifiers->map(i | $i->toIdentifier());
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::isQuoted(identifier:String[1]):Boolean[1]
+{
+  $identifier->startsWith('"') && $identifier->endsWith('"')
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::quoteIdentifier(identifier:String[1]):String[1]
+{
+  if($identifier->isQuoted(), | $identifier, | '"' + $identifier + '"');
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::toIdentifier(identifier:String[1]):String[1]
+{
+  // Remove all quotes from within the string if it starts with a double quote. This is to workaround incorrect quoting in Pure2SQL.
+  if($identifier->startsWith('"'), | $identifier->replace('"', '')->quoteIdentifier(), | $identifier);
+}

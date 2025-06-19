@@ -165,7 +165,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testNotI
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertSameElements(['Allen', 'Roberts', 'Harris', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
-   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where not "root".FIRSTNAME in (\'John\', \'Peter\') or "root".FIRSTNAME is null', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testNotContains():Boolean[1]
@@ -176,7 +176,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testNotC
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertSameElements(['Allen', 'Roberts', 'Harris', 'Hill'], $result.values.rows->map(r | $r.values->at(0)));
-   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where not "root".FIRSTNAME in (\'John\', \'Peter\') or "root".FIRSTNAME is null', $result->sqlRemoveFormatting());
 }
 
 //TODO: Move to another location - this is testing that legend-h2 is
@@ -201,7 +201,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testInWi
    println($result.values.rows.values);
    assertSameElements([false, '4'], $result.values.rows.values);
    assertEquals(
-    'select "root".ID as "id", case when "root".active = \'Y\' then \'true\' else \'false\' end as "active" from interactionTable as "root" where (case when "root".active = \'Y\' then \'true\' else \'false\' end in (\'false\', \'something\') and "root".ID = 4)', 
+    'select "root".ID as "id", case when "root".active = \'Y\' then \'true\' else \'false\' end as "active" from interactionTable as "root" where case when "root".active = \'Y\' then \'true\' else \'false\' end in (\'false\', \'something\') and "root".ID = 4', 
     $result->sqlRemoveFormatting()
    );
 }
@@ -213,6 +213,6 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testQual
                         meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertSameElements(['A', 'Account 2', 'B', ^TDSNull()], $result.values.rows.values);
-   assertEquals('select "accounttable_0".name as "name", case when "accounttable_0".name in (\'Account 1\', \'Account 2\') then \'A\' else \'B\' end as "cat" from tradeTable as "root" left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) where ("root".ID = 10 or "root".ID = 11)', $result->sqlRemoveFormatting());
+   assertEquals('select "accounttable_0".name as "name", case when "accounttable_0".name in (\'Account 1\', \'Account 2\') then \'A\' else \'B\' end as "cat" from tradeTable as "root" left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) where "root".ID = 10 or "root".ID = 11', $result->sqlRemoveFormatting());
 
 }

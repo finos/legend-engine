@@ -17,7 +17,7 @@ package org.finos.legend.engine.server.core.session;
 import io.dropwizard.Bundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.pac4j.core.context.J2EContext;
+import org.pac4j.core.context.JEEContext;
 import org.pac4j.core.context.WebContext;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
@@ -68,7 +68,7 @@ public class SessionAttributeBundle implements Bundle
             if (userPrincipal != null)
             {
                 session.setAttribute(SessionTracker.ATTR_USER_ID, userPrincipal.getName());
-                WebContext context = new J2EContext((HttpServletRequest) request, (HttpServletResponse) response);
+                WebContext context = new JEEContext((HttpServletRequest) request, (HttpServletResponse) response);
                 ProfileManager<CommonProfile> manager = new ProfileManager<>(context);
                 Optional<CommonProfile> profile = manager.get(true);
                 profile.ifPresent(commonProfile -> session.setAttribute(SessionTracker.ATTR_USER_PROFILE, commonProfile));

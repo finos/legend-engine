@@ -39,7 +39,7 @@ public class LegendExecute extends AbstractNative
 {
     public LegendExecute()
     {
-        super("execute_String_1__Pair_MANY__String_1_");
+        super("execute_String_1__Pair_MANY__String_1_", "execute_String_1__Pair_MANY__String_1__String_1_");
     }
 
     @Override
@@ -55,12 +55,17 @@ public class LegendExecute extends AbstractNative
                 "            @Override\n" +
                 "            public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
                 "            {\n" +
-                "                return " + this.getClass().getCanonicalName() + ".execute((String)vars.get(0), vars.get(1), es);" +
+                "                return " + this.getClass().getCanonicalName() + ".execute((String)vars.get(0), vars.get(1), vars.size() == 3 ? (String)vars.get(2) : null, es);" +
                 "            }\n" +
                 "        }";
     }
 
     public static String execute(String planAsJson, Object variableOrVariables, ExecutionSupport es)
+    {
+        return execute(planAsJson, variableOrVariables, null, es);
+    }
+
+    public static String execute(String planAsJson, Object variableOrVariables, String serializationFormat, ExecutionSupport es)
     {
         RichIterable<Pair<String, Object>> variables;
 
@@ -82,7 +87,7 @@ public class LegendExecute extends AbstractNative
         }
 
         Map<String, Object> planVariables = pureToPlanVariables(Optional.ofNullable(variables).orElse(Lists.fixedSize.empty()));
-        return org.finos.legend.engine.pure.runtime.execution.shared.LegendExecute.doExecute(planAsJson, planVariables, Stacks.mutable.empty());
+        return org.finos.legend.engine.pure.runtime.execution.shared.LegendExecute.doExecute(planAsJson, planVariables, serializationFormat, Stacks.mutable.empty());
     }
 
     private static Map<String, Object> pureToPlanVariables(RichIterable<? extends Pair<? extends String, ?>> variables)

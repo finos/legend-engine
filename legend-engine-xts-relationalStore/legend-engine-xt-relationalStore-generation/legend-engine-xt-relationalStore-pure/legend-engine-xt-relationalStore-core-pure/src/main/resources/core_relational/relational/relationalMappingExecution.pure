@@ -96,8 +96,6 @@ function meta::relational::mapping::TDSSelectQueryToTDSResultType(class:Type[1],
                                       );
                                 )
         );
-
-
 }
 
 function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], query:SQLQuery[1], node:ExecutionNode[1], m:Mapping[0..1],exeCtx:meta::pure::runtime::ExecutionContext[1]):ExecutionNode[1]
@@ -105,6 +103,10 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
    let possibleClass = $sq.vs.genericType.rawType->toOne();
    let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($sq.vs); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
    let resultType = if([
+                          pair(
+                              |$class == Nil,
+                              | ^DataTypeResultType( genericType=^GenericType(rawType=$class))
+                          ),
                           pair(
                               |$class->_subTypeOf(TabularDataSet),
                               | meta::relational::mapping::TDSSelectQueryToTDSResultType($class,$query->cast(@TdsSelectSqlQuery),$exeCtx);
@@ -122,7 +124,11 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                                                 (
                                                                   name = $p.name->toOne(),
                                                                   type = $cType,
-                                                                  sourceDataType = $pureToDbMap->get($cType)->toOne()
+                                                                  sourceDataType = $cType->match([
+                                                                                              p : PrimitiveType[1] | $pureToDbMap->get($cType)->toOne(),
+                                                                                              e : Enumeration<Any>[1] | $query->cast(@TdsSelectSqlQuery).columns->cast(@Alias)->filter(c | $c.name == '\"' + $p.name->toOne() + '\"').relationalElement->cast(@TableAliasColumn).column->cast(@Column).type->toOne(),
+                                                                                              a : Any[*] | []
+                                                                                           ])
                                                                 );
                                                           )
                                   );
@@ -230,7 +236,7 @@ function meta::relational::mapping::addEnumMapSupportFunctions(sq:meta::pure::ma
                                       |[]);
 }
 
-function meta::relational::mapping::fetchEnumFullPath(enum:EnumerationMapping<Any>[*]):String[1]
+function meta::relational::mapping::fetchEnumFullPath(enum:EnumerationMapping<Any>[1]):String[1]
 {
   $enum.parent->toOne()->elementToPath()->replace('::', '_') + '_' + $enum.name->toOne();
 }
@@ -365,7 +371,7 @@ function meta::relational::mapping::execution(store: Database[1], f:ValueSpecifi
 
 function meta::relational::mapping::sqlCommentPureExecution(): String[1]
 {
-  '-- "executionTraceID" : "' + meta::core::runtime::generateGuid() + '"';
+  '-- "executionTraceID" : "' + meta::pure::functions::string::generation::generateGuid() + '"';
 }
 
 function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0..1], paths: Pair<String, PathInformation>[*], connection : DatabaseConnection[1], runtime: Runtime[1], class:Type[0..1], ext:RoutedValueSpecification[0..1], m: Mapping[1], sqlGenerationTimeInNanoSecond:Integer[0..1], g_queryTimeOutInSeconds: Integer[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug:DebugContext[1]):Result<Any|*>[1]

@@ -306,7 +306,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let propertyClauses   = $context.typeInfos->allProperties($class)->map({p|
       let variable       = '_'+$conventions->fieldName($p);
       let javaType       = $conventions->pureTypeToJavaType($p);
-      let propertyType   = $p.genericType.rawType->toOne();
+      let propertyType   = $p.genericType.rawType->toOne()->bypassExtendedPrimitives ();
       let defectRecorder = 'm -> defects.add('+$conventions->codeType($conventions->className(DataQualityBasicDefectClass))->codeToString($proto)+'.newInvalidInputErrorDefect('+escapedString($p.name->toOne())+'+": "+m,'+escapedString($class->elementToPath())+'))';
 
       'if (node.path('+escapedString($p.name->toOne())+').getNodeType() != JsonNodeType.MISSING){\n' +

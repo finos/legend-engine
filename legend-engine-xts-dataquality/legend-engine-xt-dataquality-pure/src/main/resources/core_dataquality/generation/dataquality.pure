@@ -501,39 +501,45 @@ function <<access.private>> meta::external::dataquality::constraintToDqRule(cons
 }
 
 
-function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], resultLimit:Integer[0..1]): LambdaFunction<Any>[1]
-{
-  $dqRelationValidation->generateDataqualityRelationValidationLambda($validationName, $resultLimit, true);
-}
-
-
-function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], resultLimit:Integer[0..1], useFrom:Boolean[1]): LambdaFunction<Any>[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], defectsLimit:Integer[0..1]): LambdaFunction<Any>[1]
 {
   let selectedValidation = $dqRelationValidation.validations->filter(val| $val.name == $validationName)->toOne();
 
-  if($selectedValidation.type == 'ROW_LEVEL',
-     | $dqRelationValidation->generateDataqualityRelationValidationLambda_RowLevel($selectedValidation, $resultLimit, $useFrom),
-     | $dqRelationValidation->generateDataqualityRelationValidationLambda_Aggregate($selectedValidation, $resultLimit, $useFrom));
+  if($selectedValidation.type->isNotEmpty() && $selectedValidation.type == 'ROW_LEVEL',
+     | $dqRelationValidation->generateDataqualityRelationValidationLambda_RowLevel($selectedValidation, $defectsLimit), // for backward compatibility
+     | $dqRelationValidation->generateDataqualityRelationValidationLambda_Aggregate($selectedValidation, $defectsLimit));
 }
 
 
-function meta::external::dataquality::generateDataqualityRelationValidationLambda_RowLevel(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], resultLimit:Integer[0..1], useFrom:Boolean[1]): LambdaFunction<Any>[1]
+// row level validation for backward compatibility
+function meta::external::dataquality::generateDataqualityRelationValidationLambda_RowLevel(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1]): LambdaFunction<Any>[1]
 {
   let lambda = $dqRelationValidation.query;
-  let relationType = $dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType().typeArguments.rawType->toOne();
-  let withValidationFilterExpression = $dqRelationValidation->buildRelationFilterExpressionForRowLevelVal($selectedValidation, $relationType);
-  let withLimitExpression = if($resultLimit->isEmpty(),
-                                | $withValidationFilterExpression,
-                                | $withValidationFilterExpression->buildLimitFilterExpression($resultLimit->toOne(), ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relationType)))
+  let inputRelType = $dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType().typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>)->toOne();
+  let withValidationFilterExpression = $dqRelationValidation.query.expressionSequence->toOne()->evaluateAndDeactivate()->buildRelationFilterExpressionForRowLevelVal($selectedValidation, $inputRelType);
+
+  //enrich dq columns
+  let relParamName = 'row';
+
+  let newRelTypeWithLogicalDefectId = $inputRelType->addColumns(~[DQ_LOGICAL_DEFECT_ID: String[1]])->evaluateAndDeactivate();
+  let withLogicalId = $withValidationFilterExpression->cast(@ValueSpecification)->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildHashFunctionExpression($inputRelType, $inputRelType.columns.name, $relParamName), $relParamName, $inputRelType, $newRelTypeWithLogicalDefectId, String);
+
+  let newRelTypeWithDefectId = $newRelTypeWithLogicalDefectId->addColumns(~[DQ_DEFECT_ID: String[1]])->evaluateAndDeactivate();
+  let withDefectId = $withLogicalId->buildExtendExpression('DQ_DEFECT_ID', buildGenerateGuidExpression(), $relParamName, $newRelTypeWithLogicalDefectId, $newRelTypeWithDefectId, String);
+
+  let newRelTypeWithRuleId = $newRelTypeWithDefectId->addColumns(~[DQ_RULE_NAME: String[1]])->evaluateAndDeactivate();
+  let withRuleId = $withDefectId->buildExtendExpression('DQ_RULE_NAME', ^InstanceValue(values=$selectedValidation.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), $relParamName, $newRelTypeWithDefectId, $newRelTypeWithRuleId, String);
+
+
+  let withLimitExpression = if($defectsLimit->isEmpty(),
+                                | $withRuleId,
+                                | $withRuleId->buildLimitFilterExpression($defectsLimit->toOne(), ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelTypeWithRuleId)))
                             );
-  let withFromRuntimeExpression = if(!$useFrom || $dqRelationValidation.runtime->isEmpty(),
-                                    | $withLimitExpression,
-                                    | $withLimitExpression->buildFromRuntimeExpression($dqRelationValidation.runtime->toOne(), ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relationType)))
-                                  );
-  ^$lambda(expressionSequence=$withFromRuntimeExpression);
+
+  ^$lambda(expressionSequence=$withLimitExpression);
 }
 
-function meta::external::dataquality::generateDataqualityRelationValidationLambda_Aggregate(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], resultLimit:Integer[0..1], useFrom:Boolean[1]): LambdaFunction<Any>[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda_Aggregate(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], resultLimit:Integer[0..1]): LambdaFunction<Any>[1]
 {
   // assertion transformation - 
   let poppedAssertion = $selectedValidation->popAssertionForProjection()->evaluateAndDeactivate();
@@ -543,33 +549,173 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
 
   //enrich dq columns
   let relParamName = 'row';
-  let newRelTypeWithLogicalDefectId = $inputRelType->addColumns(~[dq_logical_defect_id: String[1]])->evaluateAndDeactivate();
-  let withLogicalId = $poppedAssertion->cast(@ValueSpecification)->buildStringExtendExpression('dq_logical_defect_id', buildHashFunctionExpression($inputRelType, $inputRelType.columns.name, $relParamName), $relParamName, $inputRelType, $newRelTypeWithLogicalDefectId);
-  let newRelTypeWithRuleId = $newRelTypeWithLogicalDefectId->addColumns(~[dq_rule_name: String[1]])->evaluateAndDeactivate();
-  let withRuleId = $withLogicalId->buildStringExtendExpression('dq_rule_name', ^InstanceValue(values=$selectedValidation.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), $relParamName, $newRelTypeWithLogicalDefectId, $newRelTypeWithRuleId);
+
+  let newRelTypeWithLogicalDefectId = $inputRelType->addColumns(~[DQ_LOGICAL_DEFECT_ID: String[1]])->evaluateAndDeactivate();
+  let withLogicalId = $poppedAssertion->cast(@ValueSpecification)->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildHashFunctionExpression($inputRelType, $inputRelType.columns.name, $relParamName), $relParamName, $inputRelType, $newRelTypeWithLogicalDefectId, String);
+
+  let newRelTypeWithDefectId = $newRelTypeWithLogicalDefectId->addColumns(~[DQ_DEFECT_ID: String[1]])->evaluateAndDeactivate();
+  let withDefectId = $withLogicalId->buildExtendExpression('DQ_DEFECT_ID', buildGenerateGuidExpression(), $relParamName, $newRelTypeWithLogicalDefectId, $newRelTypeWithDefectId, String);
+
+  let newRelTypeWithRuleId = $newRelTypeWithDefectId->addColumns(~[DQ_RULE_NAME: String[1]])->evaluateAndDeactivate();
+  let withRuleId = $withDefectId->buildExtendExpression('DQ_RULE_NAME', ^InstanceValue(values=$selectedValidation.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), $relParamName, $newRelTypeWithDefectId, $newRelTypeWithRuleId, String);
+
   
-  // main dataset query transformation - 
+  // main dataset query transformation -
   let queryWithLimitExpression = if($resultLimit->isEmpty(),
                                      | $dqRelationValidation.query.expressionSequence->toOne()->evaluateAndDeactivate(),
                                      | $dqRelationValidation.query.expressionSequence->toOne()->evaluateAndDeactivate()->buildRelationLimitFilterExpression($resultLimit->toOne(), $dqRelationValidation.query->genericType())
                                   );
-  
-  let queryWithFromRuntimeExpression = if(!$useFrom || $dqRelationValidation.runtime->isEmpty(),
-                                            | $queryWithLimitExpression,
-                                            | $queryWithLimitExpression->cast(@ValueSpecification)->buildFromRuntimeExpression($dqRelationValidation.runtime->toOne(), ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelTypeWithRuleId)))
-                                        );
 
-
-  // compose above transformed query and assertion             
-  let evalExpression = $withRuleId->buildEvalExpression($queryWithFromRuntimeExpression->cast(@ValueSpecification), $selectedValidation, $inputRelType, $newRelTypeWithRuleId);
+  // compose above transformed query and assertion
+  let evalExpression = $withRuleId->buildEvalExpression($queryWithLimitExpression->cast(@ValueSpecification), $selectedValidation, getRelationType($selectedValidation), $newRelTypeWithRuleId);
   let lambda = $dqRelationValidation.query;
   ^$lambda(expressionSequence=$evalExpression);
 }
 
+function meta::external::dataquality::getRelationType(selectedValidation: RelationValidation[1]):meta::pure::metamodel::relation::RelationType<Any>[1]
+{
+  let assertionFunction = getAssertionFunction($selectedValidation);
+  //we know that this will be one of the allowed assertion terminal functions so the first parameter will be the relation
+  $assertionFunction.parametersValues->at(0).genericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>);
+}
 
 function meta::external::dataquality::popAssertionForProjection(selectedValidation: RelationValidation[1]):ValueSpecification[1]
 {
-  $selectedValidation.assertion.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(0);
+  let assertionFunction = getAssertionFunction($selectedValidation);
+  //function will either be assertRelationEmpty or assertRelationNotEmpty - this is enforced in the compiler
+  if($assertionFunction.func == assertRelationEmpty_Relation_1__ColSpecArray_1__Boolean_1_,
+  | buildSelectExpression($assertionFunction.parametersValues->evaluateAndDeactivate()->at(0), $assertionFunction.parametersValues->at(1)->cast(@InstanceValue)),
+  | buildOneRowIfEmptyExpression($assertionFunction.parametersValues->evaluateAndDeactivate()->at(0)));
+}
+
+function meta::external::dataquality::popTerminalFunctionExpression(query: LambdaFunction<Any>[1]):ValueSpecification[1]
+{
+  $query.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::getAssertionFunction(selectedValidation: RelationValidation[1]):SimpleFunctionExpression[1]
+{
+  //we know that this will be a simple function expression since the assertion needs to end with one of the allowed assertion terminal functions
+  $selectedValidation.assertion.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@SimpleFunctionExpression);
+}
+
+function meta::external::dataquality::buildSelectExpression(inputRel: ValueSpecification[1], selectedCols: InstanceValue[1]):FunctionExpression[1]
+{
+  let currentRelType = $inputRel.genericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>);
+  let projectedColumnNames = $selectedCols.values->match([
+    csa:meta::pure::metamodel::relation::ColSpecArray<Any>[1] | $csa.names,
+    cs:meta::pure::metamodel::relation::ColSpec<Any>[1] | [$cs.name]
+  ]);
+  let newRelType = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $currentRelType.columns->filter(col | $projectedColumnNames->contains($col.name->toOne())));
+  let selectFunction = ^SimpleFunctionExpression
+  (
+      func = select_Relation_1__ColSpecArray_1__Relation_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType)),
+      importGroup  = system::imports::coreImport,
+      parametersValues = [
+        $inputRel,
+        $selectedCols
+      ]
+  )->evaluateAndDeactivate();
+}
+
+//we need to create an expression that will produce 1 row with the count if the relation is empty otherwise return no rows.
+function meta::external::dataquality::buildOneRowIfEmptyExpression(inputRel: ValueSpecification[1]):FunctionExpression[1]
+{
+  //get the row count as DQ_COUNT column
+  let inputRelType = $inputRel.genericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>);
+  let dqCountColSpec = ^InstanceValue(values=^ColSpec<Integer>(name='DQ_COUNT'), genericType=^GenericType(rawType=ColSpec, typeArguments = ^GenericType(rawType=Integer)), multiplicity=PureOne)->evaluateAndDeactivate();
+  let newRelTypeWithDqCount = $inputRelType->addColumns(~[DQ_COUNT: Integer[1]])->evaluateAndDeactivate();
+  let withDqCount = buildDqCountExpression($inputRel, $inputRelType, $newRelTypeWithDqCount);
+
+  //select only the DQ_COUNT column
+  let newRelTypeWithOnlyDqCount = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $newRelTypeWithDqCount.columns->filter(col | 'DQ_COUNT' == ($col.name->toOne())));
+  let withOnlyCount = buildSelectExpression($withDqCount, $dqCountColSpec);
+
+  //rename the DQ_COUNT column to COUNT (this is needed as we can't directly use aggregate functions like count(*) in the WHERE clause of a query)
+  let relTypeWithRenamedCount = $newRelTypeWithOnlyDqCount->addColumns(~[COUNT: Integer[1]])->evaluateAndDeactivate();
+  let newRelTypeWithCount = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $relTypeWithRenamedCount.columns->filter(col | 'COUNT' == ($col.name->toOne())));
+  let withRenameCount = buildRenameDqCountExpression($withOnlyCount, $dqCountColSpec, $newRelTypeWithCount);
+
+  //filter where COUNT == 0
+  buildFilterOnEmptyCountExpression($withRenameCount, $newRelTypeWithCount);
+}
+
+function meta::external::dataquality::buildDqCountExpression(rel: ValueSpecification[1], relType: meta::pure::metamodel::relation::RelationType<Any>[1], newRelType: meta::pure::metamodel::relation::RelationType<Any>[1]):FunctionExpression[1]
+{
+  let rowCountFunction = ^SimpleFunctionExpression
+  (
+      func = size_Relation_1__Integer_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=Integer),
+      importGroup  = system::imports::coreImport,
+      parametersValues = [
+        ^VariableExpression(name='rel', genericType=^GenericType(rawType=$relType), multiplicity=PureOne)->evaluateAndDeactivate()
+      ]
+  )->evaluateAndDeactivate();
+
+  $rel->buildExtendExpression('DQ_COUNT', $rowCountFunction, 'row', $relType, $newRelType, Integer);
+}
+
+function meta::external::dataquality::buildRenameDqCountExpression(rel: ValueSpecification[1], columnToRename: InstanceValue[1], newRelType: meta::pure::metamodel::relation::RelationType<Any>[1]):FunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+  (
+      func = rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType)),
+      importGroup  = system::imports::coreImport,
+      parametersValues = [
+        $rel,
+        $columnToRename,
+        ^InstanceValue(values=^ColSpec<Integer>(name='COUNT'), genericType=^GenericType(rawType=ColSpec, typeArguments = ^GenericType(rawType=Integer)), multiplicity=PureOne)->evaluateAndDeactivate()
+      ]
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::buildFilterOnEmptyCountExpression(rel: ValueSpecification[1], relType: meta::pure::metamodel::relation::RelationType<Any>[1]):FunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+   (
+      func = filter_Relation_1__Function_1__Relation_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType)),
+      importGroup  = system::imports::coreImport,
+      parametersValues =
+      [  $rel,
+         ^InstanceValue (genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='row', genericType=^GenericType(rawType=$relType), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
+            multiplicity = PureOne,
+            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity= PureOne, returnType = ^GenericType(rawType = Boolean), parameters = ^VariableExpression(name='row', genericType=^GenericType(rawType=$relType), multiplicity=PureOne)), buildEqualToZeroExpression($relType))
+         )->evaluateAndDeactivate()
+      ]
+   )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::buildEqualToZeroExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1]):FunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+  (
+      func = equal_Any_MANY__Any_MANY__Boolean_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=Boolean),
+      importGroup  = system::imports::coreImport,
+      parametersValues = [
+        ^SimpleFunctionExpression
+        (
+            func = $relType.columns->filter(x|$x.name == 'COUNT')->toOne(),
+            multiplicity = ZeroOne,
+            genericType  = ^GenericType(rawType=Integer),
+            importGroup  = system::imports::coreImport,
+            parametersValues =
+            [
+              ^VariableExpression(name='row', genericType=^GenericType(rawType=$relType), multiplicity=PureOne)->evaluateAndDeactivate()
+            ],
+            propertyName = ^InstanceValue(genericType = ^GenericType(rawType=Any), multiplicity = ZeroOne, values = ['COUNT'])
+        )->evaluateAndDeactivate(),
+        ^InstanceValue(values=0, genericType=^GenericType(rawType=Integer), multiplicity=PureOne)
+      ]
+  )->evaluateAndDeactivate();
 }
 
 
@@ -585,7 +731,7 @@ function meta::external::dataquality::buildEvalExpression(f: ValueSpecification[
       [ ^InstanceValue (
             genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='rel', genericType=^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType)), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType))))),
             multiplicity = PureOne,
-            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType)), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType)),name=$selectedValidation.assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters(false))]),
+            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType)), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType)),name='rel')]),
                                                           $f->evaluateAndDeactivate()->toOne())
          ),
          $query
@@ -593,7 +739,7 @@ function meta::external::dataquality::buildEvalExpression(f: ValueSpecification[
    )->evaluateAndDeactivate();
 }
 
-function meta::external::dataquality::buildStringExtendExpression(rel: ValueSpecification[1], newColumnName: String[1], newColumnFunction: ValueSpecification[1], relParamName: String[1], relType: meta::pure::metamodel::relation::RelationType<Any>[1], newRelType: meta::pure::metamodel::relation::RelationType<Any>[1]):FunctionExpression[1]
+function meta::external::dataquality::buildExtendExpression(rel: ValueSpecification[1], newColumnName: String[1], newColumnFunction: ValueSpecification[1], relParamName: String[1], relType: meta::pure::metamodel::relation::RelationType<Any>[1], newRelType: meta::pure::metamodel::relation::RelationType<Any>[1], newColType: Type[1]):FunctionExpression[1]
 {
    ^SimpleFunctionExpression
    (
@@ -611,9 +757,9 @@ function meta::external::dataquality::buildStringExtendExpression(rel: ValueSpec
                 importGroup  = system::imports::coreImport,
                 parametersValues =
                 [  ^InstanceValue (
-                        genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=String), parameters=^VariableExpression(name=$relParamName, genericType=^GenericType(rawType=$relType), multiplicity=PureOne)))),
+                        genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=$newColType), parameters=^VariableExpression(name=$relParamName, genericType=^GenericType(rawType=$relType), multiplicity=PureOne)))),
                         multiplicity = PureOne,
-                        values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=String), parameters=^VariableExpression(name=$relParamName, genericType=^GenericType(rawType=$relType), multiplicity=PureOne)), $newColumnFunction)),
+                        values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=$newColType), parameters=^VariableExpression(name=$relParamName, genericType=^GenericType(rawType=$relType), multiplicity=PureOne)), $newColumnFunction)),
                    ^InstanceValue(values=$newColumnName, genericType=^GenericType(rawType=String), multiplicity=PureOne),
                    ^InstanceValue(values=$newRelType, genericType=^GenericType(rawType=$newRelType), multiplicity=PureOne)->evaluateAndDeactivate()
                 ]
@@ -622,7 +768,7 @@ function meta::external::dataquality::buildStringExtendExpression(rel: ValueSpec
    )->evaluateAndDeactivate();
 }
 
-function meta::external::dataquality::buildRelationFilterExpressionForRowLevelVal(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], relationType:Type[1]):FunctionExpression[1]
+function meta::external::dataquality::buildRelationFilterExpressionForRowLevelVal(queryExpression: ValueSpecification[1], selectedValidation: RelationValidation[1], relationType:Type[1]):FunctionExpression[1]
 {
   
   let assertion = $selectedValidation.assertion;
@@ -634,7 +780,7 @@ function meta::external::dataquality::buildRelationFilterExpressionForRowLevelVa
       genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relationType)),
       importGroup  = system::imports::coreImport,
       parametersValues =
-      [  $dqRelationValidation.query->evaluateAndDeactivate()->toOne().expressionSequence->toOne(),
+      [  $queryExpression,
          ^InstanceValue (
             genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='validationFilter', genericType=^GenericType(rawType=$relationType), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
             multiplicity = PureOne,
@@ -665,22 +811,18 @@ function meta::external::dataquality::buildRelationLimitFilterExpression(f: Valu
                             importGroup=system::imports::coreImport)->evaluateAndDeactivate();
 }
 
-function meta::external::dataquality::buildFromRuntimeExpression(f: ValueSpecification[1], runtime: Runtime[1], returnType:GenericType[1]):FunctionExpression[1]
-{
-  ^SimpleFunctionExpression(func=from_T_m__Runtime_1__T_m_,
-                            functionName=from_T_m__Runtime_1__T_m_.name,
-                            importGroup=system::imports::coreImport,
-                            genericType=$returnType,
-                            multiplicity=$f.multiplicity,
-                            parametersValues=[$f, ^InstanceValue(values=$runtime->evaluateAndDeactivate(), genericType=$runtime->genericType(), multiplicity=PureOne)]->evaluateAndDeactivate());
-}
-
 function meta::external::dataquality::isFromFunctionPresent(func: FunctionDefinition<Any>[1]):Boolean[1]
 {
   let getExprList = $func->findExpressionsForFunctionInFunctionDefinition(
     meta::external::dataquality::fromFunctions()
     );
   !$getExprList->isEmpty();
+}
+
+function meta::external::dataquality::isEndingWithFromFunction(func: FunctionDefinition<Any>[1]):Boolean[1]
+{
+  let queryEndExpression = $func.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression);
+  $queryEndExpression.func->in(fromFunctions());
 }
 
 function <<access.protected>> meta::external::dataquality::fromFunctions():Function<Any>[*]
@@ -713,15 +855,12 @@ function meta::external::dataquality::generateMainQueryCountLambda(dqRelationVal
 {
   let lambda = $dqRelationValidation.query;
   let relationType = $dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType().typeArguments.rawType->toOne();
-  let withSizeExpression = $dqRelationValidation->buildSizeExpression();
-  let withFromRuntimeExpression = if(!$useFrom || $dqRelationValidation.runtime->isEmpty(),
-                                    | $withSizeExpression,
-                                    | $withSizeExpression->buildFromRuntimeExpression($dqRelationValidation.runtime->toOne(), $dqRelationValidation.query->genericType())
-                                   );
-  ^$lambda(expressionSequence=$withFromRuntimeExpression);
+
+  let withSizeExpression = $dqRelationValidation.query.expressionSequence->toOne()->evaluateAndDeactivate()->buildSizeExpression();
+  ^$lambda(expressionSequence=$withSizeExpression);
 }
 
-function meta::external::dataquality::buildSizeExpression(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1]):FunctionExpression[1]
+function meta::external::dataquality::buildSizeExpression(queryExpression: ValueSpecification[1]):FunctionExpression[1]
 {
   ^SimpleFunctionExpression
   (
@@ -731,7 +870,7 @@ function meta::external::dataquality::buildSizeExpression(dqRelationValidation: 
      importGroup  = system::imports::coreImport,
      parametersValues =
       [
-        $dqRelationValidation.query->evaluateAndDeactivate()->toOne().expressionSequence->toOne()
+        $queryExpression
       ]
   )->evaluateAndDeactivate();
 }
@@ -904,5 +1043,17 @@ function meta::external::dataquality::buildHashTypeFunctionExpression():Function
             values = ['MD5']
          )
      ]
+   )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::buildGenerateGuidExpression():FunctionExpression[1]
+{
+   ^SimpleFunctionExpression
+   (
+      func = meta::pure::functions::string::generation::generateGuid__String_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=String),
+      importGroup  = system::imports::coreImport,
+      parametersValues = []
    )->evaluateAndDeactivate();
 }

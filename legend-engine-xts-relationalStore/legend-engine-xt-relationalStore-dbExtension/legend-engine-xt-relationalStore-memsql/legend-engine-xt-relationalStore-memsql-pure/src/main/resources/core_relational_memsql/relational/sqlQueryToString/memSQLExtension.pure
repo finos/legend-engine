@@ -107,6 +107,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('firstMinuteOfHour',         $allStates,            ^ToSql(format='date_trunc(\'hour\', %s)')),
     dynaFnToSql('firstSecondOfMinute',       $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)')),
     dynaFnToSql('floor',                     $allStates,            ^ToSql(format='floor(%s)')),
+    dynaFnToSql('generateGuid',              $allStates,            ^ToSql(format='UUID()')),
     dynaFnToSql('hour',                      $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('indexOf',                   $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('joinStrings',               $allStates,            ^ToSql(format='group_concat(%s separator %s)')),

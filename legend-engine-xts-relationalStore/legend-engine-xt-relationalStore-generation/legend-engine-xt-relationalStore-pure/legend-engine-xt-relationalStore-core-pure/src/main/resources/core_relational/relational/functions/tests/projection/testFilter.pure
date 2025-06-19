@@ -49,7 +49,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::testChainedF
    let result = execute(|Firm.all()->filter(f|$f.employees->filter(e|$e.lastName == 'Smith').locations->filter(o|$o.place == 'Hoboken').place != 'New York'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1 );
    assertEquals('Firm X', $result.values->at(0).legalName);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join locationTable as "locationtable_0" on ("persontable_0".ID = "locationtable_0".PERSONID and "locationtable_0".PLACE = \'Hoboken\') where ("persontable_0".LASTNAME = \'Smith\' and ("locationtable_0".PLACE <> \'New York\' OR "locationtable_0".PLACE is null))', $result);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join locationTable as "locationtable_0" on ("persontable_0".ID = "locationtable_0".PERSONID and "locationtable_0".PLACE = \'Hoboken\') where "persontable_0".LASTNAME = \'Smith\' and ("locationtable_0".PLACE <> \'New York\' or "locationtable_0".PLACE is null)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::testChainedFiltersGet():Boolean[1]
@@ -72,7 +72,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::testIsNullCo
 {
    let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/age#])->filter(r|$r.getInteger('age') > 30 && $r.isNull('age')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 0);
-   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where ("root".AGE > 30 and "root".AGE is null)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where "root".AGE > 30 and "root".AGE is null', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::testIsNotNullColumn():Boolean[1]
@@ -80,7 +80,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::testIsNotNul
    let result = execute(|Person.all()->project([#/Person/firstName#, #/Person/age#])->filter(r|$r.getInteger('age') > 30 && $r.isNotNull('age')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements([32, 34, 35, 'David', 'Fabrice', 'Oliver'], $result.values.rows.values);
-   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where ("root".AGE > 30 and "root".AGE is not null)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" where "root".AGE > 30 and "root".AGE is not null', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::testCompressSQLforINFilter():Boolean[1]
@@ -89,7 +89,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::testCompress
    let result = execute(|Person.all()->project(  [col( x |$x.name,'Name' ),
    col( x |$x.locations->filter( f| $f.place -> in(['Hoboken', 'New York']) ).place ,'place' ),
    col( x |$x.locations->filter( f| $f.place -> in(['Hoboken','New York']) ).censusdate ,'CD' )  ]),
-   meta::relational::tests::simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), debug());
+   meta::relational::tests::simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
    assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "Name", "locationtable_0".PLACE as "place", "locationtable_0".date as "CD" from personTable as "root" left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID and "locationtable_0".PLACE in (\'Hoboken\', \'New York\'))', $result->sqlRemoveFormatting());
 
 }

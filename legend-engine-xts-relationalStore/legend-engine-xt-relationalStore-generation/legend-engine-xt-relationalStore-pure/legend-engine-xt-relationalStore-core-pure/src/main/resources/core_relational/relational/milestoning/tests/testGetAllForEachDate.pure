@@ -83,7 +83,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
    assertSameElements($expectedValue, $actualValue);
    assertEqualsH2Compatible(
     'select "root".name as "name", "calendartable_0".calendar_date as "date" from (select "root".calendar_date from CalendarTable as "root" where ("root".calendar_date > \'2020-01-02\' and "root".calendar_date < \'2020-01-15\')) as "calendartable_0" left outer join ProductTable as "root" on ("root".from_z <= "calendartable_0".calendar_date and "root".thru_z > "calendartable_0".calendar_date) where "root".name = \'ProductName3\'',
-    'select "root".name as "name", "calendartable_0".calendar_date as "date" from (select "root".calendar_date from CalendarTable as "root" where ("root".calendar_date > DATE\'2020-01-02\' and "root".calendar_date < DATE\'2020-01-15\')) as "calendartable_0" left outer join ProductTable as "root" on ("root".from_z <= "calendartable_0".calendar_date and "root".thru_z > "calendartable_0".calendar_date) where "root".name = \'ProductName3\'',
+    'select "root".name as "name", "calendartable_0".calendar_date as "date" from (select "root".calendar_date from CalendarTable as "root" where "root".calendar_date > DATE\'2020-01-02\' and "root".calendar_date < DATE\'2020-01-15\') as "calendartable_0" left outer join ProductTable as "root" on ("root".from_z <= "calendartable_0".calendar_date and "root".thru_z > "calendartable_0".calendar_date) where "root".name = \'ProductName3\'',
     $result->sqlRemoveFormatting()
    );
 }

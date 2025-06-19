@@ -28,8 +28,7 @@ public class Test_H2_SDT extends TestSuite
     {
         return SdtTestSuiteBuilder.buildSdtTestSuite(
                 "H2",
-                es -> Lists.immutable.of(Root_meta_external_store_relational_sqlDialectTranslation_h2_h2SqlDialectExtension__Extension_1_(es)),
-                core_external_store_relational_sql_dialect_translation_h2_h2SqlDialect::Root_meta_external_store_relational_sqlDialectTranslation_h2_h2FunctionTestsExpectedErrors__Map_1_
+                es -> Lists.immutable.of(Root_meta_external_store_relational_sqlDialectTranslation_h2_h2SqlDialectExtension__Extension_1_(es))
         );
     }
 }

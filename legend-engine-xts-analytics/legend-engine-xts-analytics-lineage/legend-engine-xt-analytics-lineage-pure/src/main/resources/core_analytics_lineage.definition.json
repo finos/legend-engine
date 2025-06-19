@@ -5,10 +5,12 @@
     "platform",
     "platform_dsl_store",
     "platform_dsl_mapping",
+    "platform_precise_primitives",
     "platform_store_relational",
     "core_functions_json",
     "core_functions_standard",
     "core_functions_unclassified",
+    "core_functions_relation",
     "core_relational",
     "core"
   ]

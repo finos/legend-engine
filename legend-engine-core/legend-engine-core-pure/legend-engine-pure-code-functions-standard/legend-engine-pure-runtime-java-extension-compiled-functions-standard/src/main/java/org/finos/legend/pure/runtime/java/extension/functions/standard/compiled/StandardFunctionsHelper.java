@@ -21,6 +21,8 @@ import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives.date.operation.TimeBucketShared;
 
+import java.util.UUID;
+
 public class StandardFunctionsHelper
 {
     // DATE-TIME --------------------------------------------------------------
@@ -77,5 +79,49 @@ public class StandardFunctionsHelper
     public static double tanh(double input)
     {
         return Math.tanh(input);
+    }
+
+    // BITWISE ---------------------------------------------------------------------
+    public static Long bitAnd(Long arg1, Long arg2)
+    {
+        return arg1 & arg2;
+    }
+
+    public static Long bitOr(Long arg1, Long arg2)
+    {
+        return arg1 | arg2;
+    }
+
+    public static Long bitXor(Long arg1, Long arg2)
+    {
+        return arg1 ^ arg2;
+    }
+
+    public static Long bitNot(Long arg)
+    {
+        return ~arg;
+    }
+
+    public static Long bitShiftLeft(Long arg, Long n)
+    {
+        if (n < 0 || n > 62)
+        {
+            throw new PureExecutionException("Unsupported number of bits to shift - max bits allowed is 62");
+        }
+        return arg << n;
+    }
+
+    public static Long bitShiftRight(Long arg, Long n)
+    {
+        if (n < 0 || n > 62)
+        {
+            throw new PureExecutionException("Unsupported number of bits to shift - max bits allowed is 62");
+        }
+        return arg >> n;
+    }
+
+    public static String generateGuid()
+    {
+        return UUID.randomUUID().toString();
     }
 }

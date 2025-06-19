@@ -125,7 +125,7 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
         test("###DataQualityValidation\n" +
                 "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
                 "{\n" +
-                "   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok')->from(dq::dqDevRuntime);\n" +
                 "   validations: [\n" +
                 "   {\n" +
                 "     name: 'testValidation';\n" +
@@ -139,32 +139,56 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
         test("###DataQualityValidation\n" +
                 "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
                 "{\n" +
-                "   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok')->from(dq::dqDevRuntime);\n" +
                 "   validations: [\n" +
                 "   {\n" +
                 "     name: 'testValidation';\n" +
                 "     description: 'test validation';\n" +
-                "     assertion: rel|$rel->size() > 0;\n" +
+                "     assertion: rel|$rel->assertRelationNotEmpty();\n" +
                 "     type: AGGREGATE;\n" +
+                "    }\n" +
+                "   ];\n" +
+                "}\n");
+
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok')->from(dq::dqDevRuntime);\n" +
+                "   validations: [\n" +
+                "   {\n" +
+                "     name: 'testValidation';\n" +
+                "     description: 'test validation';\n" +
+                "     assertion: rel|$rel->assertRelationNotEmpty();\n" +
                 "    }\n" +
                 "   ];\n" +
                 "}\n");
     }
 
     @Test
-    public void testRelationalValidation_separateRuntime()
+    public void testRelationValidation_query_params()
     {
         test("###DataQualityValidation\n" +
                 "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
                 "{\n" +
-                "   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
-                "   runtime: test::test;\n" +
+                "   query: name: String[1]|#>{my::Store.myTable}#->filter(c|$c.name == 'ok')->from(dq::dqDevRuntime);\n" +
                 "   validations: [\n" +
                 "   {\n" +
                 "     name: 'testValidation';\n" +
                 "     description: 'test validation';\n" +
-                "     assertion: row|$row.name != 'error';\n" +
-                "     type: ROW_LEVEL;\n" +
+                "     assertion: {name: String[1], rel|$rel->assertRelationNotEmpty()};\n" +
+                "    }\n" +
+                "   ];\n" +
+                "}\n");
+
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "   query: {name: String[1], businessDate: Date[1]|#>{my::Store.myTable}#->filter(c|$c.name == 'ok')->from(dq::dqDevRuntime)};\n" +
+                "   validations: [\n" +
+                "   {\n" +
+                "     name: 'testValidation';\n" +
+                "     description: 'test validation';\n" +
+                "     assertion: {businessDate: Date[1], rel|$rel->assertRelationNotEmpty()};\n" +
                 "    }\n" +
                 "   ];\n" +
                 "}\n");

@@ -48,14 +48,16 @@ function meta::external::store::relational::sqlDialectTranslation::fetchSqlDiale
 
 // Interface
 
-function meta::external::store::relational::sqlDialectTranslation::generateSqlDialectForStatement(statement: Statement[1], config: SqlDialectTranslationConfig[1], extensions: Extension[*]): String[1]
+function meta::external::store::relational::sqlDialectTranslation::generateSqlDialect(node: Node[1], config: SqlDialectTranslationConfig[1], extensions: Extension[*]): String[1]
 {
   let sqlDialect = $config.dbConfig.dbType->fetchSqlDialectForDbType($extensions);
-  let typeInferredStatement = $statement->match([
+  let typeInferredNode = $node->match([
     q: Query[1] | $q->inferTypes($config.functionRegistry),
-    s: Statement[1] | $s
+    e: meta::external::query::sql::metamodel::Expression[1] | $e->inferTypes($config.functionRegistry);,
+    s: Statement[1] | $s,
+    n: Node[1] | fail('SQL Dialect generation only supported for Statements and Expressions. Can\'t generate dialect for node of type ' + $n->type().name->toOne()); ^NullLiteral();
   ]);
-  $sqlDialect->executeNodeProcessor($typeInferredStatement, ^SqlDialectTranslationState(), $config);
+  $sqlDialect->executeNodeProcessor($typeInferredNode, ^SqlDialectTranslationState(), $config);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -67,6 +69,7 @@ Class meta::external::store::relational::sqlDialectTranslation::SqlDialectTransl
   dbConfig: DbConfig[1];
   formatConfig: FormatConfig[1]; 
   functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1];
+  extraNodeProcessors: Map<Class<Node>, NodeProcessor<Node>>[0..1];
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::DbConfig
@@ -103,6 +106,8 @@ Class meta::external::store::relational::sqlDialectTranslation::SqlDialectTransl
         | ''
     )
   }: String[1];
+
+  nestedFreeMarkerOperation: Boolean[1] = false;
 }
 
 function meta::external::store::relational::sqlDialectTranslation::increaseLevel(state: SqlDialectTranslationState[1]): SqlDialectTranslationState[1]

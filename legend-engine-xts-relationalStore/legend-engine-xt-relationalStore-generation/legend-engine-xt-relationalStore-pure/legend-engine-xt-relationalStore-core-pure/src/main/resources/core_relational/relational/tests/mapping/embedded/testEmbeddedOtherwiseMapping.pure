@@ -105,7 +105,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
 
 
   assertEquals('name,type\n' + 'Product 1,15 years\n' + 'Product 2,15 years\n', $result.values->toOne()->toCSV());
-  assertSameSQL('select "root".PRODUCT_NAME as "name", "bond_detail_0".TYPE as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where ("bond_detail_0".TYPE like \'15%\' and "root".BOND_DETAILS like \'Bond%\')', $result);
+  assertSameSQL('select "root".PRODUCT_NAME as "name", "bond_detail_0".TYPE as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where "bond_detail_0".TYPE like \'15%\' and "root".BOND_DETAILS like \'Bond%\'', $result);
  }
 
 
@@ -121,7 +121,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
   assertEquals('Bond Type,Profit\n' + '15 years,10.0\n' + '5 years,1.0\n', $result.values->toOne()->toCSV());
   assertEqualsH2Compatible(
     'select "bond_detail_0".TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then 5.0 else 1.0 end) as "Profit" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
-    'select "bond_detail_0".TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "Profit" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
+    'select "bond_detail_0".TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then cast(5.0 as float) else cast(1.0 as float) end) as "Profit" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
     $result->sqlRemoveFormatting()
   );
 }
@@ -138,7 +138,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
   assertEquals('Bond Type,sum\n' + '15 years,2.0\n' + '5 years,5.0\n', $result.values->toOne()->toCSV());
   assertEqualsH2Compatible(
     'select "bond_detail_0".TYPE as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
-    'select "bond_detail_0".TYPE as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
+    'select "bond_detail_0".TYPE as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then cast(5.0 as float) else cast(1.0 as float) end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
     $result->sqlRemoveFormatting()
   );
 }
@@ -155,7 +155,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
   assertEquals('Bond Type,sum\n' + 'Bond 1,1.0\n' + 'Bond 2,1.0\n'+ 'SuperBond 3 super,5.0\n', $result.values->toOne()->toCSV());
   assertEqualsH2Compatible(
     'select "root".BOND_DETAILS as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
-    'select "root".BOND_DETAILS as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
+    'select "root".BOND_DETAILS as "Bond Type", sum(case when "bond_detail_0".TYPE like \'5%\' then cast(5.0 as float) else cast(1.0 as float) end) as "sum" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) group by "Bond Type"', 
     $result->sqlRemoveFormatting()
   );
 
@@ -204,7 +204,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
 
   
    assertEquals('name,description\n' + 'Product 1,laBond 1\n' + 'Product 2,laBond 2\n'+ 'Product 3,laSuperBond 3 super\n', $result.values->toOne()->toCSV());
-   assertSameSQL('select "root".PRODUCT_NAME as "name", concat(\'la\', "root".BOND_DETAILS) as "description" from PRODUCT_DENORM as "root" where (concat(\'\', "root".BOND_DETAILS) <> \'2\' OR concat(\'\', "root".BOND_DETAILS) is null)', $result);
+   assertSameSQL('select "root".PRODUCT_NAME as "name", concat(\'la\', "root".BOND_DETAILS) as "description" from PRODUCT_DENORM as "root" where concat(\'\', "root".BOND_DETAILS) <> \'2\' or concat(\'\', "root".BOND_DETAILS) is null', $result);
 
 }
 
@@ -235,7 +235,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
 {
   let result = execute(|Product.all()->filter( p| $p.bondDetails.status == Status.Closed)
                                      ->project( [p | $p.bondDetails.status, p | $p.bondDetails.type], ['status', 'type'])
-                                 , testMappingEmbeddedOtherwise2, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), debug());
+                                 , testMappingEmbeddedOtherwise2, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
 
   assertEquals('status,type\n' + 'Closed,5 years\n', $result.values->toOne()->toCSV());
   assertSameSQL('select "root".BOND_STATUS as "status", "bond_detail_0".TYPE as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where "root".BOND_STATUS in (\'CLOSED\', \'Closed\')', $result);

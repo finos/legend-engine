@@ -109,6 +109,7 @@ function meta::relational::functions::sqlQueryToString::sybaseASE::getDynaFuncti
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='dateadd(DAY, -(datepart(dayofyear, current_date()) - 1), current_date())%s', transform={p:String[*] | ''})),
     dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='dateadd(DAY, -((datepart(weekday, %s)+5) %% 7), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='dateadd(DAY, -(datepart(dayofyear, %s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='NEWID()')),
     dynaFnToSql('greatest',               $allStates,            ^ToSql(format='%s', transform={p:String[*] | convertGreatestLeastToCaseStatement('>=', $p)})),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='datepart(HH, %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),

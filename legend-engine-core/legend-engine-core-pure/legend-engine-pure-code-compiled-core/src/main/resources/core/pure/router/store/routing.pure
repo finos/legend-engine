@@ -182,6 +182,84 @@ function <<access.private>> meta::pure::router::store::routing::processClassPass
   ^$s(depth = $s.depth + $c->varToString());
 }
 
+function meta::pure::router::store::routing::projectFunctions(): Function<Any>[*]
+{
+  tdsProjectFunctions()->concatenate(relationProjectFunctions())
+}
+
+function meta::pure::router::store::routing::tdsProjectFunctions(): Function<Any>[*]
+{
+  [
+    project_T_MANY__Path_MANY__TabularDataSet_1_,
+    project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_,
+    project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_
+  ]
+}
+
+function meta::pure::router::store::routing::relationProjectFunctions(): Function<Any>[*]
+{
+  [
+    meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_
+  ]
+}
+
+Enum meta::pure::router::store::routing::QueryPattern
+{
+  FilteredGetAll,
+  Project,
+  GraphFetch,
+  Unknown
+}
+
+function <<access.private>> meta::pure::router::store::routing::identifyQueryPattern(state: RoutingState[1]): QueryPattern[1]
+{
+  // Router union should be retained only for certain pattern of queries
+  // Only [getAll, filtered getAll] potentially followed by project or graphFetch 
+  // In case of other operations like groupBy, resolution should not happen as its not functionally correct to concatenate results from multiple queries
+  // This function identifies the query pattern
+
+  let exprSequenceAfterGetAll = $state.functionExpressionStack->evaluateAndDeactivate()->reverse()->tail();
+  let withFiltersRemoved = $exprSequenceAfterGetAll->fold({e, agg | if ($agg->isEmpty() && $e.func->evaluateAndDeactivate() == filter_T_MANY__Function_1__T_MANY_, | [], | $agg->concatenate($e)->evaluateAndDeactivate())}, []);
+
+  if (
+    [
+      pair(|$withFiltersRemoved->isEmpty(), |QueryPattern.FilteredGetAll),
+      pair(|$withFiltersRemoved->at(0)->evaluateAndDeactivate().func->evaluateAndDeactivate()->in(projectFunctions()), |QueryPattern.Project),
+      pair(|$withFiltersRemoved->at(0)->evaluateAndDeactivate().func->evaluateAndDeactivate()->in(meta::pure::graphFetch::execution::graphFetchFunctions()), |QueryPattern.GraphFetch)
+    ],
+    |QueryPattern.Unknown
+  );
+}
+
+function <<access.private>> meta::pure::router::store::routing::isClassEncounteredInGetAllFunction(state: RoutingState[1]): Boolean[1]
+{
+  let exprSequence = $state.functionExpressionStack->evaluateAndDeactivate()->reverse();
+  $exprSequence->isNotEmpty() && $exprSequence->at(0).func->evaluateAndDeactivate()->isGetAllFunction();
+}
+
+function <<access.private>> meta::pure::router::store::routing::potentiallyConvertRouterUnionToStoreUnionAndResolveSets(set: SetImplementation[0..1], state: RoutingState[1], mapping: Mapping[1], debug: DebugContext[1]): SetImplementation[*]
+{
+  let isRouterUnionSet = $set->match([o:OperationSetImplementation[1] | ($o.operation == meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_) && ($o->resolveOperation($mapping)->size() > 1), a:Any[*] | false]);
+  if ($isRouterUnionSet && $state->isClassEncounteredInGetAllFunction(),
+      | let opSet = $set->toOne()->cast(@OperationSetImplementation);
+        let queryPattern = $state->identifyQueryPattern();
+        if (
+          [
+            // For unknown pattern, convert to store union as concatenate might not be functionally correct (groupBy queries etc.)
+            pair(|$queryPattern == QueryPattern.Unknown, |^$opSet(operation = meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_)->potentiallyResolveOperation($mapping)),
+
+            // For project, concatenation should happen just after project but not for the full query. This will be handled in further routing of project function if router union set is encountered
+            pair(|$queryPattern == QueryPattern.Project, |$opSet->reprocessOperationForAssociationMapping($mapping))
+          ],
+
+          // For getAll and graphFetch, concatenate at the top is fine. So, resolve the router union into multiple sets
+          |$opSet->potentiallyResolveOperation($mapping)
+        );,
+      | $set->potentiallyResolveOperation($mapping)
+  );
+}
+
+
 function <<access.private>> meta::pure::router::store::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], s:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
 {
     // Route a Class using the Mapping
@@ -189,7 +267,7 @@ function <<access.private>> meta::pure::router::store::routing::processClass(c:C
     let mapping      = $strategy.mapping;
     let runtime      = $strategy.runtime;
     let state        = ^$s(depth = $s.depth + $c->varToString());
-    let classMapping = if($strategy.toChooseSet->isEmpty(), |$mapping->rootClassMappingByClass($c)->potentiallyResolveOperation($mapping), |$strategy.toChooseSet);
+    let classMapping = if($strategy.toChooseSet->isEmpty(), |$mapping->rootClassMappingByClass($c)->potentiallyConvertRouterUnionToStoreUnionAndResolveSets($s, $mapping, $debug), |$strategy.toChooseSet);
 
 
     // Possible when the mapping is 'embedded'
@@ -469,8 +547,8 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                 let newRoutingStrategy     = getRoutingStrategyFromMappingAndRuntime($currentRoutingStrategy, $fromMapping, $fromRuntime, $extensions);
                 let newState               = ^$state(routingStrategy = $newRoutingStrategy);
 
-                let processedFunction      = $fe.parametersValues->at(0)->match([v:VariableExpression[1] | meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values->cast(@FunctionExpression)->at(0),
-                                                                                 f:FunctionExpression[1] |$f])->routeFunctionExpression( $newState, $fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
+                let processedFunction      = ^$newState(value = $fe.parametersValues->at(0)->match([v:VariableExpression[1] | meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values->cast(@FunctionExpression)->at(0),
+                                                                                 f:FunctionExpression[1] |$f])->evaluateAndDeactivate())->routeValueSpecification($fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
                 let valueSpec              = $processedFunction.value;
                 let wrappedValueSpec       = $valueSpec->evaluateAndDeactivate()->match([
                                                           evs: ExtendedRoutedValueSpecification[1] | $evs,
@@ -536,8 +614,109 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                   routingStrategy = $newRoutingStrategy,
                   value           = $routedSave);
         }
+    ),
+    pair(
+      {fe:FunctionExpression[1] | $fe.func->in([projectFunctions()])},
+      {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+        let processedFunction = $f->routeFunctionExpressionFunctionDefinition($fe, $state, $executionContext, $vars, $inScopeVars->putAll($f->openVariableValues()), $extensions, $debug);
+        let processedExpr = $processedFunction.value->evaluateAndDeactivate()->match([
+          {rfe: FunctionExpression[1] | 
+            $rfe.parametersValues->evaluateAndDeactivate()->at(0)->match([
+              {smrv: StoreMappingRoutedValueSpecification[1] |
+                if (($smrv.sets->size() == 1) && $smrv.sets->toOne()->instanceOf(OperationSetImplementation) && ($smrv.sets->toOne()->cast(@OperationSetImplementation).operation == meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_),
+                    | let opSet = $smrv.sets->toOne()->cast(@OperationSetImplementation);
+                      let resolvedSets = $opSet->resolveOperation($smrv.mapping);
+                      let filteredGetAllClass = $smrv->fetchFilteredGetAllClass();
+                      if ($filteredGetAllClass->isNotEmpty(),
+                          | if ($resolvedSets->size() > 1,
+                                | print(if($debug.debug,|$debug.space+'Identified project function with root class \'' + $filteredGetAllClass->toOne()->elementToPath() + '\' mapped as a special_union with sets ' + $resolvedSets.id->joinStrings('[', ', ', ']') + '. Converting to concatenation query on individual sets.\n',|''));
+                                  let routedSubExpressions = $resolvedSets->map({rset |
+                                    let newDebug = $debug->indent();
+                                    print(if($newDebug.debug,|$newDebug.space+'Routing query with root set (' + $rset.id + ')\n',|''));
+                                    let openVars = $inScopeVars->putAll($f->openVariableValues());
+                                    let singleSetRoutingStrategy = getRoutingStrategyFromMappingAndRuntime($smrv.mapping->updateRouterUnionSetWithSingleSet($opSet.id, $rset.id), $smrv.runtime);
+                                    let singleSetProcessedFunc = $f->routeFunctionExpressionFunctionDefinition($fe, ^$state(routingStrategy = $singleSetRoutingStrategy), $executionContext, $vars, $openVars, $extensions, $newDebug);
+                                    let result = $singleSetProcessedFunc.routingStrategy.wrapValueSpec($singleSetProcessedFunc.value->evaluateAndDeactivate()->at(0)->cast(@ValueSpecification), 'special_unon_project_wrapper', $singleSetProcessedFunc.executionContext, $extensions, $newDebug->indent())->evaluateAndDeactivate()
+                                      ->enrichExpressionWithStrategyBasedEnrichment($singleSetProcessedFunc.executionContext, $extensions, $newDebug->indent())->evaluateAndDeactivate()
+                                      ->clusterFunctionExpressions($openVars, $singleSetProcessedFunc.executionContext, $extensions, $newDebug->indent())->evaluateAndDeactivate();
+                                    print(if($newDebug.debug,|$newDebug.space+'Routing result with root set (' + $rset.id + '): ' + $result->map(r | $r->meta::pure::router::printer::asString())->joinStrings('[', ', ', ']') + '\n',|''));
+                                    $result;
+                                  });
+                                  let routingStrategy = $smrv.routingStrategy->cast(@StoreMappingRoutingStrategy);
+                                  ^$processedFunction(value = buildConcatenate($routedSubExpressions, $fe.genericType), routingStrategy=^$routingStrategy(sets = []));,
+                                | $processedFunction
+                            ),
+                          | $processedFunction
+                      );,
+                    | $processedFunction
+                )
+              },
+              {a: Any[*] | $processedFunction}
+            ])
+          },
+          {a: Any[*] | $processedFunction}
+        ]);
+      }
     )
   ];
+}
+
+function <<access.private>> meta::pure::router::store::routing::updateRouterUnionSetWithSingleSet(m: Mapping[1], opSetId: String[1], paramSetId: String[1]): Mapping[1]
+{
+  ^$m
+  (
+    classMappings = $m.classMappings->map({cm |
+      if (($cm.id == $opSetId) && $cm->instanceOf(OperationSetImplementation) && ($cm->cast(@OperationSetImplementation).operation == meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_),
+          | let rSet = $cm->cast(@OperationSetImplementation);
+            ^$rSet(parameters = $rSet.parameters->filter(p | $p.id == $paramSetId));,
+          | $cm
+      )
+    }),
+    includes = $m.includes->map(i | ^$i(included = $i.included->updateRouterUnionSetWithSingleSet($opSetId, $paramSetId)))
+  )
+}
+
+function <<access.private>> meta::pure::router::store::routing::buildConcatenate(v: ValueSpecification[*], type: GenericType[1]): ValueSpecification[1]
+{
+  let isRelation = $type.rawType->isNotEmpty() && ($type.rawType->toOne()->elementToPath() == 'meta::pure::metamodel::relation::Relation');
+  let func =  if($isRelation, | 'meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_', | 'meta::pure::tds::concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_')->pathToElement()->cast(@Function<Any>);
+  $v->tail()->fold({a, b|
+    ^SimpleFunctionExpression(
+      func = $func,
+      functionName = 'concatenate',
+      genericType = $type,
+      multiplicity = PureOne,
+      importGroup = system::imports::coreImport,
+      parametersValues = [$b, $a]->evaluateAndDeactivate()
+    )->evaluateAndDeactivate();
+  }, $v->head()->toOne());
+}
+
+function <<access.private>> meta::pure::router::store::routing::fetchFilteredGetAllClass(vs: ValueSpecification[1]): Class<Any>[0..1]
+{
+  $vs->byPassRouterInfo()->match([
+    {fe: FunctionExpression[1] |
+      if (
+        [
+          pair(
+            {|$fe.func == meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_},
+            {|$fe.parametersValues->evaluateAndDeactivate()->at(0)->fetchFilteredGetAllClass()}
+          ),
+          pair(
+            {|$fe.func->meta::pure::router::routing::isGetAllFunction()},
+            {|
+              $fe.parametersValues->evaluateAndDeactivate()->at(0)->meta::pure::router::utils::deepByPassRouterInfo()->match([
+                iv: InstanceValue[1] | $iv.values->evaluateAndDeactivate()->match([cls: Class<Any>[1] | $cls, a: Any[*] | []]),
+                a: Any[*] | []
+              ])
+            }
+          )
+        ],
+        {|[]}
+      )
+    },
+    {a: Any[*] | []}
+  ])
 }
 
 // ===================================================================================

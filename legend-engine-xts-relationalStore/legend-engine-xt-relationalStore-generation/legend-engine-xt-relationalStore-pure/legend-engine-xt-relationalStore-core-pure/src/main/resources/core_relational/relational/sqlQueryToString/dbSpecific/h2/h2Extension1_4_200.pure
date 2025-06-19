@@ -1,3 +1,4 @@
+import meta::relational::extension::*;
 import meta::relational::metamodel::relation::*;
 import meta::pure::extension::*;
 import meta::relational::metamodel::join::*;
@@ -63,7 +64,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::loadValuesToDbTableForH2(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
 {
-  if($l.absolutePathToFile->isNotEmpty(),| 'INSERT INTO ' + $l.table->tableToString($dbConfig) + ' SELECT * FROM CSVREAD(\''+$l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + '\');'
+  if($l.absolutePathToFile->isNotEmpty(),| 'INSERT INTO ' + $l.table->tableToString($dbConfig) + ' SELECT * FROM CSVREAD(\''+$l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, relationalExtensions()) + '\');'
                               ,| $l->meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault($dbConfig))
 }
 
@@ -105,6 +106,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(current_date()) - 1), current_date())')),
     dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='dateadd(DAY, -(mod(dayofweek(%s)+5, 7)), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='TO_CHAR(RANDOM_UUID())')),   
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),

@@ -47,14 +47,43 @@ Class meta::relational::metamodel::DataRow
    values : Any[*];
 }
 
-Class meta::relational::metamodel::CreateViewSQL extends SQLQuery
+Class meta::relational::metamodel::ObjectQuery extends SQLQuery
 {
-    schemaName : String[0..1];
-    name : String[1];
-    generatedSQL : String[1];
-    secure : Boolean[1] = false;
-    copyGrants : Boolean[1] = false;
+  schemaName : String[0..1];
+  name : String[1];
+  generatedSQL : String[1];
+  secure : Boolean[1] = false;
+  copyGrants : Boolean[1] = false;
 }
+
+Class meta::relational::metamodel::ParameterizedQuery extends ObjectQuery
+{
+  parameters: String[1];
+  return : String[1];
+  
+}
+
+Class meta::relational::metamodel::CreateViewSQL extends ObjectQuery
+{
+  
+}
+
+Class meta::relational::metamodel::CreateProcedureSQL extends ParameterizedQuery
+{  
+    declarations : VariableDeclaration[*]; 
+}
+
+Class meta::relational::metamodel::VariableDeclaration extends RelationalOperationElement
+{  
+    name : String[1];
+    type: String[0..1];
+    value : RelationalOperationElement[1]; 
+}
+
+Class meta::relational::metamodel::CreateFunctionSQL extends ParameterizedQuery
+{
+}
+
 
 Class meta::relational::metamodel::CreateSchemaSQL extends SQLQuery
 {

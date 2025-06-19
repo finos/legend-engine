@@ -39,7 +39,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testSimpleC
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -64,7 +64,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testMultiCo
    assertEquals('Allen_0,Allen_1,Allen_2,Allen_3,Harris_0,Harris_1,Harris_2,Harris_3,Hill_0,Hill_0,Hill_1,Hill_1,Hill_2,Hill_2,Hill_3,Hill_3,Johnson_0,Johnson_1,Johnson_2,Johnson_3,Roberts_0,Roberts_1,Roberts_2,Roberts_3,Smith_0,Smith_1,Smith_2,Smith_3',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select concat("root".LASTNAME, \'_0\') as "lastName" from personTable as "root" UNION ALL select concat("root".LASTNAME, \'_1\') as "lastName" from personTable as "root" UNION ALL select concat("root".LASTNAME, \'_2\') as "lastName" from personTable as "root" UNION ALL select concat("root".LASTNAME, \'_3\') as "lastName" from personTable as "root") as "unionalias_0"',
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select concat("root".LASTNAME, \'_0\') as "lastName" from personTable as "root" union all select concat("root".LASTNAME, \'_1\') as "lastName" from personTable as "root" union all select concat("root".LASTNAME, \'_2\') as "lastName" from personTable as "root" union all select concat("root".LASTNAME, \'_3\') as "lastName" from personTable as "root") as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -86,7 +86,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME <> \'hello\' OR "root".LASTNAME is null) UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME <> \'hello\' or "root".LASTNAME is null union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -107,7 +107,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME <> \'hello\' OR "root".LASTNAME is null)) as "unionalias_0"',
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME <> \'hello\' or "root".LASTNAME is null) as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -129,7 +129,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Harris,Hill,Hill,Johnson,Roberts,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\' UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\' union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -150,7 +150,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Harris,Hill,Hill,Johnson,Roberts,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\') as "unionalias_0"',
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\') as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -172,7 +172,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where ("unionalias_0"."lastName" <> \'hello\' OR "unionalias_0"."lastName" is null)',
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where "unionalias_0"."lastName" <> \'hello\' or "unionalias_0"."lastName" is null',
       $result->sqlRemoveFormatting());
 }
 
@@ -194,7 +194,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where "unionalias_0"."lastName" = \'hello\'',
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where "unionalias_0"."lastName" = \'hello\'',
       $result->sqlRemoveFormatting());
 }
 
@@ -218,7 +218,7 @@ function <<test.Test, test.ToFix>> meta::relational::tests::tds::tdsConcatenate:
    //assertEquals('',
    //   $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   //assertEquals('select "union"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "union" where "union"."lastName" = \'hello\'',
+   //assertEquals('select "union"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "union" where "union"."lastName" = \'hello\'',
    //   $result->sqlRemoveFormatting());
 
    fail('Expectations need updating once it works');

@@ -35,7 +35,7 @@ function meta::external::function::activator::snowflakeApp::generation::generate
   let plan =  meta::pure::executionPlan::executionPlan($s.function->cast(@ConcreteFunctionDefinition<Any>), $contextWithEnumPushDown, $extensions, noDebug());
   let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
   let generatedQueryNode = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(node|$node.sqlQuery->toLower()->startsWith('select'))->last()->toOne('candidate query not found');
-  let query = 'CREATE OR REPLACE SECURE FUNCTION %S.' + $deploymentSchema + '.' +$s.applicationName->toUpper() + $inputParamsStub + ' RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS $$ '+ $generatedQueryNode.sqlQuery +' $$;';
+  let query = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.' + $deploymentSchema + '.' +$s.applicationName->toUpper() + $inputParamsStub + ' RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS $$ '+ $generatedQueryNode.sqlQuery +' $$;';
   if($s.usageRole->isNotEmpty(),
   |
     let grant = 'GRANT USAGE ON FUNCTION %S.' + $deploymentSchema + '.'+ $s.applicationName->toUpper()+ generateInputParamsStub($s.function, false) +  ' to role '+ if($s.usageRole->isNotEmpty(), |$s.usageRole->toOne()->toUpper(),|'PUBLIC')+';' ; 

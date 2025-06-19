@@ -62,14 +62,12 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.pure.generated.Package_Impl;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_PackageableElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Type_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
@@ -440,7 +438,7 @@ public class PureModel implements IPureModel
 
     private <T> Stream<T> maybeParallel(Stream<T> stream)
     {
-        if (Thread.currentThread() instanceof ForkJoinWorkerThread)
+        if (this.pureModelProcessParameter.getForkJoinPool() != null)
         {
             return stream.parallel();
         }

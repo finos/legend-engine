@@ -31,7 +31,7 @@ function <<test.Test>> meta::relational::tests::query::function::sybaseIQ::testP
    let f2 = {|Person.all()->project(p|$p.firstName, 'firstName')->sort(asc('firstName'))->paginated(3, 5);};
 
    let s4 = toSQLString($f2, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" order by "firstName" limit ${((3?number - 1?number)?number * 5?number)},${5?number}', $s4);
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" order by "firstName" limit 10,5', $s4);
 
    // Third type of function - subQuery
 
@@ -40,7 +40,7 @@ function <<test.Test>> meta::relational::tests::query::function::sybaseIQ::testP
    let s5 = toSQLString($f3, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "subselect"."firstName" as "firstName" from (select "limitoffset_via_window_subquery"."firstName" as "firstName", "limitoffset_via_window_subquery"."lastName" as "lastName" from '
                 + '(select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", row_number() OVER (Order By "root".FIRSTNAME) as "row_number" from personTable as "root") '
-                + 'as "limitoffset_via_window_subquery" where "limitoffset_via_window_subquery".row_number <= 50) as "subselect" order by "firstName" limit ${((2?number - 1?number)?number * 3?number)},${3?number}', $s5);
+                + 'as "limitoffset_via_window_subquery" where "limitoffset_via_window_subquery".row_number <= 50) as "subselect" order by "firstName" limit 3,3', $s5);
 
 }
 

@@ -140,5 +140,5 @@ function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::
 function <<test.Test>> meta::pure::alloy::connections::tests::relationalMapper::testRelationalMapperTwoDBs():Boolean[1]
 {
   let resultSQL = relationalMapperSqlQuery({|Product.all()->filter(p | $p.cusip == 'CUSIP1')->project([p | $p.name, p | $p.cusip], ['name', 'cusip'])}, productMappingWithFilter, databaseMappers(), schemaMappers(), tableMappers());
-  assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip" from snDB.productSchemaNewDBINC.productTableNewINC as "root" left outer join snDB.productSchemaNewDB.synonymTableNew as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".ID != 1) where "synonymtable_0".NAME = \'CUSIP1\'', $resultSQL);
+  assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip" from snDB.productSchemaNewDBINC.productTableNewINC as "root" left outer join snDB.productSchemaNewDB.synonymTableNew as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".ID <> 1) where "synonymtable_0".NAME = \'CUSIP1\'', $resultSQL);
 }

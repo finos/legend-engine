@@ -42,7 +42,6 @@ import org.finos.legend.pure.runtime.java.extension.functions.interpreted.native
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.meta.NewProperty;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.meta.NewQualifiedProperty;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.runtime.CurrentUserId;
-import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.runtime.Guid;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.runtime.IsOptionSet;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.ASCII;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.Char;
@@ -103,7 +102,6 @@ public class FunctionExtensionInterpreted extends BaseInterpretedExtension
 
                 //Runtime
                 Tuples.pair("currentUserId__String_1_", CurrentUserId::new),
-                Tuples.pair("generateGuid__String_1_", Guid::new),
                 Tuples.pair("isOptionSet_String_1__Boolean_1_", IsOptionSet::new),
 
 

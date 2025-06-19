@@ -24,6 +24,7 @@ public class MemSQLPCTContainer extends JdbcDatabaseContainer<MemSQLPCTContainer
 
     private static final String DEFAULT_USER = "root";
     private static final String DEFAULT_PASSWORD = "admin";
+    private static final int DEFAULT_STARTUP_ATTEMPTS = 3;
     private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
     private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 240;
 
@@ -36,6 +37,7 @@ public class MemSQLPCTContainer extends JdbcDatabaseContainer<MemSQLPCTContainer
     {
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+        this.withStartupAttempts(DEFAULT_STARTUP_ATTEMPTS);
         this.withStartupTimeoutSeconds(DEFAULT_STARTUP_TIMEOUT_SECONDS);
         this.withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         this.withUrlParam("permitMysqlScheme", null);

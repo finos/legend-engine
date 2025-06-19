@@ -12,12 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::extension::*;
+
 // Note: Purposefully using reflection here because compile/execute functions are available only for development and test scope and should notbe used in production
 function meta::legend::compileLegendGrammar(grammar:String[1]): PackageableElement[*]
 {
   let fStr = 'meta::legend::compile_String_1__PackageableElement_MANY_';
   let func = $fStr->pathToElement()->cast(@Function<{String[1]->PackageableElement[*]}>);
   $func->eval($grammar);
+}
+
+function meta::legend::compileLegendFile(file:String[1]): PackageableElement[*]
+{
+  $file->readFile()->toOne('Unable to read file: ' + $file)->meta::legend::compileLegendGrammar();
 }
 
 function meta::legend::executeLegendQuery(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*], extensions:meta::pure::extension::Extension[*]): String[1]
@@ -46,9 +53,23 @@ function meta::legend::executePlanAsJSON(plan:String[1], vars: Pair<String, Any>
   $func->eval($plan, $vars);
 }
 
+function meta::legend::executePlanAsJSON(plan:String[1], vars: Pair<String, Any>[*], format: String[1]):String[1]
+{
+  let fStr = 'meta::legend::execute_String_1__Pair_MANY__String_1__String_1_';
+  let func = $fStr->pathToElement()->cast(@Function<{String[1], Pair<String, Any>[*], String[1]->String[1]}>);
+  $func->eval($plan, $vars, $format);
+}
+
 function meta::legend::compileLegendPMCD(pmcdJSON : String[1]):PackageableElement[*]
 {
   let fStr = 'meta::legend::compilePMCD_String_1__PackageableElement_MANY_';
   let func = $fStr->pathToElement()->cast(@Function<{String[1]->PackageableElement[*]}>);
   $func->eval($pmcdJSON);
+}
+
+function meta::legend::getLegendExtensions():Extension[*]
+{ 
+  let fStr = 'meta::pure::extension::runtime::getExtensions__Extension_MANY_';
+  let func = $fStr->pathToElement()->cast(@Function<{->Extension[*]}>);
+  $func->eval();
 }

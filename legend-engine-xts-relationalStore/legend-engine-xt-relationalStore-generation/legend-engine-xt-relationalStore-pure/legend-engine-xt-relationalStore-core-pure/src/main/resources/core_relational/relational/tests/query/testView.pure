@@ -79,7 +79,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::view::
 function <<test.Test>> meta::relational::tests::query::view::testViewSimpleExists():Boolean[1]
 {
 
-  let result = execute(|Order.all()->filter(o|$o.pnlContact->exists( p| $p.firm.legalName == 'Johnson')), relationalMappingWithViewAndInnerJoin, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),debug());
+  let result = execute(|Order.all()->filter(o|$o.pnlContact->exists( p| $p.firm.legalName == 'Johnson')), relationalMappingWithViewAndInnerJoin, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
   assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime" from orderTable as "root" left outer join (select distinct "salespersontable_1".ACCOUNT_ID from (select "salespersontable_1".ACCOUNT_ID as ACCOUNT_ID, "personfirmview_0".firm_name as firm_name from salesPersonTable as "salespersontable_1" inner join (select "root".ID as PERSON_ID, "root".LASTNAME as lastName, "firmtable_0".LEGALNAME as firm_name from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "personfirmview_0" on ("salespersontable_1".PERSON_ID = "personfirmview_0".PERSON_ID) where "personfirmview_0".firm_name = \'Johnson\') as "salespersontable_1" where "salespersontable_1".firm_name = \'Johnson\') as "salespersontable_0" on ("root".accountID = "salespersontable_0".ACCOUNT_ID) where "salespersontable_0".ACCOUNT_ID is not null', $result);
 }
 

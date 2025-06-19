@@ -127,7 +127,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
 
 
     @Test
-    public void testRelationValidation()
+    public void testRelationValidation_row_level() // row level tests for backward compatibility
     {
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
@@ -139,6 +139,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         name: 'validFirstName';\n" +
                 "         description: 'First name cannot be empty';\n" +
                 "         assertion: row|$row.FIRSTNAME->isNotEmpty();\n" +
+                "         type: ROW_LEVEL;\n" +
                 "      }\n" +
                 "    ];\n" +
                 "}");
@@ -158,32 +159,14 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         name: 'validTheName';\n" +
                 "         description: 'theName cannot be empty';\n" +
                 "         assertion: row|$row.theName->isNotEmpty();\n" +
+                "         type: ROW_LEVEL;\n" +
                 "      }\n" +
                 "    ];\n" +
                 "}");
     }
 
     @Test
-    public void testRelationValidation_separateRuntime()
-    {
-        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
-                "###DataQualityValidation\n" +
-                "DataQualityRelationValidation meta::external::dataquality::Validation\n" +
-                "{\n" +
-                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME);\n" +
-                "    runtime: meta::dataquality::DataQualityRuntime;\n" +
-                "    validations: [\n" +
-                "      {\n" +
-                "         name: 'validFirstName';\n" +
-                "         description: 'First name cannot be empty';\n" +
-                "         assertion: row|$row.FIRSTNAME->isNotEmpty();\n" +
-                "      }\n" +
-                "    ];\n" +
-                "}");
-    }
-
-    @Test
-    public void testRelationValidation_noRuntime()
+    public void testRelationValidation_absentRuntime()
     {
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
@@ -195,13 +178,14 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         name: 'validFirstName';\n" +
                 "         description: 'First name cannot be empty';\n" +
                 "         assertion: row|$row.FIRSTNAME->isNotEmpty();\n" +
+                "         type: ROW_LEVEL;\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", " at [104:1-114:1]: Error in 'meta::external::dataquality::Validation': Execution error at (resource: lines:104c1-114c1), \"Constraint :[mustHaveOneRuntime] violated in the Class DataQualityRelationValidation\"");
+                "}", " at [104:1-115:1]: Error in 'meta::external::dataquality::Validation': Execution error at (resource: lines:104c1-115c1), \"Constraint :[mustEndWithRuntime] violated in the Class DataQualityRelationValidation\"");
     }
 
     @Test
-    public void testRelationValidation_aggregate()
+    public void testRelationValidation()
     {
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
@@ -212,7 +196,50 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      {\n" +
                 "         name: 'nonEmptyDataset';\n" +
                 "         description: 'dataset cannot be empty';\n" +
-                "         assertion: rel|$rel->size()>0;\n" +
+                "         assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "         type: AGGREGATE;\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: {firstName:String[1]| #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->filter(r| $r.FIRSTNAME == $firstName)->from(meta::dataquality::DataQualityRuntime)};\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: {firstName:String[1], rel| $rel->assertRelationNotEmpty()};\n" +
                 "         type: AGGREGATE;\n" +
                 "      }\n" +
                 "    ];\n" +
@@ -220,7 +247,104 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
-    public void testRelationValidation_assertion_should_return_boolean()
+    public void testRelationValidation_MultilineQuery()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: {|let l = #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime); $l->select(~FIRSTNAME);};\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "COMPILATION error at [106:13-161]: Multiline lambda is not supported.");
+    }
+
+    @Test
+    public void testRelationValidation_MultilineAssertion()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: {|let l = #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime); $l->select(~FIRSTNAME);};\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: {rel|let isEmpty = $rel->assertRelationNotEmpty(); isEmpty;};\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "COMPILATION error at [106:13-161]: Multiline lambda is not supported.");
+    }
+
+    @Test
+    public void testRelationValidation_query_params()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: {firstName:String[1]| #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->filter(r| $r.FIRSTNAME == $firstName)->from(meta::dataquality::DataQualityRuntime)};\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: {firstName:String[1], rel| $rel->assertRelationNotEmpty()};\n" +
+                "         type: AGGREGATE;\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: {firstName:String[1], businessDate:String[1]| #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->filter(r| $r.FIRSTNAME == $firstName)->from(meta::dataquality::DataQualityRuntime)};\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: {firstName, rel| $rel->assertRelationNotEmpty()};\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "COMPILATION error at [111:36-67]: Invalid parameter specified on assertion - firstName. Please validate that it is exactly the same as query parameters(name/type/multiplicity)");
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: {firstName:String[1], businessDate:String[1]| #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->filter(r| $r.FIRSTNAME == $firstName)->from(meta::dataquality::DataQualityRuntime)};\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: {lastName:String[1], rel| $rel->assertRelationNotEmpty()};\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "COMPILATION error at [111:22-39]: Invalid parameter specified on assertion - lastName. Please validate that it is exactly the same as query parameters(name/type/multiplicity)");
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: {firstName:String[1], businessDate:String[1]| #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->filter(r| $r.FIRSTNAME == $firstName)->from(meta::dataquality::DataQualityRuntime)};\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: {firstName:String[1] | $rel->assertRelationNotEmpty()};\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "COMPILATION error at [111:42-73]: Assertion param 'rel' is missing!");
+    }
+
+    @Test
+    public void testRelationValidation_assertionValidation()
     {
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
@@ -247,10 +371,9 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         name: 'nonEmptyDataset';\n" +
                 "         description: 'dataset cannot be empty';\n" +
                 "         assertion: rel|$rel->filter(r|$r.FIRSTNAME->isNotEmpty());\n" +
-                "         type: AGGREGATE;\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [111:24-66]: Assertion should return Boolean");
+                "}", "COMPILATION error at [111:24-66]: Assertion should end in either assertRelationEmpty or assertRelationNotEmpty functions");
     }
 
 
@@ -357,15 +480,5 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
             "  ];\n" +
             "  defaultExecutionContext: 'default';\n" +
             "}\n";
-
-    private static final String RELATION_COMPILATION_PREREQUISITE_CODE = "###Relational\n" +
-            "Database my::Store" +
-            "(" +
-            "   Table myTable" +
-            "   (" +
-            "       id INT," +
-            "       name VARCHAR(200)" +
-            "   )" +
-            ")\n";
 
 }

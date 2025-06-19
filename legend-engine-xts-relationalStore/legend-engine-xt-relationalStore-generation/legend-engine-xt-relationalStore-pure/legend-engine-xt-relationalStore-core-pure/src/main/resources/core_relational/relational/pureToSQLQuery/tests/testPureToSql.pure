@@ -251,7 +251,7 @@ meta::relational::tests::functions::pureToSqlQuery::simpleFunctionExpressionTran
    let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
 
-   assertEquals('select current_timestamp()', $sql_string);
+   assertEquals('select now()', $sql_string);
 }
 
 function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::simpleFunctionExpressionTranslationAdjust() : Boolean[1]
@@ -265,7 +265,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::simpl
    let sql = meta::relational::functions::pureToSqlQuery::toSQLQuery($fe, $mapping, ^Map<String,List<Any>>() , [], noDebug(), meta::relational::extension::relationalExtensions());
    let sql_string = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select dateadd(MONTH, 1, current_timestamp())', $sql_string);
+   assertEquals('select dateadd(month, 1, now())', $sql_string);
 }
 
 function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::addDriverTablePkForProject() : Boolean[1]

@@ -27,7 +27,7 @@ public class DataQualityExecuteTrialInput
     public PureModelContext model;
     @JsonProperty
     public String packagePath;
-    public Integer queryLimit;
+    public Integer defectsLimit;
     public List<ParameterValue> lambdaParameterValues;
     public String validationName;
     public Boolean runQuery;

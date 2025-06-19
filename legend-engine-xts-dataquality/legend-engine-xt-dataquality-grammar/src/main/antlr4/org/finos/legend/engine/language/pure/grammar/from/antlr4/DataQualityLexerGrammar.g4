@@ -28,4 +28,3 @@ VALIDATION_ASSERTION:                    'assertion';
 VALIDATION_TYPE:                         'type';
 VALIDATION_TYPE_ROW:                     'ROW_LEVEL';
 VALIDATION_TYPE_AGG:                     'AGGREGATE';
-RELATION_RUNTIME:                        'runtime';

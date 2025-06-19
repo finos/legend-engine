@@ -47,20 +47,19 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     tests = [
       sqlFunctionTest(
         testSetupDataForStatistics(),        
-        // SELECT country, var_samp(temperature) AS result FROM testTable GROUP BY country ORDER BY result ASC NULLS LAST
+        // SELECT var_samp(temperature) AS result FROM testTable ORDER BY result ASC NULLS LAST
         simpleAggFunctionCall(
           ^FunctionCall(
             name = ^QualifiedName(parts = 'var_samp'), 
             arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'temperature'))]
           ),
           'testTable',
-          'country'
+          []
         ),
         ^TestExpectedResult(
-          columns = ['country', 'result'], 
+          columns = ['result'], 
           data = [
-            list(['US', 0.5]),
-            list(['India', 51.96])            
+            list([215.108])
           ]
         )
       )

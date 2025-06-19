@@ -176,11 +176,11 @@ public class ProjectExtend extends AggregationShared
         }
         else if (type == _Package.getByUserPath("Integer", processorSupport))
         {
-            int[] finalRes = new int[(int) source.getOne().getRowCount()];
+            long[] finalRes = new long[(int) source.getOne().getRowCount()];
             boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
             Arrays.fill(nulls, Boolean.FALSE);
             processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.INT, finalRes, nulls);
+            return new ColumnValue(name, DataType.LONG, finalRes, nulls);
         }
         else if (type == _Package.getByUserPath("Float", processorSupport))
         {

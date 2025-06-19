@@ -1,0 +1,51 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class {sqlFunctionInfo.initializer = 'decodeBase64'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::DecodeBase64 extends ExtensionSqlFunction
+[
+  $this.name == 'decode_base64'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::decodeBase64(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::DecodeBase64
+  (
+    name = 'decode_base64',
+    documentation = 'Decodes a Base64-encoded string to a string.',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = AbstractStringSqlType,
+        returnType = AbstractStringSqlType
+      )
+    ],
+    tests = [ 
+      sqlFunctionTest(
+        simpleFunctionCall('decode_base64', literal('bG9yZW1pcHN1bTMz')),
+        'loremipsum33'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('decode_base64', literal('bG9yZW00Mmlwc3Vt')),
+        'lorem42ipsum'
+      )
+    ]
+  )
+}

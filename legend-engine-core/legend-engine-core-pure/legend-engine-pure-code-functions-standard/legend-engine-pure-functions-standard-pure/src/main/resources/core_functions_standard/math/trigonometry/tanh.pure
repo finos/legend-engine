@@ -23,33 +23,33 @@ meta::pure::functions::math::tanh(number:Number[1]):Float[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Identities<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals(tanh(0), 0.0);
-  assertEquals(tanh(-5), -tanh(5));
-  assertEquals(tanh(-100), -tanh(100));
-  assertEqWithinTolerance(tanh(14), 2*tanh(7) / (1 + pow(tanh(7), 2)), 0.00000000000001);
-  assertEqWithinTolerance(tanh(3 + 6), (tanh(3) + tanh(6)) / (1 + tanh(3)*tanh(6)), 0.0000000000001);
-  assertEqWithinTolerance(tanh(3 - 6), (tanh(3) - tanh(6)) / (1 - tanh(3)*tanh(6)), 0.0000000000001);
+  assertEquals($f->eval(|tanh(0)), 0.0);
+  assertEquals($f->eval(|tanh(-5)), $f->eval(|-tanh(5)));
+  assertEquals($f->eval(|tanh(-100)), $f->eval(|-tanh(100)));
+  assertEqWithinTolerance($f->eval(|tanh(14)), $f->eval(|(2*tanh(7) / (1 + pow(tanh(7), 2)))), 0.00000000000001);
+  assertEqWithinTolerance($f->eval(|tanh(3 + 6)), $f->eval(|(tanh(3) + tanh(6)) / (1 + tanh(3)*tanh(6))), 0.0000000000001);
+  assertEqWithinTolerance($f->eval(|tanh(3 - 6)), $f->eval(|(tanh(3) - tanh(6)) / (1 - tanh(3)*tanh(6))), 0.0000000000001);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Integers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals(tanh(3), 0.9950547536867305);
-  assertEquals(tanh(-2), -0.9640275800758169);
+  assertEquals($f->eval(|tanh(3)), 0.9950547536867305);
+  assertEquals($f->eval(|tanh(-2)), -0.9640275800758169);
 
-  assertEquals(tanh(6), 0.9999877116507956);
-  assertEquals(tanh(-6), -0.9999877116507956);
+  assertEquals($f->eval(|tanh(6)), 0.9999877116507956);
+  assertEquals($f->eval(|tanh(-6)), -0.9999877116507956);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Floats<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals(tanh(-3.14), -0.9962602049458319);
-  assertEquals(tanh(3.14), 0.9962602049458319);
+  assertEquals($f->eval(|tanh(-3.14)), -0.9962602049458319);
+  assertEquals($f->eval(|tanh(3.14)), 0.9962602049458319);
 
-  assertEquals(tanh(-.7654321), -0.6442654436049523);
-  assertEquals(tanh(.7654321), 0.6442654436049523);
+  assertEquals($f->eval(|tanh(-.7654321)), -0.6442654436049523);
+  assertEquals($f->eval(|tanh(.7654321)), 0.6442654436049523);
 
-  assertEqWithinTolerance(tanh(11.573574828312076), 0.9999999998228462, 0.0000000001);
-  assertEqWithinTolerance(tanh(-11.573574828312076), -0.9999999998228462, 0.0000000001);
+  assertEqWithinTolerance($f->eval(|tanh(11.573574828312076)), 0.9999999998228462, 0.0000000001);
+  assertEqWithinTolerance($f->eval(|tanh(-11.573574828312076)), -0.9999999998228462, 0.0000000001);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.87.5-SNAPSHOT</version>
+        <version>4.88.11-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,6 +34,7 @@
         <module>legend-engine-xt-snowflake-grammar</module>
         <module>legend-engine-xt-snowflake-protocol</module>
         <module>legend-engine-xt-snowflake-pure</module>
+        <module>legend-engine-xt-snowflake-pure-test</module>
         <module>legend-engine-xt-snowflake-generator</module>
         <module>legend-engine-xt-snowflake-m2mudf-plan-executor</module>
     </modules>

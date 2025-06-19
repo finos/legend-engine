@@ -52,12 +52,11 @@ Class meta::external::dataquality::DataQualityRule
 
 Class meta::external::dataquality::DataQualityRelationValidation extends PackageableElement
 [
-  mustHaveOneRuntime: ($this.runtime->isNotEmpty() || $this.query->meta::external::dataquality::isFromFunctionPresent()) && !($this.runtime->isNotEmpty() && $this.query->meta::external::dataquality::isFromFunctionPresent()) 
+  mustEndWithRuntime: $this.query->meta::external::dataquality::isEndingWithFromFunction()
 ]
 {
   query: LambdaFunction<Any>[1];                                         // should return a relation - enforced in compiler
   validations: meta::external::dataquality::RelationValidation[*];
-  runtime: meta::core::runtime::Runtime[0..1];
 }
 
 Class meta::external::dataquality::RelationValidation
@@ -65,5 +64,5 @@ Class meta::external::dataquality::RelationValidation
   name: String[1];
   description: String[0..1];
   assertion: LambdaFunction<Any>[1];
-  type: String[1];
+  type: String[0..1];
 }

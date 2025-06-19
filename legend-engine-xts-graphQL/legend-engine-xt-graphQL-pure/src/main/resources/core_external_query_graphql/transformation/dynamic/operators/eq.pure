@@ -58,7 +58,7 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::o
 
 function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eq::createEqual(left: ValueSpecification[1], right: ValueSpecification[1]): SimpleFunctionExpression[1]
 {
-  assertEquals(
+  assertBothTypesShareCommonSupertype(
     $left.genericType.rawType,
     $right.genericType.rawType, 
     'Incorrect type of value provided for "' + $left->cast(@SimpleFunctionExpression).func->cast(@AbstractProperty<Any>).name->toOne() + '".' + 

@@ -35,7 +35,7 @@ function <<test.Test>> meta::pure::tds::toRelation::testJoinUsing():Boolean[1]
               JoinKind.INNER, {x, y | ($x.int1 == $y.int2) && $x.str1 == $y.str2}
       )
     },
-    meta::relational::extension::relationalExtension()
+    meta::relational::extension::relationalExtensions()
   )
 }
 
@@ -59,6 +59,6 @@ function <<test.Test>> meta::pure::tds::toRelation::testJoinFunc():Boolean[1]
               JoinKind.INNER, {x, y | $x.int1 == $y.int2}
       )
     },
-    meta::relational::extension::relationalExtension()
+    meta::relational::extension::relationalExtensions()
   )
 }

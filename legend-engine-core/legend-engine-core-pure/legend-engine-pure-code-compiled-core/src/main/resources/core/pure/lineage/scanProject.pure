@@ -16,6 +16,7 @@ import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::*;
 import meta::pure::lineage::scanProject::*;
 import meta::pure::mapping::*;
+import meta::pure::metamodel::relation::*;
 
 Class meta::pure::lineage::scanProject::Project
 {
@@ -58,7 +59,21 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
                                                             let columns =  $cols->map(c|$c->meta::pure::lineage::scanProject::extractCol($vars));
                                                             ^Project(projectfuncEntryPoint = $fe,
                                                                      columns = zip($columns.name, $columns.func->cast(@FunctionDefinition<Any>)));
-                                                                     ),
+                                                      ),
+                                                      pair('meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_',
+                                                        |
+                                                          let cols = $fe.parametersValues->at(1)->evaluateAndDeactivate();
+                                                          let columns =  $cols->map(c|$c->meta::pure::lineage::scanProject::extractFuncCol($vars));
+                                                          ^Project(projectfuncEntryPoint = $fe,
+                                                                   columns = zip($columns.name, $columns.function->cast(@FunctionDefinition<Any>)));
+                                                      ),
+                                                      pair('meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_',
+                                                        |
+                                                          let cols = $fe.parametersValues->at(1)->evaluateAndDeactivate();
+                                                          let columns =  $cols->map(c|$c->meta::pure::lineage::scanProject::extractFuncCol($vars));
+                                                          ^Project(projectfuncEntryPoint = $fe,
+                                                                   columns = zip($columns.name, $columns.function->cast(@FunctionDefinition<Any>)));
+                                                      ),
                                                       pair('meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_',
                                                         | let funcs = $fe.parametersValues->at(1)->match([s:InstanceValue[1]|$s.values, a:Any[*]|^Unknown()]);
                                                           let aggregateFuncs = $fe.parametersValues->at(2)->scanAggregateValue();
@@ -119,6 +134,18 @@ function <<access.private>> meta::pure::lineage::scanProject::extractCol(vs:Valu
             i:InstanceValue[1] |   let cols = $i.values->evaluateAndDeactivate()->cast(@SimpleFunctionExpression);
                                    let colSpecs = $cols->map(c | $c->reactivate($vars)->cast(@BasicColumnSpecification<Any>));,
             s:SimpleFunctionExpression[1] |   $s->reactivate($vars)->cast(@BasicColumnSpecification<Any>);,
+            a:Any[*]| [] ;
+          ]
+      );
+}
+
+function <<access.private>> meta::pure::lineage::scanProject::extractFuncCol(vs:ValueSpecification[1],vars:Map<String, List<Any>>[1]):FuncColSpec<Any,Any>[*]
+{ 
+ $vs->match(
+          [
+            i:InstanceValue[1] |  let cols = $i.values->evaluateAndDeactivate()->cast(@SimpleFunctionExpression);
+                                  let colSpecs = $cols->map(c | $c->reactivate($vars)->cast(@FuncColSpec<Any,Any>));,
+            s:SimpleFunctionExpression[1] |  $s->reactivate($vars)->cast(@FuncColSpecArray<Any,Any>).funcSpecs->map(f | $f->cast(@FuncColSpec<Any,Any>));,
             a:Any[*]| [] ;
           ]
       );

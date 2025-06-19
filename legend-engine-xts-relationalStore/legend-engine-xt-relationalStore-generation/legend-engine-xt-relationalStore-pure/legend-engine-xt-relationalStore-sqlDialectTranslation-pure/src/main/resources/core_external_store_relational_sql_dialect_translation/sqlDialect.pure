@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::query::sql::metamodel::extension::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
@@ -23,15 +24,18 @@ import meta::external::store::relational::sqlDialectTranslation::utils::*;
 Class meta::external::store::relational::sqlDialectTranslation::SqlDialect
 {
   dbType: String[1];
-  quoteConfig: QuoteConfiguration[1];
+  identifierQuoteConfig: QuoteConfiguration[1];
+  literalQuoteConfig: QuoteConfiguration[1];
   nodeProcessors: Map<Class<Node>, NodeProcessor<Node>>[1];
   identifierProcessor: IdentifierProcessor[1];
   expressionPrecedenceComparator: ExpressionPrecedenceComparator[1];
   keywords: String[*];
   functionProcessorMap: Map<Class<SqlFunction>, FunctionProcessor>[0..1];
+  variablePlaceholderPrefixSuffixMap: Map<String, Pair<String, String>>[1];
 
   // For testing
   initSqlStatementsForTests: String[*];
+  expectedSqlDialectTestErrors: Map<String, String>[1];
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::NodeProcessor<T> // T extends Node
@@ -98,6 +102,58 @@ function meta::external::store::relational::sqlDialectTranslation::nodeProcessor
   )
 }
 
+function meta::external::store::relational::sqlDialectTranslation::executeNodeProcessor(sqlDialect: SqlDialect[1], node: Node[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  $sqlDialect->executeNodeProcessor($node, [], $state, $config)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::executeNodeProcessor(sqlDialect: SqlDialect[1], node: Node[1], parentNode: Node[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  let nodeProcessor = $node->getNodeProcessorForNode($sqlDialect, $config);
+  executeNodeProcessor($sqlDialect, $nodeProcessor, $node, $parentNode, $state, $config);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::executeNodeProcessor(sqlDialect: SqlDialect[1], nodeProcessor: NodeProcessor<Node>[1], node: Node[1], parentNode: Node[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedNode = $nodeProcessor.processFunction->toOne()->evaluate([list($sqlDialect), list($node), list($state), list($config)])->toOne()->cast(@String);
+  if ($node->isSelfDelimiting($nodeProcessor),
+    | $processedNode,
+    | // Check precedence of expressions
+      if ($node->instanceOf(meta::external::query::sql::metamodel::Expression) && $parentNode->isNotEmpty() && $parentNode->toOne()->instanceOf(meta::external::query::sql::metamodel::Expression),
+        | let e1 = $node->cast(@meta::external::query::sql::metamodel::Expression);
+          let e2 = $parentNode->toOne()->cast(@meta::external::query::sql::metamodel::Expression);
+          let precedenceResult = $sqlDialect.expressionPrecedenceComparator.compare($e1, $e2);
+          // Though precedence wise its enough to check precedenceResult < 0, better to wrap in parentheses when dealing with different logical operations (to make SQL more readable)
+          // With divide not always floating points, need to wrap
+          if ($precedenceResult < 0 || differentLogicalBinaryExpressionTypes($e1, $e2) || doubleNegation($e1, $e2) 
+              || $e1->isDivideExpr() || $e2->isDivideExpr() || $e1->isSubtractExpr() || $e2->isSubtractExpr(),
+            | '(' + $processedNode + ')',
+            | $processedNode
+          );,
+        | $processedNode 
+      );
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::isSelfDelimiting(node:Node[1], nodeProcessor: NodeProcessor<Node>[1]): Boolean[1]
+{
+  $nodeProcessor->toOne().selfDelimiting->evaluate(list($node))->toOne()->cast(@Boolean);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::getNodeProcessorForNode(node: Node[1], sqlDialect: SqlDialect[1], config: SqlDialectTranslationConfig[1]): NodeProcessor<Node>[1]
+{
+  let nodeProcessorsMap = if($config.extraNodeProcessors->isNotEmpty(),
+    | $sqlDialect.nodeProcessors->putAll($config.extraNodeProcessors->toOne()),
+    | $sqlDialect.nodeProcessors
+  );
+  let nodeClass = $node->class();
+  let untypedNodeClass = if($nodeClass->_subTypeOf(TypedSqlExpression), 
+    | $nodeClass->validGeneralizations()->filter(x | !$x->_subTypeOf(TypedSqlExpression))->toOne(), 
+    | $nodeClass
+  )->cast(@Class<Node>);
+  $nodeProcessorsMap->get($untypedNodeClass)->toOne('Dialect translation for node of type "' + $untypedNodeClass->elementToPath() + '" not implemented in SqlDialect for database type "' + $config.dbConfig.dbType + '"');
+}
+
 function meta::external::store::relational::sqlDialectTranslation::functionProcessor<T>(processFunction: Function<{SqlDialect[1], FunctionCall[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1], selfDelimiting: Function<{T[1] -> Boolean[1]}>[1]): FunctionProcessor[1]
 {
   ^FunctionProcessor
@@ -107,56 +163,12 @@ function meta::external::store::relational::sqlDialectTranslation::functionProce
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::executeNodeProcessor(sqlDialect: SqlDialect[1], node: Node[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
-{
-  $sqlDialect->executeNodeProcessor($node, [], $state, $config)
-}
-
-function meta::external::store::relational::sqlDialectTranslation::executeNodeProcessor(sqlDialect: SqlDialect[1], node: Node[1], parentNode: Node[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
-{
-  let nodeClass = $node->class();
-  let nodeClassGeneralizations = $nodeClass->validGeneralizations();
-  let nodeClassNonTyped = if ($nodeClassGeneralizations->contains(TypedSqlExpression), | $nodeClassGeneralizations->filter(x | $x != TypedSqlExpression)->toOne(), | $nodeClass);
-  let nodeProcessor = $sqlDialect.nodeProcessors->get($nodeClassNonTyped);
-  if ($nodeProcessor->isNotEmpty(),
-      | let processedNode = $nodeProcessor.processFunction->toOne()->evaluate([list($sqlDialect), list($node), list($state), list($config)])->toOne()->cast(@String);
-        if ($nodeProcessor->toOne().selfDelimiting->evaluate(list($node))->toOne()->cast(@Boolean),
-            | $processedNode,
-            | // Check precedence of expressions
-              if ($node->instanceOf(meta::external::query::sql::metamodel::Expression) && $parentNode->isNotEmpty() && $parentNode->toOne()->instanceOf(meta::external::query::sql::metamodel::Expression),
-                  | 
-                    let e1 = $node->cast(@meta::external::query::sql::metamodel::Expression);
-                    let e2 = $parentNode->toOne()->cast(@meta::external::query::sql::metamodel::Expression);
-                    let precedenceResult = $sqlDialect.expressionPrecedenceComparator.compare($e1, $e2);
-                    // Though precedence wise its enough to check precedenceResult < 0, better to wrap in parentheses when dealing with different logical operations (to make SQL more readable)
-                    // With divide not always floating points, need to wrap
-                    if ($precedenceResult < 0 || differentLogicalBinaryExpressionTypes($e1, $e2) || doubleNegation($e1, $e2) || $e1->isDivideExpr() || $e2->isDivideExpr(),
-                        | '(' + $processedNode + ')',
-                        | $processedNode
-                    );,
-                  | $processedNode 
-              );
-        );,
-      | fail('Dialect translation for node of type "' + $nodeClassNonTyped->elementToPath() + '" not implemented in SqlDialect for database type "' + $config.dbConfig.dbType + '"'); '';
-  );
-}
-
-function meta::external::store::relational::sqlDialectTranslation::identifierProcessor(processFunction: Function<{SqlDialect[1], String[1], Boolean[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1]): IdentifierProcessor[1]
-{
-  ^IdentifierProcessor(processFunction = $processFunction)
-}
-
-function meta::external::store::relational::sqlDialectTranslation::executeIdentifierProcessor(sqlDialect: SqlDialect[1], identifier: String[1], shouldQuote: Boolean[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
-{
-  $sqlDialect.identifierProcessor.processFunction->eval($sqlDialect, $identifier, $shouldQuote, $state, $config)
-}
-
 function meta::external::store::relational::sqlDialectTranslation::simpleFunctionProcessor(functionName: String[*]): FunctionProcessor[1]
 {
   functionProcessor(
     {sqlDialect, f, state, config |
       $f->doFunctionCallChecks();
-      $sqlDialect->generateFunctionCallWithArgs($functionName, $f.arguments, $f.window, $state, $config);
+      $sqlDialect->generateFunctionCallWithArgs($functionName, $f.arguments, $f.window, $f.group, $f.distinct, $state, $config);
     },
     {n: FunctionCall[1] | true}
   )
@@ -168,7 +180,7 @@ function meta::external::store::relational::sqlDialectTranslation::argTransformF
   functionProcessor(
     {sqlDialect, f, state, config |
       $f->doFunctionCallChecks();
-      $sqlDialect->generateFunctionCallWithArgs($functionName, $transform->eval($f.arguments), $f.window, $state, $config);
+      $sqlDialect->generateFunctionCallWithArgs($functionName, $transform->eval($f.arguments), $f.window, $f.group, $f.distinct, $state, $config);
     },
     {n: FunctionCall[1] | true}
   )
@@ -194,9 +206,7 @@ function meta::external::store::relational::sqlDialectTranslation::nativeFunctio
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::doFunctionCallChecks(f: FunctionCall[1]): Any[*]
 {
-  assert($f.distinct == false, | 'Distinct function call processing not implemented yet');
   assert($f.filter->isEmpty(), | 'Filtered function call processing not implemented yet');
-  assert($f.group->isEmpty(), | 'Grouped function call processing not implemented yet');
   assert($f.orderBy->isEmpty(), | 'Sorted function call processing not implemented yet');
 }
 
@@ -207,25 +217,67 @@ function meta::external::store::relational::sqlDialectTranslation::processFuncti
 
 function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: Node[*], window: meta::external::query::sql::metamodel::Window[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
+  generateFunctionCallWithArgs($sqlDialect, $targetFunction, $args, $window, [], [], $state, $config)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: Node[*], window: meta::external::query::sql::metamodel::Window[0..1], group:Group[0..1], distinct:Boolean[0..1],state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
   let processedArgs = $sqlDialect->processFunctionArgs($args, $state, $config);
-  generateFunctionCallWithArgs($sqlDialect, $targetFunction, $processedArgs, $window, $state, $config);
+  generateFunctionCallWithArgs($sqlDialect, $targetFunction, $processedArgs, $window, $group, $distinct, $state, $config);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: String[*], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  generateFunctionCallWithArgs($sqlDialect, $targetFunction, $args, [], [], [], $state, $config)
 }
 
 function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: String[*], window: meta::external::query::sql::metamodel::Window[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
+  generateFunctionCallWithArgs($sqlDialect, $targetFunction, $args, $window, [], [], $state, $config)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: String[*], f: meta::external::query::sql::metamodel::FunctionCall[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  generateFunctionCallWithArgs($sqlDialect, $targetFunction, $args, $f.window, $f.group, $f.distinct, $state, $config)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: String[*], window: meta::external::query::sql::metamodel::Window[0..1], group:Group[0..1], distinct:Boolean[0..1],state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
   let sep0 = $state.separatorIfPretty(0, $config);
   let sep1 = $state.separatorIfPretty(1, $config);
 
+  let functionName = $targetFunction->joinStrings('.');
+  
   let noArgIsMultiLine = !($args->isNotEmpty() && $config.formatConfig.pretty && $args->map(a | $a->indexOf($config.formatConfig.lineSeparator) >= 0)->or());
-  let functionName = $sqlDialect->qualifiedName(^QualifiedName(parts = $targetFunction), $state, $config);
-  let argumentsString = $args->joinStrings(',' + if($noArgIsMultiLine, |' ', |$state.separator(1, $config)));
+  let argsWithDistinct = if($distinct->isTrue(), | $sqlDialect->keyword('distinct', $state, $config) + '(' + $args->at(0) + ')', | $args->head())->concatenate($args->tail());
+  let argumentsString = $argsWithDistinct->joinStrings(',' + if($noArgIsMultiLine, |' ', |$state.separator(1, $config)));
+
   $functionName + '(' + if($noArgIsMultiLine, |'', |$state.separatorIfPretty(1, $config)) +
     $argumentsString +
   if($noArgIsMultiLine, |'', |$state.separatorIfPretty(0, $config)) + ')' +
-  if ($window->isNotEmpty(),
-    | ' ' + $sqlDialect->keyword('over', $state, $config) + ' (' + $sep1 + $sqlDialect->executeNodeProcessor($window->toOne(), [], $state->increaseLevel(), $config) + $sep0 + ')',
-    | ''
-  );
+
+  $group->executeIfNotEmptyElseReturnEmptyString({|
+    ' ' + $sqlDialect->keyword('within group', $state, $config) + ' (' + $sep1 + $sqlDialect->keyword('order by ', $state, $config) + $sep1 + $group.orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel(), $config))->joinStrings(',' + $sep1) + ')'
+  }) + 
+ 
+  $window->executeIfNotEmptyElseReturnEmptyString({|
+    ' ' + $sqlDialect->keyword('over', $state, $config) + ' (' + $sep1 + $sqlDialect->executeNodeProcessor($window->toOne(), [], $state->increaseLevel(), $config) + $sep0 + ')'
+  });  
+}
+
+function meta::external::store::relational::sqlDialectTranslation::identifierProcessor(processFunction: Function<{SqlDialect[1], String[1], Boolean[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1]): IdentifierProcessor[1]
+{
+  ^IdentifierProcessor(processFunction = $processFunction)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::executeIdentifierProcessor(sqlDialect: SqlDialect[1], identifier: String[1], shouldQuote: Boolean[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  $sqlDialect.identifierProcessor.processFunction->eval($sqlDialect, $identifier, $shouldQuote, $state, $config)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::executeIdentifierProcessor(sqlDialect: SqlDialect[1], identifier: String[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  $sqlDialect.identifierProcessor.processFunction->eval($sqlDialect, $identifier, $config.dbConfig.quoteIdentifiers, $state, $config)
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

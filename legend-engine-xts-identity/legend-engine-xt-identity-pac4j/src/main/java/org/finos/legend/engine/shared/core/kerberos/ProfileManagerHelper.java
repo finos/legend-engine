@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
+import org.pac4j.core.profile.UserProfile;
 
 import javax.security.auth.Subject;
 import java.util.Objects;
@@ -32,7 +33,7 @@ public class ProfileManagerHelper
         return (pm == null) ? null : extractSubject(pm.getAll(true));
     }
 
-    public static Subject extractSubject(Iterable<? extends CommonProfile> profiles)
+    public static Subject extractSubject(Iterable<? extends UserProfile> profiles)
     {
         if (profiles == null)
         {

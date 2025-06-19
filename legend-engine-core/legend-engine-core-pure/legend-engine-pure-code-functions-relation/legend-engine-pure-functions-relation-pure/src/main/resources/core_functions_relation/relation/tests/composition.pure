@@ -92,7 +92,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testF
 }
 
 
-function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                | #TDS
@@ -138,7 +138,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->sort(~val->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_GroupBy_GroupBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_GroupBy_GroupBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                | #TDS
@@ -161,7 +161,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->sort(~str->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                | #TDS
@@ -211,7 +211,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -243,7 +243,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->cast(@Relation<(city:String,country:String,'\'2011__|__newCol\'':Integer,'\'4022__|__newCol\'':Integer,'\'6035__|__newCol\'':Integer)>)->sort(ascending(~city))->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -277,7 +277,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->sort(ascending(~city))->limit(3)->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -314,7 +314,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
 
 // ------------------------------------- TO FIX -------------------------------------
 
-function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_GroupBy_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_GroupBy_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                | #TDS
@@ -337,7 +337,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->sort(~str->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                | #TDS
@@ -360,7 +360,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->sort([~str->ascending(), ~newCol->ascending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                | #TDS
@@ -381,7 +381,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->sort(~str->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::composition::testWindowFunctionsAfterProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::composition::testWindowFunctionsAfterProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
         [

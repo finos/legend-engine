@@ -36,5 +36,4 @@ public class DataqualityRelationValidation extends PackageableElement
 
     public LambdaFunction query;
     public List<RelationValidation> validations = Collections.emptyList();
-    public PackageableElementPointer runtime;
 }

@@ -15,12 +15,15 @@
 package org.finos.legend.engine.language.snowflakeApp.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
 import org.finos.legend.engine.functionActivator.api.input.FunctionActivatorInput;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppDeploymentManager;
+import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppContent;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -85,7 +88,7 @@ public class TestValidation
         Response response = api.list(null);
         System.out.println(response.getEntity().toString());
         List<FunctionActivatorInfo> info = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(response.getEntity().toString(), new TypeReference<List<FunctionActivatorInfo>>(){});
-        Assert.assertEquals(1, info.size());
+        Assert.assertEquals(2, info.size());
         Assert.assertEquals("Snowflake App", info.get(0).name);
         Assert.assertEquals("Create a SnowflakeApp that can activate the function in Snowflake. It then can be used in SQL expressions and be shared with other accounts", info.get(0).description);
         Assert.assertEquals("meta::protocols::pure::vX_X_X::metamodel::function::activator::snowflakeApp::SnowflakeApp", info.get(0).configuration.topElement);
@@ -133,5 +136,27 @@ public class TestValidation
                         "}";
         Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null, null);
         Assert.assertEquals("{\"errors\":[{\"message\":\"Deployment schema can only contains letter, digit, underscore and dollar\"}],\"warnings\":[]}", response.getEntity().toString());
+    }
+
+    @Test
+    public void testQueryFormatting()
+    {
+        SnowflakeAppContent content = new SnowflakeAppContent();
+        content.createStatement = "CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.My_Deployment_Schema.MY_SCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"CODE\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".CODE as \"Code\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart) and \"root\".CODE = '%') $$;";
+        SnowflakeAppDeploymentManager snowflakeAppDeploymentManager = new SnowflakeAppDeploymentManager();
+        MutableList<String> statements = snowflakeAppDeploymentManager.generateStatements("MY_CATALOG", content);
+        String expected = "CREATE OR REPLACE SECURE FUNCTION MY_CATALOG.My_Deployment_Schema.MY_SCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"CODE\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".CODE as \"Code\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart) and \"root\".CODE = '%') $$;";
+        Assert.assertEquals(expected, statements.get(0));
+    }
+
+    @Test
+    public void testQueryFormattingWithPreviouslyGeneratedArtifactQuery()
+    {
+        SnowflakeAppContent content = new SnowflakeAppContent();
+        content.createStatement = "CREATE OR REPLACE SECURE FUNCTION %S.My_Deployment_Schema.MY_SCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"CODE\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".CODE as \"Code\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart) and \"root\".CODE = '$') $$;";
+        SnowflakeAppDeploymentManager snowflakeAppDeploymentManager = new SnowflakeAppDeploymentManager();
+        MutableList<String> statements = snowflakeAppDeploymentManager.generateStatements("MY_CATALOG", content);
+        String expected = "CREATE OR REPLACE SECURE FUNCTION MY_CATALOG.My_Deployment_Schema.MY_SCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"CODE\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".CODE as \"Code\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart) and \"root\".CODE = '$') $$;";
+        Assert.assertEquals(expected, statements.get(0));
     }
 }

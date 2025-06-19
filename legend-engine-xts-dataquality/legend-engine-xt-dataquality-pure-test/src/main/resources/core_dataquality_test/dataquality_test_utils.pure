@@ -56,31 +56,31 @@ function meta::external::dataquality::tests::doTest(tree:String[1], expected:Fun
   if ($assertJson, | assertLambdaJSONEquals($expected, $actual), | true);
 }
 
-function meta::external::dataquality::tests::doRelationTest(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1]):Boolean[1]
+function meta::external::dataquality::tests::doRelationTest(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]):Boolean[1]
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
-  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, [], false);
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, []);
 
-  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>));
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
 }
 
-function meta::external::dataquality::tests::doRelationRowCountTest(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1]):Boolean[1]
+function meta::external::dataquality::tests::doRelationRowCountTest(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]):Boolean[1]
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
   let actual = $dataqualityRelationValidation->meta::external::dataquality::generateMainQueryCountLambda(false);
 
-  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>));
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
 }
 
-function meta::external::dataquality::tests::doRelationTestWithLimit(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], resultLimit: Integer[1]):Boolean[1]
+function meta::external::dataquality::tests::doRelationTestWithLimit(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], resultLimit: Integer[1], packageableRuntimeAsString: String[1]):Boolean[1]
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
-  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, $resultLimit, false);
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, $resultLimit);
 
-  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>));
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
 }
 
 
@@ -105,6 +105,25 @@ function meta::external::dataquality::tests::assertLambdaEquals(expected:Functio
             );
   assertEquals($expected->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')), $actual->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
 }
+
+function meta::external::dataquality::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]): Boolean[1]
+{
+  let config = ^meta::pure::metamodel::serialization::grammar::Configuration
+            (
+              fullPath = true,
+              extensions = ^meta::pure::metamodel::serialization::grammar::GrammarExtension(
+                                extraInstanceValueHandlers =
+                                  [
+                                    g:GraphFetchTree[1]| treeToString($g)
+                                  ]
+                            )
+            );
+
+  let actualFunctionDefinition = $actual->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space=''));
+  assert($actualFunctionDefinition->contains($packageableRuntimeAsString));
+  assertEquals($expected->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')), $actualFunctionDefinition->replace(['->meta::pure::mapping::from(', $packageableRuntimeAsString, ')']->joinStrings(), ''));
+}
+
 
 function meta::external::dataquality::tests::assertLambdaJSONEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
 {

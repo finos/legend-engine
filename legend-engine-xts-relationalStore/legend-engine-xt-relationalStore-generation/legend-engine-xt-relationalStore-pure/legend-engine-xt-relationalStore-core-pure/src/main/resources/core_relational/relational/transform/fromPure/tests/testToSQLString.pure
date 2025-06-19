@@ -142,7 +142,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
                                   )};
 
    let h2Sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LEGALNAME as "legalName", group_concat("personTable_d#4_d_m1".FIRSTNAME separator \'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"', $h2Sql);
+   assertEquals('select "root".LEGALNAME as "legalName", listagg("personTable_d#4_d_m1".FIRSTNAME, \'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"', $h2Sql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringJoinStringsSimpleConcat():Boolean[1]
@@ -221,7 +221,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
       col(row:TDSRow[1] | splitPart($row.getString('splitBarExpression'), ',', 1 + 1), 'splitCommaExpression')
     ])}, simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select legend_h2_extension_split_part(legend_h2_extension_split_part("root".FIRSTNAME, \'|\', 1), \',\', 2) as "splitComma", legend_h2_extension_split_part(legend_h2_extension_split_part("root".FIRSTNAME, \'|\', ((1 + 1) + 1)), \',\', ((1 + 1) + 1)) as "splitCommaExpression" from personTable as "root"', $sql);
+   assertEquals('select legend_h2_extension_split_part(legend_h2_extension_split_part("root".FIRSTNAME, \'|\', 1), \',\', 2) as "splitComma", legend_h2_extension_split_part(legend_h2_extension_split_part("root".FIRSTNAME, \'|\', 1 + 1 + 1), \',\', 1 + 1 + 1) as "splitCommaExpression" from personTable as "root"', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringAscii():Boolean[1]
@@ -238,7 +238,14 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithPosition():Boolean[1]
 {
-   [DatabaseType.H2, DatabaseType.Composite]->map(db|
+   [DatabaseType.H2]->map(db|
+      let s = toSQLString(
+              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
+               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, $db, meta::relational::extension::relationalExtensions());
+
+      assertEquals('select substring("root".FULLNAME, 0, locate(\',\', "root".FULLNAME) - 1) as "firstName" from personTable as "root"', $s);
+   );
+   [DatabaseType.Composite]->map(db|
       let s = toSQLString(
               |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
                meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, $db, meta::relational::extension::relationalExtensions());
@@ -282,7 +289,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffYears']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(year,"root".settlementDateTime,current_timestamp()) as "DiffYears" from tradeTable as "root"', $result);
+   assertEquals('select datediff(year, "root".settlementDateTime, now()) as "DiffYears" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMonths():Boolean[1]
@@ -292,7 +299,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffMonths']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(month,"root".settlementDateTime,current_timestamp()) as "DiffMonths" from tradeTable as "root"', $result);
+   assertEquals('select datediff(month, "root".settlementDateTime, now()) as "DiffMonths" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInWeeks():Boolean[1]
@@ -302,7 +309,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffWeeks']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(week,"root".settlementDateTime,current_timestamp()) as "DiffWeeks" from tradeTable as "root"', $result);
+   assertEquals('select datediff(week, "root".settlementDateTime, now()) as "DiffWeeks" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInDays():Boolean[1]
@@ -312,7 +319,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffDays']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(day,"root".settlementDateTime,current_timestamp()) as "DiffDays" from tradeTable as "root"', $result);
+   assertEquals('select datediff(day, "root".settlementDateTime, now()) as "DiffDays" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInHours():Boolean[1]
@@ -322,7 +329,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffHours']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(hour,"root".settlementDateTime,current_timestamp()) as "DiffHours" from tradeTable as "root"', $result);
+   assertEquals('select datediff(hour, "root".settlementDateTime, now()) as "DiffHours" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMinutes():Boolean[1]
@@ -332,7 +339,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffMinutes']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(minute,"root".settlementDateTime,current_timestamp()) as "DiffMinutes" from tradeTable as "root"', $result);
+   assertEquals('select datediff(minute, "root".settlementDateTime, now()) as "DiffMinutes" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInSeconds():Boolean[1]
@@ -342,7 +349,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffSeconds']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(second,"root".settlementDateTime,current_timestamp()) as "DiffSeconds" from tradeTable as "root"', $result);
+   assertEquals('select datediff(second, "root".settlementDateTime, now()) as "DiffSeconds" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMilliseconds():Boolean[1]
@@ -352,13 +359,13 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffMilliseconds']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(millisecond,"root".settlementDateTime,current_timestamp()) as "DiffMilliseconds" from tradeTable as "root"', $result);
+   assertEquals('select datediff(millisecond, "root".settlementDateTime, now()) as "DiffMilliseconds" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testDayOfYear():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.H2, 'select DAY_OF_YEAR("root".tradeDate) as "doy" from tradeTable as "root"'),
+      pair(DatabaseType.H2, 'select extract(doy from "root".tradeDate) as "doy" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select dayofyear("root".tradeDate) as "doy" from tradeTable as "root"')
    ];
 
@@ -382,7 +389,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testTrim()
 
    let expected = [
     pair(DatabaseType.DB2, $common),
-    pair(DatabaseType.H2, $common),
+    pair(DatabaseType.H2, 'select regexp_replace("root".FIRSTNAME, \'^[ ]+\', \'\') as "ltrim", trim(both from "root".FIRSTNAME) as "trim", regexp_replace("root".FIRSTNAME, \'[ ]+$\', \'\') as "rtrim" from personTable as "root"'),
     pair(DatabaseType.Composite, $common)
   ];
 
@@ -410,7 +417,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testPad():
 
    let expected = [
     pair(DatabaseType.DB2, $common),
-    pair(DatabaseType.H2, $common),
+    pair(DatabaseType.H2, 'select legend_h2_extension_lpad("root".FIRSTNAME, 1, \' \') as "lpad", legend_h2_extension_lpad("root".FIRSTNAME, 1, \'0\') as "lpad2", legend_h2_extension_rpad("root".FIRSTNAME, 1, \' \') as "rpad", legend_h2_extension_rpad("root".FIRSTNAME, 1, \'0\') as "rpad2" from personTable as "root"'),
     pair(DatabaseType.Composite, $common)
   ];
 
@@ -438,7 +445,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testLeftRi
 
    let expected = [
     pair(DatabaseType.DB2, 'select trim(left("root".FIRSTNAME, 1)) as "left", trim(right("root".FIRSTNAME, 1)) as "right" from personTable as "root"'),
-    pair(DatabaseType.H2, 'select left("root".FIRSTNAME,1) as "left", right("root".FIRSTNAME,1) as "right" from personTable as "root"')
+    pair(DatabaseType.H2, 'select left("root".FIRSTNAME, 1) as "left", right("root".FIRSTNAME, 1) as "right" from personTable as "root"')
   ];
 
    $expected->map(p|
@@ -464,7 +471,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testCbrt()
 
    let expected = [
     pair(DatabaseType.DB2, $common),
-    pair(DatabaseType.H2, $common),
+    pair(DatabaseType.H2, 'select power("root".quantity, 1.0/3) as "cbrt" from tradeTable as "root"'),
     pair(DatabaseType.Composite, $common)
    ];
 
@@ -493,7 +500,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGen
                               simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select dateadd(SECOND, 86400, \'2011-12-30\') as "a" from personTable as "root"',
-    'select dateadd(SECOND, 86400, DATE\'2011-12-30\') as "a" from personTable as "root"',
+    'select dateadd(second, 86400, DATE\'2011-12-30\') as "a" from personTable as "root"',
     $result->sqlRemoveFormatting()
   );
 }
@@ -507,7 +514,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGen
                               simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select \'a\' as "a" from tradeTable as "root" where dateadd(SECOND, 86400, \'2011-12-30\') > \'2011-12-30\'',
-    'select \'a\' as "a" from tradeTable as "root" where dateadd(SECOND, 86400, DATE\'2011-12-30\') > DATE\'2011-12-30\'',
+    'select \'a\' as "a" from tradeTable as "root" where dateadd(second, 86400, DATE\'2011-12-30\') > DATE\'2011-12-30\'',
     $result->sqlRemoveFormatting()
   );
 }
@@ -526,7 +533,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGen
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfMonth():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofmonth("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.H2, 'select cast(cast(date_trunc(\'month\', "root".tradeDate) as timestamp) as date) as "date" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select date(1) + (year("root".tradeDate)-1) YEARS + (month("root".tradeDate)-1) MONTHS as "date" from tradeTable as "root"')
    ];
 
@@ -547,7 +554,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfYear():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.H2, 'select cast(cast(date_trunc(\'year\', "root".tradeDate) as timestamp) as date) as "date" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select date(1) + (year("root".tradeDate)-1) YEARS as "date" from tradeTable as "root"')
    ];
 
@@ -568,7 +575,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfThisYear():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()) as "date" from tradeTable as "root"'),
+      pair(DatabaseType.H2, 'select cast(cast(date_trunc(\'year\', now()) as timestamp) as date) as "date" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select date(1) + (year(current date)-1) YEARS as "date" from tradeTable as "root"')
    ];
 
@@ -600,7 +607,7 @@ function meta::relational::tests::functions::sqlstring::testToSqlGenerationFirst
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_H2():Boolean[1]
 {
-   testToSqlGenerationFirstDayOfQuarter(DatabaseType.H2, 'select dateadd(MONTH, 3 * quarter("root".tradeDate) - 3, dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate)) as "date" from tradeTable as "root"');
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.H2, 'select cast(cast(date_trunc(\'quarter\', "root".tradeDate) as timestamp) as date) as "date" from tradeTable as "root"');
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_DB2():Boolean[1]
@@ -611,7 +618,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfWeek():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.H2, 'select dateadd(DAY, -(mod(dayofweek("root".tradeDate)+5, 7)), "root".tradeDate) as "date" from tradeTable as "root"')
+      pair(DatabaseType.H2, 'select cast(cast(date_trunc(\'week\', "root".tradeDate) as timestamp) as date) as "date" from tradeTable as "root"')
    ];
 
    $expected->map(p|
@@ -631,7 +638,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationMonth():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.H2, 'select monthname("root".tradeDate) as "month" from tradeTable as "root"')
+      pair(DatabaseType.H2, 'select formatdatetime("root".tradeDate, \'MMMM\') as "month" from tradeTable as "root"')
    ];
 
    $expected->map(p|
@@ -698,7 +705,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
           col(t|$t.quantity->toFloat(), 'float')
         ]), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-    assertEquals('select cast("root".quantity as decimal) as "decimal", cast("root".quantity as double precision) as "float" from tradeTable as "root"', $result);
+    assertEquals('select cast("root".quantity as decimal) as "decimal", cast("root".quantity as float) as "float" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGreatestLeast():Boolean[1]

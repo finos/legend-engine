@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.memsqlFunction.grammar.from.MemSqlFunctionGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunction;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
@@ -50,7 +51,7 @@ public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtensi
                 "{\n" +
                 "   functionName : '" + app.functionName + "';\n" +
                 "   function : " + app.function.path + ";\n" +
-                (app.owner == null ? "" : "   owner : '" + app.owner + "';\n") +
+                "   ownership : Deployment { identifier: '" + ((DeploymentOwner)app.ownership).id + "' };\n" +
                 (app.description == null ? "" : "   description : '" + app.description + "';\n") +
                 (app.activationConfiguration == null ? "" : "   activationConfiguration : " + ((MemSqlFunctionDeploymentConfiguration) app.activationConfiguration).activationConnection.connection + ";\n") +
                 "}";

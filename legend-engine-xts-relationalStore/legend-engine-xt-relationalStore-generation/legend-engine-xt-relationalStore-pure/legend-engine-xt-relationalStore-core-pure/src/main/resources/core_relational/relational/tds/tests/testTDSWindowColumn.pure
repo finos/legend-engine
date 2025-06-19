@@ -33,7 +33,7 @@ meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[
       simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
    assertSize($result1.values.rows, 7);
-   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(CAST(0.9 AS FLOAT)) within group (order by "root".AGE asc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result1);
+   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(cast(0.9 as float)) within group (order by "root".AGE asc) over (partition by "root".FIRSTNAME) as "testCol1" from personTable as "root"', $result1);
    assertSameElements(['Anthony|Allen|22|22.0', 'David|Harris|35|35.0', 'Fabrice|Roberts|34|34.0', 'John|Hill|12|21.0', 'John|Johnson|22|21.0', 'Oliver|Hill|32|32.0', 'Peter|Smith|23|23.0'], $result1.values.rows->map(r|$r.values->makeString('|')));
 
    let result2 = execute(
@@ -45,7 +45,7 @@ meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[
       simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
    assertSize($result2.values.rows, 7);
-   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(CAST(0.9 AS FLOAT)) within group (order by "root".AGE desc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result2);
+   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(cast(0.9 as float)) within group (order by "root".AGE desc) over (partition by "root".FIRSTNAME) as "testCol1" from personTable as "root"', $result2);
    assertSameElements(['Anthony|Allen|22|22.0', 'David|Harris|35|35.0', 'Fabrice|Roberts|34|34.0', 'John|Hill|12|13.0', 'John|Johnson|22|13.0', 'Oliver|Hill|32|32.0', 'Peter|Smith|23|23.0'], $result2.values.rows->map(r|$r.values->makeString('|')));
 
 
@@ -58,7 +58,7 @@ meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[
       simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
    assertSize($result3.values.rows, 7);
-   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_disc(CAST(0.9 AS FLOAT)) within group (order by "root".AGE desc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result3);
+   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_disc(cast(0.9 as float)) within group (order by "root".AGE desc) over (partition by "root".FIRSTNAME) as "testCol1" from personTable as "root"', $result3);
    assertSameElements(['Anthony|Allen|22|22.0', 'David|Harris|35|35.0', 'Fabrice|Roberts|34|34.0', 'John|Hill|12|12.0', 'John|Johnson|22|12.0', 'Oliver|Hill|32|32.0', 'Peter|Smith|23|23.0'], $result3.values.rows->map(r|$r.values->makeString('|')));
 }
 
@@ -90,7 +90,7 @@ meta::relational::tests::tds::tdsWindow::testDistinctBeforeWindowFunction():Bool
   let values = $result.values->cast(@TabularDataSet)->toOne();
 
   assertSize($values.rows, 10);
-  meta::relational::functions::asserts::assertSameSQL('select "subselect"."source" as "source", "subselect"."target" as "target", count("subselect"."target") OVER (Partition By "subselect"."source" ) as "testCol1" from (select distinct "persontable_0".FIRSTNAME as "source", "persontable_1".FIRSTNAME as "target" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) left outer join personTable as "persontable_1" on ("root".targetId = "persontable_1".ID)) as "subselect"', $result);
+  meta::relational::functions::asserts::assertSameSQL('select "subselect"."source" as "source", "subselect"."target" as "target", count("subselect"."target") over (partition by "subselect"."source") as "testCol1" from (select distinct "persontable_0".FIRSTNAME as "source", "persontable_1".FIRSTNAME as "target" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) left outer join personTable as "persontable_1" on ("root".targetId = "persontable_1".ID)) as "subselect"', $result);
   assertSameElements( ['Anthony|Fabrice|4', 'Anthony|John|4', 'Anthony|Oliver|4', 'Anthony|Peter|4', 'Fabrice|Anthony|2', 'Fabrice|Oliver|2', 'John|David|2', 'John|Oliver|2', 'Peter|Anthony|2', 'Peter|John|2'], $values.rows->map(r|$r.values->makeString('|')));
 }
 
@@ -121,6 +121,6 @@ meta::relational::tests::tds::tdsWindow::testDistinctAfterWindowFunction():Boole
   let values = $result.values->cast(@TabularDataSet)->toOne();
 
   assertSize($values.rows, 10);
-  meta::relational::functions::asserts::assertSameSQL('select distinct "subselect"."source" as "source", "subselect"."target" as "target", "subselect"."testCol1" as "testCol1" from (select "persontable_0".FIRSTNAME as "source", "persontable_1".FIRSTNAME as "target", count("persontable_1".FIRSTNAME) OVER (Partition By "persontable_0".FIRSTNAME ) as "testCol1" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) left outer join personTable as "persontable_1" on ("root".targetId = "persontable_1".ID)) as "subselect"', $result);
+  meta::relational::functions::asserts::assertSameSQL('select distinct "subselect"."source" as "source", "subselect"."target" as "target", "subselect"."testCol1" as "testCol1" from (select "persontable_0".FIRSTNAME as "source", "persontable_1".FIRSTNAME as "target", count("persontable_1".FIRSTNAME) over (partition by "persontable_0".FIRSTNAME) as "testCol1" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) left outer join personTable as "persontable_1" on ("root".targetId = "persontable_1".ID)) as "subselect"', $result);
   assertSameElements(['Anthony|Fabrice|6', 'Anthony|John|6', 'Anthony|Oliver|6', 'Anthony|Peter|6', 'Fabrice|Anthony|2', 'Fabrice|Oliver|2', 'John|David|2', 'John|Oliver|2', 'Peter|Anthony|4', 'Peter|John|4'], $values.rows->map(r|$r.values->makeString('|')));
 }

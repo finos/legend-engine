@@ -22,6 +22,7 @@ import meta::external::language::java::transform::functions::date::pure::*;
 import meta::external::language::java::serialization::*;
 
 import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::functions::meta::*;
 
 Enum meta::external::language::java::transform::ClassPurpose
 {
@@ -236,8 +237,13 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
                 );
                 $classWithTypes->listIfMulti($mult);
               },
-              | fail('Unsupported type: ' + $type->printType());
-                ^meta::external::language::java::metamodel::Type();
+              {|
+                if( $type->isExtendedPrimitiveType(),
+                    | pureTypeToJavaType($conventions, $type->bypassExtendedPrimitives (), $typeArgs, $mult),
+                    | fail('Unsupported type: ' + $type->printType());
+                      ^meta::external::language::java::metamodel::Type();
+                );    
+              }       
    ))))))))))));
 }
 

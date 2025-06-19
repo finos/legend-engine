@@ -38,6 +38,7 @@ public class TestMemSqlFunctionParsing extends TestGrammarParser.TestGrammarPars
                 "{\n" +
                 "   functionName : 'demoFunction';\n" +
                 "   function : a::f():String[1];" +
+                "   ownership : Deployment { identifier: 'testDeployment' };" +
                 "}\n";
     }
 
@@ -48,7 +49,7 @@ public class TestMemSqlFunctionParsing extends TestGrammarParser.TestGrammarPars
                 "MemSqlFunction x::A\n" +
                 "{\n" +
                 "   funcName : 'demoFunction';\n" +
-                "}\n", "PARSER error at [4:4-11]: Unexpected token 'funcName'. Valid alternatives: ['functionName', 'description', 'function', 'owner', 'activationConfiguration']");
+                "}\n", "PARSER error at [4:4-11]: Unexpected token 'funcName'. Valid alternatives: ['functionName', 'description', 'function', 'ownership', 'activationConfiguration']");
     }
 
     @Test
@@ -58,7 +59,8 @@ public class TestMemSqlFunctionParsing extends TestGrammarParser.TestGrammarPars
                 "MemSqlFunction x::A\n" +
                 "{\n" +
                 "   function : a::f():String[1];" +
-                "}\n", "PARSER error at [2:1-4:32]: Field 'functionName' is required");
+                "   ownership : Deployment { identifier: 'testDeployment' };" +
+                "}\n", "PARSER error at [2:1-4:91]: Field 'functionName' is required");
     }
 
     @Test
@@ -68,6 +70,18 @@ public class TestMemSqlFunctionParsing extends TestGrammarParser.TestGrammarPars
                 "MemSqlFunction x::A\n" +
                 "{\n" +
                 "   functionName : 'demoFunction';\n" +
-                "}\n", "PARSER error at [2:1-5:1]: Field 'function' is required");
+                "   ownership : Deployment { identifier: 'testDeployment' };" +
+                "}\n", "PARSER error at [2:1-5:60]: Field 'function' is required");
+    }
+
+    @Test
+    public void testGetParserErrorMissingOwnership()
+    {
+        test("###MemSql\n" +
+                "MemSqlFunction x::A\n" +
+                "{\n" +
+                "   functionName : 'demoFunction';\n" +
+                "   function : a::f():String[1];" +
+                "}\n", "PARSER error at [2:1-5:32]: Field 'ownership' is required");
     }
 }

@@ -1,0 +1,71 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class {sqlFunctionInfo.initializer = 'covariancePopulation'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::CovariancePopulation extends PostgresNativeSqlFunction
+[
+  $this.name == 'covar_pop'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::covariancePopulation(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::CovariancePopulation
+  (
+    name = 'covar_pop',
+    documentation = 'Returns the population covariance of the input values',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [DoubleSqlType, DoubleSqlType],
+        returnType = DoubleSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractNumericSqlType, AbstractNumericSqlType],
+        returnType = AbstractNumericSqlType
+      )
+    ],
+    tests = [
+      sqlFunctionTest(
+        testSetupDataForCorrelation(),
+        // SELECT covar_pop(num1, num2) AS result FROM testTable ORDER BY result ASC NULLS LAST
+        simpleAggFunctionCall(
+          ^FunctionCall(
+            name = ^QualifiedName(parts = 'covar_pop'), 
+            arguments = [
+              ^QualifiedNameReference(name = ^QualifiedName(parts = 'num1')), 
+              ^QualifiedNameReference(name = ^QualifiedName(parts = 'num2'))
+            ]
+          ),
+          'testTable',
+          []
+        ),
+        ^TestExpectedResult(
+          columns = ['result'], 
+          data = [
+            list([50.0])
+          ]
+        )
+      )
+    ]
+  )
+}

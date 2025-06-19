@@ -88,19 +88,19 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::paginate:
 
   runTest(
     |Person.all()->from(simpleRelationalMapping, runtime())->sortBy(#/Person/firstName!fn#)->paginated(1,4),
-    'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset 0 rows fetch next 4 rows only',
+    'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME asc offset 0 rows fetch next 4 rows only',
     4
   );
 
   runTest(
     |Person.all()->from(simpleRelationalMapping, runtime())->sortBy(#/Person/firstName!fn#)->paginated(2,2),
-    'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset 2 rows fetch next 2 rows only',
+    'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME asc offset 2 rows fetch next 2 rows only',
     2
   );
 
   runTest(
     |Person.all()->from(simpleRelationalMapping, runtime())->sortBy(#/Person/firstName!fn#)->paginated(2,4),
-    'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset 4 rows fetch next 4 rows only',
+    'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME asc offset 4 rows fetch next 4 rows only',
     3
   );
 }
@@ -112,6 +112,6 @@ function <<test.Test>> meta::relational::tests::query::paginate::testPaginatedBy
    let f1 = {|Person.all()->sortBy(#/Person/firstName!fn#)->paginated(1,4);};
 
    let s = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset ${((1?number - 1?number)?number * 4?number)} rows fetch next ${4?number} rows only', $s);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME asc offset 0 rows fetch next 4 rows only', $s);
 }
 

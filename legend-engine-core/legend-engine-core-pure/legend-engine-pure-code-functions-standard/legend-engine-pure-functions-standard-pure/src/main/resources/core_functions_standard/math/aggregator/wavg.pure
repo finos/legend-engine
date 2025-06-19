@@ -32,26 +32,12 @@ meta::pure::functions::math::wavg(numbers:Number[*], weights:Number[*]):Float[1]
              $weightedQuantitySum/$weightsSum;));
 }
 
-function  meta::pure::functions::math::wavg(wavgRows: meta::pure::functions::math::wavgUtility::WavgRowMapper[*]):Float[1]
+function  meta::pure::functions::math::wavg(wavgRows: meta::pure::functions::math::mathUtility::RowMapper[*]):Float[1]
 {
-  meta::pure::functions::math::wavg($wavgRows.quantity, $wavgRows.weight);
+  meta::pure::functions::math::wavg($wavgRows.rowA, $wavgRows.rowB);
 }
 
-Class meta::pure::functions::math::wavgUtility::WavgRowMapper
-{
-  quantity: Number[0..1];
-  weight: Number[0..1];
-}
-
-function meta::pure::functions::math::wavgUtility::wavgRowMapper(quantity:Number[0..1], weight:Number[0..1]):meta::pure::functions::math::wavgUtility::WavgRowMapper[1]
-{
-  ^meta::pure::functions::math::wavgUtility::WavgRowMapper(
-    quantity= $quantity,
-    weight= $weight
-  )
-}
-
-function <<PCT.test>> meta::pure::functions::math::tests::wavg::testSimpleGroupByWavg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::wavg::testSimpleGroupByWavg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -65,7 +51,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::wavg::testSimpleGroupB
                   7, 3, G, 400, 0.75
                   8, 1, H, 150, 0.4
                   9, 5, I, 350, 1
-                #->groupBy(~grp, ~wavgCol : x | meta::pure::functions::math::wavgUtility::wavgRowMapper($x.quantity, $x.weight) : y | $y->wavg())
+                #->groupBy(~grp, ~wavgCol : x | meta::pure::functions::math::mathUtility::rowMapper($x.quantity, $x.weight) : y | $y->wavg())
                };
 
     let res =  $f->eval($expr);
@@ -80,7 +66,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::wavg::testSimpleGroupB
                   '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::wavg::testSimpleGroupByMultipleWavg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::wavg::testSimpleGroupByMultipleWavg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -94,8 +80,8 @@ function <<PCT.test>> meta::pure::functions::math::tests::wavg::testSimpleGroupB
                   7, 3, G, 400, 0.75, 0.50
                   8, 1, H, 150, 0.4, 0.4
                   9, 5, I, 350, 1, 1
-                #->groupBy(~grp, ~[wavgCol1 : x | meta::pure::functions::math::wavgUtility::wavgRowMapper($x.quantity, $x.weight) : y | $y->wavg(),
-                                  wavgCol2 : x | meta::pure::functions::math::wavgUtility::wavgRowMapper($x.quantity, $x.weight1) : y | $y->wavg()])
+                #->groupBy(~grp, ~[wavgCol1 : x | meta::pure::functions::math::mathUtility::rowMapper($x.quantity, $x.weight) : y | $y->wavg(),
+                                  wavgCol2 : x | meta::pure::functions::math::mathUtility::rowMapper($x.quantity, $x.weight1) : y | $y->wavg()])
                };
 
     let res =  $f->eval($expr);

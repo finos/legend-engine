@@ -129,6 +129,7 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                     u:Union[1] | ^$u(queries=$u.queries->map(q|$q->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SelectSQLQuery))),
                     v:ViewSelectSQLQuery[1] | if($shouldProcessViewSubSelect,|^$v(selectSQLQuery=$v.selectSQLQuery->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SelectSQLQuery)),|$v),
                     t:Table[1] | $tableToTable->eval($t),
+                    tf:TabularFunction[1] | $tf,
                     d:DynaFunction[1] | ^$d(parameters=$d.parameters->map(p|$p->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))),
                     f:FreeMarkerOperationHolder[1]| $f,
                     c:TableAliasColumn[1] | $c,

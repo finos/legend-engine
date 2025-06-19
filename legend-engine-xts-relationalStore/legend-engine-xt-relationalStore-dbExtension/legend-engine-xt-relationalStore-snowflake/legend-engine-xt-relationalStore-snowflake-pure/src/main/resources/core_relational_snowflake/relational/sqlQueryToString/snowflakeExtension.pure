@@ -51,7 +51,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForSnowflake_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
-      tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor_String_1__String_1__String_1_,
+      tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor_String_1__String_1__FunctionParameter_MANY__String_1_,
+      variableDeclarationProcessor = variableDeclarationProcessor_VariableDeclaration_1__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForSnowflake_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinProcessor = meta::relational::functions::sqlQueryToString::snowflake::processJoinForSnowflake_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinStringsProcessor = processJoinStringsOperationForSnowflake_JoinStrings_1__SqlGenerationContext_1__String_1_,
@@ -103,9 +104,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     );
 }
 
-function meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor(schema:String[1], functionName: String[1]):String[1]
+function meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor(schema:String[1], functionName: String[1], params: FunctionParameter[*]):String[1]
 {
-   'table('+ if($schema=='', | $functionName,| $schema+'.'+$functionName) + '())';
+   'table('+ if($schema=='', | $functionName,| $schema+'.'+$functionName) + '('+ $params->map(p|$p.name)->joinStrings(', ')+ '))';
 }
 
 function meta::relational::functions::sqlQueryToString::snowflake::schemaIdentifierToString(identifier:String[1], dbConfig: DbConfig[1]):String[1]
@@ -132,8 +133,10 @@ function meta::relational::functions::sqlQueryToString::snowflake::getDDLCommand
                 createTable = translateCreateTableStatementForSnowflake_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementForSnowflake_DropTableSQL_1__DbConfig_1__String_1_,
                 loadTable = loadValuesToDbTableForSnowflake_LoadTableSQL_1__DbConfig_1__String_MANY_,
-                createView = createView_CreateViewSQL_1__DbConfig_1__String_1_
-              );
+                createView = createView_CreateViewSQL_1__DbConfig_1__Extension_MANY__String_1_,
+                createProcedure = createProcedure_CreateProcedureSQL_1__DbConfig_1__Extension_MANY__String_1_ ,             
+                 createFunction = createFunction_CreateFunctionSQL_1__DbConfig_1__Extension_MANY__String_1_              
+                );
 }
 
 function meta::relational::functions::sqlQueryToString::snowflake::processTempTableNameSnowflake(tempTableName: String[1], dc: meta::external::store::relational::runtime::DatabaseConnection[1]): String[1]
@@ -161,7 +164,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function meta::relational::functions::sqlQueryToString::snowflake::translateCreateTableStatementForSnowflake(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[1]
 {
-   if($c.isTempTable->isTrue(),| 'CREATE TEMPORARY TABLE ' + $c.table->tableToString($dbConfig) + '('+ $c.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextDefault($c.type),
+   if($c.isTempTable->isTrue(),| 'CREATE TEMPORARY TABLE ' + $c.table->tableToString($dbConfig) + '('+ $c.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextSnowflake($c.type),
                                                                                                                                           r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]))->joinStrings(',') + ');'
                               ,| $c->meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault($dbConfig))
 
@@ -175,7 +178,29 @@ function meta::relational::functions::sqlQueryToString::snowflake::loadValuesToD
                                  let copyIntoCommand = 'COPY INTO ' + $l.table->tableToString($dbConfig)->toOne() + ' FROM @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE' + $l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + ' file_format = (type= CSV field_optionally_enclosed_by= \'"\');';
                                  let dropStage = 'DROP STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE';
                                  [$createStage, $loadTempTableCommand, $copyIntoCommand, $dropStage];
-                              ,| $l->meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault($dbConfig))
+                              ,| $l->insertValuesToDbTableForSnowflake($dbConfig))
+}
+
+function meta::relational::functions::sqlQueryToString::snowflake::insertValuesToDbTableForSnowflake(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+  if($loadTableSQL.parsedData.values->isEmpty(),
+    |[],
+    |
+      let insertStatement = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+              + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+              +')\n';
+      $loadTableSQL.parsedData.values->map(row | 'select ' + $row.values->convertValuesToCsvForSnowflake($loadTableSQL.columnsToLoad.type))->joinStrings($insertStatement, '\nUNION ALL\n', '\n;');
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::convertValuesToCsvForSnowflake(strs : String[*], types : Any[*]): String[1]
+{
+  range($types->size())->map(x |
+    let literalStr = $strs->at($x)->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($types->at($x));
+    $types->at($x)->match([
+      s:meta::relational::metamodel::datatype::SemiStructured[*] | 'PARSE_JSON(%s)'->format($literalStr),
+      a:Any[1] | $literalStr
+    ]);)->makeString(', ');
 }
 
 function meta::relational::functions::sqlQueryToString::snowflake::translateDropTableStatementForSnowflake(d:DropTableSQL[1], dbConfig: DbConfig[1]) : String[1]
@@ -189,6 +214,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='BITAND(%s, %s)')),
+    dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='BITNOT(%s)')),
+    dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='BITOR(%s, %s)')),
+    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='BITSHIFTLEFT(%s, %s)')),
+    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='BITSHIFTRIGHT(%s, %s)')),
+    dynaFnToSql('bitXor',                 $allStates,            ^ToSql(format='BITXOR(%s, %s)')),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='booland(%s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='boolor(%s)')),    
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceil(%s)')),
@@ -197,6 +228,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeSnowflake()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='to_char(%s)')),
     dynaFnToSql('contains',               $allStates,            ^ToSql(format='contains(%s,%s)', transform={p:String[2]|$p})),
+    dynaFnToSql('date',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformDateConstructionForSnowflake()})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSnowflake(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='DAYOFMONTH(%s)')),
@@ -217,6 +249,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='DATE_TRUNC(\'DAY\', %s)')),
     dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='DATE_TRUNC(\'SECOND\', %s)')),
     dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='DATE_TRUNC(\'HOUR\', %s)')),
+    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='UUID_STRING()')),
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='DATE_TRUNC(\'MINUTE\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='CHARINDEX(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
@@ -252,7 +285,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='split_part(%s, %s, %s)')),
     dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='TIME_SLICE(%s)', transform={p:String[3]|$p->at(0) + ', ' + constructInterval($p->at(2), $p->at(1))})),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
-    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='to_decimal(%s)')),
+    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='%s', transform={p:String[1]|$p->transformToDecimalSnowflake()})),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='to_double(%s)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s' , transform={p:String[2] | $p->transformToTimestampSnowflake()})),
@@ -310,6 +343,18 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    'to_timestamp('+$params->at(0)+','+$timestampFormat+')';
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformDateConstructionForSnowflake(params:String[*]):String[1]
+{
+   let paramsSize = $params->size();
+   assert($paramsSize != 3 || $paramsSize != 6,'Incorrect number of parameters for date construction! The correct usage is either date(<year>, <month>, <day>) or date(<year>, <month>, <day>, <hour>, <minute>, <second>)');
+   if ($paramsSize == 3,
+      |'DATE_FROM_PARTS(' + $params->joinStrings(',') + ')',
+      |let secondParam = $params->at(5)->parseDecimal();
+       let second = $secondParam->floor();
+       let nanoseconds = ($secondParam - $second) * 1000000000;
+       'TIMESTAMP_FROM_PARTS(' + $params->take(5)->joinStrings(',') + ',' + $second->toString() + ',' + $nanoseconds->toString() + ')';);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::dateFormatsSnowFlake():String[*]
 {
    ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd', 'ddMMMyyyy', 'ddMONyyyy', 'DD/MM/YYYY', 'YYYY/MM/DD'];
@@ -350,10 +395,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]
 {
-  assert($r->instanceOf(TableFunctionParamPlaceHolder), 'sqlQueryToString for relational element ' + $r->type().name->toOne() + ' has not been implemented yet for snowflake');
   $r->match([
-    t: TableFunctionParamPlaceHolder[1] | $t.var->replaceVarPlaceHolderForAppGeneration($sgc)
-  ]);
+    t: TableFunctionParamPlaceHolder[1] | $t.var->replaceVarPlaceHolderForAppGeneration($sgc),
+    t: ProcedureVariablePlaceHolder[1] | $t.var->replaceProcedurevariable($sgc),
+    r: RelationalOperationElement[1] | 'sqlQueryToString for relational element ' + $r->type().name->toOne() + ' has not been implemented yet for snowflake'
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::variableDeclarationProcessor(v:VariableDeclaration[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  $v.name + ' := (' + $v.value->match([
+                        l: Literal[1] | $l.value,
+                        r: RelationalOperationElement[1]| $r->processOperation($sgc)
+                      ])->cast(@String) + ')'
 }
 
 function <<access.private>>  meta::relational::functions::sqlQueryToString::snowflake::replaceVarPlaceHolderForAppGeneration(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
@@ -363,6 +417,14 @@ function <<access.private>>  meta::relational::functions::sqlQueryToString::snow
 
   $v.name;
 }
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::snowflake::replaceProcedurevariable(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
+{
+  assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
+  assertFalse($v->isCollectionPlaceHolder() || $v->isOptionalPlaceHolder(), 'only variables of multiplicity one can be used');
+  ':'+$v.name;
+}
+
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredObjectNavigationForSnowflake(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
 {
@@ -521,7 +583,19 @@ function meta::relational::functions::sqlQueryToString::snowflake::constructInte
    $i + ', ' + $interval;
 }
 
-
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformToDecimalSnowflake(param:String[1]):String[1]
+{
+  // https://docs.snowflake.com/en/sql-reference/functions/to_decimal
+  let parts = $param->split('.');
+  if ($parts->at(0)->isDigit(),
+      | if ($parts->size() == 1,
+        | format('to_decimal(%s)', [$param]);,
+        | let scale = max(0, min(37 - $parts->at(0)->length(), $parts->at(1)->length()));
+          format('to_decimal(%s,%s,%s)', [$param,38,$scale]);
+      ),
+      | format('to_decimal(%s, 38, 19)', [$param]);
+  );
+}
 
 
 
@@ -615,3 +689,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   ]
 }
 
+function meta::relational::functions::sqlQueryToString::snowflake::getColumnTypeSqlTextSnowflake(type: meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+    $type->match([
+       s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARIANT',
+       a : meta::relational::metamodel::datatype::DataType[1] | $a->getColumnTypeSqlTextDefault()
+    ]);
+}

@@ -23,31 +23,31 @@ meta::pure::functions::math::cosh(number:Number[1]):Float[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Identities<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals(cosh(0), 1.0);
-  assertEquals(cosh(-5), cosh(5));
-  assertEquals(cosh(-100), cosh(100));
-  assertEqWithinTolerance(pow(cosh(7/2),2), (1 + cosh(7))/2, 0.00000000000001);
+  assertEquals($f->eval(|cosh(0)), 1.0);
+  assertEquals($f->eval(|cosh(-5)), cosh(5));
+  assertEquals($f->eval(|cosh(-100)), cosh(100));
+  assertEqWithinTolerance($f->eval(|pow(cosh(7/2),2)), $f->eval(|(1 + cosh(7))/2), 0.00000000000001);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Integers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals(cosh(2), 3.7621956910836314);
-  assertEquals(cosh(-2), 3.7621956910836314);
+  assertEquals($f->eval(|cosh(2)), 3.7621956910836314);
+  assertEquals($f->eval(|cosh(-2)), 3.7621956910836314);
 
-  assertEquals(cosh(6), 201.7156361224559);
-  assertEquals(cosh(-6), 201.7156361224559);
+  assertEquals($f->eval(|cosh(6)), 201.7156361224559);
+  assertEquals($f->eval(|cosh(-6)), 201.7156361224559);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Floats<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals(cosh(-3.14), 11.573574828312076);
-  assertEquals(cosh(3.14), 11.573574828312076);
+  assertEquals($f->eval(|cosh(-3.14)), 11.573574828312076);
+  assertEquals($f->eval(|cosh(3.14)), 11.573574828312076);
 
-  assertEquals(cosh(-.7654321), 1.307528029695523);
-  assertEquals(cosh(.7654321), 1.307528029695523);
+  assertEquals($f->eval(|cosh(-.7654321)), 1.307528029695523);
+  assertEquals($f->eval(|cosh(.7654321)), 1.307528029695523);
 
-  assertEqWithinTolerance(cosh(11.573574828312076), 53126.3144145034, 0.0000000001);
-  assertEqWithinTolerance(cosh(-11.573574828312076), 53126.3144145034, 0.0000000001);
+  assertEqWithinTolerance($f->eval(|cosh(11.573574828312076)), 53126.3144145034, 0.0000000001);
+  assertEqWithinTolerance($f->eval(|cosh(-11.573574828312076)), 53126.3144145034, 0.0000000001);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

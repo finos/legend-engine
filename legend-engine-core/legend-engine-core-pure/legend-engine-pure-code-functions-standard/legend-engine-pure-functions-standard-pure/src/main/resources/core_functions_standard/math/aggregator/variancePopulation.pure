@@ -26,7 +26,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::variance::testVariance
 }
 
 
-function <<PCT.test>> meta::pure::functions::math::tests::variance::testSimpleGroupByVariancePopulation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::variance::testSimpleGroupByVariancePopulation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -47,7 +47,7 @@ function <<PCT.test>> meta::pure::functions::math::tests::variance::testSimpleGr
                   '#', $res->sort(~id->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::variance::testSimpleWindowVariancePopulation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::variance::testSimpleWindowVariancePopulation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS

@@ -1,0 +1,205 @@
+
+###Pure
+import meta::external::function::activator::snowflakeApp::tests::*;
+import meta::external::function::activator::snowflakeApp::tests::model::simple::*;
+import meta::core::runtime::*;
+import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::metamodel::*;
+
+Class meta::external::function::activator::snowflakeApp::tests::model::simple::PersonX
+{
+    firstName : String[1];
+    lastName : String[1];
+    otherNames : String[*];
+    extraInformation : String[0..1];
+    manager : PersonX[0..1];
+    gender: Gender[0..1];
+    genderFromInt: Gender[0..1];
+    age : Integer[0..1];
+    nickName : String[0..1];    
+    activeEmployment: Boolean[0..1];
+    lastUpdated: DateTime[0..1];
+    name(){$this.firstName+' '+$this.lastName}:String[1];
+
+}
+
+Enum meta::external::function::activator::snowflakeApp::tests::model::simple::Gender {
+  M, F
+}
+
+function meta::external::function::activator::snowflakeApp::tests::testRuntime(db:Database[1]):Runtime[1]
+{
+    testRuntime(testDatabaseConnection($db,[]->cast(@String)));
+}
+
+function meta::external::function::activator::snowflakeApp::tests::testRuntimeWithTimeZone(db:Database[1]):Runtime[1]
+{
+    testRuntime(testDatabaseConnection($db, '+0530'));
+}
+
+function meta::external::function::activator::snowflakeApp::tests::testRelationalConnection():ConnectionStore[1]
+{
+  ^ConnectionStore(
+    element = dbInc ,connection=
+  ^RelationalDatabaseConnection(
+    type = DatabaseType.Snowflake,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = ''),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+  ))
+}
+
+function <<access.private>> meta::external::function::activator::snowflakeApp::tests::testRuntime(testConnection:ConnectionStore[1]):Runtime[1]
+{
+   ^Runtime(connectionStores = $testConnection)
+}
+
+function <<access.private>> meta::external::function::activator::snowflakeApp::tests::testDatabaseConnection(db:Database[1], timeZone:String[0..1]):ConnectionStore[1]
+{
+    ^ConnectionStore(
+        element = $db,
+        connection=
+    ^meta::external::store::relational::runtime::TestDatabaseConnection(
+        type = DatabaseType.Snowflake,
+        timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone)
+    ));
+}
+
+###Mapping
+
+import meta::external::function::activator::snowflakeApp::tests::model::simple::*;
+import meta::external::function::activator::snowflakeApp::tests::*;
+
+Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelationalMapping
+(
+
+    PersonX : Relational
+            {
+                scope([dbInc])
+                (
+                    firstName : personTable.FIRSTNAME,
+                    age : personTable.AGE,
+                    gender:  EnumerationMapping genderEnum: personTable.GENDER,
+                    genderFromInt:  EnumerationMapping genderEnum2: personTable.GENDER2
+                ),
+                scope([dbInc]default.personTable)
+                (
+                    lastName : LASTNAME,
+                    lastUpdated: LAST_UPDATED
+                ),
+                manager : [dbInc]@Person_Manager
+            }
+
+    Gender: EnumerationMapping genderEnum
+    {
+          M:  'male',
+          F: ['female', 'Female']
+    }
+
+    Gender: EnumerationMapping genderEnum2
+    {
+          M:  1,
+          F: 2
+    }
+)
+
+Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelationalMapping2
+(
+
+    PersonX : Relational
+            {
+                scope([dbInc])
+                (
+                    firstName : concat(personTable.FIRSTNAME,'__X'),
+                    age : personTable.AGE
+                ),
+                scope([dbInc]default.personTable)
+                (
+                    lastName : concat(LASTNAME,'__X')
+                ),
+                manager : [dbInc]@Person_Manager
+            }
+
+
+)
+
+###Connection  
+RelationalDatabaseConnection meta::external::function::activator::snowflakeApp::tests::MyConnection
+{
+    store: meta::external::function::activator::snowflakeApp::tests::dbInc;
+    type: Snowflake;
+    specification: LocalH2
+    {
+      testDataSetupSqls: [];
+    };
+    auth: DefaultH2;
+}
+
+###Relational
+Database meta::external::function::activator::snowflakeApp::tests::dbInc
+(
+    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, GENDER VARCHAR(200), GENDER2 INT,LAST_UPDATED TIMESTAMP)
+    Table validPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+    Table PersonTableExtension (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, birthDate DATE)
+    Table differentPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+
+    Table firmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT, CEOID INT)
+    Table firmExtensionTable(firmId INT PRIMARY KEY, legalName VARCHAR(200), establishedDate DATE)
+    Table otherFirmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT)
+
+    Table addressTable(ID INT PRIMARY KEY, TYPE INT, NAME VARCHAR(200), STREET VARCHAR(100), COMMENTS VARCHAR(100))
+    Table locationTable(ID INT PRIMARY KEY, PERSONID INT, PLACE VARCHAR(200),date DATE)
+    Table placeOfInterestTable(ID INT PRIMARY KEY,locationID INT PRIMARY KEY, NAME VARCHAR(200))
+
+    View PersonFirmView
+    (
+        PERSON_ID: personTable.ID PRIMARY KEY,
+        lastName:  personTable.LASTNAME,
+        firm_name :  @Firm_Person | firmTable.LEGALNAME
+    )
+
+    View FirstNameAddress
+    (
+       ~distinct
+       firstName: personTable.FIRSTNAME  PRIMARY KEY,
+       address :  @Address_Person | addressTable.NAME PRIMARY KEY
+    )
+
+    View personViewWithGroupBy
+    (
+       ~groupBy(personTable.ID)
+       id: personTable.ID PRIMARY KEY,
+       maxage: max(personTable.AGE)
+    )
+
+    View PersonViewWithDistinct
+    (
+      ~distinct
+      id: @PersonWithPersonView| personTable.ID PRIMARY KEY,
+      firstName: @PersonWithPersonView| personTable.FIRSTNAME,
+      lastName: @PersonWithPersonView|personTable.LASTNAME,
+      firmId: @PersonWithPersonView|personTable.FIRMID
+    )
+
+    Schema productSchema
+    (
+       Table productTable(ID INT PRIMARY KEY, NAME VARCHAR(200))
+    )
+
+    Filter FirmXFilter(firmTable.LEGALNAME = 'Firm X')
+    Filter FirmBFilter(firmTable.LEGALNAME = 'Firm B')
+
+    Join personViewWithFirmTable(firmTable.ID = PersonViewWithDistinct.firmId)
+    Join PersonWithPersonView(personTable.ID = personViewWithGroupBy.id and personTable.AGE = personViewWithGroupBy.maxage)
+    Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)
+    Join Address_Person(addressTable.ID = personTable.ADDRESSID)
+    Join Firm_Ceo(firmTable.CEOID = personTable.ID)
+    Join Firm_Person(firmTable.ID = personTable.FIRMID)
+    Join Firm_Person1(firmTable.ID = personTable.FIRMID and firmTable.LEGALNAME = 'Firm X')
+    Join Firm_Person2(firmTable.ID = personTable.FIRMID and personTable.FIRSTNAME = 'Peter')
+    Join FirmExtension_PersonExtension(firmExtensionTable.firmId = PersonTableExtension.FIRMID)
+    Join Person_Location(personTable.ID = locationTable.PERSONID)
+    Join Person_Manager(personTable.MANAGERID = {target}.ID)
+    Join location_PlaceOfInterest(locationTable.ID  = placeOfInterestTable.locationID)
+    Join Person_OtherFirm(personTable.FIRMID = otherFirmTable.ID)
+)

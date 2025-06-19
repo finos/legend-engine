@@ -122,7 +122,7 @@ function <<test.Test>> meta::relational::tests::map::testIntegerMultiply():Boole
    let result = execute(|Person.all()->map(p|$p.age->toOne() * 2), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 7);
    assertSameElements([24, 44, 44, 46, 64, 68, 70], $result.values);
-   assertEquals('select ("root".AGE * 2) from personTable as "root"', $result->sqlRemoveFormatting());
+   assertEquals('select "root".AGE * 2 from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::map::testSimpleDerivedProperty():Boolean[1]
@@ -178,7 +178,7 @@ function <<test.Test>> meta::relational::tests::map::testBooleanFilterWithProper
    let result = execute(|Firm.all()->map(f|$f.employees->filter(e|$e.firstName == 'John' && $e.lastName == 'Johnson').lastName), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertSameElements(['Johnson'], $result.values);
-   assertEquals('select "persontable_0".LASTNAME from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where ("persontable_0".FIRSTNAME = \'John\' and "persontable_0".LASTNAME = \'Johnson\')', $result->sqlRemoveFormatting());
+   assertEquals('select "persontable_0".LASTNAME from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRSTNAME = \'John\' and "persontable_0".LASTNAME = \'Johnson\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::map::testAutoMapBooleanFilterWithProperty():Boolean[1]
@@ -186,7 +186,7 @@ function <<test.Test>> meta::relational::tests::map::testAutoMapBooleanFilterWit
    let result = execute(|Firm.all().employees->filter(e|$e.firstName == 'John' && $e.lastName == 'Johnson').lastName, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertSameElements(['Johnson'], $result.values);
-   assertEquals('select "persontable_0".LASTNAME from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where ("persontable_0".FIRSTNAME = \'John\' and "persontable_0".LASTNAME = \'Johnson\')', $result->sqlRemoveFormatting());
+   assertEquals('select "persontable_0".LASTNAME from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRSTNAME = \'John\' and "persontable_0".LASTNAME = \'Johnson\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::map::testDeepBooleanFilterWithProperty():Boolean[1]
@@ -194,7 +194,7 @@ function <<test.Test>> meta::relational::tests::map::testDeepBooleanFilterWithPr
    let result = execute(|Firm.all()->map(f|$f.employees->filter(e|$e.address.name == 'New York' && $e.lastName == 'Johnson').lastName), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertSameElements(['Johnson'], $result.values);
-   assertEquals('select "persontable_0".LASTNAME from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID) where ("addresstable_0".NAME = \'New York\' and "persontable_0".LASTNAME = \'Johnson\')', $result->sqlRemoveFormatting());
+   assertEquals('select "persontable_0".LASTNAME from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID) where "addresstable_0".NAME = \'New York\' and "persontable_0".LASTNAME = \'Johnson\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::map::testDeepBooleanFilterWithPropertyUsingOr():Boolean[1]
@@ -202,7 +202,7 @@ function <<test.Test>> meta::relational::tests::map::testDeepBooleanFilterWithPr
    let result = execute(|Firm.all()->map(f|$f.employees->filter(e|$e.address.name == 'New York' || $e.lastName == 'Smith').lastName), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 5);
    assertSameElements(['Hill', 'Johnson', 'Harris', 'Smith', 'Allen'], $result.values);
-   assertEquals('select "persontable_0".LASTNAME from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID) where ("addresstable_0".NAME = \'New York\' or "persontable_0".LASTNAME = \'Smith\')', $result->sqlRemoveFormatting());
+   assertEquals('select "persontable_0".LASTNAME from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_0".ADDRESSID) where "addresstable_0".NAME = \'New York\' or "persontable_0".LASTNAME = \'Smith\'', $result->sqlRemoveFormatting());
 }
 
 
@@ -245,18 +245,18 @@ function <<test.Test>> meta::relational::tests::map::testSubAggregationMultiLeve
    let result = execute(|Firm.all().employees->map(e|$e.lastName->joinStrings()), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 7);
    assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'Harris', 'Roberts', 'Hill'], $result.values);
-   assertEquals('select group_concat("persontable_0".LASTNAME ) from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) group by "persontable_0".ID', $result->sqlRemoveFormatting());
+   assertEquals('select listagg("persontable_0".LASTNAME, \'\') from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) group by "persontable_0".ID', $result->sqlRemoveFormatting());
 
-   let result2 = execute(|Firm.all().employees.lastName->joinStrings(), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result2 = execute(|Firm.all().employees.lastName->joinStrings(','), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 1);
    assertEquals('Smith,Johnson,Hill,Allen,Roberts,Hill,Harris', $result2.values);
-   assertEquals('select group_concat("persontable_0".LASTNAME ) from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result2->sqlRemoveFormatting());
+   assertEquals('select listagg("persontable_0".LASTNAME, \',\') from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result2->sqlRemoveFormatting());
 
-   let result3 = execute(|Firm.all()->map(f|$f.employees->sortBy(#/Person/lastName#).lastName->joinStrings()), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),debug());
+   let result3 = execute(|Firm.all()->map(f|$f.employees->sortBy(#/Person/lastName#).lastName->joinStrings(',')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),noDebug());
 
    assertSize($result3.values, 4);
    assertEquals(['Allen,Hill,Johnson,Smith', 'Roberts', 'Hill', 'Harris'], $result3.values);
-   assertEquals('select "firmtable_1".aggCol from firmTable as "root" left outer join (select "firmtable_2".ID as ID, group_concat("firmtable_2".LASTNAME ) as aggCol from (select "firmtable_1".ID, "persontable_0".LASTNAME from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) order by "persontable_0".LASTNAME) as "firmtable_2" group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result3->sqlRemoveFormatting());
+   assertEquals('select "firmtable_1".aggCol from firmTable as "root" left outer join (select "firmtable_2".ID as ID, listagg("firmtable_2".LASTNAME, \',\') as aggCol from (select "firmtable_1".ID, "persontable_0".LASTNAME from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) order by "persontable_0".LASTNAME asc) as "firmtable_2" group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result3->sqlRemoveFormatting());
 }
 
 
@@ -265,7 +265,7 @@ function <<test.Test>> meta::relational::tests::map::testSubAggregationAverageWi
    let result = execute(|Firm.all()->map(f|$f.employees.age->average()*2), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 4);
    assertSameElements([39.5, 64.0, 68.0, 70.0], $result.values);
-   assertEquals('select ("firmtable_1".aggCol * 2) from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * "persontable_0".AGE) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());
+   assertEquals('select "firmtable_1".aggCol * 2 from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * "persontable_0".AGE) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::map::testSubAggregationSumWithOperation():Boolean[1]
@@ -273,7 +273,7 @@ function <<test.Test>> meta::relational::tests::map::testSubAggregationSumWithOp
    let result = execute(|Firm.all()->map(f|$f.employees.age->sum()*10), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 4);
    assertSameElements([320, 340, 350, 790], $result.values);
-   assertEquals('select ("firmtable_1".aggCol * 10) from firmTable as "root" left outer join (select "firmtable_1".ID as ID, sum("persontable_0".AGE) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());
+   assertEquals('select "firmtable_1".aggCol * 10 from firmTable as "root" left outer join (select "firmtable_1".ID as ID, sum("persontable_0".AGE) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::map::testSubAggregationUsingIf():Boolean[1]
@@ -283,7 +283,7 @@ function <<test.Test>> meta::relational::tests::map::testSubAggregationUsingIf()
    assertSameElements([1.0, 1.0, 2.25, 16.0], $result.values);
    assertEqualsH2Compatible(
     'select "firmtable_1".aggCol from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then ((1.0 * "persontable_0".AGE) / 2) else 1.0 end) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
-    'select "firmtable_1".aggCol from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then ((1.0 * "persontable_0".AGE) / 2) else CAST(1.0 AS FLOAT) end) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
+    'select "firmtable_1".aggCol from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then (1.0 * "persontable_0".AGE) / 2 else cast(1.0 as float) end) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)',
     $result->sqlRemoveFormatting()
    );
 }
@@ -295,7 +295,7 @@ function <<test.Test>> meta::relational::tests::map::testSubAggregationAverageIn
    assertSameElements([39.5, 64.0, 68.0, 70.0], $result.values);
    assertEqualsH2Compatible(
     'select ("firmtable_1".aggCol * 2.0) from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * "persontable_0".AGE) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
-    'select ("firmtable_1".aggCol * CAST(2.0 AS FLOAT)) from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * "persontable_0".AGE) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
+    'select "firmtable_1".aggCol * cast(2.0 as float) from firmTable as "root" left outer join (select "firmtable_1".ID as ID, avg(1.0 * "persontable_0".AGE) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)',
     $result->sqlRemoveFormatting()
    );
 }

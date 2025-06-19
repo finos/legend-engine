@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-databricks</artifactId>
-        <version>4.87.5-SNAPSHOT</version>
+        <version>4.88.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-relationalStore-databricks-PCT</artifactId>
@@ -40,7 +40,7 @@
 
     <profiles>
         <profile>
-            <id>pct-cloud-test-toFix</id>
+            <id>pct-cloud-test</id>
             <build>
                 <plugins>
                     <plugin>

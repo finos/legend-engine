@@ -593,3 +593,66 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
                                            $lineage);
 
 }
+
+
+###Pure
+import meta::analytics::lineage::*;
+import meta::relational::tests::model::simple::*;
+function <<test.Test>> meta::analytics::lineage::tests::relation::testForSimpleNewTDSFunction():Boolean[1]
+{
+  let query = {|Person.all()->project(~['firstName': x| $x.firstName])};
+  let mapping = meta::relational::tests::simpleRelationalMapping;
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultpersonTable'],
+                                          ['Lambda', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
+                                          '[firstName: [personTable.FIRSTNAME <TableAliasColumn>]]',
+                                           $lineage);
+
+}
+
+function <<test.Test>> meta::analytics::lineage::tests::relation::testForDerivedPropertyInNewTDSFunction():Boolean[1]
+{
+  let query = {|Person.all()->project(~['fullName': x| $x.name])};
+  let mapping = meta::relational::tests::simpleRelationalMapping;
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultpersonTable'],
+                                          ['Lambda', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
+                                          '[fullName: [personTable.FIRSTNAME <TableAliasColumn>, personTable.LASTNAME <TableAliasColumn>]]',
+                                           $lineage);
+
+}
+
+function <<test.Test>> meta::analytics::lineage::tests::relation::testForParametrizedDerivedPropertyInNewTDSFunction():Boolean[1]
+{
+  let query = {|Person.all()->project(~['fullName': x| $x.fullName(true)])};
+  let mapping = meta::relational::tests::simpleRelationalMapping;
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultpersonTable'],
+                                          ['Lambda', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
+                                          '[fullName: [personTable.FIRSTNAME <TableAliasColumn>, personTable.LASTNAME <TableAliasColumn>]]',
+                                           $lineage);
+
+}
+
+function <<test.Test>> meta::analytics::lineage::tests::relation::testNewTDSWithRelationStoreAccessor():Boolean[1]
+{
+  let query = {|#>{meta::relational::tests::db.personTable}#->project(~['firstName': x| $x.FIRSTNAME])};
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let lineage = meta::analytics::lineage::computeLineage($query, [], $runtime, []);
+
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultpersonTable'],
+                                          [],
+                                          '[firstName: [personTable.FIRSTNAME <FIRSTNAME>]]',
+                                          $lineage);
+
+}

@@ -1,0 +1,596 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class simple::model::order
+{
+  id: String[1];
+  identifier: String[1];
+  quantity: Integer[1];
+  side: String[1];
+  price: Float[1];
+  account: String[1];
+  tradeId: String[1];
+  product: simple::model::Product[1];
+  block: simple::model::block[1];
+}
+
+Class simple::model::trade
+{
+  id: String[1];
+  tradeSummary: simple::model::tradeSummary[1];
+  status: String[1];
+  block: simple::model::block[1];
+}
+
+Class simple::model::tradeSummary
+{
+  identifier: String[1];
+  execQuantity: Integer[1];
+  price: String[1];
+  side: String[1];
+  orderId: String[1];
+}
+
+Class simple::model::block
+{
+  id: String[1];
+  account: String[1];
+  blockData: simple::model::blockData[1];
+  trades: simple::model::trade[*];
+  orders: simple::model::order[*];
+  products: String[*];
+}
+
+Class simple::model::relatedEntity
+{
+  tag: String[1];
+  tagId: String[1];
+}
+
+Class simple::model::blockData
+{
+  relatedEntities: simple::model::relatedEntity[1..*];
+  status: String[1];
+}
+
+Class simple::model::Product
+{
+  product: String[1];
+  identifier: String[1];
+  version: String[1];
+}
+
+###ExternalFormat
+Binding simple::binding::binding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    simple::model::tradeSummary,
+    simple::model::relatedEntity,
+    simple::model::blockData
+  ];
+}
+
+###Relational
+Database simple::store::semistructured
+(
+  Schema Semistructured
+  (
+    Table Blocks
+    (
+      ID varchar(100) PRIMARY KEY,
+      ACCOUNT varchar(100),
+      BLOCKDATA SEMISTRUCTURED
+    )
+    Table Trades
+    (
+      ID varchar(100) PRIMARY KEY,
+      STATUS varchar(100),
+      TRADESUMMARY SEMISTRUCTURED
+    )
+    Table Orders
+    (
+      ID varchar(100) PRIMARY KEY,
+      IDENTIFIER varchar(100),
+      QUANTITY INTEGER,
+      SIDE varchar(100),
+      PRICE DOUBLE
+    )
+    Table Product
+    (
+      IDENTIFIER varchar(100) PRIMARY KEY,
+      VERSION varchar(100) PRIMARY KEY,
+      PRODUCT varchar(100)
+    )
+  )
+
+  Join Block_Order(extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tag', 'VARCHAR') = 'order'
+    and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = Semistructured.Orders.ID)
+  Join Block_Trade(extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tag', 'VARCHAR') = 'trade'
+    and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = Semistructured.Trades.ID)
+  Join Order_Product(Semistructured.Orders.IDENTIFIER = Semistructured.Product.IDENTIFIER)
+  Join Block_Trade_Complex(extractFromSemiStructured(Semistructured.Blocks.BLOCKDATA, 'tag', 'VARCHAR') = extractFromSemiStructured(Semistructured.Trades.TRADESUMMARY, 'tradeSummary.tradeTag', 'VARCHAR')
+      and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities.trades', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = extractFromSemiStructured(Semistructured.Trades.TRADESUMMARY, 'tradeTag', 'VARCHAR'))
+
+)
+
+
+Database view::store::semistructured
+(
+  Schema Semistructured
+  (
+    Table AllBlocksVersions
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      VERSION VARCHAR(100) PRIMARY KEY,
+      ACCOUNT VARCHAR(100),
+      BLOCKDATA SEMISTRUCTURED
+    )
+    Table TradesTable
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      STATUS VARCHAR(100),
+      TRADESUMMARY SEMISTRUCTURED
+    )
+    Table Orders
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      IDENTIFIER VARCHAR(100),
+      QUANTITY INTEGER,
+      SIDE VARCHAR(100),
+      PRICE DOUBLE
+    )
+    Table Product
+    (
+      IDENTIFIER VARCHAR(100) PRIMARY KEY,
+      PRODUCT VARCHAR(100),
+      VERSION VARCHAR(100)
+    )
+    Table Attributes
+    (
+      ATTRIBUTE_ID VARCHAR(100) PRIMARY KEY,
+      VERSION VARCHAR(100) PRIMARY KEY,
+      ATTRIBUTE_VALUE VARCHAR(100),
+      DESCRIPTION VARCHAR(100)
+    )
+
+    View LatestBlockVersion
+    (
+      ~groupBy
+      (
+        Semistructured.AllBlocksVersions.ID
+      )
+      ID: Semistructured.AllBlocksVersions.ID PRIMARY KEY,
+      MAX_VERSION: max(Semistructured.AllBlocksVersions.VERSION)
+    )
+    View Blocks
+    (
+      ID: Semistructured.LatestBlockVersion.ID PRIMARY KEY,
+      ACCOUNT: [view::store::semistructured]@AllBlocksVersions_LatestBlockVersion | Semistructured.AllBlocksVersions.ACCOUNT,
+      BLOCKDATA: [view::store::semistructured]@AllBlocksVersions_LatestBlockVersion | Semistructured.AllBlocksVersions.BLOCKDATA
+    )
+    View Trades
+    (
+      ID: Semistructured.TradesTable.ID PRIMARY KEY,
+      STATUS: Semistructured.TradesTable.STATUS,
+      TRADESUMMARY: Semistructured.TradesTable.TRADESUMMARY
+    )
+  )
+
+  Join AllBlocksVersions_LatestBlockVersion(Semistructured.AllBlocksVersions.ID = Semistructured.LatestBlockVersion.ID
+    and Semistructured.AllBlocksVersions.VERSION = Semistructured.LatestBlockVersion.MAX_VERSION)
+  Join Block_Order(extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tag', 'VARCHAR') = 'order'
+    and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = Semistructured.Orders.ID)
+  Join Block_Trade(extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tag', 'VARCHAR') = 'trade'
+    and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = Semistructured.Trades.ID)
+  Join Order_Product(Semistructured.Orders.IDENTIFIER = Semistructured.Product.IDENTIFIER)
+  Join Block_Attributes(extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'attributes', 'SEMISTRUCTURED'), 'id', 'VARCHAR') = Semistructured.Attributes.ATTRIBUTE_ID
+    and extractFromSemiStructured(explodeSemiStructured(Semistructured.Blocks.BLOCKDATA, 'attributes', 'SEMISTRUCTURED'), 'version', 'VARCHAR') = Semistructured.Attributes.VERSION)
+)
+
+###Mapping
+Mapping simple::mapping::semistructured
+(
+  *simple::model::block: Relational
+  {
+    ~primaryKey
+    (
+      [simple::store::semistructured]Semistructured.Blocks.ID
+    )
+    ~mainTable [simple::store::semistructured]Semistructured.Blocks
+    id: [simple::store::semistructured]Semistructured.Blocks.ID,
+    account: [simple::store::semistructured]Semistructured.Blocks.ACCOUNT,
+    trades[simple_model_trade]: [simple::store::semistructured]@Block_Trade,
+    orders[simple_model_order]: [simple::store::semistructured]@Block_Order,
+    products: [simple::store::semistructured]@Block_Order > [simple::store::semistructured]@Order_Product | [simple::store::semistructured]Semistructured.Product.PRODUCT,
+    blockData: Binding simple::binding::binding : [simple::store::semistructured]Semistructured.Blocks.BLOCKDATA
+  }
+  *simple::model::order: Relational
+  {
+    ~primaryKey
+    (
+      [simple::store::semistructured]Semistructured.Orders.ID
+    )
+    ~mainTable [simple::store::semistructured]Semistructured.Orders
+    id: [simple::store::semistructured]Semistructured.Orders.ID,
+    quantity: [simple::store::semistructured]Semistructured.Orders.QUANTITY,
+    side: [simple::store::semistructured]Semistructured.Orders.SIDE,
+    price: [simple::store::semistructured]Semistructured.Orders.PRICE,
+    block[simple_model_block]: [simple::store::semistructured]@Block_Order,
+    account: [simple::store::semistructured]@Block_Order | [simple::store::semistructured]Semistructured.Blocks.ACCOUNT,
+    tradeId: [simple::store::semistructured]@Block_Order > [simple::store::semistructured]@Block_Trade | [simple::store::semistructured]Semistructured.Trades.ID,
+    identifier: [simple::store::semistructured]Semistructured.Orders.IDENTIFIER,
+    product: [simple::store::semistructured]@Order_Product
+  }
+  *simple::model::trade: Relational
+  {
+    ~primaryKey
+    (
+      [simple::store::semistructured]Semistructured.Trades.ID
+    )
+    ~mainTable [simple::store::semistructured]Semistructured.Trades
+    id: [simple::store::semistructured]Semistructured.Trades.ID,
+    status: [simple::store::semistructured]Semistructured.Trades.STATUS,
+    block[simple_model_block]: [simple::store::semistructured]@Block_Trade,
+    tradeSummary: Binding simple::binding::binding : [simple::store::semistructured]Semistructured.Trades.TRADESUMMARY
+  }
+  *simple::model::Product: Relational
+  {
+    ~primaryKey
+    (
+      [simple::store::semistructured]Semistructured.Product.IDENTIFIER
+    )
+    ~mainTable [simple::store::semistructured]Semistructured.Product
+    identifier: [simple::store::semistructured]Semistructured.Product.IDENTIFIER,
+    version: [simple::store::semistructured]Semistructured.Product.VERSION,
+    product: [simple::store::semistructured]Semistructured.Product.PRODUCT
+  }
+)
+
+Mapping simple::mapping::semistructuredWithExtractAndExplode
+(
+  *simple::model::block: Relational
+  {
+    ~primaryKey
+    (
+      [simple::store::semistructured]Semistructured.Blocks.ID
+    )
+    ~mainTable [simple::store::semistructured]Semistructured.Blocks
+    id: [simple::store::semistructured]Semistructured.Blocks.ID,
+    account: [simple::store::semistructured]Semistructured.Blocks.ACCOUNT,
+    trades[simple_model_trade]: [simple::store::semistructured]@Block_Trade_Complex
+  }
+  *simple::model::trade: Relational
+  {
+    ~primaryKey
+    (
+      [simple::store::semistructured]Semistructured.Trades.ID
+    )
+    ~mainTable [simple::store::semistructured]Semistructured.Trades
+    id: [simple::store::semistructured]Semistructured.Trades.ID,
+    status: extractFromSemiStructured([simple::store::semistructured]Semistructured.Trades.TRADESUMMARY, 'status', 'VARCHAR')
+  }
+)
+
+Mapping view::mapping::semistructured
+(
+  *simple::model::block: Relational
+  {
+    ~primaryKey
+    (
+      [view::store::semistructured]Semistructured.Blocks.ID
+    )
+    ~mainTable [view::store::semistructured]Semistructured.Blocks
+    id: [view::store::semistructured]Semistructured.Blocks.ID,
+    account: [view::store::semistructured]Semistructured.Blocks.ACCOUNT,
+    trades[simple_model_trade]: [view::store::semistructured]@Block_Trade,
+    orders[simple_model_order]: [view::store::semistructured]@Block_Order,
+    products: [view::store::semistructured]@Block_Order > [view::store::semistructured]@Order_Product | [view::store::semistructured]Semistructured.Product.PRODUCT,
+    blockData: Binding simple::binding::binding : [view::store::semistructured]Semistructured.Blocks.BLOCKDATA
+  }
+  *simple::model::order: Relational
+  {
+    ~primaryKey
+    (
+      [view::store::semistructured]Semistructured.Orders.ID
+    )
+    ~mainTable [view::store::semistructured]Semistructured.Orders
+    id: [view::store::semistructured]Semistructured.Orders.ID,
+    quantity: [view::store::semistructured]Semistructured.Orders.QUANTITY,
+    side: [view::store::semistructured]Semistructured.Orders.SIDE,
+    price: [view::store::semistructured]Semistructured.Orders.PRICE,
+    block[simple_model_block]: [view::store::semistructured]@Block_Order,
+    account: [view::store::semistructured]@Block_Order | [view::store::semistructured]Semistructured.Blocks.ACCOUNT,
+    tradeId: [view::store::semistructured]@Block_Order > [view::store::semistructured]@Block_Trade | [view::store::semistructured]Semistructured.Trades.ID,
+    identifier: [view::store::semistructured]Semistructured.Orders.IDENTIFIER,
+    product: [view::store::semistructured]@Order_Product
+  }
+  *simple::model::trade: Relational
+  {
+    ~primaryKey
+    (
+      [view::store::semistructured]Semistructured.Trades.ID
+    )
+    ~mainTable [view::store::semistructured]Semistructured.Trades
+    id: [view::store::semistructured]Semistructured.Trades.ID,
+    status: [view::store::semistructured]Semistructured.Trades.STATUS,
+    block[simple_model_block]: [view::store::semistructured]@Block_Trade,
+    tradeSummary: Binding simple::binding::binding : [view::store::semistructured]Semistructured.Trades.TRADESUMMARY
+  }
+  *simple::model::Product: Relational
+  {
+    ~primaryKey
+    (
+      [view::store::semistructured]Semistructured.Product.IDENTIFIER
+    )
+    ~mainTable [view::store::semistructured]Semistructured.Product
+    identifier: [view::store::semistructured]Semistructured.Product.IDENTIFIER,
+    version: [view::store::semistructured]Semistructured.Product.VERSION,
+    product: [view::store::semistructured]Semistructured.Product.PRODUCT
+  }
+)
+
+###Pure
+function simple::query::getOrdersForBlock():TabularDataSet[1]
+{
+    simple::model::block.all()->project(
+      [
+        x|$x.id,
+        x|$x.account,
+        x|$x.orders.id,
+        x|$x.orders.identifier,
+        x|$x.orders.price
+      ],
+      [
+        'Id',
+        'Account',
+        'Orders/Id',
+        'Orders/Identifier',
+        'Orders/Price'
+      ]
+    );
+}
+
+function simple::query::getBlockForTrade():TabularDataSet[1]
+{
+    simple::model::trade.all()->project(
+      [
+        x|$x.id,
+        x|$x.status,
+        x|$x.block.id,
+        x|$x.block.account
+      ],
+      [
+        'Id',
+        'Status',
+        'Block/Id',
+        'Block/Account'
+      ]
+    );
+}
+
+function simple::query::getTradesForNonCancelledBlocks():TabularDataSet[1]
+{
+    simple::model::block.all()->filter(
+      x|!($x.blockData.status == 'cancelled')
+    )->project(
+      [
+        x|$x.id,
+        x|$x.account,
+        x|$x.trades.id,
+        x|$x.trades.status
+      ],
+      [
+        'Id',
+        'Account',
+        'Trades/Id',
+        'Trades/Status'
+      ]
+    );
+}
+
+function simple::query::getNonCancelledBlocksForTrades():TabularDataSet[1]
+{
+    simple::model::trade.all()->filter(
+      x|!($x.block.blockData.status == 'cancelled')
+    )->project(
+      [
+        x|$x.id,
+        x|$x.status,
+        x|$x.block.id,
+        x|$x.block.account
+      ],
+      [
+        'Id',
+        'Status',
+        'Block/Id',
+        'Block/Account'
+      ]
+    );
+}
+
+function simple::query::getNonCancelledBlocksForTradesNoProject():TabularDataSet[1]
+{
+    simple::model::trade.all()->filter(
+      x|!($x.block.blockData.status == 'cancelled')
+    )->project(
+      [
+        x|$x.id,
+        x|$x.status
+      ],
+      [
+        'Id',
+        'Status'
+      ]
+    );
+}
+
+function simple::query::getOrdersAndRelatedEntitiesForBlock():TabularDataSet[1]
+{
+    simple::model::block.all()->project(
+      [
+        x|$x.id,
+        x|$x.blockData.relatedEntities.tag,
+        x|$x.blockData.relatedEntities.tagId,
+        x|$x.orders.id
+      ],
+      [
+        'Id',
+        'Entity Tag',
+        'Entity Tag Id',
+        'Orders/Id'
+      ]
+    );
+}
+
+function simple::query::getBigBuyOrdersInBlock():TabularDataSet[1]
+{
+    simple::model::block.all()->project(
+      [
+        x|$x.id,
+        x|$x.account,
+        x|$x.orders->filter(
+        x_1|($x_1.quantity >= 100) &&
+          ($x_1.side == 'BUY')
+      ).id,
+        x|$x.orders.id
+      ],
+      [
+        'Block/Id',
+        'Block/Account',
+        'Big Buy Orders',
+        'Orders/Id'
+      ]
+    );
+}
+
+function simple::query::getTradeVolumeInBlock():TabularDataSet[1]
+{
+    simple::model::block.all()->groupBy(
+      [
+        x|$x.id,
+        x|$x.account
+      ],
+      [
+        agg(
+          x|$x.trades.tradeSummary.execQuantity,
+          x|$x->sum()
+        )
+      ],
+      [
+        'Id',
+        'Account',
+        'quantity'
+      ]
+    );
+}
+
+function simple::query::getTotalBuyOrderVolumeInBlock():TabularDataSet[1]
+{
+    simple::model::block.all()->project(
+      [
+        x|$x.id,
+        x|$x.account,
+        x|$x.orders->filter(
+        x_1|$x_1.side == 'BUY'
+      ).quantity->sum()
+      ],
+      [
+        'Id',
+        'Account',
+        'Buy Order'
+      ]
+    );
+}
+
+function simple::query::getTradesAndOrdersInBlock():TabularDataSet[1]
+{
+    simple::model::block.all()->project(
+      [
+        x|$x.id,
+        x|$x.account,
+        x|$x.orders.id,
+        x|$x.orders.identifier,
+        x|$x.trades.id,
+        x|$x.trades.status
+      ],
+      [
+        'Id',
+        'Account',
+        'Orders/Id',
+        'Orders/Identifier',
+        'Trades/Id',
+        'Trades/Status'
+      ]
+    );
+}
+
+function simple::query::getAccountForOrders():TabularDataSet[1]
+{
+    simple::model::order.all()->project(
+      [
+        x|$x.id,
+        x|$x.account,
+        x|$x.block.id
+      ],
+      [
+        'Id',
+        'Account',
+        'Block/Id'
+      ]
+    );
+}
+
+function simple::query::getRelatedTradesForOrder():TabularDataSet[1]
+{
+    simple::model::order.all()->project(
+      [
+        x|$x.id,
+        x|$x.tradeId
+      ],
+      [
+        'Id',
+        'Trade Id'
+      ]
+    );
+}
+
+function simple::query::getProductsForOrdersInBlock():TabularDataSet[1]
+{
+    simple::model::block.all()->project(
+      [
+        x|$x.products,
+        x|$x.id
+      ],
+      [
+        'Product',
+        'Id'
+      ]
+    );
+}
+
+function simple::query::blockAndAssociatedTradeStatus(): TabularDataSet[1]
+{
+  simple::model::block.all()->project(
+    [
+      x|$x.id,
+      x|$x.trades.status
+    ],
+    [
+      'Id',
+      'Trades/Status'
+    ])
+
+}

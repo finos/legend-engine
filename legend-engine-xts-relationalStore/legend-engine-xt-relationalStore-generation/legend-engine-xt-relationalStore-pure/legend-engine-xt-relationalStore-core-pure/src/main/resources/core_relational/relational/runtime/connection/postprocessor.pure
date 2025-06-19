@@ -125,7 +125,7 @@ function meta::pure::alloy::connections::tableMapperPostProcessor(sql:SQLQuery[1
    let schemaMappers = $params->filter(p | $p->instanceOf(meta::pure::alloy::connections::SchemaNameMapper))->cast(@meta::pure::alloy::connections::SchemaNameMapper);
 
    let processedMappers = meta::pure::alloy::connections::postProcessTablesFn($tableMappers, $schemaMappers);
-   let result = meta::relational::postProcessor::transform($sql, $processedMappers);
+   let result = meta::relational::postProcessor::transformNonCached($sql, $processedMappers);
    ^meta::relational::mapping::PostProcessorResult(query = $result->cast(@SQLQuery));
 }
 
@@ -137,10 +137,22 @@ function meta::pure::alloy::connections::postProcessTablesFn(tableNameMappers: m
                                                                                                                                                                       ,|$t);
                                                                                                                                   );
                                                                                                           ,|$t);,
+                                                    tf: meta::relational::metamodel::relation::TabularFunction[1] | let nt = processTabularFunctionMappers($tf, $tableNameMappers);
+                                                                                                                    if(!$nt->isEmpty(),| $nt->toOne();
+                                                                                                                                        ,| let ns = processSchemaMappers($tf.schema, $schemaNameMappers);
+                                                                                                                                          if(!$ns->isEmpty(),|^$tf(schema=$ns->toOne());
+                                                                                                                                                            ,|$tf);
+                                                                                                                                  );,
                                                     r:RelationalOperationElement[1] | $r]);}
 }
 
 function <<access.private>> meta::pure::alloy::connections::processTableMappers(t:meta::relational::metamodel::relation::Table[1], tableNameMappers:meta::pure::alloy::connections::TableNameMapper[*]):meta::relational::metamodel::relation::Table[0..1]{
+    $tableNameMappers->map(m| if($t.name==$m.from && ($m.schema.from->toLower() == $t.schema.name->toLower()),| let processedSchema = meta::pure::alloy::connections::processSchemaMappers($t.schema, $m.schema);
+                                                  if(!$processedSchema->isEmpty(),|^$t(name=$m.to, schema=$processedSchema->toOne()),|^$t(name=$m.to));
+                                                  ,|[]))->last()
+}
+
+function <<access.private>> meta::pure::alloy::connections::processTabularFunctionMappers(t:meta::relational::metamodel::relation::TabularFunction[1], tableNameMappers:meta::pure::alloy::connections::TableNameMapper[*]):meta::relational::metamodel::relation::TabularFunction[0..1]{
     $tableNameMappers->map(m| if($t.name==$m.from && ($m.schema.from->toLower() == $t.schema.name->toLower()),| let processedSchema = meta::pure::alloy::connections::processSchemaMappers($t.schema, $m.schema);
                                                   if(!$processedSchema->isEmpty(),|^$t(name=$m.to, schema=$processedSchema->toOne()),|^$t(name=$m.to));
                                                   ,|[]))->last()

@@ -20,6 +20,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
@@ -34,20 +35,18 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQuali
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataqualityRelationValidation;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.SubTypeGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
-import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
-import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.SubTypeGraphFetchTree;
-import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree;
@@ -65,6 +64,7 @@ import org.finos.legend.pure.generated.Root_meta_external_dataquality_RelationVa
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_constraint_Constraint_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -85,10 +85,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers.SelectColInference;
+
 public class DataQualityCompilerExtension implements CompilerExtension
 {
 
     private static final String RELATION_ROW_LEVEL_VAL_TYPE = "ROW_LEVEL";
+    private static final String RELATION_ASSERTION_INPUT_PARAM = "rel";
+    private static final ImmutableSet<String> ASSERTION_END_PERMITTED_FUNC_NAMES = Sets.immutable.of("assertRelationEmpty", "assertRelationNotEmpty");
 
     @Override
     public MutableList<String> group()
@@ -187,8 +191,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
                     Root_meta_external_dataquality_DataQualityRelationValidation_Impl metamodel = (Root_meta_external_dataquality_DataQualityRelationValidation_Impl) compileContext.pureModel.getPackageableElement(compileContext.pureModel.buildPackageString(dataqualityRelationValidation._package, dataqualityRelationValidation.name));
                     LambdaFunction<?> relationValidationQuery = buildDataqualityRelationValidationQuery(dataqualityRelationValidation, compileContext);
                     metamodel._query(relationValidationQuery);
-                    metamodel._validations(buildDataQualityRelationValidations(dataqualityRelationValidation.validations, relationValidationQuery, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext));
-                    metamodel._runtime(buildRelationValidationRuntime(dataqualityRelationValidation.runtime, relationValidationQuery, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext));
+                    metamodel._validations(buildDataQualityRelationValidations(dataqualityRelationValidation.validations, dataqualityRelationValidation.query, relationValidationQuery, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext));
                     metamodel._validate(true, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext.getExecutionSupport());
                 },
                 this::dataQualityRelationValidationPrerequisiteElementsPass
@@ -201,47 +204,88 @@ public class DataQualityCompilerExtension implements CompilerExtension
         ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(compileContext, prerequisiteElements);
         dataqualityRelationValidation.query.accept(valueSpecificationPrerequisiteElementsPassBuilder);
         ListIterate.forEach(dataqualityRelationValidation.validations, validation -> validation.assertion.accept(valueSpecificationPrerequisiteElementsPassBuilder));
-        if (Objects.nonNull(dataqualityRelationValidation.runtime))
-        {
-            prerequisiteElements.add(dataqualityRelationValidation.runtime);
-        }
         return prerequisiteElements;
     }
 
     private LambdaFunction<?> buildDataqualityRelationValidationQuery(DataqualityRelationValidation dataqualityRelationValidation, CompileContext compileContext)
     {
+        if (dataqualityRelationValidation.query.body.size() > 1)
+        {
+            throw new EngineException("Multiline lambda is not supported.", dataqualityRelationValidation.query.sourceInformation, EngineErrorType.COMPILATION);
+        }
         LambdaFunction<?> relationQuery = HelperValueSpecificationBuilder.buildLambda(dataqualityRelationValidation.query, compileContext);
         String relationQueryReturnType = getLambdaFunctionRawReturnTypeName(relationQuery);
-        if (!"Relation".equals(relationQueryReturnType))
+        if (!(relationQuery._expressionSequence().getLast() instanceof  Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) && !"Relation".equals(relationQueryReturnType))
         {
             throw new EngineException("Relation expected from lambda", dataqualityRelationValidation.query.sourceInformation, EngineErrorType.COMPILATION);
         }
         return relationQuery;
     }
 
-    private RichIterable<Root_meta_external_dataquality_RelationValidation> buildDataQualityRelationValidations(List<RelationValidation> relationValidations, LambdaFunction<?> relationQuery, SourceInformation sourceInformation, CompileContext compileContext)
+    private RichIterable<Root_meta_external_dataquality_RelationValidation> buildDataQualityRelationValidations(List<RelationValidation> relationValidations, org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction dataqualityQuery, LambdaFunction<?> compiledDataqualityQuery, SourceInformation sourceInformation, CompileContext compileContext)
     {
         Set<String> allValidationNames = new HashSet<>();
         return Lists.mutable.withAll(relationValidations.stream()
-                .map(relationValidation -> buildRelationValidation(relationValidation, relationQuery, allValidationNames, sourceInformation, compileContext))
+                .map(relationValidation -> buildRelationValidation(relationValidation, dataqualityQuery, compiledDataqualityQuery, allValidationNames, sourceInformation, compileContext))
                 .collect(Collectors.toList()));
     }
 
-    private Root_meta_external_dataquality_RelationValidation_Impl buildRelationValidation(RelationValidation relationalValidation, LambdaFunction<?> relationQuery, Set<String> allValidationNames, SourceInformation sourceInformation, CompileContext compileContext)
+    private Root_meta_external_dataquality_RelationValidation_Impl buildRelationValidation(RelationValidation relationalValidation, org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction dataqualityQuery, LambdaFunction<?> compiledDataqualityQuery, Set<String> allValidationNames, SourceInformation sourceInformation, CompileContext compileContext)
     {
-        Assert.assertTrue(relationalValidation.assertion.parameters.size() == 1, () -> "Assertion should have one input param!");
-        Root_meta_external_dataquality_RelationValidation_Impl relationValidation = new Root_meta_external_dataquality_RelationValidation_Impl("", sourceInformation, compileContext.pureModel.getClass("meta::external::dataquality::RelationValidation"));
-
         if (!allValidationNames.add(relationalValidation.name))
         {
             throw new EngineException("Duplicated validation '" + relationalValidation.name + "'", EngineErrorType.COMPILATION);
         }
+        if (relationalValidation.assertion.body.size() > 1)
+        {
+            throw new EngineException("Multiline lambda is not supported.", relationalValidation.assertion.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        if (RELATION_ROW_LEVEL_VAL_TYPE.equals(relationalValidation.type))
+        {
+            return buildRowLevelRelationValidation(relationalValidation, compiledDataqualityQuery, sourceInformation, compileContext);
+        }
+        return buildAggregateRelationValidation(relationalValidation, dataqualityQuery, compiledDataqualityQuery, sourceInformation, compileContext);
+    }
+
+    private Root_meta_external_dataquality_RelationValidation_Impl buildAggregateRelationValidation(RelationValidation relationalValidation, org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction dataqualityQuery, LambdaFunction<?> compiledDataqualityQuery, SourceInformation sourceInformation, CompileContext compileContext)
+    {
+        Root_meta_external_dataquality_RelationValidation_Impl relationValidation = new Root_meta_external_dataquality_RelationValidation_Impl("", sourceInformation, compileContext.pureModel.getClass("meta::external::dataquality::RelationValidation"));
+        relationValidation._name(relationalValidation.name);
+        relationValidation._description(relationalValidation.description);
+        relationValidation._type(relationalValidation.type);
+        final Variable relationAssertionInputParam = getRelationAssertionInputParam(dataqualityQuery.parameters, relationalValidation.assertion);
+        relationAssertionInputParam.multiplicity = Multiplicity.PURE_ONE;
+        relationAssertionInputParam.genericType = getAggregateAssertionInputParamGenericType(compiledDataqualityQuery);
+
+        LambdaFunction<?> assertion = HelperValueSpecificationBuilder.buildLambda(relationalValidation.assertion, compileContext);
+        validateAggregateAssertion(relationalValidation, assertion);
+        relationValidation._assertion(assertion);
+        return relationValidation;
+    }
+
+    private void validateAggregateAssertion(RelationValidation relationalValidation, LambdaFunction<?> assertion)
+    {
+        if (!(assertion._expressionSequence().getLast() instanceof  Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) || !ASSERTION_END_PERMITTED_FUNC_NAMES.contains(((Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) assertion._expressionSequence().getLast())._functionName))
+        {
+            throw new EngineException("Assertion should end in either assertRelationEmpty or assertRelationNotEmpty functions", relationalValidation.assertion.sourceInformation, EngineErrorType.COMPILATION);
+        }
+    }
+
+    // ROW_LEVEL type support for backward compatibility until old validations are migrated.
+    private Root_meta_external_dataquality_RelationValidation_Impl buildRowLevelRelationValidation(RelationValidation relationalValidation, LambdaFunction<?> compiledDataqualityQuery, SourceInformation sourceInformation, CompileContext compileContext)
+    {
+        if (relationalValidation.assertion.parameters.size() != 1)
+        {
+            throw new EngineException("Assertion should have one input param!" + relationalValidation.assertion.parameters.size(), relationalValidation.assertion.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        Root_meta_external_dataquality_RelationValidation_Impl relationValidation = new Root_meta_external_dataquality_RelationValidation_Impl("", sourceInformation, compileContext.pureModel.getClass("meta::external::dataquality::RelationValidation"));
+
         relationValidation._name(relationalValidation.name);
         relationValidation._description(relationalValidation.description);
         relationValidation._type(relationalValidation.type);
         Variable assertionInputParam = relationalValidation.assertion.parameters.get(0);
         assertionInputParam.multiplicity = Multiplicity.PURE_ONE;
-        assertionInputParam.genericType = getAssertionInputParamGenericType(relationQuery, relationalValidation.type);
+        assertionInputParam.genericType = getRowLevelAssertionInputParamGenericType(compiledDataqualityQuery);
 
         LambdaFunction<?> assertion = HelperValueSpecificationBuilder.buildLambda(relationalValidation.assertion, compileContext);
         String assertionReturnType = getLambdaFunctionRawReturnTypeName(assertion);
@@ -253,18 +297,39 @@ public class DataQualityCompilerExtension implements CompilerExtension
         return relationValidation;
     }
 
+    private Variable getRelationAssertionInputParam(List<Variable> queryParams, org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction assertion)
+    {
+        final Variable relAssertionParam = assertion.parameters.stream()
+                .filter(param -> RELATION_ASSERTION_INPUT_PARAM.equals(param.name))
+                .findAny()
+                .orElseThrow(() -> new EngineException("Assertion param '" + RELATION_ASSERTION_INPUT_PARAM + "' is missing!", assertion.sourceInformation, EngineErrorType.COMPILATION));
+
+        HashSet<Variable> queryParamsSet = new HashSet<>(queryParams);
+        for (Variable assertionInputParam : assertion.parameters)
+        {
+            if (!RELATION_ASSERTION_INPUT_PARAM.equals(assertionInputParam.name) && !queryParamsSet.contains(assertionInputParam))
+            {
+                throw new EngineException(String.format("Invalid parameter specified on assertion - %s. Please validate that it is exactly the same as query parameters(name/type/multiplicity)", assertionInputParam.name), Objects.nonNull(assertionInputParam.sourceInformation) ? assertionInputParam.sourceInformation : assertion.sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
+
+        return relAssertionParam;
+    }
+
     private String getLambdaFunctionRawReturnTypeName(LambdaFunction<?> lambdaFunction)
     {
         return lambdaFunction._expressionSequence().getLast()._genericType()._rawType()._name();
     }
 
-    private org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType getAssertionInputParamGenericType(LambdaFunction<?> relationQuery, String relationValidationType)
+    private org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType getRowLevelAssertionInputParamGenericType(LambdaFunction<?> compiledDataqualityQuery)
     {
-        FunctionType functionType = (FunctionType) relationQuery._classifierGenericType()._typeArguments().getLast()._rawType();
-        if (Objects.isNull(relationValidationType) || RELATION_ROW_LEVEL_VAL_TYPE.equals(relationValidationType))
-        {
-            return CompileContext.convertGenericType(functionType._returnType()._typeArguments().getLast());
-        }
+        FunctionType functionType = (FunctionType) compiledDataqualityQuery._classifierGenericType()._typeArguments().getLast()._rawType();
+        return CompileContext.convertGenericType(functionType._returnType()._typeArguments().getLast());
+    }
+
+    private org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType getAggregateAssertionInputParamGenericType(LambdaFunction<?> compiledDataqualityQuery)
+    {
+        FunctionType functionType = (FunctionType) compiledDataqualityQuery._classifierGenericType()._typeArguments().getLast()._rawType();
         return CompileContext.convertGenericType(functionType._returnType());
     }
 
@@ -415,15 +480,6 @@ public class DataQualityCompilerExtension implements CompilerExtension
     }
 
 
-    private RichIterable<? extends Root_meta_core_runtime_Runtime> buildRelationValidationRuntime(PackageableElementPointer runtime, LambdaFunction<?> relationValidationQuery, SourceInformation toM3SourceInformation, CompileContext compileContext)
-    {
-        if (Objects.isNull(runtime))
-        {
-            return Lists.immutable.empty();
-        }
-        return Lists.immutable.of(compileContext.resolveRuntime(runtime.path, runtime.sourceInformation));
-    }
-
     @Override
     public List<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> getExtraFunctionExpressionBuilderRegistrationInfoCollectors()
     {
@@ -431,6 +487,8 @@ public class DataQualityCompilerExtension implements CompilerExtension
                 Lists.mutable.with(
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::relationEmpty_Relation_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 1 && handlers.typeOne(ps.get(0), "Relation")))),
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::relationNotEmpty_Relation_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 1 && handlers.typeOne(ps.get(0), "Relation")))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.grp(SelectColInference, handlers.h("meta::external::dataquality::assertRelationEmpty_Relation_1__ColSpecArray_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> true))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::assertRelationNotEmpty_Relation_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 1 && handlers.typeOne(ps.get(0), "Relation")))),
                         // row count
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountGreaterThan_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.mutable.with("Number", "Integer", "Float", "Decimal"))))),
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountGreaterThanEqual_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.mutable.with("Number", "Integer", "Float", "Decimal"))))),

@@ -97,7 +97,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testLowerProje
    //Expect that the const column has been dropped from the sql
    assert($result->sqlRemoveFormatting()->toLower()->contains('hello'));
 
-   assertEquals('select "persontable_0"."firstName" as "firstName" from (select distinct "root".FIRSTNAME as "firstName", \'Hello\' as "Hello" from personTable as "root" order by "firstName") as "persontable_0"',
+   assertEquals('select "persontable_0"."firstName" as "firstName" from (select distinct "root".FIRSTNAME as "firstName", \'Hello\' as "Hello" from personTable as "root" order by "firstName" asc) as "persontable_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -119,7 +119,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testLowerProje
    //Expect that the const column has been dropped from the sql
    assert($result->sqlRemoveFormatting()->toLower()->contains('hello'));
 
-   assertEquals('select "persontable_0"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "Hello" from personTable as "root" order by "Hello","firstName") as "persontable_0"',
+   assertEquals('select "persontable_0"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "Hello" from personTable as "root" order by "Hello" asc, "firstName" asc) as "persontable_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -145,7 +145,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOn
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
    //Expect that the calculation of Max(age) has been dropped from the SQL
-   assertEquals('select "firmtable_0".LEGALNAME as "Firm", count("root".FIRSTNAME) as "People count" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) group by "Firm" order by "Firm"',
+   assertEquals('select "firmtable_0".LEGALNAME as "Firm", count("root".FIRSTNAME) as "People count" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) group by "Firm" order by "Firm" asc',
       $result->sqlRemoveFormatting());
 }
 
@@ -177,7 +177,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOn
    assertFalse($result->sqlRemoveFormatting()->toLower()->contains('max'));
 
    //Expect that the calculation of Max(age) has been dropped from the SQL
-   assertEquals('select "persontable_0"."Firm" as "Firm", "persontable_0"."People count" as "People count" from (select distinct "firmtable_0".LEGALNAME as "Firm", count("root".FIRSTNAME) as "People count" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) group by "Firm" order by "Firm") as "persontable_0"',
+   assertEquals('select "persontable_0"."Firm" as "Firm", "persontable_0"."People count" as "People count" from (select distinct "firmtable_0".LEGALNAME as "Firm", count("root".FIRSTNAME) as "People count" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) group by "Firm" order by "Firm" asc) as "persontable_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -208,7 +208,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOn
    //Expect that it still groups by the place
    assert($result->sqlRemoveFormatting()->toLower()->contains('place'));
 
-   assertEquals('select "persontable_0"."Firm" as "Firm", "persontable_0"."People count" as "People count" from (select "firmtable_0".LEGALNAME as "Firm", "locationtable_0".PLACE as "Place", count("root".FIRSTNAME) as "People count" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID) group by "Firm","Place") as "persontable_0" order by "Firm","People count"',
+   assertEquals('select "persontable_0"."Firm" as "Firm", "persontable_0"."People count" as "People count" from (select "firmtable_0".LEGALNAME as "Firm", "locationtable_0".PLACE as "Place", count("root".FIRSTNAME) as "People count" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID) group by "Firm", "Place") as "persontable_0" order by "Firm" asc, "People count" asc',
       $result->sqlRemoveFormatting());
 }
 
@@ -241,7 +241,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictOn
    assert($result->sqlRemoveFormatting()->toLower()->contains('place'));
 
 
-   assertEquals('select "persontable_0"."Firm" as "Firm" from (select "firmtable_0".LEGALNAME as "Firm", "locationtable_0".PLACE as "Place" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID) group by "Firm","Place") as "persontable_0" order by "Firm"',
+   assertEquals('select "persontable_0"."Firm" as "Firm" from (select "firmtable_0".LEGALNAME as "Firm", "locationtable_0".PLACE as "Place" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID) group by "Firm", "Place") as "persontable_0" order by "Firm" asc',
       $result->sqlRemoveFormatting());
 }
 
@@ -273,7 +273,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictWi
    let runtimeWithPostProcessor = ^$runtime(connectionStores = ^$connectionStore(connection=^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel}) }])));
    let result = execute(|Person.all()->project([col(p|$p.firstName,'firstName'), col(p|'Hello','Hello')])->sort([asc('Hello'), asc('firstName')])->restrict(['firstName']), simpleRelationalMapping, $runtimeWithPostProcessor, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select "persontable_0"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "Hello" from personTable as "root" order by "Hello","firstName") as "persontable_0"', $result->sqlRemoveFormatting());
+   assertEquals('select "persontable_0"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "Hello" from personTable as "root" order by "Hello" asc, "firstName" asc) as "persontable_0"', $result->sqlRemoveFormatting());
 }
 
 

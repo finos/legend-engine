@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sdt::suite::functions::*;
 import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
 import meta::relational::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
-import meta::external::store::relational::sqlDialectTranslation::tests::metamodel::*;
+import meta::external::query::sql::metamodel::extension::tests::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sdt::framework::*;
@@ -89,9 +90,9 @@ function <<access.private>> meta::external::store::relational::sdt::framework::g
 
   ^SdtTestCaseSqls
   (
-    setupSqls = $dbType->fetchSqlDialectForDbType($extensions).initSqlStatementsForTests->concatenate($sdt.setupStatements->map(s | $s->generateSqlDialectForStatement($cfg, $extensions))),
-    testQuery = $sdt.testQuery->generateSqlDialectForStatement($cfg, $extensions),
-    teardownSqls = $sdt.teardownStatements->map(s | $s->generateSqlDialectForStatement($cfg, $extensions))
+    setupSqls = $dbType->fetchSqlDialectForDbType($extensions).initSqlStatementsForTests->concatenate($sdt.setupStatements->map(s | $s->generateSqlDialect($cfg, $extensions))),
+    testQuery = $sdt.testQuery->generateSqlDialect($cfg, $extensions),
+    teardownSqls = $sdt.teardownStatements->map(s | $s->generateSqlDialect($cfg, $extensions))
   );
 }
 
@@ -191,30 +192,70 @@ function <<access.private>> meta::external::store::relational::sdt::framework::s
   )
 }
 
-function meta::external::store::relational::sdt::framework::runSdtTestsInIDE(package: String[1], dbType: String[1], excludes: Map<String, String>[1], extensions: Extension[*], debug: DebugContext[1]): Any[*]
+function meta::external::store::relational::sdt::framework::testSuiteBasePackage(): String[1]
 {
-  meta::external::store::relational::sdt::framework::collectSDTTestsInPackage($package)
-    ->map({x |
-      let sdtConfigs = $x->eval();
-      let len = $sdtConfigs->size();
-      $sdtConfigs->size()->range()->map({i |
-        let sdtTest = $sdtConfigs->at($i);
-        let excluded = $excludes->get($sdtTest.identifier)->isNotEmpty();
-        if ($excluded,
-            | print(if(!$debug.debug, |'', | $debug.space + '[' + $dbType + '] Exluding SDT Test - ' + $sdtTest.identifier + '\n')),
-            | print(if(!$debug.debug, |'', | $debug.space + '[' + $dbType + '] Running SDT Test - ' + $sdtTest.identifier + '\n'));
-              $sdtConfigs->at($i)->runSqlDialectTest($dbType, $extensions, $debug->indent());
-        );
-      });
-    });
+  'meta::external::store::relational::sdt::suite';
 }
 
-function meta::external::store::relational::sdt::framework::runPostgresSdtTestsInIDE(debug: DebugContext[1]): Any[*]
+function meta::external::store::relational::sdt::framework::runSdtTestsInIDE(extensions: Extension[*]): Any[*]
 {
-  meta::external::store::relational::sdt::framework::runSdtTestsInIDE(
-    'meta::external::store::relational::sdt::suite',
-    'Postgres',
-    meta::external::store::relational::sqlDialectTranslation::postgres::postgresFunctionTestsExpectedErrors(),
+  runSdtTestsInIDE($extensions, noDebug());
+}
+
+function meta::external::store::relational::sdt::framework::runSdtTestsInIDE(extensions: Extension[*], debug: DebugContext[1]): Any[*]
+{
+  runSdtTestsInIDE(testSuiteBasePackage(), $extensions, $debug);
+}
+
+function meta::external::store::relational::sdt::framework::runSdtTestsInIDE(package: String[1], extensions: Extension[*], debug: DebugContext[1]): Any[*]
+{
+  let tests = collectSDTTestsInPackage($package)->map(x| $x->eval());
+  runSdtTestsInIDE($tests, $extensions, $debug);
+}
+
+function meta::external::store::relational::sdt::framework::runSdtTestsInIDE(tests: SqlDialectTest[*], extensions: Extension[*], debug: DebugContext[1]): Any[*]
+{
+  let dialectExtensions = $extensions.moduleExtensions->filter(m | $m.module == sqlDialectTranslationModuleExtensionName())->cast(@SqlDialectTranslationModuleExtension);
+  $dialectExtensions->map({ext|
+    $ext.extraSqlDialects->map({dialect|
+      $tests->map({sdtConfigs |
+        let len = $sdtConfigs->size();
+        $sdtConfigs->size()->range()->map({i |
+          let sdtTest = $sdtConfigs->at($i);
+          let dbType = $dialect.dbType;
+          let excluded = $dialect.expectedSqlDialectTestErrors->get($sdtTest.identifier)->isNotEmpty();
+          if ($excluded,
+            | print(if(!$debug.debug, |'', | $debug.space + '[' + $dbType + '] Excluding SDT Test - ' + $sdtTest.identifier + '\n')),
+            | print(if(!$debug.debug, |'', | $debug.space + '[' + $dbType + '] Running SDT Test - ' + $sdtTest.identifier + '\n'));
+              $sdtConfigs->at($i)->runSqlDialectTest($dbType, $extensions, $debug->indent());
+          );
+        });
+      });
+    });
+  });
+}
+
+function meta::external::store::relational::sdt::framework::runFunctionSdtTestsInIDE(functions: Class<SqlFunction>[*], extensions: Extension[*], debug: DebugContext[1]): Any[*]
+{
+  let registry = sqlFunctionRegistry();
+  let tests = $functions->map(f | functionSdtTests($registry->get($f)->toOne()));
+  runSdtTestsInIDE($tests, $extensions, $debug);
+}
+
+function meta::external::store::relational::sdt::framework::runPostgresSdtTestsInIDE(): Any[*]
+{
+  runPostgresSdtTestsInIDE(testSuiteBasePackage(), noDebug())
+}
+
+function meta::external::store::relational::sdt::framework::runPostgresSdtTestsInIDE(package: String[1]): Any[*]
+{
+  runPostgresSdtTestsInIDE($package, noDebug())
+}
+
+function meta::external::store::relational::sdt::framework::runPostgresSdtTestsInIDE(package:String[1], debug: DebugContext[1]): Any[*]
+{
+  runSdtTestsInIDE(
+    $package,
     meta::external::store::relational::sqlDialectTranslation::postgres::postgresSqlDialectExtension(),
     $debug
   );

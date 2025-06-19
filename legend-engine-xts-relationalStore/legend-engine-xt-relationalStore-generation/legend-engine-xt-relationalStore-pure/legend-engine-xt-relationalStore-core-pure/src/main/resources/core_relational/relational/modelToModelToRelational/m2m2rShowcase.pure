@@ -67,7 +67,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
                 '(\n' +
                 '  type = TDS[(name, String, VARCHAR(8192), ""), (prop3, Number, FLOAT, "")]\n' +
                 '  resultColumns = [("name", VARCHAR(200)), ("prop3", "")]\n' +
-                '  sql = select "root".name as "name", case when "sourceannouncement_0".basis = CAST(0.0 AS FLOAT) then CAST(0.0 AS FLOAT) else (((1.0 * "root".entitledQuantity) / "sourceannouncement_0".basis) * "sourceannouncement_0".grossRate) end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
+                '  sql = select "root".name as "name", case when "sourceannouncement_0".basis = cast(0.0 as float) then cast(0.0 as float) else ((1.0 * "root".entitledQuantity) / ("sourceannouncement_0".basis)) * "sourceannouncement_0".grossRate end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
                 '  connection = RelationalDatabaseConnection(type = "H2")\n' +
                 ')\n' ;
     assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result);
@@ -119,7 +119,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
                   '(\n'+
                   '  type = TDS[(name, String, VARCHAR(8192), ""), (prop1, Boolean, BIT, "")]\n'+
                   '  resultColumns = [("name", VARCHAR(200)), ("prop1", "")]\n'+
-                  '  sql = select "root".name as "name", "sourceannouncement_0".name = \'ha\' as "prop1" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id) order by "name"\n'+
+                  '  sql = select "root".name as "name", "sourceannouncement_0".name = \'ha\' as "prop1" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id) order by "name" asc\n'+
                   '  connection = RelationalDatabaseConnection(type = "H2")\n'+
                   ')\n';
   assertEquals($expected, $result);

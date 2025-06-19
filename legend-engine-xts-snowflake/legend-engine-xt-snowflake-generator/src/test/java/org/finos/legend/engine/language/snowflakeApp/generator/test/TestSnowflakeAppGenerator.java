@@ -76,7 +76,7 @@ public class TestSnowflakeAppGenerator
     public void testNoParamActivator()
     {
         SnowflakeAppArtifact artifact = generateForActivator("demo::activators::snowflakeApp::App1", this.pureModel);
-        String expected = "CREATE OR REPLACE SECURE FUNCTION %S.LEGEND_NATIVE_APPS.APP1_REVISED() RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"OWNER\" VARCHAR,\"VERSION\" VARCHAR,\"DOC\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".OWNER as \"Owner\", \"root\".VERSION_NUMBER as \"Version\", \"root\".DESCRIPTION as \"Doc\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" $$;";
+        String expected = "CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1_REVISED() RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"OWNER\" VARCHAR,\"VERSION\" VARCHAR,\"DOC\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".OWNER as \"Owner\", \"root\".VERSION_NUMBER as \"Version\", \"root\".DESCRIPTION as \"Doc\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" $$;";
         Assert.assertEquals(expected, ((SnowflakeAppContent)artifact.content).createStatement);
         Assert.assertNull(((SnowflakeAppContent) artifact.content).grantStatement);
     }
@@ -85,7 +85,7 @@ public class TestSnowflakeAppGenerator
     public void testParamActivator()
     {
         SnowflakeAppArtifact artifact = generateForActivator("demo::activators::snowflakeApp::UDTFWithParam", this.pureModel);
-        String expected = "CREATE OR REPLACE SECURE FUNCTION %S.LEGEND_NATIVE_APPS.UDTFWITHPARAMETER(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"OWNER\" VARCHAR,\"VERSION\" VARCHAR,\"DOC\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".OWNER as \"Owner\", \"root\".VERSION_NUMBER as \"Version\", \"root\".DESCRIPTION as \"Doc\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart)) $$;";
+        String expected = "CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.UDTFWITHPARAMETER(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"OWNER\" VARCHAR,\"VERSION\" VARCHAR,\"DOC\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".OWNER as \"Owner\", \"root\".VERSION_NUMBER as \"Version\", \"root\".DESCRIPTION as \"Doc\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart)) $$;";
         Assert.assertEquals(expected, ((SnowflakeAppContent)artifact.content).createStatement);
         Assert.assertNull(((SnowflakeAppContent) artifact.content).grantStatement);
     }
@@ -94,7 +94,7 @@ public class TestSnowflakeAppGenerator
     public void testGrantGenerated()
     {
         SnowflakeAppArtifact artifact = generateForActivator("demo::activators::snowflakeApp::App2", this.pureModel);
-        String expected = "CREATE OR REPLACE SECURE FUNCTION %S.LEGEND_NATIVE_APPS.APP1_REVISED() RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"OWNER\" VARCHAR,\"VERSION\" VARCHAR,\"DOC\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".OWNER as \"Owner\", \"root\".VERSION_NUMBER as \"Version\", \"root\".DESCRIPTION as \"Doc\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" $$;";
+        String expected = "CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1_REVISED() RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"OWNER\" VARCHAR,\"VERSION\" VARCHAR,\"DOC\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".OWNER as \"Owner\", \"root\".VERSION_NUMBER as \"Version\", \"root\".DESCRIPTION as \"Doc\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" $$;";
         String expectedGrant = "GRANT USAGE ON FUNCTION %S.LEGEND_NATIVE_APPS.APP1_REVISED() to role PUBLIC;";
         Assert.assertEquals(expected, ((SnowflakeAppContent)artifact.content).createStatement);
         Assert.assertEquals(expectedGrant, ((SnowflakeAppContent) artifact.content).grantStatement);
@@ -104,7 +104,7 @@ public class TestSnowflakeAppGenerator
     public void testDeploymentSchema()
     {
         SnowflakeAppArtifact artifact = generateForActivator("demo::activators::snowflakeApp::UDTFWithDeploymentSchema", this.pureModel);
-        String expected = "CREATE OR REPLACE SECURE FUNCTION %S.My_Deployment_Schema.UDTFWITHDEPLOYMENTSCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"OWNER\" VARCHAR,\"VERSION\" VARCHAR,\"DOC\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".OWNER as \"Owner\", \"root\".VERSION_NUMBER as \"Version\", \"root\".DESCRIPTION as \"Doc\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart)) $$;";
+        String expected = "CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.My_Deployment_Schema.UDTFWITHDEPLOYMENTSCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"OWNER\" VARCHAR,\"VERSION\" VARCHAR,\"DOC\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".OWNER as \"Owner\", \"root\".VERSION_NUMBER as \"Version\", \"root\".DESCRIPTION as \"Doc\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart)) $$;";
         Assert.assertEquals(expected, ((SnowflakeAppContent)artifact.content).createStatement);
         Assert.assertNull(((SnowflakeAppContent) artifact.content).grantStatement);
     }

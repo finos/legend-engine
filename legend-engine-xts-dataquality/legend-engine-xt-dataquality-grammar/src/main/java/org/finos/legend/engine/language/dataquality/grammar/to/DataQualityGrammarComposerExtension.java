@@ -88,7 +88,6 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
         return "DataQualityRelationValidation " + renderAnnotations(dataqualityRelationValidation.stereotypes, dataqualityRelationValidation.taggedValues) + packageName + "\n" +
                 "{\n" +
                 "   query: " + renderRelationQuery(dataqualityRelationValidation, context) +
-                renderRuntime(dataqualityRelationValidation, context) +
                 "   validations: " + renderValidations(dataqualityRelationValidation.validations, context) +
                 "}";
     }
@@ -100,15 +99,6 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
             return "";
         }
         return "   filter: " + dataQuality.filter.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + ";\n";
-    }
-
-    private static String renderRuntime(DataqualityRelationValidation dataqualityRelationValidation, PureGrammarComposerContext context)
-    {
-        if (Objects.isNull(dataqualityRelationValidation.runtime))
-        {
-            return "";
-        }
-        return "   runtime: " + dataqualityRelationValidation.runtime.path + ";\n";
     }
 
     private static String getContextFunc(DataQuality dataQuality)
@@ -286,11 +276,9 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
         return
                 "   {\n" +
                 "     name: '" + relationValidation.name + "';\n" +
-                        (Objects.nonNull(relationValidation.description) ?
-                "     description: '" + relationValidation.description + "';\n" : "") +
-                "     assertion: " + renderAssertion(relationValidation, context) + ";\n" +
-                        (Objects.nonNull(relationValidation.type) ?
-                "     type: " + relationValidation.type + ";\n" : "") +
+                (Objects.isNull(relationValidation.description) ? "" : "     description: '" + relationValidation.description + "';\n") +
+                (Objects.isNull(relationValidation.assertion) ? "" : "     assertion: " + renderAssertion(relationValidation, context) + ";\n") +
+                (Objects.isNull(relationValidation.type) ? "" : "     type: " + relationValidation.type + ";\n") +
                 "    }";
     }
 

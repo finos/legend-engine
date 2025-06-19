@@ -30,7 +30,7 @@ function meta::external::function::activator::lineage::supportedFunctions(): Fun
 function meta::external::function::activator::lineage::process(g:GenericType[1], params:ValueSpecification[*], e : meta::pure::extension::Extension[*]): FunctionAnalytics[1]
 {
   let newf = ^LambdaFunction<Any>( expressionSequence=$params->at(0)->cast(@SimpleFunctionExpression)->evaluateAndDeactivate()); //todo cant assign generic type here.
-  meta::analytics::lineage::computeLineage_FunctionDefinition_1__Mapping_1__Runtime_$0_1$__Extension_MANY__FunctionAnalytics_1_
+  meta::analytics::lineage::computeLineage_FunctionDefinition_1__Mapping_$0_1$__Runtime_$0_1$__Extension_MANY__FunctionAnalytics_1_
   ->eval(^$newf(classifierGenericType = $g), $params->at(1)->cast(@InstanceValue).values->at(0), [], $e ); 
 }
 

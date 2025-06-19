@@ -72,7 +72,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
                 createTable = translateCreateTableStatementDuckDB_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
                 loadTable = loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_,
-                createView = createView_CreateViewSQL_1__DbConfig_1__String_1_
+                createView = createView_CreateViewSQL_1__DbConfig_1__Extension_MANY__String_1_
               );
 }
 
@@ -158,6 +158,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
+    dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(cast(%s as BIGINT) & cast(%s as BIGINT))')),
+    dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ cast(%s as BIGINT))')),
+    dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='(cast(%s as BIGINT) | cast(%s as BIGINT))')),
+    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='(cast(%s as BIGINT) << cast(%s as BIGINT))')),
+    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='(cast(%s as BIGINT) >> cast(%s as BIGINT))')),
+    dynaFnToSql('bitXor',                 $allStates,            ^ToSql(format='xor(cast(%s as BIGINT), cast(%s as BIGINT))')),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),   //aggregate function across rows (not and on conditions)
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),
     dynaFnToSql('castBoolean',            $allStates,            ^ToSql(format='cast(%s as boolean)')),
@@ -166,6 +172,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     // dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateH2()})),
     // dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeH2()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='convert(%s, VARCHAR)')),
+    dynaFnToSql('date',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformDateConstructionForDuckDB()})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(\'%s\',%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForDuckDB(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date_trunc(\'day\', %s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='day(%s)')),
@@ -187,6 +194,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('firstMillisecondOfSecond',$allStates,           ^ToSql(format='date_trunc(\'second\', %s)', transform={p:String[1] | $p->repeat(1)})),
     dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='date_trunc(\'hour\', %s)', transform={p:String[1] | $p->repeat(1)})),
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)', transform={p:String[1] | $p->repeat(1)})),
+    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='CAST(uuid() AS VARCHAR)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='instr(%s, %s)', transform={p:String[2] | [$p->at(0), $p->at(1)]})),  // TODO - pure uses 0-based indexing,  duck db returns location with 1-based index , keeping this as H2 also returns 1-based currently, many user tests need to be fixed
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
@@ -207,7 +215,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     // dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='parsedatetime(%s,%s)')),
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
-    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as BIGINT)')),
     // dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='legend_h2_extension_json_parse(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s IN %s)')),
     // dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_add(DAY, case when %s - DAY_OF_WEEK(%s) >= 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
@@ -280,6 +288,15 @@ function meta::relational::functions::sqlQueryToString::duckDB::constructInterva
    ]->filter(p | $p.first == $unitWithoutQuotes).second->toOne('Unit not found: ' + $unitWithoutQuotes);
 
    $interval_func +'(' + $i +')';
+}
+
+function meta::relational::functions::sqlQueryToString::duckDB::transformDateConstructionForDuckDB(params:String[*]):String[1]
+{
+  let paramsSize = $params->size();
+   assert($paramsSize != 3 || $paramsSize != 6,'Incorrect number of parameters for date construction! The correct usage is either date(<year>, <month>, <day>) or date(<year>, <month>, <day>, <hour>, <minute>, <second>)');
+   if ($paramsSize == 3,
+      |'make_date(' + $params->joinStrings(',') + ')',
+      |'make_timestamp(' + $params->joinStrings(',') + ')');
 }
 
 // DuckDb uses a different origin for calculation of timebuckets; this offset helps to standardize toward unix epoch as origin and

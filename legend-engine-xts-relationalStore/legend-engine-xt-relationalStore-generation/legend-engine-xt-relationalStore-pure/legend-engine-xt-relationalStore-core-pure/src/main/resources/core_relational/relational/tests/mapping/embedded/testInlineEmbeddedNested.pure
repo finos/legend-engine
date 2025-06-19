@@ -26,7 +26,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
 
 
   let result = execute(|BondDetail.all()->project([p| $p.type, p | $p.issuer.name ,p | $p.issuer.address.name], ['type', 'i','a'])
-                        , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),debug());
+                        , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
 
  assertEquals('type,i,a\n' + '5 years,issuer1,addressi1\n' + '5 years,issuer2,addressi2\n' + '7 weeks,issuer3,addressi3\n', $result.values->toOne()->toCSV());
  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i", "root".ISSUER_ADDRESS_NAME as "a" from PRODUCT_DENORM as "root"', $result);
@@ -62,7 +62,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
 
 
   assertEquals('name,c1\n' + 'Bond 1,addressi1\n', $result.values->toOne()->toCSV());
-  assertSameSQL('select "root".BOND_DETAILS as "name", "root".ISSUER_ADDRESS_NAME as "c1" from PRODUCT_DENORM as "root" where ("root".ISSUER_ADDRESS_NAME like \'%i1\' and "root".BOND_DETAILS like \'Bond%\')', $result);
+  assertSameSQL('select "root".BOND_DETAILS as "name", "root".ISSUER_ADDRESS_NAME as "c1" from PRODUCT_DENORM as "root" where "root".ISSUER_ADDRESS_NAME like \'%i1\' and "root".BOND_DETAILS like \'Bond%\'', $result);
  }
 
 
@@ -78,7 +78,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
   assertEquals('c1,c2\n' + 'addressh1,10.0\n' + 'addressh3,1.0\n', $result.values->toOne()->toCSV());
   assertEqualsH2Compatible(
     'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".BOND_TYPE = \'5 years\' then 5.0 else 1.0 end) as "c2" from PRODUCT_DENORM as "root" group by "c1"', 
-    'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".BOND_TYPE = \'5 years\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "c2" from PRODUCT_DENORM as "root" group by "c1"', 
+    'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".BOND_TYPE = \'5 years\' then cast(5.0 as float) else cast(1.0 as float) end) as "c2" from PRODUCT_DENORM as "root" group by "c1"', 
     $result->sqlRemoveFormatting()
   );
 }
@@ -95,7 +95,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
   assertEquals('c1,sum\n' + 'addressh1,10.0\n' + 'addressh3,1.0\n', $result.values->toOne()->toCSV());
   assertEqualsH2Compatible(
     'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".HOLDER_ADDRESS_NAME like \'addressh1%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" group by "c1"', 
-    'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".HOLDER_ADDRESS_NAME like \'addressh1%\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "sum" from PRODUCT_DENORM as "root" group by "c1"', 
+    'select "root".HOLDER_ADDRESS_NAME as "c1", sum(case when "root".HOLDER_ADDRESS_NAME like \'addressh1%\' then cast(5.0 as float) else cast(1.0 as float) end) as "sum" from PRODUCT_DENORM as "root" group by "c1"', 
     $result->sqlRemoveFormatting()
   );
 }

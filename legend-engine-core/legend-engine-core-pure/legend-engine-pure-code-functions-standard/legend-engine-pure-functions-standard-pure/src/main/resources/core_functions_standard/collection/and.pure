@@ -28,7 +28,7 @@ function <<PCT.test>> meta::pure::functions::collection::tests::and::testAnd<T|m
 }
 
 // This PCT test needs to be tagged once we enhance the TDS library to handle Booleans
-function meta::pure::functions::collection::tests::and::testAnd_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::collection::tests::and::testAnd_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -52,7 +52,7 @@ function meta::pure::functions::collection::tests::and::testAnd_Relation_Aggrega
 }
 
 // This PCT test needs to be tagged once we enhance the TDS library to handle Booleans
-function meta::pure::functions::collection::tests::and::testAnd_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::collection::tests::and::testAnd_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS

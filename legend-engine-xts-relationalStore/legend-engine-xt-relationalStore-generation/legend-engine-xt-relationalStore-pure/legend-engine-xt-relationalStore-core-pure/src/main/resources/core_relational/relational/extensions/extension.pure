@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::query::sql::metamodel::*;
 import meta::external::language::java::factory::project::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::pure::alloy::connections::*;
@@ -37,6 +39,8 @@ import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::mapping::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::relational::functions::sqlDialectTranslation::*;
+import meta::relational::functions::toPostgresModel::*;
 
 Class meta::relational::extension::RelationalExtension extends ModuleExtension
 {
@@ -48,11 +52,14 @@ Class meta::relational::extension::RelationalExtension extends ModuleExtension
 
    sqlQueryToString_processOperation : Function<{Nil[1], Format[1], GenerationState[1], Config[1], Extension[*] -> Function<{Nil[1]->String[1]}>[*]}>[0..1];
    sqlQueryToString_isBooleanOperation : Function<{Nil[1] -> Boolean[1]}>[*];
+
+   sqlDialectTranslation_nodeConverters : Function<{ModelConversionState[1] -> Function<{Nil[1] -> Node[1]}>[*]}>[0..1];
+   sqlDialectTranslation_nodeProcessorsMapByDbType : Map<DatabaseType, Map<Class<Node>, NodeProcessor<Node>>>[0..1];
 }
 
 function meta::relational::extension::relationalExtensions() : meta::pure::extension::Extension[*]
 {
-   [relationalExtension()]
+  relationalExtension()->concatenate(meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDialectExtension())
 }
 
 function meta::relational::extension::relationalSerializerExtension(version:String[1]):String[1]
@@ -273,7 +280,7 @@ function  meta::relational::functions::sqlQueryToString::processLiteralDefaultFo
       |$processor.formatValue($a, $dbTimeZone)->replace('\'\'', '\''));
 }
 
-function meta::relational::functions::sqlQueryToString::processLiteralListForPlanService(a:List<Any>[*], type:Type[1], dbConfig : DbConfig[1], dbType:DatabaseType[1], dbTimeZone : String[0..1]): String[1]
+function meta::relational::functions::sqlQueryToString::processLiteralListForPlanService(a:List<Any>[*], type:Type[1], dbConfig : meta::relational::functions::sqlQueryToString::DbConfig[1], dbType:DatabaseType[1], dbTimeZone : String[0..1]): String[1]
 {
 
    $a.values->map(v|$v->match([

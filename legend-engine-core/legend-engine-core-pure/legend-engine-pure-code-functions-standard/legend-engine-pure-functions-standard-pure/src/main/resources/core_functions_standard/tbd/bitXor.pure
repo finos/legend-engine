@@ -1,0 +1,50 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+native function
+    <<PCT.function>>
+    {
+        doc.doc='bitwise XOR operator returns an Number representing the bitwise XOR of the Number input params'
+    }
+meta::pure::functions::math::bitXor(arg1:Integer[1], arg2:Integer[1]):Integer[1];
+
+function <<PCT.test>> meta::pure::functions::math::tests::bitXor::testBitXor_SmallNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals($f->eval(|bitXor(1, 0)), 1);
+  assertEquals($f->eval(|bitXor(0, 0)), 0);
+  assertEquals($f->eval(|bitXor(5, 6)), 3);
+  assertEquals($f->eval(|bitXor(25, 11)), 18);
+  assertEquals($f->eval(|bitXor(137, 670)), 535);
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::bitXor::testBitXor_NegativeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals($f->eval(|bitXor(-1, 0)), -1);
+  assertEquals($f->eval(|bitXor(-5, 6)), -3);
+  assertEquals($f->eval(|bitXor(5, -6)), -1);
+  assertEquals($f->eval(|bitXor(-5, -6)), 1);
+  assertEquals($f->eval(|bitXor(-25, 11)), -20);
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::bitXor::testBitXor_LargeNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals($f->eval(|bitXor(1000000000, 0)), 1000000000);
+  assertEquals($f->eval(|bitXor(9223372036854775807, 9223372036854775806)), 1);
+  assertEquals($f->eval(|bitXor(9223372036854775807, 922807)), 9223372036853853000);
+  assertEquals($f->eval(|bitXor(-1000000000, 0)), -1000000000);
+  assertEquals($f->eval(|bitXor('-9223372036854775808'->parseInteger(), -999999999)), 9223372035854775809);
+  assertEquals($f->eval(|bitXor('-9223372036854775808'->parseInteger(), 999999999)), '-9223372035854775809'->parseInteger());
+}

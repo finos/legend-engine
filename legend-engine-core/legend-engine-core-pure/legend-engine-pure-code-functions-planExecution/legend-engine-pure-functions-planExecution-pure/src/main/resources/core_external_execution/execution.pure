@@ -17,6 +17,8 @@ import meta::pure::extension::*;
 
 native function meta::legend::execute(planAsJson: String[1], vars: Pair<String, Any>[*]):String[1];
 
+native function meta::legend::execute(planAsJson: String[1], vars: Pair<String, Any>[*], format: String[1]):String[1];
+
 native function meta::legend::execute(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*], context: meta::pure::runtime::ExecutionContext[1]):String[1];
 
 function meta::legend::execute(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*], context: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*]):String[1]
