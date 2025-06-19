@@ -1,0 +1,8 @@
+model Model
+	culture: en_US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en_US
+ref table %s
+ref table %s
+ref table %s
+ref cultureInfo en_US

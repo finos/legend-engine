@@ -1,0 +1,50 @@
+table Customer_Service
+	lineageTag: spaces::dataspaceNamePlaceholder::services::customerService
+	column 'Customer ID'
+		dataType: Int64
+		lineageTag: spaces::dataspaceNamePlaceholder::services::customerService::customerId
+		sourceColumn: Customer ID
+		summarizeBy: none
+	column 'Customer Name'
+		dataType: String
+		lineageTag: spaces::dataspaceNamePlaceholder::services::customerService::customerName
+		sourceColumn: Customer Name
+		summarizeBy: none
+	column 'BirthDate'
+		dataType: DateTime
+		lineageTag: spaces::dataspaceNamePlaceholder::services::customerService::birthDate
+		sourceColumn: BirthDate
+		summarizeBy: none
+	column 'Time Field'
+		dataType: DateTime
+		lineageTag: spaces::dataspaceNamePlaceholder::services::customerService::timeField
+		sourceColumn: Time Field
+		summarizeBy: none
+	column 'StrictDate Field'
+		dataType: DateTime
+		lineageTag: spaces::dataspaceNamePlaceholder::services::customerService::strictDateField
+		sourceColumn: StrictDate Field
+		summarizeBy: none
+	column 'BooleanField'
+		dataType: Boolean
+		lineageTag: spaces::dataspaceNamePlaceholder::services::customerService::booleanField
+		sourceColumn: BooleanField
+		summarizeBy: none
+	column 'Number Field'
+		dataType: Int64
+		lineageTag: spaces::dataspaceNamePlaceholder::services::customerService::numberField
+		sourceColumn: Number Field
+		summarizeBy: none
+	column 'Float Field'
+		dataType: Double
+		lineageTag: spaces::dataspaceNamePlaceholder::services::customerService::floatField
+		sourceColumn: Float Field
+		summarizeBy: none
+	column 'Decimal Field'
+		dataType: Decimal
+		lineageTag: spaces::dataspaceNamePlaceholder::services::customerService::decimalField
+		sourceColumn: Decimal Field
+		summarizeBy: none
+	partition p=m
+		mode: %s
+		source=Value.NativeQuery(Snowflake.Databases("account.organization.region.cloudType.privatelink.snowflakecomputing.com","warehouse",[Role="role"]){[Name="name"]}[Data], "select ""root"".CUSTOMER_ID as ""Customer ID"", ""root"".CUSTOMER_NAME as ""Customer Name"", ""root"".CUSTOMER_BIRTH_DATE as ""BirthDate"", ""root"".CUSTOMER_TIME_FIELD as ""Time Field"", ""root"".CUSTOMER_STRICT_DATE_FIELD as ""StrictDate Field"", ""root"".CUSTOMER_BOOLEAN_FIELD as ""BooleanField"", ""root"".CUSTOMER_NUMBER_FIELD as ""Number Field"", ""root"".CUSTOMER_FLOAT_FIELD as ""Float Field"", ""root"".CUSTOMER_DECIMAL_FIELD as ""Decimal Field"" from SAMPLE_DATA.CUSTOMERS as ""root""", null, [EnableFolding=true])
