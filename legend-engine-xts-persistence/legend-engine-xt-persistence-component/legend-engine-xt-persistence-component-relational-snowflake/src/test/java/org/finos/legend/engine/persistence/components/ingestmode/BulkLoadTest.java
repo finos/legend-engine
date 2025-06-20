@@ -109,7 +109,7 @@ public class BulkLoadTest
 
     private static Field col9 = Field.builder()
             .name("col_timestamp")
-            .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.of(3)))
+            .type(FieldType.of(DataType.TIMESTAMP, Optional.of(3), Optional.empty()))
             .columnNumber(1)
             .elementPath("col_timestamp")
             .build();
@@ -119,6 +119,13 @@ public class BulkLoadTest
             .type(FieldType.of(DataType.TIME, Optional.empty(), Optional.empty()))
             .columnNumber(1)
             .elementPath("col_time")
+            .build();
+
+    private static Field col11 = Field.builder()
+            .name("col_timestamp_11")
+            .type(FieldType.of(DataType.TIMESTAMP, Optional.of(6), Optional.empty()))
+            .columnNumber(1)
+            .elementPath("col_timestamp_11")
             .build();
 
     private static Field col1NonNullable = Field.builder()
@@ -998,7 +1005,7 @@ public class BulkLoadTest
                                 .location("my_location")
                                 .fileFormat(StandardFileFormat.builder().formatType(FileFormatType.AVRO).build())
                                 .addAllFilePaths(filesList).build())
-                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col6, col7, col8, col9, col10)).build())
+                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col6, col7, col8, col9, col11, col10)).build())
                 .build();
 
         Dataset mainDataset = DatasetDefinition.builder()
@@ -1021,21 +1028,23 @@ public class BulkLoadTest
         List<String> ingestSql = operations.ingestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_string\" VARCHAR,\"col_datetime\" DATETIME,\"col_date\" DATE,\"col_timestamp\" TIMESTAMP,\"col_time\" TIME,\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" DATETIME)";
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_string\" VARCHAR,\"col_datetime\" DATETIME,\"col_date\" DATE,\"col_timestamp\" TIMESTAMP(3),\"col_timestamp_11\" TIMESTAMP(6),\"col_time\" TIME,\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" DATETIME)";
 
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
-                "(\"col_string\", \"col_datetime\", \"col_date\", \"col_timestamp\", \"col_time\", \"digest\", \"batch_id\", \"append_time\") " +
+                "(\"col_string\", \"col_datetime\", \"col_date\", \"col_timestamp\", \"col_timestamp_11\", \"col_time\", \"digest\", \"batch_id\", \"append_time\") " +
                 "FROM (SELECT legend_persistence_stage.$1:\"col_string\" as \"col_string\"," +
                 "legend_persistence_stage.$1:\"col_datetime\" as \"col_datetime\"," +
-                "TO_DATE(TO_TIMESTAMP_NTZ((legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400)::VARCHAR)) as \"col_date\"," +
-                "TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp\"::VARCHAR) as \"col_timestamp\"," +
+                "TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400)::DATE as \"col_date\"," +
+                "TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp\"::NUMBER, 3) as \"col_timestamp\"," +
+                "TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp_11\"::NUMBER, 6) as \"col_timestamp_11\"," +
                 "TO_TIME(legend_persistence_stage.$1:\"col_time\"::VARCHAR) as \"col_time\"," +
                 "LAKEHOUSE_UDF(CONCAT(" +
-                "COLUMN_STRING_UDF('col_date',CAST(TO_DATE(TO_TIMESTAMP_NTZ((legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400)::VARCHAR)) AS DATE))," +
+                "COLUMN_STRING_UDF('col_date',CAST(TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_date\"::NUMBER * 86400)::DATE AS DATE))," +
                 "COLUMN_STRING_UDF('col_datetime',CAST(legend_persistence_stage.$1:\"col_datetime\" AS DATETIME))," +
                 "COLUMN_STRING_UDF('col_string',CAST(legend_persistence_stage.$1:\"col_string\" AS VARCHAR))," +
                 "COLUMN_STRING_UDF('col_time',CAST(TO_TIME(legend_persistence_stage.$1:\"col_time\"::VARCHAR) AS TIME))," +
-                "COLUMN_STRING_UDF('col_timestamp',CAST(TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp\"::VARCHAR) AS TIMESTAMP))))," +
+                "COLUMN_STRING_UDF('col_timestamp',CAST(TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp\"::NUMBER, 3) AS TIMESTAMP(3)))," +
+                "COLUMN_STRING_UDF('col_timestamp_11',CAST(TO_TIMESTAMP_NTZ(legend_persistence_stage.$1:\"col_timestamp_11\"::NUMBER, 6) AS TIMESTAMP(6)))))," +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
                 "WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
                 "FROM my_location as legend_persistence_stage) FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
@@ -1094,7 +1103,7 @@ public class BulkLoadTest
         List<String> ingestSql = operations.ingestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_string\" VARCHAR,\"col_datetime\" DATETIME,\"col_date\" DATE,\"col_timestamp\" TIMESTAMP,\"col_time\" TIME,\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" DATETIME)";
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_string\" VARCHAR,\"col_datetime\" DATETIME,\"col_date\" DATE,\"col_timestamp\" TIMESTAMP(3),\"col_time\" TIME,\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" DATETIME)";
 
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
                 "(\"col_string\", \"col_datetime\", \"col_date\", \"col_timestamp\", \"col_time\", \"digest\", \"batch_id\", \"append_time\") " +
@@ -1108,7 +1117,7 @@ public class BulkLoadTest
                 "COLUMN_STRING_UDF('col_datetime',CAST(legend_persistence_stage.$1:\"col_datetime\" AS DATETIME))," +
                 "COLUMN_STRING_UDF('col_string',CAST(legend_persistence_stage.$1:\"col_string\" AS VARCHAR))," +
                 "COLUMN_STRING_UDF('col_time',CAST(legend_persistence_stage.$1:\"col_time\" AS TIME))," +
-                "COLUMN_STRING_UDF('col_timestamp',CAST(legend_persistence_stage.$1:\"col_timestamp\" AS TIMESTAMP))))," +
+                "COLUMN_STRING_UDF('col_timestamp',CAST(legend_persistence_stage.$1:\"col_timestamp\" AS TIMESTAMP(3)))))," +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
                 "WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
                 "FROM my_location as legend_persistence_stage) FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
