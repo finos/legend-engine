@@ -137,21 +137,21 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
     ))->cast(@X)->toMultiplicity(@[o]);
 }
 
-function meta::relational::tests::pct::process::resultToType(preResultFinal: Any[1], type: GenericType[1], mult: Multiplicity[1]):Any[*]
+function meta::relational::tests::pct::process::resultToType(preResultFinal: Any[0..1], type: GenericType[1], mult: Multiplicity[1]):Any[*]
 {
   let resultType = $type.rawType->toOne();
 
   if ([
-        pair(|$mult->isToMany(), |$preResultFinal->cast(@String)->fromJson()->toMany(^InstanceValue(genericType = $type, multiplicity = PureZero)->reactivate()->head())),
         pair(|$preResultFinal->isEmpty() || $preResultFinal == TDSNull, |[]),
-        pair(|$resultType->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toString())),
-        pair(|$resultType->subTypeOf(Date), |buildDate($preResultFinal->toString())),
-        pair(|$resultType->subTypeOf(Decimal), |$preResultFinal->cast(@Number)->toDecimal()),
-        pair(|$resultType->subTypeOf(Integer), |$preResultFinal->cast(@Number)->round()),
-        pair(|$resultType->subTypeOf(Float), |$preResultFinal->cast(@Number)->toFloat()),
-        pair(|$resultType->subTypeOf(Number), |$preResultFinal->cast(@Number)),
-        pair(|$resultType == Variant, |$preResultFinal->cast(@String)->fromJson()),
-        pair(|$resultType->in([List, Map]), |$preResultFinal->cast(@String)->fromJson()->to(^InstanceValue(genericType = $type, multiplicity = PureZero)->reactivate()->head()))
+        pair(|$mult->isToMany(), |$preResultFinal->toOne()->cast(@String)->fromJson()->toMany(^InstanceValue(genericType = $type, multiplicity = PureZero)->reactivate()->head())),
+        pair(|$resultType->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toOne()->toString())),
+        pair(|$resultType->subTypeOf(Date), |buildDate($preResultFinal->toOne()->toString())),
+        pair(|$resultType->subTypeOf(Decimal), |$preResultFinal->toOne()->cast(@Number)->toDecimal()),
+        pair(|$resultType->subTypeOf(Integer), |$preResultFinal->toOne()->cast(@Number)->round()),
+        pair(|$resultType->subTypeOf(Float), |$preResultFinal->toOne()->cast(@Number)->toFloat()),
+        pair(|$resultType->subTypeOf(Number), |$preResultFinal->toOne()->cast(@Number)),
+        pair(|$resultType == Variant, |$preResultFinal->toOne()->cast(@String)->fromJson()),
+        pair(|$resultType->in([List, Map]), |$preResultFinal->toOne()->cast(@String)->fromJson()->to(^InstanceValue(genericType = $type, multiplicity = PureZero)->reactivate()->head()))
       ],
     | $preResultFinal->toOne()
   );
@@ -573,7 +573,7 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
                           let type = $i.genericType.rawType->toOne();
                           let hasClass = $i.values->find(x|$x->instanceOf(Class))->isNotEmpty();
                           // Nil is for Empty Sets, Any is currently for collection of primitives of different types (may create an issue if we have classes of different types)
-                          if ($type->instanceOf(Class) && !$type->subTypeOf(Function) && !$type->in([Any, Nil, TDS, Enumeration, SortInfo, Variant, meta::pure::metamodel::relation::Relation]),
+                          if ($type->instanceOf(Class) && !$type->subTypeOf(Function) && !$type->in([Any, Nil, TDS, Enumeration, SortInfo, Map, List, Pair, Variant, meta::pure::metamodel::relation::Relation]),
                               |
                                 // Process class
                                 let values = $i.values->map(
