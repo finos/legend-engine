@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
@@ -71,10 +70,10 @@ public class PCT_to_SimpleHTML
         // Organize by source
         MutableListMultimap<String, FunctionDocumentation> ordered = Lists.mutable.withAll(doc.functionsDocumentation)
                 .select(x -> !skipFunctionsWithoutTest || orderedAdapters.stream()
-                                 .map(x.functionTestResults::get)
-                                 .filter(Objects::nonNull)
-                                 .flatMap(result -> result.tests.stream())
-                                 .anyMatch(t -> hasAdapterQualifier(t, adapterQualifiers))
+                        .map(x.functionTestResults::get)
+                        .filter(Objects::nonNull)
+                        .flatMap(result -> result.tests.stream())
+                        .anyMatch(t -> hasAdapterQualifier(t, adapterQualifiers))
                 )
                 .groupBy(x ->
                 {
@@ -91,7 +90,7 @@ public class PCT_to_SimpleHTML
                         {
                             TreeNode node = root;
                             //System.out.println(x.getOne());
-                           // System.out.println(x.getTwo().collect(e -> e.functionDefinition.name));
+                            // System.out.println(x.getTwo().collect(e -> e.functionDefinition.name));
                             for (String z : x.getOne().split("/"))
                             {
                                 node = node.createOrReturnChild(z);
@@ -256,7 +255,10 @@ public class PCT_to_SimpleHTML
         }
         else
         {
-            return f.signatures.stream().map(x -> "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.simple.substring(x.simple.indexOf(f.name + "("))) + "</td>" + "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.documentation != null ? x.documentation : "") + "</td>" ).collect(Collectors.joining("<tr></tr>", "<table style='width:1000; table-layout: fixed;'><tr>\n", "</tr></table>"));
+            return f.signatures.stream().map(x ->
+                        "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.simple.substring(x.simple.indexOf(f.name + "("))) + "</td>"
+                      + "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.documentation != null ? x.documentation : "") + "</td>"
+            ).collect(Collectors.joining("<tr></tr>", "<table style='width:1000; table-layout: fixed;'><tr>\n", "</tr></table>"));
         }
     }
 
@@ -348,9 +350,9 @@ public class PCT_to_SimpleHTML
             "<body>\n";
     private static String bottom =
             "</body>\n" +
-            "<footer style='font-size: 15px;'>\n" +
-            String.format("PCT results as of %s using commit <a href='https://github.com/finos/legend-engine/tree/%s'>%s</a>.\n", DeploymentStateAndVersions.sdlc.commitTime, getCommitId(), getCommitId()) +
-            "</footer>\n" +
+                    "<footer style='font-size: 15px;'>\n" +
+                    String.format("PCT results as of %s using commit <a href='https://github.com/finos/legend-engine/tree/%s'>%s</a>.\n", DeploymentStateAndVersions.sdlc.commitTime, getCommitId(), getCommitId()) +
+                    "</footer>\n" +
                     "</html>";
 
     private static String getCommitId()
