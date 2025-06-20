@@ -55,7 +55,6 @@
         <module>legend-engine-xts-json</module>
         <module>legend-engine-xts-avro</module>
         <module>legend-engine-xts-arrow</module>
-        <module>legend-engine-xts-powerbi</module>
 
         <!-- Table Formats -->
         <module>legend-engine-xts-iceberg</module>
@@ -1975,17 +1974,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-data-space-http-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-powerbi-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-powerbi-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

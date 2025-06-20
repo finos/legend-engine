@@ -101,7 +101,6 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-text/legend-engine-xt-text-pure-metamodel", "text-metamodel"))
                 .with(this.buildCore("legend-engine-xts-data-space/legend-engine-xt-data-space-pure-metamodel", "data-space-metamodel"))
                 .with(this.buildCore("legend-engine-xts-data-space/legend-engine-xt-data-space-pure", "data-space"))
-                .with(this.buildCore("legend-engine-xts-powerbi/legend-engine-xt-powerbi-pure", "external-format-powerbi"))
                 .with(this.buildCore("legend-engine-xts-diagram/legend-engine-xt-diagram-pure", "diagram"))
                 .with(this.buildCore("legend-engine-xts-flatdata/legend-engine-xt-flatdata-pure", "external-format-flatdata"))
                 .with(this.buildCore("legend-engine-xts-flatdata/legend-engine-xt-flatdata-javaPlatformBinding-pure", "external-format-flatdata-java-platform-binding"))

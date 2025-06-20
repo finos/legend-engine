@@ -31,7 +31,6 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.functionActivator.generation.FunctionActivatorArtifactGenerationExtension;
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
-import org.finos.legend.engine.generation.PowerBIArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
 import org.finos.legend.engine.language.functionJar.compiler.toPureGraph.FunctionJarCompilerExtension;
 import org.finos.legend.engine.language.bigqueryFunction.compiler.toPureGraph.BigQueryFunctionCompilerExtension;
@@ -554,8 +553,7 @@ public class TestExtensions
                 .with(SnowflakeAppArtifactGenerationExtension.class)
                 .with(SnowflakeM2MUdfArtifactGenerationExtension.class)
                 .with(HostedServiceArtifactGenerationExtension.class)
-                .with(FunctionActivatorArtifactGenerationExtension.class)
-                .with(PowerBIArtifactGenerationExtension.class);
+                .with(FunctionActivatorArtifactGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends EntitlementServiceExtension>> getExpectedEntitlementServiceExtensions()
@@ -589,7 +587,6 @@ public class TestExtensions
                 .with("core_external_format_flatdata")
                 .with("core_external_format_json")
                 .with("core_external_format_openapi")
-                .with("core_external_format_powerbi")
                 .with("core_external_format_protobuf")
                 .with("core_external_format_xml")
                 .with("core_external_format_arrow")
