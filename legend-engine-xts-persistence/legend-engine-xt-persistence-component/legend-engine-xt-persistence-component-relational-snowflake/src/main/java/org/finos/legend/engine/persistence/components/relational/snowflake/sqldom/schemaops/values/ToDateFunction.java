@@ -42,11 +42,8 @@ public class ToDateFunction extends Value
     @Override
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
-        //TO_DATE(TO_TIMESTAMP_NTZ(($1::NUMBER * SEC_IN_A_DAY)::VARCHAR))
-        builder.append(Clause.TO_DATE);
-        builder.append(OPEN_PARENTHESIS);
+        //TO_TIMESTAMP_NTZ($1:%s::NUMBER * SEC_IN_A_DAY)::DATE
         builder.append(Clause.TO_TIMESTAMP_NTZ);
-        builder.append(OPEN_PARENTHESIS);
         builder.append(OPEN_PARENTHESIS);
         column.genSqlWithoutAlias(builder);
         builder.append(COLON);
@@ -59,9 +56,7 @@ public class ToDateFunction extends Value
         builder.append(CLOSING_PARENTHESIS);
         builder.append(COLON);
         builder.append(COLON);
-        builder.append("VARCHAR");
-        builder.append(CLOSING_PARENTHESIS);
-        builder.append(CLOSING_PARENTHESIS);
+        builder.append("DATE");
     }
 
     @Override

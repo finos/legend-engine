@@ -18,17 +18,18 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomEx
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
-import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_PARENTHESIS;
-import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_PARENTHESIS;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.*;
 
 public class ToTimestampFunction extends Value
 {
     private Value column;
+    private int scale;
 
-    public ToTimestampFunction(Value column, String quoteIdentifier)
+    public ToTimestampFunction(Value column, String quoteIdentifier, int scale)
     {
         super(column.getAlias(), quoteIdentifier);
         this.column = column;
+        this.scale = scale;
     }
 
     @Override
@@ -41,11 +42,16 @@ public class ToTimestampFunction extends Value
     @Override
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
+        //TO_TIMESTAMP_NTZ($1:%s::NUMBER, scale)
         builder.append(Clause.TO_TIMESTAMP_NTZ);
         builder.append(OPEN_PARENTHESIS);
         column.genSqlWithoutAlias(builder);
-        builder.append("::");
-        builder.append("VARCHAR");
+        builder.append(COLON);
+        builder.append(COLON);
+        builder.append("NUMBER");
+        builder.append(COMMA);
+        builder.append(WHITE_SPACE);
+        builder.append(scale);
         builder.append(CLOSING_PARENTHESIS);
     }
 

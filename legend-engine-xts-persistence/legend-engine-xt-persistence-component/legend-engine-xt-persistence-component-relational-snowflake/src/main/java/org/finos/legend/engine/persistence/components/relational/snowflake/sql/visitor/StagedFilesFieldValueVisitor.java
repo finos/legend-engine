@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
-import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
@@ -27,11 +26,9 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.common.F
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
-import org.finos.legend.engine.persistence.components.util.Capability;
 
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.Set;
 
 public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFilesFieldValue>
 {
@@ -58,7 +55,8 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
         {
             if (current.fieldType().dataType().equals(DataType.TIMESTAMP))
             {
-                prev.push(new ToTimestampFunction(stageField, context.quoteIdentifier()));
+                int timestampScale = getTimestampScale(current);
+                prev.push(new ToTimestampFunction(stageField, context.quoteIdentifier(), timestampScale));
                 return new VisitorResult(null);
             }
             if (current.fieldType().dataType().equals(DataType.DATE))
@@ -74,6 +72,23 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
         }
         prev.push(stageField);
         return new VisitorResult(null);
+    }
+
+    private static int getTimestampScale(StagedFilesFieldValue current)
+    {
+        Optional<Integer> length = current.fieldType().length();
+        if (length.isPresent())
+        {
+            return length.get();
+        }
+
+        Optional<Integer> scale = current.fieldType().scale();
+        if (scale.isPresent())
+        {
+            return scale.get();
+        }
+
+        return 3; // Default is millis
     }
 
 
