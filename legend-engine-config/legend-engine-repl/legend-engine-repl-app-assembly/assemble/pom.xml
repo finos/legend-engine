@@ -23,6 +23,7 @@
 
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine-repl-app-assembly</artifactId>
+    <name>Legend Engine - REPL - App - Assembly</name>
     <version>local-pom</version>
     <packaging>pom</packaging>
 
