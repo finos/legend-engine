@@ -150,7 +150,7 @@ Class meta::relational::functions::sqlstring::SQLResult
 
    toSQLString(databaseType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], format:Format[1])
    {
-      let sqlStrings = $this.sqlQueries->map(s | $s->sqlQueryToString($databaseType, $dbTimeZone, $quoteIdentifiers, $format, $this.extensions));
+      let sqlStrings = $this.sqlQueries->map(s | $s->sqlQueryToString($databaseType, $dbTimeZone, $quoteIdentifiers, $format, true, $this.extensions));
       let sql = $sqlStrings->joinStrings('\n');
 
       if ($this.shouldWarn, | $sql + '\nWarning: Results only shown for first relational query. Other SQL statements could not be computed because they require results from the execution of the previous expression.' , | $sql);
