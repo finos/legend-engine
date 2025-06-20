@@ -28,6 +28,7 @@ import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVis
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFilesFieldValue>
 {
@@ -75,16 +76,16 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
 
     private static int getTimestampScale(StagedFilesFieldValue current)
     {
-        Integer length = current.fieldType().length().orElse(0);
-        if (length > 0)
+        Optional<Integer> length = current.fieldType().length();
+        if (length.isPresent())
         {
-            return length;
+            return length.get();
         }
 
-        Integer scale = current.fieldType().scale().orElse(0);
-        if (scale > 0)
+        Optional<Integer> scale = current.fieldType().scale();
+        if (scale.isPresent())
         {
-            return scale;
+            return scale.get();
         }
 
         return 3; // Default is millis
