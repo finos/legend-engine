@@ -55,7 +55,7 @@ Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeI
 
 function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(query: Query[1], functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1]): Query[1]
 {
-  let castedFunctionRegistry = $functionRegistry->values()->map(sqlFunc | pair($sqlFunc.name->toOne(), $sqlFunc))->newMap();
+  let castedFunctionRegistry = $functionRegistry->values()->map(sqlFunc | pair($sqlFunc.name->toOne()->toLower(), $sqlFunc))->newMap();
   $query->inferTypes(typeInferenceTransformFunction($castedFunctionRegistry))->cast(@Query);
 }
 
@@ -151,7 +151,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedFunctionCall(f: FunctionCall[1], functionRegistry: Map<String, SqlFunction>[1]): TypedSqlExpression[1]
 {
-  let funcName = $f.name.parts->joinStrings('.');
+  let funcName = $f.name.parts->joinStrings('.')->toLower();
   let sqlFunction = $functionRegistry->get($funcName)->toOne('Function registry does not contain function - ' + $funcName);
   let funcArgs = $f.arguments;
   if ($funcArgs->forAll(x | $x->instanceOf(TypedSqlExpression)),

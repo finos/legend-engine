@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlPlanning::*;
 import meta::pure::extension::*;
@@ -39,6 +40,5 @@ function meta::external::store::relational::sqlPlanning::planSqlStatement(statem
 
 function <<access.private>> meta::external::store::relational::sqlPlanning::planSqlQuery(query: Query[1], config: SqlPlanningConfig[1], extensions: Extension[*]): Query[1]
 {
-  fail('Not implemented yet!');
-  $query;
+  executeRuleBasedTransformersOnQuery($query, $config, noDebug(), $extensions)
 }
