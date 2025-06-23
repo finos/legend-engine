@@ -46,7 +46,7 @@ public class PostgresTestConnectionIntegration implements TestConnectionIntegrat
     }
 
 
-    public PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer(DockerImageName.parse("postgres").withTag("16.9"));
+    public PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer(DockerImageName.parse("postgres").withTag("17.5"));
 
     private VaultImplementation vaultImplementation;
 
