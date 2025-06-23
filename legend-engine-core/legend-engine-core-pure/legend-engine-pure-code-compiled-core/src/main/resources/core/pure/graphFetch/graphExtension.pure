@@ -395,6 +395,7 @@ function meta::pure::graphFetch::canEvaluateForTree(pTree:GraphFetchTree[1], gfT
 
 function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any>[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*]): RootGraphFetchTree<Any>[1]
 {
+  // fail();
    let replaced = $tree->replaceQualifiedPropertiesWithRequiredProperties();
 
    let rootSetImplementation = $tree->match([r:RoutedRootGraphFetchTree<Any>[1]|$r.sets->toOne(),
@@ -402,7 +403,7 @@ function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any
 
    assert($rootSetImplementation->isNotEmpty(), |'Mapping ' + $mapping->elementToPath() + ' does not map class from tree: ' + $replaced.class->elementToPath());
 
-   $rootSetImplementation->toOne()->match($extensions.graphExtension_calculateSourceTree->map(ext | $ext->eval($replaced))->concatenate([
+   let restree = $rootSetImplementation->toOne()->match($extensions.graphExtension_calculateSourceTree->map(ext | $ext->eval($replaced))->concatenate([
       {pisi: PureInstanceSetImplementation[1]  |
          assert($pisi.srcClass->isNotEmpty() && $pisi.srcClass->toOne()->instanceOf(Class), 'Pure mapping does not have a class as ~src for root of tree');
          let srcClass     = $pisi.srcClass->toOne()->cast(@Class<Any>);
@@ -410,6 +411,12 @@ function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any
          let withChildren = $root->enrichSourceTreeNode($mapping, $pisi, $replaced, $extensions)->mergeSubTrees()->sortTree()->cast(@RootGraphFetchTree<Any>);
       }
    ])->toOneMany());
+
+  println('-------- calculate source tree');
+  $restree->meta::pure::graphFetch::printTree();
+    println('-------- done calculate source tree');
+
+   $restree;
 }
 
 
@@ -508,6 +515,10 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
 
          let inlinedPropertyTree = $propertyPaths.result->buildPropertyTree()->inlineQualifiedPropertyNodes();
 
+
+         println('inlinedPropertyTree');
+         $inlinedPropertyTree->meta::pure::lineage::scanProperties::propertyTree::printTree(' ');
+         println('inlinedPropertyTree done');
          // Property tree root node may not start at owner (e.g. when the source of a mapping is wrapped in a new class and passed to a property mapping).
          // Here we try and find the part of the tree that starts at the owner - in usual case we will return the same tree but now also handle case mentioned above.
          // Due to subTypes we could end up returning multiple trees hence we check if there is only one and start there, otherwise continue with old behaviour.
