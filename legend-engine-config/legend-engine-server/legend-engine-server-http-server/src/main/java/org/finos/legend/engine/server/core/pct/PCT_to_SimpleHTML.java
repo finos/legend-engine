@@ -125,7 +125,7 @@ public class PCT_to_SimpleHTML
                 "<BR/><BR/>\n" +
                 "    <table style=\"border-spacing:20px 8px;width:900;text-align: center;max-height:70vh;overflow-y:auto\">\n" +
                 "        <tr>\n" +
-                "           <TH colspan='5' style='width:100'></TH>\n" +
+                "           <TH colspan='4' style='width:100'></TH>\n" +
                 addGroups(orderedAdapters) +
                 "        </tr>\n" +
                 "        <tr>\n" +
