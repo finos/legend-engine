@@ -21,14 +21,21 @@ Class meta::pure::functions::relation::Rows extends Frame
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
+    {
+         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(-3, 0) means the three rows preceding the current row'
+    }
     meta::pure::functions::relation::rows(offsetFrom:Integer[1], offsetTo:Integer[1]):Rows[1]
 {
+  assert($offsetFrom <= $offsetTo, 'Invalid window frame boundary - lower bound of window frame cannot be greater than the upper bound!');
   ^Rows(offsetFrom = ^FrameIntValue(value=$offsetFrom), offsetTo = ^FrameIntValue(value=$offsetTo));
 }
 
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
+    {
+         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(meta::pure::functions::relation::unbounded(), 2) means that the frame consists of the whole set of rows (zero or more) that physically precede the current row and the two rows that follow it'
+    }
     meta::pure::functions::relation::rows(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:Integer[1]):Rows[1]
 {
   ^Rows(offsetFrom = $offsetFrom, offsetTo = ^FrameIntValue(value=$offsetTo));
@@ -37,6 +44,9 @@ function
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
+    {
+         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(-3, meta::pure::functions::relation::unbounded()) means that the frame consists of three rows that physically precede the current row and the whole set of rows (zero or more) that follow it'
+    }
     meta::pure::functions::relation::rows(offsetFrom:Integer[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):Rows[1]
 {
   ^Rows(offsetFrom = ^FrameIntValue(value=$offsetFrom), offsetTo = $offsetTo);
@@ -45,6 +55,9 @@ function
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
+    {
+         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(meta::pure::functions::relation::unbounded(), meta::pure::functions::relation::unbounded()) means that the frame consists of the whole set of rows (zero or more) that physically precede and follow the current row'
+    }
     meta::pure::functions::relation::rows(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):Rows[1]
 {
   ^Rows(offsetFrom = $offsetFrom, offsetTo = $offsetTo);

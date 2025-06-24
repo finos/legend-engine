@@ -70,6 +70,7 @@ public abstract class AggregationShared extends Shared
         Type type = ((FunctionType) reduceF._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType()._rawType();
 
         int size = compress ? aggregationScope.getTwo().size() : (int) aggregationScope.getOne().getRowCount();
+        boolean[] nulls = new boolean[(int) size];
         if (type == _Package.getByUserPath("String", processorSupport))
         {
             String[] finalRes = new String[size];
@@ -79,19 +80,38 @@ public abstract class AggregationShared extends Shared
         else if (type == _Package.getByUserPath("Integer", processorSupport))
         {
             long[] finalRes = new long[size];
-            performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
-            return new ColumnValue(name, DataType.LONG, finalRes);
+            performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
+            return new ColumnValue(name, DataType.LONG, finalRes, nulls);
         }
         else if (type == _Package.getByUserPath("Float", processorSupport) || type == _Package.getByUserPath("Number", processorSupport))
         {
             double[] finalRes = new double[size];
-            performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
-            return new ColumnValue(name, DataType.DOUBLE, finalRes);
+            performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
+            return new ColumnValue(name, DataType.DOUBLE, finalRes, nulls);
         }
         else
         {
             throw new RuntimeException("The type " + type._name() + " is not supported yet!");
         }
+    }
+
+    private static void processWithNull(Integer j, Object val, boolean[] nulls, Proc p)
+    {
+        {
+            if (val == null)
+            {
+                nulls[j] = true;
+            }
+            else
+            {
+                p.invoke();
+            }
+        }
+    }
+
+    private interface Proc
+    {
+        void invoke();
     }
 
     protected void performAggregation(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> orderedSource, Window window, LambdaFunction<CoreInstance> mapF, LambdaFunction<CoreInstance> reduceF, Procedure2<Integer, CoreInstance> setter, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, RelationType<?> relationType, VariableContext mapFVarContext, VariableContext reduceFVarContext, boolean compress, boolean twoParamFunc, GenericType sourceTDSType)
@@ -127,11 +147,19 @@ public abstract class AggregationShared extends Shared
             {
                 for (int i = 0; i < r.getTwo() - r.getOne(); i++)
                 {
-                    MutableList<CoreInstance> l = framedList(subList, window.getFrame(), i);
-                    l.removeIf(Objects::isNull);
-                    reduceParameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(l, true, processorSupport));
-                    CoreInstance re = this.functionExecution.executeFunction(false, reduceF, reduceParameters, resolvedTypeParameters, resolvedMultiplicityParameters, reduceFVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
-                    setter.value(r.getOne() + i, re.getValueForMetaPropertyToOne("values"));
+                    Frame frame = window.getFrame();
+                    if (i + frame.getOffsetTo(subList.size()) < 0 || i + frame.getOffsetFrom() >= subList.size())
+                    {
+                        setter.value(r.getOne() + i, null);
+                    }
+                    else
+                    {
+                        MutableList<CoreInstance> l = framedList(subList, frame, i);
+                        l.removeIf(Objects::isNull);
+                        reduceParameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(l, true, processorSupport));
+                        CoreInstance re = this.functionExecution.executeFunction(false, reduceF, reduceParameters, resolvedTypeParameters, resolvedMultiplicityParameters, reduceFVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
+                        setter.value(r.getOne() + i, re.getValueForMetaPropertyToOne("values"));
+                    }
                 }
             }
         }

@@ -184,7 +184,25 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::relation::tests::sort::testSimpleSort_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\"", AdapterQualifier.unsupportedFeature),
 
             //testWrite
-            one("meta::pure::functions::relation::tests::write::testWrite_Function_1__Boolean_1_", "\"\nexpected: 5\nactual:   0\"", AdapterQualifier.needsInvestigation)
+            one("meta::pure::functions::relation::tests::write::testWrite_Function_1__Boolean_1_", "\"\nexpected: 5\nactual:   0\"", AdapterQualifier.needsInvestigation),
+
+            // over
+            one("meta::pure::functions::relation::tests::over::testRows_CurrentRow_CurrentRow_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_CurrentRow_NFollowing_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_CurrentRow_UnboundedFollowing_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_NFollowing_NFollowing_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_NFollowing_UnboundedFollowing_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_NPreceding_CurrentRow_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_NPreceding_NFollowing_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_NPreceding_NPreceding_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_NPreceding_UnboundedFollowing_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_CurrentRow_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_CurrentRow_WithMultiplePartitions_WithSingleOrderBy_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_NFollowing_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_NPreceding_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\"", AdapterQualifier.unsupportedFeature)
             );
 
     public static Test suite()
