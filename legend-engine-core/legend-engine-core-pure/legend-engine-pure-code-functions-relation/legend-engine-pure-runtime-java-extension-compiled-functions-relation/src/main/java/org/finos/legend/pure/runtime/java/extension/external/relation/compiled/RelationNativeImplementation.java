@@ -514,21 +514,21 @@ public class RelationNativeImplementation
                 case "String":
                 {
                     String[] finalRes = new String[size];
-                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (o, j) -> finalRes[j] = (String) o, true);
+                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalRes[j] = (String) o, true);
                     existing.addColumn(aggColSpecTrans.newColName, DataType.STRING, finalRes);
                     break;
                 }
                 case "Integer":
                 {
                     long[] finalResLong = new long[size];
-                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (o, j) -> finalResLong[j] = (long) o, true);
+                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalResLong[j] = (long) o, true);
                     existing.addColumn(aggColSpecTrans.newColName, DataType.LONG, finalResLong);
                     break;
                 }
                 case "Float":
                 {
                     double[] finalResDouble = new double[size];
-                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (o, j) -> finalResDouble[j] = (double) o, true);
+                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalResDouble[j] = (double) o, true);
                     existing.addColumn(aggColSpecTrans.newColName, DataType.DOUBLE, finalResDouble);
                     break;
                 }
@@ -595,6 +595,7 @@ public class RelationNativeImplementation
     private static MutableList<ColumnValue> aggregateTDS(Window window, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes, MutableList<? extends AggColSpecTrans> aggColSpecTransAll, boolean compress, ExecutionSupport es)
     {
         int size = compress ? sortRes.getTwo().size() : (int) sortRes.getOne().getRowCount();
+        boolean[] nulls = new boolean[(int) size];
         MutableList<ColumnValue> columnValues = Lists.mutable.empty();
         for (AggColSpecTrans aggColSpecTrans : aggColSpecTransAll)
         {
@@ -602,20 +603,20 @@ public class RelationNativeImplementation
             {
                 case "String":
                     String[] finalRes = new String[size];
-                    performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (o, j) -> finalRes[j] = (String) o, compress);
+                    performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> finalRes[j] = (String) o, compress);
                     columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.STRING, finalRes));
                     break;
                 case "Integer":
                     long[] finalResLong = new long[size];
-                    performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (o, j) -> finalResLong[j] = (long) o, compress);
-                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.LONG, finalResLong));
+                    performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> processWithNull(j, o, nulls, () -> finalResLong[j] = (long) o), compress);
+                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.LONG, finalResLong, nulls));
                     break;
                 case "Double":
                 case "Float":
                 case "Number":
                     double[] finalResDouble = new double[size];
-                    performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (o, j) -> finalResDouble[j] = (double) o, compress);
-                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.DOUBLE, finalResDouble));
+                    performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> processWithNull(j, o, nulls, () -> finalResDouble[j] = (double) o), compress);
+                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.DOUBLE, finalResDouble, nulls));
                     break;
                 default:
                     throw new RuntimeException(aggColSpecTrans.reduceType + " is not supported yet!");
@@ -624,7 +625,7 @@ public class RelationNativeImplementation
         return columnValues;
     }
 
-    private static void performMapReduce(Window window, AggColSpecTrans map, Function2 reduce, ExecutionSupport es, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes, Function2<Object, Integer, Object> val, boolean compress)
+    private static void performMapReduce(Window window, AggColSpecTrans map, Function2 reduce, ExecutionSupport es, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes, Procedure2<Integer, Object> setter, boolean compress)
     {
         int cursor = 0;
         int size = sortRes.getTwo().size();
@@ -645,7 +646,7 @@ public class RelationNativeImplementation
             {
                 subList.removeIf(Objects::isNull);
                 Object result = reduce.value(subList, es);
-                val.apply(result, j);
+                setter.value(j, result);
             }
             else
             {
@@ -655,17 +656,25 @@ public class RelationNativeImplementation
                     Object result = reduce.value(subList, es);
                     for (int i = 0; i < r.getTwo() - r.getOne(); i++)
                     {
-                        val.apply(result, cursor++);
+                        setter.value(cursor++, result);
                     }
                 }
                 else
                 {
                     for (int i = 0; i < r.getTwo() - r.getOne(); i++)
                     {
-                        MutableList<Object> framed = framedList(subList, window.getFrame(), i);
-                        framed.removeIf(Objects::isNull);
-                        Object result = reduce.value(framed, es);
-                        val.apply(result, cursor++);
+                        Frame windowFrame = window.getFrame();
+                        if (i + windowFrame.getOffsetTo(subList.size()) < 0 || i + windowFrame.getOffsetFrom() >= subList.size())
+                        {
+                            setter.value(cursor++, null);
+                        }
+                        else
+                        {
+                            MutableList<Object> framed = framedList(subList, window.getFrame(), i);
+                            framed.removeIf(Objects::isNull);
+                            Object result = reduce.value(framed, es);
+                            setter.value(cursor++, result);
+                        }
                     }
                 }
             }

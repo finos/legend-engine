@@ -26,7 +26,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testWindowWithout
                             ->olapGroupBy(['firstName','lastName'],y|$y->rank(),'testCol1')
    };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME,"root".LASTNAME ) as "testCol1" from personTable as "root"', $result);
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME,"root".LASTNAME) as "testCol1" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testMultipleWindowWithSortWithRank():Boolean[1]
@@ -156,7 +156,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testWindowWithout
                             ->sort('testCol1', SortDirection.DESC)->sort('firstName', SortDirection.ASC)
    };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age", "subselect"."testCol1" as "testCol1" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME,"root".LASTNAME ) as "testCol1" from personTable as "root") as "subselect" order by "firstName","testCol1" desc', $result);
+   assertEquals('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age", "subselect"."testCol1" as "testCol1" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME,"root".LASTNAME) as "testCol1" from personTable as "root") as "subselect" order by "firstName","testCol1" desc', $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testDynaFunctionInWindow():Boolean[1]

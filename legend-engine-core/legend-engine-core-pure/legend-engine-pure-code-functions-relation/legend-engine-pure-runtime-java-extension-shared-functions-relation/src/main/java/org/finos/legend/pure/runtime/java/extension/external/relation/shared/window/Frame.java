@@ -88,9 +88,19 @@ public class Frame
         return result;
     }
 
+    public int getOffsetFrom()
+    {
+        return fromUnbounded ? 0 : this.offsetFrom;
+    }
+
+    public int getOffsetTo(int maxSize)
+    {
+        return toUnbounded ? maxSize - 1 : this.offsetTo;
+    }
+
     public int getLow(int currentRow)
     {
-        return fromUnbounded ? 0 : Math.max(0, currentRow - offsetFrom);
+        return fromUnbounded ? 0 : Math.max(0, currentRow + offsetFrom);
     }
 
     public int getHigh(int currentRow, int maxSize)

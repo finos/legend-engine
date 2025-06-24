@@ -63,7 +63,8 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             pack("meta::pure::functions::relation::tests::composition", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::relation::tests::composition::testFilterPostProject_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testWindowFunctionsAfterProject_Function_1__Boolean_1_", "\"meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
-            pack("meta::pure::functions::relation::tests::write", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation)
+            pack("meta::pure::functions::relation::tests::write", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
+            pack("meta::pure::functions::relation::tests::over", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()
