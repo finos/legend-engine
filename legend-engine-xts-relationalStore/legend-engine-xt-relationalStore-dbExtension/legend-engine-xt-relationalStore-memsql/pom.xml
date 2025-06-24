@@ -33,5 +33,7 @@
         <module>legend-engine-xt-relationalStore-memsql-grammar</module>
         <module>legend-engine-xt-relationalStore-memsql-PCT</module>
         <module>legend-engine-xt-relationalStore-memsql-protocol</module>
+        <module>legend-engine-xt-relationalStore-memsql-SDT</module>
+        <module>legend-engine-xt-relationalStore-memsql-sqlDialectTranslation-pure</module>
     </modules>
 </project>
