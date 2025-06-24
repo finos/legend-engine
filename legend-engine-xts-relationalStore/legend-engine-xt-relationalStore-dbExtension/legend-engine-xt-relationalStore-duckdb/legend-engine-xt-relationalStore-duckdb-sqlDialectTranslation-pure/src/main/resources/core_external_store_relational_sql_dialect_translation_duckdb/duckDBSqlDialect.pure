@@ -597,7 +597,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForConvertTimeZone(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let timeZoneArg = $processedArgs->at(0) + ' AT TIME ZONE \'UTC\' AT TIME ZONE ' + $processedArgs->at(1);
+  let srcTimeZone = '\''+ if($config.dbConfig.dbTimeZone->isEmpty(), | 'GMT', |  $config.dbConfig.dbTimeZone->toOne()) + '\'';
+  let timeZoneArg = $processedArgs->at(0) + ' AT TIME ZONE '+ $srcTimeZone +' AT TIME ZONE ' + $processedArgs->at(1);
   $sqlDialect->generateFunctionCallWithArgs('strftime', [$timeZoneArg, $processedArgs->at(2)->dateFormatSpecifierForDuckDB()], [], $state, $config);
   // $sqlDialect->generateFunctionCallWithArgs('convert_from', [$decodeCall, '\'utf8\''], [], $state, $config);
 }

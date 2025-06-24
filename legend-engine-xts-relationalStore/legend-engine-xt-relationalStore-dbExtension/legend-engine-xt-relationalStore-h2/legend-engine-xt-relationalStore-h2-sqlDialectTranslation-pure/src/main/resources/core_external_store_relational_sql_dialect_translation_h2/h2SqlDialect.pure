@@ -532,25 +532,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   $sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'random_uuid', [], $state, $config), 'varchar', $state, $config)
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::isNumeric(s:String[1]): Boolean[1]
-{
-  // Not exact
-  $s->matches('[-]?[0-9]+(\\.[0-9]+)?')
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForDirectionalIndex(directionFunc:String[1], f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config)->transformRegexpParams($sqlDialect);
-  let index = $processedArgs->at(1);
-  let inputString = $processedArgs->at(0);
-
-  let modifiedIndex = if($index->isNumeric() && ($index->parseInteger() < 0), 
-    | generateFunctionCallWithArgs($sqlDialect, 'length', [$inputString], $state, $config ) + $index, 
-    | $index
-  );
-  generateFunctionCallWithArgs($sqlDialect, $directionFunc, [$inputString, $modifiedIndex], $f, $state, $config);
-}
-
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForDateDiff(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
