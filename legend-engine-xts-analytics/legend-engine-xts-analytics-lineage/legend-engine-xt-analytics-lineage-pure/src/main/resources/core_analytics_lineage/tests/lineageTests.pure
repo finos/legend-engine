@@ -525,7 +525,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let grammar = readFile('/core_analytics_lineage/tests/resources/lineageTestSchemaForSemiStructuredJoin.txt')->toOne();
   let elements = compileLegendGrammar($grammar);
-  let runtime = $elements->filter(e|$e->instanceOf(PackageableRuntime))->at(0)->cast(@PackageableRuntime).runtimeValue->cast(@Runtime);
+  let runtime = $elements->filter(e|$e->instanceOf(PackageableRuntime))->at(0)->cast(@PackageableRuntime).runtimeValue->cast(@meta::core::runtime::Runtime);
   let mapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
   let function = $elements->filter(e|$e->instanceOf(FunctionDefinition))->at(0)->cast(@FunctionDefinition<{->TabularDataSet[1]}>);
   let lineage = meta::analytics::lineage::computeLineage($function, $mapping, $runtime, meta::relational::extension::relationalExtensions());
@@ -648,11 +648,11 @@ function <<test.Test>> meta::analytics::lineage::tests::relation::testNewTDSWith
   let query = {|#>{meta::relational::tests::db.personTable}#->project(~['firstName': x| $x.FIRSTNAME])};
   let runtime = meta::external::store::relational::tests::testRuntime();
 
-  let lineage = meta::analytics::lineage::computeLineage($query, [], $runtime, []);
+  let lineage = meta::analytics::lineage::computeLineage($query, [], $runtime, [],buildDefaultAnalyticsConfig());
 
   meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultpersonTable'],
                                           [],
-                                          '[firstName: [personTable.FIRSTNAME <FIRSTNAME>]]',
+                                          '[firstName: [dbInc.default.personTable.FIRSTNAME <FIRSTNAME>]]',
                                           $lineage);
 
 }

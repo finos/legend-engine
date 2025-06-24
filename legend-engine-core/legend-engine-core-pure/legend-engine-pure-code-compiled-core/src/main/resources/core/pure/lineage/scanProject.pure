@@ -139,13 +139,13 @@ function <<access.private>> meta::pure::lineage::scanProject::extractCol(vs:Valu
       );
 }
 
-function <<access.private>> meta::pure::lineage::scanProject::extractFuncCol(vs:ValueSpecification[1],vars:Map<String, List<Any>>[1]):FuncColSpec<Any,Any>[*]
+function <<access.private>> meta::pure::lineage::scanProject::extractFuncCol(vs:Any[1],vars:Map<String, List<Any>>[1]):FuncColSpec<Any,Any>[*]
 { 
  $vs->match(
           [
-            i:InstanceValue[1] |  let cols = $i.values->evaluateAndDeactivate()->cast(@SimpleFunctionExpression);
-                                  let colSpecs = $cols->map(c | $c->reactivate($vars)->cast(@FuncColSpec<Any,Any>));,
+            i:InstanceValue[1] |  $i.values->at(0)->extractFuncCol($vars),
             s:SimpleFunctionExpression[1] |  $s->reactivate($vars)->cast(@FuncColSpecArray<Any,Any>).funcSpecs->map(f | $f->cast(@FuncColSpec<Any,Any>));,
+            f:FuncColSpecArray<Any,Any>[1] |  $f.funcSpecs->cast(@FuncColSpec<Any,Any>),
             a:Any[*]| [] ;
           ]
       );

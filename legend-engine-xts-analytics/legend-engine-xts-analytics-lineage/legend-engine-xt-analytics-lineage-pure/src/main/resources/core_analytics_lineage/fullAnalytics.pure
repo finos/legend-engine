@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::postProcessor::*;
+import meta::pure::store::set::*;
+import meta::pure::extension::*;
 import meta::pure::lineage::scanRelationAccessor::propertyTree::*;
 import meta::pure::metamodel::relation::*;
 import meta::analytics::lineage::scanRelationAccessor::*;
@@ -61,12 +64,17 @@ Class meta::analytics::lineage::ReportLineage
    columns : ReportColumn[*];
 }
 
-Class meta::analytics::lineage::ReportColumn
+Class meta::analytics::lineage::ReportColumn  
 {
    name : String[1];
    propertyTree : PropertyPathTree[1];
    columns : ColumnWithContext[*];
+   accessorColumns:meta::analytics::lineage::Column[*]; 
+
+ 
 }
+
+
 
 Class meta::analytics::lineage::ServiceLineage
 {
@@ -114,53 +122,117 @@ function meta::analytics::lineage::buildDefaultAnalyticsConfig(): FunctionAnalyt
     reportLineage = true
   )
 }
+Class meta::analytics::lineage::LineageInputFromFunctionDefinition
+{
+  mapping: Mapping[*];
+  runtime: Runtime[*];
+  funcBody: ValueSpecification[1..*];
+}
+
+
+function <<access.private>> meta::analytics::lineage::lineageExtension():Extension[1]
+{
+ ^Extension(type='lineage',
+            availableFeatures = ^FeatureExtension(id='lineage',
+                                                 shouldStopPreeval= {a:Any[*] | $a->match([ f: SimpleFunctionExpression[1] | $f.func->in([meta::pure::functions::string::parseDate_String_1__Date_1_ ]),
+                                                               a: Any[*] | false
+                                                           ])}
+                     ));
+}
+
+
+function meta::analytics::lineage::getLineageInputFromFunctionDefinition(f:FunctionDefinition<Any>[1], extensions:Extension[*]):LineageInputFromFunctionDefinition[1]
+{
+
+
+   let extensionsWithL = $extensions->concatenate(lineageExtension());
+
+  let fromExprList =   $f->evaluateAndDeactivate()->meta::pure::router::preeval::preval($extensionsWithL).expressionSequence->filter(x| $x->instanceOf(FunctionExpression))->map(seq| $seq->cast(@FunctionExpression)->evaluateAndDeactivate()->meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification([
+        meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
+        meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__ExecutionContext_1__TabularDataSet_1_,
+        meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
+        meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_,
+        meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
+        meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_])) //TODO: handle from_T_m__Runtime_1__T_m_
+        ->evaluateAndDeactivate();
+  let resolvedParams = if($fromExprList->isEmpty(), |[], |$fromExprList->map(x|$x.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([i:InstanceValue[1]|$i.values, a: Any[1]| []]))));
+  let funcBody = $f.expressionSequence->evaluateAndDeactivate();
+
+  ^LineageInputFromFunctionDefinition //TODO: investigate ordering with chained froms
+  (
+    mapping = $resolvedParams->filter(x|$x->instanceOf(Mapping))->cast(@Mapping),
+    runtime = $resolvedParams->map(r | $r->match([runtime:Runtime[1] | $runtime, packageableRuntime:meta::pure::runtime::PackageableRuntime[1] | $packageableRuntime.runtimeValue, any:Any[1] | []])),
+    funcBody = $funcBody
+  );
+}
 
 function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[0..1], r:Runtime[0..1], extensions:meta::pure::extension::Extension[*], config: FunctionAnalyticsConfig[1]):FunctionAnalytics[1]
 {
-   let mappings = if($r->isEmpty(), |$m, |$m->concatenate(getMappingsFromRuntime($r->toOne())));
-   let modelToModelMappings = $mappings->init();
+  let lineageExtensions =  meta::analytics::lineage::getLineageExtension($extensions);
+  let lineageInputFromFuncDef = $f->meta::analytics::lineage::getLineageInputFromFunctionDefinition($extensions);
 
-   let sourceMapping = if($mappings->isNotEmpty(), | $mappings->last()->toOne(), | []);
-   let funcBody = $f.expressionSequence->evaluateAndDeactivate();
+  let runtimes = $lineageInputFromFuncDef.runtime->concatenate($r)->removeDuplicates();
+  let runtime = if($runtimes->isEmpty(), |[], |$runtimes->at(0)); //TODO: handle more than one runtime, currently runtime from func def takes priority
+
+  let mappingsFromRuntime = if($runtime->isEmpty(), |[], |getMappingsFromRuntime($runtime->toOne()));
+  let mappings = $lineageInputFromFuncDef.mapping->concatenate($m)->concatenate($mappingsFromRuntime)->removeDuplicates(); //mapping from func def takes priority
+
+  let funcBody = $lineageInputFromFuncDef.funcBody;
    let updatedFuncBody = $funcBody->map(e|$e->meta::pure::lineage::analytics::inlineQualifiedProperties(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $f->openVariableValues(), $extensions));
-   
-   let reprocessedFuncBody = if($modelToModelMappings->isEmpty() && ($mappings->size() <= 1),
-                                  |$updatedFuncBody,
-                                  |$updatedFuncBody->map(e|$e->cast(@FunctionExpression)->meta::pure::mapping::modelToModel::chain::allReprocess([], $modelToModelMappings, $extensions, noDebug()).res));
-    
-   let relationElementAccessor = $updatedFuncBody->map(v | $v->cast(@ValueSpecification)->extractRelationElementAccessor(noDebug()));
+  
+  let modelToModelMappings = $mappings->init();
+  let sourceMapping = if($mappings->isEmpty(),
+                          | [], 
+                          | $mappings->last()->toOne()
+                        );
+  let classLineageMapping = if($modelToModelMappings->isEmpty() && $mappings->size() == 1, | $sourceMapping, | $modelToModelMappings);
+  let reprocessedFuncBody = if($modelToModelMappings->isEmpty() && ($mappings->size() <= 1),
+                                |$updatedFuncBody,
+                                |$updatedFuncBody->map(e|$e->cast(@FunctionExpression)->meta::pure::mapping::modelToModel::chain::allReprocess([], $modelToModelMappings, $extensions, noDebug()).res));
 
-    if( $relationElementAccessor->isNotEmpty(),
-        | 
-            ^FunctionAnalytics
-            (
-                databaseLineage = if($config.databaseLineage, |$f->toFlowDatabase($relationElementAccessor)->toGraph(),|^Graph()),
-                classLineage = ^Graph(),
-                functionTrees = ^PropertyPathTree(display='root', value='root'),  // Assuming that in the simple case, there are no model joins and hence no property trees
-                relationTree = ^RelationTree(),
-                reportLineage = if($config.reportLineage, |buildReportLineage($reprocessedFuncBody->last()->toOne(), $relationElementAccessor), |^ReportLineage())
-            );,
+  let relationElementAccessor = $updatedFuncBody->map(v | $v->cast(@ValueSpecification)->extractRelationElementAccessor(noDebug()));
+  
+  if( $relationElementAccessor->isNotEmpty(),
+      | 
+          ^FunctionAnalytics
+          (
+              databaseLineage = $relationElementAccessor->map(r |$r-> meta::analytics::lineage::relationAccessorToFlow($f, $lineageExtensions))->merge()->toGraph($lineageExtensions),
+              classLineage = ^Graph(),
+              functionTrees = ^PropertyPathTree(display='root', value='root'),  // Assuming that in the simple case, there are no model joins and hence no property trees
+              relationTree = ^RelationTree(),
+              reportLineage = buildReportLineage($reprocessedFuncBody->last()->toOne(), $relationElementAccessor, $extensions)
+          );,
 
-        |
-            let propertyTrees = $updatedFuncBody->map(e|$e->buildMultiLevelPropertyTrees($modelToModelMappings, $extensions));
-              
-            let combinedTrees = if( $propertyTrees->size()>1,|$propertyTrees->first()->toOne()->findAndAddChildrenAtTheEnd([],$propertyTrees->tail()),|$propertyTrees->toOne());
-            let vars = $f->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, genericType = $p.genericType, multiplicity=$p.multiplicity))));
-            let classLineageMapping = if($modelToModelMappings->isEmpty() && $mappings->size() == 1, | $sourceMapping, | $modelToModelMappings);
+      |
+          let propertyTrees = $updatedFuncBody->map(e|$e->buildMultiLevelPropertyTrees($modelToModelMappings, $extensions));
+            
+          let combinedTrees = if( $propertyTrees->size()>1,|$propertyTrees->first()->toOne()->findAndAddChildrenAtTheEnd([],$propertyTrees->tail()),|$propertyTrees->toOne());
+          let vars = $f->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, genericType = $p.genericType, multiplicity=$p.multiplicity))));
+          let classLineageMapping = if($modelToModelMappings->isEmpty() && $mappings->size() == 1, | $sourceMapping, | $modelToModelMappings);
+          //if we have lambdas like let x=y we need placeholders for $x else the lineage wont be generated
+          let extraVars = $f.expressionSequence->take($f.expressionSequence->size()-1)->map(e|let placeholderVar = $e->evaluateAndDeactivate()->convertValueSpecificationToPlaceholder();
+                                                                                                if($placeholderVar->isNotEmpty(),|$placeholderVar->first()->toOne(),|[]););
 
-            ^FunctionAnalytics
-            (
-                databaseLineage = if($config.databaseLineage, |$f->toFlowDatabase($sourceMapping, $combinedTrees, $r)->toGraph(), |^Graph()),
-                classLineage = if($config.classLineage, |$f->toFlowClass($combinedTrees, $classLineageMapping)->toGraph(), |^Graph()),
-                functionTrees = $combinedTrees,
-                relationTree = if($config.relationTree && $sourceMapping->isNotEmpty(), |if($f->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet) && $r->isNotEmpty() && $modelToModelMappings->isEmpty(),
-                                                              | scanRelations(^LambdaFunction<{->Any[*]}>(expressionSequence = $funcBody), $sourceMapping->toOne(), $r->toOne(), $vars, noDebug(), $extensions),
-                                                              | scanRelations($combinedTrees->last()->toOne(), $sourceMapping->toOne())), |^RelationTree()),
-                reportLineage = if($config.reportLineage, |buildReportLineage($reprocessedFuncBody->last()->toOne(), $sourceMapping,$vars->newMap()), |^ReportLineage())
-            );
-    );
+
+         let  relationTree = if($config.relationTree && $sourceMapping->isNotEmpty(),
+                                    |if($f->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet) && $runtime->isNotEmpty() && $modelToModelMappings->isEmpty(),
+                                        | scanRelations(^LambdaFunction<{->Any[*]}>(expressionSequence = $f->meta::pure::router::preeval::preval($extensions).expressionSequence->evaluateAndDeactivate()), $sourceMapping->toOne(), $runtime->toOne(), $vars->concatenate($extraVars), noDebug(), $extensions),
+                                        | scanRelations($propertyTrees->last()->toOne(), $sourceMapping->toOne()));,
+                                    | ^RelationTree() ); 
+                
+
+          ^FunctionAnalytics
+          (
+            databaseLineage = $f->toFlowDatabase2($sourceMapping, $combinedTrees, $runtime,$extensions)->toGraph($lineageExtensions),
+            classLineage = $f->toFlowClass($propertyTrees->at(0), $classLineageMapping)->toGraph($lineageExtensions),
+            functionTrees = $propertyTrees,
+            relationTree = $relationTree,
+            reportLineage = buildReportLineage($reprocessedFuncBody->last()->toOne(), $sourceMapping->toOne(), $vars)
+          );
+  );
 
 }
+
 
 function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[0..1], extensions:meta::pure::extension::Extension[*], config: FunctionAnalyticsConfig[1]):FunctionAnalytics[1]
 {
@@ -199,30 +271,33 @@ Class meta::analytics::lineage::ColumnLineage
 
 Class meta::analytics::lineage::Column
 {
+   type:String[0..1];
    name: String[1];
-   table: String[1];
-   schema: String[1];
+   table: String[1]; 
+   schema: String[1]; 
    database: String[1];
 }
 
-function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecification[1], mapping:Mapping[0..1]):ReportLineage[1]
+function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecification[1], mapping:Mapping[1]):ReportLineage[1]
 {
-    meta::analytics::lineage::buildReportLineage($funcBody, $mapping,^Map<String, List<Any>>());
+    meta::analytics::lineage::buildReportLineage($funcBody, $mapping,[]);
 }
 
-function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecification[1], mapping:Mapping[0..1], vars:Map<String, List<Any>>[1]):ReportLineage[1]
-{
-   let project = $funcBody->meta::pure::lineage::scanProject::scanProject($vars);
-   let groupedProject = $project.columns->groupBy(c| $c.first);
 
+function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecification[1], mapping:Mapping[1], vars:Pair<String, List<Any>>[*]):ReportLineage[1]
+{
+   let varMap =  if($vars->isEmpty(),|^Map<String, List<Any>>(),|$vars->newMap());
+   let project = $funcBody->meta::pure::lineage::scanProject::scanProject($varMap);
+   let groupedProject = $project.columns->groupBy(c| $c.first);
+   
    let colPropertyTreePair = $groupedProject->keys()->map(gp|let propertiesPaths = $groupedProject->get($gp).values->map(c| $c.second.expressionSequence->at(0)->scanProperties(^List<PropertyPathNode>(), [], [], noDebug()))->removeDuplicates();
                                                 pair($gp, $propertiesPaths.result->buildPropertyTree()););
-
+   
    let result = $colPropertyTreePair->fold({p,state|
-                                            let res= $p.second->scanColumns($mapping->toOne(), $state.classToSets, $state.idToSet);
-                                            ^ReportColumnsWithState(columns=$state.columns->concatenate(^ReportColumn(name = $p.first, propertyTree = $p.second, columns = $res.colRes.columns->removeDuplicates())),
+                                            let res= $p.second->scanColumns($mapping, $state.classToSets, $state.idToSet); 
+                                            ^ReportColumnsWithState(columns=$state.columns->concatenate(^ReportColumn(name = $p.first, propertyTree = $p.second, columns = $res.colRes.columns->removeDuplicates())), 
                                                          idToSet = $res.idToSet->map(n|$n->keyValues())->newMap(),
-                                                         classToSets = $res.classToSets->map(n|$n->keyValues())->newMap());},
+                                                         classToSets = $res.classToSets->map(n|$n->keyValues())->newMap());}, 
                                             ^ReportColumnsWithState(idToSet=^Map<String, List<SetImplementation>>(), classToSets=^Map<Class<Any>, List<InstanceSetImplementation>>()));
 
    ^ReportLineage
@@ -231,20 +306,44 @@ function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecificatio
    );
 }
 
-function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecification[1], r: RelationElementAccessor<Any>[*]):ReportLineage[1]
+
+function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecification[1], r: RelationElementAccessor<Any>[*], extensions:Extension[*]):ReportLineage[1]
 {
+    let lineageext  = $extensions->meta::analytics::lineage::getLineageExtension();
+
    let project = $funcBody->meta::pure::lineage::scanProject::scanProject(^Map<String, List<Any>>());
-   let groupedProject = $project.columns->groupBy(c| $c.first);
-   let result = $groupedProject->keys()->map(k|
+  
+  let result =  if($project->isEmpty(), //TODO: this needs to work with  extend and group by
+                    | $r.classifierGenericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns
+                                      ->map(c| let col = $c->scanRelationAccessorColumns($r->toOne(),$lineageext);
+                                                ^ReportColumn(name = $c.name->toOne(), propertyTree = $col->buildRelationAccessorPropertyTreeLineageColumn(), accessorColumns = $col);),
+                    |  let groupedProject = $project.columns->groupBy(c| $c.first);
+                                  $groupedProject->keys()->map(k| 
                                                   let columnFunctions = $groupedProject->get($k).values.second;
-                                                  let columns = $columnFunctions->map(f | $f->scanRelationAccessorColumns($r));
-                                                  let columnsWithContext = $columns->map(c | ^ColumnWithContext(context=$c.name, column=$c));
-                                                  ^ReportColumn(name = $groupedProject->get($k).values.first->toOne(), propertyTree = $columns->buildRelationAccessorPropertyTree(), columns = $columnsWithContext);
-                                            );
+                                                  let columns =    $r->map( re|  $columnFunctions->map(f | $f->scanRelationAccessorColumns($re,$lineageext)));
+                                                  ^ReportColumn(name = $groupedProject->get($k).values.first->toOne(), propertyTree = $columns->buildRelationAccessorPropertyTreeLineageColumn(), accessorColumns = $columns);
+                                                      );
+
+   
+                        ); 
+
    ^ReportLineage
    (
-      columns = $result
+      columns = $result  
    );
+}
+
+function meta::analytics::lineage::convertValueSpecificationToPlaceholder(v:ValueSpecification[1]):Pair<String,List<PlanVarPlaceHolder>>[*]
+{
+  $v->match([
+    s:SimpleFunctionExpression[1]|if($s.func == letFunction_String_1__T_m__T_m_ ,
+                                    |let variableName =  $s.parametersValues->at(0)->cast(@InstanceValue).values->first()->toOne()->cast(@String);
+                                     pair($variableName , ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$variableName, genericType = $s.genericType, multiplicity=$s.multiplicity))); ,
+                                    | []),
+
+    a:Any[*]| []
+  ]);
+
 }
 
 function meta::analytics::lineage::buildServiceLineage(funcBody:ValueSpecification[1], mapping:Mapping[1], vars:Map<String, List<Any>>[1]):ServiceLineage[1]
@@ -280,7 +379,7 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:ConcreteFuncti
 
 function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:FunctionDefinition<Any>[1], mappings:Mapping[*], propertyTree:PropertyPathTree[1]):Flow[1]
 {
-   meta::analytics::lineage::flowDatabase::toFlowDatabase($f, $mappings, $propertyTree, []);
+   meta::analytics::lineage::flowDatabase::toFlowDatabase($f, $mappings, $propertyTree, [],[]);
 }
 
 function meta::analytics::lineage::flowDatabase::toFlowStore(f:FunctionDefinition<Any>[1], tables:NamedRelation[*]):Flow[1]
@@ -303,32 +402,119 @@ function meta::analytics::lineage::flowDatabase::toFlowStore(f:FunctionDefinitio
   );
 }
 
+////Mach on RA  and return a Flow
 
-function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:FunctionDefinition<Any>[1], ra:RelationElementAccessor<Any>[*]):Flow[1]
+
+//database graph 
+ function  meta::analytics::lineage::relationAccessorToFlow(r:RelationElementAccessor<Any>[1],function:FunctionDefinition<Any>[1], extension:LineageExtension[*]):meta::analytics::lineage::flow::Flow[1]
 {
-  let tables = $ra.sourceElement->cast(@NamedRelation)->removeDuplicates();
-  $f->toFlowStore($tables);
+  $r->match(  $extension.accessorToFlow->map(a|$a->eval($r,$function,$extension))->concatenate(
+            r:RelationElementAccessor<Any>[1] |    toFlowStore($function, $r.sourceElement->cast(@NamedRelation)->distinct())                                                                                                      
+            )->toOneMany());
+
 }
 
-
-
-function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:FunctionDefinition<Any>[1], mappings:Mapping[*], propertyTree:PropertyPathTree[1], runtime:Runtime[0..1]):Flow[1]
+function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:FunctionDefinition<Any>[1], mappings:Mapping[*], propertyTree:PropertyPathTree[1], runtime:Runtime[0..1], extension:Extension[*]):Flow[1]
 {
    let databaseConnection = if($runtime->isNotEmpty(),
-                          | let connections = $runtime->toOne().connectionStores.connection->filter(c | $c->instanceOf(DatabaseConnection));
+                          | let connections = $runtime->toOne().connectionStores.connection->filter(c | $c->instanceOf(meta::external::store::relational::runtime::DatabaseConnection));
                             if($connections->size() == 1,
-                               | $connections->toOne()->cast(@DatabaseConnection),
+                               | $connections->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection),
                                | []);,
                           | []);
 
    $mappings->map(m|
-         let tables = $propertyTree->toFlowDatabase($m, [], false, [])->cast(@NamedRelation)->removeDuplicates();
-         $f->toFlowStore($tables);
+         let tables = $propertyTree->toFlowDatabase($m, [], false, [],$extension)->cast(@NamedRelation)->removeDuplicates();
+         let dbs = $tables->map(r|$r->schema()).database->removeDuplicates();
+         let maturityTests = maturityTests();
+         ^Flow(
+            functions = if($tables->size() == 0 && $dbs->size() == 0, | [], | $f),
+            databases = $dbs,
+            tables = $tables->cast(@NamedRelation),
+            links = $tables->map(t|let db = $t->map(r|$r->schema()).database->toOne();
+                                   let tbNode = ^NamedRelationNode(relation=$t->cast(@NamedRelation));
+                                   let fNode = ^FunctionNode(func=$f);
+                                   let dbNode = ^DatabaseNode(db=$db);
+                                   [
+                                     ^FlowEdge(source=$tbNode, target=$fNode, lineageMaturity=maturity($tbNode, $fNode, $maturityTests)),
+                                     ^FlowEdge(source=$dbNode, target=$tbNode, lineageMaturity=maturity($dbNode, $tbNode, $maturityTests))
+                                   ];
+                           )
+         );
    )->merge();
 }
-
-function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTree[1], m:Mapping[1], sets:SetImplementation[*], disregardClass:Boolean[1], extraChildren:PropertyPathTree[*]):NamedRelation[*]
+function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTree[1], m:Mapping[1], sets:SetImplementation[*], disregardClass:Boolean[1], extraChildren:PropertyPathTree[*], extensions:Extension[*]):NamedRelation[*]
 {
+    meta::analytics::lineage::flowDatabase::toFlowStore($p,$m,$sets,$disregardClass,$extraChildren,$extensions)->filter(f|$f->instanceOf(FlowRelationalStore))->cast(@FlowRelationalStore).relation;
+
+}
+
+
+function meta::analytics::lineage::flowDatabase::toFlowDatabase2(f:FunctionDefinition<Any>[1], mappings:Mapping[*], propertyTree:PropertyPathTree[1], runtime:Runtime[0..1], extensions:Extension[*]):Flow[1]
+{
+   let databaseConnection = if($runtime->isNotEmpty(),
+                          | let connections = $runtime->toOne().connectionStores.connection->filter(c | $c->instanceOf(meta::external::store::relational::runtime::DatabaseConnection));
+                            if($connections->size() == 1,
+                               | $connections->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection),
+                               | []);,
+                          | []);
+   $mappings->map(m| let flowDB =  $propertyTree->toFlowStore($m, [], false, [],$extensions);
+                        if($flowDB->isEmpty(),|^Flow(  functions = $f ),
+
+                        |  let ext = $extensions->meta::analytics::lineage::getLineageExtension();
+                           $flowDB->map(d| $d->match( 
+                             [ r:FlowRelationalStore[1]| let tables = $r.relation->removeDuplicates();
+                                                              let dbs = $tables->map(r|$r->schema()).database->removeDuplicates();
+                                                              let maturityTests = maturityTests();
+                                                                        ^Flow(
+                                                                            functions = $f,
+                                                                            databases = $dbs,
+                                                                            tables = $tables->cast(@NamedRelation),
+                                                                            links = $tables->map(t|let db = $t->map(r|$r->schema()).database->toOne();
+                                                                                                  let tbNode = ^NamedRelationNode(relation=$t->cast(@NamedRelation));
+                                                                                                  let fNode = ^FunctionNode(func=$f);
+                                                                                                  let dbNode = ^DatabaseNode(db=$db);
+                                                                                                  [
+                                                                                                    ^FlowEdge(source=$tbNode, target=$fNode, lineageMaturity=maturity($tbNode, $fNode, $maturityTests)),
+                                                                                                    ^FlowEdge(source=$dbNode, target=$tbNode, lineageMaturity=maturity($dbNode, $tbNode, $maturityTests))
+                                                                                                  ];
+                                                                                          )
+                                                                        );
+                            ]->concatenate($ext.storetoFlow->map(s|$s->eval($f,$runtime)))->toOneMany()));
+
+    )
+  ;)->merge();
+}
+
+
+Class meta::analytics::lineage::LineageExtension extends ModuleExtension
+[
+  $this.module == 'lineage'
+]
+{
+    storetoFlow:  Function<{FunctionDefinition<Any>[1], Runtime[0..1]->Function<{Nil[1]->Flow[*]}>[*]}>[0..1];
+    mappingToStore: Function<{PropertyMapping[1], SetImplementation[1] -> Function<{Nil[1] -> FlowStore[1]}>[*]}>[0..1];
+    accessorToFlow:  Function<{ RelationElementAccessor<Any>[1],FunctionDefinition<Any>[1],LineageExtension[*] -> Function<{Nil[1] -> Flow[1]}>[*]}>[0..1];
+    accessorToColumn:  Function<{meta::pure::metamodel::relation::Column<Nil,Any|*>[1], RelationElementAccessor<Any>[1] -> Function<{Nil[1] -> meta::analytics::lineage::Column[1]}>[*]}>[0..1];
+    graphID:  Function<{->Function<{Nil[1]->String[1]}>[*]}>[0..1];
+
+
+}
+function meta::analytics::lineage::getLineageExtension(extension:Extension[*]):LineageExtension[*]
+{
+      $extension.moduleExtension('lineage')->filter(f|$f->instanceOf(LineageExtension))->cast(@LineageExtension);
+}
+
+
+
+
+
+
+
+
+function meta::analytics::lineage::flowDatabase::toFlowStore(p:PropertyPathTree[1], m:Mapping[1], sets:SetImplementation[*], disregardClass:Boolean[1], extraChildren:PropertyPathTree[*], extensions:Extension[*]):meta::analytics::lineage::flowDatabase::FlowStore[*]
+{
+
     $p.value->match([
                      pr:PropertyPathNode[1]|
                           let possiblePropertyTargetClasses = $p.children.value->map(vv|$vv->match([
@@ -337,35 +523,57 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTr
                           ]))->removeDuplicates();
                           let wsets = $sets->filter(s|$s->instanceOf(PropertyMappingsImplementation))->cast(@PropertyMappingsImplementation);
                           $pr.property->match([
-                             sp:Property<Nil,Any|*>[1]|let propertyMappings = $wsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.name->toOne()););
+                             sp:Property<Nil,Any|*>[1]|let propertyMappings = $wsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.name->toOne());)->filter(m|$m.property.owner->equal($pr.property.owner));
                                                        let isDataTypeProperty = !$pr.property.genericType.rawType->isEmpty() && $pr.property.genericType.rawType->toOne()->instanceOf(DataType);
                                                        if ($isDataTypeProperty,
-                                                         | $propertyMappings->map(pm |$pm->match([
-                                                                                              rpm: RelationalPropertyMapping[1] | $rpm->meta::analytics::lineage::flowDatabase::getTables(),
-                                                                                              ppm: PurePropertyMapping[1] | [],
-                                                                                              agr: meta::pure::mapping::aggregationAware::AggregationAwarePropertyMapping[1] |meta::pure::router::routing::reprocessAggregationAwarePropertyMapping($agr)->cast(@RelationalPropertyMapping)->meta::analytics::lineage::flowDatabase::getTables();,
-                                                                                              a: Any[*] | fail('Database lineage not support for given type of mapping: ' + $pm->typeName()); [];
-                                                                                             ])),
-                                                         | $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren))
-                                                       );,
+                                                         |  let extension =   $extensions->meta::analytics::lineage::getLineageExtension();
+                                                            $propertyMappings->map(pm | let fns = $extension.mappingToStore->map(s|$s->eval($pm,$sets))->concatenate([
+                                                                                        rpm: RelationalPropertyMapping[1] |^FlowRelationalStore(relation=$rpm->meta::analytics::lineage::flowDatabase::getTables()),
+                                                                                        ppm: PurePropertyMapping[1] | [],
+                                                                                        agr: meta::pure::mapping::aggregationAware::AggregationAwarePropertyMapping[1] | ^FlowRelationalStore(relation=meta::pure::router::routing::reprocessAggregationAwarePropertyMapping($agr)->cast(@RelationalPropertyMapping)->meta::analytics::lineage::flowDatabase::getTables());
+                                                                                         ])->toOneMany();
+                                                                                            $pm->match( $fns);
+                                                                               );
+                                                            ,
+                                                         | $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren,$extensions)));
+,
                              q:QualifiedProperty<Any>[1]|if($q->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
                                                             | let propertyMappings = $wsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.functionName->toOne()+'AllVersions'));
-                                                              $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren));,
-                                                            | $p.qualifierSubTree->toOne()->toFlowDatabase($m, $sets, true, $p.children));
+                                                              $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren,$extensions));,
+                                                            | $p.qualifierSubTree->toOne()->toFlowStore($m, $sets, true, $p.children,$extensions));
                           ]);
                           ,
                      cl: Class<Any>[1]|if($disregardClass,
-                                             |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowDatabase($m, $sets, false, $extraChildren)),
-                                             | 
-                                               let sets = $m->_classMappingByClass($cl)->map(s|$s->meta::pure::router::routing::resolveOperation($m));
-                                               let setsWithSuper = $sets->map(s|$s->allSuperSetImplementations($m))->concatenate($sets)->cast(@InstanceSetImplementation);
-                                                meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowDatabase($m, $setsWithSuper, false, $extraChildren));
+                                             |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowStore($m, $sets, false, $extraChildren,$extensions)),
+                                             |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowStore($m, $m->meta::pure::mapping::rootClassMappingByClass($cl)->last()->meta::pure::router::routing::resolveOperation($m), false, $extraChildren,$extensions));
                                        );,
-                     a :Any[1]|meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowDatabase($m, $sets, $disregardClass, $extraChildren))
+                     a :Any[1]|meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowStore($m, $sets, $disregardClass, $extraChildren,$extensions))
                    ]);
 }
 
-function <<access.private>> meta::analytics::lineage::flowDatabase::processNonDataTypeProperty(p:PropertyPathTree[1], pm: PropertyMapping[1], possiblePropertyTargetClasses: Class<Any>[*], m:Mapping[1], extraChildren:PropertyPathTree[*]): NamedRelation[*]
+function <<access.private>> meta::analytics::lineage::flowDatabase::manageQualifiers(children:PropertyPathTree[*], extraChildren:PropertyPathTree[*]):PropertyPathTree[*]
+{
+   if ($children->isEmpty() ||
+       ($children->size()==1 &&
+        $children->at(0).value->instanceOf(PropertyPathNode) &&
+        $children->at(0).value->cast(@PropertyPathNode).property.name == 'businessDate ') , |$extraChildren->concatenate($children), |$children);
+}
+
+
+Class meta::analytics::lineage::flowDatabase::FlowStore
+{
+
+}
+
+Class meta::analytics::lineage::flowDatabase::FlowRelationalStore extends meta::analytics::lineage::flowDatabase::FlowStore
+{
+  relation:NamedRelation[*];
+}
+
+
+
+
+function <<access.private>> meta::analytics::lineage::flowDatabase::processNonDataTypeProperty(p:PropertyPathTree[1], pm: PropertyMapping[1], possiblePropertyTargetClasses: Class<Any>[*], m:Mapping[1], extraChildren:PropertyPathTree[*], extension:Extension[*]): FlowStore[*]
 {
    let targetSetImplementationId = $pm->match([
       i: InlineEmbeddedRelationalInstanceSetImplementation[1]|
@@ -381,16 +589,17 @@ function <<access.private>> meta::analytics::lineage::flowDatabase::processNonDa
    let potentialTablesFromJoin = $pm->match([
       r:RelationalPropertyMapping[1]|
          if($targetSetImplementationId->contains($r.targetSetImplementationId),
-            | $r->meta::analytics::lineage::flowDatabase::getTables(),
+            | ^FlowRelationalStore(relation=$r->meta::analytics::lineage::flowDatabase::getTables()),
             | []),
       a:Any[1]|[]
    ]);
 
    let tablesFromChildren = meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)
-   ->map(c|$c->toFlowDatabase($m, $targetSetImplementationId->map(id|$m->classMappingById($id)), false, $extraChildren));
+   ->map(c|$c->toFlowStore($m, $targetSetImplementationId->map(id|$m->classMappingById($id)), false, $extraChildren,$extension));
 
    $potentialTablesFromJoin->concatenate($tablesFromChildren);
 }
+
 
 function meta::analytics::lineage::flowClass::toFlowClass(f:FunctionDefinition<Any>[1], propertyTree:PropertyPathTree[1]):Flow[1]
 {
@@ -413,12 +622,14 @@ function meta::analytics::lineage::flowClass::toFlowClass(f:FunctionDefinition<A
    );
 }
 
+
+
 function meta::analytics::lineage::getExecutionTables::getExecutionTables(func:FunctionDefinition<Any>[1]):String[*]
 {
    let executes = $func->scanExecutes();
    $executes->map( e |  let propertyTree = $e->buildPropertyTree();
                         let mappings = $e.mappingEntryPoint->toOne()->scanMapping();
-                        $mappings->map(m| $propertyTree->toFlowDatabase($m, [], false, [])->map(nr|let table = $nr->match([t:Table[1]|$t, v:View[1]|$v->mainTable()]); $table.schema.name+'.'+$table.name;));)->removeDuplicates();
+                        $mappings->map(m| $propertyTree->toFlowDatabase($m, [], false, [],[])->map(nr|let table = $nr->match([t:Table[1]|$t, v:View[1]|$v->mainTable()]); $table.schema.name+'.'+$table.name;));)->removeDuplicates();
 }
 
 function <<access.private>> meta::analytics::lineage::flowDatabase::getTables(r:RelationalPropertyMapping[1]):NamedRelation[*]
@@ -444,13 +655,7 @@ function meta::analytics::lineage::flowDatabase::allSubSetImplementationIds(m:Ma
    $ids->concatenate($m->meta::analytics::lineage::flowDatabase::allSubSetImplementationIds($m->classMappings()->filter(si|!$si.superSetImplementationId->isEmpty()&& $ids->contains($si.superSetImplementationId->toOne())).id)));
 }
 
-function <<access.private>> meta::analytics::lineage::flowDatabase::manageQualifiers(children:PropertyPathTree[*], extraChildren:PropertyPathTree[*]):PropertyPathTree[*]
-{
-   if ($children->isEmpty() ||
-       ($children->size()==1 &&
-        $children->at(0).value->instanceOf(PropertyPathNode) &&
-        $children->at(0).value->cast(@PropertyPathNode).property.name == 'businessDate') , |$extraChildren->concatenate($children), |$children);
-}
+
 
 function <<access.private>> meta::analytics::lineage::flowClass::toFlowClassOne(p:PropertyPathTree[1], f:FunctionDefinition<Any>[1], maturityTests:Pair<Function<{FlowNode[1],FlowNode[1]->Boolean[1]}>,LineageMaturity>[*]) : FlowEdge[*]
 {
@@ -464,7 +669,7 @@ function <<access.private>> meta::analytics::lineage::flowClass::toFlowClassOne(
                            ^FlowEdge(source=$classNode, target=$functionNode, lineageMaturity=maturity($classNode, $functionNode, $maturityTests)),
                            ^FlowEdge(source=$packageNode, target=$classNode, lineageMaturity=maturity($packageNode, $classNode, $maturityTests))
                         ];,
-                     a :Any[1]|[]
+                     a :Any[1]| [];
                    ])->concatenate($p.children->map(c|$c->toFlowClassOne($f, $maturityTests)));
 }
 
@@ -514,7 +719,8 @@ function meta::analytics::lineage::transformColumns(c: meta::analytics::lineage:
 //testing purpose
 function meta::analytics::lineage::ReportLineageToString(reportLineage:ReportLineage[1]):String[1]
 {
-  $reportLineage.columns->map(c | $c.name + $c.columns->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->removeDuplicates()->sort()->makeString(': [', ', ', ']'))->sort()->joinStrings('[', ', ', ']');
+  $reportLineage.columns->map(c | $c.name + $c.columns->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->concatenate($c.accessorColumns->map(c|$c.database+'.'+$c.schema+'.'+$c.table+'.'+$c.name  ))->removeDuplicates()->sort()->makeString(': [', ', ', ']'))
+  ->sort()->joinStrings('[', ', ', ']');
 }
 
 function meta::analytics::lineage::assertLineage(databaseLineage:String[*], classLineage:String[*], reportLineage:String[1], functionAnalytics:FunctionAnalytics[1]):Boolean[1]
