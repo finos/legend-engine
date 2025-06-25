@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
@@ -218,12 +219,21 @@ public class Handlers
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
         GenericType gt = firstProcessedParameter._genericType();
         MutableList<ValueSpecification> processedParameters;
-        if (parameters.size() == 3)
+        if (parameters.size() == 3) // This implies that we're using over() with a window
         {
             if (parameters.get(1) instanceof AppliedFunction)// && ((AppliedFunction) parameters.get(1)).function.endsWith("over"))
             {
-                AppliedFunction func = (AppliedFunction) parameters.get(1);
-                func.parameters.forEach(x ->
+                AppliedFunction windowFunction = (AppliedFunction) parameters.get(1);
+                windowFunction.parameters.stream().filter(x ->
+                {
+                    if (!(x instanceof AppliedFunction))
+                    {
+                        return true;
+                    }
+                    AppliedFunction appliedFunction = (AppliedFunction) x;
+                    ImmutableSet<String> frameFunctions = Sets.immutable.with("meta::pure::functions::relation::rows", "rows", "meta::pure::functions::relation::_range", "_range");
+                    return !frameFunctions.contains(appliedFunction.function);
+                }).forEach(x ->
                 {
                     processColumn(x, gt, cc);
                     processSort(x, gt, cc, valueSpecificationBuilder, cc.pureModel.getExecutionSupport().getProcessorSupport());
@@ -969,17 +979,25 @@ public class Handlers
         );
 
         register(m(
+                h("meta::pure::functions::relation::rows_Integer_1__Integer_1__Rows_1_", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
+                h("meta::pure::functions::relation::rows_UnboundedFrameValue_1__Integer_1__Rows_1_", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> typeOne(ps.get(0), "UnboundedFrameValue") && typeOne(ps.get(1), "Integer")),
+                h("meta::pure::functions::relation::rows_Integer_1__UnboundedFrameValue_1__Rows_1_", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> typeOne(ps.get(0), "Integer")),
+                h("meta::pure::functions::relation::rows_UnboundedFrameValue_1__UnboundedFrameValue_1__Rows_1_", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> typeOne(ps.get(0), "UnboundedFrameValue"))
+        ));
+
+        register(m(
                         m(
                                 h("meta::pure::functions::relation::over_ColSpec_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_Frame_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
                                 h("meta::pure::functions::relation::over_ColSpecArray_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
                                 h("meta::pure::functions::relation::over_SortInfo_MANY___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true)),
                         m(
                                 h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_MANY___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_ColSpec_1__Frame_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_MANY___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_SortInfo_MANY__Frame_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true)
-                        )
+                                h("meta::pure::functions::relation::over_ColSpecArray_1__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_ColSpec_1__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_MANY___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true)),
+                        m(
+                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_MANY__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_MANY__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true))
                 )
         );
 
@@ -3086,12 +3104,13 @@ public class Handlers
         map.put("meta::pure::functions::relation::ntile_Relation_1__T_1__Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_Relation").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_MANY___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_ColSpecArray").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_relation_SortInfo").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::over_ColSpecArray_1___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_ColSpecArray").contains(ps.get(0)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::relation::over_ColSpec_1__Frame_1___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_ColSpec").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation_Frame").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::relation::over_ColSpecArray_1__Rows_1___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_ColSpecArray").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation_Frame").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::relation::over_ColSpec_1__Rows_1___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_ColSpec").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation_Frame").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::over_ColSpec_1__SortInfo_MANY___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_ColSpec").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_relation_SortInfo").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::over_ColSpec_1___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_ColSpec").contains(ps.get(0)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::relation::over_Frame_1___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_Frame").contains(ps.get(0)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::relation::over_SortInfo_MANY__Frame_1___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_relation_SortInfo").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation_Frame").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::over_SortInfo_MANY___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_relation_SortInfo").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_MANY__Rows_1___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && taxoMap.get("cov_relation_ColSpecArray").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_relation_SortInfo").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_relation_Frame").contains(ps.get(2)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::relation::over_ColSpec_1__SortInfo_MANY__Rows_1___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && taxoMap.get("cov_relation_ColSpec").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_relation_SortInfo").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_relation_Frame").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::over_String_MANY__SortInfo_MANY__Frame_$0_1$___Window_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && taxoMap.get("cov_String").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_relation_SortInfo").contains(ps.get(1)._genericType()._rawType()._name()) && matchZeroOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_relation_Frame").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::percentRank_Relation_1___Window_1__T_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_Relation").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation__Window").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()));
         map.put("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_Relation").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation_ColSpecArray").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_relation_AggColSpecArray").contains(ps.get(2)._genericType()._rawType()._name()));

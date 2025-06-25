@@ -69,7 +69,7 @@ function <<test.Test>>meta::relational::tests::projection::sybaseIQ::testWindowW
          ,col(window(p |$p.firstName ), func(p |$p.age->toOne(), y| $y->average()),'ageWindow')
       ])};
    let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME ) as "ageWindow" from personTable as "root"',$res);
+   assertEquals('select "root".LASTNAME as "lastName", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME) as "ageWindow" from personTable as "root"',$res);
 }
 
 function <<test.Test>>meta::relational::tests::projection::sybaseIQ::testWindowWithoutSortMultiple():Boolean[1]
@@ -81,7 +81,7 @@ function <<test.Test>>meta::relational::tests::projection::sybaseIQ::testWindowW
          ,col(window(p |$p.manager.lastName->toOne() ), func(p |$p.age->toOne(), y| $y->sum()),'ageSumWindow')
       ])};
    let res= toSQLString($func, simpleRelationalMappingInc, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LASTNAME as "lastName", max("root".AGE) OVER (Partition By "root".FIRSTNAME ) as "ageMaxWindow", sum("root".AGE) OVER (Partition By "personTable_d#5_d_m1_d_m2_d_m2".LASTNAME ) as "ageSumWindow" from personTable as "root" left outer join personTable as "personTable_d#5_d_m1_d_m2_d_m2" on ("root".MANAGERID = "personTable_d#5_d_m1_d_m2_d_m2".ID)',$res);
+   assertEquals('select "root".LASTNAME as "lastName", max("root".AGE) OVER (Partition By "root".FIRSTNAME) as "ageMaxWindow", sum("root".AGE) OVER (Partition By "personTable_d#5_d_m1_d_m2_d_m2".LASTNAME) as "ageSumWindow" from personTable as "root" left outer join personTable as "personTable_d#5_d_m1_d_m2_d_m2" on ("root".MANAGERID = "personTable_d#5_d_m1_d_m2_d_m2".ID)',$res);
 }
 
 function <<test.Test>>meta::relational::tests::projection::sybaseIQ::testRankSingle():Boolean[1]

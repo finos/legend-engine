@@ -54,7 +54,11 @@ public class Test_Relational_Snowflake_RelationFunctions_PCT extends PCTReportCo
             // Composition
             one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nsyntax error line 1 at position 80 unexpected '.2011'.\nsyntax error line 1 at position 130 unexpected '.2012'.", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nsyntax error line 1 at position 56 unexpected '.2011'.\nsyntax error line 1 at position 56 unexpected '.2011'.", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nsyntax error line 1 at position 80 unexpected '.2000'.\nsyntax error line 1 at position 130 unexpected '.2011'.\nsyntax error line 1 at position 180 unexpected '.2012'.", AdapterQualifier.needsInvestigation)
+            one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nsyntax error line 1 at position 80 unexpected '.2000'.\nsyntax error line 1 at position 130 unexpected '.2011'.\nsyntax error line 1 at position 180 unexpected '.2012'.", AdapterQualifier.needsInvestigation),
+
+            // Snowflake doesn't support window frame without ORDER BY
+            one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_", "Window frame requires an ORDER BY clause", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_", "Window frame requires an ORDER BY clause", AdapterQualifier.unsupportedFeature)
     );
 
     public static Test suite()

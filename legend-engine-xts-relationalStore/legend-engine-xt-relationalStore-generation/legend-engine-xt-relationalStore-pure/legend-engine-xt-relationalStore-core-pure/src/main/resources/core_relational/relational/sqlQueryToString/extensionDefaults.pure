@@ -292,16 +292,43 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
   ];
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::processFrameValueDirection(frameValueDirection:meta::relational::metamodel::FrameValueDirection[1]):String[1]
+{
+   if($frameValueDirection == meta::relational::metamodel::FrameValueDirection.PRECEDING, | 'PRECEDING', | 'FOLLOWING');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::processFrameValue(frameValue:meta::relational::metamodel::FrameValue[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   $frameValue->match([
+                        u: meta::relational::metamodel::UnboundedFrameValue[1] | 'UNBOUNDED ' + $u.direction->processFrameValueDirection(),
+                        c: meta::relational::metamodel::FrameCurrentRowValue[1] | 'CURRENT ROW',
+                        l: meta::relational::metamodel::FrameLiteralValue[1] | $l.value->processOperation($sgc) + ' ' + $l.direction->processFrameValueDirection()
+                      ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::processWindowFrame(frame:meta::relational::metamodel::Frame[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let frameType = if($frame.frameType == meta::relational::metamodel::FrameType.ROWS, | 'ROWS BETWEEN', | 'RANGE BETWEEN');
+   let offsetFrom = $frame.offsetFrom->processFrameValue($sgc);
+   let offsetTo = $frame.offsetTo->processFrameValue($sgc);
+   $frameType + ' ' + $offsetFrom + ' AND ' + $offsetTo;
+}
+
 function meta::relational::functions::sqlQueryToString::default::processWindowColumn(w:WindowColumn[1], sgc:SqlGenerationContext[1]):String[1]
 {
-   $w.func->processOperation($sgc) + ' OVER ('
-   + if($w.window.partition->isNotEmpty(),
-        |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(',')+' ',
-        |'')
-   + if($w.window.sortBy->isNotEmpty(),
-        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name, | ''))->joinStrings(', ')
-              +')',
-        |')') ;
+   let partitionTranslation = if($w.window.partition->isNotEmpty(),
+        |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(','),
+        |'');
+   let orderByTranslation = if($w.window.sortBy->isNotEmpty(),
+        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name, | ''))->joinStrings(', '),
+        |'');
+   let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
+        |$w.window.frame->toOne()->processWindowFrame($sgc),
+        |'');
+   $w.func->processOperation($sgc) +
+   ' OVER (' +
+   [$partitionTranslation, $orderByTranslation, $windowFrameTranslation]->filter(s | $s != '')->joinStrings(' ') +
+   + ')';
 }
 
 function meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]

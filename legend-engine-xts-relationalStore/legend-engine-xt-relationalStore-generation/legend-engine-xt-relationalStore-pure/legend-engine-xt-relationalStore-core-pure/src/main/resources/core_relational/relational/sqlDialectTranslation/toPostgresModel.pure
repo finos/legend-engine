@@ -741,6 +741,28 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   $a.name->toIdentifier()->quoteIdentifier();
 }
 
+function <<access.private>> meta::relational::functions::toPostgresModel::convertFrameValue(frameValue:meta::relational::metamodel::FrameValue[1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::FrameBound[1]
+{
+  $frameValue->match([
+                      u: meta::relational::metamodel::UnboundedFrameValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = if($u.direction == meta::relational::metamodel::FrameValueDirection.PRECEDING,
+                                                                                                                                            | meta::external::query::sql::metamodel::FrameBoundType.UNBOUNDED_PRECEDING,
+                                                                                                                                            | meta::external::query::sql::metamodel::FrameBoundType.UNBOUNDED_FOLLOWING)),
+                      c: meta::relational::metamodel::FrameCurrentRowValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = meta::external::query::sql::metamodel::FrameBoundType.CURRENT_ROW),
+                      l: meta::relational::metamodel::FrameLiteralValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = if($l.direction == meta::relational::metamodel::FrameValueDirection.PRECEDING,
+                                                                                                                                            | meta::external::query::sql::metamodel::FrameBoundType.PRECEDING,
+                                                                                                                                            | meta::external::query::sql::metamodel::FrameBoundType.FOLLOWING),
+                                                                                                                                value = $l.value->convertElementToExpression($state))
+                     ]);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertWindowFrame(frame:meta::relational::metamodel::Frame[1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::WindowFrame[1]
+{
+  let mode = if($frame.frameType == meta::relational::metamodel::FrameType.ROWS, | meta::external::query::sql::metamodel::WindowFrameMode.ROWS, | meta::external::query::sql::metamodel::WindowFrameMode.RANGE);
+  let start = $frame.offsetFrom->convertFrameValue($state);
+  let end = $frame.offsetTo->convertFrameValue($state);
+  ^meta::external::query::sql::metamodel::WindowFrame(mode = $mode, start = $start, end = $end);
+}
+
 function <<access.private>> meta::relational::functions::toPostgresModel::convertWindowColumn(w:WindowColumn[1], state:ModelConversionState[1]):Node[1]
 {
   let func = $w.func->convertElement($state)->cast(@FunctionCall);
@@ -749,7 +771,10 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
                                                   ordering = $s.sortDirection->convertSortDirection(),
                                                   nullOrdering = SortItemNullOrdering.UNDEFINED
                                                 ));
-  let window = ^meta::external::query::sql::metamodel::Window(partitions = $partitions, orderBy = $orderBy);
+  let windowFrame = if($w.window.frame->isNotEmpty(),
+                       | $w.window.frame->toOne()->convertWindowFrame($state),
+                       | []);
+  let window = ^meta::external::query::sql::metamodel::Window(partitions = $partitions, orderBy = $orderBy, windowFrame = $windowFrame);
   ^$func(window = $window);
 }
 
