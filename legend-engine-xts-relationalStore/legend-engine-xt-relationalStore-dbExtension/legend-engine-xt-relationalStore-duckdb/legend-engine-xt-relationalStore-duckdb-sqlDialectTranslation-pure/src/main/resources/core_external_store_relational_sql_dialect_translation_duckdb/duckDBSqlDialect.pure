@@ -689,8 +689,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::convertDateToSqlStringForDuckDB(date:Date[1], dbTimeZone:String[0..1]):String[1]
 {
-  //Default to UTC, if timezone is not specified.
-  let timeZone = if( $dbTimeZone->isEmpty(), | 'UTC', |  $dbTimeZone->toOne());
+  //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
+  let timeZone = if( $dbTimeZone->isEmpty(), | 'GMT', |  $dbTimeZone->toOne());
   if($date->hasSecond(),
     | if ($date->hasSubsecond(),
         | let d= format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date);
