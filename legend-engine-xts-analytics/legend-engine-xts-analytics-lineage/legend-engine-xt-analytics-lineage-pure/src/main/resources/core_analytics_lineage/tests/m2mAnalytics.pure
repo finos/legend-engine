@@ -14,7 +14,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::te
                                 defaultExtensions()
                 );
 
-  let expectedDatabaseNodesId = [];
+  let expectedDatabaseNodesId =['Lambda'];
   let expectedDatabaseEdgesId = [];
 
   let expectedClassNodesId = [
@@ -37,8 +37,8 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::te
      '  p_TargetClass.value1\n']->joinStrings()
   ];
 
-  assertSameElements($expectedDatabaseNodesId, $result.databaseLineage.nodes);
-  assertSameElements($expectedDatabaseEdgesId, $result.databaseLineage.edges);
+  assertSameElements($expectedDatabaseNodesId, $result.databaseLineage.nodes.data.id);
+  assertSameElements($expectedDatabaseEdgesId, $result.databaseLineage.edges.data.id);
   assertSameElements($expectedClassNodesId, $result.classLineage.nodes.data.id);
   assertSameElements($expectedClassEdgesId, $result.classLineage.edges.data->map(m | $m.target.data.id + ' -> ' + $m.source.data.id));
   assertSameElements($expectedPropertyTrees, $result.functionTrees->map(ft | $ft->meta::pure::lineage::scanProperties::propertyTree::printTree('')));
