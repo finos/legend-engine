@@ -1743,7 +1743,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForConvertTimeZone(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
-  let srcTimeZone = '\''+ if($config.dbConfig.dbTimeZone->isEmpty(), | 'GMT', |  $config.dbConfig.dbTimeZone->toOne()) + '\'';
+  let srcTimeZone = '\''+ if($config.dbConfig.dbTimeZone->isEmpty(), | 'UTC', |  $config.dbConfig.dbTimeZone->toOne()) + '\'';
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   let convertTz = $sqlDialect->generateFunctionCallWithArgs('convert_tz', [$processedArgs->at(0), $srcTimeZone, $processedArgs->at(1)], [], $state, $config);
   $sqlDialect->generateFunctionCallWithArgs('to_char', [$convertTz, $processedArgs->at(2)->dateFormatSpecifierForMemSQL()], [], $state, $config);
