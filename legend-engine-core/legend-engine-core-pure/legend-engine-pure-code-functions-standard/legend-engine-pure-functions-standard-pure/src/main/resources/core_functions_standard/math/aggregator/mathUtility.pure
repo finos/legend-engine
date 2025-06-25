@@ -1,18 +1,18 @@
-Class meta::pure::functions::math::mathUtility::RowMapper
+Class meta::pure::functions::math::mathUtility::RowMapper<T,U>
 {
-  rowA: Number[0..1];
-  rowB: Number[0..1];
+  rowA: T[0..1];
+  rowB: U[0..1];
 }
 
-function meta::pure::functions::math::mathUtility::rowMapper(rowA:Number[0..1], rowB:Number[0..1]):meta::pure::functions::math::mathUtility::RowMapper[1]
+function meta::pure::functions::math::mathUtility::rowMapper<T,U>(rowA:T[0..1], rowB:U[0..1]):meta::pure::functions::math::mathUtility::RowMapper<T,U>[1]
 {
-  ^meta::pure::functions::math::mathUtility::RowMapper(
+  ^meta::pure::functions::math::mathUtility::RowMapper<T,U>(
     rowA= $rowA,
     rowB= $rowB
   )
 }
 
-Class meta::pure::functions::math::wavgUtility::WavgRowMapper extends meta::pure::functions::math::mathUtility::RowMapper
+Class meta::pure::functions::math::wavgUtility::WavgRowMapper extends meta::pure::functions::math::mathUtility::RowMapper<Number, Number>
 {
 }
 

@@ -22,7 +22,12 @@ Class <<access.private>> meta::pure::functions::math::Accumulator
    prevCount: Integer[1];   
 }
 
-function <<PCT.function>> meta::pure::functions::math::mode(numbers:Number[*]):Number[1]
+function 
+<<PCT.function>> 
+    {
+        doc.doc='Returns the most frequent value for the values within expr1. NULL values are ignored.'
+    } 
+meta::pure::functions::math::mode(numbers:Number[*]):Number[1]
 {
      let sortedNumbers = $numbers->toOneMany()->sort();
      let res = $sortedNumbers->fold({x, y | let currCount =  if(!(($x < $y.prev->cast(@Number)) || ($x > $y.prev->cast(@Number))), |$y.prevCount + 1,|1);

@@ -14,12 +14,17 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> meta::pure::functions::math::covarSample(numbersA:Number[*], numbersB:Number[*]):Number[0..1]
+function 
+<<PCT.function>> 
+    {
+        doc.doc='Returns the sample covariance for non-null pairs in a group.'
+    } 
+meta::pure::functions::math::covarSample(numbersA:Number[*], numbersB:Number[*]):Number[0..1]
 {
   covariance($numbersA, $numbersB, min($numbersA->size(),$numbersB->size()), true);
 }
 
-function  meta::pure::functions::math::covarSample(covarRows: meta::pure::functions::math::mathUtility::RowMapper[*]):Number[0..1]
+function  meta::pure::functions::math::covarSample(covarRows: meta::pure::functions::math::mathUtility::RowMapper<Number,Number>[*]):Number[0..1]
 {
   covariance($covarRows.rowA, $covarRows.rowB, min($covarRows.rowA->size(),$covarRows.rowB->size()), true);
 }
