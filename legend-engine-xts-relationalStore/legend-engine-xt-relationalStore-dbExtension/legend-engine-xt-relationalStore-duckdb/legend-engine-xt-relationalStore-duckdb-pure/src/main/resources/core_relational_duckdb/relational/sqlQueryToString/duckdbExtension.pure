@@ -205,6 +205,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='lpad(%s,%s,%s)', transform=processPaddingParams_String_MANY__String_MANY_)),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format= 'regexp_matches(%s,%s)', transform={p:String[2]|$p})),
     dynaFnToSql('md5',                    $allStates,            ^ToSql(format='md5(%s)')),
+    dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='MAX_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='MIN_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='cast(fmod(%s,%s) as integer)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
