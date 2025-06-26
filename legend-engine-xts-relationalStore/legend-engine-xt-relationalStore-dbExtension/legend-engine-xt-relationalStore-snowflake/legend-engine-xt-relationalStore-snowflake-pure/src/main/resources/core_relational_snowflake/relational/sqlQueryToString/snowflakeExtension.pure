@@ -83,7 +83,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
         |$w.window.frame->toOne()->processWindowFrame($sgc),
         |'');
-   let withinGroupTranslation = if($w.func.name->equal('joinStrings') && $orderByTranslation != '' && $windowFrameTranslation->contains('UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING'),
+   let withinGroupTranslation = if($w.func.name->equal('joinStrings') && $orderByTranslation != '' && $w.window.frame->toOne().offsetFrom->instanceOf(meta::relational::metamodel::UnboundedFrameValue) && $w.window.frame->toOne().offsetTo->instanceOf(meta::relational::metamodel::UnboundedFrameValue),
         | ' WITHIN GROUP(' + $orderByTranslation + ')',
         | '');
         
