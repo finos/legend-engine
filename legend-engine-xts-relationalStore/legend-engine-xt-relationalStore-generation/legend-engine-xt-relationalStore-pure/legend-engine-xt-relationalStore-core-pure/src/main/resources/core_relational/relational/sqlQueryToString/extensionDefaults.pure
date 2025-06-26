@@ -306,7 +306,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::defau
                       ]);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::default::processWindowFrame(frame:meta::relational::metamodel::Frame[1], sgc:SqlGenerationContext[1]):String[1]
+function meta::relational::functions::sqlQueryToString::default::processWindowFrame(frame:meta::relational::metamodel::Frame[1], sgc:SqlGenerationContext[1]):String[1]
 {
    let frameType = if($frame.frameType == meta::relational::metamodel::FrameType.ROWS, | 'ROWS BETWEEN', | 'RANGE BETWEEN');
    let offsetFrom = $frame.offsetFrom->processFrameValue($sgc);

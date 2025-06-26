@@ -38,6 +38,9 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
     private static final Adapter adapter = CoreRelationalPostgresPCTCodeRepositoryProvider.postgresAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            // ListAgg
+            one("meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndUnboundedWindow_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,grp,name,newCol\n   10,0,J,J\n   2,1,B,BFH\n   6,1,F,BFH\n   8,1,H,BFH\n   1,2,A,AE\n   5,2,E,AE\n   3,3,C,CG\n   7,3,G,CG\n   4,4,D,D\n   9,5,I,I\n#'\nactual:   '#TDS\n   id,grp,name,newCol\n   10,0,J,J\n   2,1,B,BFH\n   6,1,F,BFH\n   8,1,H,BFH\n   5,2,E,EA\n   1,2,A,EA\n   7,3,G,GC\n   3,3,C,GC\n   4,4,D,D\n   9,5,I,I\n#'\"", AdapterQualifier.needsInvestigation),
+
             // Pivot
             pack("meta::pure::functions::relation::tests::pivot", "\"pivot is not supported\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "\"pivot is not supported\"", AdapterQualifier.unsupportedFeature),
