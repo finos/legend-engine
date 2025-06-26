@@ -14,7 +14,12 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> meta::pure::functions::math::corr(numbersA:Number[*], numbersB:Number[*]):Number[0..1]
+function
+<<PCT.function>>
+    {
+        doc.doc='Returns the correlation coefficient for non-null pairs in a group.'
+    }
+meta::pure::functions::math::corr(numbersA:Number[*], numbersB:Number[*]):Number[0..1]
 {
   if( covarPopulation($numbersA, $numbersB)->equal([]),
   | [],
@@ -23,7 +28,7 @@ function <<PCT.function>> meta::pure::functions::math::corr(numbersA:Number[*], 
  
 }
 
-function  meta::pure::functions::math::corr(covarRows: meta::pure::functions::math::mathUtility::RowMapper[*]):Number[0..1]
+function  meta::pure::functions::math::corr(covarRows: meta::pure::functions::math::mathUtility::RowMapper<Number,Number>[*]):Number[0..1]
 {
   corr($covarRows.rowA, $covarRows.rowB);
 }

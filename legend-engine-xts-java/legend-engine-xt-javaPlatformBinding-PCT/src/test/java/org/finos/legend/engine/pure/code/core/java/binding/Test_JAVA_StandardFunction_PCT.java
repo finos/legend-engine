@@ -53,6 +53,10 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Relation_Window_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]", AdapterQualifier.needsInvestigation),
 
+            // MaxBy
+            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "\"Generics not supported (function: meta::pure::functions::math::maxBy_T_MANY__Number_MANY__T_$0_1$_)\""),
+            one("meta::pure::functions::math::tests::maxBy::testSimpleGroupByMaxBy_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
+
             // Min
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::min::testMin_Floats_Relation_Aggregate_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
@@ -62,6 +66,10 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]", AdapterQualifier.needsInvestigation),
+
+            // MinBy
+            one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "\"Generics not supported (function: meta::pure::functions::math::minBy_T_MANY__Number_MANY__T_$0_1$_)\""),
+            one("meta::pure::functions::math::tests::minBy::testSimpleGroupByMinBy_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
 
             // Median
             one("meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Aggregate_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),

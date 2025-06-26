@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::test::pct::*;
+import meta::pure::tds::extensions::*;
 
 function 
 <<PCT.function>> 
@@ -32,7 +33,7 @@ meta::pure::functions::math::wavg(numbers:Number[*], weights:Number[*]):Float[1]
              $weightedQuantitySum/$weightsSum;));
 }
 
-function  meta::pure::functions::math::wavg(wavgRows: meta::pure::functions::math::mathUtility::RowMapper[*]):Float[1]
+function  meta::pure::functions::math::wavg(wavgRows: meta::pure::functions::math::mathUtility::RowMapper<Number,Number>[*]):Float[1]
 {
   meta::pure::functions::math::wavg($wavgRows.rowA, $wavgRows.rowB);
 }
