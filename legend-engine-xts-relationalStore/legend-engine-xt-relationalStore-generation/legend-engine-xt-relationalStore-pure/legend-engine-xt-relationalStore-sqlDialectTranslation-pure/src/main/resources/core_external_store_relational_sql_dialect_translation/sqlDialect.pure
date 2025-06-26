@@ -32,7 +32,7 @@ Class meta::external::store::relational::sqlDialectTranslation::SqlDialect
   keywords: String[*];
   functionProcessorMap: Map<Class<SqlFunction>, FunctionProcessor>[0..1];
   variablePlaceholderPrefixSuffixMap: Map<String, Pair<String, String>>[1];
-
+  isBooleanAliasForTinyInt: Boolean[1] = false;
   // For testing
   initSqlStatementsForTests: String[*];
   expectedSqlDialectTestErrors: Map<String, String>[1];
