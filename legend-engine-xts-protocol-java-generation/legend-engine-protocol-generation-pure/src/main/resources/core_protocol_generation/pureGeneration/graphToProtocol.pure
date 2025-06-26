@@ -1,0 +1,146 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::functions::meta::*;
+import meta::protocols::generation::pure::*;
+
+function meta::protocols::generation::pure::usage():Any[*]
+{
+  println(
+    process(meta::pure::metamodel, '/platform/pure/grammar/m3.pure')
+    ->map(c|$c.second->match(
+                [
+                  x:Class<Any>[1]|$x->printClass(),
+                  e:Enumeration<Any>[1]|$e->printEnumeration()
+                ]
+              )
+    )
+    ->joinStrings('\n\n')
+  );
+}
+
+function meta::protocols::generation::pure::process(elements:PackageableElement[1], pureFile:String[1]):Pair<Type,Type>[*]
+{
+  $elements->concatenate(Package)
+  ->createClasses($elements->elementToPath(), $pureFile)
+  ->addProperties($pureFile)
+  ->addInheritance($pureFile)
+}
+
+function <<access.private>> meta::protocols::generation::pure::addInheritance(pairs:Pair<Type,Type>[*], pureFile:String[1]):Pair<Type,Type>[*]
+{
+  processInheritance($pairs, Any, $pureFile);
+}
+
+function <<access.private>> meta::protocols::generation::pure::processInheritance(pairs:Pair<Type,Type>[*], processedClasses:Type[*], pureFile:String[1]):Pair<Type,Type>[*]
+{
+  let processedAndNonProcessed = $pairs->partition(c|$c.first->in($processedClasses));
+  let processedPair = $processedAndNonProcessed.first.values;
+  let nonProcessedPair = $processedAndNonProcessed.second.values;
+  let canAndCannotProcess = $nonProcessedPair->partition(c|$c.first.generalizations->map(g|!meta::protocols::generation::pure::isTypeInScope($g.general.rawType->toOne(), $pureFile) || $g.general.rawType->in($processedClasses))->and());
+
+  let toProcess = $canAndCannotProcess.first.values;
+
+  let doneInThisRound = $toProcess->map(pair|
+    let createdClass = $pair.second;
+    let newType = ^$createdClass
+                  (
+                    generalizations = $pair.first.generalizations
+                                      ->filter(g|$g.general.rawType != Any && meta::protocols::generation::pure::isTypeInScope($g.general.rawType->toOne(), $pureFile))
+                                      ->map(g|
+                                              ^Generalization
+                                              (
+                                                general=^GenericType(rawType=$processedPair->filter(t|$t.first == $g.general.rawType).second->toOne()),
+                                                specific=$pair.second
+                                              );
+                                           )
+                  );
+    pair($pair.first,$newType);
+  );
+
+  if (!$toProcess->isEmpty(),
+    |processInheritance($processedPair->concatenate($doneInThisRound)->concatenate($canAndCannotProcess.second.values), $processedClasses->concatenate($toProcess.first), $pureFile),
+    |$processedPair->concatenate($doneInThisRound)->concatenate($canAndCannotProcess.second.values)
+  );
+}
+
+function <<access.private>> meta::protocols::generation::pure::newName(p:PackageableElement[1], base:String[1]):String[1]
+{
+  let srcPath = $p->elementToPath();
+  let newName = if ($srcPath->startsWith($base),|$srcPath->substring($base->length()+2),|$srcPath);
+}
+
+function meta::protocols::generation::pure::createClasses(elements:Any[*], base:String[1], pureFile:String[1]):Pair<Type,Type>[*]
+{
+  $elements->map(x|$x->match(
+      [
+        p:Package[1]|$p.children->sortBy(e|$e.name->toOne())->meta::protocols::generation::pure::createClasses($base, $pureFile),
+        c:Class<Any>[1]|if($c->isTypeInScope($pureFile),
+                          |pair($c, meta::pure::functions::meta::newClass(newName($c, $base)));,
+                          |[]
+                        ),
+        e:Enumeration<Any>[1]|pair($e,meta::pure::functions::meta::newEnumeration(newName($e, $base), $e->enumValues()->cast(@Enum).name)),
+        a:Any[1]|[]
+      ]
+    )
+  )
+}
+
+function <<access.private>> meta::protocols::generation::pure::addProperties(source:Pair<Type,Type>[*], pureFile:String[1]):Pair<Type,Type>[*]
+{
+  $source->map(s|
+    $s.first->match(
+      [
+        c:Class<Any>[1]|
+          let sourceClass = $s.first->cast(@Class<Any>);
+          let createdClass = $s.second->cast(@Class<Any>);
+          $createdClass->mutateAdd(
+            'properties',
+            $sourceClass.properties
+                          ->filter(p|$p->isPropertyInScope($pureFile))
+                          ->map(p|
+                          let returnGenericType = $p->functionReturnType();
+                          newProperty(
+                              $p.name->toOne(),
+                              ^GenericType(rawType=$createdClass),
+                              if($returnGenericType.rawType->toOne()->instanceOf(PrimitiveType),
+                                |$returnGenericType,
+                                |^GenericType(rawType=$source->filter(s|$s.first == $returnGenericType.rawType)->toOne().second)
+                              ),
+                              ZeroMany
+                            );
+                          )
+          );,
+        e:Enumeration<Any>[1]|
+        []
+      ]
+    )
+  );
+  $source;
+}
+
+function <<access.private>> meta::protocols::generation::pure::isTypeInScope(type:Type[1], pureFile:String[1]):Boolean[1]
+{
+  $type == Any || ($type != SourceInformation && !$type->hasStereotype('excluded', ProtocolInfo) && ($type->sourceInformation().source == $pureFile));
+}
+
+function <<access.private>> meta::protocols::generation::pure::isPropertyInScope(p:Property<Nil,Any|*>[1], pureFile:String[1]):Boolean[1]
+{
+  let returnType = $p->functionReturnType().rawType;
+  !$p->hasStereotype('inferred', ProtocolInfo) &&
+  !$p->hasStereotype('excluded', ProtocolInfo) &&
+  $returnType->isNotEmpty() &&
+  isTypeInScope($returnType->toOne(), $pureFile);
+}
