@@ -107,6 +107,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='%s', transform={p:String[1..2] | $p->arrayJoinDatabricks()})),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format='%s', transform={p:String[2]|$p->transformRegexpParamsDatabricks()})),
+    dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='MAX_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='MIN_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),

@@ -84,8 +84,8 @@ public class Test_Relational_MemSQL_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
 
             // MaxBy
-            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "Function 'for_testing.MAX_BY' is not defined"),
-            one("meta::pure::functions::math::tests::maxBy::testSimpleGroupByMaxBy_Function_1__Boolean_1_", "Function 'for_testing.MAX_BY' is not defined"),
+            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "\"[unsupported-api] The function 'maxBy' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::math::tests::maxBy::testSimpleGroupByMaxBy_Function_1__Boolean_1_", "\"[unsupported-api] The function 'maxBy' (state: [Select, false]) is not supported yet\""),
 
             // Min
             one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\"", AdapterQualifier.unsupportedFeature),
@@ -94,8 +94,8 @@ public class Test_Relational_MemSQL_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
 
             // MinBy
-            one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "Function 'for_testing.MIN_BY' is not defined"),
-            one("meta::pure::functions::math::tests::minBy::testSimpleGroupByMinBy_Function_1__Boolean_1_", "Function 'for_testing.MIN_BY' is not defined"),
+            one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "\"[unsupported-api] The function 'minBy' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::math::tests::minBy::testSimpleGroupByMinBy_Function_1__Boolean_1_", "\"[unsupported-api] The function 'minBy' (state: [Select, false]) is not supported yet\""),
 
             // Median
             one("meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\"", AdapterQualifier.unsupportedFeature),

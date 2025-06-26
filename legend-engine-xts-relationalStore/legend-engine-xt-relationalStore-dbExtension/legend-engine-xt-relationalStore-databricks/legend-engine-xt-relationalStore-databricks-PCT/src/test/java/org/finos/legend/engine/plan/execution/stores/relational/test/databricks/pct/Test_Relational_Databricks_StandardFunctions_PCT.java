@@ -82,11 +82,17 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
             one("meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"max(%s)\"\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
 
+            //maxBy
+            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `max_by` requires 2 parameters but the actual number is 4.", AdapterQualifier.unsupportedFeature),
+
             //min
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
+
+            //minBy
+            one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `min_by` requires 2 parameters but the actual number is 4.", AdapterQualifier.unsupportedFeature),
 
             //percentile
             one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'range_Integer_1__Integer_1__Integer_1__Integer_MANY_'", AdapterQualifier.unsupportedFeature),

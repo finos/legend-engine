@@ -60,7 +60,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   3, 1, C, 8000
                   4, 1, D, 15000
                   5, 1, E, 17000
-                  6, 1, F, 8000
+                  6, 1, F, 8500
                   6, 2, G, 12000
                   6, 2, H, 13000
                   6, 2, I, 8000
