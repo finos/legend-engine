@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::analytics::lineage::*;
+import meta::pure::extension::*;
 import meta::relational::metamodel::relation::*;
 import meta::pure::store::*;
 import meta::pure::lineage::scanProperties::*;
@@ -37,6 +39,14 @@ function meta::analytics::lineage::scanRelationAccessor::extractRelationElementA
   $res;
 }
 
+function meta::pure::lineage::scanRelationAccessor::propertyTree::buildRelationAccessorPropertyTreeLineageColumn(columns:meta::analytics::lineage::Column[*]):PropertyPathTree[1]
+{
+   let filteredColumnLists = $columns->filter(c|$c->isNotEmpty());
+   let propertyTree = ^PropertyPathTree(display='root',
+                                        value='root',
+                                        children = $filteredColumnLists->map(c | ^PropertyPathTree(display=$c.name->toOne(), value=$c))
+                                       );
+}
 
 function meta::pure::lineage::scanRelationAccessor::propertyTree::buildRelationAccessorPropertyTree(columns:meta::relational::metamodel::Column[*]):PropertyPathTree[1]
 {
@@ -47,14 +57,52 @@ function meta::pure::lineage::scanRelationAccessor::propertyTree::buildRelationA
                                        );
 }
 
-
 function meta::analytics::lineage::scanRelationAccessor::scanRelationAccessorColumns(vs: Any[1], r: RelationElementAccessor<Any>[*]):meta::relational::metamodel::Column[*]
 {
+  
   $vs->match([
               f:FunctionDefinition<Any>[1]             | $f.expressionSequence->evaluateAndDeactivate()->map(e|$e->scanRelationAccessorColumns($r)),
               fe:FunctionExpression[1]                 | $fe.func->evaluateAndDeactivate()->scanRelationAccessorColumns($r),
               i:InstanceValue[1]                       | $i.values->evaluateAndDeactivate()->map(a|$a->scanRelationAccessorColumns($r)),
-              p:Column<Nil,Any|*>[1]                   | $r.sourceElement->cast(@Table).columns->cast(@meta::relational::metamodel::Column)->filter(rac|$rac.name == $p.name),
-              a:Any[*]                                 | [];
+              p:meta::pure::metamodel::relation::Column<Nil,Any|*>[1]  |$r.sourceElement->cast(@Table).columns->cast(@meta::relational::metamodel::Column)->filter(rac|$rac.name == $p.name),
+              a:Any[*]                                 |   [];
             ]);
 }
+
+function meta::analytics::lineage::scanRelationAccessor::scanRelationAccessorColumns(vs: Any[1], r: RelationElementAccessor<Any>[1], extension:LineageExtension[*]):meta::analytics::lineage::Column[*]
+{
+  $vs->match([
+              f:FunctionDefinition<Any>[1]             | $f.expressionSequence->evaluateAndDeactivate()->map(e|$e->scanRelationAccessorColumns($r,$extension)),
+              fe:FunctionExpression[1]                 | $fe.func->evaluateAndDeactivate()->scanRelationAccessorColumns($r,$extension),
+              i:InstanceValue[1]                       | $i.values->evaluateAndDeactivate()->map(a|$a->scanRelationAccessorColumns($r,$extension)),
+              p:meta::pure::metamodel::relation::Column<Nil,Any|*>[1]  |   $r->match( $extension.accessorToColumn->map(a|$a->eval($p,$r)
+                                                                        )->concatenate(rea:RelationElementAccessor<Any>[*]| $r.sourceElement->cast(@Table).columns->cast(@meta::relational::metamodel::Column)->filter(rac|$rac.name == $p.name)->map(c|$c->lineageColumn()))->toOneMany()),
+              a:Any[*]                                 |   [];
+            ]);
+}
+
+function meta::analytics::lineage::scanRelationAccessor::relationColumns(vs: Any[1]):meta::pure::metamodel::relation::Column<Nil,Any|*>[*]
+{
+  $vs->match([
+              f:FunctionDefinition<Any>[1]             | $f.expressionSequence->evaluateAndDeactivate()->map(e|$e->relationColumns()),
+              fe:FunctionExpression[1]                 | $fe.func->evaluateAndDeactivate()->relationColumns(),
+              i:InstanceValue[1]                       | $i.values->evaluateAndDeactivate()->map(a|$a->relationColumns()),
+              p:meta::pure::metamodel::relation::Column<Nil,Any|*>[*]  |  $p,
+              a:Any[*]                                 |   [];
+            ]);
+}
+
+
+function meta::analytics::lineage::scanRelationAccessor::lineageColumn(c:meta::relational::metamodel::Column[1]):meta::analytics::lineage::Column[1]
+{
+        ^meta::analytics::lineage::Column
+        (
+            database = $c.owner->match([t:Table[1]|$t.schema.database.name, v:View[1]|$v.schema.database.name])->toOne(),
+            schema = $c.owner->match([t:Table[1]|$t.schema.name, v:View[1]|$v.schema.name])->toOne(),
+            table = $c.owner->match([t:Table[1]|$t.name, v:View[1]|$v.name])->toOne(),
+            name = $c.name
+        )
+
+}
+
+

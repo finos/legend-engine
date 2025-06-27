@@ -20,7 +20,7 @@ import meta::json::*;
 import meta::pure::lineage::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::relation::*;
-
+import meta::analytics::lineage::*;
 
 function meta::analytics::lineage::graph::toJSON(graph : Graph[1]):JSONElement[1]
 {
@@ -46,49 +46,56 @@ function meta::analytics::lineage::graph::toJSON(graph : Graph[1]):JSONElement[1
 
 function meta::analytics::lineage::graph::toGraph(flow:Flow[1]):Graph[1]
 {
-   toGraph($flow, []);
+   toGraph($flow, [],[]);
 }
 
-function meta::analytics::lineage::graph::toGraph(flow:Flow[1], base:Flow[0..1]):Graph[1]
+function meta::analytics::lineage::graph::toGraph(flow:Flow[1],extension:LineageExtension[*]):Graph[1]
 {
-   let groupNodes = $flow.groups->map(g|$g->toNode([],$base));
-   let groupNodesIndex = $groupNodes->groupBy(g|$g.data.id);
-   let index = $flow.groups->map(g|$g.nodes->map(n|pair($n->toId(), $groupNodesIndex->get($g->toId())->toOne().values->at(0))))->newMap();
+   toGraph($flow, [],$extension);
+}
 
-   let nodes = $flow.groups->concatenate($flow.functions)->concatenate($flow.systems)->concatenate($flow.tables)->concatenate($flow.databases)->concatenate($flow.properties)->concatenate($flow.classes)->concatenate($flow.packages)->map(o|$o->toNode($index,$base));
+
+
+function meta::analytics::lineage::graph::toGraph(flow:Flow[1], base:Flow[0..1],extension:LineageExtension[*]):Graph[1]
+{
+   let groupNodes = $flow.groups->map(g|$g->toNode([],$base,$extension));
+   let groupNodesIndex = $groupNodes->groupBy(g|$g.data.id);
+   let index = $flow.groups->map(g|$g.nodes->map(n|pair($n->toId($extension), $groupNodesIndex->get($g->toId($extension))->toOne().values->at(0))))->newMap();
+   let nodes = $flow.groups->concatenate($flow.functions)->concatenate($flow.systems)->concatenate($flow.tables)->concatenate($flow.databases)->concatenate($flow.properties)->concatenate($flow.classes)->concatenate($flow.packages)->concatenate($flow.accessors)->concatenate($flow.services)->map(o|$o->toNode($index,$base,$extension));
    let nodesById = $nodes->groupBy(t|$t.data.id);
 
-   ^Graph
+  ^Graph
    (
       nodes = $nodes,
-      edges = $flow.links->map(l|^Edge(
+      edges = $flow.links->map(l|
+                                    ^Edge(
                                     data=^EdgeData(
                                                 id='x',
                                                 text='txt',
                                                 type=if($l.lineageMaturity->isEmpty(),|'',|$l.lineageMaturity->toOne()->id()),
-                                                source=$nodesById->get($l.source->toId())->toOne().values->at(0),
-                                                target=$nodesById->get($l.target->toId())->toOne().values->at(0)
+                                                source=$nodesById->get($l.source->toId($extension))->toOne().values->at(0),
+                                                target=$nodesById->get($l.target->toId($extension))->toOne().values->at(0)
                                          )
-                                 )
+                                 );
                            )
    );
 }
 
-function <<access.private>> meta::analytics::lineage::graph::toNode(a:Any[1], parents:Map<String,Node>[0..1]):Node[1]
+function <<access.private>> meta::analytics::lineage::graph::toNode(a:Any[1], parents:Map<String,Node>[0..1],extension:LineageExtension[*]):Node[1]
 {
-   toNode($a, $parents, []);
+   toNode($a, $parents, [],$extension);
 }
 
 
-function <<access.private>> meta::analytics::lineage::graph::toNode(a:Any[1], parents:Map<String,Node>[0..1],baseFlow:Flow[0..1]):Node[1]
+function <<access.private>> meta::analytics::lineage::graph::toNode(a:Any[1], parents:Map<String,Node>[0..1],baseFlow:Flow[0..1],extension:LineageExtension[*]):Node[1]
 {
-   let parent = if ($parents->isEmpty(),|[],|$parents->toOne()->get($a->toId()));
-   ^Node(data=^NodeData(id=$a->toId(), text=$a->toName(), parent=$parent, type=$a->toType(), displayType=if($baseFlow->isEmpty(),|[],|$a->toDisplayType($baseFlow->toOne()))));
+   let parent = if ($parents->isEmpty(),|[],|$parents->toOne()->get($a->toId($extension)));
+   ^Node(data=^NodeData(id=$a->toId($extension), text=$a->toName(), parent=$parent, type=$a->toType(), displayType=if($baseFlow->isEmpty(),|[],|$a->toDisplayType($baseFlow->toOne(),$extension))));
 }
 
-function <<access.private>> meta::analytics::lineage::graph::toId(a:Any[1]):String[1]
+function <<access.private>> meta::analytics::lineage::graph::toId(a:Any[1], extension:LineageExtension[*]):String[1]
 {
-   $a->match(
+   $a->match( $extension.graphID->map(g|$g->eval())->concatenate(
       [
          p:Property<Nil,Any|*>[1]|'p_'+$p.owner->elementToPath()+'_'+$p.name->toOne(),
          p:PropertyNode[1]|'p_'+$p.property.owner->elementToPath()+'_'+$p.property.name->toOne(),
@@ -96,7 +103,7 @@ function <<access.private>> meta::analytics::lineage::graph::toId(a:Any[1]):Stri
          p:PackageNode[1]|'pack_'+$p.package->elementToPath(),
          a:LambdaFunction<Any>[1]|'Lambda',
          a:Function<Any>[1]|$a->elementToPath(),
-         a:FunctionNode[1]|$a.func->toId(),
+         a:FunctionNode[1]|$a.func->toId($extension),
          c:Class<Any>[1]|$c->elementToPath(),
          c:ClassNode[1]|$c.class->elementToPath(),
          a:System[1]|'app_'+$a.appId->toString(),
@@ -104,10 +111,13 @@ function <<access.private>> meta::analytics::lineage::graph::toId(a:Any[1]):Stri
          a:Group[1]|'grp_'+$a.groupId->toString(),
          a:GroupNode[1]|'grp_'+$a.groupId->toString(),
          a:Database[1]|'db_'+$a.name->toOne(),
-         a:DatabaseNode[1]|$a.db->toId(),
+         a:DatabaseNode[1]|$a.db->toId($extension),
          a:NamedRelation[1]|let schema = $a->schema(); 'tb_'+$schema.database.name->toOne()+$schema.name+$a.name;,
-         a:NamedRelationNode[1]|$a.relation->toId()
-      ]
+         a:NamedRelationNode[1]|$a.relation->toId($extension),
+         a:AccessorNode[1] | $a.accessor->toOne(),
+         s:ServiceNode[1] |$s.service,
+         s:String[1]| $s
+      ])->toOneMany()
    )
 }
 
@@ -123,10 +133,10 @@ function <<access.private>> meta::analytics::lineage::graph::toType(a:Any[1]):St
 
 }
 
-function <<access.private>> meta::analytics::lineage::graph::toDisplayType(a:Any[1],flow:Flow[1]):String[0..1]
+function <<access.private>> meta::analytics::lineage::graph::toDisplayType(a:Any[1],flow:Flow[1],extension:LineageExtension[*]):String[0..1]
 {
    let baseNodes = $flow.groups->concatenate($flow.functions)->concatenate($flow.systems)->concatenate($flow.tables)->concatenate($flow.databases)->concatenate($flow.properties)->concatenate($flow.classes)->concatenate($flow.packages);
-   if($baseNodes->map(n|$n->toId())->contains($a->toId()),|'',|'Inferred');
+   if($baseNodes->map(n|$n->toId($extension))->contains($a->toId($extension)),|'',|'Inferred');
 }
 
 function <<access.private>> meta::analytics::lineage::graph::toName(a:Any[1]):String[1]
@@ -139,8 +149,9 @@ function <<access.private>> meta::analytics::lineage::graph::toName(a:Any[1]):St
          c:Class<Any>[1]|$c.name->toOne(),
          a:System[1]|$a.name,
          a:Group[1]|$a.name,
-         a:Database[1]|$a.name->toOne(),
-         a:NamedRelation[1]|$a.name;
+         a:meta::pure::store::Store[1]|$a.name->toOne(),
+         a:NamedRelation[1]|$a.name,
+         s:String[1]|$s;
       ]
    )
 }
