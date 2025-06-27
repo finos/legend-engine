@@ -1,6 +1,6 @@
 {
   "name": "core_protocol_generation",
-  "pattern": "(meta::protocols::generation::java)(::.*)?",
+  "pattern": "(meta::protocols::generation::java|meta::protocols::generation::pure)(::.*)?",
   "dependencies": [
     "platform",
     "platform_dsl_store",

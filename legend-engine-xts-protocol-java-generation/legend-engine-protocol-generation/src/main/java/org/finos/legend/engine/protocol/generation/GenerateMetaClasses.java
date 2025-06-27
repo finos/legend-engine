@@ -18,7 +18,7 @@ import org.finos.legend.engine.external.language.java.generation.GenerateJavaPro
 import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_Project;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
-import static org.finos.legend.pure.generated.core_protocol_generation_class_Main.Root_meta_protocols_generation_java_generateProtocolProject_String_1__String_MANY__Project_1_;
+import static org.finos.legend.pure.generated.core_protocol_generation_javaGeneration_classGeneration_class_Main.Root_meta_protocols_generation_java_generateProtocolProject_String_1__String_MANY__Project_1_;
 
 public class GenerateMetaClasses extends GenerateJavaProject
 {
