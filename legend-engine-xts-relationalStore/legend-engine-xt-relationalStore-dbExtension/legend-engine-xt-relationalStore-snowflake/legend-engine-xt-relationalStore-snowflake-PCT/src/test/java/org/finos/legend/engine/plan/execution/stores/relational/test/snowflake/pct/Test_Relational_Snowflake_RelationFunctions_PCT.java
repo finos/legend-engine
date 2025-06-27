@@ -37,7 +37,7 @@ public class Test_Relational_Snowflake_RelationFunctions_PCT extends PCTReportCo
     private static final Adapter adapter = CoreRelationalSnowflakePCTCodeRepositoryProvider.snowflakeAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            // Snowflake doesn't support ListAgg as an olap aggregation
+            // Listagg
             one("meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_", "Cumulative window frame unsupported for function LISTAGG", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_", "Cumulative window frame unsupported for function LISTAGG", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_", "Cumulative window frame unsupported for function LISTAGG", AdapterQualifier.unsupportedFeature),

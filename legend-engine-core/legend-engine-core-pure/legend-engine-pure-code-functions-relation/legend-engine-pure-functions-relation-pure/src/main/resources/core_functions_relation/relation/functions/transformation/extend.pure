@@ -1119,10 +1119,10 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                 #->extend(over(~grp, rows(meta::pure::functions::relation::unbounded(), meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.name}:y|$y->joinStrings(''))
                };
 
-    let res =  $f->eval($expr);
+    let res =  $f->eval($expr)->extend(~newColSorted:r|$r.newCol->toOne()->chunk(1)->sort()->joinStrings(''));
 
     assertEquals( '#TDS\n'+
-                  '   id,grp,name,newCol\n'+
+                  '   id,grp,name,newColSorted\n'+
                   '   10,0,J,J\n'+
                   '   2,1,B,BFH\n'+
                   '   6,1,F,BFH\n'+
@@ -1133,7 +1133,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   '   7,3,G,CG\n'+
                   '   4,4,D,D\n'+
                   '   9,5,I,I\n'+
-                  '#', $res->sort([~grp->ascending()])->toString());
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->select(~[id, grp, name, newColSorted])->toString());
 }
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
