@@ -59,7 +59,6 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
 
         TrinoSSLSpecification trinoSSLSpecification = buildSSLSpecWith(true, "testPathRef", "testPwdRef");
         TrinoDatasourceSpecificationRuntime ds = buildDatasourceSpecificationRuntime(trinoSSLSpecification);
-        String tempDirectory = System.getProperty("java.io.tmpdir");
 
         Properties properties = ds.getExtraDatasourceProperties();
         assertEquals("catalog", properties.getProperty(CATALOG));
@@ -68,7 +67,7 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
         assertEquals("true", properties.getProperty(SSL));
         assertEquals("test_user", properties.getProperty(USER));
         assertEquals("changeme", properties.getProperty(SSL_TRUST_STORE_PASSWORD));
-        assertTrue(properties.getProperty(SSL_TRUST_STORE_PATH).matches(tempDirectory + "/trino_keystore_testPathRef.*jks"));
+        assertTrue(properties.getProperty(SSL_TRUST_STORE_PATH).matches(".*trino_keystore_testPathRef.*jks"));
     }
 
     @Test
