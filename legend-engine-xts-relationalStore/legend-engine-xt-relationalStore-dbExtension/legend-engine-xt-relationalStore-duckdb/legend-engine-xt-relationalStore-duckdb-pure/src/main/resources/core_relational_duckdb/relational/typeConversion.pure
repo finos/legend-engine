@@ -46,7 +46,8 @@ function meta::relational::functions::typeConversion::duckDB::convert(genericTyp
             pair(|$path == 'UInt', |fail('not supported yet!')),
             pair(|$path == 'USmallInt', |fail('not supported yet!')),
             pair(|$path == 'UTinyInt', |fail('not supported yet!')),
-            pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer)))
+            pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer))),
+            pair(|$path == 'Variant', |^meta::relational::metamodel::datatype::Json())
         ],
         | fail ($path + ' is not managed yet');
     )->cast(@meta::relational::metamodel::datatype::DataType);

@@ -42,6 +42,7 @@ import meta::relational::runtime::*;
 import meta::relational::milestoning::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::store::metamodel::*;
+import meta::pure::metamodel::variant::*;
 
 function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1], extensions:Extension[*]):ExecutionNode[1]
 {
@@ -119,7 +120,12 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                (
                                     genericType=^GenericType(rawType=$class),
                                     tdsColumns = $sq.vs.genericType.typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->map(p|
-                                                                let cType = $p.classifierGenericType.typeArguments->at(1).rawType->cast(@meta::pure::metamodel::type::DataType)->toOne();
+                                                                let cType = $p.classifierGenericType.typeArguments->at(1).rawType->toOne()->match(
+                                                                    [
+                                                                        x:meta::pure::metamodel::type::DataType[1]|$x,
+                                                                        c:Class<Variant>[1]|String
+                                                                    ]
+                                                                );
                                                                 ^TDSColumn
                                                                 (
                                                                   name = $p.name->toOne(),

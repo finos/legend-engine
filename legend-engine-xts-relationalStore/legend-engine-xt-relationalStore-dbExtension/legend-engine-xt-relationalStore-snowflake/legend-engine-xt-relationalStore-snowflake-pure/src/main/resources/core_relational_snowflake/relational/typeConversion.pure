@@ -46,7 +46,8 @@ function meta::relational::functions::typeConversion::snowflake::convert(generic
             pair(|$path == 'UInt', |^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),
             pair(|$path == 'USmallInt', |^meta::relational::metamodel::datatype::Decimal(precision=5, scale=0)),
             pair(|$path == 'UTinyInt', |^meta::relational::metamodel::datatype::Decimal(precision=3, scale=0)),
-            pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer)))
+            pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer))),
+            pair(|$path == 'Variant', |^meta::relational::metamodel::datatype::SemiStructured())
         ],
         | fail ($path + ' is not managed yet');
     )->cast(@meta::relational::metamodel::datatype::DataType);
