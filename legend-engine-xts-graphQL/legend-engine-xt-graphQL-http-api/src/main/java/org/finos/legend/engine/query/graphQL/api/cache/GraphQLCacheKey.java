@@ -17,4 +17,7 @@ package org.finos.legend.engine.query.graphQL.api.cache;
 public interface GraphQLCacheKey
     {
         String getQueryClassPath();
+        String getMappingPath();
+        String getRuntimePath();
+        String getProjectBasePath();
     }

@@ -33,4 +33,6 @@ public @interface Prometheus
     Type type() default Type.SUMMARY;
 
     String name();
+
+    String[] labels() default {};
 }

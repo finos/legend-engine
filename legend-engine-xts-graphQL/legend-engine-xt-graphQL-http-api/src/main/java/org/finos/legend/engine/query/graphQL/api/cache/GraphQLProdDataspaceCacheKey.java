@@ -60,4 +60,16 @@ public class GraphQLProdDataspaceCacheKey extends GraphQLProdCacheKey
     {
         return executionContext;
     }
+
+    @Override
+    public String getMappingPath()
+    {
+        return dataspacePath;
+    }
+
+    @Override
+    public String getRuntimePath()
+    {
+        return "NA";
+    }
 }
