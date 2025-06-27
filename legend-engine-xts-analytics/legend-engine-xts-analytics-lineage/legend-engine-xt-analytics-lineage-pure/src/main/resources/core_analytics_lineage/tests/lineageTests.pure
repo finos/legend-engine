@@ -645,8 +645,8 @@ function <<test.Test>> meta::analytics::lineage::tests::relation::testForParamet
 
 function <<test.Test>> meta::analytics::lineage::tests::relation::testNewTDSWithRelationStoreAccessor():Boolean[1]
 {
-  let query = {|#>{meta::relational::tests::db.personTable}#->project(~['firstName': x| $x.FIRSTNAME])};
-  let runtime = meta::external::store::relational::tests::testRuntime();
+  let query = {|#>{meta::analytics::lineage::tests::db.personTable}#->project(~['firstName': x| $x.FIRSTNAME])};
+  let runtime = meta::external::store::relational::tests::testRuntime(meta::external::store::relational::tests::testDatabaseConnection(meta::analytics::lineage::tests::db, []));
 
   let lineage = meta::analytics::lineage::computeLineage($query, [], $runtime, [],buildDefaultAnalyticsConfig());
 
@@ -656,6 +656,18 @@ function <<test.Test>> meta::analytics::lineage::tests::relation::testNewTDSWith
                                           $lineage);
 
 }
+
+###Relational
+Database meta::analytics::lineage::tests::dbInc
+(
+   Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+)
+
+###Relational
+Database meta::analytics::lineage::tests::db
+(
+   include meta::analytics::lineage::tests::dbInc
+)
 
 ###Pure
 import meta::pure::lineage::scanRelations::*;
