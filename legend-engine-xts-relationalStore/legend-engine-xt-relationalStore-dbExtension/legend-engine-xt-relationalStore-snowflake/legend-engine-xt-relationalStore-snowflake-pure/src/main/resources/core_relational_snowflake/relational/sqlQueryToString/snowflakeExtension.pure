@@ -260,6 +260,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='editdistance(%s, %s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='MAX_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='MIN_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='MONTH(%s)')),
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'MMMM\')')),
