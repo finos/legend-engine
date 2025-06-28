@@ -315,9 +315,5 @@
             <artifactId>jackson-core</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-core</artifactId>
-        </dependency>
     </dependencies>
 </project>
