@@ -66,6 +66,7 @@ public class SnowflakeM2MUdfGenerator
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SnowflakeM2MUdfGenerator.class);
     public static final String EXECUTION_JAR_FILENAME = "legend-engine-xt-snowflake-m2mudf-plan-executor.jar";
     public static final String EXECUTION_PLAN_FILENAME = "executionPlan.json";
+    public static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
     private static String database;
     private static String deploymentSchema;
     private static String deploymentStage;
@@ -191,7 +192,7 @@ public class SnowflakeM2MUdfGenerator
 
     private static String generatePutSqlCommand(String fileName)
     {
-        return String.format("PUT file://%s @%S%s AUTO_COMPRESS = FALSE OVERWRITE = TRUE",fileName,deploymentStage,directoryLocation);
+        return String.format("PUT file://%s/%s @%S%s AUTO_COMPRESS = FALSE OVERWRITE = TRUE",TEMP_DIR,fileName,deploymentStage,directoryLocation);
     }
 
     private static String getVersion()
