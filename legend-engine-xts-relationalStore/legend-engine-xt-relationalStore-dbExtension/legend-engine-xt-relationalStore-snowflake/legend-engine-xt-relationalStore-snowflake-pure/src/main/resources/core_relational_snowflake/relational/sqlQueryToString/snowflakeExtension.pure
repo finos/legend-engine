@@ -48,7 +48,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       aliasLimit = 255,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
-      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      windowColumnProcessor = processWindowColumnForSnowflake_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForSnowflake_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor_String_1__String_1__FunctionParameter_MANY__String_1_,
@@ -70,6 +70,28 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       buildDummyConnection = meta::relational::functions::sqlQueryToString::snowflake::buildDummyConnection__RelationalDatabaseConnection_1_
 
    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processWindowColumnForSnowflake(w:WindowColumn[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let partitionTranslation = if($w.window.partition->isNotEmpty(),
+        |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(','),
+        |'');
+   let orderByTranslation = if($w.window.sortBy->isNotEmpty(),
+        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name, | ''))->joinStrings(', '),
+        |'');
+   let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
+        |$w.window.frame->toOne()->processWindowFrame($sgc),
+        |'');
+   let withinGroupTranslation = if($w.func.name->equal('joinStrings') && $w.window.sortBy->isNotEmpty() && $w.window.frame->isNotEmpty() && $w.window.frame->toOne().offsetFrom->instanceOf(meta::relational::metamodel::UnboundedFrameValue) && $w.window.frame->toOne().offsetTo->instanceOf(meta::relational::metamodel::UnboundedFrameValue),
+        | ' WITHIN GROUP(' + $orderByTranslation + ')',
+        | '');
+        
+   $w.func->processOperation($sgc)
+   + $withinGroupTranslation
+   + ' OVER ('
+   + [$partitionTranslation, $orderByTranslation, $windowFrameTranslation]->filter(s | $s != '')->joinStrings(' ') +
+   + ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processJoinForSnowflake(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
