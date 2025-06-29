@@ -157,7 +157,7 @@ public class SnowflakeM2MUdfDeploymentManager implements DeploymentManager<Snowf
     {
         try
         {
-            FileUtils.copyURLToFile(new URL(url), new File(fileName));
+            FileUtils.copyURLToFile(new URL(url), new File(SnowflakeM2MUdfGenerator.TEMP_DIR, fileName));
         }
         catch (Exception e)
         {
@@ -170,7 +170,7 @@ public class SnowflakeM2MUdfDeploymentManager implements DeploymentManager<Snowf
     {
         try
         {
-            Files.deleteIfExists(Paths.get(fileName));
+            Files.deleteIfExists(Paths.get(SnowflakeM2MUdfGenerator.TEMP_DIR, fileName));
         }
         catch (IOException e)
         {
@@ -182,7 +182,7 @@ public class SnowflakeM2MUdfDeploymentManager implements DeploymentManager<Snowf
     {
         try
         {
-            Files.write(Paths.get(fileName), content.getBytes());
+            Files.write(Paths.get(SnowflakeM2MUdfGenerator.TEMP_DIR, fileName), content.getBytes());
         }
         catch (Exception e)
         {
