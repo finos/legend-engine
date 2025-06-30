@@ -38,6 +38,7 @@ import org.finos.legend.engine.plan.execution.planHelper.PrimitiveValueSpecifica
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
+import org.finos.legend.engine.plan.generation.PlanWithDebug;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.dataquality.model.DataQualityExecuteInput;
@@ -119,6 +120,28 @@ public class DataQualityExecute
             SingleExecutionPlan singleExecutionPlan = generateExecutionPlan(dataQualityExecuteInput, identity, false);
             LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_GENERATE_PLAN_END, System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(identity.getName(), singleExecutionPlan, objectMapper);
+        }
+        catch (Exception ex)
+        {
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PLAN_ERROR, identity.getName());
+        }
+    }
+
+    @POST
+    @Path("debugPlan")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response generatePlanDebug(DataQualityExecuteTrialInput dataQualityExecuteInput, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_PLAN_GENERATION_DEBUG_START).toString());
+        try (Scope scope = GlobalTracer.get().buildSpan("DataQuality: planGenerationDebug").startActive(true))
+        {
+            PlanWithDebug planWithDebug = generateExecutionPlanDebug(dataQualityExecuteInput, identity, false);
+            LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_PLAN_GENERATION_DEBUG_STOP, System.currentTimeMillis() - start).toString());
+            return ManageConstantResult.manageResult(identity.getName(), planWithDebug, objectMapper);
         }
         catch (Exception ex)
         {
@@ -213,6 +236,16 @@ public class DataQualityExecute
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction = generateLambdaFunction(dataQualityExecuteInput, pureModel, rowCount);
         // 3. Generate Plan from the lambda generated in the previous step
         return PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
+    }
+
+    private PlanWithDebug generateExecutionPlanDebug(DataQualityExecuteTrialInput dataQualityExecuteInput, Identity identity, boolean rowCount)
+    {
+        // 1. load pure model from PureModelContext
+        PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
+        // 2. call DQ PURE func to generate lambda
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction = generateLambdaFunction(dataQualityExecuteInput, pureModel, rowCount);
+        // 3. Generate Plan debug from the lambda generated in the previous step
+        return  PlanGenerator.generateExecutionPlanDebug(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
     }
 
     private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction generateLambdaFunction(DataQualityExecuteTrialInput dataQualityExecuteInput, PureModel pureModel, boolean rowCount)
