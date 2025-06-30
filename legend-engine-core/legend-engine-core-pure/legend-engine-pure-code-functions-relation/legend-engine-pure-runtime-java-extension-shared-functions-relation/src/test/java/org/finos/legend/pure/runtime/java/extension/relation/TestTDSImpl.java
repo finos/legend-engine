@@ -28,7 +28,7 @@ public class TestTDSImpl extends TestTDS
 
     public TestTDSImpl(String csv)
     {
-        super(csv);
+        super(csv, null, null);
     }
 
     public TestTDSImpl(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows)

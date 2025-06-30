@@ -19,6 +19,7 @@ import io.deephaven.csv.reading.CsvReader;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
@@ -38,16 +39,9 @@ public class TestTDSInterpreted extends TestTDS
     private ModelRepository modelRepository;
     private ProcessorSupport processorSupport;
 
-    public TestTDSInterpreted(String csv, ModelRepository repository, ProcessorSupport processorSupport)
-    {
-        super(csv);
-        this.modelRepository = repository;
-        this.processorSupport = processorSupport;
-    }
-
     public TestTDSInterpreted(CsvReader.Result result, ModelRepository repository, ProcessorSupport processorSupport)
     {
-        super(result);
+        super(result, repository, processorSupport);
         this.modelRepository = repository;
         this.processorSupport = processorSupport;
     }
@@ -96,8 +90,14 @@ public class TestTDSInterpreted extends TestTDS
                 result = !isNull[rowNum] ? newIntegerLiteral(modelRepository, value, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Integer, processorSupport), processorSupport), true, processorSupport);
                 break;
             }
-            case STRING:
             case CUSTOM:
+            {
+                Variant[] data = (Variant[]) dataAsObject;
+                Variant value = data[rowNum];
+                result = value != null ? ValueSpecificationBootstrap.wrapValueSpecification(value, true, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Variant, processorSupport), processorSupport), true, processorSupport);
+                break;
+            }
+            case STRING:
             {
                 String[] data = (String[]) dataAsObject;
                 String value = data[rowNum];

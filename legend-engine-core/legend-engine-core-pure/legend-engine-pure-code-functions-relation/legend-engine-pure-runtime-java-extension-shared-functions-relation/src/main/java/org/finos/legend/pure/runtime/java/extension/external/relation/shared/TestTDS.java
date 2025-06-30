@@ -22,8 +22,6 @@ import io.deephaven.csv.sinks.SinkFactory;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
@@ -49,21 +47,16 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.function.Function;
+import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
-import org.eclipse.collections.impl.utility.ListIterate;
-
-import java.io.ByteArrayInputStream;
-import java.lang.reflect.Array;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Objects;
+import org.finos.legend.pure.runtime.java.shared.variant.VariantInstanceImpl;
 
 public abstract class TestTDS
 {
@@ -175,12 +168,12 @@ public abstract class TestTDS
 
     public abstract TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows);
 
-    public TestTDS(String csv)
+    public TestTDS(String csv, ModelRepository modelRepository, ProcessorSupport processorSupport)
     {
-        this(readCsv(csv));
+        this(readCsv(csv), modelRepository, processorSupport);
     }
 
-    public TestTDS(CsvReader.Result result)
+    public TestTDS(CsvReader.Result result, ModelRepository modelRepository, ProcessorSupport processorSupport)
     {
         this.rowCount = result.numRows();
 
@@ -191,8 +184,8 @@ public abstract class TestTDS
             int typeIndex = name.indexOf(':');
             if (typeIndex != -1)
             {
+                type = name.substring(typeIndex + 1).equals(M3Paths.Variant) ? DataType.CUSTOM : type;
                 name = name.substring(0, typeIndex);
-                type = DataType.CUSTOM;
             }
             columnsOrdered.add(name);
             columnType.put(name, type);
@@ -223,8 +216,16 @@ public abstract class TestTDS
                         isNullFlag[i] = ((double[]) c.data())[i] == DOUBLE_NULL_SENTINEL;
                     }
                     break;
-                case STRING:
                 case CUSTOM:
+                    Variant[] variants = new Variant[(int) this.rowCount];
+                    dataByColumnName.put(name, variants);
+                    for (int i = 0; i < this.rowCount; i++)
+                    {
+                        String value = ((String[]) c.data())[i];
+                        variants[i] = value == null ? null : VariantInstanceImpl.newVariant(value, modelRepository, processorSupport);
+                    }
+                    break;
+                case STRING:
                     // nothing... csv parser manage how to handle null sentinels
                     break;
                 case DATETIME_AS_LONG:

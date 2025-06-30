@@ -9,6 +9,7 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
+import meta::relational::functions::typeConversion::duckDB::*;
 
 function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::duckDB::dbExtensionLoaderForDuckDB():DbExtensionLoader[1]
 {
@@ -39,7 +40,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator(),
       dataTypeToSqlText = dataTypeToSqlTextDuckDB_DataType_1__String_1_,
-      pureTypeToDatabaseTypeConverter = meta::relational::functions::typeConversion::duckDB::convert_GenericType_1__DataType_1_,
+      pureTypeToDatabaseTypeConverter = convert_GenericType_1__DataType_1_,
       buildDummyConnection = meta::relational::functions::sqlQueryToString::duckDB::buildDummyConnection__RelationalDatabaseConnection_1_,
       lambdaParameterProcessor = buildLambdaParameter_RelationalLambdaParameter_1__SqlGenerationContext_1__String_1_,
       lambdaProcessor = buildLambda_RelationalLambda_1__SqlGenerationContext_1__String_1_
@@ -122,37 +123,6 @@ function meta::relational::functions::sqlQueryToString::duckDB::translateCreateT
       + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ')')
       +');';
 }
-
-
-function meta::relational::functions::sqlQueryToString::duckDB::dataTypeToSqlTextDuckDB(type: meta::relational::metamodel::datatype::DataType[1]):String[1]
-{
-    $type->match([
-        b : meta::relational::metamodel::datatype::Boolean[1] | 'BOOL',
-        i : meta::relational::metamodel::datatype::Integer[1] | 'INT',
-        f : meta::relational::metamodel::datatype::Float[1] | 'FLOAT',
-        v : meta::relational::metamodel::datatype::Varchar[1] | format('VARCHAR(%d)', $v.size),
-        c : meta::relational::metamodel::datatype::Char[1] | format('CHAR(%d)', $c.size),
-        d : meta::relational::metamodel::datatype::Decimal[1] | format('DECIMAL(%d, %d)', [$d.precision, $d.scale]),
-        t : meta::relational::metamodel::datatype::Timestamp[1] | 'TIMESTAMP',
-        d : meta::relational::metamodel::datatype::Date[1] | 'DATE',
-        b : meta::relational::metamodel::datatype::BigInt[1] | 'BIGINT',
-        s : meta::relational::metamodel::datatype::SmallInt[1] | 'SMALLINT',
-        t : meta::relational::metamodel::datatype::TinyInt[1] | 'TINYINT',
-        d : meta::relational::metamodel::datatype::Double[1] | 'DOUBLE',
-        n : meta::relational::metamodel::datatype::Numeric[1] | format('NUMERIC(%d, %d)', [$n.precision, $n.scale]),
-        d : meta::relational::metamodel::datatype::Distinct[1] | 'DISTINCT',
-        o : meta::relational::metamodel::datatype::Other[1] | 'OTHER',
-        b : meta::relational::metamodel::datatype::Bit[1] | 'BIT',
-        b : meta::relational::metamodel::datatype::Binary[1] | 'BINARY',
-        r : meta::relational::metamodel::datatype::Real[1] | 'REAL',
-        a : meta::relational::metamodel::datatype::Array[1] | if($a.type->isEmpty(), |'JSON[]', |$a.type->toOne()->dataTypeToSqlTextDuckDB() + '[]'),
-        o : meta::relational::metamodel::datatype::Object[1] | 'MAP(%s, %s)'->format([$o.keyType->dataTypeToSqlTextDuckDB(), $o.valueType->dataTypeToSqlTextDuckDB()]),
-        v : meta::relational::metamodel::datatype::Varbinary[1] | 'VARBINARY',
-        s : meta::relational::metamodel::datatype::SemiStructured[1] | 'JSON',
-        d : meta::relational::metamodel::datatype::DbSpecificDataType[1] | $d.dbSpecificSql
-    ]);
-}
-
 
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDynaFunctionToSqlForDuckDB(): DynaFunctionToSql[*]
@@ -455,17 +425,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::buildFoldLambda(lambda: FoldRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
 {
-  // DuckDb does not have a fold/reduce that takes two arguments
-  // it expects a non-empty array/list
-  // Hence, we insert the starting value at the start of the array/list been folded/reduces
-  // This bring another challenge, as the list now is heterogeneous in types, hence the lambda parameters need to be casted,
-  // and the list is just json values to "homogenous them"
-  'reduce(array_prepend((%s)::JSON, (%s)::JSON[]), lambda "%s", "%s" : %s)::%s'->format([
-    $lambda.parameters->at(1).value->processOperation($sgc),
+  'reduce(%s, lambda "%s", "%s" : %s, %s)::%s'->format([
     $lambda.parameters->at(0).value->processOperation($sgc),
-    $lambda.parameters->at(0).name,
     $lambda.parameters->at(1).name,
+    $lambda.parameters->at(0).name,
     $lambda.body->processOperation($sgc),
+    $lambda.parameters->at(1).value->processOperation($sgc),
     $sgc.dbConfig.dataTypeToSqlText($lambda.parameters->at(1).type)
   ]);
 }

@@ -127,7 +127,11 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                     let tdsString = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->map(c | $c.name + $c.type->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
                                   $res.result.rows->map(x|
                                         range($x.values->size())->map(z |
-                                            if($x.values->at($z) == TDSNull, |'null', |$x.values->at($z))
+                                            $x.values->at($z)->match([
+                                              n: TDSNull[1] | 'null',
+                                              s: String[1] | $s->meta::relational::tests::csv::escapeCSVString(),
+                                              a: Any[1] | $a
+                                            ]);
                                         )->makeString(',')
                                       )->joinStrings('\n');
                     let resultFinal = $tdsString->stringToTDS();
@@ -709,6 +713,7 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
               x | $cols->map(c|$c->eval($x)->toOne()->match(
                                 [
                                   x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS}', $x),
+                                  s : Variant[1] | '"' + $s->toString() + '"',
                                   z : Any[1] | $z->toString()
                                 ]
                 ))->joinStrings(',')

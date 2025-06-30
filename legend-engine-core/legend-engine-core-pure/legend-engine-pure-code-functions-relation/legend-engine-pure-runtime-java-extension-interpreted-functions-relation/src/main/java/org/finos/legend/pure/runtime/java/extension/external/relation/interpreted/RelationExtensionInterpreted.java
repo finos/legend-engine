@@ -24,6 +24,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
@@ -143,7 +144,7 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
             }
             else if (colType._rawType() == processorSupport.package_getByUserPath(M3Paths.Variant))
             {
-                value = ValueSpecificationBootstrap.wrapValueSpecification(VariantInstanceImpl.newVariant(PrimitiveUtilities.getStringValue(value), interpreted.getPureRuntime().getModelRepository(), processorSupport), true, processorSupport);
+                value = ValueSpecificationBootstrap.wrapValueSpecification(VariantInstanceImpl.newVariant(PrimitiveUtilities.getStringValue(processorSupport.instance_getValueForMetaPropertyToOneResolved(value, M3Properties.values)), interpreted.getPureRuntime().getModelRepository(), processorSupport), true, processorSupport);
             }
 
             return value;

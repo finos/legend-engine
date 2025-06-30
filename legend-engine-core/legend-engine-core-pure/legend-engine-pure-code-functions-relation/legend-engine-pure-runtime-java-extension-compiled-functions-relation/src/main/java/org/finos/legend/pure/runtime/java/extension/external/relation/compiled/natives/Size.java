@@ -15,12 +15,13 @@
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives;
 
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation;
+import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNativeFunctionGeneric;
 
 public class Size extends AbstractNativeFunctionGeneric
 {
     public Size()
     {
-        super("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.size", new Class[]{Relation.class}, "size_Relation_1__Integer_1_");
+        super("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.size", new Class[]{Relation.class, ExecutionSupport.class}, false, true, false, "size_Relation_1__Integer_1_");
     }
 }
