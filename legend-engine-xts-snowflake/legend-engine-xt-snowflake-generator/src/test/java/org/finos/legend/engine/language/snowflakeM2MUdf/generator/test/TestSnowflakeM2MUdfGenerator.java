@@ -76,8 +76,8 @@ public class TestSnowflakeM2MUdfGenerator
     public void testSnowflakeM2MUdfActivator()
     {
         SnowflakeM2MUdfArtifact artifact = generateForActivator("test::udf::MyUDF", this.pureModel);
-        String expectedExecutionJarPutCommand = "PUT file://legend-engine-xt-snowflake-m2mudf-plan-executor.jar @DEMO_SCHEMA.SNOWFLAKESTAGE/test/query/getFirmDetailsWithInput AUTO_COMPRESS = FALSE OVERWRITE = TRUE";
-        String expectedExecutionPlanPutCommand = "PUT file://executionPlan.json @DEMO_SCHEMA.SNOWFLAKESTAGE/test/query/getFirmDetailsWithInput AUTO_COMPRESS = FALSE OVERWRITE = TRUE";
+        String expectedExecutionJarPutCommand = "PUT file://" + SnowflakeM2MUdfGenerator.TEMP_DIR + "/legend-engine-xt-snowflake-m2mudf-plan-executor.jar @DEMO_SCHEMA.SNOWFLAKESTAGE/test/query/getFirmDetailsWithInput AUTO_COMPRESS = FALSE OVERWRITE = TRUE";
+        String expectedExecutionPlanPutCommand = "PUT file://" + SnowflakeM2MUdfGenerator.TEMP_DIR + "/executionPlan.json @DEMO_SCHEMA.SNOWFLAKESTAGE/test/query/getFirmDetailsWithInput AUTO_COMPRESS = FALSE OVERWRITE = TRUE";
         String expectedCreateCommand = "CREATE OR REPLACE FUNCTION dbName.legend_native_apps_1.MYUDF(\"input\" VARCHAR)\n" +
                 "RETURNS VARCHAR\n" +
                 "LANGUAGE JAVA\n" +
@@ -115,4 +115,3 @@ public class TestSnowflakeM2MUdfGenerator
     }
 
 }
- 
