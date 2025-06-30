@@ -54,8 +54,7 @@
     {
       "name": "memsql",
       "modules": [
-        "legend-engine-xt-relationalStore-memsql-PCT",
-        "legend-engine-xt-relationalStore-memsql-SDT"
+        "legend-engine-xt-relationalStore-memsql-PCT"
       ]
     },
     {
