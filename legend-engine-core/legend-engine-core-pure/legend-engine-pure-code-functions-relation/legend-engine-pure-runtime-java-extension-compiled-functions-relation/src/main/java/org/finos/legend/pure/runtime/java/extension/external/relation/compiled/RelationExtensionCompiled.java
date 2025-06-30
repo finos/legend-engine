@@ -159,14 +159,7 @@ public class RelationExtensionCompiled implements CompiledExtension
                 CoreInstance returnGenericType = Instance.getValueForMetaPropertyToOneResolved(functionType, M3Properties.returnType, processorSupport);
                 String returnType = TypeProcessor.typeToJavaObjectSingle(returnGenericType, true, processorSupport);
 
-                String getValue = "((org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.RowContainer)" + processedOwnerInstance + ").apply(\"" + Instance.getValueForMetaPropertyToOneResolved(function, M3Properties.name, processorContext.getSupport()).getName() + "\")";
-
-                if (returnGenericType.getValueForMetaPropertyToOne(M3Properties.rawType) == processorSupport.package_getByUserPath(M3Paths.Variant))
-                {
-                    getValue = FromJson.class.getCanonicalName() + ".fromJson((String)" + getValue + ",es)";
-                }
-
-                getValue = "(" + returnType + ")" + getValue;
+                String getValue = "(" + returnType + ")((org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.RowContainer)" + processedOwnerInstance + ").apply(\"" + Instance.getValueForMetaPropertyToOneResolved(function, M3Properties.name, processorContext.getSupport()).getName() + "\")";
 
                 if (GenericType.testContainsExtendedPrimitiveTypes(returnGenericType, processorSupport))
                 {

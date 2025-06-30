@@ -142,10 +142,6 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
             {
                 Cast.evaluateConstraints(value, colType, interpreted, instantiationContext, functionExpressionCallStack, functionExpressionCallStack.isEmpty() ? null : functionExpressionCallStack.peek().getSourceInformation(), executionSupport, processorSupport);
             }
-            else if (colType._rawType() == processorSupport.package_getByUserPath(M3Paths.Variant))
-            {
-                value = ValueSpecificationBootstrap.wrapValueSpecification(VariantInstanceImpl.newVariant(PrimitiveUtilities.getStringValue(processorSupport.instance_getValueForMetaPropertyToOneResolved(value, M3Properties.values)), interpreted.getPureRuntime().getModelRepository(), processorSupport), true, processorSupport);
-            }
 
             return value;
         }
