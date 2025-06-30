@@ -31,11 +31,10 @@ native function meta::external::store::relational::sdt::framework::runSqlDialect
 
 function meta::external::store::relational::sdt::framework::runSqlDialectTest(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*], debug: DebugContext[1]): Boolean[1]
 {
-  let transformBooleanToInt =  $dbType->fetchSqlDialectForDbType($extensions).isBooleanAliasForTinyInt->toOne();
   let sdtTestCaseSqls = $sdt->generateSdtTestCaseSqls($dbType, $extensions);
   $sdtTestCaseSqls.setupSqls->concatenate($sdtTestCaseSqls.testQuery)->concatenate($sdtTestCaseSqls.teardownSqls)->map(s | print(if(!$debug.debug, |'', | $debug.space + 'Running statement: ' + $s + '\n')));
   let result = $dbType->runSqlDialectTestQuery($sdtTestCaseSqls.testQuery, $sdtTestCaseSqls.setupSqls, $sdtTestCaseSqls.teardownSqls)->testResultFromResultSet();
-  $sdt->assertSdtTestPasses($result, $transformBooleanToInt);
+  $sdt->assertSdtTestPasses($result);
 }
 
 Profile meta::external::store::relational::sdt::framework::SDT
@@ -106,9 +105,9 @@ function <<access.private>> meta::external::store::relational::sdt::framework::t
   )
 }
 
-function <<access.private>> meta::external::store::relational::sdt::framework::assertSdtTestPasses(sdt: SqlDialectTest[1], actualResult: TestResult[1], transformBooleanToInt: Boolean[1]): Boolean[1]
+function <<access.private>> meta::external::store::relational::sdt::framework::assertSdtTestPasses(sdt: SqlDialectTest[1], actualResult: TestResult[1]): Boolean[1]
 {
-  let expected = if($transformBooleanToInt, | $sdt.expectedResult->transformResult()->transformExpectedBoolean(), | $sdt.expectedResult->transformResult());
+  let expected = $sdt.expectedResult->transformResult();
   let actual = $actualResult->transformResult();
   assertEquals($expected, $actual, | 'Expected - ' + $expected->toJSON(100) + '\n' + 'Actual - ' + $actual->toJSON(100));
 }
@@ -116,11 +115,6 @@ function <<access.private>> meta::external::store::relational::sdt::framework::a
 function <<access.private>> meta::external::store::relational::sdt::framework::transformResult(res: TestResult[1]): TestResult[1]
 {
   ^$res(rows = $res.rows->map(r | ^$r(values = $r.values->map(v | $v->match([f: Float[1] | round($f, 8), a:Any[*] | $a])))),columnNames=$res.columnNames->map(c|$c->toLower()))
-}
-
-function <<access.private>> meta::external::store::relational::sdt::framework::transformExpectedBoolean(res: TestResult[1]): TestResult[1]
-{
-  ^$res(rows = $res.rows->map(r | ^$r(values = $r.values->map(v | $v->match([b: Boolean[1] | if($b,| 1, | 0), a:Any[*] | $a])))),columnNames=$res.columnNames)
 }
 
 function meta::external::store::relational::sdt::framework::testConfigForSimpleExpression(expression: String[1], expected: Any[1], identifier: String[1]): SqlDialectTest[1]
