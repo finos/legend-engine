@@ -5236,7 +5236,7 @@ function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecif
          e:RoutedValueSpecification[1]|$e.value->processAggFn($params, $state),
          f:FunctionExpression[1] |
                if($f.func == cast_Any_m__T_1__T_m_,
-                  | $f.parametersValues->at(1)->cast(@ValueSpecification)->processAggFn($params, $state),
+                  | $f.parametersValues->at(0)->processAggFn($params, $state),
                   | let fn = $f.func.functionName->toOne();
                     let singleArgument = $f.parametersValues->match([
                       i:InstanceValue[1] | $i.values->size() == 1,
