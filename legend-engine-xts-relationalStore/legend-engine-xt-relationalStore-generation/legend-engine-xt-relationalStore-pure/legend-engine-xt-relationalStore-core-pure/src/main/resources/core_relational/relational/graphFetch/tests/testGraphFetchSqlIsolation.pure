@@ -31,7 +31,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
 {
    let runtime = getRuntime(IsolationTestDB1);
 
-   let connection = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
+   let connection = $runtime.connectionStores.connection->at(0)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    dropAndCreateTableInDb(IsolationTestDB1, 'firmTable', $connection);
    dropAndCreateTableInDb(IsolationTestDB1, 'personTable', $connection);
    dropAndCreateTableInDb(IsolationTestDB1, 'personFirmBridgeTable', $connection);

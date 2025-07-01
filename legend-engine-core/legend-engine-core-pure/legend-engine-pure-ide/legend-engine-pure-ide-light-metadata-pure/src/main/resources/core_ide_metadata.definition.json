@@ -1,9 +1,0 @@
-{
-  "name": "core_ide_metadata",
-  "pattern": "(meta::alloy|meta::protocols)(::.*)?",
-  "dependencies": [
-    "platform",
-    "core",
-    "core_relational"
-  ]
-}

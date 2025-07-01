@@ -22,25 +22,25 @@ import meta::relational::metamodel::execute::*;
 import meta::relational::functions::typeInference::*;
 import meta::relational::translation::*;
 
-function meta::relational::metamodel::execute::executeInDb(sql:String[1], databaseConnectionFunction:Function<{->DatabaseConnection[1]}>[1]):ResultSet[1]
+function meta::relational::metamodel::execute::executeInDb(sql:String[1], databaseConnectionFunction:Function<{->meta::external::store::relational::runtime::DatabaseConnection[1]}>[1]):ResultSet[1]
 {
    let databaseConnection = $databaseConnectionFunction->eval();
    meta::relational::metamodel::execute::executeInDb($sql, $databaseConnection, 0, 1000);
 }
 
-function meta::relational::metamodel::execute::executeInDb(sql:String[1], databaseConnection:DatabaseConnection[1]):ResultSet[1]
+function meta::relational::metamodel::execute::executeInDb(sql:String[1], databaseConnection:meta::external::store::relational::runtime::DatabaseConnection[1]):ResultSet[1]
 {
     meta::relational::metamodel::execute::executeInDb($sql, $databaseConnection, 0, 1000)
 }
 
 function meta::relational::metamodel::execute::executeInDb(sql:String[1], connectionStore:ConnectionStore[1]):ResultSet[1]
 {
-    let databaseConnection = $connectionStore.connection->cast(@DatabaseConnection);
+    let databaseConnection = $connectionStore.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
     meta::relational::metamodel::execute::executeInDb($sql, $databaseConnection, 0, 1000);
 }
 
 
-function meta::relational::functions::database::executeInDb(str: String[1] , connection:DatabaseConnection[1], debug:Boolean[1]):ResultSet[1]
+function meta::relational::functions::database::executeInDb(str: String[1] , connection:meta::external::store::relational::runtime::DatabaseConnection[1], debug:Boolean[1]):ResultSet[1]
 {
    print(if($debug,|$str+'\n',|''));
    executeInDb($str, $connection);
@@ -48,13 +48,13 @@ function meta::relational::functions::database::executeInDb(str: String[1] , con
 
 function meta::relational::functions::database::executeInDb(str: String[1] , connectionStore:ConnectionStore[1], debug:Boolean[1]):ResultSet[1]
 {
-   let connection = $connectionStore.connection->cast(@DatabaseConnection);
+   let connection = $connectionStore.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    print(if($debug,|$str+'\n',|''));
    executeInDb($str, $connection);
 }
 
 
-function meta::relational::metamodel::execute::loadCsvToDbTable(filePath:String[1], table:Table[1], databaseConnection:DatabaseConnection[1]):Nil[0]
+function meta::relational::metamodel::execute::loadCsvToDbTable(filePath:String[1], table:Table[1], databaseConnection:meta::external::store::relational::runtime::DatabaseConnection[1]):Nil[0]
 {
     loadCsvToDbTable($filePath, $table, $databaseConnection, [])
 }
@@ -65,7 +65,7 @@ function meta::relational::metamodel::execute::loadCsvToDbTable(filePath:String[
     loadCsvToDbTable($filePath, $table, $databaseConnection, []);
 }
 
-function meta::relational::metamodel::execute::createTestDatabaseConnection():DatabaseConnection[1]
+function meta::relational::metamodel::execute::createTestDatabaseConnection():meta::external::store::relational::runtime::DatabaseConnection[1]
 {
    ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2);
 }
@@ -84,7 +84,7 @@ function meta::relational::metamodel::execute::resultSetToTDS(resultSet:ResultSe
    $tds;
 }
 
-function meta::relational::metamodel::execute::executeInDbToTDS(sql:String[1], databaseConnectionFunction:Function<{->DatabaseConnection[1]}>[1]):TabularDataSet[1]
+function meta::relational::metamodel::execute::executeInDbToTDS(sql:String[1], databaseConnectionFunction:Function<{->meta::external::store::relational::runtime::DatabaseConnection[1]}>[1]):TabularDataSet[1]
 {
    meta::relational::metamodel::execute::executeInDb($sql, $databaseConnectionFunction)->resultSetToTDS();
 }

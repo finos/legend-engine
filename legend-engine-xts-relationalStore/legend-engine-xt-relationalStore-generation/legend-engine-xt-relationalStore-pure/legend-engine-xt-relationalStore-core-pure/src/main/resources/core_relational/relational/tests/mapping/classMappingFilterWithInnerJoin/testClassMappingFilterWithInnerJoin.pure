@@ -15,8 +15,7 @@
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
-import  meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::*;
-import meta::relational::tests::*;
+import meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::*;
 import meta::external::store::relational::tests::*;
 import meta::relational::tests::mapping::embedded::model::mapping::*;
 import meta::relational::tests::csv::*;

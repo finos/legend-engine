@@ -565,7 +565,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
                     ^meta::core::runtime::ConnectionStore(
                       element=meta::relational::tests::db,
                       connection=
-                    ^RelationalDatabaseConnection
+                    ^meta::external::store::relational::runtime::RelationalDatabaseConnection
                     (
                        type = meta::relational::runtime::DatabaseType.H2,
                        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(),

@@ -29,7 +29,7 @@ import meta::json::*;
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::subType::setup(): Boolean[1]
 {
    let runtime =  ^Runtime(connectionStores= [^ConnectionStore(element=meta::relational::graphFetch::tests::subType::db,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2))]);
-   let connection  = $runtime.connectionStores->at(0).connection->cast(@DatabaseConnection);
+   let connection  = $runtime.connectionStores->at(0).connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    executeInDb('Drop table if exists addressTable;', $connection);
    executeInDb('Drop table if exists landmarkTable;', $connection);
    executeInDb('Drop table if exists landmarkTable1;', $connection);

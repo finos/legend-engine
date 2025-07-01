@@ -21,7 +21,7 @@ import meta::relational::functions::sqlstring::*;
 
 function <<test.Test, test.ToFix>> meta::relational::tests::projection::concatenate::testSimpleConcatenate():Boolean[1]
 {
-   let result = execute(|Person.all()->concatenate(Person.all())->project([#/Person/firstName#]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Person.all()->concatenate(Person.all())->project([#/Person/firstName#]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 14 );
    //assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
    //assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());

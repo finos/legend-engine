@@ -185,7 +185,7 @@ function meta::relational::testDataGeneration::generateTestData(func:FunctionDef
 {
    let newVars = $func->generateParametersNameValuePair($parameters, []);
    let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $newVars, $extensions),| scanRelations($func, $mapping, $extensions));
-   let dbConnection = $runtime.connectionStores.connection->filter(c|$c->instanceOf(DatabaseConnection))->toOne()->cast(@DatabaseConnection);
+   let dbConnection = $runtime.connectionStores.connection->filter(c|$c->instanceOf(meta::external::store::relational::runtime::DatabaseConnection))->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    let relationColumnMap = $relationTree->generateRelationColumnMap(^Map<NamedRelation, List<Column>>());
 
    let generationResult = meta::relational::testDataGeneration::generateTestDataStartingFromRoot($relationTree, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $config, $extensions);
@@ -289,7 +289,7 @@ function <<access.protected>> meta::relational::testDataGeneration::generateSeed
    ^LambdaFunction<{->RelationData[1]}>(expressionSequence=$expressionSequence->take($exprSize - 1)->concatenate($wrappedLast)->toOneMany());
 }
 
-function meta::relational::testDataGeneration::generateTestDataStartingFromRoot(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<Pair<NamedRelation, ResultSet>>, List<String>>[*]
+function meta::relational::testDataGeneration::generateTestDataStartingFromRoot(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<Pair<NamedRelation, ResultSet>>, List<String>>[*]
 {
    assert($relationTree.root == true, 'Should start with a table tree starting from a \'root\'');
    let childrenTrees = $relationTree.children;
@@ -336,7 +336,7 @@ function meta::relational::testDataGeneration::generateTestDataStartingFromRoot(
    });
 }
 
-function meta::relational::testDataGeneration::generateTestDataForNestedViewTree(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<Pair<NamedRelation, ResultSet>>, List<String>>[*]
+function meta::relational::testDataGeneration::generateTestDataForNestedViewTree(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<Pair<NamedRelation, ResultSet>>, List<String>>[*]
 {
    let view = $relationTree.view;
    let mainRelation = $view->mainRelation();
@@ -417,7 +417,7 @@ function meta::relational::testDataGeneration::generateTestDataForNestedViewTree
    pair(list(pair($relationTree.view, $viewResult)->concatenate($initialResults.first.values)), list($initialResults.second.values->concatenate($viewSql)));
 }
 
-function meta::relational::testDataGeneration::generateTestDataStartingFromNode(relationTree: RelationTree[1], nodeResult: ResultSet[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<Pair<NamedRelation, ResultSet>>, List<String>>[*]
+function meta::relational::testDataGeneration::generateTestDataStartingFromNode(relationTree: RelationTree[1], nodeResult: ResultSet[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<Pair<NamedRelation, ResultSet>>, List<String>>[*]
 {
    let root = $relationTree.relation->cast(@NamedRelation)->toOne();
    let newPairs = $relationTree.children->map({child |
@@ -479,7 +479,7 @@ function meta::relational::testDataGeneration::generateTestDataStartingFromNode(
    });
 }
 
-function <<access.protected>> meta::relational::testDataGeneration::getRowIdentifiersForTable(rowIdentifiers: TableRowIdentifiers[*], table: Table[1], generateWithDefaultPKs: Boolean[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: DatabaseConnection[1], isViewRoot: Boolean[1], view: View[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):RowIdentifier[*]
+function <<access.protected>> meta::relational::testDataGeneration::getRowIdentifiersForTable(rowIdentifiers: TableRowIdentifiers[*], table: Table[1], generateWithDefaultPKs: Boolean[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[1], isViewRoot: Boolean[1], view: View[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):RowIdentifier[*]
 {
    let tablePk = $rowIdentifiers->filter(t | $t.table == $table);
    if($tablePk->size() == 1,
@@ -517,7 +517,7 @@ function <<access.protected>> meta::relational::testDataGeneration::getRowIdenti
    );
 }
 
-function <<access.protected>> meta::relational::testDataGeneration::getRowIdentifiersForChildViewRoot(rowIdentifiers: TableRowIdentifiers[*], root: NamedRelation[1], nodeResult: ResultSet[1], join:Join[1], generateWithDefaultPKs: Boolean[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: DatabaseConnection[1], view: View[1], config: TestDataGenerationConfig[1], extensions:Extension[*]):RowIdentifier[*]
+function <<access.protected>> meta::relational::testDataGeneration::getRowIdentifiersForChildViewRoot(rowIdentifiers: TableRowIdentifiers[*], root: NamedRelation[1], nodeResult: ResultSet[1], join:Join[1], generateWithDefaultPKs: Boolean[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[1], view: View[1], config: TestDataGenerationConfig[1], extensions:Extension[*]):RowIdentifier[*]
 {
    let viewMainTable = $view->findMainTableForView();
    let tempName = 'testDataGen_Temp_' + $root.name;
@@ -828,13 +828,13 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
 {
    let newParameterNameValuePairs = meta::relational::testDataGeneration::generateParametersNameValuePair($func, [], $parameterNameValuePairs);
    let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $newParameterNameValuePairs, $extensions),| scanRelations($func, $mapping, $extensions));
-   let dbConnectionStore = $runtime.connectionStores->filter(c|$c.connection->instanceOf(DatabaseConnection));
+   let dbConnectionStore = $runtime.connectionStores->filter(c|$c.connection->instanceOf(meta::external::store::relational::runtime::DatabaseConnection));
    let updatedDbConnectionStore = $extensions.executionPlanExtensions().processRuntimeTestConnections->toOne()->eval($dbConnectionStore);
    let newRuntime = ^$runtime(connectionStores=$updatedDbConnectionStore);
 
    let relationColumnMap = $relationTree->generateRelationColumnMap(^Map<NamedRelation, List<Column>>());
 
-   let node = meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($relationTree, $newRuntime, $exeCtx, $updatedDbConnectionStore.connection->distinct()->toOne()->cast(@DatabaseConnection), $relationColumnMap, [], ^TestDataGenerationConfig(rowIdentifiers=$rowIdentifiers,  generateWithDefaultPKs=false, hashStrings=$hashStrings, temporalMilestoningDates=$temporalMilestoningDates), $extensions);
+   let node = meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($relationTree, $newRuntime, $exeCtx, $updatedDbConnectionStore.connection->distinct()->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection), $relationColumnMap, [], ^TestDataGenerationConfig(rowIdentifiers=$rowIdentifiers,  generateWithDefaultPKs=false, hashStrings=$hashStrings, temporalMilestoningDates=$temporalMilestoningDates), $extensions);
    ^ExecutionPlan
    (
       func = $func,
@@ -852,7 +852,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    planTestDataGenerationWithParameterValuePairs($func, $mapping, $runtime, $exeCtx, $rowIdentifiers, $hashStrings, $temporalMilestoningDates,$func->generateParametersNameValuePair($parameters, []) ,$extensions)
 }
 
-function meta::relational::testDataGeneration::executionPlan::planTestDataGeneration(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[1]
+function meta::relational::testDataGeneration::executionPlan::planTestDataGeneration(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[1]
 {
    assert($relationTree.root == true, 'Should start with a relation tree starting from a \'root\'');
    let childrenTrees = $relationTree.children;
@@ -938,7 +938,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    );
 }
 
-function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationStartingFromNode(relationTree: RelationTree[1], nodeResPlaceHolder: String[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[*]
+function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationStartingFromNode(relationTree: RelationTree[1], nodeResPlaceHolder: String[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[*]
 {
    let root = $relationTree.relation->cast(@NamedRelation)->toOne();
    let newPairs = $relationTree.children->size()->range()->map({i |
@@ -1019,11 +1019,11 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    });
 }
 
-function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], root: Boolean[1], parentResPlaceHolder: String[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[*]
+function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], root: Boolean[1], parentResPlaceHolder: String[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[*]
 {
   let view               = $relationTree.view;
   let currentIndices     = $indices->add('v');
-  let translationContext = ^TranslationContext(dbType=$dbConnection->cast(@DatabaseConnection).type);
+  let translationContext = ^TranslationContext(dbType=$dbConnection->cast(@meta::external::store::relational::runtime::DatabaseConnection).type);
   let table              = meta::relational::metamodel::mainTable($view);
 
   let pksAndErrorNodes   = if($root,
@@ -1198,7 +1198,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
   );
 }
 
-function <<access.protected>> meta::relational::testDataGeneration::executionPlan::planRowIdentifierExtractionForTable(rowIdentifiers: TableRowIdentifiers[*], table: Table[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: DatabaseConnection[1], isViewRoot: Boolean[1], view: View[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<RowIdentifier>, List<ExecutionNode>>[1]
+function <<access.protected>> meta::relational::testDataGeneration::executionPlan::planRowIdentifierExtractionForTable(rowIdentifiers: TableRowIdentifiers[*], table: Table[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[1], isViewRoot: Boolean[1], view: View[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<RowIdentifier>, List<ExecutionNode>>[1]
 {
    let tablePk = $rowIdentifiers->filter(t | $t.table == $table);
    if($tablePk->size() == 1,

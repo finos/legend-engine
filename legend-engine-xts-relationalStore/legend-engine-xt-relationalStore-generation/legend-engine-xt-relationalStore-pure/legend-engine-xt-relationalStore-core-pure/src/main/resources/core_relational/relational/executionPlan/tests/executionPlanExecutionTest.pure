@@ -159,6 +159,6 @@ function <<access.private>> meta::pure::executionPlan::tests::execution::setUpDa
    let database = if ($databases->size() == 1, | $databases->toOne(), | ^Database(name='Default_CatchAll', includes = $databases));
 
    meta::alloy::service::execution::setUpDataSQLs($t->cast(@SingleExecutionTest).data, $database)
-      ->map(sql| executeInDb($sql, $runtime->connectionByElement($databases->at(0))->cast(@DatabaseConnection));)->size();  // DO NOT REMOVE: size called to inhibit lazy evaluation ensuring the map is activated;
+      ->map(sql| executeInDb($sql, $runtime->connectionByElement($databases->at(0))->cast(@meta::external::store::relational::runtime::DatabaseConnection));)->size();  // DO NOT REMOVE: size called to inhibit lazy evaluation ensuring the map is activated;
    true;
 }

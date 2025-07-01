@@ -107,7 +107,7 @@ import meta::relational::runtime::*;
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::crossDatabase::setUpDBs():Any[*]
 {
    let runtime1 = meta::external::store::relational::tests::testRuntime(EmployeeDB);
-   let connection1 = $runtime1.connectionStores.connection->toOne()->cast(@DatabaseConnection);
+   let connection1 = $runtime1.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection);
 
    executeInDb('Drop table if exists employee;', $connection1);
    executeInDb('Create Table employee(name VARCHAR(100), id INT, ceoName VARCHAR(100));', $connection1);
@@ -122,7 +122,7 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::crossDataba
 
 
    let runtime2 = meta::external::store::relational::tests::testRuntime(FirmDB);
-   let connection2 = $runtime2.connectionStores.connection->toOne()->cast(@DatabaseConnection);
+   let connection2 = $runtime2.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection);
 
    executeInDb('Drop table if exists firm;', $connection2);
    executeInDb('Create Table firm(id INT, legalName VARCHAR(100), ceoIdentifier INT);', $connection2);

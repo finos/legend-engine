@@ -1090,17 +1090,17 @@ function meta::external::store::relational::tests::testRuntimeForBQ():Runtime[1]
 
 function meta::external::store::relational::tests::testRuntime(timeZone:String[1]):Runtime[1]
 {
-   meta::external::store::relational::tests::testRuntime(testDatabaseConnection(db, $timeZone))
+   meta::external::store::relational::tests::testRuntime(meta::external::store::relational::tests::testDatabaseConnection(db, $timeZone))
 }
 
 function meta::external::store::relational::tests::testRuntime(quoteIdentifiers:Boolean[1]):Runtime[1]
 {
-   meta::external::store::relational::tests::testRuntime(testDatabaseConnection(db, [], $quoteIdentifiers))
+   meta::external::store::relational::tests::testRuntime(meta::external::store::relational::tests::testDatabaseConnection(db, [], $quoteIdentifiers))
 }
 
 function meta::external::store::relational::tests::testRuntime(db:Database[1]):Runtime[1]
 {
-   meta::external::store::relational::tests::testRuntime(testDatabaseConnection($db, []))
+   meta::external::store::relational::tests::testRuntime(meta::external::store::relational::tests::testDatabaseConnection($db, []))
 }
 
 function meta::external::store::relational::tests::testRuntime(testConnection:ConnectionStore[1]):Runtime[1]
@@ -1130,7 +1130,7 @@ function meta::external::store::relational::tests::testDatabaseConnection(db:Dat
 }
 
 
-function meta::relational::tests::createPersonTableAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+function meta::relational::tests::createPersonTableAndFillDb(connection : meta::external::store::relational::runtime::DatabaseConnection[1]) : Boolean[1]
 {
    executeInDb('Drop table if exists PersonTable;', $connection);
    executeInDb('Create Table PersonTable(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT);', $connection);
@@ -1150,7 +1150,7 @@ function meta::relational::tests::createPersonTableAndFillDb(connection : Databa
    true;
 }
 
-function meta::relational::tests::createFirmTableAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+function meta::relational::tests::createFirmTableAndFillDb(connection : meta::external::store::relational::runtime::DatabaseConnection[1]) : Boolean[1]
 {
    executeInDb('Drop table if exists FirmTable;', $connection);
    executeInDb('Create Table FirmTable(id INT, legalName VARCHAR(200), addressId INT, ceoId INT);', $connection);
@@ -1161,7 +1161,7 @@ function meta::relational::tests::createFirmTableAndFillDb(connection : Database
    true;
 }
 
-function meta::relational::tests::createTradeTableAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+function meta::relational::tests::createTradeTableAndFillDb(connection : meta::external::store::relational::runtime::DatabaseConnection[1]) : Boolean[1]
 {
    executeInDb('Drop table if exists tradeTable;', $connection);
    executeInDb('Create Table tradeTable(id INT, prodid INT, accountId INT, quantity FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP(9));', $connection);
@@ -1194,7 +1194,7 @@ function meta::relational::tests::createTradeTableAndFillDb(connection : Databas
    true;
 }
 
-function meta::relational::tests::createtestTableAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+function meta::relational::tests::createtestTableAndFillDb(connection : meta::external::store::relational::runtime::DatabaseConnection[1]) : Boolean[1]
 {
    executeInDb('Drop table if exists testTable;', $connection);
    executeInDb('Create Table testTable(quantity INT, Class VARCHAR(200),boolean  INT, abstract  INT, assert  INT, break  INT, byte  INT, catch  INT, char  INT, const  INT, continue  INT, default  INT, do  INT, double  INT, else  INT, enum  INT, final  INT, finally  INT, float  INT, goto  INT, implements  INT, instanceof  INT, interface VARCHAR(100), long VARCHAR(100), new VARCHAR(100), package VARCHAR(100), private VARCHAR(100), protected VARCHAR(100), public VARCHAR(100), return VARCHAR(100), short VARCHAR(100), static VARCHAR(100), strictfp VARCHAR(100), super VARCHAR(100), switch VARCHAR(100), synchronized VARCHAR(100), this VARCHAR(100), throw VARCHAR(100), throws VARCHAR(100), transient VARCHAR(100), try VARCHAR(100), void VARCHAR(100), volatile VARCHAR(100), while VARCHAR(100));', $connection);
@@ -1204,7 +1204,7 @@ function meta::relational::tests::createtestTableAndFillDb(connection : Database
    true;
 }
 
-function meta::relational::tests::createtestClassTableAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+function meta::relational::tests::createtestClassTableAndFillDb(connection : meta::external::store::relational::runtime::DatabaseConnection[1]) : Boolean[1]
 {
    executeInDb('Drop table if exists testClassTable;', $connection);
    executeInDb('Create Table testClassTable(desks INT, students INT);', $connection);
@@ -1214,7 +1214,7 @@ function meta::relational::tests::createtestClassTableAndFillDb(connection : Dat
    true;
 }
 
-function meta::relational::tests::createProductSchemaTablesAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+function meta::relational::tests::createProductSchemaTablesAndFillDb(connection : meta::external::store::relational::runtime::DatabaseConnection[1]) : Boolean[1]
 {
    executeInDb('Drop schema if exists productSchema cascade;', $connection);
    executeInDb('Create schema productSchema;', $connection);

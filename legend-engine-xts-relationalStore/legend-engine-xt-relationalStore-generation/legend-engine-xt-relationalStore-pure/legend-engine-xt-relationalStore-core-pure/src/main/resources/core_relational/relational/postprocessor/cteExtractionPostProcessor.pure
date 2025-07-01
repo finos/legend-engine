@@ -134,7 +134,7 @@ function meta::relational::tests::postProcessor::cteExtraction::testRuntimeWithC
    (
       connectionStores = ^ConnectionStore(
         element = meta::relational::tests::db,
-        connection = ^TestDatabaseConnection(
+        connection = ^meta::external::store::relational::runtime::TestDatabaseConnection(
            type = DatabaseType.H2,
            sqlQueryPostProcessors = {s: SelectSQLQuery[1] | ^meta::pure::mapping::Result<SelectSQLQuery|1>(values = $s->extractSubqueriesAsCTEs())},
            queryPostProcessorsWithParameter = [extractSubQueriesAsCTEsPostProcessor(^ExtractSubQueriesAsCTEsPostProcessor())]
@@ -148,7 +148,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
    let func = {|Trade.all()->filter(x | $x.id == 100)->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])};
    let result = execute($func, simpleRelationalMapping, testRuntimeWithCTEPP(), relationalExtensions());
    assertSameSQL('select "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root" where "root".ID = 100', $result);
-   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
 }
 
@@ -161,7 +161,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
       'select "root".ID as "TradeID", "root".quantity as "Quantity", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "LatestEventDate" from tradeTable as "root" left outer join subquery_cte_1_1 as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id and "tradeeventviewmaxtradeeventdate_0".trade_id = 100) where "root".ID = 100',
       $result
    );
-   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
 }
 
@@ -174,7 +174,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
      'select "subselect"."TradeID" as "TradeID", "subselect"."Quantity" as "Quantity" from subquery_cte_1_1 as "subselect" where "subselect"."TradeID" = 100',
       $result
    );
-   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
 }
 
@@ -189,7 +189,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
       $result
    );
 
-   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
 }
 
@@ -210,7 +210,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
      'select "tradetable_0"."TradeID" as "TradeID", "tradetable_0"."Quantity" as "Quantity", "tradetable_0"."ProductName" as "ProductName" from subquery_cte_1_1 as "tradetable_0"',
       $result
    );
-   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
 }
 
@@ -232,7 +232,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
      'select "tradetable_0"."TradeID" as "TradeID", "tradetable_0"."Quantity" as "Quantity", "tradetable_0"."ProductName" as "ProductName" from subquery_cte_1_1 as "tradetable_0"',
       $result
    );
-   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
 }
 
@@ -247,6 +247,6 @@ function <<test.Test>> meta::relational::tests::postProcessor::cteExtraction::te
      'select "firmtable_0".LEGALNAME as "Legal Name", "persontable_1".FIRSTNAME as "Employee Name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join subquery_cte_1_1 as "persontable_1" on ("firmtable_0".ID = "persontable_1".FIRMID)',
       $result
    );
-   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, testRuntime(), relationalExtensions());
+   let resultWithoutCTEPP = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    assertEquals($resultWithoutCTEPP.values->toCSV(), $result.values->toCSV());
 }

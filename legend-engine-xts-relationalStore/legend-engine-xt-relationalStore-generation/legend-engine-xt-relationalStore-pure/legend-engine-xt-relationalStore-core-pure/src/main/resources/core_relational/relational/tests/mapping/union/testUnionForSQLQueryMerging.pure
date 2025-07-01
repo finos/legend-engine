@@ -305,7 +305,7 @@ import meta::relational::tests::mapping::union::sqlQueryMerging::store::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::union::sqlQueryMerging::setup():Runtime[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime(database).connectionByElement(database)->cast(@DatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime(database).connectionByElement(database)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
 
    executeInDb('drop table if exists aTable1;', $connection);
    executeInDb('create table aTable1 (pk INTEGER, fk INTEGER)', $connection);

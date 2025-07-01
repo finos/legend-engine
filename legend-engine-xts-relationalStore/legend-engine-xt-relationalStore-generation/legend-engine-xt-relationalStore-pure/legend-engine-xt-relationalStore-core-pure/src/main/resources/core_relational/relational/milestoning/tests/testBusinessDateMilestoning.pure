@@ -25,7 +25,6 @@ import meta::relational::milestoning::*;
 
 import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;
-import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::relational::tests::milestoning::*;

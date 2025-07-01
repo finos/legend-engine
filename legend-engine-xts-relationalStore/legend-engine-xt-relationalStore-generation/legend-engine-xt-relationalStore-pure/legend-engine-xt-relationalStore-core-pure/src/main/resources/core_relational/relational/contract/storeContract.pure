@@ -244,11 +244,11 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
       ]
       ,|
           // Normal Flow
-        let connections = $runtime.connectionStores->filter(c | $c.connection->instanceOf(DatabaseConnection));
+        let connections = $runtime.connectionStores->filter(c | $c.connection->instanceOf(meta::external::store::relational::runtime::DatabaseConnection));
         let storeRuntime = if($connections->size() <= 1,
                             | $runtime->toOne(),
                             | let oldRuntime = $runtime->toOne();
-                              let dbConn = $oldRuntime->connectionByElement($store)->cast(@DatabaseConnection);
+                              let dbConn = $oldRuntime->connectionByElement($store)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
                               let dbConnectionStore = $oldRuntime.connectionStores->filter(c|$c.connection==$dbConn);
                               ^$oldRuntime(connectionStores = $dbConnectionStore);
                         );
