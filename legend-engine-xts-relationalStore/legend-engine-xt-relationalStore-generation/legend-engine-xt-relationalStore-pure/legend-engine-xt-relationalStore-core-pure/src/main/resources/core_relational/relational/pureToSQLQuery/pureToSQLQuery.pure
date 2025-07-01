@@ -136,11 +136,10 @@ Class meta::relational::functions::pureToSqlQuery::FunctionParamScope
    }:FunctionParamScope[0..1];
 }
 
-function meta::relational::functions::pureToSqlQuery::updateFunctionParamScope(state:State[1], functionType:FunctionType[1], selectWithCursor: SelectWithCursor[*]):State[1]
+function meta::relational::functions::pureToSqlQuery::updateFunctionParamScope(state:State[1], functionType:FunctionType[1], selectWithCursor: SelectWithCursor[1]):State[1]
 {
    let paramNames = $functionType.parameters->evaluateAndDeactivate().name;
-   assertEquals($paramNames->size(), $selectWithCursor->size(), |'Number of arguments in function does not match number of given queries.');
-   let values=$paramNames->zip($selectWithCursor);
+   let values=$paramNames->map(p|pair($p,$selectWithCursor));
    let varToSelect=newMap($values);
    let newScope = ^FunctionParamScope(parent=$state.functionReferenceScope, varToSelect=$varToSelect);
    ^$state(functionReferenceScope=$newScope);
