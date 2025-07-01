@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-spanner</artifactId>
-        <version>4.89.4</version>
+        <version>4.89.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-relationalStore-spanner-PCT</artifactId>
