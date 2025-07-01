@@ -474,6 +474,7 @@ public class Handlers
         {
             Column<?, ?> found = findColumn(type, c, valueSpecificationBuilder.getContext().pureModel.getExecutionSupport().getProcessorSupport());
             c.genericType = CompileContext.convertGenericType(_Column.getColumnType(found));
+            c.multiplicity = CompileContext.convertMultiplicity(_Column.getColumnMultiplicity(found));
         });
 
         return Lists.mutable.with(
@@ -561,6 +562,7 @@ public class Handlers
             ColSpec column = (ColSpec) ((ClassInstance) ((AppliedFunction) parameter).parameters.get(0)).value;
             Column<?, ?> foundColumn = findColumn(type, column, processorSupport);
             column.genericType = CompileContext.convertGenericType(_Column.getColumnType(foundColumn));
+            column.multiplicity = CompileContext.convertMultiplicity(_Column.getColumnMultiplicity(foundColumn));
         }
         else if (parameter instanceof Collection)
         {
@@ -594,6 +596,7 @@ public class Handlers
             ColSpec column = (ColSpec) ((ClassInstance) af.parameters.get(0)).value;
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?> foundColumn = findColumn(type, column, processorSupport);
             column.genericType = CompileContext.convertGenericType(_Column.getColumnType(foundColumn));
+            column.multiplicity = CompileContext.convertMultiplicity(_Column.getColumnMultiplicity(foundColumn));
         }
         else
         {
@@ -802,6 +805,7 @@ public class Handlers
             {
                 Column<?, ?> found = findColumn(relationType, c, cc.pureModel.getExecutionSupport().getProcessorSupport());
                 c.genericType = CompileContext.convertGenericType(_Column.getColumnType(found));
+                c.multiplicity = CompileContext.convertMultiplicity(_Column.getColumnMultiplicity(found));
             });
         }
     }

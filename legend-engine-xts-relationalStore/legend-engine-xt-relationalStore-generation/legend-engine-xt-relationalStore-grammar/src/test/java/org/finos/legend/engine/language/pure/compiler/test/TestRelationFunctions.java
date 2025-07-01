@@ -59,6 +59,157 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     }
 
     @Test
+    public void lambdaColumnsMultiplicityAfterSelect() throws Exception
+    {
+        Pair<PureModelContextData, PureModel> pureModelPair = test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, other Integer NOT NULL))\n"
+        );
+
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|#>{a::A.tb}#->select(~id)");
+        GenericType genericType = Compiler.getLambdaReturnGenericType(lambda, pureModelPair.getTwo());
+        String actualValue = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(genericType);
+        JsonAssert.assertJsonEquals(
+                "{\n" +
+                        "  \"multiplicityArguments\": [],\n" +
+                        "  \"rawType\": {\n" +
+                        "    \"_type\": \"packageableType\",\n" +
+                        "    \"fullPath\": \"meta::pure::metamodel::relation::Relation\"\n" +
+                        "  },\n" +
+                        "  \"typeArguments\": [\n" +
+                        "    {\n" +
+                        "      \"multiplicityArguments\": [],\n" +
+                        "      \"rawType\": {\n" +
+                        "        \"_type\": \"relationType\",\n" +
+                        "        \"columns\": [\n" +
+                        "          {\n" +
+                        "            \"genericType\": {\n" +
+                        "              \"multiplicityArguments\": [],\n" +
+                        "              \"rawType\": {\n" +
+                        "                \"_type\": \"packageableType\",\n" +
+                        "                \"fullPath\": \"meta::pure::precisePrimitives::Int\"\n" +
+                        "              },\n" +
+                        "              \"typeArguments\": [],\n" +
+                        "              \"typeVariableValues\": []\n" +
+                        "            },\n" +
+                        "            \"multiplicity\": {\n" +
+                        "              \"lowerBound\": 0,\n" +
+                        "              \"upperBound\": 1\n" +
+                        "            },\n" +
+                        "            \"name\": \"id\"\n" +
+                        "          }\n" +
+                        "        ]\n" +
+                        "      },\n" +
+                        "      \"typeArguments\": [],\n" +
+                        "      \"typeVariableValues\": []\n" +
+                        "    }\n" +
+                        "  ],\n" +
+                        "  \"typeVariableValues\": []\n" +
+                        "}",
+                actualValue);
+
+        LambdaFunction lambda2 = PureGrammarParser.newInstance().parseLambda("|#>{a::A.tb}#->select(~other)");
+        GenericType genericType2 = Compiler.getLambdaReturnGenericType(lambda2, pureModelPair.getTwo());
+        String actualValue2 = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(genericType2);
+        JsonAssert.assertJsonEquals(
+                "{\n" +
+                        "  \"multiplicityArguments\": [],\n" +
+                        "  \"rawType\": {\n" +
+                        "    \"_type\": \"packageableType\",\n" +
+                        "    \"fullPath\": \"meta::pure::metamodel::relation::Relation\"\n" +
+                        "  },\n" +
+                        "  \"typeArguments\": [\n" +
+                        "    {\n" +
+                        "      \"multiplicityArguments\": [],\n" +
+                        "      \"rawType\": {\n" +
+                        "        \"_type\": \"relationType\",\n" +
+                        "        \"columns\": [\n" +
+                        "          {\n" +
+                        "            \"genericType\": {\n" +
+                        "              \"multiplicityArguments\": [],\n" +
+                        "              \"rawType\": {\n" +
+                        "                \"_type\": \"packageableType\",\n" +
+                        "                \"fullPath\": \"meta::pure::precisePrimitives::Int\"\n" +
+                        "              },\n" +
+                        "              \"typeArguments\": [],\n" +
+                        "              \"typeVariableValues\": []\n" +
+                        "            },\n" +
+                        "            \"multiplicity\": {\n" +
+                        "              \"lowerBound\": 1,\n" +
+                        "              \"upperBound\": 1\n" +
+                        "            },\n" +
+                        "            \"name\": \"other\"\n" +
+                        "          }\n" +
+                        "        ]\n" +
+                        "      },\n" +
+                        "      \"typeArguments\": [],\n" +
+                        "      \"typeVariableValues\": []\n" +
+                        "    }\n" +
+                        "  ],\n" +
+                        "  \"typeVariableValues\": []\n" +
+                        "}",
+                actualValue2);
+
+        LambdaFunction lambda3 = PureGrammarParser.newInstance().parseLambda("|#>{a::A.tb}#->select(~[id, other])");
+        GenericType genericType3 = Compiler.getLambdaReturnGenericType(lambda3, pureModelPair.getTwo());
+        String actualValue3 = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(genericType3);
+        JsonAssert.assertJsonEquals(
+                "{\n" +
+                        "  \"multiplicityArguments\": [],\n" +
+                        "  \"rawType\": {\n" +
+                        "    \"_type\": \"packageableType\",\n" +
+                        "    \"fullPath\": \"meta::pure::metamodel::relation::Relation\"\n" +
+                        "  },\n" +
+                        "  \"typeArguments\": [\n" +
+                        "    {\n" +
+                        "      \"multiplicityArguments\": [],\n" +
+                        "      \"rawType\": {\n" +
+                        "        \"_type\": \"relationType\",\n" +
+                        "        \"columns\": [\n" +
+                        "          {\n" +
+                        "            \"genericType\": {\n" +
+                        "              \"multiplicityArguments\": [],\n" +
+                        "              \"rawType\": {\n" +
+                        "                \"_type\": \"packageableType\",\n" +
+                        "                \"fullPath\": \"meta::pure::precisePrimitives::Int\"\n" +
+                        "              },\n" +
+                        "              \"typeArguments\": [],\n" +
+                        "              \"typeVariableValues\": []\n" +
+                        "            },\n" +
+                        "            \"multiplicity\": {\n" +
+                        "              \"lowerBound\": 0,\n" +
+                        "              \"upperBound\": 1\n" +
+                        "            },\n" +
+                        "            \"name\": \"id\"\n" +
+                        "          },\n" +
+                        "          {\n" +
+                        "            \"genericType\": {\n" +
+                        "              \"multiplicityArguments\": [],\n" +
+                        "              \"rawType\": {\n" +
+                        "                \"_type\": \"packageableType\",\n" +
+                        "                \"fullPath\": \"meta::pure::precisePrimitives::Int\"\n" +
+                        "              },\n" +
+                        "              \"typeArguments\": [],\n" +
+                        "              \"typeVariableValues\": []\n" +
+                        "            },\n" +
+                        "            \"multiplicity\": {\n" +
+                        "              \"lowerBound\": 1,\n" +
+                        "              \"upperBound\": 1\n" +
+                        "            },\n" +
+                        "            \"name\": \"other\"\n" +
+                        "          }\n" +
+                        "        ]\n" +
+                        "      },\n" +
+                        "      \"typeArguments\": [],\n" +
+                        "      \"typeVariableValues\": []\n" +
+                        "    }\n" +
+                        "  ],\n" +
+                        "  \"typeVariableValues\": []\n" +
+                        "}",
+                actualValue3);
+    }
+
+    @Test
     public void testFilterError()
     {
         test(
@@ -564,7 +715,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->sort(~id2)\n" +
                         "}",
-                "COMPILATION error at [7:18-21]: Can't find a match for function 'sort(RelationStoreAccessor<(id:Int)>[1],ColSpec<(id2:NULL)>[1])"
+                "COMPILATION error at [7:18-21]: Can't find a match for function 'sort(RelationStoreAccessor<(id:Int)>[1],ColSpec<(id2:NULL[NULL])>[1])'"
         );
     }
 

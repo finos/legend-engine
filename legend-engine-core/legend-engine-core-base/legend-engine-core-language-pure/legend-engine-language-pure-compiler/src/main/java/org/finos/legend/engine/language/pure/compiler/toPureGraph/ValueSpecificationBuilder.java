@@ -508,7 +508,12 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                 gt = this.context.newGenericType(colSpec.genericType);
                 gt.setSourceInformation(SourceInformationHelper.toM3SourceInformation(colSpec.sourceInformation));
             }
-            return Handlers.wrapInstanceValue(Handlers.buildColSpec(colSpec.name, gt, (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), this.context.pureModel, this.context.pureModel.getExecutionSupport().getProcessorSupport()), this.context.pureModel);
+            Multiplicity multiplicity = null;
+            if (colSpec.multiplicity != null)
+            {
+                multiplicity = this.context.pureModel.getMultiplicity(colSpec.multiplicity);
+            }
+            return Handlers.wrapInstanceValue(Handlers.buildColSpec(colSpec.name, gt, multiplicity, this.context.pureModel, this.context.pureModel.getExecutionSupport().getProcessorSupport()), this.context.pureModel);
         }
         else if (colSpec.function2 == null)
         {
