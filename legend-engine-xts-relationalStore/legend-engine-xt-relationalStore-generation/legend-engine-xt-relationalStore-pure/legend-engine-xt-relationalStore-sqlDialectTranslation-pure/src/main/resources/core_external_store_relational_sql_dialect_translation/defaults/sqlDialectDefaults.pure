@@ -903,7 +903,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::pro
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   let index = $processedArgs->at(1);
-  let modifiedIndex = if($index->parseInteger() < 0, | $sqlDialect->generateFunctionCallWithArgs('length', [$processedArgs->at(0)], [], $state, $config) + $index, | $index);
+  let modifiedIndex = if($index->isNumeric() && ($index->parseInteger() < 0), | $sqlDialect->generateFunctionCallWithArgs('length', [$processedArgs->at(0)], [], $state, $config) + $index, | $index);
   $sqlDialect->generateFunctionCallWithArgs($directionFunc, [$processedArgs->at(0), $modifiedIndex], [], $state, $config);
 }
 
