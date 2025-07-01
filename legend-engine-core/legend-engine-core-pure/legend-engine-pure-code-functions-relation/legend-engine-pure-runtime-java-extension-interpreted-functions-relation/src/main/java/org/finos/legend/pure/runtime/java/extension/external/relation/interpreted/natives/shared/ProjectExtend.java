@@ -36,6 +36,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relati
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
@@ -172,13 +173,13 @@ public class ProjectExtend extends AggregationShared
 
         Type type = ((FunctionType) lambdaFunction._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType()._rawType();
 
-        if (type == _Package.getByUserPath("String", processorSupport))
+        if (type == _Package.getByUserPath(M3Paths.String, processorSupport))
         {
             String[] finalRes = new String[(int) source.getOne().getRowCount()];
             processOneColumn(source, window, lambdaFunction, (j, val) -> finalRes[j] = val == null ? null : PrimitiveUtilities.getStringValue(val), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
             return new ColumnValue(name, DataType.STRING, finalRes);
         }
-        else if (type == _Package.getByUserPath("Integer", processorSupport))
+        else if (type == _Package.getByUserPath(M3Paths.Integer, processorSupport))
         {
             long[] finalRes = new long[(int) source.getOne().getRowCount()];
             boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
@@ -186,7 +187,7 @@ public class ProjectExtend extends AggregationShared
             processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
             return new ColumnValue(name, DataType.LONG, finalRes, nulls);
         }
-        else if (type == _Package.getByUserPath("Float", processorSupport))
+        else if (type == _Package.getByUserPath(M3Paths.Float, processorSupport))
         {
             double[] finalRes = new double[(int) source.getOne().getRowCount()];
             boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
@@ -196,9 +197,9 @@ public class ProjectExtend extends AggregationShared
         }
         else if (type == _Package.getByUserPath(M3Paths.Variant, processorSupport))
         {
-            String[] finalRes = new String[(int) source.getOne().getRowCount()];
-            processOneColumn(source, window, lambdaFunction, (j, val) -> finalRes[j] = val == null ? null : val.getName(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.STRING, finalRes);
+            Variant[] finalRes = new Variant[(int) source.getOne().getRowCount()];
+            processOneColumn(source, window, lambdaFunction, (j, val) -> finalRes[j] = val == null ? null : (Variant) val, resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, DataType.CUSTOM, finalRes);
         }
         else
         {

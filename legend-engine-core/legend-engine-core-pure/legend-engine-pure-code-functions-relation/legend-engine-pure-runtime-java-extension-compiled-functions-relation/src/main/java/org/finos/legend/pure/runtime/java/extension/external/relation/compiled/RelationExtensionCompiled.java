@@ -14,72 +14,29 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled;
 
-import java.util.List;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.generictype.GenericType;
-import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.lang.cast.Cast;
-import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.variant.FromJson;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Bridge;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.PureFunction1;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.type.TypeProcessor;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.valuespecification.ValueSpecificationProcessor;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.AsOfJoin;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Columns;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Concatenate;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.CumulativeDistribution;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.DenseRank;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Distinct;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.DistinctAll;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Drop;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Extend;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendAgg;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendAggArray;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendArray;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendWindowAgg;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendWindowAggArray;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendWindowFunc;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendWindowFuncArray;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Filter;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.First;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.GroupBy;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.GroupByArray;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Join;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Last;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Limit;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Map;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.NTile;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Nth;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Offset;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.PercentRank;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Pivot;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.PivotArray;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Project;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ProjectRelation;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Rank;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Rename;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.RowNumber;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Select;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.SelectAll;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.SelectArray;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Size;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Slice;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Sort;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Write;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.*;
 import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.RowContainer;
+
+import java.util.List;
 
 public class RelationExtensionCompiled implements CompiledExtension
 {
@@ -160,7 +117,6 @@ public class RelationExtensionCompiled implements CompiledExtension
                 String returnType = TypeProcessor.typeToJavaObjectSingle(returnGenericType, true, processorSupport);
 
                 String getValue = "(" + returnType + ")((org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.RowContainer)" + processedOwnerInstance + ").apply(\"" + Instance.getValueForMetaPropertyToOneResolved(function, M3Properties.name, processorContext.getSupport()).getName() + "\")";
-
                 if (GenericType.testContainsExtendedPrimitiveTypes(returnGenericType, processorSupport))
                 {
                     return "(" + returnType + ")" + Cast.buildRunnableForExtendedPrimitiveType(getValue, returnGenericType, null, processorSupport) + ".value()";
@@ -179,18 +135,7 @@ public class RelationExtensionCompiled implements CompiledExtension
     {
         if (func instanceof Column)
         {
-            return (o, executionSupport) ->
-            {
-                Column<?, ?> column = (Column<?, ?>) func;
-                Object colValue = ((RowContainer) o).apply(func._name());
-
-                if (_Column.getColumnType(column)._rawType()._name().equals(M3Paths.Variant) && !(colValue instanceof Variant))
-                {
-                    colValue = FromJson.fromJson((String) colValue, es);
-                }
-
-                return colValue;
-            };
+            return (o, executionSupport) -> ((RowContainer) o).apply(func._name());
         }
         return null;
     }

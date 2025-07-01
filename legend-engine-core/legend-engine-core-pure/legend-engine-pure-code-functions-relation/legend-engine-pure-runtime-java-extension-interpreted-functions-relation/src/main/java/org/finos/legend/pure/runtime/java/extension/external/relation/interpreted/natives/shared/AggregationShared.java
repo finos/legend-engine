@@ -32,6 +32,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relati
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
@@ -71,19 +72,19 @@ public abstract class AggregationShared extends Shared
 
         int size = compress ? aggregationScope.getTwo().size() : (int) aggregationScope.getOne().getRowCount();
         boolean[] nulls = new boolean[(int) size];
-        if (type == _Package.getByUserPath("String", processorSupport))
+        if (type == _Package.getByUserPath(M3Paths.String, processorSupport))
         {
             String[] finalRes = new String[size];
             performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getStringValue(val), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
             return new ColumnValue(name, DataType.STRING, finalRes);
         }
-        else if (type == _Package.getByUserPath("Integer", processorSupport))
+        else if (type == _Package.getByUserPath(M3Paths.Integer, processorSupport))
         {
             long[] finalRes = new long[size];
             performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
             return new ColumnValue(name, DataType.LONG, finalRes, nulls);
         }
-        else if (type == _Package.getByUserPath("Float", processorSupport) || type == _Package.getByUserPath("Number", processorSupport))
+        else if (type == _Package.getByUserPath(M3Paths.Float, processorSupport) || type == _Package.getByUserPath(M3Paths.Number, processorSupport))
         {
             double[] finalRes = new double[size];
             performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);

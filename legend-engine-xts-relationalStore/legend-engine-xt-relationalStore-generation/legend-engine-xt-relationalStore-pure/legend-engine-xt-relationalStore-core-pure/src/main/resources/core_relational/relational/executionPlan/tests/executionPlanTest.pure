@@ -207,7 +207,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '      type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
                   '             as meta::relational::tests::model::simple::Order\n' +
                   '      resultSizeRange = *\n'+
-                  '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", VARCHAR(5))]\n'+
+                  '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]\n'+
                   '      sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where (${optionalVarPlaceHolderOperationSelector(optionalPnl![], \'"orderpnlview_0".pnl = ${varPlaceHolderToString(optionalPnl![] "CAST(" " AS FLOAT)" {} "null")}\', \'"orderpnlview_0".pnl is null\')})\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
@@ -315,7 +315,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '      type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
                   '             as meta::relational::tests::model::simple::Order\n' +
                   '      resultSizeRange = *\n'+
-                  '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", VARCHAR(5))]\n'+
+                  '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]\n'+
                   '      sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where (${optionalVarPlaceHolderOperationSelector(optionalSettlementDateTime![], \'"root".settlementDateTime = ${varPlaceHolderToString(optionalSettlementDateTime![] "TIMESTAMP\\\'" "\\\'" {} "null")}\', \'"root".settlementDateTime is null\')})\n'+
                   '      connection = DatabaseConnection(type = "H2")\n'+
                   '    )\n'+
@@ -344,7 +344,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '      type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
                   '             as meta::relational::tests::model::simple::Order\n' +
                   '      resultSizeRange = *\n'+
-                  '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", VARCHAR(5))]\n'+
+                  '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]\n'+
                   '      sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where (${optionalVarPlaceHolderOperationSelector(optionalSettlementDateTime![], \'"root".settlementDateTime = ${varPlaceHolderToString(GMTtoTZ( "[US/Arizona]" optionalSettlementDateTime![]) "TIMESTAMP\\\'" "\\\'" {} "null")}\', \'"root".settlementDateTime is null\')})\n'+
                   '      connection = DatabaseConnection(type = "H2")\n'+
                   '    )\n'+
@@ -829,7 +829,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testIfEnumParameterInPr
                   '    Relational\n'+
                   '    (\n'+
                   '      type = TDS[(name, String, VARCHAR(8192), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
-                  '      resultColumns = [("name", VARCHAR(200)), ("active", INT)]\n'+
+                  '      resultColumns = [("name", ""), ("active", INT)]\n'+
                   '      sql = select case when \'${yesOrNo}\' = \'NO\' then \'InActive User\' else "root".name end as "name", "root".active as "active" from employeeTable as "root"\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
@@ -856,7 +856,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testIfEnumParameterWith
                   '    Relational\n'+
                   '    (\n'+
                   '      type = TDS[(name, String, VARCHAR(8192), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
-                  '      resultColumns = [("name", VARCHAR(200)), ("active", INT)]\n'+
+                  '      resultColumns = [("name", ""), ("active", INT)]\n'+
                   '      sql = select case when (${optionalVarPlaceHolderOperationSelector(yesOrNo, equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}\'), \'0 = 1\')}) then "root".name else \'InActive User\' end as "name", "root".active as "active" from employeeTable as "root"\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
@@ -875,7 +875,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testIfOpFilterEnumValue
    let expected = 'Relational\n'+
                   '(\n'+
                   '  type = TDS[(name, String, VARCHAR(8192), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
-                  '  resultColumns = [("name", VARCHAR(200)), ("active", INT)]\n'+
+                  '  resultColumns = [("name", ""), ("active", INT)]\n'+
                   '  sql = select case when "root".active = 0 then \'InActive User\' else "root".name end as "name", "root".active as "active" from employeeTable as "root"\n'+
                   '  connection = TestDatabaseConnection(type = "H2")\n'+
                   ')\n';
@@ -899,7 +899,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testOptionalEnumParamet
                   '    Relational\n'+
                   '    (\n'+
                   '      type = TDS[(name, String, VARCHAR(8192), ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
-                  '      resultColumns = [("name", VARCHAR(200)), ("active", INT)]\n'+
+                  '      resultColumns = [("name", ""), ("active", INT)]\n'+
                   '      sql = select case when (${optionalVarPlaceHolderOperationSelector(yesOrNo![], equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo![]), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo![])})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo![])}\'), \'0 = 1\')}) then \'InActive User\' else "root".name end as "name", "root".active as "active" from employeeTable as "root"\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
@@ -913,7 +913,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 {
    let planWithString = executionPlanForQueryWithDateTimeConstantForDatabaseConnectionTimeZone(%2019-4-8T18:00:00, []);
    let planAsString = $planWithString.second;
-   let expectedH2 = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]          as meta::relational::tests::model::simple::Order   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", VARCHAR(5))]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'2019-04-08 18:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
+   let expectedH2 = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]          as meta::relational::tests::model::simple::Order   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'2019-04-08 18:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
    assertEquals($expectedH2, $planAsString);
    assert($planAsString->indexOf('settlementDateTime = \'2019-04-08 18:00:00\'') != -1 || $planAsString->indexOf('settlementDateTime = TIMESTAMP\'2019-04-08 18:00:00\'') != -1);
    assertSameElements(templateFunctionsList(),$planWithString.first.processingTemplateFunctions);
@@ -923,7 +923,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 {
    let planWithString = executionPlanForQueryWithDateTimeConstantForDatabaseConnectionTimeZone(%2019-4-8T18:00:00, 'GMT');
    let planAsString = $planWithString.second;
-   let expectedH2 = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]          as meta::relational::tests::model::simple::Order   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", VARCHAR(5))]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'2019-04-08 18:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
+   let expectedH2 = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]          as meta::relational::tests::model::simple::Order   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'2019-04-08 18:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
    assertEquals($expectedH2, $planAsString);
    assert($planAsString->indexOf('settlementDateTime = \'2019-04-08 18:00:00\'') != -1 || $planAsString->indexOf('settlementDateTime = TIMESTAMP\'2019-04-08 18:00:00\'') != -1);
    assertSameElements(templateFunctionsList(),$planWithString.first.processingTemplateFunctions);
@@ -933,7 +933,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 {
    let planWithString = executionPlanForQueryWithDateTimeConstantForDatabaseConnectionTimeZone(%2019-4-8T18:00:00, 'EST');
    let planAsString = $planWithString.second;
-   let expectedH2    = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]          as meta::relational::tests::model::simple::Order   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", VARCHAR(5))]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'2019-04-08 13:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
+   let expectedH2    = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]          as meta::relational::tests::model::simple::Order   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'2019-04-08 13:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
    assertEquals($expectedH2, $planAsString);
    assert($planAsString->indexOf('settlementDateTime = \'2019-04-08 13:00:00\'') != -1 || $planAsString->indexOf('settlementDateTime = TIMESTAMP\'2019-04-08 13:00:00\'') != -1);
    assertSameElements(['<#function GMTtoTZ tz paramDate><#if paramDate?is_enumerable && !paramDate?has_content><#return paramDate><#else><#return (tz+" "+paramDate)?date.@alloyDate></#if></#function><#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue><#assign result = [] /><#list collection as c><#assign result = [prefix + (timeZone+" "+c)?date.@alloyDate + suffix] + result></#list><#return result?reverse?join(separator, defaultValue)></#function>',
@@ -949,7 +949,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 {
    let planWithString = executionPlanForQueryWithDateTimeVariableForDatabaseConnectionTimeZone([]);
    let planAsString = $planWithString.second;
-   let expectedH2       = 'Sequence (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]          as meta::relational::tests::model::simple::Order   resultSizeRange = *   (     FunctionParametersValidationNode     (       functionParameters = [dt:DateTime[1]]     )     Relational     (       type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]              as meta::relational::tests::model::simple::Order       resultSizeRange = *       resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", VARCHAR(5))]       sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'${dt}\'       connection = TestDatabaseConnection(type = "H2")     )   ) ) ';
+   let expectedH2       = 'Sequence (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]          as meta::relational::tests::model::simple::Order   resultSizeRange = *   (     FunctionParametersValidationNode     (       functionParameters = [dt:DateTime[1]]     )     Relational     (       type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]              as meta::relational::tests::model::simple::Order       resultSizeRange = *       resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]       sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'${dt}\'       connection = TestDatabaseConnection(type = "H2")     )   ) ) ';
    assertEquals($expectedH2, $planAsString);
    assert($planAsString->indexOf('settlementDateTime = \'${dt}\'') != -1|| $planAsString->indexOf('settlementDateTime = TIMESTAMP\'${dt}\'') != -1);
    assertSameElements(templateFunctionsList(),$planWithString.first.processingTemplateFunctions);
@@ -959,7 +959,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 {
    let planWithString = executionPlanForQueryWithDateTimeVariableForDatabaseConnectionTimeZone('US/Arizona');
    let planAsString = $planWithString.second;
-   let expectedH2       = 'Sequence (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]          as meta::relational::tests::model::simple::Order   resultSizeRange = *   (     FunctionParametersValidationNode     (       functionParameters = [dt:DateTime[1]]     )     Relational     (       type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]              as meta::relational::tests::model::simple::Order       resultSizeRange = *       resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", VARCHAR(5))]       sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'${GMTtoTZ( "[US/Arizona]" dt)}\'       connection = TestDatabaseConnection(type = "H2")     )   ) ) ';
+   let expectedH2       = 'Sequence (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]          as meta::relational::tests::model::simple::Order   resultSizeRange = *   (     FunctionParametersValidationNode     (       functionParameters = [dt:DateTime[1]]     )     Relational     (       type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]              as meta::relational::tests::model::simple::Order       resultSizeRange = *       resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]       sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'${GMTtoTZ( "[US/Arizona]" dt)}\'       connection = TestDatabaseConnection(type = "H2")     )   ) ) ';
    assertEquals($expectedH2,  $planAsString);
    assert($planAsString->indexOf('settlementDateTime = \'${GMTtoTZ( "[US/Arizona]" dt)}\'') != -1 || 'settlementDateTime = TIMESTAMP\'${GMTtoTZ( "[US/Arizona]" dt)}\'' != -1);
    assertSameElements(['<#function GMTtoTZ tz paramDate><#if paramDate?is_enumerable && !paramDate?has_content><#return paramDate><#else><#return (tz+" "+paramDate)?date.@alloyDate></#if></#function><#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue><#assign result = [] /><#list collection as c><#assign result = [prefix + (timeZone+" "+c)?date.@alloyDate + suffix] + result></#list><#return result?reverse?join(separator, defaultValue)></#function>',
@@ -1192,7 +1192,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithOpenVari
       '    Relational\n'+
       '    (\n'+
       '      type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
-      '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", DOUBLE)]\n'+
+      '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", "")]\n'+
       '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else 0.0 end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") group by "Sales Division"\n'+
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
@@ -1224,7 +1224,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithOpenVari
       '    Relational\n'+
       '    (\n'+
       '      type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
-      '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", DOUBLE)]\n'+
+      '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", "")]\n'+
       '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else cast(0.0 as float) end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") group by "Sales Division"\n'+
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
@@ -1292,7 +1292,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithTwoOpenV
       '    Relational\n'+
       '    (\n'+
       '      type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
-      '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", DOUBLE)]\n'+
+      '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", "")]\n'+
       '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else 0.0 end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > \'${startDate}\' and "calendar_0"."date" <= \'${reportEndDate.date}\') group by "Sales Division"\n'+
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
@@ -1339,7 +1339,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithTwoOpenV
       '    Relational\n'+
       '    (\n'+
       '      type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
-      '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", DOUBLE)]\n'+
+      '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", "")]\n'+
       '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else cast(0.0 as float) end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where "calendar_0"."date" > DATE\'${startDate}\' and "calendar_0"."date" <= TIMESTAMP\'${reportEndDate.date}\' group by "Sales Division"\n'+
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
@@ -1378,7 +1378,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testMapWithOpenVariable
       '    (\n'+
       '      type = Integer\n'+
       '      resultSizeRange = *\n'+
-      '      resultColumns = [(("firmtable_1".aggCol + ${a}), INT)]\n'+
+      '      resultColumns = [("firmtable_1".aggCol + ${a}, "")]\n'+
       '      sql = select "firmtable_1".aggCol + ${a} from firmTable as "root" left outer join (select "firmtable_1".ID as ID, count(*) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)\n'+
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
@@ -1538,7 +1538,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testMapWithOpenVariable
                 '(\n'+
                 '  type = Integer\n'+
                 '  resultSizeRange = *\n'+
-                '  resultColumns = [(("firmtable_1".aggCol + 10), INT)]\n'+
+                '  resultColumns = [("firmtable_1".aggCol + 10, "")]\n'+
                 '  sql = select "firmtable_1".aggCol + 10 from firmTable as "root" left outer join (select "firmtable_1".ID as ID, count(*) as aggCol from firmTable as "firmtable_1" left outer join personTable as "persontable_0" on ("firmtable_1".ID = "persontable_0".FIRMID) group by "firmtable_1".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)\n'+
                 '  connection = TestDatabaseConnection(type = "H2")\n'+
                 ')\n',$result->planToString(meta::relational::extension::relationalExtensions()));
@@ -1646,7 +1646,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsWithEnumReturn():Boo
    assertEquals('Relational\n'+
                 '(\n'+
                 '  type = TDS[(description, String, VARCHAR(200), ""), (type, meta::relational::tests::mapping::enumeration::model::domain::ProductSynonymType, VARCHAR(10), "", synonym)]\n'+
-                '  resultColumns = [("description", VARCHAR(200)), ("type", VARCHAR(10))]\n'+
+                '  resultColumns = [("description", VARCHAR(200)), ("type", "")]\n'+
                 '  sql = select "root".prod_desc as "description", case when "root".prod_desc = \'My Product 2\' then "product_synonym_0".type else "product_synonym_0".type end as "type" from Product as "root" left outer join Product_Synonym as "product_synonym_0" on ("root".id = "product_synonym_0".product_id)\n'+
                 '  connection = TestDatabaseConnection(type = "H2")\n'+
                 ')\n',$result->planToString(meta::relational::extension::relationalExtensions()));
@@ -1805,7 +1805,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinTwoDBWithColumnM
                      '          Relational\n'+
                      '          (\n'+
                      '            type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (managerID, Integer, INT, \"\")]\n'+
-                     '            resultColumns = [(\"firstName\", VARCHAR(200)), (\"eID\", INT), (\"managerID\", INT)]\n'+
+                     '            resultColumns = [(\"firstName\", VARCHAR(200)), (\"eID\", INT), (\"managerID\", \"\")]\n'+
                      '            sql = select \"root\".FIRSTNAME as \"firstName\", \"firmtable_0\".ID as \"eID\", case when \"root\".MANAGERID = 0 then 0 else \"root\".MANAGERID end as \"managerID\" from personTable as \"root\" left outer join firmTable as \"firmtable_0\" on (\"firmtable_0\".ID = \"root\".FIRMID)\n'+
                      '            connection = TestDatabaseConnection(type = \"H2\")\n'+
                      '          )\n'+
@@ -2095,7 +2095,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionDeep
       'Relational\n'+
       '(\n'+
       '  type = TDS[(firstName, String, VARCHAR(8192), ""), (lastName, String, VARCHAR(8192), "")]\n'+
-      '  resultColumns = [("firstName", VARCHAR(202)), ("lastName", VARCHAR(202))]\n'+
+      '  resultColumns = [("firstName", ""), ("lastName", "")]\n'+
       '  sql = select concat(substring("root".fullname, 0, locate(\' \', "root".fullname)), \'XX\') as "firstName", concat(substring("root".fullname, locate(\' \', "root".fullname) + 1, char_length("root".fullname)), \'ZZ\') as "lastName" from SPerson as "root"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
       ')\n';
@@ -2115,7 +2115,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionJoin
       'Relational\n'+
       '(\n'+
       '  type = TDS[(legalName, String, VARCHAR(8192), ""), (lastName, String, VARCHAR(8192), "")]\n'+
-      '  resultColumns = [("legalName", VARCHAR(200)), ("lastName", VARCHAR(1000))]\n'+
+      '  resultColumns = [("legalName", VARCHAR(200)), ("lastName", "")]\n'+
       '  sql = select "root".name as "legalName", substring("person_0".fullname, locate(\' \', "person_0".fullname) + 1, char_length("person_0".fullname)) as "lastName" from Firm as "root" left outer join Person as "person_0" on ("person_0".firm = "root".name)\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
       ')\n';
@@ -2137,7 +2137,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionAgg(
       'Relational\n'+
       '(\n'+
       '  type = TDS[(FirstName, String, VARCHAR(8192), ""), (PersonCount, Integer, INT, "")]\n'+
-      '  resultColumns = [("FirstName", VARCHAR(200)), ("PersonCount", BIGINT)]\n'+
+      '  resultColumns = [("FirstName", ""), ("PersonCount", "")]\n'+
       '  sql = select substring("root".fullname, 0, locate(\' \', "root".fullname)) as "FirstName", count(substring("root".fullname, locate(\' \', "root".fullname) + 1, char_length("root".fullname))) as "PersonCount" from SPerson as "root" group by "FirstName"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
       ')\n';
@@ -2165,7 +2165,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionMult
       'Relational\n'+
       '(\n'+
       '  type = TDS[(FirstName, String, VARCHAR(8192), ""), (PersonCount, Integer, INT, ""), (PersonCountViaSize, Integer, INT, "")]\n'+
-      '  resultColumns = [("FirstName", VARCHAR(200)), ("PersonCount", BIGINT), ("PersonCountViaSize", INT)]\n'+
+      '  resultColumns = [("FirstName", ""), ("PersonCount", ""), ("PersonCountViaSize", "")]\n'+
       '  sql = select substring("root".fullname, 0, locate(\' \', "root".fullname)) as "FirstName", count(substring("root".fullname, locate(\' \', "root".fullname) + 1, char_length("root".fullname))) as "PersonCount", count(substring("root".fullname, 0, locate(\' \', "root".fullname))) as "PersonCountViaSize" from SPerson as "root" group by "FirstName"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
       ')\n';
@@ -2537,7 +2537,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFla
    assertEquals('Relational\n'+
                 '(\n'+
                 '  type = TDS[(prodName, String, VARCHAR(200), ""), (cnt, Integer, INT, "")]\n'+
-                '  resultColumns = [("prodName", VARCHAR(200)), ("cnt", BIGINT)]\n'+
+                '  resultColumns = [("prodName", VARCHAR(200)), ("cnt", "")]\n'+
                 '  sql = select "root"."NAME" as "prodName", count(*) as "cnt" from "productSchema"."productTable" as "root" group by "prodName"\n'+
                 '  connection = TestDatabaseConnection(type = "H2")\n'+
                 ')\n', $result->planToString(meta::relational::extension::relationalExtensions()));
@@ -2612,7 +2612,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
                '    Relational\n' +
                '    (\n' +
                '      type = TDS[(name, String, VARCHAR(200), "")]\n'+
-               '      resultColumns = [("name", VARCHAR(5))]\n'+
+               '      resultColumns = [("name", "")]\n'+
                '      sql = select case when "root".TYPE = \'CUSIP\' then \'CUSIP\' when "root".TYPE = \'ISIN\' then \'ISIN\' else null end as "name" from productSchema.synonymTable as "root"\n'+
                '      connection = TestDatabaseConnection(type = "H2")\n'+
                '    )\n' +
