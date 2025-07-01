@@ -557,7 +557,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                         ),
                         // getter for execution parameters from execution environment
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.m(handlers.h("meta::pure::metamodel::dataSpace::get_DataSpace_1__String_1__DataSpaceExecutionContext_1_", false, ps -> handlers.res("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext", "one"), ps -> ps.size() == 2))))
+                                handlers.m(handlers.m(handlers.h("meta::pure::metamodel::dataSpace::get_DataSpace_1__String_1__DataSpaceExecutionContext_1_", false, ps -> handlers.res("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "DataSpace")))))
 
                 ));
     }

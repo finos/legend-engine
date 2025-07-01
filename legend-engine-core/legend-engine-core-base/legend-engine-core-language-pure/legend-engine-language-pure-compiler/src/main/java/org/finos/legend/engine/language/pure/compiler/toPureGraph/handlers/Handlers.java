@@ -1335,7 +1335,6 @@ public class Handlers
                     h("meta::pure::functions::variant::navigation::get_Variant_$0_1$__Integer_1__Variant_$0_1$_", false, ps -> res(M3Paths.Variant, "zeroOne"), ps -> ps.size() == 2 && typeZeroOne(ps.get(0), "Variant") && typeOne(ps.get(1), "Integer"))
             )
         );
-        register("meta::pure::functions::variant::navigation::get_Variant_$0_1$__Integer_1__Variant_$0_1$_", false, ps -> res(M3Paths.Variant, "zeroOne"));
 
         register("meta::pure::functions::collection::newMap_Pair_MANY__Map_1_", true, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.Map), ListIterate.collect(ps, ValueSpecificationAccessor::_genericType), pureModel), "one"));
         register("meta::pure::functions::collection::list_U_MANY__List_1_", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.List), ps.get(0)._genericType(), pureModel), "one"));

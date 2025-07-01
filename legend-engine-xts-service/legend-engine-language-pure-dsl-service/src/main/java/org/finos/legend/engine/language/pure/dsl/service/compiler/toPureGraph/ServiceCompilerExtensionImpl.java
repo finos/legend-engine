@@ -469,8 +469,8 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         ),
                         // getter for execution parameters from execution environment
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(
-                                handlers.m(handlers.h("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_", false, ps -> handlers.res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 2)),
-                                handlers.m(handlers.h("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", false, ps -> handlers.res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 3))
+                                handlers.m(handlers.h("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_", false, ps -> handlers.res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "ExecutionEnvironmentInstance"))),
+                                handlers.m(handlers.h("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", false, ps -> handlers.res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 3 && handlers.typeOne(ps.get(0), "ExecutionEnvironmentInstance")))
                         )),
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(
                                  handlers.m(handlers.h("meta::legend::service::getWithRuntime_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", false, ps -> handlers.res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 3)))

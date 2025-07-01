@@ -3842,7 +3842,7 @@ function meta::relational::functions::pureToSqlQuery::processToVariantParameter(
               newDynaFunction('toVariantList', $sf.parametersValues->evaluateAndDeactivate()->toOne()->processToVariantParameter($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));
           ),
           pair(
-            |$sf.func == newMap_Pair_MANY__Map_1_,
+            |$sf.func == newMap_Pair_MANY__Map_1_, // todo Pair class rather than function...
             |
               let pairFunctions = $sf.parametersValues->match([
                 iv: InstanceValue[1] |

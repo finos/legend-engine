@@ -883,7 +883,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     levenshteinDistance_String_1__String_1__Integer_1_,
     jaroWinklerSimilarity_String_1__String_1__Float_1_,
     list_U_MANY__List_1_,
-    pair_U_1__V_1__Pair_1_,
+    // pair_U_1__V_1__Pair_1_, // preeval/reactivation shenanigans...
     meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_,
     meta::pure::functions::date::calendar::annualized_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,
     meta::pure::functions::date::calendar::cme_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,

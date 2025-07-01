@@ -664,7 +664,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting26():Bo
       pair('hello', today());
     };
 
-  let expected = {| 'hello'->pair(today()) };
+  let expected = {| ^Pair<String,StrictDate>(first='hello', second = today()) };
 
   assertRoundTrip($input, $expected);
 }
