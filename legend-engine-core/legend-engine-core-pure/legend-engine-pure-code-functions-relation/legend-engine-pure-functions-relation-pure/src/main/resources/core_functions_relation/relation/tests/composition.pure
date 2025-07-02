@@ -410,7 +410,12 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::testGroupByCastBeforeAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>>
+  {
+    doc.doc='Tests map and casting the values of the column before applying the aggregate function. Cast is treated as a noop in this case.'
+  }
+meta::pure::functions::relation::tests::composition::testGroupByCastBeforeAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
               | #TDS
@@ -441,7 +446,12 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                 '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>>
+  {
+    doc.doc='Tests map and casting result of the aggregate function. Cast is treated as a noop in this case.'
+  }
+meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
               | #TDS
