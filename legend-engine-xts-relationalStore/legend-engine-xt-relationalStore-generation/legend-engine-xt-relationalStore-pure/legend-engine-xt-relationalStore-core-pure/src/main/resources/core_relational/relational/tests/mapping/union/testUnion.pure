@@ -391,12 +391,12 @@ function <<test.Test>> meta::relational::tests::mapping::union::testUnionWithSin
 
 function <<test.Test>> meta::relational::tests::mapping::union::testEnumFilterWithUnionMappingPlanGeneration():Boolean[1]
 {
-   let plan = meta::pure::executionPlan::executionPlan({type: GeographicEntityType[1] | Address.all()->filter(a | $a.type == $type)->project([a | $a.name], ['name'])}, unionMappingWithEnumerationMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let plan = meta::pure::executionPlan::executionPlan({type: GeographicEntityType[1] | Address.all()->filter(a | $a.type == $type)->project([a | $a.name], ['name'])}, unionMappingWithEnumerationMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let expected = 'Sequence(type=TDS[(name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[type:meta::relational::tests::model::simple::GeographicEntityType[1]])Relational(type=TDS[(name,String,VARCHAR(200),"")]resultColumns=[("name",VARCHAR(200))]sql=select"unionBase"."AddressSet1name_AddressSet2name"as"name"from(select\'city\'as"city_REGION","root".IDas"pk_0_0",nullas"pk_0_1","root".nameas"AddressSet1name_AddressSet2name"fromAddressSet1as"root"unionallselect\'REGION\'as"city_REGION",nullas"pk_0_0","root".IDas"pk_0_1","root".nameas"AddressSet1name_AddressSet2name"fromAddressSet2as"root")as"unionBase"where(${optionalVarPlaceHolderOperationSelector(type,equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_union_unionMappingWithEnumerationMapping_GeographicEntityType(type),\'"unionBase"."city_REGION"in(${enumMap_meta_relational_tests_mapping_union_unionMappingWithEnumerationMapping_GeographicEntityType(type)})\',\'"unionBase"."city_REGION"=${enumMap_meta_relational_tests_mapping_union_unionMappingWithEnumerationMapping_GeographicEntityType(type)}\'),\'0=1\')})connection=TestDatabaseConnection(type="H2"))))';
    assertEquals($expected, $plan->meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
-function meta::relational::tests::mapping::union::executeInDb2(sql:String[1], databaseConnection:DatabaseConnection[1]):ResultSet[1]
+function meta::relational::tests::mapping::union::executeInDb2(sql:String[1], databaseConnection:meta::external::store::relational::runtime::DatabaseConnection[1]):ResultSet[1]
 {
     meta::relational::metamodel::execute::executeInDb($sql, $databaseConnection);
 }

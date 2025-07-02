@@ -163,7 +163,7 @@ function meta::relational::tests::advanced::failures::moveFilterInOnClause::crea
    true;
 }
 
-function meta::relational::functions::toDDL::executeInDb2(sql:String[1], databaseConnection:DatabaseConnection[1]):ResultSet[1]
+function meta::relational::functions::toDDL::executeInDb2(sql:String[1], databaseConnection:meta::external::store::relational::runtime::DatabaseConnection[1]):ResultSet[1]
 {
    println($sql);
    executeInDb($sql, $databaseConnection);

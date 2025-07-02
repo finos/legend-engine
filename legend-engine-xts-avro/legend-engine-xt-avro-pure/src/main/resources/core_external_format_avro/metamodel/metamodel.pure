@@ -62,6 +62,7 @@ Class meta::external::format::avro::metamodel::AvroStringSchema extends AvroSche
 Class meta::external::format::avro::metamodel::AvroArraySchema extends AvroSchema
 {
     <<equality.Key>> elementType: AvroSchema[1];
+    minSize : Number[0..1];
 }
 
 Class meta::external::format::avro::metamodel::AvroUnionSchema extends AvroSchema

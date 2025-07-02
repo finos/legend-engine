@@ -349,7 +349,7 @@ import meta::relational::runtime::*;
 function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::ordered::createTablesInDb():Boolean[1]
 {
    let runtime =  ^Runtime(connectionStores= [^ConnectionStore(element=DB1,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2))]);
-   let dbConn1 = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
+   let dbConn1 = $runtime.connectionStores.connection->at(0)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
 
    dropAndCreateTableInDb(DB1, 'productTable', $dbConn1);
    dropAndCreateTableInDb(DB1, 'productTable2', $dbConn1);

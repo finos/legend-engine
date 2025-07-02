@@ -68,7 +68,7 @@ function <<access.private>> meta::pure::alloy::connections::tests::relationalMap
   let runtime = ^meta::core::runtime::Runtime
                 ( connectionStores = ^meta::core::runtime::ConnectionStore(
                                         element = meta::relational::tests::db,
-                                        connection = ^TestDatabaseConnection(
+                                        connection = ^meta::external::store::relational::runtime::TestDatabaseConnection(
                                         type = DatabaseType.H2,
                                         queryPostProcessorsWithParameter = [relationalMapperPostProcessor(^RelationalMapperPostProcessor(relationalMappers = ^RelationalMapper(databaseMappers = $databaseMaps, schemaMappers  = $schemaMaps, tableMappers   = $tableMaps)))]
                                     ))

@@ -295,7 +295,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::r
 {
    let result = execute(|Trade.all()->filter(t|$t.settlementDateTime->in([%2014-12-03T4:00:00, %2014-12-04T04:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00]))
                                      ->project([x | $x.id], ['TradeId']),
-                        simpleRelationalMapping, testRuntime('US/Arizona'), meta::relational::extension::relationalExtensions());
+                        simpleRelationalMapping, meta::external::store::relational::tests::testRuntime('US/Arizona'), meta::relational::extension::relationalExtensions());
    assertSize($result.values->cast(@TabularDataSet).rows, 5);
    assertSameElements([1, 2, 3, 4, 5], $result.values->cast(@TabularDataSet).rows.getNumber('TradeId')->sort());
    assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());
@@ -359,7 +359,7 @@ function <<test.ToFix, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::
    let result = execute({| let validTimes = Trade.all()->filter(t|$t.settlementDateTime->in([%2014-12-02T19:00:00])).settlementDateTime;
                            Trade.all()->filter(t|$t.settlementDateTime->in($validTimes))
                                       ->project([x | $x.id], ['TradeId']);},
-                         simpleRelationalMapping, testRuntime('Israel'), meta::relational::extension::relationalExtensions());
+                         simpleRelationalMapping, meta::external::store::relational::tests::testRuntime('Israel'), meta::relational::extension::relationalExtensions());
    assertSize($result.values->cast(@TabularDataSet).rows, 5);
    assertSameElements([1, 2, 3, 4, 5], $result.values->cast(@TabularDataSet).rows.getNumber('TradeId')->sort());
    assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());

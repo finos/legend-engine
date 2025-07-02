@@ -75,7 +75,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::presto::testExecutionPl
 {
    let res = executionPlan({dates:DateTime[*] |Trade.all()->filter(t|$t.settlementDateTime->in($dates))->project([x | $x.id], ['TradeId'])},
                            simpleRelationalMapping,
-                           ^Runtime(connectionStores=^ConnectionStore(element = relationalDB, connection=^DatabaseConnection(type=DatabaseType.Presto, timeZone='US/Arizona'))),
+                           ^Runtime(connectionStores=^ConnectionStore(element = relationalDB, connection=^meta::external::store::relational::runtime::DatabaseConnection(type=DatabaseType.Presto, timeZone='US/Arizona'))),
                            meta::relational::extension::relationalExtensions());
    let expected =
       'Sequence\n'+

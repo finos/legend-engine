@@ -30,66 +30,66 @@ function meta::relational::functions::toDDL::dropAndCreateTableSql(database:Data
 
 }
 
-function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], tableName: String[1], c:DatabaseConnection[1]) : Boolean[1]
+function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], tableName: String[1], c:meta::external::store::relational::runtime::DatabaseConnection[1]) : Boolean[1]
 {
     dropAndCreateTableInDb($database, 'default', $tableName, $c);
 }
 
 function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], tableName: String[1], connectionStore:ConnectionStore[1]) : Boolean[1]
 {
-  let c = $connectionStore.connection->cast(@DatabaseConnection);
+  let c = $connectionStore.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
     dropAndCreateTableInDb($database, 'default', $tableName, $c);
 }
 
-function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], c:DatabaseConnection[1]) : Boolean[1]
+function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], c:meta::external::store::relational::runtime::DatabaseConnection[1]) : Boolean[1]
 {
    dropAndCreateTableInDb($database, $schema, $tableName, getTableToTableIdentityFunction(), $c, true, false);
 }
 
 function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], connectionStore:ConnectionStore[1]) : Boolean[1]
 {
-  let c = $connectionStore.connection->cast(@DatabaseConnection);
+  let c = $connectionStore.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
   dropAndCreateTableInDb($database, $schema, $tableName, getTableToTableIdentityFunction(), $c, true, false);
 }
 
 
-function <<doc.deprecated>> meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], c:DatabaseConnection[1], applyConstraints:Boolean[1]) : Boolean[1]
+function <<doc.deprecated>> meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], c:meta::external::store::relational::runtime::DatabaseConnection[1], applyConstraints:Boolean[1]) : Boolean[1]
 {
    dropAndCreateTableInDb($database, $schema, $tableName, getTableToTableIdentityFunction(), $c, $applyConstraints, false);
 }
 
 function <<doc.deprecated>> meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], connectionStore:ConnectionStore[1], applyConstraints:Boolean[1]) : Boolean[1]
 {
-  let c = $connectionStore.connection->cast(@DatabaseConnection);
+  let c = $connectionStore.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    dropAndCreateTableInDb($database, $schema, $tableName, getTableToTableIdentityFunction(), $c, $applyConstraints, false);
 }
 
 
-function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], c:DatabaseConnection[1]) : Boolean[1]
+function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], c:meta::external::store::relational::runtime::DatabaseConnection[1]) : Boolean[1]
 {
    dropAndCreateTableInDb($database, $schema, $tableName, $tablePostProcess, $c, true, false);
 }
 
 function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], connectionStore:ConnectionStore[1]) : Boolean[1]
 {
-    let c = $connectionStore.connection->cast(@DatabaseConnection);
+    let c = $connectionStore.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    dropAndCreateTableInDb($database, $schema, $tableName, $tablePostProcess, $c, true, false);
 }
 
 
-function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], c:DatabaseConnection[1], applyConstraints:Boolean[1]) : Boolean[1]
+function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], c:meta::external::store::relational::runtime::DatabaseConnection[1], applyConstraints:Boolean[1]) : Boolean[1]
 {
    dropAndCreateTableInDb($database, $schema, $tableName, $tablePostProcess, $c, $applyConstraints, false);
 }
 
 function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], connectionStore:ConnectionStore[1], applyConstraints:Boolean[1]) : Boolean[1]
 {
-   let c = $connectionStore.connection->cast(@DatabaseConnection);
+   let c = $connectionStore.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    dropAndCreateTableInDb($database, $schema, $tableName, $tablePostProcess, $c, $applyConstraints, false);
 }
 
 
-function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], c:DatabaseConnection[1], applyConstraints:Boolean[1], debug:Boolean[1]) : Boolean[1]
+function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], c:meta::external::store::relational::runtime::DatabaseConnection[1], applyConstraints:Boolean[1], debug:Boolean[1]) : Boolean[1]
 {
    executeInDb(dropTableStatement($database, $schema, $tableName, $tablePostProcess), $c, $debug);
    executeInDb(createTableStatement($database, $c.type, $schema, $tableName, $tablePostProcess, $applyConstraints), $c, $debug);
@@ -98,26 +98,26 @@ function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Dat
 
 function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], connectionStore:ConnectionStore[1], applyConstraints:Boolean[1], debug:Boolean[1]) : Boolean[1]
 {
-   let c = $connectionStore.connection->cast(@DatabaseConnection);
+   let c = $connectionStore.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    executeInDb(dropTableStatement($database, $schema, $tableName, $tablePostProcess), $c, $debug);
    executeInDb(createTableStatement($database, $c.type, $schema, $tableName, $tablePostProcess, $applyConstraints), $c, $debug);
    true;
 }
 
 
-function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: String[1], c:DatabaseConnection[1]) : Boolean[1]
+function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: String[1], c:meta::external::store::relational::runtime::DatabaseConnection[1]) : Boolean[1]
 {
    dropAndCreateSchemaInDb($schema, $c, false);
 }
 
 function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: String[1], connectionStore:ConnectionStore[1]) : Boolean[1]
 {
-   let c = $connectionStore.connection->cast(@DatabaseConnection);
+   let c = $connectionStore.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    dropAndCreateSchemaInDb($schema, $c, false);
 }
 
 
-function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: String[1], c:DatabaseConnection[1], debug:Boolean[1]) : Boolean[1]
+function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: String[1], c:meta::external::store::relational::runtime::DatabaseConnection[1], debug:Boolean[1]) : Boolean[1]
 {
    executeInDb(dropSchemaStatement($schema), $c, $debug);
    executeInDb(createSchemaStatement($schema), $c, $debug);
@@ -126,7 +126,7 @@ function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: Str
 
 function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: String[1], connectionStore:ConnectionStore[1], debug:Boolean[1]) : Boolean[1]
 {
-   let c = $connectionStore.connection->cast(@DatabaseConnection);
+   let c = $connectionStore.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    executeInDb(dropSchemaStatement($schema), $c, $debug);
    executeInDb(createSchemaStatement($schema), $c, $debug);
    true;
@@ -198,12 +198,12 @@ function meta::relational::functions::toDDL::getSemiStructuredColumnTypeSqlText(
    )
 }
 
-function meta::relational::functions::toDDL::buildInsertSQLQueryResultIntoTable(tableName: String[1], s:SelectSQLQuery[1], connection: DatabaseConnection[1], extensions:meta::pure::extension::Extension[*], context:DebugContext[1]) : String[1]
+function meta::relational::functions::toDDL::buildInsertSQLQueryResultIntoTable(tableName: String[1], s:SelectSQLQuery[1], connection: meta::external::store::relational::runtime::DatabaseConnection[1], extensions:meta::pure::extension::Extension[*], context:DebugContext[1]) : String[1]
 {
    'insert into '+ $tableName+' ( '+sqlQueryToString($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions)+' )';
 }
 
-function meta::relational::functions::toDDL::insertSQLQueryResultIntoTable(tableName: String[1], s:SelectSQLQuery[1], connection: DatabaseConnection[1], extensions:meta::pure::extension::Extension[*], context:DebugContext[1]) : Any[0..1]
+function meta::relational::functions::toDDL::insertSQLQueryResultIntoTable(tableName: String[1], s:SelectSQLQuery[1], connection: meta::external::store::relational::runtime::DatabaseConnection[1], extensions:meta::pure::extension::Extension[*], context:DebugContext[1]) : Any[0..1]
 {
    let stmt = buildInsertSQLQueryResultIntoTable($tableName, $s, $connection, $extensions, $context);
 

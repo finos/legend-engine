@@ -18,7 +18,6 @@ import meta::pure::functions::tests::model::*;
 import meta::pure::extension::*;
 import meta::pure::router::extension::*;
 import meta::pure::tds::extensions::*;
-import meta::pure::tests::model::simple::*;
 import meta::relational::tds::schema::tests::*;
 
 //NOTE: These tests should be combined with the rest of the tdsSchema tests if/when join and columnValuDifference are moved to non relational space.

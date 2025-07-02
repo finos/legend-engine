@@ -75,7 +75,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::sybase::testExecutionPl
 {
    let res = executionPlan({dates:StrictDate[*] |Trade.all()->filter(t|$t.date->in($dates))->project([x | $x.id], ['TradeId'])},
                            simpleRelationalMapping,
-                           ^Runtime(connectionStores=^ConnectionStore(element = relationalDB, connection=^DatabaseConnection(type=DatabaseType.Sybase))),
+                           ^Runtime(connectionStores=^ConnectionStore(element = relationalDB, connection=^meta::external::store::relational::runtime::DatabaseConnection(type=DatabaseType.Sybase))),
                            meta::relational::extension::relationalExtensions());
    let expected =
       'Sequence\n'+

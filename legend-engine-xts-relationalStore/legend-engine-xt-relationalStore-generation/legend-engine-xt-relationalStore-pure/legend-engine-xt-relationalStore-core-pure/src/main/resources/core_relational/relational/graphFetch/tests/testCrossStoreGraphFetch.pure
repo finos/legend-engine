@@ -366,9 +366,9 @@ function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::inMemoryA
       element=db3,
       connection=
       ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2))]);
-   let dbConn1 = $runtime.connectionStores->at(0).connection->cast(@DatabaseConnection);
-   let dbConn2 = $runtime.connectionStores->at(1).connection->cast(@DatabaseConnection);
-   let dbConn3 = $runtime.connectionStores->at(2).connection->cast(@DatabaseConnection);
+   let dbConn1 = $runtime.connectionStores->at(0).connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+   let dbConn2 = $runtime.connectionStores->at(1).connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+   let dbConn3 = $runtime.connectionStores->at(2).connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
 
    dropAndCreateTableInDb(db1, 'tradeTable', $dbConn1);
    dropAndCreateTableInDb(db1, 'traderTable', $dbConn2);
@@ -1036,7 +1036,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
 
    let plan = executionPlan($query, meta::relational::extension::relationalExtensions());
 
-  assertEquals(7, $plan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).children->at(0).localGraphFetchExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@RelationalDatabaseConnection)
+  assertEquals(7, $plan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).children->at(0).localGraphFetchExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@meta::external::store::relational::runtime::RelationalDatabaseConnection)
   .datasourceSpecification->cast(@LocalH2DatasourceSpecification).testDataSetupSqls->size());
   let result = meta::legend::executeLegendQuery($query,[], meta::relational::extension::relationalExtensions());
   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"tradeId":1,"product":{"productId":"productID 2","productName":"productName 84","description":"description 67"}},{"tradeId":2,"product":null},{"tradeId":3,"product":null},{"tradeId":4,"product":null}]}',$result);

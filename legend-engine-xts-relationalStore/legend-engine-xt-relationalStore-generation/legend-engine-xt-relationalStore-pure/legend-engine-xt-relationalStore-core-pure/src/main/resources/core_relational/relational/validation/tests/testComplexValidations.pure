@@ -237,7 +237,7 @@ import meta::core::runtime::*;
 function <<test.BeforePackage>> meta::relational::validation::complex::createTablesInDb():Boolean[1]
 {
    let runtime    = getRuntime();
-   let connection = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
+   let connection = $runtime.connectionStores.connection->at(0)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
 
    executeInDb('Drop table if exists legalEntityTable;', $connection);
    executeInDb('Create Table legalEntityTable(id INT, firmId INT, legalEntityAddressId INT);', $connection);

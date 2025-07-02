@@ -24,7 +24,7 @@ function meta::relational::mutation::executionPlan::planWriteExecution(sq: Store
   let fe = $sq.vs->cast(@FunctionExpression);
  
   let store = $sq.store->cast(@Database);
-  let dbConnection = $runtime.connectionByElement($store)->cast(@DatabaseConnection);
+  let dbConnection = $runtime.connectionByElement($store)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
   $fe.parametersValues->at(0)
   ->match([
     s: StoreMappingRoutedValueSpecification[1]| $s.value,
@@ -42,7 +42,7 @@ function meta::relational::mutation::executionPlan::generateNodeForPotentialCros
 {
   let var = $fe.parametersValues->at(0)->cast(@InstanceValue).values->cast(@PlanVarPlaceHolder);
   let store = $sq.store->cast(@Database);
-  let dbConnection = $runtime.connectionByElement($sq.store)->cast(@DatabaseConnection);
+  let dbConnection = $runtime.connectionByElement($sq.store)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
   let placeHolder = $sq.inScopeVars->get($var.name->at(0)).values->at(0)->cast(@PlanSetPlaceHolder);
   let translationContext = ^TranslationContext(dbType = $dbConnection.type);
   let table = $fe.parametersValues->at(1)->cast(@InstanceValue).values->cast(@RelationStoreAccessor<Any>).sourceElement->cast(@Table)->toOne();
@@ -89,7 +89,7 @@ function meta::relational::mutation::executionPlan::generateNodeForSameConnectio
     $node;
 }
 
-function meta::relational::mutation::generateCommit(commitQuery:CommitQuery[1],  connection:DatabaseConnection[1], extensions: Extension[*]): ExecutionNode[1]
+function meta::relational::mutation::generateCommit(commitQuery:CommitQuery[1],  connection:meta::external::store::relational::runtime::DatabaseConnection[1], extensions: Extension[*]): ExecutionNode[1]
 {
    let sql = sqlQueryToString($commitQuery, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
    ^SQLExecutionNode(resultType = ^VoidResultType(genericType = ^GenericType(rawType = meta::pure::router::store::routing::Void)),

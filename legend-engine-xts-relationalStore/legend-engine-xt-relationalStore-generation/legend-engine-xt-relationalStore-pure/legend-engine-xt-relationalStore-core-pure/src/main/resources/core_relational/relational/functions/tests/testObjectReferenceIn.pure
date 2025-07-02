@@ -42,7 +42,7 @@ function <<meta::pure::profiles::test.BeforePackage>> meta::relational::tests::f
    meta::relational::tests::mapping::embedded::setUp();
    meta::relational::tests::milestoning::initDatabase();
 
-   let connection = getConnection().connection->cast(@DatabaseConnection);
+   let connection = getConnection().connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    dropAndCreateTableInDb(relationalDB, 'default', 'Person', $connection);
    dropAndCreateTableInDb(relationalDB, 'default', 'Firm', $connection);
    dropAndCreateTableInDb(relationalDB, 'default', 'Address', $connection);

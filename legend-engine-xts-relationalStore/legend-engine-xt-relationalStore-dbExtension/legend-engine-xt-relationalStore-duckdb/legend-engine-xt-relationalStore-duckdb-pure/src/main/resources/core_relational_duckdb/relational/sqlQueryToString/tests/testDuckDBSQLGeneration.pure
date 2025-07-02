@@ -29,7 +29,7 @@ import meta::external::store::relational::sqlDialectTranslation::duckDB::*;
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testCTESQLGeneration(): Boolean[1]
 {
    let func = {|Trade.all()->project([x|$x.id, x|$x.quantity], ['TradeID', 'Quantity'])->limit(10)->filter(x | $x.getInteger('TradeID') == 100)};
-   let pp = testRuntimeWithCTEPP().connectionStores->at(0).connection->cast(@DatabaseConnection).sqlQueryPostProcessors;
+   let pp = testRuntimeWithCTEPP().connectionStores->at(0).connection->cast(@meta::external::store::relational::runtime::DatabaseConnection).sqlQueryPostProcessors;
    let result = toSQLString($func, simpleRelationalMapping, DatabaseType.DuckDB, []->cast(@String), $pp, ^Format(newLine='', indent=''), duckDBExtensions(), noDebug());
    assertEquals(
       'WITH subquery_cte_1_1 AS (select "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root" limit 10) \n' +

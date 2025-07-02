@@ -110,7 +110,7 @@ function meta::relational::tests::postProcessor::runtimeWithTableReplace(oldToNe
         element = db,
         connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                         type=DatabaseType.H2,
-                        sqlQueryPostProcessorsConnectionAware = [{query:SelectSQLQuery[1],conn:DatabaseConnection[1] | replaceTables($query, $oldToNewPairs) }]
+                        sqlQueryPostProcessorsConnectionAware = [{query:SelectSQLQuery[1],conn:meta::external::store::relational::runtime::DatabaseConnection[1] | replaceTables($query, $oldToNewPairs) }]
                     ))
    );
 }

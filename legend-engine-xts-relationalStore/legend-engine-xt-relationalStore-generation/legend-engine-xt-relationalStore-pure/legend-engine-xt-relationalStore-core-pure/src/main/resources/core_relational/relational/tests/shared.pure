@@ -31,7 +31,7 @@ function meta::pure::mapping::modelToModel::test::shared::getConnection():Connec
 
 function meta::pure::mapping::modelToModel::test::shared::initData():Boolean[1]
 {
-   let connection = getConnection().connection->cast(@DatabaseConnection);
+   let connection = getConnection().connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    dropAndCreateTableInDb(relationalDB, 'default', 'SPerson', $connection);
    dropAndCreateTableInDb(relationalDB, 'default', 'Person', $connection);
    dropAndCreateTableInDb(relationalDB, 'default', 'Firm', $connection);

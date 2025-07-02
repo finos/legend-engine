@@ -53,7 +53,6 @@ public class PureIDELight extends PureIDEServer
     {
         return Lists.mutable.<RepositoryCodeStorage>empty()
                 // --- MINIMUM -----
-                .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
                 .with(this.build("legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-pure", "pure_ide", false))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/legend-engine-xt-relationalStore-core-pure", "relational"))
                 .with(this.buildCore("legend-engine-xts-serviceStore/legend-engine-xt-serviceStore-pure", "servicestore"))

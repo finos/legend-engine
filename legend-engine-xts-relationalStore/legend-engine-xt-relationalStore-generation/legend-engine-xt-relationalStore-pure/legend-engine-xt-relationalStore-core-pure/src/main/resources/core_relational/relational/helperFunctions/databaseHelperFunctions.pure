@@ -31,13 +31,13 @@ import meta::relational::functions::database::constructDb::joinFunctions::*;
 import meta::relational::functions::pureToSqlQuery::*;
 
 function {doc.doc = 'Helper function to construct a Database object given a DatabaseConnection. If schema name is not specified, all schemas/tables will be included.'}
-meta::relational::functions::database::constructDb(connection:DatabaseConnection[1], dbName:String[1], schemaNames:String[*], tableNames:String[*]):Database[1]
+meta::relational::functions::database::constructDb(connection:meta::external::store::relational::runtime::DatabaseConnection[1], dbName:String[1], schemaNames:String[*], tableNames:String[*]):Database[1]
 {
    constructDb($connection, $dbName, $schemaNames, $tableNames, [])
 }
 
 function {doc.doc = 'Helper function to construct a Database object given a DatabaseConnection. If schema name is not specified, all schemas/tables will be included.'}
-meta::relational::functions::database::constructDb(connection:DatabaseConnection[1], dbName:String[1], schemaNames:String[*], tableNames:String[*], createJoinFunctions:Function<{Table[1],Database[1]->Join[0..1]}>[*]):Database[1]
+meta::relational::functions::database::constructDb(connection:meta::external::store::relational::runtime::DatabaseConnection[1], dbName:String[1], schemaNames:String[*], tableNames:String[*], createJoinFunctions:Function<{Table[1],Database[1]->Join[0..1]}>[*]):Database[1]
 {
    let db = ^meta::relational::metamodel::Database(name = $dbName);
    let map = sqlTextToRelationalDataTypeMap();
@@ -123,7 +123,7 @@ function meta::relational::metamodel::relation::allFilters(n:Database[1]):Filter
    $n.filters->concatenate($n.includes->map(d|$d->cast(@Database)->allFilters()));
 }
 
-function <<access.private>> meta::relational::functions::database::resultSetToSchemas(connection:DatabaseConnection[1], tableNames:String[*], resultSets:ResultSet[*], database:Database[1], map:Map<String, Function<{Integer[1], Integer[0..1]->meta::relational::metamodel::datatype::DataType[1]}>>[1]):Schema[*]
+function <<access.private>> meta::relational::functions::database::resultSetToSchemas(connection:meta::external::store::relational::runtime::DatabaseConnection[1], tableNames:String[*], resultSets:ResultSet[*], database:Database[1], map:Map<String, Function<{Integer[1], Integer[0..1]->meta::relational::metamodel::datatype::DataType[1]}>>[1]):Schema[*]
 {
     $resultSets->map(rs|
          $rs.rows->map(m| let schemaName = $m.values->at(0)->toString();
@@ -138,7 +138,7 @@ function <<access.private>> meta::relational::functions::database::resultSetToSc
          )
 }
 
-function <<access.private>> meta::relational::functions::database::resultSetToTables(connection:DatabaseConnection[1], rs:ResultSet[*], schema:Schema[1], map:Map<String, Function<{Integer[1], Integer[0..1]->meta::relational::metamodel::datatype::DataType[1]}>>[1]):Table[*]
+function <<access.private>> meta::relational::functions::database::resultSetToTables(connection:meta::external::store::relational::runtime::DatabaseConnection[1], rs:ResultSet[*], schema:Schema[1], map:Map<String, Function<{Integer[1], Integer[0..1]->meta::relational::metamodel::datatype::DataType[1]}>>[1]):Table[*]
 {
    $rs.rows->map(m| let tableName = $m.values->at(2)->toString();
                     let newTableName = if ($tableName->contains(' '), | '"' + $tableName + '"', | $tableName);
@@ -270,12 +270,12 @@ function meta::relational::functions::database::testDatabaseDefinitionForRuntime
 {
 
    $database.schemas->map(s | $s.tables->map(t | let sql = createSelectOneRowSql($t, $s, DatabaseType.SybaseIQ);
-                                                 executeInDb($sql, $runtime.connectionStores->at(0).connection->cast(@DatabaseConnection));
+                                                 executeInDb($sql, $runtime.connectionStores->at(0).connection->cast(@meta::external::store::relational::runtime::DatabaseConnection));
                                              )
                       );
 }
 
-function meta::relational::functions::database::createSelectOneRowSql(table:Table[1], schema:Schema[1], dbType:DatabaseType[1]):String[1]
+function meta::relational::functions::database::createSelectOneRowSql(table:Table[1], schema:Schema[1], dbType:meta::relational::runtime::DatabaseType[1]):String[1]
 {
    'select top 1 ' + $table.columns->cast(@Column).name->map(s | $s->processColumnName(createDbConfig($dbType, [])))->makeString(',') + ' from ' + $schema.name + '.' + $table.name;
 }

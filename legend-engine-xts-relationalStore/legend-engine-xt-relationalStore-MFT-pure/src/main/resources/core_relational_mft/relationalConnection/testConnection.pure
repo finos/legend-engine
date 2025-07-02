@@ -145,7 +145,7 @@ function   meta::relational::mft::setupDataExecuteRunner(mappingTestFN:Function<
 
      $mappingTest.setupData->map(s|$s->match([c:CSVSetupData[1]|let csvData = meta::pure::functions::io::readFile($c.path)->toOne();
                                                                  let rt =      testRuntime($c.database);
-                                                                 let connection = $rt->connectionByElement($c.database)->cast(@DatabaseConnection);
+                                                                 let connection = $rt->connectionByElement($c.database)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
                                                                  let formattedData = $csvData->meta::pure::functions::string::splitIntoLines()
                                                                                         ->map(l|list($l->trim()->meta::alloy::service::execution::splitWithEmptyValue()))
                                                                                         ->concatenate(list(''));

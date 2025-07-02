@@ -51,7 +51,7 @@ function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(
 
 function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1], wrapInInstantiationNode: Boolean[1], extensions:Extension[*]):ExecutionNode[1]
 {
-   let sqlNode = generateSQLExecutionNode($postProcessorResult.query, $runtime->toOne()->connectionByElement($store)->cast(@DatabaseConnection), addEnumMapSupportFunctions($sq, $m), $extensions);
+   let sqlNode = generateSQLExecutionNode($postProcessorResult.query, $runtime->toOne()->connectionByElement($store)->cast(@meta::external::store::relational::runtime::DatabaseConnection), addEnumMapSupportFunctions($sq, $m), $extensions);
    let relationalNode =  if($wrapInInstantiationNode, | generateInstantiationExecutionNode($sq, $ext, $postProcessorResult.query, $sqlNode, $m,$exeCtx), | $sqlNode);
    let nodes = $postProcessorResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessorResult.postExecutionNodes);
    if($nodes->size()>1,
@@ -185,7 +185,7 @@ function <<access.private>> meta::relational::mapping::getRelationalTypeFromRela
   $r->toOne().relationalOperationElement->inferRelationalType(false)->cast(@meta::relational::metamodel::datatype::DataType)
 }
 
-function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:DatabaseConnection[1], enumMapSupportFunctions:String[*], extensions:Extension[*]):ExecutionNode[1]
+function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], enumMapSupportFunctions:String[*], extensions:Extension[*]):ExecutionNode[1]
 {
    let sql = sqlQueryToString($query, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
 
@@ -195,7 +195,7 @@ function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], 
       sqlQuery = $sql,
       resultColumns = $query->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->columnLabel($connection, $extensions), dataType = $c->getRelationalTypeFromRelationalOperationElement()->translateCoreTypeToDbSpecificType(^TranslationContext(dbType = $connection.type)))), a:Any[1] | []]),
       resultType = ^ResultType(genericType=^GenericType(rawType=Any)),
-      connection = $connection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
+      connection = $connection->meta::relational::mapping::updateConnection($extensions)->cast(@meta::external::store::relational::runtime::DatabaseConnection),
       supportFunctions = relationalPlanSupportFunctions($connection)->concatenate($enumMapSupportFunctions),
       metadata = ^meta::relational::mapping::TableInfo(info  = $query->meta::relational::milestoning::getQueryTableAliases()->map(a|$a.relationalElement)->cast(@Table)->removeDuplicatesBy(t|$t.schema.name+'.'+$t.name)->map(tab| ^meta::relational::mapping::TableIdentifier(schema=$tab.schema.name, table=$tab.name))),
       // the only case that we yield result with dynamic columns is when pivot() is used and no casting is done afterwards, resulting
@@ -208,11 +208,11 @@ function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], 
 function meta::relational::mapping::updateConnection(conn:Connection[1], extensions:Extension[*]):Connection[1]
 {
    $conn->match($extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_plan_updateConnection)->concatenate([
-      c:DatabaseConnection[1] | $c
+      c:meta::external::store::relational::runtime::DatabaseConnection[1] | $c
    ])->toOneMany())
 }
 
-function <<access.private>> meta::relational::mapping::columnLabel(v:RelationalOperationElement[1], connection: DatabaseConnection[1], extensions:Extension[*]):String[1]
+function <<access.private>> meta::relational::mapping::columnLabel(v:RelationalOperationElement[1], connection: meta::external::store::relational::runtime::DatabaseConnection[1], extensions:Extension[*]):String[1]
 {
    $v->match(
       [
@@ -247,7 +247,7 @@ function meta::relational::mapping::fetchEnumFullPath(enum:EnumerationMapping<An
   $enum.parent->toOne()->elementToPath()->replace('::', '_') + '_' + $enum.name->toOne();
 }
 
-function meta::relational::mapping::relationalPlanSupportFunctions(c:DatabaseConnection[1]):String[*]
+function meta::relational::mapping::relationalPlanSupportFunctions(c:meta::external::store::relational::runtime::DatabaseConnection[1]):String[*]
 {
    if($c.timeZone->isNotEmpty() && !meta::pure::functions::date::systemDefaultTimeZones()->contains($c.timeZone->toOne()),|utcToTimeZoneSupportFunction(),|[])->concatenate(collectionRenderFunction())->concatenate(collectionSizeFunction())->concatenate(optionalVarPlaceHolderOperationSelectorFunction())->concatenate(varPlaceHolderToStringFunction())->concatenate(equalEnumOperationSelectorFunction());
 }
@@ -334,18 +334,18 @@ function meta::relational::mapping::execution(store: Database[1], f:ValueSpecifi
    let originalQuery = $f->toSQLQuery($m, $inScopeVars, $relationalExecutionContext, $debug, $extensions);
    let toSqlQueryDurationMilliseconds = ($toSqlQueryStart->dateDiff(now(),DurationUnit.MILLISECONDS));
 
-   let connections = $runtime.connectionStores->filter(c | $c.connection->instanceOf(DatabaseConnection));
+   let connections = $runtime.connectionStores->filter(c | $c.connection->instanceOf(meta::external::store::relational::runtime::DatabaseConnection));
    let storeRuntime = if($connections->size() <= 1,
                          | $runtime->toOne(),
                          | let oldRuntime = $runtime->toOne();
-                           let dbConn = $oldRuntime->connectionByElement($store)->cast(@DatabaseConnection);
+                           let dbConn = $oldRuntime->connectionByElement($store)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
                            let dbConnectionStore = $oldRuntime.connectionStores->filter(c|$c.connection==$dbConn);
                            ^$oldRuntime(connectionStores = $dbConnectionStore);
                       );
 
    let postProcessorResult = postProcessQuery($exeCtx, $originalQuery, $storeRuntime, $store, $extensions);
 
-   let connection = $runtime->connectionByElement($store)->cast(@DatabaseConnection);
+   let connection = $runtime->connectionByElement($store)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
 
    let sqlQueryToStringStart = now();
    let sql = if($relationalExecutionContext.insertDriverTablePkInTempTable->isEmpty(),
@@ -380,7 +380,7 @@ function meta::relational::mapping::sqlCommentPureExecution(): String[1]
   '-- "executionTraceID" : "' + meta::pure::functions::string::generation::generateGuid() + '"';
 }
 
-function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0..1], paths: Pair<String, PathInformation>[*], connection : DatabaseConnection[1], runtime: Runtime[1], class:Type[0..1], ext:RoutedValueSpecification[0..1], m: Mapping[1], sqlGenerationTimeInNanoSecond:Integer[0..1], g_queryTimeOutInSeconds: Integer[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0..1], paths: Pair<String, PathInformation>[*], connection : meta::external::store::relational::runtime::DatabaseConnection[1], runtime: Runtime[1], class:Type[0..1], ext:RoutedValueSpecification[0..1], m: Mapping[1], sqlGenerationTimeInNanoSecond:Integer[0..1], g_queryTimeOutInSeconds: Integer[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    print(if(!$debug.debug, |'', | $debug.space+'>Execute SQL: '+$sql+'\n'));
 
@@ -392,7 +392,7 @@ function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0
                                                );
                                              );
    let sqlComment = sqlCommentPureExecution();
-   let res = executeInDb($sqlComment + '\n' + $sql, $connection->cast(@DatabaseConnection), $queryTimeOutInSeconds, 1000);
+   let res = executeInDb($sqlComment + '\n' + $sql, $connection->cast(@meta::external::store::relational::runtime::DatabaseConnection), $queryTimeOutInSeconds, 1000);
     //let res = ^ResultSet(connectionAcquisitionTimeInNanoSecond=1,executionTimeInNanoSecond=2);
    print(if(!$debug.debug, |'', |let ds = $res.dataSource->toOne();
                                  $debug.space+'>Query executed in '+$res.executionTimeInNanoSecond->toString()+'ns, host: \''+$ds.host+':'+$ds.port->toOne()->toString()+'\', name: \''+$ds.name+'\', type: \''+$ds.type->toOne()->toString()+'\'\n';));
@@ -654,12 +654,12 @@ function meta::relational::mapping::processProperty(o:Any[1], property:Property<
 
            let sqlQueryToStringStart = now();
            let targetImplSqlQueryPair = generatePropertySql($setImplementation, $property, JoinType.INNER, $keyInformation.pk, $mapping, $keyInformation.static.runtime, $db, $keyInformation.static.exeCtx, $extensions);
-           let sourceConnection = $keyInformation.sourceConnection->cast(@DatabaseConnection);
+           let sourceConnection = $keyInformation.sourceConnection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
            let sql = sqlQueryToStringPretty($targetImplSqlQueryPair.second, $sourceConnection.type, $sourceConnection.timeZone, $sourceConnection.quoteIdentifiers, $extensions);
            let sqlQueryToStringDurationMilliseconds = ($sqlQueryToStringStart->dateDiff(now(),DurationUnit.MILLISECONDS));
 
            let sqlComment = sqlCommentPureExecution();
-           let executed = executeInDb($sqlComment + '\n' + $sql, $keyInformation.sourceConnection->cast(@DatabaseConnection));
+           let executed = executeInDb($sqlComment + '\n' + $sql, $keyInformation.sourceConnection->cast(@meta::external::store::relational::runtime::DatabaseConnection));
 
            meta::pure::functions::io::logActivities(^RelationalActivity(sql=$sql,
                                                                         comment = $sqlComment,

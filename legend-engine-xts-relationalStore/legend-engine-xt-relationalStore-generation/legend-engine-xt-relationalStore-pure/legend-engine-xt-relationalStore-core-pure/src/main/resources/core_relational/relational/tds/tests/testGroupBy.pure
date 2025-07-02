@@ -29,7 +29,7 @@ import meta::pure::metamodel::tds::*;
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy::testValidateTdsGroupByWithIsNotEmpty():Boolean[1]
 {
    let runtime = meta::external::store::relational::tests::testRuntime();
-   let connection = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
+   let connection = $runtime.connectionStores.connection->at(0)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    meta::relational::metamodel::execute::executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (9, 3, 2, 45, \'2014-12-04\', \'2014-12-05 22:00:00\');', $connection);
 
    let result = validate(|AccountWithConstraints.all(), simpleRelationalMappingWithConstraints, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());

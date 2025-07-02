@@ -135,7 +135,7 @@ function meta::relational::validation::showcase::standalone::getRuntime():Runtim
 function <<test.BeforePackage>> meta::relational::validation::showcase::standalone::createTablesInDb():Boolean[1]
 {
    let runtime = getRuntime();
-   let dbConn = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
+   let dbConn = $runtime.connectionStores.connection->at(0)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    dropAndCreateTableInDb(db, 'tradeTable', $dbConn);
    dropAndCreateTableInDb(db, 'accountTable', $dbConn);
    dropAndCreateTableInDb(db, 'tradeEventTable', $dbConn);

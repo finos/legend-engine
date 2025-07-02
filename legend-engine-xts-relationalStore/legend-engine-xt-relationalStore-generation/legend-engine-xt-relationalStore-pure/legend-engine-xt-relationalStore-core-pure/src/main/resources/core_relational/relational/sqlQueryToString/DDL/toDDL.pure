@@ -77,7 +77,7 @@ function
 {doc.doc = 'Input CSV file must contain one empty line between each table and two empty lines after the last table'}
 meta::relational::functions::database::loadCsvDataToDbTable(csvData:List<String>[*],
                                                          db:Database[*],
-                                                         databaseConnection:DatabaseConnection[1],
+                                                         databaseConnection:meta::external::store::relational::runtime::DatabaseConnection[1],
                                                          tablePostProcessor:Function<{Table[1]->Table[1]}>[1]
                                                          ):Any[*]
 {
