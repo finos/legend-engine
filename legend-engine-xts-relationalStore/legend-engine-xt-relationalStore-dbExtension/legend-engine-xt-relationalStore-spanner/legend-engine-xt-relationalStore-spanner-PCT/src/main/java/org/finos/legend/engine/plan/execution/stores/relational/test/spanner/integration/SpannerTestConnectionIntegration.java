@@ -33,7 +33,11 @@ import org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.Span
 import org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.SpannerOptions;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import org.testcontainers.containers.SpannerEmulatorContainer;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.utility.DockerImageName;
+
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 public class SpannerTestConnectionIntegration implements TestConnectionIntegration, TestServerResource
 {
@@ -42,7 +46,7 @@ public class SpannerTestConnectionIntegration implements TestConnectionIntegrati
     public SpannerEmulatorContainer spannerContainerEmulator = new SpannerEmulatorContainer(
             DockerImageName.parse(System.getProperty("legend.engine.testcontainer.registry", "gcr.io") + "/cloud-spanner-emulator/emulator")
             .asCompatibleSubstituteFor("gcr.io/cloud-spanner-emulator/emulator")
-    ).withStartupAttempts(DEFAULT_STARTUP_ATTEMPTS);
+    ).withStartupAttempts(DEFAULT_STARTUP_ATTEMPTS).withImagePullPolicy(PullPolicy.ageBased(Duration.of(7L, ChronoUnit.DAYS)));
 
     private Spanner spanner;
     private final String PCT_SPANNER_PROJECT_ID = "legend-spanner-pct-testing";
