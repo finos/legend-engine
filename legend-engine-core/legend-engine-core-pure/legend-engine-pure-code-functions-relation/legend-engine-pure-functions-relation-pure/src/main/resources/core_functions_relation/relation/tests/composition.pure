@@ -410,7 +410,12 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::testGroupByCastBeforeAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>>
+  {
+    doc.doc='Tests map and casting the values of the column before applying the aggregate function. Cast is treated as a noop in this case.'
+  }
+meta::pure::functions::relation::tests::composition::testGroupByCastBeforeAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
               | #TDS
@@ -441,7 +446,12 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                 '#', $res->sort(~grp->ascending())->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>>
+  {
+    doc.doc='Tests map and casting result of the aggregate function. Cast is treated as a noop in this case.'
+  }
+meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
               | #TDS
@@ -470,4 +480,168 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                 '   4,4\n'+
                 '   5,9\n'+
                 '#', $res->sort(~grp->ascending())->toString());
+}
+
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
+  {
+    doc.doc='Tests olap with a partition window and casting result of the aggregate function. Cast is treated as a noop in this case.'
+  }
+meta::pure::functions::relation::tests::composition::testOLAPCastAggWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->plus()->cast(@Integer))
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10,0,J,10\n'+
+                  '   2,1,B,16\n'+
+                  '   6,1,F,16\n'+
+                  '   8,1,H,16\n'+
+                  '   1,2,A,6\n'+
+                  '   5,2,E,6\n'+
+                  '   3,3,C,10\n'+
+                  '   7,3,G,10\n'+
+                  '   4,4,D,4\n'+
+                  '   9,5,I,9\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
+}
+
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
+  {
+    doc.doc='Tests olap with a partition window and casting the values of the column before applying the aggregate function. Cast is treated as a noop in this case.'
+  }
+meta::pure::functions::relation::tests::composition::testOLAPAggCastWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->cast(@Integer)->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10,0,J,10\n'+
+                  '   2,1,B,16\n'+
+                  '   6,1,F,16\n'+
+                  '   8,1,H,16\n'+
+                  '   1,2,A,6\n'+
+                  '   5,2,E,6\n'+
+                  '   3,3,C,10\n'+
+                  '   7,3,G,10\n'+
+                  '   4,4,D,4\n'+
+                  '   9,5,I,9\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
+}
+
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
+  {
+    doc.doc='Tests olap with a partition window and casting the values of the extract function before applying the aggregate function. Cast is treated as a noop in this case.'
+  }
+meta::pure::functions::relation::tests::composition::testOLAPCastExtractAggWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id->cast(@Integer)}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10,0,J,10\n'+
+                  '   2,1,B,16\n'+
+                  '   6,1,F,16\n'+
+                  '   8,1,H,16\n'+
+                  '   1,2,A,6\n'+
+                  '   5,2,E,6\n'+
+                  '   3,3,C,10\n'+
+                  '   7,3,G,10\n'+
+                  '   4,4,D,4\n'+
+                  '   9,5,I,9\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
+}
+
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
+  {
+    doc.doc='Tests olap with a partition window, casting the values of the extract function before applying the aggregate function, and casting result of the aggregate function. Cast is treated as a noop in this case.'
+  }
+meta::pure::functions::relation::tests::composition::testOLAPCastExtractCastAggWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id->cast(@Integer)}:y|$y->plus()->cast(@Integer))
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10,0,J,10\n'+
+                  '   2,1,B,16\n'+
+                  '   6,1,F,16\n'+
+                  '   8,1,H,16\n'+
+                  '   1,2,A,6\n'+
+                  '   5,2,E,6\n'+
+                  '   3,3,C,10\n'+
+                  '   7,3,G,10\n'+
+                  '   4,4,D,4\n'+
+                  '   9,5,I,9\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
