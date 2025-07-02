@@ -353,6 +353,7 @@ public class GraphQLExecute extends GraphQL
                             }
                             catch (IOException e)
                             {
+                                observeError(e, graphQLCacheKey);
                                 throw new RuntimeException(e);
                             }
                             catch (Exception e)
