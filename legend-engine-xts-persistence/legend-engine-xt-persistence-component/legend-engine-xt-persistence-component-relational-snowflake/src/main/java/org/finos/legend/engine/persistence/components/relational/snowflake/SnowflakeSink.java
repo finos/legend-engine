@@ -70,6 +70,7 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.optmi
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeDataTypeToDefaultSizeMapping;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeIcebergDataTypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeJdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.BatchEndTimestampVisitor;
@@ -94,6 +95,7 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ToArrayFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.TryCastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.executor.TabularData;
+import org.finos.legend.engine.persistence.components.relational.sql.DataTypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
@@ -126,6 +128,7 @@ public class SnowflakeSink extends AnsiSqlSink
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSink.class);
     private static final RelationalSink INSTANCE;
+    private static final RelationalSink ICEBERG_INSTANCE;
 
     private static final Set<Capability> CAPABILITIES;
     private static final Map<Class<?>, LogicalPlanVisitor<?>> LOGICAL_PLAN_VISITOR_BY_CLASS;
@@ -204,12 +207,18 @@ public class SnowflakeSink extends AnsiSqlSink
 
         EXPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(new HashMap<>());
 
-        INSTANCE = new SnowflakeSink();
+        INSTANCE = new SnowflakeSink(new SnowflakeDataTypeToDefaultSizeMapping());
+        ICEBERG_INSTANCE = new SnowflakeSink(new SnowflakeIcebergDataTypeToDefaultSizeMapping());
     }
 
     public static RelationalSink get()
     {
         return INSTANCE;
+    }
+
+    public static RelationalSink getIcebergInstance()
+    {
+        return ICEBERG_INSTANCE;
     }
 
     public static Connection createConnection(String user,
@@ -236,13 +245,13 @@ public class SnowflakeSink extends AnsiSqlSink
         }
     }
 
-    private SnowflakeSink()
+    private SnowflakeSink(DataTypeToDefaultSizeMapping dataTypeToDefaultSizeMapping)
     {
         super(
             CAPABILITIES,
             IMPLICIT_DATA_TYPE_MAPPING,
             EXPLICIT_DATA_TYPE_MAPPING,
-            new SnowflakeDataTypeToDefaultSizeMapping(),
+            dataTypeToDefaultSizeMapping,
             SqlGenUtils.QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) ->
