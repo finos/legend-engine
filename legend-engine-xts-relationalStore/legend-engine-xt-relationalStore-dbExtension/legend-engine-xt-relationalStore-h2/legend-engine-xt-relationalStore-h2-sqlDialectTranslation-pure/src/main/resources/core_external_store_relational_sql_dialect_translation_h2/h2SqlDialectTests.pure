@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::h2::*;
@@ -137,4 +138,40 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
     'ORDER BY c1 DESC NULLS FIRST, c2 ASC NULLS LAST OFFSET 5 ROWS',
     $dialect->executeNodeProcessor($q9, $state, $config)
   );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testLeftForH2(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+  assertEquals('left(\'abcd\', char_length(\'xy\'))', $dialect->executeNodeProcessor(
+    ^FunctionCall(
+      name = ^QualifiedName(parts = 'left'),
+      arguments = [
+        literal('abcd'),
+        ^FunctionCall(
+          name = ^QualifiedName(parts = 'char_length'),
+          arguments = [literal('xy')]
+        )
+      ]
+    )->inferTypes($config.functionRegistry), $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testRightForH2(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+  assertEquals('right(\'defgh\', char_length(\'ghij\'))', $dialect->executeNodeProcessor(
+    ^FunctionCall(
+      name = ^QualifiedName(parts = 'right'),
+      arguments = [
+        literal('defgh'),
+        ^FunctionCall(
+          name = ^QualifiedName(parts = 'char_length'),
+          arguments = [literal('ghij')]
+        )
+      ]
+    )->inferTypes($config.functionRegistry), $state, $config));
 }
