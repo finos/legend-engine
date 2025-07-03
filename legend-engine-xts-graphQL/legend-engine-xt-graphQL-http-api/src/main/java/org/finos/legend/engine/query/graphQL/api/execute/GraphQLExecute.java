@@ -65,10 +65,12 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transformation_queryToPure_NamedExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext;
 import org.finos.legend.pure.generated.core_external_query_graphql_transformation_transformation_graphFetch;
@@ -82,15 +84,6 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.concurrent.Callable;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -103,9 +96,20 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.query.graphQL.api.execute.model.GraphQLCachableVisitorHelper.createCachableGraphQLQuery;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
+import static org.finos.legend.engine.shared.core.operational.logs.LoggingEventType.GRAPHQL_EXECUTE;
+import static org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler.GRAPHQL_ERROR_COUNTER;
 
 @Api(tags = "GraphQL - Execution")
 @Path("graphQL/v1/execution")
@@ -127,10 +131,11 @@ public class GraphQLExecute extends GraphQL
         this.transformers = transformers;
         this.extensionsFunc = extensionsFunc;
         this.graphQLPlanCache = planCache;
-        for (IGraphQLDirectiveExtension graphQLExecuteExtension: ServiceLoader.load(IGraphQLDirectiveExtension.class))
+        for (IGraphQLDirectiveExtension graphQLExecuteExtension : ServiceLoader.load(IGraphQLDirectiveExtension.class))
         {
             this.graphQLExecuteExtensions.add(graphQLExecuteExtension);
         }
+        MetricsHandler.createMetrics(GraphQLExecute.class);
     }
 
     public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Iterable<? extends PlanTransformer> transformers)
@@ -291,10 +296,10 @@ public class GraphQLExecute extends GraphQL
             }
             throw e;
         }
-        return execute(identity, planWithSerialized, graphQLQuery);
+        return execute(identity, planWithSerialized, graphQLQuery, graphQLCacheKey);
     }
 
-    private List<SerializedNamedPlans> getSerializedNamedPlans(Document document, GraphQLCacheKey graphQLCacheKey,OperationDefinition graphQLQuery, PureModel pureModel)
+    private List<SerializedNamedPlans> getSerializedNamedPlans(Document document, GraphQLCacheKey graphQLCacheKey, OperationDefinition graphQLQuery, PureModel pureModel)
     {
         List<SerializedNamedPlans> planWithSerialized;
         if (graphQLCacheKey instanceof GraphQLDevCacheKey)
@@ -319,11 +324,13 @@ public class GraphQLExecute extends GraphQL
         return planWithSerialized;
     }
 
-    private Response execute(Identity identity, List<SerializedNamedPlans> planWithSerialized, OperationDefinition graphQLQuery)
+    @Prometheus(name = "graphql execution", labels = {"projectBasePath", "mappingPath", "runtimePath", "queryClassPath"})
+    public Response execute(Identity identity, List<SerializedNamedPlans> planWithSerialized, OperationDefinition graphQLQuery, GraphQLCacheKey graphQLCacheKey)
     {
         return Response.ok(
                 (StreamingOutput) outputStream ->
                 {
+                    long startTime = System.currentTimeMillis();
                     try (JsonGenerator generator = new JsonFactory().createGenerator(outputStream)
                             .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
                             .enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);)
@@ -346,7 +353,13 @@ public class GraphQLExecute extends GraphQL
                             }
                             catch (IOException e)
                             {
+                                observeError(e, graphQLCacheKey);
                                 throw new RuntimeException(e);
+                            }
+                            catch (Exception e)
+                            {
+                                observeError(e, graphQLCacheKey);
+                                throw e;
                             }
                             finally
                             {
@@ -365,10 +378,15 @@ public class GraphQLExecute extends GraphQL
                         }
                         generator.writeEndObject();
                     }
+                    MetricsHandler.observe("graphql execution", startTime, System.currentTimeMillis(),
+                            graphQLCacheKey.getProjectBasePath(),
+                            graphQLCacheKey.getMappingPath(),
+                            graphQLCacheKey.getRuntimePath(),
+                            graphQLCacheKey.getQueryClassPath());
                 }).build();
     }
 
-    private Map<String, ?> computeExtensionsField(OperationDefinition query, List<SerializedNamedPlans> serializedNamedPlans,Identity identity)
+    private Map<String, ?> computeExtensionsField(OperationDefinition query, List<SerializedNamedPlans> serializedNamedPlans, Identity identity)
     {
         Map<String, Map<String, Object>> m = new HashMap<>();
         List<Directive> directives = GraphQLExecutionHelper.findDirectives(query);
@@ -410,14 +428,14 @@ public class GraphQLExecute extends GraphQL
         directives.forEach(directive ->
         {
             SingleExecutionPlan plan = (SingleExecutionPlan) getExtensionForDirective(directive).planDirective(
-                        document,
-                        pureModel,
-                        _class,
-                        mapping,
-                        runtime,
-                        this.extensionsFunc.apply(pureModel),
-                        this.transformers
-                );
+                    document,
+                    pureModel,
+                    _class,
+                    mapping,
+                    runtime,
+                    this.extensionsFunc.apply(pureModel),
+                    this.transformers
+            );
             serializedNamedPlans.add(new SerializedNamedPlans(GraphQLExecutionHelper.getPlanNameForDirective(rootFieldName, directive), plan));
         });
         return serializedNamedPlans;
@@ -468,7 +486,7 @@ public class GraphQLExecute extends GraphQL
     }
 
     private List<SerializedNamedPlans> getSerializedNamedPlans(
-            PureModel pureModel,RichIterable<? extends Root_meta_pure_extension_Extension> extensions,
+            PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> extensions,
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class,
             Mapping mapping,
             Root_meta_core_runtime_Runtime runtime,
@@ -521,19 +539,27 @@ public class GraphQLExecute extends GraphQL
         return this.executeDevImpl(request, projectId, workspaceId, true, queryClassPath, mappingPath, runtimePath, query, pm);
     }
 
-    private Response executeDevImpl(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String queryClassPath, String mappingPath, String runtimePath, Query query, ProfileManager<CommonProfile> pm)
+    @Prometheus(name = "graphql plan generation", labels = {"projectBasePath", "mappingPath", "runtimePath", "queryClassPath"})
+    public Response executeDevImpl(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String queryClassPath, String mappingPath, String runtimePath, Query query, ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
+            long startTime = System.currentTimeMillis();
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
             Document cachableGraphQLQuery = createCachableGraphQLQuery(document);
             GraphQLDevCacheKey key = new GraphQLDevCacheKey(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, objectMapper.writeValueAsString(cachableGraphQLQuery));
-            return this.executeGraphQLQuery(document, key, identity, () -> loadSDLCProjectModel(identity, request, projectId, workspaceId, isGroupWorkspace));
+
+            Response response = this.executeGraphQLQuery(document, key, identity, () -> loadSDLCProjectModel(identity, request, projectId, workspaceId, isGroupWorkspace));
+            MetricsHandler.observe("graphql plan generation", startTime, System.currentTimeMillis(),
+                    key.getProjectBasePath(), key.getMappingPath(), key.getRuntimePath(), key.getQueryClassPath());
+            return response;
         }
         catch (Exception ex)
         {
+            GraphQLDevCacheKey key = new GraphQLDevCacheKey(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, null);
+            observeError(ex, key);
             return Response.ok(new GraphQLErrorMain(ex.getMessage())).build();
         }
     }
@@ -542,19 +568,26 @@ public class GraphQLExecute extends GraphQL
     @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime")
     @Path("execute/prod/{groupId}/{artifactId}/{versionId}/query/{queryClassPath}/mapping/{mappingPath}/runtime/{runtimePath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Prometheus(name = "graphql plan generation", labels = {"projectBasePath", "mappingPath", "runtimePath", "queryClassPath"})
     public Response executeProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
+            long startTime = System.currentTimeMillis();
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
             GraphQLProdMappingRuntimeCacheKey key = new GraphQLProdMappingRuntimeCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
 
-            return this.executeGraphQLQuery(document, key, identity, () -> loadProjectModel(identity, groupId, artifactId, versionId));
+            Response response = this.executeGraphQLQuery(document, key, identity, () -> loadProjectModel(identity, groupId, artifactId, versionId));
+            MetricsHandler.observe("graphql plan generation", startTime, System.currentTimeMillis(),
+                    key.getProjectBasePath(), key.getMappingPath(), key.getRuntimePath(), key.getQueryClassPath());
+            return response;
         }
         catch (Exception ex)
         {
+            GraphQLProdMappingRuntimeCacheKey key = new GraphQLProdMappingRuntimeCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, queryClassPath, null);
+            observeError(ex, key);
             return Response.ok(new GraphQLErrorMain(ex.getMessage())).build();
         }
     }
@@ -563,19 +596,25 @@ public class GraphQLExecute extends GraphQL
     @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime")
     @Path("execute/prod/{groupId}/{artifactId}/{versionId}/query/{queryClassPath}/dataspace/{dataspacePath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Prometheus(name = "graphql plan generation", labels = {"projectBasePath", "mappingPath", "runtimePath", "queryClassPath"})
     public Response executeProdWithDataspace(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("dataspacePath") String dataspacePath, @QueryParam("executionContext") @DefaultValue("defaultExecutionContext") String executionContext, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
+            long startTime = System.currentTimeMillis();
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
             GraphQLProdDataspaceCacheKey key = new GraphQLProdDataspaceCacheKey(groupId, artifactId, versionId, dataspacePath, executionContext, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
 
-            return this.executeGraphQLQuery(document, key, identity, () -> loadProjectModel(identity, groupId, artifactId, versionId));
+            Response response = this.executeGraphQLQuery(document, key, identity, () -> loadProjectModel(identity, groupId, artifactId, versionId));
+            MetricsHandler.observe("graphql plan generation", startTime, System.currentTimeMillis(), key.getProjectBasePath(), key.getMappingPath(), key.getRuntimePath(), key.getQueryClassPath());
+            return response;
         }
         catch (Exception ex)
         {
+            GraphQLProdDataspaceCacheKey key = new GraphQLProdDataspaceCacheKey(groupId, artifactId, versionId, dataspacePath, executionContext, queryClassPath, null);
+            observeError(ex, key);
             return Response.ok(new GraphQLErrorMain(ex.getMessage())).build();
         }
     }
@@ -586,5 +625,8 @@ public class GraphQLExecute extends GraphQL
         return !selections.isEmpty() && selections.get(0) instanceof Field && ((Field) selections.get(0)).name.equals("__schema");
     }
 
-
+    private static synchronized void observeError(Exception exception, GraphQLCacheKey key)
+    {
+        MetricsHandler.observeError(GRAPHQL_ERROR_COUNTER, GRAPHQL_EXECUTE, exception, key.getProjectBasePath(), key.getMappingPath(), key.getRuntimePath(), key.getQueryClassPath());
+    }
 }

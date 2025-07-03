@@ -36,6 +36,9 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
+
+import static org.finos.legend.engine.shared.core.operational.logs.LoggingEventType.GRAPHQL_EXECUTE;
 
 public class MetricsHandler
 {
@@ -179,7 +182,7 @@ public class MetricsHandler
                 Prometheus val = m.getAnnotation(Prometheus.class);
                 if (val.type() == Prometheus.Type.SUMMARY && (serviceMetrics.get(val.name()) == null))
                 {
-                    Summary g = Summary.build().name(generateMetricName(val.name(), false))
+                    Summary g = Summary.build().name(generateMetricName(val.name(), false)).labelNames(val.labels())
                             .quantile(0.5, 0.05).quantile(0.9, 0.01).quantile(0.99, 0.001)
                             .help(val.doc())
                             .register();
@@ -196,20 +199,20 @@ public class MetricsHandler
     }
 
     @Deprecated
-    public static synchronized void observe(String name, long startTime, long endTime)
+    public static synchronized void observe(String name, long startTime, long endTime, String... labels)
     {
         if (serviceMetrics.get(name) == null)
         {
-            Summary g = Summary.build().name(generateMetricName(name, false))
+            Summary g = Summary.build().name(generateMetricName(name, false)).labelNames(labels)
                     .quantile(0.5, 0.05).quantile(0.9, 0.01).quantile(0.99, 0.001)
                     .help(name + " duration metrics")
                     .register();
             serviceMetrics.put(name, g);
-            g.observe((endTime - startTime) / 1000F);
+            g.labels(labels).observe((endTime - startTime) / 1000F);
         }
         else
         {
-            serviceMetrics.get(name).observe((endTime - startTime) / 1000F);
+            serviceMetrics.get(name).labels(labels).observe((endTime - startTime) / 1000F);
         }
     }
 
@@ -271,6 +274,11 @@ public class MetricsHandler
      */
     protected static final Counter EXCEPTION_ERROR_COUNTER = Counter.build("legend_engine_error_total", "Count errors in legend engine").labelNames("exceptionClass", "category", "source", "serviceName").register(getMetricsRegistry());
 
+    public static final Counter GRAPHQL_ERROR_COUNTER = Counter.build().name("graphql_execution_error_total")
+            .help("Count errors in graphql executions")
+            .labelNames("exceptionClass", "category", "source", "projectBasePath", "mappingPath", "runtimePath", "queryClassPath")
+            .register();
+
     /**
      * List of objects corresponding to the error categories holding their associated exception data.
      */
@@ -292,19 +300,12 @@ public class MetricsHandler
         SECONDARY,
     }
 
-    /**
-     * Method to record an exception occurring during execution and add it to the metrics.
-     * @param origin the stage in execution at which the exception occurred. For service execution exceptions use SERVICE_EXECUTE_ERROR.
-     * @param exception the non-null exception to be analysed that has occurred in execution.
-     * @param servicePath the name of the service whose execution invoked the error.
-     */
-    public static synchronized void observeError(Enum origin, Exception exception, String servicePath)
+    public static synchronized void observeError(Counter counter, Enum origin, Exception exception, String... additionalLabels)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Error Categorisation").startActive(true))
         {
             Assert.assertTrue(origin != null, () -> "Exception origin must not be null!");
             String source = removeErrorSuffix(toCamelCase(origin));
-            String servicePattern = servicePath == null ? "N/A" : servicePath;
             String exceptionClass = exception.getClass().getSimpleName();
             ExceptionCategory category = ExceptionCategory.UNKNOWN_ERROR;
             if (categorisationEnabled)
@@ -313,9 +314,32 @@ public class MetricsHandler
                 exceptionClass = exceptionLabelValues.exceptionClass;
                 category = exceptionLabelValues.exceptionCategory;
             }
-            EXCEPTION_ERROR_COUNTER.labels(exceptionClass, toCamelCase(category), source, servicePattern).inc();
-            LOGGER.error("Exception added to metric - Label: {}. Category: {}. Source: {}. Service: {}. {}. Exception Categorisation is: {}", exceptionClass, category, source, servicePattern, exceptionToPrettyString(exception), categorisationEnabled);
+            counter.labels(constructErrorLabels(exceptionClass, category, source, additionalLabels)).inc();
+            LOGGER.error("Exception added to metric - Label: {}. Category: {}. Source: {}. Service: {}. " +
+                    "{}. Exception Categorisation is: {}",
+                    exceptionClass, category, source, additionalLabels,
+                    exceptionToPrettyString(exception), categorisationEnabled);
         }
+    }
+
+    private static String[] constructErrorLabels(String exceptionClass, ExceptionCategory category, String source, String[] additionalLabels)
+    {
+        return Stream.concat(
+                    Arrays.stream(new String[] {exceptionClass, toCamelCase(category), source}),
+                    Arrays.stream(additionalLabels))
+                .toArray(String[]::new);
+    }
+
+    /**
+     * Method to record an exception occurring during execution and add it to the metrics.
+     * @param origin the stage in execution at which the exception occurred. For service execution exceptions use SERVICE_EXECUTE_ERROR.
+     * @param exception the non-null exception to be analysed that has occurred in execution.
+     * @param servicePath the name of the service whose execution invoked the error.
+     */
+    public static synchronized void observeError(Enum origin, Exception exception, String servicePath)
+    {
+        String servicePattern = servicePath == null ? "N/A" : servicePath;
+        observeError(EXCEPTION_ERROR_COUNTER, origin, exception, servicePattern);
     }
 
     /**

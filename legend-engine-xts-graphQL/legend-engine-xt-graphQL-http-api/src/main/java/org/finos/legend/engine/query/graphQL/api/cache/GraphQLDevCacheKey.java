@@ -66,6 +66,12 @@ public class GraphQLDevCacheKey implements GraphQLCacheKey
         return queryClassPath;
     }
 
+    @Override
+    public String getProjectBasePath()
+    {
+        return String.format("%s:%s", projectId, workspaceId);
+    }
+
     public String getMappingPath()
     {
         return mappingPath;

@@ -76,4 +76,9 @@ public abstract class GraphQLProdCacheKey implements GraphQLCacheKey
     {
         return query;
     }
+
+    public String getProjectBasePath()
+    {
+        return String.format("%s:%s:%s", groupID, artifactId, versionId);
+    }
 }
