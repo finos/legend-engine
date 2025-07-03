@@ -12,6 +12,7 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::*;
 import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::functions::sqlQueryToString::h2::v2_1_214::*;
 
 function meta::relational::functions::sqlQueryToString::h2::v2_1_214::createDbExtensionForH2():DbExtension[1]
@@ -75,7 +76,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::getColumnTypeSqlTextH2(columnType: meta::relational::metamodel::datatype::DataType[1]): String[1]
 {
   $columnType->match([
-    s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARCHAR(4000)',
+    s : meta::relational::metamodel::datatype::SemiStructured[1] | format('VARCHAR(%d)', maxVarcharLength()),
     a : Any[*] | dataTypeToSqlTextH2($columnType)
   ])
 }
@@ -157,13 +158,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::dataTypeToSqlTextH2(type: meta::relational::metamodel::datatype::DataType[1]):String[1]
 {
-  let MAX_CHAR_LENGTH = 1000000000;
   let MIN_CHAR_LENGTH = 1;
   let MIN_PRECISION = 1;
 
   $type->match([
-    v : meta::relational::metamodel::datatype::Varchar[1]  | format('VARCHAR(%d)', max([$MIN_CHAR_LENGTH, min([$v.size, $MAX_CHAR_LENGTH])])),
-    c : meta::relational::metamodel::datatype::Char[1]     | format('CHAR(%d)', max([$MIN_CHAR_LENGTH, min([$c.size, $MAX_CHAR_LENGTH])])),  // H2 now pads characters to hit stated size
+    v : meta::relational::metamodel::datatype::Varchar[1]  | format('VARCHAR(%d)', max([$MIN_CHAR_LENGTH, min([$v.size, maxVarcharLength()])])),
+    c : meta::relational::metamodel::datatype::Char[1]     | format('CHAR(%d)', max([$MIN_CHAR_LENGTH, min([$c.size, maxVarcharLength()])])),  // H2 now pads characters to hit stated size
     //b : meta::relational::metamodel::datatype::Bit[1]      | 'TINYINT',  // allows comparisons to Booleans with new H2
     n : meta::relational::metamodel::datatype::Numeric[1]  | format('NUMERIC(%d, %d)', [max([$n.precision, $MIN_PRECISION]), $n.scale]),
     d : meta::relational::metamodel::datatype::DataType[1] | getColumnTypeSqlTextDefault($d)

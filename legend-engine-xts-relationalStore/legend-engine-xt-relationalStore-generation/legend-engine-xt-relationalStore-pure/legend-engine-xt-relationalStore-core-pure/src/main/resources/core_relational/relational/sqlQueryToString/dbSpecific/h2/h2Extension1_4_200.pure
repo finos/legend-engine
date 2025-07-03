@@ -8,6 +8,7 @@ import meta::relational::runtime::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::*;
 import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::functions::sqlQueryToString::h2::v1_4_200::*;
 
 function meta::relational::functions::sqlQueryToString::h2::v1_4_200::createDbExtensionForH2():DbExtension[1]
@@ -54,9 +55,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
  'COMMIT';
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::getColumnTypeSqlTextH2(columnType: meta::relational::metamodel::datatype::DataType[1]): String[1]
+{
+  $columnType->match([
+    s : meta::relational::metamodel::datatype::SemiStructured[1] | format('VARCHAR(%d)', maxVarcharLength()),
+    a : Any[*] | getColumnTypeSqlTextDefault($columnType)
+  ])
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::translateCreateTableStatementForH2(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[1]
 {
-  if($c.isTempTable->isTrue(),| 'CREATE LOCAL TEMPORARY TABLE ' + $c.table->tableToString($dbConfig) + '('+ $c.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextDefault($c.type),
+  if($c.isTempTable->isTrue(),| 'CREATE LOCAL TEMPORARY TABLE ' + $c.table->tableToString($dbConfig) + '('+ $c.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextH2($c.type),
                                                                                                                                    r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]))->joinStrings(',') + ');'
                              ,| $c->meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault($dbConfig))
 

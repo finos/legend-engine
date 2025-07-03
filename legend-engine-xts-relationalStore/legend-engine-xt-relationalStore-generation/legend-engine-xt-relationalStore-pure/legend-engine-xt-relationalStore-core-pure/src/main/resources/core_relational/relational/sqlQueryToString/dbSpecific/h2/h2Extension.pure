@@ -21,6 +21,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::c
   );
 }
 
+function meta::relational::functions::sqlQueryToString::h2::maxVarcharLength():Integer[1]
+{
+  1000000000
+}
+
 function meta::relational::functions::sqlQueryToString::h2::assertEqualsH2Compatible(
   legacyExpected: Any[1],
   upgradedExpected: Any[1],
