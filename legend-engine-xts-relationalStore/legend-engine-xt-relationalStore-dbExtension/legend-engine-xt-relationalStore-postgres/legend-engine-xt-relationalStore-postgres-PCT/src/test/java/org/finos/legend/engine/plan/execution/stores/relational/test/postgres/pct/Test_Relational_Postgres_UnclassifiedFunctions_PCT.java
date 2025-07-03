@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct;
 
 import junit.framework.Test;
+import org.checkerframework.checker.units.qual.A;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
@@ -44,9 +45,7 @@ public class Test_Relational_Postgres_UnclassifiedFunctions_PCT extends PCTRepor
             one("meta::pure::functions::string::tests::char::testEmptyChar_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: null character not permitted", AdapterQualifier.needsInvestigation),
 
             //base64
-            one("meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'encodeBase64_String_1__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::string::tests::base64::testDecodeBase64_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'decodeBase64_String_1__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'encodeBase64_String_1__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: invalid base64 end sequence\n  Hint: Input data is missing padding, is truncated, or is otherwise corrupted.", AdapterQualifier.unsupportedFeature),
 
             //jarowinklersimilarity
             one("meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual_Function_1__Boolean_1_", "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),

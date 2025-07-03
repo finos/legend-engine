@@ -273,7 +273,7 @@ public class FunctionsHelper
     // STRING -------------------------------------------------------------------
     public static String encodeBase64(String str)
     {
-        return Base64.encodeBase64URLSafeString(str.getBytes());
+        return Base64.encodeBase64String(str.getBytes());
     }
 
     public static String decodeBase64(String str)
