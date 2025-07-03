@@ -91,19 +91,12 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
 
             // CosH
             one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"cosh(%s)\"\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Identities_Function_1__Boolean_1_", "\"\nexpected: 274.658517577606\nactual:   274.65851757760606\"", AdapterQualifier.needsInvestigation),
 
             // SinH
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "\"\nexpected: 3.6268604078470186\nactual:   3.626860407847019\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_", "\"\nexpected: -0.8423951260776952\nactual:   -0.8423951260776953\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Floats_Function_1__Boolean_1_", "\"\nexpected: -0.8423951260776952\nactual:   -0.8423951260776953\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Identities_Function_1__Boolean_1_", "\"\nexpected: 273.6585175776061\nactual:   273.65851757760606\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Integers_Function_1__Boolean_1_", "\"\nexpected: -3.6268604078470186\nactual:   -3.626860407847019\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"sinh(%s)\"\"", AdapterQualifier.needsInvestigation),
 
             // TanH
             one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"tanh(%s)\"\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "\"\nexpected: -0.6442654436049522\nactual:   -0.6442654436049523\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Floats_Function_1__Boolean_1_", "\"\nexpected: -0.6442654436049522\nactual:   -0.6442654436049523\"", AdapterQualifier.needsInvestigation),
 
             // Bitwise
             one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\"", AdapterQualifier.assertErrorMismatch),
