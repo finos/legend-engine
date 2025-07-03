@@ -159,7 +159,7 @@ function <<access.private>> meta::external::function::description::openapi::tran
                                       type='object',
                                       properties=newMap(
                                         $c.rawType->cast(@Class<Any>).properties
-                                          ->filter(p|$p.name!='elementOverride' && $p.name!='classifierGenericType')
+                                          ->filter(p|!$p.name->in(['elementOverride', 'classifierGenericType', 'generalizations', 'specializations']))
                                           ->map(p|
                                                   pair
                                                   (

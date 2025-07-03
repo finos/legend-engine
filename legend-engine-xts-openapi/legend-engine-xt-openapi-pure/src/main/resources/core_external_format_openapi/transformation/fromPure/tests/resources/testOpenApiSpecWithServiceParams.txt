@@ -91,54 +91,58 @@
   },
   "components": {
     "schemas": {
-      "TabularDataSet": {
+      "Type": {
         "type": "object",
         "properties": {
-          "columns": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TDSColumn"
-            }
-          },
-          "rows": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TDSRow"
-            }
+          "name": {
+            "type": "string"
           }
         }
-      },
-      "DataType": {
-        "type": "object",
-        "properties": {}
-      },
-      "Any": {
-        "type": "object",
-        "properties": {}
       },
       "TDSColumn": {
         "type": "object",
         "properties": {
-          "enumMapping": {
-            "$ref": "#/components/schemas/EnumerationMapping"
-          },
-          "enumMappingId": {
+          "name": {
             "type": "string"
           },
           "sourceDataType": {
             "$ref": "#/components/schemas/Any"
           },
-          "name": {
-            "type": "string"
-          },
-          "documentation": {
+          "enumMappingId": {
             "type": "string"
           },
           "offset": {
             "type": "integer"
           },
           "type": {
-            "$ref": "#/components/schemas/DataType"
+            "$ref": "#/components/schemas/Type"
+          },
+          "documentation": {
+            "type": "string"
+          },
+          "enumMapping": {
+            "$ref": "#/components/schemas/EnumerationMapping"
+          }
+        }
+      },
+      "Any": {
+        "type": "object",
+        "properties": {}
+      },
+      "TabularDataSet": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TDSRow"
+            }
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TDSColumn"
+            }
           }
         }
       },
