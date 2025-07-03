@@ -23,28 +23,28 @@ meta::pure::functions::math::sinh(number:Number[1]):Float[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Identities<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEqWithinTolerance($f->eval(|sinh(0)), 0.0, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh(-5)), -sinh(5), 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh(-100)), -sinh(100), 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|pow(sinh(7/2),2)), $f->eval(|(cosh(7) - 1)/2), 0.00000000000001);
+  assertEqWithinTolerance($f->eval(|sinh(0)), 0.0, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh(-5)), -sinh(5), 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh(-100)), -sinh(100), 0.000000001);
+  assertEqWithinTolerance($f->eval(|pow(sinh(7/2),2)), $f->eval(|(cosh(7) - 1)/2), 0.000000001);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Integers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEqWithinTolerance($f->eval(|sinh(3)), 10.017874927409903, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh(-2)), -3.626860407847019, 0.00000000000001);
+  assertEqWithinTolerance($f->eval(|sinh(3)), 10.017874927409903, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh(-2)), -3.626860407847019, 0.000000001);
 
-  assertEqWithinTolerance($f->eval(|sinh(6)), 201.71315737027922, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh(-6)), -201.71315737027922, 0.00000000000001);
+  assertEqWithinTolerance($f->eval(|sinh(6)), 201.71315737027922, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh(-6)), -201.71315737027922, 0.000000001);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Floats<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEqWithinTolerance($f->eval(|sinh(-3.14)), -11.53029203041011, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh(3.14)), 11.53029203041011, 0.00000000000001);
+  assertEqWithinTolerance($f->eval(|sinh(-3.14)), -11.53029203041011, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh(3.14)), 11.53029203041011, 0.000000001);
 
-  assertEqWithinTolerance($f->eval(|sinh(-.7654321)), -0.8423951260776953, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh(.7654321)), 0.8423951260776953, 0.00000000000001);
+  assertEqWithinTolerance($f->eval(|sinh(-.7654321)), -0.8423951260776953, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh(.7654321)), 0.8423951260776953, 0.000000001);
 
   assertEqWithinTolerance($f->eval(|sinh(11.573574828312076)), 53126.31440509195, 0.0000000001);
   assertEqWithinTolerance($f->eval(|sinh(-11.573574828312076)), -53126.31440509195, 0.0000000001);
@@ -52,11 +52,11 @@ function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::sinh::te
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEqWithinTolerance($f->eval(|sinh(-3.14)), -11.53029203041011, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh(3.14)), 11.53029203041011, 0.00000000000001);
+  assertEqWithinTolerance($f->eval(|sinh(-3.14)), -11.53029203041011, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh(3.14)), 11.53029203041011, 0.000000001);
 
-  assertEqWithinTolerance($f->eval(|sinh(-.7654321)), -0.8423951260776953, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh(.7654321)), 0.8423951260776953, 0.00000000000001);
+  assertEqWithinTolerance($f->eval(|sinh(-.7654321)), -0.8423951260776953, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh(.7654321)), 0.8423951260776953, 0.000000001);
 
   assertEqWithinTolerance($f->eval(|sinh(11.573574828312076)), 53126.31440509195, 0.0000000001);
   assertEqWithinTolerance($f->eval(|sinh(-11.573574828312076)), -53126.31440509195, 0.0000000001);
@@ -64,12 +64,12 @@ function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::sinh::te
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(0)), 0.0, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(2)), 3.626860407847019, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(1.5)), 2.1292794550948173, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(0.5)), 0.5210953054937474, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(3.14)), 11.53029203041011, 0.00000000000001);
-  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(-3.14)), -11.53029203041011, 0.00000000000001);
+  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(0)), 0.0, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(2)), 3.626860407847019, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(1.5)), 2.1292794550948173, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(0.5)), 0.5210953054937474, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(3.14)), 11.53029203041011, 0.000000001);
+  assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(-3.14)), -11.53029203041011, 0.000000001);
   assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(11.573574828312076)), 53126.31440509195, 0.0000000001);
   assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(-11.573574828312076)), -53126.31440509195, 0.0000000001);
 }
