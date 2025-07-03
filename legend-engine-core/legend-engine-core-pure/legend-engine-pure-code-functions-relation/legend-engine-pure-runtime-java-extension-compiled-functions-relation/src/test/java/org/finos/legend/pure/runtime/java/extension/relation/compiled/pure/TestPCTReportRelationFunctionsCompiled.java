@@ -12,21 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct;
+package org.finos.legend.pure.runtime.java.extension.relation.compiled.pure;
 
-import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestPCRReport
+public class TestPCTReportRelationFunctionsCompiled
 {
     @Test
     public void canFindPCTReport()
     {
-        Assert.assertEquals(
-                Sets.mutable.with("essential", "grammar", "standard", "relation", "unclassified"),
-                PCTReportProviderLoader.gatherReports().select(x -> x.adapterKey.adapter.name.equals("Spanner")).collect(x -> x.reportScope.module).toSet()
-        );
+        Assert.assertEquals("Native", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
+        Assert.assertEquals(5, PCTReportProviderLoader.gatherReports().size());
     }
 }

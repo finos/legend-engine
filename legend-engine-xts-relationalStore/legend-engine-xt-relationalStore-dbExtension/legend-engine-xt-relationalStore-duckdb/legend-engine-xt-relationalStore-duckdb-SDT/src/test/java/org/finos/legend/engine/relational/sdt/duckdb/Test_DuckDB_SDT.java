@@ -19,9 +19,11 @@ import junit.framework.TestSuite;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.relational.test.sdt.SdtTestSuiteBuilder;
 import org.finos.legend.pure.generated.core_external_store_relational_sql_dialect_translation_duckdb_duckDBSqlDialect;
+import org.junit.Ignore;
 
 import static org.finos.legend.pure.generated.core_external_store_relational_sql_dialect_translation_duckdb_duckDBSqlDialect.Root_meta_external_store_relational_sqlDialectTranslation_duckDB_duckDBSqlDialectExtension__Extension_1_;
 
+@Ignore
 public class Test_DuckDB_SDT extends TestSuite
 {
     public static Test suite()

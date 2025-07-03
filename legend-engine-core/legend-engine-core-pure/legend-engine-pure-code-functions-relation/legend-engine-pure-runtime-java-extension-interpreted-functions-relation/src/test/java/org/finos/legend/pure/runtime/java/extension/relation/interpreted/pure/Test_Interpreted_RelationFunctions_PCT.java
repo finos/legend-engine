@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.code.core.RelationCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
+import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
@@ -30,7 +31,10 @@ public class Test_Interpreted_RelationFunctions_PCT extends PCTReportConfigurati
     private static final ReportScope reportScope = RelationCodeRepositoryProvider.relationFunctions;
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "interpreted";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.empty();
+    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            // todo fix legend pure to properly handle exclusions on interpreted flow
+//            one("meta::pure::functions::relation::tests::composition::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "Error instantiating the type 'SortInfo<X⊆(id:Integer, payload:Variant, atCol:Variant)>'. Could not resolve type for the property 'column': ColSpec<X⊆(id:Integer, payload:Variant, atCol:Variant)>", AdapterQualifier.needsInvestigation)
+    );
 
     public static Test suite()
     {

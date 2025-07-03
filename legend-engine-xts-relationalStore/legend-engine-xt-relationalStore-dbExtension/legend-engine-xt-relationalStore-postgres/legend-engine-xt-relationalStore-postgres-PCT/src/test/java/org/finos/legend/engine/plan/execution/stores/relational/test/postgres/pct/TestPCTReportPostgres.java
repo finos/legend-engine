@@ -1,4 +1,4 @@
-// Copyright 2025 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct;
+package org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct;
 
 import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestPCTReport
+public class TestPCTReportPostgres
 {
     @Test
     public void canFindPCTReport()
     {
         Assert.assertEquals(
-                Sets.mutable.with("essential", "grammar", "standard", "relation", "unclassified"),
-                PCTReportProviderLoader.gatherReports().select(x -> x.adapterKey.adapter.name.equals("Databricks")).collect(x -> x.reportScope.module).toSet()
+                Sets.mutable.with("essential", "grammar", "standard", "relation", "unclassified", "variant"),
+                PCTReportProviderLoader.gatherReports().select(x -> x.adapterKey.adapter.name.equals("Postgres")).collect(x -> x.reportScope.module).toSet()
         );
     }
 }

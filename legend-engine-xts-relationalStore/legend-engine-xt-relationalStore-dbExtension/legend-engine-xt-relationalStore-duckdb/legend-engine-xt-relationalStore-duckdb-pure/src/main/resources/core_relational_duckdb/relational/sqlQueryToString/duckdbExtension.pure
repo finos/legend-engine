@@ -9,6 +9,7 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
+import meta::relational::functions::typeConversion::duckDB::*;
 
 function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::duckDB::dbExtensionLoaderForDuckDB():DbExtensionLoader[1]
 {
@@ -30,6 +31,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       joinStringsProcessor = processJoinStringsOperationForDuckDB_JoinStrings_1__SqlGenerationContext_1__String_1_,
       literalProcessor = $literalProcessor,
       joinProcessor = meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
+      semiStructuredElementProcessor = processSemiStructuredElementForDuckDB_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierForDuckDB_String_1__DbConfig_1__String_1_,
@@ -37,9 +39,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       commitQueryProcessor = processCommitQueryForDuckDB_CommitQuery_1__SqlGenerationContext_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator(),
-
-      pureTypeToDatabaseTypeConverter = meta::relational::functions::typeConversion::duckDB::convert_GenericType_1__DataType_1_,
-      buildDummyConnection = meta::relational::functions::sqlQueryToString::duckDB::buildDummyConnection__RelationalDatabaseConnection_1_
+      dataTypeToSqlText = dataTypeToSqlTextDuckDB_DataType_1__String_1_,
+      pureTypeToDatabaseTypeConverter = convert_GenericType_1__DataType_1_,
+      buildDummyConnection = meta::relational::functions::sqlQueryToString::duckDB::buildDummyConnection__RelationalDatabaseConnection_1_,
+      lambdaParameterProcessor = buildLambdaParameter_RelationalLambdaParameter_1__SqlGenerationContext_1__String_1_,
+      lambdaProcessor = buildLambda_RelationalLambda_1__SqlGenerationContext_1__String_1_
    );
 }
 
@@ -121,37 +125,6 @@ function meta::relational::functions::sqlQueryToString::duckDB::translateCreateT
 }
 
 
-function meta::relational::functions::sqlQueryToString::duckDB::dataTypeToSqlTextDuckDB(type: meta::relational::metamodel::datatype::DataType[1]):String[1]
-{
-    $type->match([
-       s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARCHAR(4000)',
-        i : meta::relational::metamodel::datatype::Integer[1] | 'INT',
-        f : meta::relational::metamodel::datatype::Float[1] | 'FLOAT',
-        v : meta::relational::metamodel::datatype::Varchar[1] | format('VARCHAR(%d)', $v.size),
-        c : meta::relational::metamodel::datatype::Char[1] | format('CHAR(%d)', $c.size),
-        d : meta::relational::metamodel::datatype::Decimal[1] | format('DECIMAL(%d, %d)', [$d.precision, $d.scale]),
-        t : meta::relational::metamodel::datatype::Timestamp[1] | 'TIMESTAMP',
-        d : meta::relational::metamodel::datatype::Date[1] | 'DATE',
-        b : meta::relational::metamodel::datatype::BigInt[1] | 'BIGINT',
-        s : meta::relational::metamodel::datatype::SmallInt[1] | 'SMALLINT',
-        t : meta::relational::metamodel::datatype::TinyInt[1] | 'TINYINT',
-        d : meta::relational::metamodel::datatype::Double[1] | 'DOUBLE',
-        n : meta::relational::metamodel::datatype::Numeric[1] | format('NUMERIC(%d, %d)', [$n.precision, $n.scale]),
-        d : meta::relational::metamodel::datatype::Distinct[1] | 'DISTINCT',
-        o : meta::relational::metamodel::datatype::Other[1] | 'OTHER',
-        b : meta::relational::metamodel::datatype::Bit[1] | 'BIT',
-        b : meta::relational::metamodel::datatype::Binary[1] | 'BINARY',
-        r : meta::relational::metamodel::datatype::Real[1] | 'REAL',
-        a : meta::relational::metamodel::datatype::Array[1] | 'ARRAY',
-        v : meta::relational::metamodel::datatype::Varbinary[1] | 'VARBINARY',
-        s : meta::relational::metamodel::datatype::SemiStructured[1] | 'SEMISTRUCTURED',
-        j : meta::relational::metamodel::datatype::Json[1] | 'JSON',
-        d : meta::relational::metamodel::datatype::DbSpecificDataType[1] | $d.dbSpecificSql
-    ]);
-}
-
-
-
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDynaFunctionToSqlForDuckDB(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
@@ -218,7 +191,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as BIGINT)')),
-    // dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='legend_h2_extension_json_parse(%s)')),
+    dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='%s::JSON')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s IN %s)')),
     // dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_add(DAY, case when %s - DAY_OF_WEEK(%s) >= 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
@@ -238,6 +211,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('toJson',                 $allStates,            ^ToSql(format='(json(%s)::STRING)')),
+    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='%s', transform=toVariantForDuckDb_String_MANY__String_1_)),
+    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='json_array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='json_object(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     // dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
@@ -247,6 +224,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_pop('+$p->toOne()+')',|'list_var_pop('+$p->joinStrings('[',',',']')+')'); })),
     dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::toVariantForDuckDb(params: String[*]):String[1]
+{
+  if($params->size() == 1,
+    |
+      'ifnull(to_json(%s), \'null\'::json)'->format($params->toOne()); // when single parameter, and is sql null, we need json null
+    ,
+    |
+      'to_json(%s)'->format($params->joinStrings('[', ',', ']'));
+  );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::dayOfWeekNumberForDuckDB(dayOfWeek: String[1..2]):String[1]
@@ -397,4 +385,70 @@ function meta::relational::functions::sqlQueryToString::duckDB::processJoinStrin
 {
   processJoinStringsOperation($js, $sgc, {col, sep| 'group_concat(' + $col + if($sep == '\'\'', |'', |',' + $sep) + ' )'},
                                         {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredElementForDuckDB(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   $s->match([
+      o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForDuckDB($sgc)
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredObjectNavigationForDuckDB(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   let processedOperand = $s.operand->processOperation($sgc);
+
+   let elementAccess = $s->match([
+      p: SemiStructuredPropertyAccess[1]     | $p.property,
+      a: SemiStructuredArrayElementAccess[1] | ^DynaFunction(name = 'plus', parameters = [$a.index, ^Literal(value = 1)]) // duckdb is 1-index rather than 0-index which pure is
+   ]);
+
+   '%s[%s]'->format([
+      $processedOperand,
+      $elementAccess->processOperation($sgc)
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::buildLambdaParameter(param: RelationalLambdaParameter[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  'cast("%s" as %s)'->format([$param.name, $sgc.dbConfig.dataTypeToSqlText($param.type)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::buildLambda(lambda: RelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  $lambda->match([
+    fold: FoldRelationalLambda[1] | buildFoldLambda($fold, $sgc),
+    map: MapRelationalLambda[1] | buildMapLambda($map, $sgc),
+    filter: FilterRelationalLambda[1] | buildFilterLambda($filter, $sgc)
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::buildFoldLambda(lambda: FoldRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  'reduce(%s, lambda "%s", "%s" : %s, %s)::%s'->format([
+    $lambda.parameters->at(0).value->processOperation($sgc),
+    $lambda.parameters->at(1).name,
+    $lambda.parameters->at(0).name,
+    $lambda.body->processOperation($sgc),
+    $lambda.parameters->at(1).value->processOperation($sgc),
+    $sgc.dbConfig.dataTypeToSqlText($lambda.parameters->at(1).type)
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::buildMapLambda(lambda: MapRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  'apply(%s, lambda "%s" : %s)'->format([
+      $lambda.parameters->at(0).value->processOperation($sgc),
+      $lambda.parameters->at(0).name,
+      $lambda.body->processOperation($sgc)
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::buildFilterLambda(lambda: FilterRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  'filter(%s, lambda "%s" : %s)'->format([
+      $lambda.parameters->at(0).value->processOperation($sgc),
+      $lambda.parameters->at(0).name,
+      $lambda.body->processOperation($sgc)
+   ]);
 }

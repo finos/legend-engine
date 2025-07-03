@@ -1,0 +1,37 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Maven clean install all Relational PCT Modules" type="MavenRunConfiguration" factoryName="Maven">
+    <MavenSettings>
+      <option name="myGeneralSettings" />
+      <option name="myRunnerSettings" />
+      <option name="myRunnerParameters">
+        <MavenRunnerParameters>
+          <option name="cmdOptions" />
+          <option name="profiles">
+            <set />
+          </option>
+          <option name="goals">
+            <list>
+              <option value="clean" />
+              <option value="install" />
+              <option value="-pl" />
+              <option value=":legend-engine-xt-relationalStore-h2-PCT,:legend-engine-xt-relationalStore-duckdb-PCT,:legend-engine-xt-relationalStore-memsql-PCT,:legend-engine-xt-relationalStore-spanner-PCT,:legend-engine-xt-relationalStore-postgres-PCT,:legend-engine-xt-relationalStore-snowflake-PCT,:legend-engine-xt-relationalStore-databricks-PCT" />
+            </list>
+          </option>
+          <option name="multimoduleDir" />
+          <option name="pomFileName" />
+          <option name="profilesMap">
+            <map>
+              <entry key="pct-cloud-test" value="true" />
+            </map>
+          </option>
+          <option name="projectsCmdOptionValues">
+            <list />
+          </option>
+          <option name="resolveToWorkspace" value="false" />
+          <option name="workingDirPath" value="$PROJECT_DIR$" />
+        </MavenRunnerParameters>
+      </option>
+    </MavenSettings>
+    <method v="2" />
+  </configuration>
+</component>

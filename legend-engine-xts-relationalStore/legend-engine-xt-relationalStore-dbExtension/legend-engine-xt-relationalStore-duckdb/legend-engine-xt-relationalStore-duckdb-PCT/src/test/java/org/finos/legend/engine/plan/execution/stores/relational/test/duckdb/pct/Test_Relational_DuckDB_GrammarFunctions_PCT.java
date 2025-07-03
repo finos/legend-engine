@@ -95,7 +95,7 @@ public class Test_Relational_DuckDB_GrammarFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4D\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "java.sql.SQLException: Out of Range Error: Overflow in subtraction of INT64 (-9223372036854775718 - 132)!", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Parser Error: SELECT clause without selection list", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "java.sql.SQLException: Parser Error: SELECT clause without selection list", AdapterQualifier.needsInvestigation),
 
             // Plus
             one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6D\"", AdapterQualifier.needsInvestigation),
@@ -110,12 +110,6 @@ public class Test_Relational_DuckDB_GrammarFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "\"Match failure: StoreMappingClusteredValueSpecificationObject instanceOf StoreMappingClusteredValueSpecification\"", AdapterQualifier.needsInvestigation),
-
-            // variant
-            one("meta::pure::functions::collection::tests::filter::testFilter_FromVariantAsPrimitive_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::variant::convert::toVariant'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::filter::testFilter_FromVariant_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::variant::convert::toVariant'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::map::testMap_FromVariantAsPrimitive_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::variant::convert::toVariant'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::map::testMap_FromVariant_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::variant::convert::toVariant'", AdapterQualifier.unsupportedFeature),
 
             // Let
             one("meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),

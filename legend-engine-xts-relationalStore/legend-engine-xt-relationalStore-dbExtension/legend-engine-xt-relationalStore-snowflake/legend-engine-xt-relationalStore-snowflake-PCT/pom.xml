@@ -161,6 +161,8 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <skip>false</skip>
+                            <forkCount>4</forkCount>
+                            <reuseForks>false</reuseForks>
                             <systemPropertyVariables>
                                 <AWS_ACCESS_KEY_ID>${env.AWS_ACCESS_KEY_ID}</AWS_ACCESS_KEY_ID>
                                 <AWS_SECRET_ACCESS_KEY>${env.AWS_SECRET_ACCESS_KEY}</AWS_SECRET_ACCESS_KEY>
@@ -189,6 +191,9 @@
                                 </PCTTestSuite>
                                 <PCTTestSuite>
                                     org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_UnclassifiedFunctions_PCT
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_VariantFunctions_PCT
                                 </PCTTestSuite>
                             </PCTTestSuites>
                         </configuration>

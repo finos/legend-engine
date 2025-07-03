@@ -213,7 +213,7 @@ function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpress
                                     p:Property<Nil,Any|*>[1] | $state.routingStrategy.processProperty($p, $nfe, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);,
                                     c:Column<Nil,Any|*>[1] | print(if($debug.debug,|$debug.space+' Column: '+$c.name->toOne()+'\n',|''));
                                                               $c->routeFunctionExpressionColumn($nfe, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);,
-                                    f:Function<Any>[1]       | print(if($debug.debug,|$debug.space+if($f->instanceOf(NativeFunction),|'NativeFunction',|'FunctionDefinition')+' : '+$f->asString()+'\n',|''));
+                                    f:Function<Any>[1]       | print(if($debug.debug,|$debug.space+if($f->instanceOf(NativeFunction),|'NativeFunction',|'FunctionDefinition')+' : '+$f->elementToPath()+'\n',|''));
                                                                 let specializedFunctionProcessor = specializedFunctionExpressionRouterProcessor($extensions)->filter(e|$e.first->eval($nfe)).second;
                                                                 if($specializedFunctionProcessor->isNotEmpty(),
                                                                   | assert($specializedFunctionProcessor->size() == 1, | 'Only one match is authorized for specializedFunctionProcessor');
@@ -882,7 +882,8 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     typeName_Any_1__String_1_,
     levenshteinDistance_String_1__String_1__Integer_1_,
     jaroWinklerSimilarity_String_1__String_1__Float_1_,
-
+    list_U_MANY__List_1_,
+    // pair_U_1__V_1__Pair_1_, // preeval/reactivation shenanigans...
     meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_,
     meta::pure::functions::date::calendar::annualized_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,
     meta::pure::functions::date::calendar::cme_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,

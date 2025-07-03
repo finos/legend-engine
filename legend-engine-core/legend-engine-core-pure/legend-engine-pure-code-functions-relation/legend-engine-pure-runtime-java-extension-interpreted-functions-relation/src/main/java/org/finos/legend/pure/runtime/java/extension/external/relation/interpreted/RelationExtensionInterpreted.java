@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted;
 
+import java.util.Stack;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
@@ -23,7 +24,10 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.M3Properties;
+import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.type.Type;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -36,14 +40,15 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.interprete
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Drop;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Extend;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Filter;
-import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.GroupBy;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.First;
-import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.NTile;
-import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Offset;
-import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Last;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.GroupBy;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Join;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Last;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Limit;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Map;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.NTile;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Nth;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Offset;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.PercentRank;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Pivot;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Project;
@@ -52,9 +57,8 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.interprete
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Rename;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.RowNumber;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Select;
-import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Slice;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Size;
-import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Nth;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Slice;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Sort;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Write;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.TDSWithCursorCoreInstance;
@@ -66,8 +70,7 @@ import org.finos.legend.pure.runtime.java.interpreted.extension.InterpretedExten
 import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.lang.cast.Cast;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
-
-import java.util.Stack;
+import org.finos.legend.pure.runtime.java.shared.variant.VariantInstanceImpl;
 
 public class RelationExtensionInterpreted extends BaseInterpretedExtension
 {
@@ -139,7 +142,8 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
             {
                 Cast.evaluateConstraints(value, colType, interpreted, instantiationContext, functionExpressionCallStack, functionExpressionCallStack.isEmpty() ? null : functionExpressionCallStack.peek().getSourceInformation(), executionSupport, processorSupport);
             }
-            return ((TDSWithCursorCoreInstance) params.get(0).getValueForMetaPropertyToOne("values")).getValue(function._name());
+
+            return value;
         }
         return null;
     }

@@ -130,7 +130,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwareSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.PrimitiveType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
@@ -938,7 +938,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
     private GenericType convertTypes(String type, RichIterable<? extends ValueSpecification> typeVariableValues, CompileContext compileContext)
     {
-        return compileContext.newGenericType((PrimitiveType) compileContext.resolvePackageableElement(type, null))
+        return compileContext.newGenericType((Type) compileContext.resolvePackageableElement(type, null))
                 ._typeVariableValues(typeVariableValues);
     }
 
@@ -1030,6 +1030,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Real)
         {
             return convertTypes("meta::pure::precisePrimitives::Double", compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.SemiStructured)
+        {
+            return convertTypes(M3Paths.Variant, compileContext);
         }
         // Fallback to platform function if precise primitive not available
         return (GenericType) compileContext.pureModel.getExecutionSupport().getProcessorSupport().type_wrapGenericType(

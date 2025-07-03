@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::variant::*;
 import meta::pure::executionPlan::featureFlag::*;
 import meta::pure::executionPlan::connection::*;
 import meta::relational::translation::*;
@@ -120,12 +121,7 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                (
                                     genericType=^GenericType(rawType=$class),
                                     tdsColumns = $sq.vs.genericType.typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->map(p|
-                                                                let cType = $p.classifierGenericType.typeArguments->at(1).rawType->toOne()->match(
-                                                                    [
-                                                                        x:meta::pure::metamodel::type::DataType[1]|$x,
-                                                                        c:Class<Variant>[1]|String
-                                                                    ]
-                                                                );
+                                                                let cType = $p.classifierGenericType.typeArguments->at(1).rawType->toOne();
                                                                 ^TDSColumn
                                                                 (
                                                                   name = $p.name->toOne(),
@@ -155,15 +151,19 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                        ],
                        |$class->match([
                                   e : Enumeration<Any>[1] | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
-                                  p : PrimitiveType[1] | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
-                                  c : Class<Any>[1] | ^ClassResultType
-                                                      (
-                                                         genericType=^GenericType(rawType=$class),
-                                                         setImplementations = if($ext->isEmpty(),
-                                                                                 | $m->toOne()->rootClassMappingByClass($c)->toOne(),
-                                                                                 | $ext->cast(@StoreMappingRoutedValueSpecification).sets->at(0)
-                                                                              )->resolveOperation($m->toOne())
-                                                     )
+                                  p : PrimitiveType[1]    | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
+                                  c : Class<Any>[1] |
+                                    if($c->in([Variant, List, Map]),
+                                      | ^DataTypeResultType(genericType=^GenericType(rawType=$class)),
+                                      | ^ClassResultType
+                                        (
+                                              genericType=^GenericType(rawType=$class),
+                                              setImplementations = if($ext->isEmpty(),
+                                                                      | $m->toOne('mapping missing and cannot construct return type for class: ' + $class->elementToPath())->rootClassMappingByClass($c)->toOne(),
+                                                                      | $ext->cast(@StoreMappingRoutedValueSpecification).sets->at(0)
+                                                                  )->resolveOperation($m->toOne())
+                                        )
+                                    )
                                 ])
 
 

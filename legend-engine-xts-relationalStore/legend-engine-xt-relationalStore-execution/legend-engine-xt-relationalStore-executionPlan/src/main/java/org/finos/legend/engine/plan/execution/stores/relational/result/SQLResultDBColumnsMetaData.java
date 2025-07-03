@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 
 import java.sql.ResultSetMetaData;
@@ -25,9 +27,10 @@ import java.util.List;
 public class SQLResultDBColumnsMetaData
 {
     private final List<SQLResultColumn> sqlResultColumns;
-    private final List<Integer> dbMetaDataType;
+    private final List<Pair<Integer, String>> dbMetaDataType;
     private final boolean[] timeStampColumns;
     private final boolean[] dateColumns;
+    private final boolean[] variantColumns;
 
     SQLResultDBColumnsMetaData(List<SQLResultColumn> resultColumns, ResultSetMetaData rsMetaData) throws SQLException
     {
@@ -36,12 +39,12 @@ public class SQLResultDBColumnsMetaData
         this.dbMetaDataType = Lists.multiReader.ofInitialCapacity(size);
         this.timeStampColumns = new boolean[size];
         this.dateColumns = new boolean[size];
-
+        this.variantColumns = new boolean[size];
 
         for (int i = 1; i <= size; i++)
         {
 
-            this.dbMetaDataType.add(rsMetaData.getColumnType(i));
+            this.dbMetaDataType.add(Tuples.pair(rsMetaData.getColumnType(i), rsMetaData.getColumnTypeName(i)));
             if (columnIsOfType(i, Types.TIMESTAMP, "TIMESTAMP"))
             {
                 timeStampColumns[i - 1] = true;
@@ -52,7 +55,17 @@ public class SQLResultDBColumnsMetaData
                 dateColumns[i - 1] = true;
 
             }
-
+            // Variant types are not standardized across databases, so we check for common types
+            else if (
+                    columnIsOfType(i, Types.JAVA_OBJECT, "SEMISTRUCTURED")
+                            || columnIsOfType(i, "JSON", "SEMISTRUCTURED")
+                            || columnIsOfType(i, "VARIANT", "SEMISTRUCTURED")
+                            || columnIsOfType(i, Types.ARRAY, "ARRAY")
+                            || columnIsOfType(i, Types.STRUCT, "OBJECT")
+            )
+            {
+                variantColumns[i - 1] = true;
+            }
         }
     }
 
@@ -67,10 +80,22 @@ public class SQLResultDBColumnsMetaData
         return dateColumns[index - 1];
     }
 
+    boolean isVariantColumn(int index)
+    {
+        return variantColumns[index - 1];
+    }
+
+    private boolean columnIsOfType(int index, String dbColumnTypeName, String alloyColumnType)
+    {
+        int zeroBasedIndex = index - 1;
+        SQLResultColumn sqlResultColumn = this.sqlResultColumns.get(zeroBasedIndex);
+        return dbColumnTypeName.equals(this.dbMetaDataType.get(zeroBasedIndex).getTwo()) || alloyColumnType.equals(sqlResultColumn.dataType);
+    }
+
     private boolean columnIsOfType(int index, int dbColumnType, String alloyColumnType)
     {
         int zeroBasedIndex = index - 1;
         SQLResultColumn sqlResultColumn = this.sqlResultColumns.get(zeroBasedIndex);
-        return this.dbMetaDataType.get(zeroBasedIndex) == dbColumnType || sqlResultColumn.dataType != null && sqlResultColumn.dataType.equals(alloyColumnType);
+        return this.dbMetaDataType.get(zeroBasedIndex).getOne() == dbColumnType || alloyColumnType.equals(sqlResultColumn.dataType);
     }
 }

@@ -163,6 +163,7 @@
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_GrammarFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_RelationFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_UnclassifiedFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_VariantFunctions_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>

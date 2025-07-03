@@ -1,4 +1,4 @@
-// Copyright 2025 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.functions.standard.compiled;
+package org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct;
 
-import org.eclipse.collections.api.set.ImmutableSet;
-import org.eclipse.collections.impl.factory.Sets;
+import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestPCTReport
+public class TestPCTReportSnowflake
 {
     @Test
     public void canFindPCTReport()
     {
-        Assert.assertEquals("Native", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
-        ImmutableSet<String> expectedReports = Sets.immutable.of("essential", "grammar", "relation", "standard", "unclassified", "variant");
-        Assert.assertEquals(expectedReports, PCTReportProviderLoader.gatherReports().collect(c -> c.reportScope.module).toSet());
+        Assert.assertEquals(
+                Sets.mutable.with("essential", "grammar", "standard", "relation", "unclassified", "variant"),
+                PCTReportProviderLoader.gatherReports().select(x -> x.adapterKey.adapter.name.equals("Snowflake")).collect(x -> x.reportScope.module).toSet()
+        );
     }
 }

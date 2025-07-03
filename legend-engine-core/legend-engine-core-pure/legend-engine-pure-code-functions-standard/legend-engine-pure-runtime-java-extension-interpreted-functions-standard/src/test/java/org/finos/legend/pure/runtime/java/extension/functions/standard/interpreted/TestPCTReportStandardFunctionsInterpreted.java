@@ -20,7 +20,7 @@ import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestPCTReport
+public class TestPCTReportStandardFunctionsInterpreted
 {
     @Test
     public void canFindPCTReport()

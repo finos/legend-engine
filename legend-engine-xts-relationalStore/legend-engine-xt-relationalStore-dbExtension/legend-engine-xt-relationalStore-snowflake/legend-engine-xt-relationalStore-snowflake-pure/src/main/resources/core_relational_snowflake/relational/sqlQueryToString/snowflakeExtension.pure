@@ -66,8 +66,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       ddlCommandsTranslator = getDDLCommandsTranslator(),
       processTempTableName = processTempTableNameSnowflake_String_1__DatabaseConnection_1__String_1_ ,
 
+      dataTypeToSqlText = meta::relational::functions::typeConversion::snowflake::dataTypeToSqlTextSnowflake_DataType_1__String_1_,
       pureTypeToDatabaseTypeConverter = meta::relational::functions::typeConversion::snowflake::convert_GenericType_1__DataType_1_,
-      buildDummyConnection = meta::relational::functions::sqlQueryToString::snowflake::buildDummyConnection__RelationalDatabaseConnection_1_
+      buildDummyConnection = meta::relational::functions::sqlQueryToString::snowflake::buildDummyConnection__RelationalDatabaseConnection_1_,
+
+      lambdaParameterProcessor = buildLambdaParameter_RelationalLambdaParameter_1__SqlGenerationContext_1__String_1_,
+      lambdaProcessor = buildLambda_RelationalLambda_1__SqlGenerationContext_1__String_1_
 
    );
 }
@@ -294,6 +298,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
+    dynaFnToSql('toJson',                 $allStates,            ^ToSql(format='to_json(%s)')),
+    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->toVariantForSnowflake()})),
+    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='array_construct(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='object_construct_keep_null(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('parseBoolean',           $allStates,            ^ToSql(format='to_boolean(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAYOFWEEK(%s) +1  >= 0 then %s  - DAYOFWEEK(%s) -1 - 7 else %s - DAYOFWEEK(%s) -1 end, %s)', transform={p:String[1..2] | $p->formatMostRecentSnowflake('current_date')}, parametersWithinWhenClause = [false, false])),
@@ -317,6 +325,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('convertTimeZone',        $allStates,            ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::toVariantForSnowflake(params: String[*]):String[1]
+{
+  if($params->size() == 1,
+    |
+      'ifnull(%s::VARIANT, PARSE_JSON(\'null\'))'->format($params->toOne()); // when single parameter, and is sql null, we need json null
+    ,
+    |
+       '%s::VARIANT'->format($params->joinStrings('[', ',', ']'));
+  ); 
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processExtractFromSemiStructuredParamsForSnowflake(params:String[3]):String[1]
@@ -719,4 +738,51 @@ function meta::relational::functions::sqlQueryToString::snowflake::getColumnType
        s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARIANT',
        a : meta::relational::metamodel::datatype::DataType[1] | $a->getColumnTypeSqlTextDefault()
     ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::buildLambdaParameter(param: RelationalLambdaParameter[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  '"%s"'->format($param.name);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::buildLambda(lambda: RelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  $lambda->match([
+    fold: FoldRelationalLambda[1] | buildFoldLambda($fold, $sgc),
+    map: MapRelationalLambda[1] | buildMapLambda($map, $sgc),
+    filter: FilterRelationalLambda[1] | buildFilterLambda($filter, $sgc)
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::buildFoldLambda(lambda: FoldRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  'reduce(%s, %s, ("%s" %s, "%s" %s) -> %s)'->format([
+    $lambda.parameters->at(0).value->processOperation($sgc),
+    $lambda.parameters->at(1).value->processOperation($sgc),
+    $lambda.parameters->at(1).name,
+    $sgc.dbConfig.dataTypeToSqlText($lambda.parameters->at(1).type),
+    $lambda.parameters->at(0).name,
+    $sgc.dbConfig.dataTypeToSqlText($lambda.parameters->at(0).type),
+    $lambda.body->processOperation($sgc)
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::buildMapLambda(lambda: MapRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  'transform(%s, ("%s" %s) -> %s)'->format([
+      $lambda.parameters->at(0).value->processOperation($sgc),
+      $lambda.parameters->at(0).name,
+      $sgc.dbConfig.dataTypeToSqlText($lambda.parameters->at(0).type),
+      $lambda.body->processOperation($sgc)
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::buildFilterLambda(lambda: FilterRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  'filter(%s, ("%s" %s) -> %s)'->format([
+      $lambda.parameters->at(0).value->processOperation($sgc),
+      $lambda.parameters->at(0).name,
+      $sgc.dbConfig.dataTypeToSqlText($lambda.parameters->at(0).type),
+      $lambda.body->processOperation($sgc)
+   ]);
 }

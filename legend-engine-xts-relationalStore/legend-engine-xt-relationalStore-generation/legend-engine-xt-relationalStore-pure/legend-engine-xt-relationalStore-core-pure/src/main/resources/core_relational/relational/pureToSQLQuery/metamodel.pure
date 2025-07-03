@@ -57,3 +57,46 @@ Class meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction e
 {
   owner: meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation[1];
 }
+
+Class meta::relational::metamodel::TableAliasColumnName extends meta::relational::metamodel::RelationalOperationElement
+{
+   alias : TableAlias[1];
+   columnName : String[1];
+}
+
+Class meta::relational::metamodel::RelationalLambdaParameter extends meta::relational::metamodel::RelationalOperationElement
+{
+    name: String[1];
+    value: RelationalOperationElement[1];
+    type: meta::relational::metamodel::datatype::DataType[1];
+}
+
+Class <<typemodifiers.abstract>> meta::relational::metamodel::RelationalLambda extends meta::relational::metamodel::RelationalOperationElement
+{
+   parameters: RelationalLambdaParameter[*];
+   body: RelationalOperationElement[1];
+}
+
+Class meta::relational::metamodel::FoldRelationalLambda extends meta::relational::metamodel::RelationalLambda
+[
+  paramCount: $this.parameters->size() == 2
+]
+{
+
+}
+
+Class meta::relational::metamodel::MapRelationalLambda extends meta::relational::metamodel::RelationalLambda
+[
+  paramCount: $this.parameters->size() == 1
+]
+{
+
+}
+
+Class meta::relational::metamodel::FilterRelationalLambda extends meta::relational::metamodel::RelationalLambda
+[
+  paramCount: $this.parameters->size() == 1
+]
+{
+
+}

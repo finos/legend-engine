@@ -21,7 +21,7 @@ function meta::relational::functions::sqlQueryToString::debugPrint::createDbExte
 {
    let reservedWords = h2ReservedWords();
    let literalProcessors = getDefaultLiteralProcessors();
-   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne($type->elementToPath() + ' not found!')};
    let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
      getDynaFunctionToSqlForH2()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
@@ -42,8 +42,23 @@ function meta::relational::functions::sqlQueryToString::debugPrint::createDbExte
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator(),
-      processTempTableName = processTempTableNameDefault_String_1__DatabaseConnection_1__String_1_
+      processTempTableName = processTempTableNameDefault_String_1__DatabaseConnection_1__String_1_,
+      dataTypeToSqlText = meta::relational::metamodel::datatype::dataTypeToSqlText_DataType_1__String_1_,
+      lambdaParameterProcessor = {param: RelationalLambdaParameter[1], scg: SqlGenerationContext[1]  | $param.name},
+      lambdaProcessor = lambdaProcessor_RelationalLambda_1__SqlGenerationContext_1__String_1_
    );
+}
+
+function meta::relational::functions::sqlQueryToString::debugPrint::lambdaProcessor(lambda: RelationalLambda[1], scg: SqlGenerationContext[1]):String[1]
+{
+    let funcType = $lambda->type().name->toOne();
+    let arrayParam = $lambda.parameters->at(0).value->processOperation($scg);
+    let lambdaParams = $lambda.parameters.name->joinStrings(', ');
+    let lambdaBody = $lambda.body->processOperation($scg);
+    // let lambdaExtraArgs = $lambda.parameters.value->tail()->map(x | $x->processOperation($scg))->joinStrings(', ');
+    // '%s(%s, {(%s) | %s}, %s)'->format([$funcType, $arrayParam, $lambdaParams, $lambdaBody, $lambdaExtraArgs]);
+
+    '%s(%s, {(%s) | %s})'->format([$funcType, $arrayParam, $lambdaParams, $lambdaBody]);
 }
 
 function meta::relational::functions::sqlQueryToString::debugPrint::tabularFunctionProcessor(schema:String[1], functionName: String[1], params: FunctionParameter[*] ):String[1]
@@ -278,6 +293,10 @@ function meta::relational::functions::sqlQueryToString::debugPrint::getDynaFunct
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
+    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='cast(%s as JSON)', transform={p:String[*]|$p->joinStrings('[', ',', ']')})),
+    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='JSON_ARRAY(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='JSON_OBJECT(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('toJson',                 $allStates,            ^ToSql(format='cast(%s as VARCHAR)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),

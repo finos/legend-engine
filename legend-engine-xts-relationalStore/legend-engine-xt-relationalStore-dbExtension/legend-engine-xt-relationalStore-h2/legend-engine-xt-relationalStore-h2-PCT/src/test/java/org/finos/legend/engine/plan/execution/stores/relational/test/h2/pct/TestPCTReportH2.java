@@ -12,20 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.code.core.tests;
+package org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct;
 
+import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestPCTReport
+public class TestPCTReportH2
 {
     @Test
     public void canFindPCTReport()
     {
-        Assert.assertEquals(6, PCTReportProviderLoader.gatherFunctions().size());
-        Assert.assertEquals("essential, grammar, relation, standard, unclassified, variant", PCTReportProviderLoader.gatherFunctions().collect(c -> c.reportScope.module).distinct().sortThis().makeString(", "));
-        Assert.assertEquals(0, PCTReportProviderLoader.gatherReports().size());
-        Assert.assertEquals("", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
+        Assert.assertEquals(
+                Sets.mutable.with("essential", "grammar", "standard", "relation", "unclassified", "variant"),
+                PCTReportProviderLoader.gatherReports().select(x -> x.adapterKey.adapter.name.equals("H2")).collect(x -> x.reportScope.module).toSet()
+        );
     }
 }

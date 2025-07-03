@@ -94,34 +94,37 @@
   },
   "components": {
     "schemas": {
-      "TDSRow": {
+      "Type": {
         "type": "object",
         "properties": {
-          "parent": {
-            "$ref": "#/components/schemas/TabularDataSet"
-          },
-          "values": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Any"
-            }
+          "name": {
+            "type": "string"
           }
         }
       },
-      "TabularDataSet": {
+      "TDSColumn": {
         "type": "object",
         "properties": {
-          "columns": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TDSColumn"
-            }
+          "name": {
+            "type": "string"
           },
-          "rows": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TDSRow"
-            }
+          "sourceDataType": {
+            "$ref": "#/components/schemas/Any"
+          },
+          "enumMappingId": {
+            "type": "string"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "type": {
+            "$ref": "#/components/schemas/Type"
+          },
+          "documentation": {
+            "type": "string"
+          },
+          "enumMapping": {
+            "$ref": "#/components/schemas/EnumerationMapping"
           }
         }
       },
@@ -129,33 +132,34 @@
         "type": "object",
         "properties": {}
       },
-      "DataType": {
-        "type": "object",
-        "properties": {}
-      },
-      "TDSColumn": {
+      "TabularDataSet": {
         "type": "object",
         "properties": {
-          "enumMapping": {
-            "$ref": "#/components/schemas/EnumerationMapping"
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TDSRow"
+            }
           },
-          "documentation": {
-            "type": "string"
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TDSColumn"
+            }
+          }
+        }
+      },
+      "TDSRow": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Any"
+            }
           },
-          "offset": {
-            "type": "integer"
-          },
-          "type": {
-            "$ref": "#/components/schemas/DataType"
-          },
-          "enumMappingId": {
-            "type": "string"
-          },
-          "sourceDataType": {
-            "$ref": "#/components/schemas/Any"
-          },
-          "name": {
-            "type": "string"
+          "parent": {
+            "$ref": "#/components/schemas/TabularDataSet"
           }
         }
       }

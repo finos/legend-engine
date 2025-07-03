@@ -101,17 +101,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>org.finos.legend.pure</groupId>-->
-        <!--            <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>org.finos.legend.pure</groupId>-->
-        <!--            <artifactId>legend-pure-m2-dsl-tds-grammar</artifactId>-->
-        <!--            <scope>runtime</scope>-->
-        <!--        </dependency>-->
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relation</artifactId>
@@ -133,7 +122,6 @@
         <dependency>
             <groupId>io.deephaven</groupId>
             <artifactId>deephaven-csv</artifactId>
-            <version>0.12.0</version>
         </dependency>
 
         <dependency>

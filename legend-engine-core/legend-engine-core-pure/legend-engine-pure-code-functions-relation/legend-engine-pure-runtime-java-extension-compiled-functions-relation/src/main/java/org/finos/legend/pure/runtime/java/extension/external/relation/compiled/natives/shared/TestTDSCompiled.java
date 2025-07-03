@@ -28,6 +28,7 @@ import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
+import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 
@@ -41,19 +42,14 @@ public class TestTDSCompiled extends TestTDS
         super();
     }
 
-    public TestTDSCompiled(CsvReader.Result result)
-    {
-        super(result);
-    }
-
     public TestTDSCompiled(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows)
     {
         super(columnOrdered, columnType, rows);
     }
 
-    public TestTDSCompiled(CsvReader.Result result, CoreInstance classifierGenericType)
+    public TestTDSCompiled(CsvReader.Result result, CoreInstance classifierGenericType, ModelRepository modelRepository, ProcessorSupport processorSupport)
     {
-        super(result);
+        super(result, modelRepository, processorSupport);
         this.classifierGenericType = classifierGenericType;
     }
 
@@ -126,7 +122,10 @@ public class TestTDSCompiled extends TestTDS
                 return M3Paths.Float;
             case DATETIME_AS_LONG:
                 return M3Paths.Date;
+            case CUSTOM:
+                return M3Paths.Variant;
+            default:
+                throw new RuntimeException("To Handle " + dataType);
         }
-        throw new RuntimeException("To Handle " + dataType);
     }
 }

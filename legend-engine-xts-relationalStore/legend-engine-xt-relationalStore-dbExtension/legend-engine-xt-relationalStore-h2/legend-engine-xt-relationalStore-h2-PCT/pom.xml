@@ -163,6 +163,7 @@
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_GrammarFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_RelationFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_UnclassifiedFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct.Test_Relational_H2_VariantFunctions_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>

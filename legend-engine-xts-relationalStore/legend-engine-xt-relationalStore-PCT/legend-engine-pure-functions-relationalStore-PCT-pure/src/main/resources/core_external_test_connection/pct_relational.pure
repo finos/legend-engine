@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::variant::convert::*;
+import meta::pure::metamodel::variant::*;
 import meta::relational::extension::*;
 import meta::pure::extension::*;
 import meta::relational::tests::pct::*;
@@ -102,7 +104,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
     print(if($debug.debug,|'\nResult JSON:\n'+$x+'\n',|''));
     // ----
     
-    let resultType = $f->functionReturnType().rawType;
+    let resultType = $f->functionReturnType().rawType->toOne();
     let json = $x->meta::json::parseJSON();
     if (!$json->instanceOf(JSONObject),
       | $json->meta::json::fromJSON($resultType),
@@ -112,27 +114,23 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
               $x.first.values;,
             | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
               // processResult
-              if ($resultType->toOne()->instanceOf(PrimitiveType) || $resultType == Nil,
+              if ($resultType->instanceOf(PrimitiveType) || $resultType->in([Variant, List, Map, Nil]),
                 | let preResultFinal = $res.result.rows->head().values->head();
-                  let resultFinal =
-                    if ([
-                          pair(|$preResultFinal->isEmpty() || $preResultFinal == TDSNull, |[]),
-                          pair(|$resultType->toOne()->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toOne()->toString())),
-                          pair(|$resultType->toOne()->subTypeOf(Date), |buildDate($preResultFinal->toOne()->toString())),
-                          pair(|$resultType->toOne()->subTypeOf(Decimal), |$preResultFinal->toOne()->cast(@Number)->toDecimal()),
-                          pair(|$resultType->toOne()->subTypeOf(Integer), |$preResultFinal->toOne()->cast(@Number)->round()),
-                          pair(|$resultType->toOne()->subTypeOf(Float), |$preResultFinal->toOne()->cast(@Number)->toFloat()),
-                          pair(|$resultType->toOne()->subTypeOf(Number), |$preResultFinal->toOne()->cast(@Number))
-                        ],
-                      | $preResultFinal->toOne()
-                    );
+
+                  print(if($debug.debug,|'\nRaw Result:\n'+$preResultFinal->makeString('[',',',']'),|''));
+
+                  let resultFinal = $preResultFinal->resultToType($f->functionReturnType(), $f->functionReturnMultiplicity());
+
                   print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString('[',',',']'),|''));
                   $resultFinal;,
                 | 
                     let tdsString = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->map(c | $c.name + $c.type->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
                                   $res.result.rows->map(x|
                                         range($x.values->size())->map(z |
-                                            if($x.values->at($z) == TDSNull, |'null', |$x.values->at($z))
+                                            $x.values->at($z)->match([
+                                              s: String[1] | $s->meta::relational::tests::csv::escapeCSVString(),
+                                              a: Any[1] | if($a == TDSNull, |'null', |$a->toString())
+                                            ]);
                                         )->makeString(',')
                                       )->joinStrings('\n');
                     let resultFinal = $tdsString->stringToTDS();
@@ -140,6 +138,25 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                     $resultFinal;
               );
     ))->cast(@X)->toMultiplicity(@[o]);
+}
+
+function meta::relational::tests::pct::process::resultToType(preResultFinal: Any[0..1], type: GenericType[1], mult: Multiplicity[1]):Any[*]
+{
+  let resultType = $type.rawType->toOne();
+
+  if ([
+        pair(|$preResultFinal->isEmpty() || $preResultFinal == TDSNull, |[]),
+        pair(|$resultType->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toOne()->toString())),
+        pair(|$resultType->subTypeOf(Date), |buildDate($preResultFinal->toOne()->toString())),
+        pair(|$resultType->subTypeOf(Decimal), |$preResultFinal->toOne()->cast(@Number)->toDecimal()),
+        pair(|$resultType->subTypeOf(Integer), |$preResultFinal->toOne()->cast(@Number)->round()),
+        pair(|$resultType->subTypeOf(Float), |$preResultFinal->toOne()->cast(@Number)->toFloat()),
+        pair(|$resultType->subTypeOf(Number), |$preResultFinal->toOne()->cast(@Number)),
+        pair(|$resultType == Variant, |$preResultFinal->toOne()->cast(@String)->fromJson()),
+        pair(|$resultType->in([List, Map]), |$preResultFinal->toOne()->cast(@String)->fromJson()->to(^InstanceValue(genericType = $type, multiplicity = PureZero)->reactivate()->head()))
+      ],
+    | $preResultFinal->toOne()
+  );
 }
 
 function meta::relational::tests::pct::process::buildDate(dateStr:String[1]):Date[1]
@@ -505,6 +522,7 @@ function meta::relational::tests::pct::process::initState(openVars:Map<String,An
 
 
 ###Pure
+import meta::pure::metamodel::variant::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::database::*;
 import meta::external::store::relational::runtime::*;
@@ -555,9 +573,9 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
       ix:InstanceValue[1]|
                           let i = $ix->evaluateAndDeactivate();
                           let type = $i.genericType.rawType->toOne();
-                          let hasClass = $i.values->find(x|$x->instanceOf(Class))->isNotEmpty();                       
+                          let hasClass = $i.values->find(x|$x->instanceOf(Class))->isNotEmpty();
                           // Nil is for Empty Sets, Any is currently for collection of primitives of different types (may create an issue if we have classes of different types)
-                          if ($type->instanceOf(Class) && !$type->subTypeOf(Function) && !$type->in([Any, Nil, TDS, Enumeration, SortInfo, meta::pure::metamodel::relation::Relation]),
+                          if ($type->instanceOf(Class) && !$type->subTypeOf(Function) && !$type->in([Any, Nil, TDS, Enumeration, SortInfo, Map, List, Pair, Variant, meta::pure::metamodel::relation::Relation]),
                               |
                                 // Process class
                                 let values = $i.values->map(
@@ -693,6 +711,7 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
               x | $cols->map(c|$c->eval($x)->toOne()->match(
                                 [
                                   x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS}', $x),
+                                  s : Variant[1] | '"' + $s->toString() + '"',
                                   z : Any[1] | $z->toString()
                                 ]
                 ))->joinStrings(',')
