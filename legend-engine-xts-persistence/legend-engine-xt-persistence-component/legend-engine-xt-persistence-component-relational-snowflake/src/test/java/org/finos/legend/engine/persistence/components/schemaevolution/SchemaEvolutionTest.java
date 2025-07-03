@@ -17,29 +17,23 @@ package org.finos.legend.engine.persistence.components.schemaevolution;
 import org.finos.legend.engine.persistence.components.IngestModeTest;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.TableOrigin;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.SnowflakeSink;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
+import org.finos.legend.engine.persistence.components.sink.Sink;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SchemaEvolutionTest extends IngestModeTest
 {
@@ -53,6 +47,8 @@ public class SchemaEvolutionTest extends IngestModeTest
     private Field numericId = Field.builder().name("id").type(FieldType.of(DataType.NUMERIC, Optional.empty(), Optional.empty())).primaryKey(true).build();
     private Field floatAmount = Field.builder().name("amount").type(FieldType.of(DataType.FLOAT, Optional.empty(), Optional.empty())).build();
     private Field decimalColModified = Field.builder().name("decimal_col").type(FieldType.of(DataType.NUMERIC, 20, 5)).build();
+    private Field descriptionWithI6MBLength = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, 16777216, null)).build();
+    private Field descriptionWith128MBLength = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, 134217728, null)).build();
 
     private SchemaDefinition baseTableSchema = SchemaDefinition.builder()
         .addFields(id)
@@ -99,17 +95,12 @@ public class SchemaEvolutionTest extends IngestModeTest
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(getRelationSink(false), ingestMode, schemaEvolutionCapabilitySet, true);
 
-        try
-        {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            Assertions.fail("Exception was not thrown");
-        }
-        catch (IncompatibleSchemaChangeException e)
-        {
-            Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", e.getMessage());
-        }
+        IncompatibleSchemaChangeException exception = assertThrows(IncompatibleSchemaChangeException.class,
+                () -> schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema()));
+
+        Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", exception.getMessage());
     }
 
     // Data sizing change (length) in main table column and data_type_size_change capability allowed with upper case optimizer enabled
@@ -135,15 +126,10 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
-        try
-        {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            Assertions.fail("Exception was not thrown");
-        }
-        catch (IncompatibleSchemaChangeException e)
-        {
-            Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", e.getMessage());
-        }
+        IncompatibleSchemaChangeException exception = assertThrows(IncompatibleSchemaChangeException.class,
+                () -> schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema()));
+
+        Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", exception.getMessage());
     }
 
     //Data sizing (length) changes but user capability doesn't allow it --> throws exception
@@ -166,22 +152,18 @@ public class SchemaEvolutionTest extends IngestModeTest
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
-        try
-        {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            Assertions.fail("Exception was not thrown");
-        }
-        catch (IncompatibleSchemaChangeException e)
-        {
-            Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", e.getMessage());
-        }
+        IncompatibleSchemaChangeException exception = assertThrows(IncompatibleSchemaChangeException.class,
+                () -> schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema()));
+
+        Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", exception.getMessage());
     }
 
     // Data sizing change (scale) in main table column and data_type_size_change capability allowed
     // Alter column
     // decimal_col: DECIMAL(10, 0) -> DECIMAL(10, 2)
-    @Test
-    void testSnapshotMilestoningWithColumnScaleChangeEvolution()
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testSnapshotMilestoningWithColumnScaleChangeEvolution(boolean icebergSink)
     {
         Dataset mainTable = DatasetDefinition.builder()
                 .database(mainDbName).name(mainTableName).alias(mainTableAlias)
@@ -196,17 +178,12 @@ public class SchemaEvolutionTest extends IngestModeTest
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, false);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(getRelationSink(icebergSink), ingestMode, schemaEvolutionCapabilitySet, false);
 
-        try
-        {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            Assertions.fail("Exception was not thrown");
-        }
-        catch (IncompatibleSchemaChangeException e)
-        {
-            Assertions.assertEquals("Data type scale changes couldn't be performed on column \"decimal_col\" since sink/user capability does not allow it", e.getMessage());
-        }
+        IncompatibleSchemaChangeException exception = assertThrows(IncompatibleSchemaChangeException.class,
+                () -> schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema()));
+
+        Assertions.assertEquals("Data type scale changes couldn't be performed on column \"decimal_col\" since sink/user capability does not allow it", exception.getMessage());
     }
 
     // Implicit data type conversion is automatically handled by DB. No additional alter statement generated
@@ -358,14 +335,75 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
-        try
+        IncompatibleSchemaChangeException exception = assertThrows(IncompatibleSchemaChangeException.class,
+                () -> schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema()));
+        Assertions.assertEquals("Explicit data type conversion from \"FLOAT\" to \"DOUBLE\" couldn't be performed since sink/user capability does not allow it", exception.getMessage());
+
+    }
+
+    //Alter varchar column to increase to max length supported by sink for iceberg
+    @Test
+    void testIcebergVarcharColumnLengthChangeEvolution()
+    {
+        SchemaDefinition.Builder schemaDefinitionBuilder = SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(amount)
+                .addFields(bizDate);
+
+        Dataset existingDatasetWith16MBVarcharCol = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(schemaDefinitionBuilder
+                        .addFields(descriptionWithI6MBLength)
+                        .build())
+                .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableOrigin(TableOrigin.ICEBERG).build())
+                .build();
+
+        Dataset mainTableCreatedWithMaxLength = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(schemaDefinitionBuilder
+                        .addFields(descriptionWith128MBLength)
+                        .build())
+                .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableOrigin(TableOrigin.ICEBERG).build())
+                .build();
+
+        Dataset stagingTable = DatasetDefinition.builder()
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(baseTableSchemaWithDataLengthChange)
+                .build();
+
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
+
+        SchemaEvolution schemaEvolution = new SchemaEvolution(getRelationSink(true), ingestMode, schemaEvolutionCapabilitySet, true);
+
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(existingDatasetWith16MBVarcharCol, stagingTable.schema());
+        RelationalTransformer transformer = new RelationalTransformer(relationalSink);
+        SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+
+        // Use the planner utils to return the sql
+        List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+        Assertions.assertEquals(1, sqlsForSchemaEvolution.size());
+        String expectedSchemaEvolutionAddColumn = "ALTER ICEBERG TABLE \"mydb\".\"main\" ALTER COLUMN \"description\" VARCHAR";
+        Assertions.assertEquals(expectedSchemaEvolutionAddColumn, sqlsForSchemaEvolution.get(0));
+
+        result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTableCreatedWithMaxLength, stagingTable.schema());
+        transformer = new RelationalTransformer(relationalSink);
+        physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+
+        sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+        Assertions.assertEquals(1, sqlsForSchemaEvolution.size());
+        expectedSchemaEvolutionAddColumn = "ALTER ICEBERG TABLE \"mydb\".\"main\" ALTER COLUMN \"description\" VARCHAR";
+        Assertions.assertEquals(expectedSchemaEvolutionAddColumn, sqlsForSchemaEvolution.get(0));
+    }
+
+    private Sink getRelationSink(boolean icebergSink)
+    {
+        if (icebergSink)
         {
-            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            Assertions.fail("Exception was not thrown");
+            return SnowflakeSink.getIcebergInstance();
         }
-        catch (IncompatibleSchemaChangeException e)
-        {
-            Assertions.assertEquals("Explicit data type conversion from \"FLOAT\" to \"DOUBLE\" couldn't be performed since sink/user capability does not allow it", e.getMessage());
-        }
+        return SnowflakeSink.get();
     }
 }
