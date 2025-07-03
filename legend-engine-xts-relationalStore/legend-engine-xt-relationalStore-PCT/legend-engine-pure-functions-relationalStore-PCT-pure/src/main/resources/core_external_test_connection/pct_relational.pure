@@ -128,9 +128,8 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                                   $res.result.rows->map(x|
                                         range($x.values->size())->map(z |
                                             $x.values->at($z)->match([
-                                              n: TDSNull[1] | 'null',
                                               s: String[1] | $s->meta::relational::tests::csv::escapeCSVString(),
-                                              a: Any[1] | $a
+                                              a: Any[1] | if($a == TDSNull, |'null', |$a->toString())
                                             ]);
                                         )->makeString(',')
                                       )->joinStrings('\n');
@@ -147,7 +146,6 @@ function meta::relational::tests::pct::process::resultToType(preResultFinal: Any
 
   if ([
         pair(|$preResultFinal->isEmpty() || $preResultFinal == TDSNull, |[]),
-        pair(|$mult->isToMany(), |$preResultFinal->toOne()->cast(@String)->fromJson()->toMany(^InstanceValue(genericType = $type, multiplicity = PureZero)->reactivate()->head())),
         pair(|$resultType->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toOne()->toString())),
         pair(|$resultType->subTypeOf(Date), |buildDate($preResultFinal->toOne()->toString())),
         pair(|$resultType->subTypeOf(Decimal), |$preResultFinal->toOne()->cast(@Number)->toDecimal()),

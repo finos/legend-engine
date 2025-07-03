@@ -51,6 +51,7 @@
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_GrammarFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_RelationFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_UnclassifiedFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_VariantFunctions_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>

@@ -37,7 +37,8 @@ public class Core_Relational_Databricks_PCTReportProvider implements PCTReportPr
                 "pct-reports/ADAPTER_essential_compiled_Databricks.json",
                 "pct-reports/ADAPTER_grammar_compiled_Databricks.json",
                 "pct-reports/ADAPTER_relation_compiled_Databricks.json",
-                "pct-reports/ADAPTER_unclassified_compiled_Databricks.json"
+                "pct-reports/ADAPTER_unclassified_compiled_Databricks.json",
+                "pct-reports/ADAPTER_variant_compiled_Databricks.json"
         );
     }
 }

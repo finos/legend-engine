@@ -45,7 +45,7 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "Can't find a match for function 'contains(?)'", AdapterQualifier.unsupportedFeature),
 
             // Drop
-            one("meta::pure::functions::collection::tests::drop::testDropInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'list'", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::drop::testDropInList_Function_1__Boolean_1_", "Generics not supported (function: meta::pure::functions::collection::list_U_MANY__List_1_)", AdapterQualifier.needsImplementation),
 
             // Exists
             one("meta::pure::functions::collection::tests::exists::testExistsInSelect_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\"", AdapterQualifier.needsInvestigation),
@@ -74,10 +74,10 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::last::testLastFromEmpty_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 2 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:", AdapterQualifier.needsInvestigation),
 
             // Slice
-            one("meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'list'", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_", "Generics not supported (function: meta::pure::functions::collection::list_U_MANY__List_1_)", AdapterQualifier.needsImplementation),
 
             // Take
-            one("meta::pure::functions::collection::tests::take::testTakeInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'list'", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::take::testTakeInList_Function_1__Boolean_1_", "Generics not supported (function: meta::pure::functions::collection::list_U_MANY__List_1_)", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList_Function_1__Boolean_1_", "Failed in node: root", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::take::testTakeNegativeOnNonEmptyList_Function_1__Boolean_1_", "Failed in node: root", AdapterQualifier.needsInvestigation),
 
@@ -179,8 +179,8 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 8 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:", AdapterQualifier.needsInvestigation),
 
             //variant
-            one("meta::pure::functions::collection::tests::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_", "Can't resolve the builder for function 'toMany'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::fold::testFold_FromVariant_Function_1__Boolean_1_", "Can't resolve the builder for function 'toMany'", AdapterQualifier.unsupportedFeature)
+            one("meta::pure::functions::collection::tests::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_", "\"meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_ is not supported yet!", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::fold::testFold_FromVariant_Function_1__Boolean_1_", "\"meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_ is not supported yet!", AdapterQualifier.needsImplementation)
     );
 
     public static Test suite()

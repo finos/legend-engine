@@ -40,7 +40,7 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
             // In
             one("meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_", "NullPointer exception", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "java.sql.SQLException: Conversion Error: Unimplemented type for cast (INTEGER -> DATE)\nLINE 1: select 1 in (1, 2, 5, 2, 'a', true, DATE '2014...\n               ^", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "java.sql.SQLException: Conversion Error: Unimplemented type for cast (INTEGER -> DATE)\n\nLINE 1: select 1 in (1, 2, 5, 2, 'a', true, DATE '2014-02-01', 'c')\n               ^", AdapterQualifier.needsInvestigation),
 
             // Covariance/Correlation
             one("meta::pure::functions::math::tests::corr::testCorr_Function_1__Boolean_1_", "\"Unused format args. [4] arguments provided to expression \"CORR(%s, %s)\"\"", AdapterQualifier.unsupportedFeature),
@@ -58,7 +58,7 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
 
             // MaxBy
-            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: No function matches the given name and argument types 'max_by(INTEGER, INTEGER, INTEGER, INTEGER)'. You might need to add explicit type casts."),
+            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "ava.sql.SQLException: Binder Error: No function matches the given name and argument types 'max_by(INTEGER, INTEGER, INTEGER, INTEGER)'", AdapterQualifier.unsupportedFeature),
 
             // Min
             one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\"", AdapterQualifier.unsupportedFeature),
@@ -67,7 +67,7 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
 
             // MinBy
-            one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: No function matches the given name and argument types 'min_by(INTEGER, INTEGER, INTEGER, INTEGER)'. You might need to add explicit type casts."),
+            one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'min_by(INTEGER, INTEGER, INTEGER, INTEGER)'", AdapterQualifier.unsupportedFeature),
 
             // Median
             one("meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\"", AdapterQualifier.unsupportedFeature),
@@ -87,16 +87,23 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
 
             // Percentile
             one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'range_Integer_1__Integer_1__Integer_1__Integer_MANY_'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Parser Error: ORDER BY is not implemented for window functions!", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "java.sql.SQLException: Catalog Error: Aggregate Function with name percentile_cont does not exist!", AdapterQualifier.needsInvestigation),
 
             // CosH
-            pack("meta::pure::functions::math::tests::trigonometry::cosh", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name cosh does not exist!\nDid you mean \"cos\"?\nLINE 1: select cosh", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"cosh(%s)\"\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Identities_Function_1__Boolean_1_", "\"\nexpected: 274.658517577606\nactual:   274.65851757760606\"", AdapterQualifier.needsInvestigation),
 
             // SinH
-            pack("meta::pure::functions::math::tests::trigonometry::sinh", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name sinh does not exist!\nDid you mean \"sin\"?\nLINE 1: select sinh", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "\"\nexpected: 3.6268604078470186\nactual:   3.626860407847019\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_", "\"\nexpected: -0.8423951260776952\nactual:   -0.8423951260776953\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Floats_Function_1__Boolean_1_", "\"\nexpected: -0.8423951260776952\nactual:   -0.8423951260776953\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Identities_Function_1__Boolean_1_", "\"\nexpected: 273.6585175776061\nactual:   273.65851757760606\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Integers_Function_1__Boolean_1_", "\"\nexpected: -3.6268604078470186\nactual:   -3.626860407847019\"", AdapterQualifier.needsInvestigation),
 
             // TanH
-            pack("meta::pure::functions::math::tests::trigonometry::tanh", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name tanh does not exist!\nDid you mean \"tan\"?\nLINE 1: select tanh", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"tanh(%s)\"\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_", "\"\nexpected: -0.6442654436049522\nactual:   -0.6442654436049523\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Floats_Function_1__Boolean_1_", "\"\nexpected: -0.6442654436049522\nactual:   -0.6442654436049523\"", AdapterQualifier.needsInvestigation),
 
             // Bitwise
             one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\"", AdapterQualifier.assertErrorMismatch),
@@ -109,13 +116,11 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "Can't find the packageable element 'ortrue'", AdapterQualifier.needsInvestigation),
 
             // Greatest
-            one("meta::pure::functions::collection::tests::greatest::testGreatest_Boolean_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: No function matches the given name and argument types 'greatest(BOOLEAN, BOOLEAN)'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::greatest::testGreatest_Number_Function_1__Boolean_1_", "\"\nexpected: 2\nactual:   2.0\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::greatest::testGreatest_Single_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1D\"", AdapterQualifier.needsInvestigation),
 
             // Least
-            one("meta::pure::functions::collection::tests::least::testLeast_Boolean_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Binder Error: No function matches the given name and argument types 'least(BOOLEAN, BOOLEAN)'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::least::testLeast_Number_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::least::testLeast_Single_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1D\"", AdapterQualifier.needsInvestigation)

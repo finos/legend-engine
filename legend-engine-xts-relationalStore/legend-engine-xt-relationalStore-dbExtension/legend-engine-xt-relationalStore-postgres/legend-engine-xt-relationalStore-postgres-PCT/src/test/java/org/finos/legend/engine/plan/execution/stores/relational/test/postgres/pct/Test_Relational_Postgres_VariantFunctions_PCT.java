@@ -26,6 +26,7 @@ import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import org.finos.legend.pure.code.core.CoreRelationalPostgresPCTCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
+import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
@@ -37,50 +38,47 @@ public class Test_Relational_Postgres_VariantFunctions_PCT extends PCTReportConf
     private static final Adapter adapter = CoreRelationalPostgresPCTCodeRepositoryProvider.postgresAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::pure::functions::variant::convert::tests::to::testToAny_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFalse_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromString_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToBooleanTrue_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToDateTimeFromWrongString_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToDateTime_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToEnum_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToFloatFromInteger_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToFloatFromString_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToFloat_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromString_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToInteger_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToListOfIntegers_Function_1__Boolean_1_", "\"meta::pure::functions::variant::convert::to_Variant_$0_1$__T_1__T_$0_1$_ is not supported yet!\""),
-            one("meta::pure::functions::variant::convert::tests::to::testToListOfVariants_Function_1__Boolean_1_", "\"meta::pure::functions::variant::convert::to_Variant_$0_1$__T_1__T_$0_1$_ is not supported yet!\""),
-            one("meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant_Function_1__Boolean_1_", "\"meta::pure::functions::variant::convert::to_Variant_$0_1$__T_1__T_$0_1$_ is not supported yet!\""),
-            one("meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues_Function_1__Boolean_1_", "\"Error mapping not found for class Map cache:''\""),
-            one("meta::pure::functions::variant::convert::tests::to::testToMapWithNonStringKeys_Function_1__Boolean_1_", "\"meta::pure::functions::variant::convert::to_Variant_$0_1$__T_1__T_$0_1$_ is not supported yet!\""),
-            one("meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues_Function_1__Boolean_1_", "\"meta::pure::functions::variant::convert::to_Variant_$0_1$__T_1__T_$0_1$_ is not supported yet!\""),
-            one("meta::pure::functions::variant::convert::tests::to::testToNull_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToStrictDate_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToStringFromBoolean_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToStringFromNumber_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
+            pack("meta::pure::functions::variant::convert::tests::fromJson", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
 
-            one("meta::pure::functions::variant::convert::tests::toMany::testToManyInteger_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'toMany_Variant_$0_1$__T_1__T_MANY_'."),
-            one("meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_", "Expect variant that contains an 'ARRAY', but got 'STRING'"),
-            one("meta::pure::functions::variant::convert::tests::toMany::testToManyVariant_Function_1__Boolean_1_", "\"meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_1__T_MANY_ is not supported yet!\""),
+            pack("meta::pure::functions::variant::convert::tests::toJson", "[unsupported-api] The function 'toJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
 
-            pack("meta::pure::functions::variant::convert::tests::toJson", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::convert::tests::toJson::testObjectToJson_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'toJson_Variant_1__String_1_'."),
+            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFalse_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToBooleanTrue_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToDateTimeFromWrongString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToDateTime_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToFloatFromInteger_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToFloatFromString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToFloat_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToInteger_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToListOfIntegers_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToListOfVariants_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToNull_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToStrictDate_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToStringFromBoolean_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToStringFromNumber_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: Postgres", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToMapWithIntegerValue_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: Postgres", AdapterQualifier.needsImplementation),
 
-            pack("meta::pure::functions::variant::convert::tests::toVariant", "No SQL translation exists for the PURE function 'toVariant_Any_MANY__Variant_1_'."),
-            pack("meta::pure::functions::variant::convert::tests::toVariant::convert", "No SQL translation exists for the PURE function 'toVariant_Any_MANY__Variant_1_'."),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfPrimitives_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::list'"),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfVariants_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::list'"),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfVariantValues_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::newMap'"),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithPrimitiveValues_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::newMap'"),
+            pack("meta::pure::functions::variant::convert::tests::toMany", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
 
-            pack("meta::pure::functions::variant::navigation::tests::get", "No SQL translation exists for the PURE function 'to_Variant_$0_1$__T_1__T_$0_1$_'."),
-            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::lang::cast(Nil[0],Variant[*])'")
+            pack("meta::pure::functions::variant::convert::tests::toVariant", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfMap_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfVariantValues_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithMultipleKeys_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithPrimitiveValues_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
+
+            pack("meta::pure::functions::variant::navigation::tests::get", "[unsupported-api] Semi structured array element processing not supported for Database Type: Postgres", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromArray_Function_1__Boolean_1_", "Assert failed", AdapterQualifier.needsImplementation)
     );
 
     public static Test suite()
@@ -89,7 +87,7 @@ public class Test_Relational_Postgres_VariantFunctions_PCT extends PCTReportConf
                 () -> true,
                 () -> PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter),
                 () -> false,
-                Lists.mutable.with((TestServerResource) TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.DuckDB).getFirst())
+                Lists.mutable.with((TestServerResource) TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.Postgres).getFirst())
         );
     }
 

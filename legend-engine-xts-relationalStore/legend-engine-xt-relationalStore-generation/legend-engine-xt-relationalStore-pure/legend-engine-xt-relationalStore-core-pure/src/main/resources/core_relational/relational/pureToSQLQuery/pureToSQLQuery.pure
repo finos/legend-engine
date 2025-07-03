@@ -145,6 +145,16 @@ function meta::relational::functions::pureToSqlQuery::updateFunctionParamScope(s
    ^$state(functionReferenceScope=$newScope);
 }
 
+function meta::relational::functions::pureToSqlQuery::updateFunctionParamsScope(state:State[1], functionType:FunctionType[1], selectWithCursor: SelectWithCursor[*]):State[1]
+{
+   let paramNames = $functionType.parameters->evaluateAndDeactivate().name;
+   assertEquals($paramNames->size(), $selectWithCursor->size(), |'Number of arguments in function does not match number of given queries.');
+   let values=$paramNames->zip($selectWithCursor);
+   let varToSelect=newMap($values);
+   let newScope = ^FunctionParamScope(parent=$state.functionReferenceScope, varToSelect=$varToSelect);
+   ^$state(functionReferenceScope=$newScope);
+}
+
 function meta::relational::functions::pureToSqlQuery::withFunctionParamScope(state:State[1], newScope: FunctionParamScope[0..1]):State[1]
 {
    ^$state(functionReferenceScope=$newScope);
@@ -3930,7 +3940,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantFold(f:Funct
   let param2 = ^RelationalLambdaParameter(name = $foldFunctionParamNames->at(1), value = $foldStartingValue, type = $foldFunctionParamTypes->at(1)->genericTypeToDataType());
 
   let select = $operation.select;
-  let updatedState = $state->updateFunctionParamScope($foldFunctionType,
+  let updatedState = $state->updateFunctionParamsScope($foldFunctionType,
       [
         ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $param1),|^$select(columns = $param1))),
         ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $param2),|^$select(columns = $param2)))
@@ -3962,7 +3972,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantMap(f:Functi
   let param = ^RelationalLambdaParameter(name = $mapFunctionParamNames->at(0), value = $valueToMap, type = $mapFunctionParamTypes->at(0)->genericTypeToDataType());
 
   let select = $operation.select;
-  let updatedState = $state->updateFunctionParamScope($mapFunctionType,
+  let updatedState = $state->updateFunctionParamsScope($mapFunctionType,
       [
         ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $param),|^$select(columns = $param)))
       ]
@@ -3993,7 +4003,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantFilter(f:Fun
   let param = ^RelationalLambdaParameter(name = $mapFunctionParamNames->at(0), value = $valueToMap, type = $mapFunctionParamTypes->at(0)->genericTypeToDataType());
 
   let select = $operation.select;
-  let updatedState = $state->updateFunctionParamScope($mapFunctionType,
+  let updatedState = $state->updateFunctionParamsScope($mapFunctionType,
       [
         ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $param),|^$select(columns = $param)))
       ]

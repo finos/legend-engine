@@ -38,11 +38,7 @@ public class Test_Relational_DuckDB_UnclassifiedFunctions_PCT extends PCTReportC
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             //SplitPart
-            one("meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString_Function_1__Boolean_1_", "\"\nexpected: []\nactual:   ['']\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_", "\"\nexpected: 'Hello World'\nactual:   'H'\"", AdapterQualifier.needsInvestigation),
-
-            //hash
-            one("meta::pure::functions::hash::tests::testSHA1Hash_Function_1__Boolean_1_", "java.sql.SQLException: java.sql.SQLException: Catalog Error: Scalar Function with name sha1 does not exist!\nDid you mean \"hash\"?\nLINE 1: select sha1('Hello, World!')\n               ^", AdapterQualifier.needsInvestigation),
 
             //ascii
             one("meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_", "Unexpected token", AdapterQualifier.needsInvestigation),

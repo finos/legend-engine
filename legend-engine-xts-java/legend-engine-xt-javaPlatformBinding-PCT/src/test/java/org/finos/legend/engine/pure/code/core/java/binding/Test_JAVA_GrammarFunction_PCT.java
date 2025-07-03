@@ -83,10 +83,10 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -2\"", AdapterQualifier.needsInvestigation),
 
             // variant
-            one("meta::pure::functions::collection::tests::filter::testFilter_FromVariantAsPrimitive_Function_1__Boolean_1_", "Can't resolve the builder for function 'toVariant'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::filter::testFilter_FromVariant_Function_1__Boolean_1_", "Can't resolve the builder for function 'toVariant'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::map::testMap_FromVariantAsPrimitive_Function_1__Boolean_1_", "Can't resolve the builder for function 'toVariant'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::map::testMap_FromVariant_Function_1__Boolean_1_", "Can't resolve the builder for function 'toVariant'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::filter::testFilter_FromVariantAsPrimitive_Function_1__Boolean_1_", "meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_ is not supported yet!", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::filter::testFilter_FromVariant_Function_1__Boolean_1_", "meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_ is not supported yet!", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::map::testMap_FromVariantAsPrimitive_Function_1__Boolean_1_", "meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_ is not supported yet!", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::map::testMap_FromVariant_Function_1__Boolean_1_", "meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_ is not supported yet!", AdapterQualifier.unsupportedFeature),
             
             // String plus
             one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\"", AdapterQualifier.needsInvestigation),
