@@ -388,7 +388,7 @@ public class HelperModelBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getAssociationPropertyClass(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association _association, final String name, SourceInformation sourceInformation, CompileContext context)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property = _association._properties().detect(p -> !name.equals(p.getName()));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property = _association._properties().detect(p -> name.equals(p.getName()));
         Assert.assertTrue(property != null, () -> "Can't find associated property of property '" + name + "' in association '" + (getElementFullPath(_association, context.pureModel.getExecutionSupport())) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) property._genericType()._rawType();
     }
