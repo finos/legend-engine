@@ -1,0 +1,13 @@
+{
+  "name": "core_external_store_relational_sql_dialect_translation_memsql",
+  "pattern": "(meta::external::store::relational::sqlDialectTranslation::memSQL)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core_functions_standard",
+    "core_functions_unclassified",
+    "core",
+    "core_external_store_relational_postgres_sql_model",
+    "core_external_store_relational_postgres_sql_model_extensions",
+    "core_external_store_relational_sql_dialect_translation"
+  ]
+}

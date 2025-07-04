@@ -893,6 +893,20 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::pro
   regexpLikePattern('~')->format($processedArgs->transformRegexpParams($sqlDialect));
 }
 
+function meta::external::store::relational::sqlDialectTranslation::defaults::isNumeric(s:String[1]): Boolean[1]
+{
+  // Not exact
+  $s->matches('[-]?[0-9]+(\\.[0-9]+)?')
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForDirectionalIndex(directionFunc:String[1], f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let index = $processedArgs->at(1);
+  let modifiedIndex = if($index->isNumeric() && ($index->parseInteger() < 0), | $sqlDialect->generateFunctionCallWithArgs('length', [$processedArgs->at(0)], [], $state, $config) + $index, | $index);
+  $sqlDialect->generateFunctionCallWithArgs($directionFunc, [$processedArgs->at(0), $modifiedIndex], [], $state, $config);
+}
+
 function meta::external::store::relational::sqlDialectTranslation::defaults::convertDateToSqlString(date:Date[1], dbTimeZone:String[0..1]):String[1]
 {
   //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
