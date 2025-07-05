@@ -2022,9 +2022,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
                     if (node.parentTempTableStrategy != null)
                     {
-                        try (Scope ignored1 = GlobalTracer.get().buildSpan("create temp table").withTag("parent tempTableName", node.parentTempTableName).withTag("databaseType", ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTypeName()).startActive(true))
+                        try (Scope ignored1 = GlobalTracer.get().buildSpan("create temp table").withTag("parent tempTableName", node.parentTempTableName).withTag("databaseType", node.executionNodes.get(0) instanceof SQLExecutionNode ? ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTypeName() : null).startActive(true))
                         {
-                            String databaseTimeZone = ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone();
+                            String databaseTimeZone = node.executionNodes.get(0) instanceof SQLExecutionNode ? ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone() : null;
                             if (node.parentTempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
                             {
                                 try
