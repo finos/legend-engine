@@ -14,12 +14,10 @@
 
 package org.finos.legend.pure.runtime.java.extension.relation.compiled.pure;
 
-import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.tests.function.base.PureExpressionTest;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -59,16 +57,7 @@ public class TestFunctionTester extends PureExpressionTest
                         "     5, \"[13,14,15]\"\n" +
                         "   #->extend(~reversed:x | $x.payload->toMany(@Integer)->reverse()->toVariant()));\n" +
                         "}");
-        try
-        {
-            this.execute("test():Any[*]");
-            Assert.fail("Error thrown when executing test function");
-        }
-        catch (PureExecutionException e)
-        {
-            // metadata fails...
-            Assert.assertTrue(e.getMessage().contains(" of type meta::pure::metamodel::type::FunctionType does not exist"));
-        }
+        execute("test():Any[*]");
     }
 
     @Test
