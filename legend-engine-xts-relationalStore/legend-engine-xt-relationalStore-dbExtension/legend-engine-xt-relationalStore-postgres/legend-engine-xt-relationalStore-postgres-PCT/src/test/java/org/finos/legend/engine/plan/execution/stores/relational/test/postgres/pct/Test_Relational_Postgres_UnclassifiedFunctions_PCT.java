@@ -15,7 +15,6 @@
 package org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct;
 
 import junit.framework.Test;
-import org.checkerframework.checker.units.qual.A;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;

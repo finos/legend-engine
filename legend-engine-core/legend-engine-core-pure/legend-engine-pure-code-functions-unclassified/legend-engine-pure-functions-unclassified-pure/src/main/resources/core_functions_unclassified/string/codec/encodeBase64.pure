@@ -25,6 +25,5 @@ function <<PCT.test>> meta::pure::functions::string::tests::base64::testEncodeBa
 function <<PCT.test>> meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   let testString = 'SGVsbG8sIFdvcmxkIQ==';
-  let decodedString = $f->eval(|$testString->decodeBase64());
-  assertEquals($testString, $f->eval(|$decodedString->encodeBase64()));
+  assertEquals($testString, $f->eval(|$testString->decodeBase64()->encodeBase64()));
 }
