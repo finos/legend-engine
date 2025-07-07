@@ -105,3 +105,96 @@ function <<test.Test>> meta::external::dataquality::tests::assertRelationNotEmpt
 
    $rel->meta::external::dataquality::assertRelationNotEmpty();
 }
+
+function <<test.Test>> meta::external::dataquality::tests::rowsWithEmptyColumnTest():Boolean[1]
+{
+  let rel = #TDS
+              id, code
+              -1, a
+              2, b
+              3, c
+            #->extend(~newCol: r|if($r.id < 0, | [], | 'valid'))->rowsWithEmptyColumn(~newCol)->select(~[id,code,newCol]);
+
+  assertEquals('#TDS\n'+
+                '   id,code,newCol\n'+
+                '   -1,a,null\n'+                                  
+                '#', $rel->toString());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::rowsWithValueInColumnTest():Boolean[1]
+{
+  let rel = #TDS
+                  id, code
+                  -1, a
+                  2, b
+                  3, c
+                #->extend(~newCol: r|if($r.id < 0, | [], | 'valid'))->rowsWithValueInColumn(~newCol)->select(~[id,code,newCol]);
+
+  assertEquals( '#TDS\n'+
+                '   id,code,newCol\n'+
+                '   2,b,valid\n'+
+                '   3,c,valid\n'+                                                 
+                '#', $rel->sort(~id->ascending())->toString());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::rowsWithValueOutsideRangeTest():Boolean[1]
+{
+  let rel = #TDS
+                  id, code
+                  -1, a
+                  20, b
+                  34, c
+                #->rowsWithValueOutsideRange(~id, 1, 20)->select(~[id,code]);
+
+  assertEquals( '#TDS\n'+
+                '   id,code\n'+
+                '   -1,a\n'+
+                '   34,c\n'+                  
+                '#', $rel->sort(~id->ascending())->toString());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::rowsWithNegativeValueTest():Boolean[1]
+{
+  let rel = #TDS
+                  id, code
+                  -1, a
+                  2, b
+                  3, c
+                #->rowsWithNegativeValue(~id)->select(~[id,code]);
+
+  assertEquals( '#TDS\n'+
+                '   id,code\n'+
+                '   -1,a\n'+
+                '#', $rel->toString());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::rowsWithColumnLongerThanTest():Boolean[1]
+{
+  let rel = #TDS
+                  id, code
+                  -1, a12345
+                  2, b2452
+                  3, c1
+                #->rowsWithColumnLongerThan(~code, 4)->select(~[id,code]);
+
+  assertEquals( '#TDS\n'+
+                '   id,code\n'+
+                '   -1,a12345\n'+
+                '   2,b2452\n'+                      
+                '#', $rel->sort(~id->ascending())->toString());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::rowsWithColumnDiffersFromPatternTest():Boolean[1]
+{
+  let rel = #TDS
+                  id, code
+                  -1, 123
+                  2, bt1
+                  3, 67
+                #->rowsWithColumnDiffersFromPattern(~code, '[0-9]*')->select(~[id,code]);
+
+  assertEquals( '#TDS\n'+
+                '   id,code\n'+
+                '   2,bt1\n'+                   
+                '#', $rel->toString());
+}

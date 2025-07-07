@@ -27,6 +27,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ParametersInference;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
@@ -85,6 +86,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers.processRelationAndColSpecParams;
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers.SelectColInference;
 
 public class DataQualityCompilerExtension implements CompilerExtension
@@ -479,6 +481,21 @@ public class DataQualityCompilerExtension implements CompilerExtension
         return propertyGraphFetchTree.alias != null ? propertyGraphFetchTree.alias : propertyGraphFetchTree.property;
     }
 
+    private static final ParametersInference RowsWithColInference = (parameters, valueSpecificationBuilder) ->
+            processRelationColSpecAndExtraBasicParams(parameters, valueSpecificationBuilder, null);
+
+    private static final ParametersInference RowsWithNumberColInference = (parameters, valueSpecificationBuilder) ->
+            processRelationColSpecAndExtraBasicParams(parameters, valueSpecificationBuilder, "Number");
+
+    private static final ParametersInference RowsWithStringColInference = (parameters, valueSpecificationBuilder) ->
+            processRelationColSpecAndExtraBasicParams(parameters, valueSpecificationBuilder, "String");
+
+    private static List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processRelationColSpecAndExtraBasicParams(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, ValueSpecificationBuilder valueSpecificationBuilder, String columnType)
+    {
+        List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> params = processRelationAndColSpecParams(parameters, valueSpecificationBuilder, columnType);
+        parameters.stream().skip(2).forEach(param -> params.add(param.accept(valueSpecificationBuilder)));
+        return params;
+    }
 
     @Override
     public List<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> getExtraFunctionExpressionBuilderRegistrationInfoCollectors()
@@ -494,7 +511,14 @@ public class DataQualityCompilerExtension implements CompilerExtension
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountGreaterThanEqual_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.mutable.with("Number", "Integer", "Float", "Decimal"))))),
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountLowerThan_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.mutable.with("Number", "Integer", "Float", "Decimal"))))),
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountLowerThanEqual_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.mutable.with("Number", "Integer", "Float", "Decimal"))))),
-                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountEqual_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.mutable.with("Number", "Integer", "Float", "Decimal")))))
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountEqual_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.mutable.with("Number", "Integer", "Float", "Decimal"))))),
+                        //helpers
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.grp(RowsWithColInference, handlers.h("meta::external::dataquality::rowsWithEmptyColumn_Relation_1__ColSpec_1__Relation_1_", false,  ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> org.eclipse.collections.impl.factory.Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getOnly(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> handlers.typeOne(ps.get(0), "Relation")))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.grp(RowsWithColInference, handlers.h("meta::external::dataquality::rowsWithValueInColumn_Relation_1__ColSpec_1__Relation_1_", false,  ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> org.eclipse.collections.impl.factory.Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getOnly(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> handlers.typeOne(ps.get(0), "Relation")))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.grp(RowsWithNumberColInference, handlers.h("meta::external::dataquality::rowsWithNegativeValue_Relation_1__ColSpec_1__Relation_1_", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> org.eclipse.collections.impl.factory.Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getOnly(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> handlers.typeOne(ps.get(0), "Relation")))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.grp(RowsWithStringColInference, handlers.h("meta::external::dataquality::rowsWithColumnLongerThan_Relation_1__ColSpec_1__Integer_1__Relation_1_", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> org.eclipse.collections.impl.factory.Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getOnly(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> handlers.typeOne(ps.get(0), "Relation")))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.grp(RowsWithNumberColInference, handlers.h("meta::external::dataquality::rowsWithValueOutsideRange_Relation_1__ColSpec_1__Integer_1__Integer_1__Relation_1_", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> org.eclipse.collections.impl.factory.Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getOnly(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> handlers.typeOne(ps.get(0), "Relation")))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.grp(RowsWithStringColInference, handlers.h("meta::external::dataquality::rowsWithColumnDiffersFromPattern_Relation_1__ColSpec_1__String_1__Relation_1_", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> org.eclipse.collections.impl.factory.Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getOnly(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> handlers.typeOne(ps.get(0), "Relation"))))
                 ));
     }
 
