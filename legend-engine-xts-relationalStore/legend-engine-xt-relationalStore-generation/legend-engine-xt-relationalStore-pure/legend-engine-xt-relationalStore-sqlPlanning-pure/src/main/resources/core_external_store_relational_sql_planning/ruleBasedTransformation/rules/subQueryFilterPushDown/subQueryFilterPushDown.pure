@@ -119,7 +119,7 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
                   | let subQuery = $t.query;
                     let subQuerySpec = $subQuery.queryBody->cast(@QuerySpecification);
                     let subQuerySpecHasLimitOrOffset = $subQuerySpec.limit->isNotEmpty() || $subQuerySpec.offset->isNotEmpty();
-                    let subQuerySpecHasWindowColumns = $subQuerySpec->fetchAllNodesRecursivelyExcludeSubQueries()->get($subQuerySpec).values->exists(n | $n->instanceOf(meta::external::query::sql::metamodel::Window));
+                    let subQuerySpecHasWindowColumns = $subQuerySpec->fetchAllSubNodesExcludeSubQueries()->exists(n | $n->instanceOf(meta::external::query::sql::metamodel::Window));
                     let cannotPushFiltersIntoSubQuery = $subQuerySpecHasLimitOrOffset || $subQuerySpecHasWindowColumns;
                     if ($cannotPushFiltersIntoSubQuery,
                         | pair(false, $t),
