@@ -194,6 +194,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     aliasedRelationProcessor_default(),
     joinProcessor_default(),
     querySpecificationProcessor_default(),
+    asOfJoinProcessorForSnowflake(),
     unionProcessor_default(),
     tableSubqueryProcessor_default()
   ]
@@ -703,6 +704,38 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       generateFunctionCallWithArgs($sqlDialect, $func, [$value, $shiftUnits], $state, $config);
     }
   )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::asOfJoinProcessorForSnowflake(): NodeProcessor<AsOfJoin>[1]
+{
+  nodeProcessor(
+    AsOfJoin,
+    {sqlDialect, j, state, config |
+      let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+      let left = $sqlDialect->executeNodeProcessor($j.left, $state, $config);
+      let right = $sqlDialect->executeNodeProcessor($j.right, $state->increaseLevel(), $config);
+
+      $left + $sep0 + 'asof join' + $sep1 + $right + $j.criteria->asOfJoinCriteriaProcessorForSnowFlake($sqlDialect, $state, $config);
+    },
+    {n: AsOfJoin[1] | true}
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::asOfJoinCriteriaProcessorForSnowFlake(jc:JoinCriteria[0..1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let sep0 = $state.separator(0, $config);
+  let sep1 = $state.separator(1, $config);
+
+  let isNaturalJoin = $jc->isNotEmpty() && $jc->toOne()->instanceOf(NaturalJoin);
+  if($jc->isNotEmpty() && (!$isNaturalJoin),
+    | $sep1 + $sqlDialect->keyword('MATCH_CONDITION', $state, $config) + ' ' +
+      $jc->toOne()->match([
+        o: JoinOn[1] | '(' + $sqlDialect->executeNodeProcessor($o.expression, $state, $config)  + ')';,
+        a: Any[*] | failWithMessage('Unhandled join criteria: ' + $a->class()->elementToPath())
+      ]),
+    | ''
+  );
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::dateFormatSpecifierForSnowflake(f:String[1]): String[1]

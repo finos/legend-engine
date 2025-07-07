@@ -428,7 +428,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
 
   ExtractField->enumValues()->map({ev |
     let e = ^Extract(field = $ev, expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'col'])));
-    assertEquals('EXTRACT(' + $ev.name->toUpper() + ' FROM db.schema.table_a.col)', $dialect->executeNodeProcessor($e, $state, $config));
+    assertEquals('CAST(EXTRACT(' + $ev.name->toUpper() + ' FROM db.schema.table_a.col) AS BIGINT)', $dialect->executeNodeProcessor($e, $state, $config));
   })->and();
 }
 
