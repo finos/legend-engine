@@ -18,6 +18,11 @@ mvn clean install
 Whenever you run across a failing test:
 1. Determine whether the test is an expected failure. If it is expected (e.g. we don't yet support the function on that target),
 update the expectedFailures to exclude that test.
+   - Add AdapterQualifier argument to the expectedFailure (e.g. `one("testFunctionName", "errorMessage", AdapterQualifier)`).
+     - AdapterQualifier.needsInvestigation: used for functions that need to be investigated if they can be supported or unknown if they can be supported
+     - AdapterQualifier.needsInvestigation: used for functions that are known to not be supported on the target platform
+     - AdapterQualifier.needsInvestigation: used for functions that used assertError but the error message is not matching the expected error message
+     - AdapterQualifier.needsInvestigation: used for functions that are not yet implemented on the target platform
 
 2. If the failure is unexpected, fix the failure. 
 
