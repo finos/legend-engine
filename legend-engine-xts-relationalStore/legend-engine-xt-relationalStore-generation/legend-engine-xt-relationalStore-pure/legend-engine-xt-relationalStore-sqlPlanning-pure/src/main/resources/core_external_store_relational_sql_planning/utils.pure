@@ -67,20 +67,19 @@ function meta::external::store::relational::sqlPlanning::utils::transformNodeRec
   );
 }
 
-function meta::external::store::relational::sqlPlanning::utils::fetchAllSubNodes(node: Node[1]): Node[*]
+function meta::external::store::relational::sqlPlanning::utils::fetchAllSubNodesRecursively(node: Node[1]): Node[*]
 {
-  let allProperties = $node->type()->cast(@Class<Any>)->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
-  let subResults = $allProperties->filter(p | $p->functionReturnType().rawType->toOne()->_subTypeOf(Node))->map(p | $p->eval($node)->cast(@Node))->map(n | $n->fetchAllSubNodes());
-  $node->concatenate($subResults);
+  fetchAllSubNodesRecursivelyWithFilter($node, []) 
 }
 
-function meta::external::store::relational::sqlPlanning::utils::fetchAllSubNodesExcludeSubQueries(node: Node[1]): Node[*]
+function meta::external::store::relational::sqlPlanning::utils::fetchAllSubNodesRecursivelyWithFilter(node: Node[1], filterFunction: Function<{Node[1] -> Boolean[1]}>[0..1]): Node[*]
 {
-  let allProperties = $node->type()->cast(@Class<Any>)->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
-  let subResults = if ($node->instanceOf(TableSubquery),
-                       | [],
-                       | $allProperties->filter(p | $p->functionReturnType().rawType->toOne()->_subTypeOf(Node))->map(p | $p->eval($node)->cast(@Node))->map(n | $n->fetchAllSubNodesExcludeSubQueries()));
-  $node->concatenate($subResults);
+  if($filterFunction->isNotEmpty() && $filterFunction->toOne()->eval($node),
+    | [],
+    | let allProperties = $node->type()->cast(@Class<Any>)->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
+      let subResults = $allProperties->filter(p | $p->functionReturnType().rawType->toOne()->_subTypeOf(Node))->map(p | $p->eval($node)->cast(@Node))->map(n | $n->fetchAllSubNodesRecursivelyWithFilter($filterFunction));
+      $node->concatenate($subResults);
+  )
 }
 
 function meta::external::store::relational::sqlPlanning::utils::isAndExpression(expr: meta::external::query::sql::metamodel::Expression[1]): Boolean[1]
@@ -105,7 +104,7 @@ function meta::external::store::relational::sqlPlanning::utils::identifySingleCo
 
 function <<access.private>> meta::external::store::relational::sqlPlanning::utils::identifySingleColumnFilterGroups_internal(expr: meta::external::query::sql::metamodel::Expression[1]): Pair<QualifiedNameReference, meta::external::query::sql::metamodel::Expression>[*]
 {
-  let exprSubNodes = fetchAllSubNodes($expr);
+  let exprSubNodes = fetchAllSubNodesRecursively($expr);
   let columns = $exprSubNodes->filter(n | $n->instanceOf(QualifiedNameReference))->removeDuplicates();
   let isSubNodeValidForColumnGrouping = {e: Node[1] |
     $e->match([
@@ -131,7 +130,7 @@ function meta::external::store::relational::sqlPlanning::utils::isQueryPlainQuer
 function meta::external::store::relational::sqlPlanning::utils::addClauseIfNotExisting(expr: meta::external::query::sql::metamodel::Expression[1], toAdd: meta::external::query::sql::metamodel::Expression[1]): NodeTransformationWithChangeTracking[1]
 {
   let toAddType = $toAdd->type()->elementToPath();
-  let notExisting = $expr->fetchAllSubNodes()->filter(x | $x->type()->elementToPath() == $toAddType)->filter(x | $x == $toAdd)->isEmpty();
+  let notExisting = $expr->fetchAllSubNodesRecursively()->filter(x | $x->type()->elementToPath() == $toAddType)->filter(x | $x == $toAdd)->isEmpty();
   if ($notExisting,
       | changed(^LogicalBinaryExpression(left = $expr, right = $toAdd, type = LogicalBinaryType.AND)),
       | unchanged($expr)
