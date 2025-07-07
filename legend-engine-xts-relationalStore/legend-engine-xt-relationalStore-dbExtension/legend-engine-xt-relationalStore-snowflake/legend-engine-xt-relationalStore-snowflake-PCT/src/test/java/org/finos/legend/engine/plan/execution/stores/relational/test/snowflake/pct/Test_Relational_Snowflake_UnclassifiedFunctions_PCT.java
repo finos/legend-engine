@@ -41,9 +41,7 @@ public class Test_Relational_Snowflake_UnclassifiedFunctions_PCT extends PCTRepo
             one("meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_", "Unexpected token", AdapterQualifier.needsInvestigation),
 
             //base64
-            one("meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'encodeBase64_String_1__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::base64::testDecodeBase64_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'decodeBase64_String_1__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'encodeBase64_String_1__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: The following string is not a legal base64-encoded value: 'SGVsbG8sIFdvcmxkIQ'", AdapterQualifier.unsupportedFeature),
 
             //tolowerfirstcharacter
             one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower_Function_1__Boolean_1_", "\"\nexpected: 'xOxOxOx'\nactual:   'xxOxOxOx'\"", AdapterQualifier.needsInvestigation),

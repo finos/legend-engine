@@ -1038,12 +1038,12 @@ public class Library
 
     public static String decodeBase64(String text)
     {
-        return new String(Base64.decodeBase64(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+        return new String(Base64.decodeBase64(text));
     }
 
     public static String encodeBase64(String text)
     {
-        return Base64.encodeBase64URLSafeString(text.getBytes(StandardCharsets.UTF_8));
+        return Base64.encodeBase64String(text.getBytes());
     }
 
     public static String decodeUrl(String text, String charset)

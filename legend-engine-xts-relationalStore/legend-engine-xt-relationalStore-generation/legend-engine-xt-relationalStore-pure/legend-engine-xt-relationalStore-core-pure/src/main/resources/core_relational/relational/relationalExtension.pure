@@ -1847,6 +1847,26 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Integer()}
             )
          ])
+      ),
+
+      pair(
+        'decodeBase64',
+        list([
+          pair(
+            {params: RelationalOperationElement[*] | true},
+            {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size=128)}
+          )
+        ])
+      ),
+
+      pair(
+        'encodeBase64',
+        list([
+          pair(
+            {params: RelationalOperationElement[*] | true},
+            {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size=128)}
+          )
+        ])
       )
    ]);
 

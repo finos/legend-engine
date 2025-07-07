@@ -188,7 +188,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='date_part(\'dow\', %s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='date_part(\'doy\', %s)')),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='convert_from(decode(%s, \'base64\'), \'utf8\')')),
-    dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='encode(%s, \'base64\')')),
+    dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='encode(convert_to(%s, \'UTF8\'), \'base64\')')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)')),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)')),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='date_trunc(\'month\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
