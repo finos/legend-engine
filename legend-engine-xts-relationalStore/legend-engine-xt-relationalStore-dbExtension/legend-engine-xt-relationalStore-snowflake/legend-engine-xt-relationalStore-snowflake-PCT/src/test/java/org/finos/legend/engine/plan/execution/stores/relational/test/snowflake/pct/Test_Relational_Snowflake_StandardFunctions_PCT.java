@@ -130,7 +130,7 @@ public class Test_Relational_Snowflake_StandardFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\"", AdapterQualifier.assertErrorMismatch),
 
             // Hash
-            one("meta::pure::functions::hashCode::tests::testHashCode_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"hash(%s)\"\"")
+            one("meta::pure::functions::hashCode::tests::testHashCode_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"hash(%s)\"\"", AdapterQualifier.unsupportedFeature)
     );
 
     public static Test suite()

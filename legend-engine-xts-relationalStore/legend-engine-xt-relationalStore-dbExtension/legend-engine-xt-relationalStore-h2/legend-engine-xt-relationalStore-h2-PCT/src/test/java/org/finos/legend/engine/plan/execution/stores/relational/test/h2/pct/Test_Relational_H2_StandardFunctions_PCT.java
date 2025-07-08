@@ -67,8 +67,8 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
 
             // MaxBy
-            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for maxBy().\""),
-            one("meta::pure::functions::math::tests::maxBy::testSimpleGroupByMaxBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for maxBy().\""),
+            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for maxBy().\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::maxBy::testSimpleGroupByMaxBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for maxBy().\"", AdapterQualifier.unsupportedFeature),
 
             // Min
             one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "No matched function in function registry for - min(DoubleSqlType, DoubleSqlType, DoubleSqlType, DoubleSqlType, DoubleSqlType).", AdapterQualifier.unsupportedFeature),
@@ -77,8 +77,8 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
 
             // MinBy
-            one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for minBy().\""),
-            one("meta::pure::functions::math::tests::minBy::testSimpleGroupByMinBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for minBy().\""),
+            one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for minBy().\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::minBy::testSimpleGroupByMinBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for minBy().\"", AdapterQualifier.unsupportedFeature),
 
             // Median
             one("meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_", "\"\nexpected: 3.0\nactual:   5.0\"", AdapterQualifier.needsInvestigation),
@@ -126,6 +126,10 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             // Hash
             one("meta::pure::functions::hashCode::tests::testHashCode_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for hashCode().\""),
             one("meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for hashAgg().\""),
+
+            // Hash
+            one("meta::pure::functions::hashCode::tests::testHashCode_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for hashCode().\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for hashAgg().\"", AdapterQualifier.unsupportedFeature),
 
             // And
             one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'", AdapterQualifier.assertErrorMismatch),

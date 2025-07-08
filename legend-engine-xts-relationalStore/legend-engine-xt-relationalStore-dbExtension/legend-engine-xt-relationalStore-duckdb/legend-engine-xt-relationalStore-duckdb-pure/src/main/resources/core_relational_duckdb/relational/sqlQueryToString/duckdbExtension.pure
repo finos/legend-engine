@@ -169,7 +169,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)', transform={p:String[1] | $p->repeat(1)})),
     dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='CAST(uuid() AS VARCHAR)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
-    dynaFnToSql('hashCode',               $allStates,            ^ToSql(format='hash(%s)::BITSTRING::BIGINT')),
+    dynaFnToSql('hashCode',               $allStates,            ^ToSql(format='hash(%s)::BITSTRING::BIGINT', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='instr(%s, %s)', transform={p:String[2] | [$p->at(0), $p->at(1)]})),  // TODO - pure uses 0-based indexing,  duck db returns location with 1-based index , keeping this as H2 also returns 1-based currently, many user tests need to be fixed
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='regexp_matches(%s,\'^[a-zA-Z0-9]*$\')', transform={p:String[1]|$p})),
