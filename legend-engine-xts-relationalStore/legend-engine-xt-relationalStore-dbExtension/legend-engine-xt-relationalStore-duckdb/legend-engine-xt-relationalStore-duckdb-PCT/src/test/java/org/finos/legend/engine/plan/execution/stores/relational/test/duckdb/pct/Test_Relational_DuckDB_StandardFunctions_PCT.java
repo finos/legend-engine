@@ -107,7 +107,6 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_", "\"[unsupported-api] The function 'hashAgg' (state: [Select, false]) is not supported yet\""),
 
             // Hash
-            one("meta::pure::functions::hashCode::tests::testHashCode_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"hash(%s)::BITSTRING::BIGINT\"\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_", "\"[unsupported-api] The function 'hashAgg' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             // And
