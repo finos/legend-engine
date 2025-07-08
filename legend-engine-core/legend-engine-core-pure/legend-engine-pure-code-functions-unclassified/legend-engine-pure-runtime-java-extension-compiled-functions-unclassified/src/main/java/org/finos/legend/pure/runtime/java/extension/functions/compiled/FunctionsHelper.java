@@ -273,12 +273,12 @@ public class FunctionsHelper
     // STRING -------------------------------------------------------------------
     public static String encodeBase64(String str)
     {
-        return Base64.encodeBase64String(str.getBytes());
+        return Base64.encodeBase64String(str.getBytes(StandardCharsets.UTF_8));
     }
 
     public static String decodeBase64(String str)
     {
-        return new String(Base64.decodeBase64(str));
+        return new String(Base64.decodeBase64(str.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
     }
 
     public static String encodeUrl(String str, String charset)
