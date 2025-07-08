@@ -129,7 +129,32 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       'FuncTests - mode(0/1)',
       'Expected - {"columnNames":["result"],"rows":[{"values":[88]}]}\n' +
       'Actual - {"columnNames":["result"],"rows":[{"values":[80]}]}'
-    )
+    ),
+    pair(
+      // Snowflake returns integer when scale is 0 (which is not standard)
+      'CastOperation - Numeric',
+      'Expected - {"columnNames":["result"],"rows":[{"values":[123.0]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":[123]}]}'
+    ),
+    pair(
+      // Snowflake returns integer when scale is 0 (which is not standard)
+      'CastOperation - Decimal',
+      'Expected - {"columnNames":["result"],"rows":[{"values":[123.0]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":[123]}]}'
+    ),
+    // Snowflake SQL Dialect requires custom handling of TrimProcessor, These tests will be removed after the implementation.
+    pair(
+      'SQLStructureTests - TrimBoth',
+      'Execution error at ??'
+    ),
+    pair(
+      'SQLStructureTests - TrimLeading',
+      'Execution error at ??'
+    ),
+    pair(
+      'SQLStructureTests - TrimTrailing',
+      'Execution error at ??'
+    )                 
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -215,7 +240,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     whenClauseNodeProcessor_default(),
     searchedCaseExpressionNodeProcessor_default(),
     columnTypeProcessor_default(),
-    castProcessor_default(),
+    castProcessorForSnowflake(),
     inListExpressionProcessor_default(),
     inPredicateProcessor_default(),
     extractProcessor_default(),
@@ -225,7 +250,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     trimProcessor_default(),
     bitwiseBinaryExpressionNodeProcessorForSnowflake(),
     bitwiseNotExpressionNodeProcessorForSnowflake(),
-    bitwiseShiftExpressionNodeProcessorForSnowflake()
+    bitwiseShiftExpressionNodeProcessorForSnowflake(),
+    likePredicateProcessor_default(),
+    existsPredicateProcessor_default()    
   ]
 }
 
@@ -405,6 +432,30 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       );
     }
   )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::castProcessorForSnowflake(): NodeProcessor<Cast>[1]
+{
+  let castTypes = newMap([
+    pair('int2', 'bigint'),
+    pair('int4', 'bigint'),
+    pair('int8', 'bigint'),
+    pair('bool', 'boolean')    
+  ]);  
+
+  nodeProcessor(
+    Cast,
+    {sqlDialect, c, state, config | 
+      generateCast(
+        $sqlDialect,
+        $sqlDialect->executeNodeProcessor($c.expression, [], $state, $config),
+        $sqlDialect->executeNodeProcessor(^ColumnType(name = $castTypes->get($c.type.name->toLower())->orElse($c.type.name), parameters = $c.type.parameters), [], $state, $config),  
+        $state,
+        $config
+      )
+    },
+    {n | true}
+  );
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeFunctionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]

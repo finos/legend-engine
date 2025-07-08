@@ -330,7 +330,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     Extract,
     {sqlDialect, e, state, config |
       $sqlDialect->generateCast($sqlDialect->keyword('extract', $state, $config) + '(' + $sqlDialect->keyword($e.field.name, $state, $config) + ' ' +
-      $sqlDialect->keyword('from', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($e.expression, [], $state, $config) + ')', 'bigint', $state, $config);
+      $sqlDialect->keyword('from', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($e.expression, [], $state, $config) + ')', 'BIGINT', $state, $config);
     },
     {n | true}
   )
