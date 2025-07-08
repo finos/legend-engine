@@ -142,10 +142,7 @@ public class Test_Relational_MemSQL_RelationFunctions_PCT extends PCTReportConfi
             //Sort
             one("meta::pure::functions::relation::tests::sort::testSimpleSort_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\"",  AdapterQualifier.unsupportedFeature),
 
-            one("meta::pure::functions::relation::tests::composition::testVariantColumn_roundTrip_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE leSchema.tb", AdapterQualifier.needsImplementation),
-
-            //evalColumn
-            one("meta::pure::functions::relation::tests::evalColumn::testSimpleEvalColumn_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\"", AdapterQualifier.unsupportedFeature)
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_roundTrip_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE leSchema.tb", AdapterQualifier.needsImplementation)
     );
 
     public static Test suite()
