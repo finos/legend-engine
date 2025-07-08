@@ -111,6 +111,12 @@ function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQ
       'FuncTests - string_agg(0/0)',
       'Expected - {"columnNames":["age","result"],"rows":[{"values":[18,"Anthony,John"]},{"values":[20,"Fabrice"]},{"values":[{"key":[]},"Oliver"]},{"values":[30,{"key":[]}]}]}\n'+
       'Actual - {"columnNames":["age","result"],"rows":[{"values":[20,"Fabrice"]},{"values":[18,"John,Anthony"]},{"values":[{"key":[]},"Oliver"]},{"values":[30,{"key":[]}]}]}'
+    ),
+    // TODO : Remove this test after the version issue for like is resolved.
+    pair(
+      'SQLStructureTests - LikeIgnoreCase',
+      'Expected - {"columnNames":["name"],"rows":[{"values":["abc65%"]}]}\n' +
+      'Actual - {"columnNames":["name"],"rows":[]}'
     ),  
     pair('FuncTests - split_part(0/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
     pair('FuncTests - split_part(1/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
@@ -142,7 +148,8 @@ function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQ
     pair('FuncTests - covar_samp(0/0)', 'MemSQL SQL Dialect does not support the function - covar_samp'),
     pair('FuncTests - covar_pop(0/0)', 'MemSQL SQL Dialect does not support the function - covar_pop'),
     pair('FuncTests - corr(0/0)', 'MemSQL SQL Dialect does not support the function - corr'),
-    pair('SQLStructureTests - AsOfJoin', 'MemSQL SQL Dialect does not support AsOfJoin!')                           
+    pair('SQLStructureTests - AsOfJoin', 'MemSQL SQL Dialect does not support AsOfJoin!'),                           
+    pair('SQLStructureTests - LikeEscapeChar', 'MemSQL SQL Dialect does not support custom escape char with like')
 
   ]->newMap()->cast(@Map<String, String>)
 }
@@ -1622,7 +1629,8 @@ function meta::external::store::relational::sqlDialectTranslation::memSQL::likeP
   nodeProcessor(
     LikePredicate,
     {sqlDialect, l, state, config |
-      if(!$l.ignoreCase, | $sqlDialect->keyword('binary', $state, $config), | '') + ' ' + $sqlDialect->executeNodeProcessor($l.value, $state, $config) + ' ' +  $sqlDialect->keyword('like', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($l.pattern, $state, $config)
+      assert($l.escape->isEmpty() || $l.escape == literal('\\'), 'MemSQL SQL Dialect does not support custom escape char with like');
+      if(!$l.ignoreCase, | $sqlDialect->keyword('binary', $state, $config), | '') + ' ' + $sqlDialect->executeNodeProcessor($l.value, $state, $config) + ' ' +  $sqlDialect->keyword('like', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($l.pattern, $state, $config);
     },
     {n | true}
   )

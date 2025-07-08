@@ -1011,8 +1011,8 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       from = ^Table(name = ^QualifiedName(parts = 'testTable')),
       where = ^LikePredicate(
         value = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name')),
-        pattern = ^StringLiteral(value = '%65\%', quoted = false),
-        escape = ^StringLiteral(value = '\\', quoted = false)
+        pattern = ^StringLiteral(value = '%65^%%', quoted = false),
+        escape = ^StringLiteral(value = '^', quoted = false)
       )
     )),
     expectedResult = ^TestResult(columnNames = ['name'], rows = [^TestResultRow(values = 'abc65%')])
