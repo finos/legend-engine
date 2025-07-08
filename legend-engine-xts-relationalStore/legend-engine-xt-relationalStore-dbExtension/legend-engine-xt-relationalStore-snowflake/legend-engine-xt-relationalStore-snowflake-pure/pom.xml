@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-snowflake</artifactId>
-        <version>4.89.6</version>
+        <version>4.89.7-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
