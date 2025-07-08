@@ -147,6 +147,7 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
 
             // Hash
             one("meta::pure::functions::hashCode::tests::testHashCode_Function_1__Boolean_1_", "Unused format args. [3] arguments provided to expression \"hash(%s)\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_", "\"[unsupported-api] The function 'hashAgg' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             // Covariance/Correlation
             one("meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_", "Unused format args. [4] arguments provided to expression \"COVAR_POP(%s, %s)\"", AdapterQualifier.unsupportedFeature),
