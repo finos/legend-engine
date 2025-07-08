@@ -140,6 +140,9 @@ public class Test_Relational_Databricks_RelationFunctions_PCT extends PCTReportC
             //sort
             one("meta::pure::functions::relation::tests::sort::testSimpleSort_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Databricks\"", AdapterQualifier.unsupportedFeature),
 
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks", AdapterQualifier.needsImplementation),
+
             // Pure to SQL translation for window function using range frame needs to be implemented
             one("meta::pure::functions::relation::tests::over::testRange_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_CurrentRow_WithMultiplePartitions_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation),

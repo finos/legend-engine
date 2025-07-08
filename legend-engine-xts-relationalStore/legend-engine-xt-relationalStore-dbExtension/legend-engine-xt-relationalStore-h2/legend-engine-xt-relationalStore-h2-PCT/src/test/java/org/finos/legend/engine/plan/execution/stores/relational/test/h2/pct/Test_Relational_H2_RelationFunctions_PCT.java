@@ -53,8 +53,11 @@ public class Test_Relational_H2_RelationFunctions_PCT extends PCTReportConfigura
             // Pure to SQL translation for window function using range frame needs to be implemented
             one("meta::pure::functions::relation::tests::over::testRange_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_CurrentRow_WithMultiplePartitions_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation)
-    );
+            one("meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation),
+
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation)
+        );
 
     public static Test suite()
     {

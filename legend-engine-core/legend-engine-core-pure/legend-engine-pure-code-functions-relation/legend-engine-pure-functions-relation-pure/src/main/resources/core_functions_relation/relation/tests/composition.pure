@@ -411,43 +411,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_roundTrip<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let tds = #TDS
-      id, payload:meta::pure::metamodel::variant::Variant
-      1, "[1,2,3]"
-      2, "[4,5,6]"
-      3, "[7,8,9]"
-      4, "[10,11,12]"
-      5, "[13,14,15]"
-    #;
-
-    let expr = {|$tds};
-
-    let res =  $f->eval($expr);
-
-    assertEquals( $expr->eval()->toString(), $res->sort(~id->ascending())->toString());
-}
-
-// TODO interpreted does not like the sort on ~id in the assert
-//function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_indexExtraction<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-//{
-//    let tds = #TDS
-//      id, payload:meta::pure::metamodel::variant::Variant
-//      1, "[1,2,3]"
-//      2, "[4,5,6]"
-//      3, "[7,8,9]"
-//      4, "[10,11,12]"
-//      5, "[13,14,15]"
-//    #;
-//
-//    let expr = {|$tds->extend(~atCol:x | $x.payload->get(0))};
-//
-//    let res =  $f->eval($expr);
-//
-//    assertEquals( $expr->eval()->toString(), $res->sort(~id->ascending())->toString());
-//}
-
 function
   <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>>
   {

@@ -227,7 +227,10 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                 s: SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->transformAliasName($m), index = $s.index->transformAliasName($m)),
                 s: SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->transformAliasName($m)),
                 s: SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->transformAliasName($m)->cast(@TableAliasColumn)),
-                                                                               
-                rel: RelationalOperationElement[1] |  $rel;
+
+                l: RelationalLambda[1] | ^$l(body = $l.body->transformAliasName($m), parameters = $l.parameters->map(p | $p->transformAliasName($m))->cast(@RelationalLambdaParameter)),
+                lp: RelationalLambdaParameter[1] | ^$lp(value = $lp.value->transformAliasName($m)),
+
+                rel: RelationalOperationElement[1] | $rel;
               ])
 }

@@ -221,7 +221,28 @@ public abstract class TestTDS
                     dataByColumnName.put(name, variants);
                     for (int i = 0; i < this.rowCount; i++)
                     {
-                        String value = ((String[]) c.data())[i];
+                        Object data = c.data();
+                        String value;
+                        switch (c.dataType()) // check original type
+                        {
+                            case LONG:
+                                long lVal = ((long[]) data)[i];
+                                value = lVal == LONG_NULL_SENTINEL ? null : Long.toString(lVal);
+                                break;
+                            case DOUBLE:
+                                double dVal = ((double[]) data)[i];
+                                value = dVal == DOUBLE_NULL_SENTINEL ? null : Double.toString(dVal);
+                                break;
+                            case BOOLEAN_AS_BYTE:
+                                byte bVal = ((byte[]) data)[i];
+                                value = bVal == BOOLEAN_AS_BYTE_SENTINEL ? null : Boolean.toString(bVal == 1);
+                                break;
+                            case STRING:
+                                value = ((String[]) data)[i];
+                                break;
+                            default:
+                                throw new RuntimeException("ERROR " + c.dataType() + " not supported yet on variant!");
+                        }
                         variants[i] = value == null ? null : VariantInstanceImpl.newVariant(value, modelRepository, processorSupport);
                     }
                     break;
