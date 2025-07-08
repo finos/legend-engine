@@ -1142,6 +1142,8 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   greatest,
   group,
   hour,
+  hashAgg,
+  hashCode,
   if,
   in,
   indexOf,

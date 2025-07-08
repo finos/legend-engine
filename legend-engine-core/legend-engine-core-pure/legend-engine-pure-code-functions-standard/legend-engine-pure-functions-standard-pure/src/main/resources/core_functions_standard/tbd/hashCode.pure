@@ -1,0 +1,54 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::functions::hash::*;
+
+native function <<PCT.function>> {doc.doc = ''}
+  meta::pure::functions::hash::hashCode(vals:Any[*]):Integer[1];
+
+function <<PCT.test>> meta::pure::functions::hashCode::tests::testHashCode<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertInstanceOf($f->eval(|hashCode(['a'])), Integer);
+  assertEquals($f->eval(|hashCode([10])), $f->eval(|hashCode([[10]])));
+  assertNotEmpty($f->eval(|hashCode([])));
+  assertInstanceOf($f->eval(|hashCode([10, '10', [10]])), Integer);
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::hashCode::tests::testHashCodeAggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name, employeeNumber
+                  1, 2, A, 101.0
+                  2, 0, B, 32.0
+                  3, 3, C, 71.0
+                  4, 1, D, 41.0
+                  5, 2, E, 11.0
+                  6, 1, F, 5.0
+                  7, 1, G, 5.0
+                  8, 1, H, 5.0
+                  9, 2, I, 51.0
+                  10, 2, J, 101.0
+                 
+                #->groupBy(~grp, ~hashValue : x | $x.employeeNumber : y | $y->hashCode())
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals($res->columns()->size(), 2);
+    assertEquals($res->columns()->at(1).name, 'hashValue');
+    assertEquals([true, true, true, true], $res->map(r| $r.hashValue->isNotEmpty()));
+    assertEquals($res->select(~hashValue)->distinct()->size(), 4);
+}
