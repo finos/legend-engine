@@ -14,12 +14,14 @@
 
 package org.finos.legend.engine.language.dataquality.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DataQualityExecuteTrialInput
 {
     public String clientVersion;
@@ -31,4 +33,5 @@ public class DataQualityExecuteTrialInput
     public List<ParameterValue> lambdaParameterValues;
     public String validationName;
     public Boolean runQuery;
+    public boolean enrichDQColumns = true;
 }
