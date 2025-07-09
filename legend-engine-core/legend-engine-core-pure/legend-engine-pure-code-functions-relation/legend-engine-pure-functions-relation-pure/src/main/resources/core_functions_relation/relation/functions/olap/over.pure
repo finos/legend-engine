@@ -42,12 +42,12 @@ function
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1], frame:Frame[1]):_Window<T>[1]
+    meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1], rows:Rows[1]):_Window<T>[1]
 {
   ^_Window<T>
   (
     partition=$cols.name,
-    frame = $frame
+    frame = $rows
   );
 }
 
@@ -65,12 +65,12 @@ function
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], frame:Frame[1]):_Window<T>[1]
+    meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], rows:Rows[1]):_Window<T>[1]
 {
   ^_Window<T>
   (
     partition=$cols.names,
-    frame = $frame
+    frame = $rows
   );
 }
 
