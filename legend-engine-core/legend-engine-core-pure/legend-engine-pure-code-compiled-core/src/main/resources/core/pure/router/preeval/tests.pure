@@ -1297,6 +1297,16 @@ function <<test.Test>> meta::pure::router::preeval::tests::tesColumnEvalOnRelati
   assertRoundTrip($input, $expected);
 }
 
+function <<test.Test>> meta::pure::router::preeval::tests::tesColumnEvalOnRelationWithCast():Boolean[1]
+{
+  let input = {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>[1] |
+                $rel->filter(row|$rel->genericType().typeArguments->at(0).rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->at(0)->cast(@meta::pure::metamodel::relation::Column<Nil,String|*>)->eval($row)->toOne()->length() > 10)};
+
+  let expected = {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>[1] |
+                   $rel->filter(row|$row.FIRSTNAME->toOne()->length() > 10)};
+  assertRoundTrip($input, $expected);
+}
+
 function <<test.Test>> meta::pure::router::preeval::tests::testProjectWithInferredParameterType():Boolean[1]
 {
   let input = {|meta::pure::router::preeval::tests::myFunc888()};

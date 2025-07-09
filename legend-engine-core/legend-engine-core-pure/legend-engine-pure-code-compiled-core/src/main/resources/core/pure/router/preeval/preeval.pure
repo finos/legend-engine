@@ -557,12 +557,16 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericFunctionEx
                             }),
                           pair(
                             {theSfe:FunctionExpression[1]|
-                              //limiting to eval functions on Columns for now but can extend to all eval functions without expression sequence in future if required
-                              isEval($newSfe) && getFirstParamOfEval($newSfe)->instanceOf(Column)
+                              //limiting to eval functions on Columns for now but can extend to all eval functions where first param is not a Lambda in future
+                              isEval($newSfe) && !getFirstParamOfEval($newSfe)->instanceOf(LambdaFunction) && getFirstParamOfEval($newSfe)->instanceOf(Column)
                             },
                             {theSfe:FunctionExpression[1]|
-                                let val = prevalEvalFunction($newSfe, $newSfe.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@Function<Any>));
-                                ^PrevalWrapper<Any>(value = $val, canPreval = true, modified = true);
+                                let evalFunc = $newSfe.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@Function<Any>);
+                                let val = convertEvalExpressionToAppliedFunctionExpression($newSfe->cast(@SimpleFunctionExpression), $evalFunc);
+                                //this is needed to handle bug in alloy compiler where the return type of eval function on Column is being set as RelationType instead of actual return type of column function
+                                let fixedValue = ^$val(genericType = $evalFunc->functionReturnType(), multiplicity = $evalFunc->functionReturnMultiplicity());
+                                //todo - if we change this to be more generic and not just for Column then canPreval should be recalculated and parameter values of eval should be preevaled if they can be
+                                ^PrevalWrapper<Any>(value = $fixedValue, canPreval = true, modified = true);
                             }),                            
                           pair(
                             {theSfe:FunctionExpression[1]|$newSfe.func->in([map_T_m__Function_1__V_m_, map_T_$0_1$__Function_1__V_$0_1$_, map_T_MANY__Function_1__V_MANY_]) &&  $newSfe.parametersValues->forAll(pv|$pv->isInstanceValue($state.inScopeVars))},
@@ -1027,15 +1031,9 @@ function <<access.private>> meta::pure::router::preeval::getFirstParamOfEval(eva
   ]); 
 }
 
-function <<access.private>> meta::pure::router::preeval::prevalEvalFunction(evalFe:FunctionExpression[1], func: Function<Any>[1]):SimpleFunctionExpression[1]
+function <<access.private>> meta::pure::router::preeval::convertEvalExpressionToAppliedFunctionExpression(evalFe:SimpleFunctionExpression[1], func: Function<Any>[1]):SimpleFunctionExpression[1]
 {
-  ^SimpleFunctionExpression(
-    func = $func,
-    importGroup = system::imports::coreImport,
-    genericType = $func->functionReturnType(),
-    multiplicity = $func->functionReturnMultiplicity(),
-    parametersValues = $evalFe.parametersValues->tail() //taking all arguments of eval except the first one which is the function
-  )->evaluateAndDeactivate();
+  ^$evalFe(func = $func, parametersValues = $evalFe.parametersValues->tail());
 }
 
 function <<access.private>> meta::pure::router::preeval::toMultiplicity(size : Integer[1]) : Multiplicity[1]
