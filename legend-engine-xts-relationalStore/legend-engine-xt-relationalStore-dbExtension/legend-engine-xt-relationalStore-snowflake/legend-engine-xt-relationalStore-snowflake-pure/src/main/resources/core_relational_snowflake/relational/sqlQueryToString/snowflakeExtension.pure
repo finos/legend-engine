@@ -278,7 +278,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='UUID_STRING()')),
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='DATE_TRUNC(\'MINUTE\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
-    dynaFnToSql('hashAgg',                $allStates,            ^ToSql(format='HASH_AGG(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    dynaFnToSql('hashAgg',                $allStates,            ^ToSql(format='HASH_AGG(%s)')),
     dynaFnToSql('hashCode',               $allStates,            ^ToSql(format='hash(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='CHARINDEX(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
