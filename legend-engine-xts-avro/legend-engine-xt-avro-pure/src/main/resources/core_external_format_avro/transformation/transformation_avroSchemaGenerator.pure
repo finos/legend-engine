@@ -33,7 +33,7 @@ function  meta::external::format::avro::generation::transform(input: AvroConfig[
 function <<access.private,Generation.Transformation>> meta::external::format::avro::generation::internal_transform(input: AvroConfig[1]): AvroOutput[*]
 {
    assertFalse($input.class->isEmpty(),'a class must be provided to avro transform');
-   let possibleElement = forgivingPathToElement($input.class->toOne());
+   let possibleElement = lenientPathToElement($input.class->toOne());
    assertNotEmpty($possibleElement, | $input.class->toOne() + ' was not found');    
    assertFalse($possibleElement->size()>1, | $input.class->toOne() + ' more than one found ');
    $input->meta::external::format::avro::generation::generateAvroFromPure($possibleElement->toOne()->cast(@Class<Any>));

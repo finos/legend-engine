@@ -20,12 +20,9 @@ import meta::pure::router::metamodel::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::core::runtime::*;
 
-function meta::pure::functions::meta::forgivingPathToElement(path:String[1]):PackageableElement[0..1]
+function <<doc.deprecated>> {doc.doc = 'Deprecated: use lenientPathToElement instead'} meta::pure::functions::meta::forgivingPathToElement(path:String[1]):PackageableElement[0..1]
 {
-    if($path == '::',
-      | ::,
-      | $path->split('::')->fold({str:String[1], pkg:PackageableElement[1] | let c = if ($pkg->isEmpty() || not($pkg->instanceOf(Package)), | [], | $pkg->cast(@Package).children->filter(c | $c.name == $str)); if($c->isEmpty(), | [], | $c->toOne());}, ::)
-      )
+   $path->lenientPathToElement()
 }
 
 function meta::pure::functions::meta::functionReturnType(f:Function<Any>[1]):GenericType[1]

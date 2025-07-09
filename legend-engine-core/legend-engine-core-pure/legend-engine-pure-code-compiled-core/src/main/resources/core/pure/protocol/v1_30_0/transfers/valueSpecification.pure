@@ -650,7 +650,7 @@ function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::toPureGr
    let f        = if($fMatches->size() <= 1,
                     | if($fMatches->isNotEmpty(),
                         | $fMatches->toOne(),
-                        | let f2 = $af.fControl->toOne()->forgivingPathToElement()->match([f:FunctionDefinition<Any>[1]|$f, a:Any[*]|[]]);
+                        | let f2 = $af.fControl->toOne()->lenientPathToElement()->match([f:FunctionDefinition<Any>[1]|$f, a:Any[*]|[]]);
                           assertNotEmpty($f2, | 'Failed to find match for ' + $af.fControl->toOne());
                           $f2->toOne();
                       );,
@@ -675,7 +675,7 @@ function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::toPureGr
 
 function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::toPureGrammar::defaultAlloyToPureState(extensions:meta::pure::extension::Extension[*]):AlloyToPureState[1]
 {
-  let imports = system::imports::coreImport.imports.path->map(path|$path->forgivingPathToElement())->cast(@Package);
+  let imports = system::imports::coreImport.imports.path->map(path|$path->lenientPathToElement())->cast(@Package);
 
   let fControlToFunctionMapping = $imports.children->map(e|$e->match([c:Function<Any>[1]|$c, a:Any[*]|[]]))
                                                    ->map(c|pair($c.name->toOne(), $c))

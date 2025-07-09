@@ -225,8 +225,8 @@ function <<access.private>> meta::pure::ide::display_ide_attr_pack(element:Packa
 
 function <<access.private>> meta::pure::ide::tacticalDeprecated(element:Package[1]):Boolean[1]
 {
-   let model =  'model'->forgivingPathToElement();
-   let domain = 'model::domain'->forgivingPathToElement();
+   let model =  'model'->lenientPathToElement();
+   let domain = 'model::domain'->lenientPathToElement();
 
    ($model->isNotEmpty() && $element.package == $model && !$element.name->in(['domain', 'producers', 'external', 'consumers'])) ;
 }

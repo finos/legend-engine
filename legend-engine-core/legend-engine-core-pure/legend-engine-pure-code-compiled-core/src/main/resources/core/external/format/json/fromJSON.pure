@@ -250,12 +250,12 @@ function <<access.protected>> meta::json::findClasses(json:JSONObject[1], class:
       none:String[0] | $class->getSubclasses(),
       name:String[1] | let actualClassname = if ($config.typeLookup->isEmpty() || $config.typeLookup->filter(t | $t.first == $name)->size() != 1, | $name, | $config.typeLookup->filter(t | $t.first == $name)->toOne().second);
                        if($class == Any, 
-                          |  $actualClassname->forgivingPathToElement()->cast(@Class<Any>),
+                          |  $actualClassname->lenientPathToElement()->cast(@Class<Any>),
                           | 
                              let nameParts = $actualClassname->split('::');
                              let className = $nameParts->last()->toOne();
                              let packageName = $nameParts->limit($nameParts->size()-1)->joinStrings('::');
-                             let package = if ($packageName->isEmpty(), |[], |forgivingPathToElement($packageName));
+                             let package = if ($packageName->isEmpty(), |[], |lenientPathToElement($packageName));
       
                              $class->getSubclasses()
                                 ->filter(c | $className == $c.name)
@@ -382,7 +382,7 @@ function <<access.private>> meta::json::isValidEnumeration(classPropertyType:Enu
 {
    let vals = $value->cast(@JSONString).value->split('.');
    let val = $vals->at(0);
-   let element = $val->forgivingPathToElement();
+   let element = $val->lenientPathToElement();
    ($element == $classPropertyType || ($element->isEmpty() && ($vals->size() == 1)));
    //TODO - check enum values && $classPropertyType.name->toOne()->toUpper()));
 }

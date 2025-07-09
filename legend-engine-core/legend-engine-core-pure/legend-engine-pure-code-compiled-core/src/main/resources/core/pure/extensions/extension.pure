@@ -111,7 +111,7 @@ Class meta::pure::extension::Extension
     if ($this.serializerExtension->isEmpty(),
       |[],
       |let funcString = $this.serializerExtension->toOne()->eval($version);
-       let func = $funcString->forgivingPathToElement()->cast(@Function<{String[1]->SerializerExtension[1]}>);
+       let func = $funcString->lenientPathToElement()->cast(@Function<{String[1]->SerializerExtension[1]}>);
        if($func->isEmpty(),
           |[],
           |$func->toOne()->eval($this.type)
