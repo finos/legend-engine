@@ -22,7 +22,7 @@ function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
     {
-         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(-3, 0) means start 3 rows before the current row and include all rows up to and including the current one, which is equivalent to "ROWS BETWEEN 3 PRECEDING AND CURRENT ROW". Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
+         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(-3, 0) means start 3 rows before the current row and include all rows up to and including the current one, which is equivalent to ROWS BETWEEN 3 PRECEDING AND CURRENT ROW. Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
     }
     meta::pure::functions::relation::rows(offsetFrom:Integer[1], offsetTo:Integer[1]):Rows[1]
 {
@@ -34,7 +34,7 @@ function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
     {
-         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(meta::pure::functions::relation::unbounded(), -2) means start from the very first row in the partition and include all rows up to 2 rows before current row, which is equivalent to "ROWS BETWEEN UNBOUNDED PRECEDING AND 2 PRECEDING". Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
+         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(meta::pure::functions::relation::unbounded(), -2) means start from the very first row in the partition and include all rows up to 2 rows before current row, which is equivalent to ROWS BETWEEN UNBOUNDED PRECEDING AND 2 PRECEDING. Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
     }
     meta::pure::functions::relation::rows(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:Integer[1]):Rows[1]
 {
@@ -45,7 +45,7 @@ function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
     {
-         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(3, meta::pure::functions::relation::unbounded()) means start counting 3 rows after the current row and include all rows after that, all the way to the end of the partition, which is equivalent to "ROWS BETWEEN 3 FOLLOWING AND UNBOUNDED FOLLOWING". Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
+         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(3, meta::pure::functions::relation::unbounded()) means start counting 3 rows after the current row and include all rows after that, all the way to the end of the partition, which is equivalent to ROWS BETWEEN 3 FOLLOWING AND UNBOUNDED FOLLOWING. Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
     }
     meta::pure::functions::relation::rows(offsetFrom:Integer[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):Rows[1]
 {
@@ -56,7 +56,7 @@ function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
     {
-         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(meta::pure::functions::relation::unbounded(), meta::pure::functions::relation::unbounded()) means include every row in the partition - from the very first row to the very last row - no matter which row you're currently on. Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
+         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(meta::pure::functions::relation::unbounded(), meta::pure::functions::relation::unbounded()) means include every row in the partition - from the very first row to the very last row - no matter which row you are currently on, which is equivalent to ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING. Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
     }
     meta::pure::functions::relation::rows(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):Rows[1]
 {
