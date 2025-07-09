@@ -506,9 +506,7 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericFunctionEx
               $state->printDebugWithDepth(|'Expanding eval: ' + $newSfe.func->elementToPath());
 
               let func = $newSfe.parametersValues->at(0)->match([
-                  iv:InstanceValue[1]| if ($iv.values->toOne()->instanceOf(Column),
-                                          | prevalEvalFunction($newSfe, $iv.values->toOne()->cast(@Function<Any>)),
-                                          | $iv.values->toOne()),
+                  iv:InstanceValue[1]| $iv.values->toOne(),
                   vs:ValueSpecification[*]|$vs
                   ])->cast(@FunctionDefinition<Any>)->toOne();
 
@@ -557,6 +555,15 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericFunctionEx
                                 let iv = ^InstanceValue(genericType = $newSfe.genericType,multiplicity = $val->size()->toMultiplicity(), values = $val)->evaluateAndDeactivate();
                                 ^PrevalWrapper<Any>(value = $iv, canPreval = true, modified = true);
                             }),
+                          pair(
+                            {theSfe:FunctionExpression[1]|
+                              //limiting to eval functions on Columns for now but can extend to all eval functions without expression sequence in future if required
+                              isEval($newSfe) && getFirstParamOfEval($newSfe)->instanceOf(Column)
+                            },
+                            {theSfe:FunctionExpression[1]|
+                                let val = prevalEvalFunction($newSfe, $newSfe.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@Function<Any>));
+                                ^PrevalWrapper<Any>(value = $val, canPreval = true, modified = true);
+                            }),                            
                           pair(
                             {theSfe:FunctionExpression[1]|$newSfe.func->in([map_T_m__Function_1__V_m_, map_T_$0_1$__Function_1__V_$0_1$_, map_T_MANY__Function_1__V_MANY_]) &&  $newSfe.parametersValues->forAll(pv|$pv->isInstanceValue($state.inScopeVars))},
                             {theSfe:FunctionExpression[1]|
@@ -995,8 +1002,7 @@ function <<access.private>> meta::pure::router::preeval::canInlineEvalFunctionEx
 {  
   if (isEval($fe),
      | let firstParam = getFirstParamOfEval($fe);
-       ($firstParam->instanceOf(FunctionDefinition) && $firstParam->cast(@FunctionDefinition<Any>).expressionSequence->size() == 1) 
-       || $firstParam->instanceOf(Column);, //limiting to Column functions for now but can extend to all functions without expression sequence in future if required
+       $firstParam->instanceOf(FunctionDefinition) && $firstParam->cast(@FunctionDefinition<Any>).expressionSequence->size() == 1;, 
      | false
   );
 }
@@ -1021,16 +1027,15 @@ function <<access.private>> meta::pure::router::preeval::getFirstParamOfEval(eva
   ]); 
 }
 
-function <<access.private>> meta::pure::router::preeval::prevalEvalFunction(evalFe:FunctionExpression[1], func: Function<Any>[1]):FunctionDefinition<{->Any[0..1]}>[1]
+function <<access.private>> meta::pure::router::preeval::prevalEvalFunction(evalFe:FunctionExpression[1], func: Function<Any>[1]):SimpleFunctionExpression[1]
 {
-  ^FunctionDefinition<{->Any[0..1]}>(
-        expressionSequence=^SimpleFunctionExpression(
-          func = $func,
-          importGroup = system::imports::coreImport,
-          genericType = $func->functionReturnType(),
-          multiplicity = $func->functionReturnMultiplicity(),
-          parametersValues = $evalFe.parametersValues->tail() //taking all arguments of eval except the first one which is the function
-        )->evaluateAndDeactivate());
+  ^SimpleFunctionExpression(
+    func = $func,
+    importGroup = system::imports::coreImport,
+    genericType = $func->functionReturnType(),
+    multiplicity = $func->functionReturnMultiplicity(),
+    parametersValues = $evalFe.parametersValues->tail() //taking all arguments of eval except the first one which is the function
+  )->evaluateAndDeactivate();
 }
 
 function <<access.private>> meta::pure::router::preeval::toMultiplicity(size : Integer[1]) : Multiplicity[1]
