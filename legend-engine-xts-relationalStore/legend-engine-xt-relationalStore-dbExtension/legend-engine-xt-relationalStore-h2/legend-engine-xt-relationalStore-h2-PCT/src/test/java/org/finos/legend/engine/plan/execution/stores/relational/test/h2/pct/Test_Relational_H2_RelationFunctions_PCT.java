@@ -48,8 +48,13 @@ public class Test_Relational_H2_RelationFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: CREATE LOCAL TEMPORARY TABLE", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_", "Error while executing: CREATE LOCAL TEMPORARY TABLE", AdapterQualifier.needsInvestigation),
 
-            pack("meta::pure::functions::relation::tests::asOfJoin", "Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::AsOfJoin\" not implemented in SqlDialect for database type \"H2\"", AdapterQualifier.unsupportedFeature)
-        );
+            pack("meta::pure::functions::relation::tests::asOfJoin", "Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::AsOfJoin\" not implemented in SqlDialect for database type \"H2\"", AdapterQualifier.unsupportedFeature),
+
+            // Pure to SQL translation for window function using range frame needs to be implemented
+            one("meta::pure::functions::relation::tests::over::testRange_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_CurrentRow_WithMultiplePartitions_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation)
+    );
 
     public static Test suite()
     {

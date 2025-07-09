@@ -18,13 +18,13 @@ import io.deephaven.csv.parsers.DataType;
 import java.util.Arrays;
 import java.util.Stack;
 import org.eclipse.collections.api.block.procedure.Procedure2;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.FixedSizeList;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunctionCoreInstanceWrapper;
@@ -59,6 +59,8 @@ import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationContext;
+import org.finos.legend.pure.runtime.java.interpreted.natives.NumericUtilities;
+import org.finos.legend.pure.runtime.java.interpreted.natives.grammar.math.operation.NumericAccumulator;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
 
 public class ProjectExtend extends AggregationShared
@@ -103,14 +105,14 @@ public class ProjectExtend extends AggregationShared
             else if (secondParameter instanceof AggColSpec)
             {
                 Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = tds.wrapFullTDS();
-                result = targetTds.addColumn(processOneAggColSpec(source, new Window(new Frame(FrameType.rows, true, true)), (AggColSpec<?, ?, ?>) secondParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null));
+                result = targetTds.addColumn(processOneAggColSpec(source, Lists.fixedSize.empty(), new Window(new Frame(FrameType.rows, true, true)), (AggColSpec<?, ?, ?>) secondParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null));
             }
             else if (secondParameter instanceof AggColSpecArray)
             {
                 Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = tds.wrapFullTDS();
                 result = ((AggColSpecArray<?, ?, ?>) secondParameter)._aggSpecs().injectInto(
                         targetTds,
-                        (a, aggColSpec) -> a.addColumn(processOneAggColSpec(source, new Window(new Frame(FrameType.rows, true, true)), aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null))
+                        (a, aggColSpec) -> a.addColumn(processOneAggColSpec(source, Lists.fixedSize.empty(), new Window(new Frame(FrameType.rows, true, true)), aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null))
                 );
             }
             else if (Instance.instanceOf(secondParameter, "meta::pure::functions::relation::_Window", processorSupport))
@@ -119,20 +121,21 @@ public class ProjectExtend extends AggregationShared
                 Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = partitionIds.isEmpty() ? tds.wrapFullTDS() : tds.sort(partitionIds.collect(c -> new SortInfo(c, SortDirection.ASC)));
 
                 ListIterable<? extends CoreInstance> sortInfos = secondParameter.getValueForMetaPropertyToMany("sortInfo");
-                final Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortedPartitions = TestTDS.sortPartitions(Sort.getSortInfos(sortInfos, processorSupport).toList(), source);
+                MutableList<SortInfo> newSortInfos = Sort.getSortInfos(sortInfos, processorSupport).toList();
+                final Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortedPartitions = TestTDS.sortPartitions(newSortInfos, source);
 
-                Window window = Window.build(secondParameter, processorSupport);
+                Window window = Window.build(secondParameter, processorSupport, new RepoPrimitiveHandler(repository));
 
                 CoreInstance thirdParameter = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport);
                 if (thirdParameter instanceof AggColSpec)
                 {
-                    result = sortedPartitions.getOne().addColumn(processOneAggColSpec(sortedPartitions, window, (AggColSpec<?, ?, ?>) thirdParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, true, sourceRelationType));
+                    result = sortedPartitions.getOne().addColumn(processOneAggColSpec(sortedPartitions, newSortInfos, window, (AggColSpec<?, ?, ?>) thirdParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, true, sourceRelationType));
                 }
                 else if (thirdParameter instanceof AggColSpecArray)
                 {
                     result = ((AggColSpecArray<?, ?, ?>) thirdParameter)._aggSpecs().injectInto(
                             sortedPartitions.getOne(),
-                            (a, aggColSpec) -> a.addColumn(processOneAggColSpec(sortedPartitions, window, aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, true, sourceRelationType))
+                            (a, aggColSpec) -> a.addColumn(processOneAggColSpec(sortedPartitions, newSortInfos, window, aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, true, sourceRelationType))
                     );
                 }
                 else if (thirdParameter instanceof FuncColSpec)
@@ -239,7 +242,7 @@ public class ProjectExtend extends AggregationShared
                 if (twoParamsFunc)
                 {
                     parameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(sourceTDS, relationType, repository, processorSupport), false, processorSupport));
-                    parameters.set(1, ValueSpecificationBootstrap.wrapValueSpecification(window.convert(processorSupport, new RepoPrimitiveBuilder(repository)), false, processorSupport));
+                    parameters.set(1, ValueSpecificationBootstrap.wrapValueSpecification(window.convert(processorSupport, new RepoPrimitiveHandler(repository)), false, processorSupport));
                 }
                 parameters.set(twoParamsFunc ? 2 : 0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(source.getOne(), i, "", null, relationType, -1, repository, false), false, processorSupport));
                 CoreInstance newValue = this.functionExecution.executeFunction(false, lambdaFunction, parameters, resolvedTypeParameters, resolvedMultiplicityParameters, evalVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
@@ -248,11 +251,11 @@ public class ProjectExtend extends AggregationShared
         }
     }
 
-    public static class RepoPrimitiveBuilder implements Frame.PrimitiveBuilder
+    public static class RepoPrimitiveHandler implements Frame.PrimitiveHandler
     {
         private final ModelRepository repository;
 
-        public RepoPrimitiveBuilder(ModelRepository repository)
+        public RepoPrimitiveHandler(ModelRepository repository)
         {
             this.repository = repository;
         }
@@ -264,9 +267,37 @@ public class ProjectExtend extends AggregationShared
         }
 
         @Override
-        public CoreInstance build(int val)
+        public CoreInstance build(Number val)
         {
-            return this.repository.newIntegerCoreInstance(val);
+            return NumericUtilities.toPureNumber(val, true, this.repository);
+        }
+
+        @Override
+        public Number plus(Number left, Number right)
+        {
+            NumericAccumulator accumulator = NumericAccumulator.newAccumulator(left);
+            accumulator.add(right);
+            return accumulator.getValue();
+        }
+
+        @Override
+        public Number minus(Number left, Number right)
+        {
+            NumericAccumulator accumulator = NumericAccumulator.newAccumulator(left);
+            accumulator.subtract(right);
+            return accumulator.getValue();
+        }
+
+        @Override
+        public boolean lessThanEqual(Number left, Number right)
+        {
+            return NumericUtilities.compare(left, right) <= 0;
+        }
+
+        @Override
+        public Number toJavaNumber(CoreInstance coreInstance, ProcessorSupport processorSupport)
+        {
+            return NumericUtilities.toJavaNumber(coreInstance, processorSupport);
         }
     }
 }

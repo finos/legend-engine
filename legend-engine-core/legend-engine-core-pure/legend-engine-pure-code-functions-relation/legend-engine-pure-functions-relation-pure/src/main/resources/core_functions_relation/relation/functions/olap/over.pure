@@ -42,12 +42,12 @@ function
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1], rows:Rows[1]):_Window<T>[1]
+    meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1], frame:Frame[1]):_Window<T>[1]
 {
   ^_Window<T>
   (
     partition=$cols.name,
-    frame = $rows
+    frame = $frame
   );
 }
 
@@ -65,12 +65,12 @@ function
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], rows:Rows[1]):_Window<T>[1] 
+    meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], frame:Frame[1]):_Window<T>[1]
 {
   ^_Window<T>
   (
     partition=$cols.names,
-    frame = $rows
+    frame = $frame
   );
 }
 
@@ -80,6 +80,14 @@ function
     meta::pure::functions::relation::over<T>(sortInfo:SortInfo<(?:?)⊆T>[*]):_Window<T>[1]
 {
   over([],$sortInfo,[])
+}
+
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(sortInfo:SortInfo<(?:?)⊆T>[1], range:_Range[1]):_Window<T>[1]
+{
+  over([],$sortInfo,$range)
 }
 
 function
@@ -101,6 +109,14 @@ function
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
+    meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[1], range:_Range[1]):_Window<T>[1]
+{
+  over($cols.name,$sortInfo,$range)
+}
+
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
     meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[*]):_Window<T>[1]
 {
   over($cols.names,$sortInfo,[])
@@ -112,6 +128,14 @@ function
     meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[*], rows:Rows[1]):_Window<T>[1]
 {
   over($cols.names,$sortInfo,$rows)
+}
+
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[1], range:_Range[1]):_Window<T>[1]
+{
+  over($cols.names,$sortInfo,$range)
 }
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_CurrentRow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -907,4 +931,128 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                };
 
     assertError(|$f->eval($expr), 'Invalid window frame boundary - lower bound of window frame cannot be greater than the upper bound!');
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_CurrentRow_WithMultiplePartitions_WithSingleOrderBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, a
+                  0, 1, a
+                  0, 3, c
+                  100, 1, a
+                  100, 2, b
+                  100, 2, b
+                  100, 3, c
+                  100, 3, c
+                  200, 1, a
+                  200, 1, a
+                  200, 1, a
+                  200, 2, b
+                  200, 3, c
+                  200, 3, c
+                  300, 1, a
+                  300, 2, b
+                #->extend(over(~p, ~o->ascending(), _range(meta::pure::functions::relation::unbounded(), 0)), ~sum_i_Rows:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,sum_i_Rows\n'+
+                  '   0,1,a,aa\n'+
+                  '   0,1,a,aa\n'+
+                  '   0,3,c,aac\n'+
+                  '   100,1,a,a\n'+
+                  '   100,2,b,abb\n'+
+                  '   100,2,b,abb\n'+
+                  '   100,3,c,abbcc\n'+
+                  '   100,3,c,abbcc\n'+
+                  '   200,1,a,aaa\n'+
+                  '   200,1,a,aaa\n'+
+                  '   200,1,a,aaa\n'+
+                  '   200,2,b,aaab\n'+
+                  '   200,3,c,aaabcc\n'+
+                  '   200,3,c,aaabcc\n'+
+                  '   300,1,a,a\n'+
+                  '   300,2,b,ab\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  menu_category, menu_cogs_usd
+                  Beverage, 0.5
+                  Beverage, 0.65
+                  Beverage, 0.75
+                  Dessert, 0.50
+                  Dessert, 1.00
+                  Dessert, 1.25
+                  Dessert, 2.50
+                  Dessert, 3.00
+                  Snack, 1.25
+                  Snack, 2.25
+                  Snack, 4.00
+                #->extend(over(~menu_cogs_usd->ascending(), meta::pure::functions::relation::_range(0, 2)), ~sum_cogs:{p,w,r|$r.menu_cogs_usd}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   menu_category,menu_cogs_usd,sum_cogs\n'+
+                  '   Beverage,0.5,10.65\n'+
+                  '   Beverage,0.65,9.65\n'+
+                  '   Beverage,0.75,9.0\n'+
+                  '   Dessert,0.5,10.65\n'+
+                  '   Dessert,1.0,11.25\n'+
+                  '   Dessert,1.25,10.25\n'+
+                  '   Dessert,2.5,9.5\n'+
+                  '   Dessert,3.0,7.0\n'+
+                  '   Snack,1.25,10.25\n'+
+                  '   Snack,2.25,11.75\n'+
+                  '   Snack,4.0,4.0\n'+
+                  '#', $res->sort([~menu_category->ascending(), ~menu_cogs_usd->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  menu_category, menu_cogs_usd
+                  Beverage, 0.5
+                  Beverage, 0.65
+                  Beverage, 0.75
+                  Dessert, 0.50
+                  Dessert, 1.00
+                  Dessert, 1.25
+                  Dessert, 2.50
+                  Dessert, 3.00
+                  Snack, 1.25
+                  Snack, 2.25
+                  Snack, 4.00
+                #->extend(over(~menu_cogs_usd->ascending(), meta::pure::functions::relation::_range(0.5d, 2.5d)), ~sum_cogs:{p,w,r|$r.menu_cogs_usd}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   menu_category,menu_cogs_usd,sum_cogs\n'+
+                  '   Beverage,0.5,11.25\n'+
+                  '   Beverage,0.65,10.25\n'+
+                  '   Beverage,0.75,10.25\n'+
+                  '   Dessert,0.5,11.25\n'+
+                  '   Dessert,1.0,7.75\n'+
+                  '   Dessert,1.25,7.75\n'+
+                  '   Dessert,2.5,7.0\n'+
+                  '   Dessert,3.0,4.0\n'+
+                  '   Snack,1.25,7.75\n'+
+                  '   Snack,2.25,7.0\n'+
+                  '   Snack,4.0,null\n'+
+                  '#', $res->sort([~menu_category->ascending(), ~menu_cogs_usd->ascending()])->toString());
 }
