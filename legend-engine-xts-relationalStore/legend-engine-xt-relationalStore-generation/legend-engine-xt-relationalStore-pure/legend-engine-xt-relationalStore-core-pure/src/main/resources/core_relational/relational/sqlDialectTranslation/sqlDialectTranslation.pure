@@ -63,15 +63,22 @@ function meta::relational::functions::sqlDialectTranslation::relOpToString(r:Rel
     functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(),
     extraNodeProcessors = if($extraNodeProcessorsByDb->isNotEmpty(), | $extraNodeProcessorsByDb->toOne()->get($dbType), |[])
   );
-  relOpToString($r, $config, $extensions);
-}
-
-function <<access.private>> meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], config:SqlDialectTranslationConfig[1], extensions:Extension[*]):String[1]
-{
   $r->match(
     [
-      s:SelectSQLQuery[1]| convertSqlQuery($s, newState($extensions), $extensions),
-      r:RelationalOperationElement[1]| convertElement($r, newState($extensions))
+      s:SelectSQLQuery[1]| sqlQueryToString($s, $dbType, $config, newState($extensions), $extensions),
+      r:RelationalOperationElement[1]| relOpToString($r, $config, newState($extensions), $extensions)
     ]
-  )->generateSqlDialect($config, $extensions);
+  );
+}
+
+function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], config:SqlDialectTranslationConfig[1], state:ModelConversionState[1], extensions:Extension[*]):String[1]
+{
+  $r->convertElement($state)->generateSqlDialect($config, $extensions);
+}
+
+function meta::relational::functions::sqlDialectTranslation::sqlQueryToString(s:SelectSQLQuery[1], dbType:DatabaseType[1], config:SqlDialectTranslationConfig[1], state:ModelConversionState[1], extensions:Extension[*]):String[1]
+{
+  let sql = convertSqlQuery($s, newState($extensions), $extensions);
+  let optimizedSql = $sql->planSqlStatement(^SqlPlanningConfig(dbType = $dbType->toString()), $extensions);
+  $optimizedSql->generateSqlDialect($config, $extensions);
 }

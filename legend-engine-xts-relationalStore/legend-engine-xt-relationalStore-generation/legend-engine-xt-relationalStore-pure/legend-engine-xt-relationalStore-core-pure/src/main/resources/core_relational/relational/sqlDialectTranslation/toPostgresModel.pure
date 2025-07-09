@@ -368,7 +368,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('sqlNull',                   {p:meta::external::query::sql::metamodel::Expression[*]| ^NullLiteral()}),
     pair('isDistinct',                {p:meta::external::query::sql::metamodel::Expression[*]| let count = functionCall('count', $p); ^ComparisonExpression(left = ^$count(distinct = true), operator = ComparisonOperator.EQUAL, right = $count);}),
     pair('count',                     {p:meta::external::query::sql::metamodel::Expression[*]| if($p->isNotEmpty(), | functionCall('count', $p), | functionCall('count', ^AllColumnsReference()))}),
-    pair('size',                      functionCall('count')),
+    pair('size',                      {p:meta::external::query::sql::metamodel::Expression[*]| if($p->isNotEmpty(), | functionCall('count', $p), | functionCall('count', ^AllColumnsReference()))}),
     pair('max',                       functionCall('max')),
     pair('min',                       functionCall('min')),
     pair('stdDevSample',              functionCall('stddev_samp')),
