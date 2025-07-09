@@ -509,7 +509,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::lik
   nodeProcessor(
     LikePredicate,
     {sqlDialect, l, state, config |
-      $sqlDialect->executeNodeProcessor($l.value, $state, $config) + ' '  + $sqlDialect->keyword('like', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($l.pattern, $state, $config) + 
+      $sqlDialect->executeNodeProcessor($l.value, $state, $config) + ' '  +  if($l.ignoreCase, |$sqlDialect->keyword('ilike', $state, $config), |$sqlDialect->keyword('like', $state, $config)) + ' ' + $sqlDialect->executeNodeProcessor($l.pattern, $state, $config) +
       $l.escape->executeIfNotEmptyElseReturnEmptyString({|
         ' '  + $sqlDialect->keyword('escape', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($l.escape->toOne(), $l, $state, $config)
       })

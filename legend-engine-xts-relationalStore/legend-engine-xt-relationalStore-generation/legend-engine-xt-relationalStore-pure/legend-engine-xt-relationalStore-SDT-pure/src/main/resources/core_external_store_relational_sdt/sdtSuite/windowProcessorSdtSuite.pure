@@ -1,0 +1,453 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::extension::*;
+import meta::external::store::relational::sqlDialectTranslation::tests::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::relational::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sdt::framework::*;
+import meta::external::query::sql::metamodel::extension::tests::*;
+
+// Tests on Function Call
+
+// SELECT name, max(marks) AS result FROM testTable GROUP BY name ORDER BY result ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testFunctionCall(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - FunctionCall',
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('id', ^ColumnType(name = 'integer')), pair('name', ^ColumnType(name = 'varchar')), pair('marks', ^ColumnType(name = 'integer'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['id', 'name', 'marks'], values = [list([literal(1), literal('John'), literal(30)]), list([literal(2), literal('John'), literal(30)]), list([literal(3), literal('Jessie'), literal(37)])])
+    ],
+    teardownStatements = ^DropTestTable(tableName = 'testTable', isTempTable = true),
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+        select = ^Select(
+          selectItems =  [
+            ^SingleColumn(
+              expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name'))
+            ),
+            ^SingleColumn(
+              expression = ^FunctionCall(
+                name = ^QualifiedName(parts = 'max'), 
+                arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'marks'))]
+          	  ),
+              alias = 'result'
+            )]
+        ),
+        from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+        groupBy = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name')),
+        orderBy = ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'result')),
+          ordering = SortItemOrdering.ASCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+        )
+      )
+    ),
+    expectedResult = ^TestResult(columnNames = ['name', 'result'], rows = [^TestResultRow(values = ['John', 30]), ^TestResultRow(values = ['Jessie', 37])])
+  );
+}
+
+// SELECT name, max(DISTINCT(marks)) AS result FROM testTable GROUP BY name ORDER BY result ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testFunctionCallDistinct(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - FunctionCallDistinct',
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('id', ^ColumnType(name = 'integer')), pair('name', ^ColumnType(name = 'varchar')), pair('marks', ^ColumnType(name = 'integer'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['id', 'name', 'marks'], values = [list([literal(1), literal('John'), literal(30)]), list([literal(2), literal('John'), literal(30)]), list([literal(3), literal('Jessie'), literal(37)])])
+    ],
+    teardownStatements = ^DropTestTable(tableName = 'testTable', isTempTable = true),
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+        select = ^Select(
+          selectItems =  [
+            ^SingleColumn(
+              expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name'))
+            ),
+            ^SingleColumn(
+              expression = ^FunctionCall(
+                name = ^QualifiedName(parts = 'max'), 
+                arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'marks'))],
+                distinct = true
+          	  ),
+              alias = 'result'
+            )]
+        ),
+        from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+        groupBy = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name')),
+        orderBy = ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'result')),
+          ordering = SortItemOrdering.ASCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+        )
+      )
+    ),
+    expectedResult = ^TestResult(columnNames = ['name', 'result'], rows = [^TestResultRow(values = ['John', 30]), ^TestResultRow(values = ['Jessie', 37])])
+  );
+}
+
+// Tests on Window Processor 
+
+// SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowSortByAsc(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessor(
+    'SQLStructureTests - WindowSortByAsc',
+    ^meta::external::query::sql::metamodel::Window(
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+          ordering = SortItemOrdering.ASCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+          )
+      ],
+      partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+      windowFrame = ^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.UNBOUNDED_PRECEDING), end = ^FrameBound(type = FrameBoundType.UNBOUNDED_FOLLOWING))
+    ),
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 'Alice']),
+        ^TestResultRow(values = ['Bob', 'Science', 88, 'Alice']),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 'Alice']),
+        ^TestResultRow(values = ['Frank', 'Arts', 84, 'Frank']),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 'Frank']),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 'Frank'])
+      ]
+    )    
+  )
+}
+
+// SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowSortByDesc(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessor(
+    'SQLStructureTests - WindowSortByDesc',
+    ^meta::external::query::sql::metamodel::Window(
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+          ordering = SortItemOrdering.DESCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+          )
+      ],
+      partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+      windowFrame = ^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.UNBOUNDED_PRECEDING), end = ^FrameBound(type = FrameBoundType.UNBOUNDED_FOLLOWING))
+    ),
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 'Charlie']),
+        ^TestResultRow(values = ['Bob', 'Science', 88, 'Charlie']),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 'Charlie']),
+        ^TestResultRow(values = ['Frank', 'Arts', 84, 'Hannah']),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 'Hannah']),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 'Hannah'])
+      ]
+    )    
+  )
+} 
+
+// SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowFrameRows(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessor(
+    'SQLStructureTests - WindowFrameRows',
+    ^meta::external::query::sql::metamodel::Window(
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+          ordering = SortItemOrdering.DESCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+          )
+      ],
+      partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+      windowFrame = ^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.UNBOUNDED_PRECEDING), end = ^FrameBound(type = FrameBoundType.UNBOUNDED_FOLLOWING))
+    ),
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 'Charlie']),
+        ^TestResultRow(values = ['Bob', 'Science', 88, 'Charlie']),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 'Charlie']),
+        ^TestResultRow(values = ['Frank', 'Arts', 84, 'Hannah']),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 'Hannah']),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 'Hannah'])
+      ]
+    )    
+  )
+}
+
+// SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowFrameRange(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessor(
+    'SQLStructureTests - WindowFrameRange',
+    ^meta::external::query::sql::metamodel::Window(
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+          ordering = SortItemOrdering.DESCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+          )
+      ],
+      partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+      windowFrame = ^WindowFrame(mode = WindowFrameMode.RANGE, start = ^FrameBound(type = FrameBoundType.UNBOUNDED_PRECEDING), end = ^FrameBound(type = FrameBoundType.UNBOUNDED_FOLLOWING))
+    ),
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 'Charlie']),
+        ^TestResultRow(values = ['Bob', 'Science', 88, 'Charlie']),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 'Charlie']),
+        ^TestResultRow(values = ['Frank', 'Arts', 84, 'Hannah']),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 'Hannah']),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 'Hannah'])
+      ]
+    )    
+  )
+}
+
+// SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowFrameCurrentRowAsStart(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessor(
+    'SQLStructureTests - WindowFrameCurrentRowAsStart',
+    ^meta::external::query::sql::metamodel::Window(
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+          ordering = SortItemOrdering.DESCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+          )
+      ],
+      partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+      windowFrame = ^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.CURRENT_ROW), end = ^FrameBound(type = FrameBoundType.FOLLOWING, value = literal(1)))
+    ),
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 'Bob']),
+        ^TestResultRow(values = ['Bob', 'Science', 88, 'Charlie']),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 'Charlie']),
+        ^TestResultRow(values = ['Frank', 'Arts', 84, 'Greece']),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 'Hannah']),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 'Hannah'])
+      ]
+    )    
+  )
+}
+
+// SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score ASC NULLS LAST ROWS BETWEEN 1 PRECEDING AND UNBOUNDED FOLLOWING) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowFramePreceding(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessor(
+    'SQLStructureTests - WindowFramePreceding',
+    ^meta::external::query::sql::metamodel::Window(
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+          ordering = SortItemOrdering.ASCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+          )
+      ],
+      partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+      windowFrame = ^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.PRECEDING, value = literal(1)), end = ^FrameBound(type = FrameBoundType.UNBOUNDED_FOLLOWING))
+    ),
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 'Alice']),
+        ^TestResultRow(values = ['Bob', 'Science', 88, 'Alice']),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 'Alice']),
+        ^TestResultRow(values = ['Frank', 'Arts', 84, 'Frank']),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 'Frank']),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 'Frank'])
+      ]
+    )    
+  )
+}
+
+// SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowFrameUnboundedPreceding(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessor(
+    'SQLStructureTests - WindowFrameUnboundedPreceding',
+    ^meta::external::query::sql::metamodel::Window(
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+          ordering = SortItemOrdering.DESCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+          )
+      ],
+      partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+      windowFrame = ^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.UNBOUNDED_PRECEDING), end = ^FrameBound(type = FrameBoundType.CURRENT_ROW))
+    ),
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 'Alice']),
+        ^TestResultRow(values = ['Bob', 'Science', 88, 'Bob']),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 'Charlie']),
+        ^TestResultRow(values = ['Frank', 'Arts', 84, 'Frank']),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 'Greece']),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 'Hannah'])
+      ]
+    )    
+  )
+}
+
+// SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowFrameCurrentRowAsEnd(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessor(
+    'SQLStructureTests - WindowFrameCurrentRowAsEnd',
+    ^meta::external::query::sql::metamodel::Window(
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+          ordering = SortItemOrdering.DESCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+          )
+      ],
+      partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+      windowFrame = ^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.UNBOUNDED_PRECEDING), end = ^FrameBound(type = FrameBoundType.CURRENT_ROW))
+    ),
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 'Alice']),
+        ^TestResultRow(values = ['Bob', 'Science', 88, 'Bob']),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 'Charlie']),
+        ^TestResultRow(values = ['Frank', 'Arts', 84, 'Frank']),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 'Greece']),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 'Hannah'])
+      ]
+    )    
+  )
+}
+
+// SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowFrameFollowing(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessor(
+    'SQLStructureTests - WindowFrameFollowing',
+    ^meta::external::query::sql::metamodel::Window(
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+          ordering = SortItemOrdering.DESCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+          )
+      ],
+      partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+      windowFrame = ^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.CURRENT_ROW), end = ^FrameBound(type = FrameBoundType.FOLLOWING, value = literal(1)))
+    ),
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 'Bob']),
+        ^TestResultRow(values = ['Bob', 'Science', 88, 'Charlie']),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 'Charlie']),
+        ^TestResultRow(values = ['Frank', 'Arts', 84, 'Greece']),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 'Hannah']),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 'Hannah'])
+      ]
+    )    
+  )
+}
+
+// SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowFrameUnboundedFollowing(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessor(
+    'SQLStructureTests - WindowFrameUnboundedFollowing',
+    ^meta::external::query::sql::metamodel::Window(
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+          ordering = SortItemOrdering.DESCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+          )
+      ],
+      partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))],
+      windowFrame = ^WindowFrame(mode = WindowFrameMode.ROWS, start = ^FrameBound(type = FrameBoundType.CURRENT_ROW), end = ^FrameBound(type = FrameBoundType.UNBOUNDED_FOLLOWING))
+    ),
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 'Charlie']),
+        ^TestResultRow(values = ['Bob', 'Science', 88, 'Charlie']),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 'Charlie']),
+        ^TestResultRow(values = ['Frank', 'Arts', 84, 'Hannah']),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 'Hannah']),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 'Hannah'])
+      ]
+    )    
+  )
+}
+
+function meta::external::store::relational::sdt::framework::testConfigForWindowProcessor(identifier: String[1], window: meta::external::query::sql::metamodel::Window[1], expected: TestResult[1]): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = $identifier,
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('student', ^ColumnType(name = 'varchar')), pair('dept', ^ColumnType(name = 'varchar')), pair('score', ^ColumnType(name = 'integer'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['student', 'dept', 'score'], values = [
+        list([literal('Alice'), literal('Science'), literal(90)]), 
+        list([literal('Bob'), literal('Science'), literal(88)]), 
+        list([literal('Charlie'), literal('Science'), literal(85)]), 
+        list([literal('Frank'), literal('Arts'), literal(84)]),
+        list([literal('Greece'), literal('Arts'), literal(83)]),
+        list([literal('Hannah'), literal('Arts'), literal(80)])
+    ])],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = [
+        ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['testTable', 'student']))),
+        ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['testTable', 'dept']))),
+        ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['testTable', 'score']))),
+        ^SingleColumn(
+          expression = ^FunctionCall(
+            name = ^QualifiedName(parts = 'last_value'), 
+            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'student'))],
+            window = $window
+          ),
+          alias = 'result'
+        )
+      ]),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      orderBy = ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'student')),
+          ordering = SortItemOrdering.ASCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+        )
+      )
+    ),
+    expectedResult = $expected
+  );
+}

@@ -108,6 +108,14 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(
       'FuncTests - make_timestamp(1/1)',
       'H2 SQL Dialect does not support the function - make_timestamp'
+    ),
+    pair(
+      'SQLStructureTests - FullJoin',
+      'Only isolated full outer joins of an aliased subquery and an aliased relation (table/subquery but not another join) are supported on H2!'
+    ),
+    pair(
+      'SQLStructureTests - AsOfJoin',
+      'H2 SQL Dialect does not support AsOfJoin!'
     )
   ]->newMap()->cast(@Map<String, String>)
 }
@@ -176,6 +184,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     tablePlaceholderProcessor_default(),
     joinProcessorForH2(),
     lateralJoinProcessorForH2(),
+    asOfJoinProcessorForH2(),
     querySpecificationProcessorForH2(),
     semiStructuredArrayFlattenProcessorForH2()
   ]
@@ -748,14 +757,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   )
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::asOfJoinProcessorForH2(): NodeProcessor<AsOfJoin>[1]
-{
-  nodeProcessor(
-    AsOfJoin,
-    {sqlDialect, a, state, config | format('AsOfJoins are not supported by %s!', $sqlDialect.dbType)}
-  );
-}
-
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::lateralJoinProcessorForH2(): NodeProcessor<LateralJoin>[1]
 {
   nodeProcessor(
@@ -774,6 +775,17 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       $left + $sep0 + 'left outer join' +
       $sep1 + $right + $joinOn->joinCriteriaProcessor_default($sqlDialect, $state, $config);
     }
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::asOfJoinProcessorForH2(): NodeProcessor<AsOfJoin>[1]
+{
+  nodeProcessor(
+    AsOfJoin,
+    {sqlDialect, j, state, config |
+      failWithMessage('H2 SQL Dialect does not support AsOfJoin!');
+    },
+    {n: AsOfJoin[1] | true}
   );
 }
 
@@ -975,7 +987,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   if(!$basicCheck,
     | false,
     | let join = $qs.from->toOne()->cast(@Join);
-      assert($join.left->isAliasedSubQuery() && $join.right->instanceOf(AliasedRelation) && !$join.right->cast(@AliasedRelation).relation->instanceOf(Join));
+      assert($join.left->isAliasedSubQuery() && $join.right->instanceOf(AliasedRelation) && !$join.right->cast(@AliasedRelation).relation->instanceOf(Join),
+        'Only isolated full outer joins of an aliased subquery and an aliased relation (table/subquery but not another join) are supported on H2!');
       true;
   );
 }

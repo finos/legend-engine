@@ -1,0 +1,286 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::sqlDialectTranslation::tests::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::relational::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sdt::framework::*;
+import meta::external::query::sql::metamodel::extension::tests::*;
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toInteger(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123.4),
+      type = ^ColumnType(name = 'integer')
+    ),
+    123,
+    'CastOperation - Integer'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toInt(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123.4),
+      type = ^ColumnType(name = 'int')
+    ),
+    123,
+    'CastOperation - int'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toInt2(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123.4),
+      type = ^ColumnType(name = 'int2')
+    ),
+    123,
+    'CastOperation - int2'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toInt4(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123.4),
+      type = ^ColumnType(name = 'int4')
+    ),
+    123,
+    'CastOperation - int4'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toInt8(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123.4),
+      type = ^ColumnType(name = 'int8')
+    ),
+    123,
+    'CastOperation - int8'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toBigInt(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123.4),
+      type = ^ColumnType(name = 'bigint')
+    ),
+    123,
+    'CastOperation - BigInt'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toSmallInt(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123.4),
+      type = ^ColumnType(name = 'smallint')
+    ),
+    123,
+    'CastOperation - SmallInt'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toDouble(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123),
+      type = ^ColumnType(name = 'double precision')
+    ),
+    123.0,
+    'CastOperation - Double'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toFloat(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123),
+      type = ^ColumnType(name = 'float')
+    ),
+    123.0,
+    'CastOperation - Float'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toFloat4(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123),
+      type = ^ColumnType(name = 'float4')
+    ),
+    123.0,
+    'CastOperation - Float4'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toFloat8(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123),
+      type = ^ColumnType(name = 'float8')
+    ),
+    123.0,
+    'CastOperation - Float8'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toReal(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123),
+      type = ^ColumnType(name = 'real')
+    ),
+    123.0,
+    'CastOperation - Real'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toDecimal(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123),
+      type = ^ColumnType(name = 'decimal')
+    ),
+    123.0,
+    'CastOperation - Decimal'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toNumeric(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(123),
+      type = ^ColumnType(name = 'numeric')
+    ),
+    123.0,
+    'CastOperation - Numeric'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toBoolean(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(1),
+      type = ^ColumnType(name = 'boolean')
+    ),
+    true,
+    'CastOperation - Boolean'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toBool(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(0),
+      type = ^ColumnType(name = 'bool')
+    ),
+    false,
+    'CastOperation - Bool'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toChar(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal('a'),
+      type = ^ColumnType(name = 'char')
+    ),
+    'a',
+    'CastOperation - Char'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toCharacter(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal('a'),
+      type = ^ColumnType(name = 'character')
+    ),
+    'a',
+    'CastOperation - Character'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toVarChar(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal('abc'),
+      type = ^ColumnType(name = 'varchar')
+    ),
+    'abc',
+    'CastOperation - VarChar'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toCharacterVarying(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal('abc'),
+      type = ^ColumnType(name = 'character varying')
+    ),
+    'abc',
+    'CastOperation - CharacterVarying'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toDate(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(%2024-12-31T12:30:02),
+      type = ^ColumnType(name = 'Date')
+    ),
+    %2024-12-31,
+    'CastOperation - Date'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::castOperation::toTimestamp(): SqlDialectTest[*]
+{
+  testConfigForSimpleExpression(
+    ^Cast(
+      expression = literal(%2024-12-31),
+      type = ^ColumnType(name = 'timestamp')
+    ),
+    %2024-12-31T00:00:00.000000000+0000,
+    'CastOperation - Timestamp'
+  )
+}
