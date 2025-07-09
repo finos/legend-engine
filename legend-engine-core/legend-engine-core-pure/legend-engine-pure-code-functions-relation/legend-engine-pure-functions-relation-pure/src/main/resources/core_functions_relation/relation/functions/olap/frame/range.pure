@@ -22,7 +22,7 @@ function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
     {
-         doc.doc = ''
+         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
     }
     meta::pure::functions::relation::_range(offsetFrom:Number[1], offsetTo:Number[1]):_Range[1]
 {
@@ -34,7 +34,7 @@ function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
     {
-         doc.doc = ''
+         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
     }
     meta::pure::functions::relation::_range(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:Number[1]):_Range[1]
 {
@@ -45,7 +45,7 @@ function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
     {
-         doc.doc = ''
+         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
     }
     meta::pure::functions::relation::_range(offsetFrom:Number[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):_Range[1]
 {
@@ -56,7 +56,7 @@ function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
     {
-         doc.doc = ''
+         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
     }
     meta::pure::functions::relation::_range(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):_Range[1]
 {
