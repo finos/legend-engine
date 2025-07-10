@@ -563,7 +563,7 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericFunctionEx
                             {theSfe:FunctionExpression[1]|
                                 let val = convertEvalExpressionToAppliedFunctionExpression($newSfe);
                                 //this is needed to handle bug in alloy compiler where the return type of eval function on Column is being set as RelationType instead of actual return type of column function
-                                let fixedValue = if ($val->genericType().rawType->toOne()->instanceOf(RelationType),
+                                let fixedValue = if ($val.genericType.rawType->toOne()->instanceOf(RelationType),
                                   | let evalFunc = $val.func;
                                     ^$val(genericType = $evalFunc->functionReturnType(), multiplicity = $evalFunc->functionReturnMultiplicity());,
                                   | $val);                                
