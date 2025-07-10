@@ -83,7 +83,7 @@ function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality:
   $rel->filter(row | eval($col,$row)->isEmpty());
 }
 
-function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::rowsWithValueInColumn<T,Z>(rel:Relation<T>[1], col:ColSpec<(?:Z)⊆T>[1]):Relation<T>[1]
+function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::rowsWithNonEmptyColumn<T,Z>(rel:Relation<T>[1], col:ColSpec<(?:Z)⊆T>[1]):Relation<T>[1]
 {
   $rel->filter(row | eval($col,$row)->isNotEmpty());
 }

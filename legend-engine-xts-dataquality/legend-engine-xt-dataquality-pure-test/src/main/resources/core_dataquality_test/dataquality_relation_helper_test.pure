@@ -121,14 +121,14 @@ function <<test.Test>> meta::external::dataquality::tests::rowsWithEmptyColumnTe
                 '#', $rel->toString());
 }
 
-function <<test.Test>> meta::external::dataquality::tests::rowsWithValueInColumnTest():Boolean[1]
+function <<test.Test>> meta::external::dataquality::tests::rowsWithNonEmptyColumnTest():Boolean[1]
 {
   let rel = #TDS
                   id, code
                   -1, a
                   2, b
                   3, c
-                #->extend(~newCol: r|if($r.id < 0, | [], | 'valid'))->rowsWithValueInColumn(~newCol)->select(~[id,code,newCol]);
+                #->extend(~newCol: r|if($r.id < 0, | [], | 'valid'))->rowsWithNonEmptyColumn(~newCol)->select(~[id,code,newCol]);
 
   assertEquals( '#TDS\n'+
                 '   id,code,newCol\n'+
