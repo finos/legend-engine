@@ -561,10 +561,12 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericFunctionEx
                               isEval($newSfe) && !getFirstParamOfEval($newSfe)->instanceOf(LambdaFunction) && getFirstParamOfEval($newSfe)->instanceOf(Column)
                             },
                             {theSfe:FunctionExpression[1]|
-                                let evalFunc = $newSfe.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@Function<Any>);
-                                let val = convertEvalExpressionToAppliedFunctionExpression($newSfe->cast(@SimpleFunctionExpression), $evalFunc);
+                                let val = convertEvalExpressionToAppliedFunctionExpression($newSfe);
                                 //this is needed to handle bug in alloy compiler where the return type of eval function on Column is being set as RelationType instead of actual return type of column function
-                                let fixedValue = ^$val(genericType = $evalFunc->functionReturnType(), multiplicity = $evalFunc->functionReturnMultiplicity());
+                                let fixedValue = if ($val->genericType().rawType->toOne()->instanceOf(RelationType),
+                                  | let evalFunc = $val.func;
+                                    ^$val(genericType = $evalFunc->functionReturnType(), multiplicity = $evalFunc->functionReturnMultiplicity());,
+                                  | $val);                                
                                 //todo - if we change this to be more generic and not just for Column then canPreval should be recalculated and parameter values of eval should be preevaled if they can be
                                 ^PrevalWrapper<Any>(value = $fixedValue, canPreval = true, modified = true);
                             }),                            
@@ -1031,8 +1033,9 @@ function <<access.private>> meta::pure::router::preeval::getFirstParamOfEval(eva
   ]); 
 }
 
-function <<access.private>> meta::pure::router::preeval::convertEvalExpressionToAppliedFunctionExpression(evalFe:SimpleFunctionExpression[1], func: Function<Any>[1]):SimpleFunctionExpression[1]
+function <<access.private>> meta::pure::router::preeval::convertEvalExpressionToAppliedFunctionExpression(evalFe:FunctionExpression[1]):FunctionExpression[1]
 {
+  let func = $evalFe.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@Function<Any>);
   ^$evalFe(func = $func, parametersValues = $evalFe.parametersValues->tail());
 }
 
