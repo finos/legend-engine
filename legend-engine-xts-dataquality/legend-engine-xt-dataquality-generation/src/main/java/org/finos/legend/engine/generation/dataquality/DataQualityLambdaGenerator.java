@@ -38,13 +38,13 @@ import java.util.Objects;
 public class DataQualityLambdaGenerator
 {
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, String qualifiedPath, String validationName, Boolean runQuery, Integer resultLimit)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, String qualifiedPath, String validationName, Boolean runQuery, Integer resultLimit, boolean enrichDQColumns)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
-        return generateLambda(pureModel, packageableElement, validationName, runQuery, resultLimit);
+        return generateLambda(pureModel, packageableElement, validationName, runQuery, resultLimit, enrichDQColumns);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, PackageableElement packageableElement, String validationName, Boolean runQuery, Integer resultLimit)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, PackageableElement packageableElement, String validationName, Boolean runQuery, Integer resultLimit, boolean enrichDQColumns)
     {
         if (packageableElement instanceof Root_meta_external_dataquality_DataQuality)
         {
@@ -52,21 +52,7 @@ public class DataQualityLambdaGenerator
         }
         else if (packageableElement instanceof Root_meta_external_dataquality_DataQualityRelationValidation)
         {
-            return generateRelationValidationLambda(pureModel, (Root_meta_external_dataquality_DataQualityRelationValidation) packageableElement, validationName, runQuery, resultLimit);
-        }
-        throw new EngineException("Unsupported Dataquality element! " + packageableElement.getClass().getSimpleName(), ExceptionCategory.USER_EXECUTION_ERROR);
-    }
-
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambdaForTrial(PureModel pureModel, String qualifiedPath, Integer queryLimit, String validationName, Boolean runQuery)
-    {
-        PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
-        if (packageableElement instanceof Root_meta_external_dataquality_DataQuality)
-        {
-            return generateModelConstraintLambda(pureModel, queryLimit, (Root_meta_external_dataquality_DataQuality) packageableElement);
-        }
-        else if (packageableElement instanceof Root_meta_external_dataquality_DataQualityRelationValidation)
-        {
-            return generateRelationValidationLambda(pureModel, (Root_meta_external_dataquality_DataQualityRelationValidation) packageableElement, validationName, runQuery, queryLimit);
+            return generateRelationValidationLambda(pureModel, (Root_meta_external_dataquality_DataQualityRelationValidation) packageableElement, validationName, runQuery, resultLimit, enrichDQColumns);
         }
         throw new EngineException("Unsupported Dataquality element! " + packageableElement.getClass().getSimpleName(), ExceptionCategory.USER_EXECUTION_ERROR);
     }
@@ -76,13 +62,13 @@ public class DataQualityLambdaGenerator
         return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_$0_1$__LambdaFunction_1_(packageableElement, Objects.isNull(queryLimit) ? null : queryLimit.longValue(), pureModel.getExecutionSupport());
     }
 
-    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateRelationValidationLambda(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement, String validationName, Boolean runQuery, Integer resultLimit)
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateRelationValidationLambda(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement, String validationName, Boolean runQuery, Integer resultLimit, boolean enrichDQColumns)
     {
         if (Boolean.TRUE.equals(runQuery))
         {
             return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) packageableElement._query();
         }
-        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_1__Integer_$0_1$__LambdaFunction_1_(packageableElement, validationName, Objects.isNull(resultLimit) ? null : resultLimit.longValue(), pureModel.getExecutionSupport());
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_1__Integer_$0_1$__Boolean_1__LambdaFunction_1_(packageableElement, validationName, Objects.isNull(resultLimit) ? null : resultLimit.longValue(), enrichDQColumns, pureModel.getExecutionSupport());
     }
 
     public static LambdaFunction transformLambda(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)
