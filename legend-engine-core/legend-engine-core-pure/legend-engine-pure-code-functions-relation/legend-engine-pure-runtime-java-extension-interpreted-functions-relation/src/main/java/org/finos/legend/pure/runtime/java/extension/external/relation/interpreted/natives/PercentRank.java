@@ -23,6 +23,7 @@ import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.ProjectExtend;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.Shared;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.TDSWithCursorCoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
@@ -46,7 +47,7 @@ public class PercentRank extends Shared
     public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
         TestTDS tds = getTDS(params, 0, processorSupport);
-        Window window = Window.build(params.get(1).getValueForMetaPropertyToOne("values"), processorSupport);
+        Window window = Window.build(params.get(1).getValueForMetaPropertyToOne("values"), processorSupport, new ProjectExtend.RepoPrimitiveHandler(repository));
         TDSWithCursorCoreInstance rc = (TDSWithCursorCoreInstance) params.get(2).getValueForMetaPropertyToOne("values");
         return ValueSpecificationBootstrap.wrapValueSpecification(this.repository.newFloatCoreInstance(String.valueOf(tds.percentRank(window.getSorts(),rc.getCurrentRow()))), true, processorSupport);
     }

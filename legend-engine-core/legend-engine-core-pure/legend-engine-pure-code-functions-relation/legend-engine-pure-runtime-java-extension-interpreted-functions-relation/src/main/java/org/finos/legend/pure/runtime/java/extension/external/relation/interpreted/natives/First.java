@@ -24,9 +24,9 @@ import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.ProjectExtend;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.Shared;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.TDSWithCursorCoreInstance;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
@@ -49,7 +49,7 @@ public class First extends Shared
     {
         TestTDS tds = getTDS(params, 0, processorSupport);
         RelationType<?> relationType = getRelationType(params, 0);
-        Window window = Window.build(params.get(1).getValueForMetaPropertyToOne("values"), processorSupport);
+        Window window = Window.build(params.get(1).getValueForMetaPropertyToOne("values"), processorSupport, new ProjectExtend.RepoPrimitiveHandler(repository));
         TDSWithCursorCoreInstance rc = (TDSWithCursorCoreInstance) params.get(2).getValueForMetaPropertyToOne("values");
         return ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(tds, window.getFrame().getLow(rc.getCurrentRow()), "", null, relationType, -1, repository, false), true, processorSupport);
     }

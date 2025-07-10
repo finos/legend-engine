@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -71,11 +72,11 @@ public class GroupBy extends AggregationShared
         CoreInstance aggSpec = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport);
         if (aggSpec instanceof AggColSpec)
         {
-            result.addColumn(processOneAggColSpec(orderedSource, null, (AggColSpec<?, ?, ?>) aggSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null));
+            result.addColumn(processOneAggColSpec(orderedSource, Lists.fixedSize.empty(), null, (AggColSpec<?, ?, ?>) aggSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null));
         }
         else if (aggSpec instanceof AggColSpecArray)
         {
-            result = ((AggColSpecArray<?, ?, ?>) aggSpec)._aggSpecs().injectInto(result, (accResult, aggColSpec) -> accResult.addColumn(processOneAggColSpec(orderedSource, null, aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null)));
+            result = ((AggColSpecArray<?, ?, ?>) aggSpec)._aggSpecs().injectInto(result, (accResult, aggColSpec) -> accResult.addColumn(processOneAggColSpec(orderedSource, Lists.fixedSize.empty(), null, aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null)));
         }
         else
         {

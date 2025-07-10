@@ -15,7 +15,6 @@
 package org.finos.legend.pure.runtime.java.extension.external.relation.shared.window;
 
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
@@ -23,11 +22,11 @@ public class Frame
 {
     FrameType type;
     boolean fromUnbounded;
-    int offsetFrom;
+    Number offsetFrom;
     boolean toUnbounded;
-    int offsetTo;
+    Number offsetTo;
 
-    public Frame(FrameType type, boolean fromUnbounded, int offsetTo)
+    public Frame(FrameType type, boolean fromUnbounded, Number offsetTo)
     {
         this.type = type;
         this.fromUnbounded = fromUnbounded;
@@ -41,7 +40,7 @@ public class Frame
         this.toUnbounded = toUnbounded;
     }
 
-    public Frame(FrameType type, int offsetFrom, boolean toUnbounded)
+    public Frame(FrameType type, Number offsetFrom, boolean toUnbounded)
     {
         this.type = type;
         this.offsetFrom = offsetFrom;
@@ -49,14 +48,14 @@ public class Frame
 
     }
 
-    public Frame(FrameType type, int offsetFrom, int offsetTo)
+    public Frame(FrameType type, Number offsetFrom, Number offsetTo)
     {
         this.type = type;
         this.offsetFrom = offsetFrom;
         this.offsetTo = offsetTo;
     }
 
-    public Frame(FrameType frameType, boolean b, int i, boolean b1, int i1)
+    public Frame(FrameType frameType, boolean b, Number i, boolean b1, Number i1)
     {
         this.type = frameType;
         this.fromUnbounded = b;
@@ -65,7 +64,7 @@ public class Frame
         this.offsetTo = i1;
     }
 
-    public static Frame build(CoreInstance frameCore, ProcessorSupport processorSupport)
+    public static Frame build(CoreInstance frameCore, ProcessorSupport processorSupport, PrimitiveHandler primitiveHandler)
     {
         if (frameCore == null)
         {
@@ -79,58 +78,91 @@ public class Frame
         Frame result;
         if (fromUn)
         {
-            result = toUn ? new Frame(type, fromUn, toUn) : new Frame(type, fromUn, (int) PrimitiveUtilities.getIntegerValue(to.getValueForMetaPropertyToOne("value")));
+            result = toUn ? new Frame(type, fromUn, toUn) : new Frame(type, fromUn, primitiveHandler.toJavaNumber(to.getValueForMetaPropertyToOne("value"), processorSupport));
         }
         else
         {
-            result = toUn ? new Frame(type, (int) PrimitiveUtilities.getIntegerValue(from.getValueForMetaPropertyToOne("value")), toUn) : new Frame(type, (int) PrimitiveUtilities.getIntegerValue(from.getValueForMetaPropertyToOne("value")), (int) PrimitiveUtilities.getIntegerValue(to.getValueForMetaPropertyToOne("value")));
+            result = toUn ? new Frame(type, primitiveHandler.toJavaNumber(from.getValueForMetaPropertyToOne("value"), processorSupport), toUn)
+                          : new Frame(type, primitiveHandler.toJavaNumber(from.getValueForMetaPropertyToOne("value"), processorSupport), primitiveHandler.toJavaNumber(to.getValueForMetaPropertyToOne("value"), processorSupport));
         }
         return result;
     }
 
-    public int getOffsetFrom()
+    public FrameType getFrameType()
     {
-        return fromUnbounded ? 0 : this.offsetFrom;
+        return this.type;
     }
 
-    public int getOffsetTo(int maxSize)
+    public Number getOffsetFrom()
     {
-        return toUnbounded ? maxSize - 1 : this.offsetTo;
+        if (this.type == FrameType.rows)
+        {
+            return fromUnbounded ? 0 : this.offsetFrom;
+        }
+        else
+        {
+            return fromUnbounded ? null : this.offsetFrom;
+        }
+    }
+
+    public Number getOffsetTo(int maxSize)
+    {
+        if (this.type == FrameType.rows)
+        {
+            return toUnbounded ? maxSize - 1 : this.offsetTo;
+        }
+        else
+        {
+            return toUnbounded ? null : this.offsetTo;
+        }
     }
 
     public int getLow(int currentRow)
     {
-        return fromUnbounded ? 0 : Math.max(0, currentRow + offsetFrom);
+        return this.type == FrameType.range || fromUnbounded ? 0 : Math.max(0, currentRow + (Integer) offsetFrom);
     }
 
     public int getHigh(int currentRow, int maxSize)
     {
-        return toUnbounded ? maxSize - 1 : Math.min(maxSize - 1, currentRow + offsetTo);
+        return this.type == FrameType.range || toUnbounded ? maxSize - 1 : Math.min(maxSize - 1, currentRow + (Integer) offsetTo);
     }
 
-    public CoreInstance convert(ProcessorSupport ps, PrimitiveBuilder primitiveBuilder)
+    public CoreInstance convert(ProcessorSupport ps, PrimitiveHandler primitiveHandler)
     {
-        CoreInstance result = ps.newCoreInstance("", this.type == FrameType.rows ? "meta::pure::functions::relation::Rows" : "meta::pure::functions::relation::Range", null);
-        CoreInstance from = ps.newCoreInstance("", this.fromUnbounded ? "meta::pure::functions::relation::UnboundedFrameValue" : "meta::pure::functions::relation::FrameIntValue", null);
+        CoreInstance result = ps.newCoreInstance("", this.type == FrameType.rows ? "meta::pure::functions::relation::Rows" : "meta::pure::functions::relation::_Range", null);
+        CoreInstance from = ps.newCoreInstance("", this.fromUnbounded ? "meta::pure::functions::relation::UnboundedFrameValue" :
+                                                      this.type == FrameType.rows ? "meta::pure::functions::relation::FrameIntValue" : "meta::pure::functions::relation::FrameNumericValue", null);
         if (!this.fromUnbounded)
         {
-            from.setKeyValues(Lists.mutable.with("value"), Lists.mutable.with(primitiveBuilder.build(this.offsetFrom)));
+            from.setKeyValues(Lists.mutable.with("value"), Lists.mutable.with(primitiveHandler.build(this.offsetFrom)));
         }
-        CoreInstance to = ps.newCoreInstance("", this.toUnbounded ? "meta::pure::functions::relation::UnboundedFrameValue" : "meta::pure::functions::relation::FrameIntValue", null);
+        CoreInstance to = ps.newCoreInstance("", this.toUnbounded ? "meta::pure::functions::relation::UnboundedFrameValue" :
+                                                    this.type == FrameType.rows ? "meta::pure::functions::relation::FrameIntValue" : "meta::pure::functions::relation::FrameNumericValue", null);
         if (!this.toUnbounded)
         {
-            to.setKeyValues(Lists.mutable.with("value"), Lists.mutable.with(primitiveBuilder.build(this.offsetTo)));
+            to.setKeyValues(Lists.mutable.with("value"), Lists.mutable.with(primitiveHandler.build(this.offsetTo)));
         }
         result.setKeyValues(Lists.mutable.with("offsetFrom"), Lists.mutable.with(from));
         result.setKeyValues(Lists.mutable.with("offsetTo"), Lists.mutable.with(to));
         return result;
     }
 
-    public static interface PrimitiveBuilder
+    public static interface PrimitiveHandler
     {
         CoreInstance build(String val);
 
-        CoreInstance build(int val);
+        CoreInstance build(Number val);
+
+        Number plus(Number left, Number right);
+
+        Number minus(Number left, Number right);
+
+        boolean lessThanEqual(Number left, Number right);
+
+        default Number toJavaNumber(CoreInstance coreInstance, ProcessorSupport processorSupport)
+        {
+            return null;
+        }
     }
 }
 
