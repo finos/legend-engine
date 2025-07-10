@@ -1035,7 +1035,10 @@ function <<access.private>> meta::pure::router::preeval::getFirstParamOfEval(eva
 
 function <<access.private>> meta::pure::router::preeval::convertEvalExpressionToAppliedFunctionExpression(evalFe:FunctionExpression[1]):FunctionExpression[1]
 {
-  let func = $evalFe.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@Function<Any>);
+  let func = $evalFe.parametersValues->at(0)->match([
+    iv:InstanceValue[1]| $iv.values->toOne(),
+    vs:ValueSpecification[*]|$vs
+  ])->cast(@Function<Any>)->toOne();
   ^$evalFe(func = $func, parametersValues = $evalFe.parametersValues->tail());
 }
 
