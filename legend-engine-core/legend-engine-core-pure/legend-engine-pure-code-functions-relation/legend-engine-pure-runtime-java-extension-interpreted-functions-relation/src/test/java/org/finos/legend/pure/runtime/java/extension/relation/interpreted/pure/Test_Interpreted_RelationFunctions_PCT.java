@@ -31,10 +31,7 @@ public class Test_Interpreted_RelationFunctions_PCT extends PCTReportConfigurati
     private static final ReportScope reportScope = RelationCodeRepositoryProvider.relationFunctions;
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "interpreted";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            // todo fix legend pure to properly handle exclusions on interpreted flow
-//            one("meta::pure::functions::relation::tests::composition::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "Error instantiating the type 'SortInfo<X⊆(id:Integer, payload:Variant, atCol:Variant)>'. Could not resolve type for the property 'column': ColSpec<X⊆(id:Integer, payload:Variant, atCol:Variant)>", AdapterQualifier.needsInvestigation)
-    );
+    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with();
 
     public static Test suite()
     {
