@@ -1686,7 +1686,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     public void testUnknownFunction()
     {
         test("Class test::Person[$this.lastName->ranDoMFuncTion()]{lastName:String[1];}",
-                "COMPILATION error at [1:36-49]: Can't resolve the builder for function 'ranDoMFuncTion' - stack:[Class 'test::Person' Third Pass, Constraint 0, new lambda, Applying ranDoMFuncTion]");
+                "COMPILATION error at [1:36-49]: Function does not exist 'ranDoMFuncTion(String[1])'");
     }
 
     @Test
@@ -3168,5 +3168,50 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 exp +
                 "}\n";
+    }
+
+    @Test
+    public void testFunctionMatchingError_MismatchOnType()
+    {
+        test("function my::functionParent(val: Integer[1]):String[1]\n" +
+                "{\n" +
+                "    between($val, %2020-01-01, %2021-01-01);\n" +
+                "}",
+        "COMPILATION error at [3:5-11]: Can't find a match for function 'between(Integer[1],StrictDate[1],StrictDate[1])'.\n" +
+                "Functions that can match if parameter types or multiplicities are change:\n" +
+                "\t\tbetween(StrictDate[0..1],StrictDate[0..1],StrictDate[0..1]):Boolean[1]\n" +
+                "\t\tbetween(DateTime[0..1],DateTime[0..1],DateTime[0..1]):Boolean[1]\n" +
+                "\t\tbetween(Number[0..1],Number[0..1],Number[0..1]):Boolean[1]\n" +
+                "\t\tbetween(String[0..1],String[0..1],String[0..1]):Boolean[1]");
+    }
+
+    @Test
+    public void testFunctionMatchingError_WrongNumberOfParameters()
+    {
+        test("function my::functionParent():String[1]\n" +
+                        "{\n" +
+                        "    between(1, 2);\n" +
+                        "}",
+                "COMPILATION error at [3:5-11]: Can't find a match for function 'between(Integer[1],Integer[1])'.\n" +
+                        "Functions that can match if number of parameters are change:\n" +
+                        "\t\tbetween(StrictDate[0..1],StrictDate[0..1],StrictDate[0..1]):Boolean[1]\n" +
+                        "\t\tbetween(DateTime[0..1],DateTime[0..1],DateTime[0..1]):Boolean[1]\n" +
+                        "\t\tbetween(Number[0..1],Number[0..1],Number[0..1]):Boolean[1]\n" +
+                        "\t\tbetween(String[0..1],String[0..1],String[0..1]):Boolean[1]");
+    }
+
+    @Test
+    public void testFunctionMatchingError_WrongMultiplicity()
+    {
+        test("function my::functionParent(val: Integer[0..1]):String[1]\n" +
+                        "{\n" +
+                        "    abs($val);\n" +
+                        "}",
+                "COMPILATION error at [3:5-7]: Can't find a match for function 'abs(Integer[0..1])'.\n" +
+                        "Functions that can match if parameter types or multiplicities are change:\n" +
+                        "\t\tabs(Float[1]):Float[1]\n" +
+                        "\t\tabs(Integer[1]):Integer[1]\n" +
+                        "\t\tabs(Decimal[1]):Decimal[1]\n" +
+                        "\t\tabs(Number[1]):Number[1]");
     }
 }
