@@ -1043,7 +1043,7 @@ public class Library
 
     public static String encodeBase64(String text)
     {
-        return Base64.encodeBase64URLSafeString(text.getBytes(StandardCharsets.UTF_8));
+        return Base64.encodeBase64String(text.getBytes(StandardCharsets.UTF_8));
     }
 
     public static String decodeUrl(String text, String charset)

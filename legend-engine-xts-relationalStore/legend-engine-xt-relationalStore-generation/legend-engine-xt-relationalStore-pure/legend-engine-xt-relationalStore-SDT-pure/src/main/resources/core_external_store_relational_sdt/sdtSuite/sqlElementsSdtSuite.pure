@@ -388,13 +388,13 @@ function meta::external::store::relational::sdt::framework::testConfigForUnion(d
             select = ^Select(
               distinct = false,
               selectItems = ^AllColumns()),
-            from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = 'testTable')), alias = '"table_a"')
+            from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = 'testTable')), alias = 'table_a')
           ),
           right = ^QuerySpecification(
             select = ^Select(
               distinct = false,
               selectItems = ^AllColumns()),
-            from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = 'testTable')), alias = '"table_b"')
+            from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = 'testTable')), alias = 'table_b')
           ),
           distinct = $distinctFlag
         )

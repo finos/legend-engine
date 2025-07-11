@@ -65,17 +65,17 @@ public class Window
         return this.frame;
     }
 
-    public static Window build(CoreInstance window, ProcessorSupport processorSupport)
+    public static Window build(CoreInstance window, ProcessorSupport processorSupport, Frame.PrimitiveHandler primitiveHandler)
     {
         return new Window(
                 window.getValueForMetaPropertyToMany("partition").collect(CoreInstance::getName).toList(),
                 window.getValueForMetaPropertyToMany("sortInfo").collect(c -> new SortInfo(c.getValueForMetaPropertyToOne("column").getValueForMetaPropertyToOne("name").getName(), SortDirection.valueOf(c.getValueForMetaPropertyToOne("direction").getName()))).toList(),
-                Frame.build(window.getValueForMetaPropertyToOne("frame"), processorSupport)
+                Frame.build(window.getValueForMetaPropertyToOne("frame"), processorSupport, primitiveHandler)
         );
     }
 
 
-    public CoreInstance convert(ProcessorSupport ps, Frame.PrimitiveBuilder builder)
+    public CoreInstance convert(ProcessorSupport ps, Frame.PrimitiveHandler builder)
     {
         CoreInstance result = ps.newCoreInstance("", "meta::pure::functions::relation::_Window", null);
         result.setKeyValues(Lists.mutable.with("partition"), getPartition().collect(builder::build));
@@ -84,7 +84,7 @@ public class Window
         return result;
     }
 
-    public CoreInstance convert(SortInfo sortInfo, ProcessorSupport ps, Frame.PrimitiveBuilder builder)
+    public CoreInstance convert(SortInfo sortInfo, ProcessorSupport ps, Frame.PrimitiveHandler builder)
     {
         CoreInstance result = ps.newCoreInstance("", "meta::pure::functions::relation::SortInfo", null);
         CoreInstance colSpec = ps.newCoreInstance("", "meta::pure::metamodel::relation::ColSpec", null);

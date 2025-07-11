@@ -18,7 +18,9 @@ import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.tests.function.base.PureExpressionTest;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class TestFunctionTester extends PureExpressionTest
 {
@@ -41,21 +43,31 @@ public class TestFunctionTester extends PureExpressionTest
         return fi;
     }
 
-    // TO FIX: this should work?
-    //    @Test
-    //    public void testColumnsOfRelationAny()
-    //    {
-    //        compileTestSource("fromString.pure",
-    //                "function test():Any[*]\n" +
-    //                        "{" +
-    //                        "#TDS\n" +
-    //                        "                  city, country, year, treePlanted\n" +
-    //                        "                  NYC, USA, 2011, 5000\n" +
-    //                        "                #->cast(@meta::pure::metamodel::relation::Relation<Any>)->columns();\n" +
-    //                        "}");
-    //        this.execute("test():Any[*]");
-    //        runtime.delete("fromString.pure");
-    //    }
+    @Test
+    public void sortOnTdsWithVariant()
+    {
+        compileTestSource("fromString.pure",
+                "function test():Any[*]\n" +
+                        "{" +
+                        "print(#TDS\n" +
+                        "            id, payload:meta::pure::metamodel::variant::Variant\n" +
+                        "            1, \"[1,2,3]\"\n" +
+                        "            2, \"[4,5,6]\"\n" +
+                        "            3, \"[7,8,9]\"\n" +
+                        "            4, \"[10,11,12]\"\n" +
+                        "            5, \"[13,14,15]\"\n" +
+                        "    #->extend(~abc:x|$x.payload->meta::pure::functions::variant::navigation::get(0))->sort(~id->ascending())->toString(), 1);\n" +
+                        "}");
+        try
+        {
+            this.execute("test():Any[*]");
+            Assert.fail("Sort call fails on inference");
+        }
+        catch (Exception e)
+        {
+            Assert.assertTrue(e.getMessage().contains("Error instantiating the type 'SortInfo<X⊆(id:Integer, payload:Variant, abc:Variant)>'. Could not resolve type for the property 'column': ColSpec<X⊆(id:Integer, payload:Variant, abc:Variant)>"));
+        }
+    }
 
     @org.junit.Test
     public void testFunction()

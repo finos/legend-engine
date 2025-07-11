@@ -83,6 +83,14 @@ function meta::external::dataquality::tests::doRelationTestWithLimit(dq:String[1
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
 }
 
+function meta::external::dataquality::tests::doRelationTestWithoutDQColumns(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]):Boolean[1]
+{
+  let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
+
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, [], false);
+
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
+}
 
 
 function meta::external::dataquality::tests::assertLambdaAndJSONEquals(expected:FunctionDefinition<Any>[1], actual:LambdaFunction<Any>[1]): Boolean[1]

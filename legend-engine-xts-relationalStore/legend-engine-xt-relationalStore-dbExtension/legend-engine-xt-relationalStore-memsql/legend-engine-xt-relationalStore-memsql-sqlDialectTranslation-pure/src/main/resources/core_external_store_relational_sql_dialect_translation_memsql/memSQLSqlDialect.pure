@@ -1,0 +1,1939 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::extension::tests::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::conditional::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::memSQL::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::pure::extension::*;
+import meta::external::query::sql::metamodel::extension::*;
+
+function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLSqlDialect(): SqlDialect[1]
+{
+  ^SqlDialect
+  (
+    dbType = 'MemSQL',
+    identifierQuoteConfig = memSQLIdentifierQuoteConfiguration(),
+    literalQuoteConfig = memSQLLiteralQuoteConfiguration(),
+    nodeProcessors = memSQLDialectNodeProcessors(),
+    identifierProcessor = memSQLIdentifierProcessor(),
+    expressionPrecedenceComparator = memSQLExpressionPrecedenceComparator(),
+    keywords = memSQLKeywords(),
+    functionProcessorMap = memSQLFunctionProcessorMap(),
+    variablePlaceholderPrefixSuffixMap = memSQLVariablePlaceholderPrefixSuffixMap(),
+    expectedSqlDialectTestErrors = memSQLFunctionTestsExpectedErrors(),
+    isBooleanAliasForTinyInt = true
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLSqlDialectExtension(): Extension[1]
+{
+  ^Extension
+  (
+    type = 'MemSQLSqlDialectExtension',
+    moduleExtensions = [
+      ^SqlDialectTranslationModuleExtension
+      (
+        module = sqlDialectTranslationModuleExtensionName(),
+        extraSqlDialects = memSQLSqlDialect()
+      )
+    ]
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLFunctionTestsExpectedErrors(): Map<String, String>[1]
+{
+  [
+    pair(
+      // MemSQL always does floating point division (unlike other dbs)
+      'NumberArithmetic - divide integer',
+      'Expected - {"columnNames":["result"],"rows":[{"values":[0]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":[0.5]}]}'
+    ),  
+    pair(
+      'FuncTests - cbrt(2/3)',
+      'Expected - {"columnNames":["result"],"rows":[{"values":[4.0]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":[3.99999999]}]}'
+    ),  
+    pair(
+      'FuncTests - cbrt(3/3)',
+      'Expected - {"columnNames":["result"],"rows":[{"values":[-4.0]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":[-3.99999999]}]}'
+    ),
+    pair(
+      'FuncTests - lag(2/2)',
+      'MemSQL does not support default value argument in lag.'
+    ),
+    pair(
+      'FuncTests - lead(2/2)',
+      'MemSQL does not support default value argument in lead.'
+    ),
+    pair(
+      'FuncTests - sum(0/1)',
+      'Expected - {"columnNames":["name","result"],"rows":[{"values":["Jane",45]},{"values":["Robert",50]},{"values":["John",{"key":[]}]}]}\n' +
+      'Actual - {"columnNames":["name","result"],"rows":[{"values":["Jane",45.0]},{"values":["Robert",50.0]},{"values":["John",{"key":[]}]}]}'
+    ),
+    pair(
+      'FuncTests - average_rank(0/0)', 
+      'MemSQL SQL Dialect does not support the function - average_rank'
+    ),
+    pair(
+      'FuncTests - string_agg(0/0)',
+      'Expected - {"columnNames":["age","result"],"rows":[{"values":[18,"Anthony,John"]},{"values":[20,"Fabrice"]},{"values":[{"key":[]},"Oliver"]},{"values":[30,{"key":[]}]}]}\n'+
+      'Actual - {"columnNames":["age","result"],"rows":[{"values":[20,"Fabrice"]},{"values":[18,"John,Anthony"]},{"values":[{"key":[]},"Oliver"]},{"values":[30,{"key":[]}]}]}'
+    ),  
+    pair('FuncTests - split_part(0/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
+    pair('FuncTests - split_part(1/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
+    pair('FuncTests - split_part(2/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
+    pair('FuncTests - cosh(0/3)', 'MemSQL SQL Dialect does not support the function - cosh'),
+    pair('FuncTests - cosh(1/3)', 'MemSQL SQL Dialect does not support the function - cosh'),
+    pair('FuncTests - cosh(2/3)', 'MemSQL SQL Dialect does not support the function - cosh'),
+    pair('FuncTests - cosh(3/3)', 'MemSQL SQL Dialect does not support the function - cosh'),
+    pair('FuncTests - sinh(0/3)','MemSQL SQL Dialect does not support the function - sinh'),
+    pair('FuncTests - sinh(1/3)','MemSQL SQL Dialect does not support the function - sinh'),
+    pair('FuncTests - sinh(2/3)','MemSQL SQL Dialect does not support the function - sinh'),
+    pair('FuncTests - sinh(3/3)','MemSQL SQL Dialect does not support the function - sinh'),
+    pair('FuncTests - tanh(0/3)','MemSQL SQL Dialect does not support the function - tanh'),
+    pair('FuncTests - tanh(1/3)','MemSQL SQL Dialect does not support the function - tanh'),
+    pair('FuncTests - tanh(2/3)','MemSQL SQL Dialect does not support the function - tanh'),
+    pair('FuncTests - tanh(3/3)','MemSQL SQL Dialect does not support the function - tanh'),
+    pair('FuncTests - cume_dist(0/0)', 'MemSQL SQL Dialect does not support the function - cume_dist'),
+    pair('FuncTests - edit_distance(0/1)', 'MemSQL SQL Dialect does not support the function - edit_distance'),
+    pair('FuncTests - edit_distance(1/1)', 'MemSQL SQL Dialect does not support the function - edit_distance'),
+    pair('FuncTests - jarowinkler_similarity(0/2)','MemSQL SQL Dialect does not support the function - jarowinkler_similarity'),
+    pair('FuncTests - jarowinkler_similarity(1/2)', 'MemSQL SQL Dialect does not support the function - jarowinkler_similarity'),         
+    pair('FuncTests - jarowinkler_similarity(2/2)', 'MemSQL SQL Dialect does not support the function - jarowinkler_similarity'),   
+    pair('FuncTests - mode(0/1)','MemSQL SQL Dialect does not support the function - mode'),
+    pair('FuncTests - mode(1/1)', 'MemSQL SQL Dialect does not support the function - mode'),
+    pair('FuncTests - parseJson(0/0)', 'MemSQL SQL Dialect does not support the function - parseJson'),     
+    pair('FuncTests - make_date(0/0)', 'MemSQL SQL Dialect does not support the function - make_date'),
+    pair('FuncTests - make_timestamp(0/1)', 'MemSQL SQL Dialect does not support the function - make_timestamp'),
+    pair('FuncTests - make_timestamp(1/1)', 'MemSQL SQL Dialect does not support the function - make_timestamp'),
+    pair('FuncTests - covar_samp(0/0)', 'MemSQL SQL Dialect does not support the function - covar_samp'),
+    pair('FuncTests - covar_pop(0/0)', 'MemSQL SQL Dialect does not support the function - covar_pop'),
+    pair('FuncTests - corr(0/0)', 'MemSQL SQL Dialect does not support the function - corr')                           
+
+  ]->newMap()->cast(@Map<String, String>)
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLIdentifierQuoteConfiguration(): QuoteConfiguration[1]
+{
+  ^QuoteConfiguration
+  (
+    start = '`',
+    end = '`',
+    escape = '``'
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLLiteralQuoteConfiguration(): QuoteConfiguration[1]
+{
+  ^QuoteConfiguration
+  (
+    start = '\'',
+    end = '\'',
+    escape = '\'\''
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLDialectNodeProcessors(): Map<Class<Node>, NodeProcessor<Node>>[1]
+{
+  newMap(
+    memSQLDialectStatementProcessors()
+    ->concatenate(
+      memSQLDialectRelationProcessors()
+    )
+    ->concatenate(
+      memSQLDialectExpressionProcessors()
+    )
+    ->concatenate(
+      memSQLDialectLiteralProcessors()
+    )
+    ->concatenate(
+      memSQLDialectSelectItemProcessors()
+    )
+    ->concatenate(
+      memSQLDialectOtherNodeProcessors()
+    )
+    ->concatenate(
+      memSQLDialectDDLProcessors()
+    )
+    ->map(n | pair($n.nodeType, $n))
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLDialectStatementProcessors(): NodeProcessor<Statement>[*]
+{
+  [
+    queryProcessor_default(),
+    windowProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLDialectRelationProcessors(): NodeProcessor<Relation>[*]
+{
+  [
+    tableProcessor_default(),
+    aliasedRelationProcessor_default(),
+    joinProcessor_default(),
+    asOfJoinProcessorForMemSQL(),
+    querySpecificationProcessor_default(),
+    unionProcessor_default(),
+    tableSubqueryProcessor_default(),
+    tablePlaceholderProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLDialectExpressionProcessors(): NodeProcessor<meta::external::query::sql::metamodel::Expression>[*]
+{
+  [
+    comparisonExpressionNodeProcessor_default(),
+    logicalBinaryExpressionNodeProcessor_default(),
+    notExpressionNodeProcessor_default(),
+    arithmeticExpressionNodeProcessor_default(),
+    qualifiedNameReferenceNodeProcessor_default(),
+    isNullPredicateNodeProcessor_default(),
+    isNotNullPredicateNodeProcessor_default(),
+    negativeNodeProcessor_default(),
+    currentTimeNodeProcessor_default(),
+    whenClauseNodeProcessor_default(),
+    searchedCaseExpressionNodeProcessor_default(),
+    columnTypeProcessor_default(),
+    castProcessorForMemSQL(),
+    inListExpressionProcessor_default(),
+    inPredicateProcessor_default(),
+    existsPredicateProcessor_default(),
+    extractProcessor_default(),
+    betweenPredicateProcessor_default(),
+    functionCallProcessor_default(),
+    subQueryExpressionProcessor_default(),
+    trimProcessor_default(),
+    likePredicateProcessor_default(),
+    allColumnsReferenceNodeProcessor_default(),
+    inClauseVariablePlaceholderProcessor_default(),
+    variablePlaceholderProcessor_default(),
+    freeMarkerOperationProcessor_default(),
+    bitwiseBinaryExpressionNodeProcessorForMemSQL(),
+    bitwiseNotExpressionNodeProcessorForMemSQL(),
+    bitwiseShiftExpressionNodeProcessorForMemSQL()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLDialectLiteralProcessors(): NodeProcessor<Literal>[*]
+{
+  [
+    integerLiteralNodeProcessor_default(),
+    stringLiteralNodeProcessor_default(),
+    booleanLiteralNodeProcessor_default(),
+    longLiteralNodeProcessor_default(),
+    doubleLiteralNodeProcessor_default(),
+    decimalLiteralNodeProcessor_default(),
+    dateLiteralNodeProcessorForMemSQL(),
+    timestampLiteralNodeProcessorForMemSQL(),
+    partialDateLiteralNodeProcessor_default(),
+    nullLiteralNodeProcessor_default(),
+    processedStringLiteralNodeProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLDialectSelectItemProcessors(): NodeProcessor<SelectItem>[*]
+{
+  [
+    allColumnsNodeProcessor_default(),
+    singleColumnNodeProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLDialectOtherNodeProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    sortItemProcessor_default(),
+    selectProcessor_default(),
+    withQueryProcessor_default(),
+    windowFrameProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLDialectDDLProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    createTestTableProcessorForMemSQL(),
+    dropTestTableProcessor_default(),
+    insertIntoTestTableProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLIdentifierProcessor(): IdentifierProcessor[1]
+{
+  identifierProcessor_default()
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLExpressionPrecedenceComparator(): ExpressionPrecedenceComparator[1]
+{
+  ^ExpressionPrecedenceComparator(
+    findOperatorType = findOperatorType_default_Expression_1__String_1_,
+    operatorPrecedence = operatorPrecedence_default()
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLKeywords(): String[*]
+{
+  [
+    'abort',
+    'abs',
+    'absolute',
+    'access',
+    'account',
+    'acos',
+    'action',
+    'add',
+    'adddate',
+    'addtime',
+    'admin',
+    'aes_decrypt',
+    'aes_encrypt',
+    'after',
+    'against',
+    'aggregate',
+    'aggregates',
+    'aggregator',
+    'aggregator_id',
+    'aggregator_plan_hash',
+    'aggregators',
+    'algorithm',
+    'all',
+    'also',
+    'alter',
+    'always',
+    'analyse',
+    'analyze',
+    'and',
+    'anti_join',
+    'any',
+    'any_value',
+    'approx_count_distinct',
+    'approx_count_distinct_accumulate',
+    'approx_count_distinct_combine',
+    'approx_count_distinct_estimate',
+    'approx_geography_intersects',
+    'approx_percentile',
+    'arghistory',
+    'arrange',
+    'arrangement',
+    'array',
+    'as',
+    'asc',
+    'ascii',
+    'asensitive',
+    'asin',
+    'asm',
+    'assertion',
+    'assignment',
+    'ast',
+    'asymmetric',
+    'async',
+    'at',
+    'atan',
+    'atan2',
+    'attach',
+    'attribute',
+    'authorization',
+    'auto',
+    'auto_increment',
+    'auto_reprovision',
+    'autostats',
+    'autostats_cardinality_mode',
+    'autostats_enabled',
+    'autostats_histogram_mode',
+    'autostats_sampling',
+    'availability',
+    'avg',
+    'avg_row_length',
+    'avro',
+    'azure',
+    'background',
+    '_background_threads_for_cleanup',
+    'backup',
+    'backup_history',
+    'backup_id',
+    'backward',
+    'batch',
+    'batches',
+    'batch_interval',
+    '_batch_size_limit',
+    'before',
+    'begin',
+    'between',
+    'bigint',
+    'bin',
+    'binary',
+    '_binary',
+    'bit',
+    'bit_and',
+    'bit_count',
+    'bit_or',
+    'bit_xor',
+    'blob',
+    'bool',
+    'boolean',
+    'bootstrap',
+    'both',
+    '_bt',
+    'btree',
+    'bucket_count',
+    'by',
+    'byte',
+    'byte_length',
+    'cache',
+    'call',
+    'call_for_pipeline',
+    'called',
+    'capture',
+    'cascade',
+    'cascaded',
+    'case',
+    'cast',
+    'catalog',
+    'ceil',
+    'ceiling',
+    'chain',
+    'change',
+    'char',
+    'character',
+    'characteristics',
+    'character_length',
+    'char_length',
+    'charset',
+    'check',
+    'checkpoint',
+    '_check_can_connect',
+    '_check_consistency',
+    'checksum',
+    '_checksum',
+    // 'class',
+    'clear',
+    'client',
+    'client_found_rows',
+    'close',
+    'cluster',
+    'clustered',
+    'cnf',
+    'coalesce',
+    'coercibility',
+    'collate',
+    'collation',
+    'collect',
+    'column',
+    'columnar',
+    'columns',
+    'columnstore',
+    'columnstore_segment_rows',
+    'comment',
+    'comments',
+    'commit',
+    'committed',
+    '_commit_log_tail',
+    'committed',
+    'compact',
+    'compile',
+    'compressed',
+    'compression',
+    'concat',
+    'concat_ws',
+    'concurrent',
+    'concurrently',
+    'condition',
+    'configuration',
+    'connection',
+    'connection_id',
+    'connections',
+    'config',
+    'constraint',
+    'constraints',
+    'content',
+    'continue',
+    '_continue_replay',
+    'conv',
+    'conversion',
+    'convert',
+    'convert_tz',
+    'copy',
+    '_core',
+    'cos',
+    'cost',
+    'cot',
+    'count',
+    'create',
+    'credentials',
+    'cross',
+    'cube',
+    'csv',
+    'cume_dist',
+    'curdate',
+    'current',
+    'current_catalog',
+    'current_date',
+    'current_role',
+    'current_schema',
+    'current_security_groups',
+    'current_security_roles',
+    'current_time',
+    'current_timestamp',
+    'current_user',
+    'cursor',
+    'curtime',
+    'cycle',
+    'data',
+    'database',
+    'databases',
+    'date',
+    'date_add',
+    'datediff',
+    'date_format',
+    'date_sub',
+    'date_trunc',
+    'datetime',
+    'day',
+    'day_hour',
+    'day_microsecond',
+    'day_minute',
+    'dayname',
+    'dayofmonth',
+    'dayofweek',
+    'dayofyear',
+    'day_second',
+    'deallocate',
+    'dec',
+    'decimal',
+    'declare',
+    'decode',
+    'default',
+    'defaults',
+    'deferrable',
+    'deferred',
+    'defined',
+    'definer',
+    'degrees',
+    'delayed',
+    'delay_key_write',
+    'delete',
+    'delimiter',
+    'delimiters',
+    'dense_rank',
+    'desc',
+    'describe',
+    'detach',
+    'deterministic',
+    'dictionary',
+    'differential',
+    'directory',
+    'disable',
+    'discard',
+    '_disconnect',
+    'disk',
+    'distinct',
+    'distinctrow',
+    'distributed_joins',
+    'div',
+    'do',
+    'document',
+    'domain',
+    'dot_product',
+    'double',
+    'drop',
+    '_drop_profile',
+    'dual',
+    'dump',
+    'duplicate',
+    'dynamic',
+    'earliest',
+    'each',
+    'echo',
+    'election',
+    'else',
+    'elseif',
+    'elt',
+    'enable',
+    'enclosed',
+    'encoding',
+    'encrypted',
+    'end',
+    'engine',
+    'engines',
+    'enum',
+    'errors',
+    'escape',
+    'escaped',
+    'estimate',
+    'euclidean_distance event',
+    'events',
+    'except',
+    'exclude',
+    'excluding',
+    'exclusive',
+    'execute',
+    'exists',
+    'exit',
+    'exp',
+    'explain',
+    'extended',
+    'extension',
+    'external',
+    'external_host',
+    'external_port',
+    'extract',
+    'extractor',
+    'extractors',
+    'extra_join',
+    '_failover',
+    'failed_login_attempts',
+    'failure',
+    'false',
+    'family',
+    'fault',
+    'fetch',
+    'field',
+    'fields',
+    'file',
+    'files',
+    'fill',
+    'first',
+    'first_value',
+    'fix_alter',
+    'fixed',
+    'float',
+    'float4',
+    'float8',
+    'floor',
+    'flush',
+    'following',
+    'for',
+    'force',
+    'force_compiled_mode',
+    'force_interpreter_mode',
+    'foreground',
+    'foreign',
+    'format',
+    'forward',
+    'found_rows',
+    'freeze',
+    'from',
+    'from_base64',
+    'from_days',
+    'from_unixtime',
+    'fs',
+    '_fsync',
+    'full',
+    'fulltext',
+    'function',
+    'functions',
+    'gc',
+    'gcs',
+    'get_format',
+    '_gc',
+    '_gcx',
+    'generate',
+    'geography',
+    'geography_area',
+    'geography_contains',
+    'geography_distance',
+    'geography_intersects',
+    'geography_latitude',
+    'geography_length',
+    'geography_longitude',
+    'geographypoint',
+    'geography_point',
+    'geography_within_distance',
+    'geometry',
+    'geometry_area',
+    'geometry_contains',
+    'geometry_distance',
+    'geometry_filter',
+    'geometry_intersects',
+    'geometry_length',
+    'geometrypoint',
+    'geometry_point',
+    'geometry_within_distance',
+    'geometry_x',
+    'geometry_y',
+    'global',
+    '_global_version_timestamp',
+    'grant',
+    'granted',
+    'grants',
+    'greatest',
+    'group',
+    'grouping',
+    'groups',
+    'group_concat',
+    'gzip',
+    'handle',
+    'handler',
+    'hard_cpu_limit_percentage',
+    'hash',
+    'has_temp_tables',
+    'having',
+    'hdfs',
+    'header',
+    'heartbeat_no_logging',
+    'hex',
+    'highlight',
+    'high_priority',
+    'hold',
+    'holding',
+    'host',
+    'hosts',
+    'hour',
+    'hour_microsecond',
+    'hour_minute',
+    'hour_second',
+    'identified',
+    'identity',
+    'if',
+    'ifnull',
+    'ignore',
+    'ilike',
+    'immediate',
+    'immutable',
+    'implicit',
+    'import',
+    'in',
+    'including',
+    'increment',
+    'incremental',
+    'index',
+    'indexes',
+    'inet_aton',
+    'inet_ntoa',
+    'inet6_aton',
+    'inet6_ntoa',
+    'infile',
+    'inherit',
+    'inherits',
+    '_init_profile',
+    'init',
+    'initcap',
+    'initialize',
+    'initially',
+    'inject',
+    'inline',
+    'inner',
+    'inout',
+    'input',
+    'insensitive',
+    'insert',
+    'insert_method',
+    'instance',
+    'instead',
+    'instr',
+    'int',
+    'int1',
+    'int2',
+    'int3',
+    'int4',
+    'int8',
+    'integer',
+    '_internal_dynamic_typecast',
+    'interpreter_mode',
+    'intersect',
+    'interval',
+    'into',
+    'invoker',
+    'is',
+    'isnull',
+    'isolation',
+    'iterate',
+    'join',
+    'json',
+    'json_agg',
+    'json_array_contains_double',
+    'json_array_contains_json',
+    'json_array_contains_string',
+    'json_array_push_double',
+    'json_array_push_json',
+    'json_array_push_string',
+    'json_delete_key',
+    'json_extract_double',
+    'json_extract_json',
+    'json_extract_string',
+    'json_extract_bigint',
+    'json_get_type',
+    'json_length',
+    'json_set_double',
+    'json_set_json',
+    'json_set_string',
+    'json_splice_double',
+    'json_splice_json',
+    'json_splice_string',
+    'kafka',
+    'key',
+    'key_block_size',
+    'keys',
+    'kill',
+    'killall',
+    'label',
+    'lag',
+    'language',
+    'large',
+    'last',
+    'last_day',
+    'last_insert_id',
+    'last_value',
+    'lateral',
+    'latest',
+    'lc_collate',
+    'lc_ctype',
+    'lcase',
+    'lead',
+    'leading',
+    'leaf',
+    'leakproof',
+    'least',
+    'leave',
+    'leaves',
+    'left',
+    'length',
+    'level',
+    'license',
+    'like',
+    'limit',
+    'lines',
+    'listen',
+    'llvm',
+    'ln',
+    'load',
+    'loaddata_where',
+    '_load',
+    'local',
+    'localtime',
+    'localtimestamp',
+    'locate',
+    'location',
+    'lock',
+    'log',
+    'log10',
+    'log2',
+    'long',
+    'longblob',
+    'longtext',
+    'loop',
+    'lower',
+    'low_priority',
+    'lpad',
+    '_ls',
+    'ltrim',
+    'lz4',
+    'management',
+    '_management_thread',
+    'mapping',
+    'master',
+    'match',
+    'materialized',
+    'max',
+    'maxvalue',
+    'max_concurrency',
+    'max_errors',
+    'max_partitions_per_batch',
+    'max_queue_depth',
+    'max_retries_per_batch_partition',
+    'max_rows',
+    'mbc',
+    'md5',
+    'mpl',
+    'median',
+    'mediumblob',
+    'mediumint',
+    'mediumtext',
+    'member',
+    'memory',
+    'memory_percentage',
+    '_memsql_table_id_lookup',
+    'memsql',
+    'memsql_deserialize',
+    'memsql_imitating_kafka',
+    'memsql_serialize',
+    'merge',
+    'metadata',
+    'microsecond',
+    'middleint',
+    'min',
+    'min_rows',
+    'minus',
+    'minute',
+    'minute_microsecond',
+    'minute_second',
+    'minvalue',
+    'mod',
+    'mode',
+    'model',
+    'modifies',
+    'modify',
+    'month',
+    'monthname',
+    'months_between',
+    'move',
+    'mpl',
+    'names',
+    'named',
+    'namespace',
+    'national',
+    'natural',
+    'nchar',
+    'next',
+    'no',
+    'node',
+    'none',
+    'no_query_rewrite',
+    'noparam',
+    'not',
+    'nothing',
+    'notify',
+    'now',
+    'nowait',
+    'no_write_to_binlog',
+    'no_query_rewrite',
+    'norely',
+    'nth_value',
+    'ntile',
+    'null',
+    'nullcols',
+    'nullif',
+    'nulls',
+    'numeric',
+    'nvarchar',
+    'object',
+    'octet_length',
+    'of',
+    'off',
+    'offline',
+    'offset',
+    'offsets',
+    'oids',
+    'on',
+    'online',
+    'only',
+    'open',
+    'operator',
+    'optimization',
+    'optimize',
+    'optimizer',
+    'optimizer_state',
+    'option',
+    'options',
+    'optionally',
+    'or',
+    'order',
+    'ordered_serialize',
+    'orphan',
+    'out',
+    'out_of_order',
+    'outer',
+    'outfile',
+    'over',
+    'overlaps',
+    'overlay',
+    'owned',
+    'owner',
+    'pack_keys',
+    'paired',
+    'parser',
+    'parquet',
+    'partial',
+    'partition',
+    'partition_id',
+    'partitioning',
+    'partitions',
+    'passing',
+    'password',
+    'password_lock_time',
+    'parser',
+    'pause',
+    '_pause_replay',
+    'percent_rank',
+    'percentile_cont',
+    'percentile_disc',
+    'periodic',
+    'persisted',
+    'pi',
+    'pipeline',
+    'pipelines',
+    'pivot',
+    'placing',
+    'plan',
+    'plans',
+    'plancache',
+    'plugins',
+    'pool',
+    'pools',
+    'port',
+    'position',
+    'pow',
+    'power',
+    'preceding',
+    'precision',
+    'prepare',
+    'prepared',
+    'preserve',
+    'primary',
+    'prior',
+    'privileges',
+    'procedural',
+    'procedure',
+    'procedures',
+    'process',
+    'processlist',
+    'profile',
+    'profiles',
+    'program',
+    'promote',
+    'proxy',
+    'purge',
+    'quarter',
+    'queries',
+    'query',
+    'query_timeout',
+    'queue',
+    'quote',
+    'radians',
+    'rand',
+    'range',
+    'rank',
+    'read',
+    '_read',
+    'reads',
+    'real',
+    'reassign',
+    'rebalance',
+    'recheck',
+    'record',
+    'recursive',
+    'redundancy',
+    'redundant',
+    'ref',
+    'reference',
+    'references',
+    'refresh',
+    'regexp',
+    'reindex',
+    'relative',
+    'release',
+    'reload',
+    'rely',
+    'remote',
+    'remove',
+    'rename',
+    'repair',
+    '_repair_table',
+    'repeat',
+    'repeatable',
+    '_repl',
+    '_reprovisioning',
+    'replace',
+    'replica',
+    'replicate',
+    'replicating',
+    'replication',
+    'durability',
+    'require',
+    'resource',
+    'resource_pool',
+    'reset',
+    'restart',
+    'restore',
+    'restrict',
+    // 'result',
+    '_resurrect',
+    'retry',
+    'return',
+    'returning',
+    'returns',
+    'reverse',
+    'revoke',
+    'rg_pool',
+    'right',
+    'right_anti_join',
+    'right_semi_join',
+    'right_straight_join',
+    'rlike',
+    'role',
+    'roles',
+    'rollback',
+    'rollup',
+    'round',
+    'routine',
+    'row',
+    'row_count',
+    'row_format',
+    'row_number',
+    'rows',
+    'rowstore',
+    'rule',
+    'rpad',
+    '_rpc',
+    'rtrim',
+    'running',
+    's3',
+    'safe',
+    'save',
+    'savepoint',
+    'scalar',
+    'schema',
+    'schemas',
+    'schema_binding',
+    'scroll',
+    'search',
+    'second',
+    'second_microsecond',
+    'sec_to_time',
+    'security',
+    'select',
+    'semi_join',
+    '_send_threads',
+    'sensitive',
+    'separator',
+    'sequence',
+    'sequences',
+    'serial',
+    'serializable',
+    'series',
+    'service_user',
+    'server',
+    'session',
+    'session_user',
+    'set',
+    'setof',
+    'security_lists_intersect',
+    'sha',
+    'sha1',
+    'sha2',
+    'shard',
+    'sharded',
+    'sharded_id',
+    'share',
+    'show',
+    'shutdown',
+    'sigmoid',
+    'sign',
+    'signal',
+    'similar',
+    'simple',
+    'site',
+    'signed',
+    'sin',
+    'skip',
+    'skipped_batches',
+    'sleep',
+    '_sleep',
+    'smallint',
+    'snapshot',
+    '_snapshot',
+    '_snapshots',
+    'soft_cpu_limit_percentage',
+    'some',
+    'soname',
+    'sparse',
+    'spatial',
+    'spatial_check_index',
+    'specific',
+    'split',
+    'sql',
+    'sql_big_result',
+    'sql_buffer_result',
+    'sql_cache',
+    'sql_calc_found_rows',
+    'sqlexception',
+    'sql_mode',
+    'sql_no_cache',
+    'sql_no_logging',
+    'sql_small_result',
+    'sqlstate',
+    'sqlwarning',
+    'sqrt',
+    'ssl',
+    'stable',
+    'standalone',
+    'start',
+    'starting',
+    'state',
+    'statement',
+    'statistics',
+    'stats',
+    'status',
+    'std',
+    'stddev',
+    'stddev_pop',
+    'stddev_samp',
+    'stdin',
+    'stdout',
+    'stop',
+    'storage',
+    'str_to_date',
+    'straight_join',
+    'strict',
+    'string',
+    'strip',
+    'subdate',
+    'substr',
+    'substring',
+    'substring_index',
+    'success',
+    'sum',
+    'super',
+    'symmetric',
+    'sync_snapshot',
+    'sync',
+    '_sync',
+    '_sync2',
+    '_sync_partitions',
+    '_sync_snapshot',
+    'synchronize',
+    'sysid',
+    'system',
+    'table',
+    'table_checksum',
+    'tables',
+    'tablespace',
+    'tags',
+    'tan',
+    'target_size',
+    'task',
+    'temp',
+    'template',
+    'temporary',
+    'temptable',
+    '_term_bump',
+    'terminate',
+    'terminated',
+    'test',
+    'text',
+    'then',
+    'time',
+    'timediff',
+    'time_bucket',
+    'time_format',
+    'timeout',
+    'timestamp',
+    'timestampadd',
+    'timestampdiff',
+    'timezone',
+    'time_to_sec',
+    'tinyblob',
+    'tinyint',
+    'tinytext',
+    'to',
+    'to_base64',
+    'to_char',
+    'to_date',
+    'to_days',
+    'to_json',
+    'to_number',
+    'to_seconds',
+    'to_timestamp',
+    'tracelogs',
+    'traditional',
+    'trailing',
+    'transform',
+    'transaction',
+    '_transactions_experimental',
+    'treat',
+    'trigger',
+    'triggers',
+    'trim',
+    'true',
+    'trunc',
+    'truncate',
+    'trusted',
+    'two_phase',
+    '_twopcid',
+    'type',
+    'types',
+    'ucase',
+    'unbounded',
+    'uncommitted',
+    'undefined',
+    'undo',
+    'unencrypted',
+    'unenforced',
+    'unhex',
+    'unhold',
+    'unicode',
+    'union',
+    'unique',
+    '_unittest',
+    'unix_timestamp',
+    'unknown',
+    'unlisten',
+    '_unload',
+    'unlock',
+    'unlogged',
+    'unpivot',
+    'unsigned',
+    'until',
+    'update',
+    'upgrade',
+    'upper',
+    'usage',
+    'use',
+    'user',
+    'users',
+    'using',
+    'utc_date',
+    'utc_time',
+    'utc_timestamp',
+    '_utf8',
+    'vacuum',
+    'valid',
+    'validate',
+    'validator',
+    'value',
+    'values',
+    'varbinary',
+    'varchar',
+    'varcharacter',
+    'variables',
+    'variadic',
+    'variance',
+    'var_pop',
+    'var_samp',
+    'varying',
+    'vector_sub',
+    'verbose',
+    'version',
+    'view',
+    'void',
+    'volatile',
+    'voting',
+    'wait',
+    '_wake',
+    'warnings',
+    'week',
+    'weekday',
+    'weekofyear',
+    'when',
+    'where',
+    'while',
+    'whitespace',
+    'window',
+    'with',
+    'without',
+    'within',
+    '_wm_heartbeat',
+    'work',
+    'workload',
+    'wrapper',
+    'write',
+    'xact_id',
+    'xor',
+    'year',
+    'year_month',
+    'yes',
+    'zerofill',
+    'zone'
+  ]
+}
+
+// Explicit casting needed as Bitwise Operators in MemSQL treat the operands as unsigned by default which implies Negative numbers as Large positive numbers 
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::bitwiseBinaryExpressionNodeProcessorForMemSQL(): NodeProcessor<BitwiseBinaryExpression>[1]
+{
+  nodeProcessor(
+    BitwiseBinaryExpression,
+    {sqlDialect, b, state, config |
+      let leftExpr = $sqlDialect->executeNodeProcessor($b.left, $b, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($b.right, $b, $state, $config);
+      let operator = if(
+        [
+          pair(| $b.operator == BitwiseBinaryOperator.AND, | '&'),
+          pair(| $b.operator == BitwiseBinaryOperator.OR, | '|'),
+          pair(| $b.operator == BitwiseBinaryOperator.XOR, | '^')
+        ],
+        | failWithMessage('Unhandled bitwise binary operator type: ' + $b.operator->toString())
+      );
+      $sqlDialect->generateCast($leftExpr + ' ' + $operator + ' ' + $rightExpr, 'signed integer', $state, $config);
+    }
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::bitwiseNotExpressionNodeProcessorForMemSQL(): NodeProcessor<BitwiseNotExpression>[1]
+{
+  nodeProcessor(
+    BitwiseNotExpression,
+    {sqlDialect, b, state, config |
+      $sqlDialect->generateCast('~ ' + $sqlDialect->executeNodeProcessor($b.expression, $b, $state, $config), 'signed integer', $state, $config);
+    }
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::bitwiseShiftExpressionNodeProcessorForMemSQL(): NodeProcessor<BitwiseShiftExpression>[1]
+{
+  nodeProcessor(
+    BitwiseShiftExpression,
+    {sqlDialect, b, state, config |
+      let value = $sqlDialect->executeNodeProcessor($b.value, $b, $state, $config);
+      let shiftUnits = $sqlDialect->executeNodeProcessor($b.shift, $b, $state, $config);
+      let operator = if(
+        [
+          pair(| $b.direction == BitwiseShiftDirection.LEFT, | '<<'),
+          pair(| $b.direction == BitwiseShiftDirection.RIGHT, | '>>')
+        ],
+        | failWithMessage('Unhandled bitwise binary shift direction: ' + $b.direction->toString())
+      );
+      $sqlDialect->generateCast($value + ' ' + $operator + ' ' + $shiftUnits, 'signed integer', $state, $config);
+    }
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::asOfJoinProcessorForMemSQL(): NodeProcessor<AsOfJoin>[1]
+{
+  nodeProcessor(
+    AsOfJoin,
+    {sqlDialect, a, state, config | format('AsOfJoins are not supported by %s!', $sqlDialect.dbType)}
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::castProcessorForMemSQL(): NodeProcessor<Cast>[1]
+{
+  // MemSQL supports casting only into limited data types.
+  // https://docs.singlestore.com/cloud/reference/sql-reference/conditional-functions/cast-or-convert/
+  let castTypes = newMap([
+    pair('integer', 'signed integer'),
+    pair('bigint', 'signed integer'),
+    pair('int2', 'signed integer'),
+    pair('small int', 'signed integer'),
+    pair('int', 'signed integer'),
+    pair('int4', 'signed integer'),
+    pair('int8', 'signed integer'),
+    pair('varchar', 'char'),
+    pair('character', 'char'),
+    pair('character varying', 'char'),
+    pair('numeric', 'decimal'),
+    pair('float', 'decimal'),
+    pair('float4', 'decimal'),
+    pair('float8', 'decimal'),    
+    pair('double', 'decimal'),
+    pair('real', 'decimal'),
+    pair('double precision', 'decimal'),    
+    pair('timestamp', 'datetime(6)'),
+    pair('time', 'time'),
+    pair('date', 'date'),
+    pair('boolean', 'signed integer'),
+    pair('bool', 'signed integer')    
+
+  ]);  
+
+  nodeProcessor(
+    Cast,
+    {sqlDialect, c, state, config | 
+      generateCast(
+        $sqlDialect,
+        $sqlDialect->executeNodeProcessor($c.expression, [], $state, $config),
+        $sqlDialect->executeNodeProcessor(^ColumnType(name = $castTypes->get($c.type.name->toLower())->orElse($c.type.name), parameters = $c.type.parameters), [], $state, $config),  
+        $state,
+        $config
+      )
+    },
+    {n | true}
+  );
+}
+
+function <<access.private>>  meta::external::store::relational::sqlDialectTranslation::memSQL::createTestTableProcessorForMemSQL(): NodeProcessor<CreateTestTable>[1]
+{
+  let supportedTypes = newMap([
+    pair('integer', 'int'),
+    pair('varchar', 'text'),
+    pair('datetime', 'datetime(6)')
+  ]);
+  nodeProcessor(
+    CreateTestTable,
+    {sqlDialect, c, state, config |
+      $sqlDialect->keyword('create', $state, $config) +
+      if($c.isTempTable, | ' ' + $sqlDialect->keyword('temporary', $state, $config) + ' ', |' ') +
+      $sqlDialect->keyword('table', $state, $config) + ' ' +
+      $sqlDialect->executeIdentifierProcessor($c.tableName, $config.dbConfig.quoteIdentifiers, $state, $config) +
+      ' (' + $state.separatorIfPretty(1, $config) +
+      $c.columns->map(c|$sqlDialect->executeIdentifierProcessor($c.first, $config.dbConfig.quoteIdentifiers, $state, $config) + ' ' + $supportedTypes->get($c.second.name)->orElse($c.second.name))->joinStrings(',' + $state.separator(1, $config)) + $state.separatorIfPretty(0, $config) +
+      ')';
+    }
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLFunctionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
+{
+  newMap([
+    // Postgres Native Functions
+    // Numeric
+    pair(Abs, simpleFunctionProcessor('abs')),
+    pair(Acos, simpleFunctionProcessor('acos')),
+    pair(Asin, simpleFunctionProcessor('asin')),
+    pair(Atan, simpleFunctionProcessor('atan')),
+    pair(Atan2, simpleFunctionProcessor('atan2')),
+    pair(Cbrt, customFunctionProcessor(processorForCbrt_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Ceil, simpleFunctionProcessor('ceil')),
+    pair(Ceiling, simpleFunctionProcessor('ceiling')),
+    pair(Cos, simpleFunctionProcessor('cos')),
+    pair(Cot, simpleFunctionProcessor('cot')),
+    pair(Degrees, simpleFunctionProcessor('degrees')),
+    pair(DenseRank, simpleFunctionProcessor('dense_rank')),
+    pair(Exp, simpleFunctionProcessor('exp')),
+    pair(Floor, simpleFunctionProcessor('floor')),
+    pair(Ln, simpleFunctionProcessor('ln')),
+    // Default logarithmic base is taken to '2' in memsql which is non-standard.
+    pair(Log, argTransformFunctionProcessor('log', {n:Node[*]| if($n->size() == 1, | ^IntegerLiteral(value = 10)->concatenate($n), |$n)})),
+    pair(Mod, simpleFunctionProcessor('mod')),
+    pair(Power, simpleFunctionProcessor('power')),
+    pair(Round, simpleFunctionProcessor('round')),
+    pair(Sign, customFunctionProcessor(processorForSign_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Sin, simpleFunctionProcessor('sin')),
+    pair(Sqrt, simpleFunctionProcessor('sqrt')),
+    pair(Tan, simpleFunctionProcessor('tan')),
+
+    // Numeric Aggregate
+    pair(Average, simpleFunctionProcessor('avg')),
+    pair(PercentileContinuous, simpleFunctionProcessor('percentile_cont')),
+    pair(PercentileDiscrete, simpleFunctionProcessor('percentile_disc')),
+    pair(StdDevPopulation, simpleFunctionProcessor('stddev_pop')),
+    pair(StdDevSample, simpleFunctionProcessor('stddev_samp')),
+    pair(Sum, simpleFunctionProcessor('sum')),
+    pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
+    pair(VarianceSample, simpleFunctionProcessor('var_samp')),  
+
+
+    // String
+    pair(Ascii, simpleFunctionProcessor('ascii')),
+    pair(CharLength, simpleFunctionProcessor('length')),
+    pair(Chr, customFunctionProcessor(processorForChr_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Concat, customFunctionProcessor(processorForConcat_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Greatest, simpleFunctionProcessor('greatest')),
+    pair(Least, simpleFunctionProcessor('least')),
+    // We need custom handling here because negative index is not supported like how it is supported in Postgres and Other DBs ,
+    // where it returns string from the opposite side.
+    pair(Left, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('left', $f, $sqlDialect, $state, $config )})),
+    pair(Lower, simpleFunctionProcessor('lower')),
+    pair(Lpad, argTransformFunctionProcessor('lpad', {n:Node[*]| if($n->size() == 2, |$n->concatenate(^StringLiteral(value = ' ')), |$n)})),
+    pair(Ltrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('ltrim', $f, $sqlDialect, $state, $config )})),
+    pair(Md5, simpleFunctionProcessor('md5')),
+    pair(Repeat, customFunctionProcessor(processorForRepeat_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Replace, simpleFunctionProcessor('replace')),
+    pair(Reverse, simpleFunctionProcessor('reverse')),
+    pair(Right, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('right', $f, $sqlDialect, $state, $config )})),
+    pair(Rpad, argTransformFunctionProcessor('rpad', {n:Node[*]| if($n->size() == 2, |$n->concatenate(^StringLiteral(value = ' ')), |$n)})),
+    pair(Rtrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('rtrim', $f, $sqlDialect, $state, $config )})),
+    pair(StrPos, customFunctionProcessor(processorForStrPos_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Substring, simpleFunctionProcessor('substring')),
+    pair(Upper, simpleFunctionProcessor('upper')),
+
+
+
+    // String Aggregate 
+    pair(StringAgg, customFunctionProcessor(processorForStringAgg_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+
+    // Boolean Aggregate
+    pair(BoolAnd, simpleFunctionProcessor('min')),
+    pair(BoolOr, simpleFunctionProcessor('max')),
+
+    // Temporal
+    pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::Date, simpleFunctionProcessor('date')),
+    pair(Now, simpleFunctionProcessor('now')),
+    pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+
+    // Miscellaneous
+    pair(Coalesce, simpleFunctionProcessor('coalesce')),
+
+    // Aggregate
+    pair(Count, simpleFunctionProcessor('count')),
+    pair(Max, simpleFunctionProcessor('max')),
+    pair(Min, simpleFunctionProcessor('min')),
+
+    // Window
+    pair(FirstValue, simpleFunctionProcessor('first_value')),
+    pair(Lag, customFunctionProcessor(processorForLagLead_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(LastValue, simpleFunctionProcessor('last_value')),
+    pair(Lead, customFunctionProcessor(processorForLagLead_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(NthValue, simpleFunctionProcessor('nth_value')),
+    pair(Ntile, simpleFunctionProcessor('ntile')),
+    pair(PercentRank, simpleFunctionProcessor('percent_rank')), 
+    pair(Rank, simpleFunctionProcessor('rank')),
+    pair(RowNumber, simpleFunctionProcessor('row_number')),
+
+    // Extension functions
+    // Numeric
+    pair(Log10, simpleFunctionProcessor('log10')),
+
+    // String
+    pair(Contains, customFunctionProcessor(processorForContains_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),    
+    pair(DecodeBase64, customFunctionProcessor(processorForDecodeBase64_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(EncodeBase64, customFunctionProcessor(processorForEncodeBase64_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(EndsWith, customFunctionProcessor(processorForEndsWith_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(RegexpLike, customFunctionProcessor(processorForRegExpLikeMemSQL_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Sha1, simpleFunctionProcessor('sha1')),
+    pair(Sha256, argTransformFunctionProcessor('sha2', {n:Node[*]| $n->concatenate(^IntegerLiteral(value = 256))})),
+    pair(StartsWith, customFunctionProcessor(processorForStartsWith_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(UuidV4, simpleFunctionProcessor('uuid')),
+
+    // Temporal
+    pair(ConvertTimeZone,customFunctionProcessor(processorForConvertTimeZone_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(DateAdd, customFunctionProcessor(processorForDateAdd_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(TimeBucket, customFunctionProcessor(processorForTimeBucket_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_))
+
+  ])
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForCbrt(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  if(!$processedArgs->at(0)->startsWith('-'), 
+    | generateFunctionCallWithArgs($sqlDialect, 'power', [$processedArgs->at(0), '1/3.0'], $f, $state, $config), 
+    | '-1*' + generateFunctionCallWithArgs($sqlDialect, 'power', [$processedArgs->at(0)->replace('-', ''), '1/3.0'], $f, $state, $config)
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForDatePart(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let datePart = $processedArgs->at(0)->toString()->removeQuotes($sqlDialect);
+  if($datePart->toLower() == 'millisecond', 
+    | let inputTextForSeconds = 'second ' + $sqlDialect->keyword('from', $state, $config) + ' ' + $processedArgs->at(1);
+      let secondsCall = generateFunctionCallWithArgs($sqlDialect, 'extract', [$inputTextForSeconds], [], $state, $config);
+      let inputTextForMicroSeconds = 'microsecond ' + $sqlDialect->keyword('from', $state, $config) + ' ' + $processedArgs->at(1);
+      let extractMicroSecondsCall = generateFunctionCallWithArgs($sqlDialect, 'extract', [$inputTextForMicroSeconds], [], $state, $config);
+      let milliSecondsCall = '(('+ $secondsCall + ' * 1000000 + ' + $extractMicroSecondsCall + ') / 1000)';
+      $sqlDialect->generateCast($milliSecondsCall, 'signed integer', $state, $config);,
+    | let inputText = $datePart + ' ' + $sqlDialect->keyword('from', $state, $config) + ' ' + $processedArgs->at(1);
+      generateFunctionCallWithArgs($sqlDialect, 'extract', [$inputText], [], $state, $config);
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForTrim(directionFunc:String[1], f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let transformedArgs = if($processedArgs->size()==1, | [$processedArgs->at(0), ' '], | $processedArgs->transformRegexpParams($sqlDialect));
+  let regexString = if($directionFunc == 'rtrim',
+    | '\'['+$transformedArgs->at(1)+']+$\'',
+    | '\'^['+$transformedArgs->at(1)+']+\''
+  );
+  let regexArgs = [$transformedArgs->at(0), $regexString, '\'\''];
+  generateFunctionCallWithArgs($sqlDialect, 'regexp_replace', $regexArgs, $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForRepeat(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let lengthToRepeat = generateFunctionCallWithArgs($sqlDialect, 'char_length', [$processedArgs->at(0)], $state, $config) + ' * ' +$processedArgs->at(1);
+  generateFunctionCallWithArgs($sqlDialect, 'rpad', ['\'\'', $lengthToRepeat, $processedArgs->at(0)], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForStrPos(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  // MemSQL instr function is case insensitive while comparing characters. Hence explicit conversion to binary is needed.
+  // https://docs.singlestore.com/cloud/reference/sql-reference/string-functions/instr/
+  generateFunctionCallWithArgs($sqlDialect, 'instr', [$sqlDialect->generateCast($processedArgs->at(0), 'binary', $state, $config), $sqlDialect->generateCast($processedArgs->at(1), 'binary', $state, $config)], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForStringAgg(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let transformedArg = $processedArgs->at(0) + ' separator ' + $processedArgs->at(1);
+  let groupConcatCall = generateFunctionCallWithArgs($sqlDialect, 'group_concat', $transformedArg, $state, $config);
+  let trimString = 'trailing ' + $processedArgs->at(1) + ' FROM ' + $groupConcatCall;
+  generateFunctionCallWithArgs($sqlDialect, 'trim', [$trimString], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForDecodeBase64(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'from_base64', $processedArgs, $state, $config), 'char', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForEncodeBase64(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'to_base64', $processedArgs, $state, $config), 'char', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForSign(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  // MemSQL returns sign in decimal, which is non standard.
+  let floatedSign = simpleFunctionProcessor('sign').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($floatedSign, 'signed integer', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForRegExpLikeMemSQL(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let patternParam = '\'^' + $processedArgs->at(1)->removeQuotes($sqlDialect) + '$\'';
+  $processedArgs->at(0) +  ' '  +$sqlDialect->keyword('rlike', $state, $config) + ' '  + $patternParam;
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForToDate(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let dateCall = generateFunctionCallWithArgs($sqlDialect, 'to_date', [$processedArgs->at(0), $processedArgs->at(1)->dateFormatSpecifierForMemSQL()], [], $state, $config);
+  $sqlDialect->generateCast($dateCall, 'date', $state, $config);
+
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForToTimestamp(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  if($processedArgs->size() == 2,
+    | generateFunctionCallWithArgs($sqlDialect, 'to_timestamp', [$processedArgs->at(0), $processedArgs->at(1)->dateFormatSpecifierForMemSQL()], [], $state, $config),
+    | let epochSeconds = $sqlDialect->generateCast($processedArgs->at(0), 'signed int', $state, $config);
+      generateFunctionCallWithArgs($sqlDialect, 'from_unixtime', $epochSeconds, [], $state, $config);
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForToChar(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  if($processedArgs->at(1)->removeQuotes($sqlDialect) == 'Day',
+  // MemSQL does not have any date formatter which returns Full day name but only the abbreviated version.(Eg : Wednesday)
+    | generateFunctionCallWithArgs($sqlDialect, 'dayname', [$processedArgs->at(0)], [], $state, $config),
+    | generateFunctionCallWithArgs($sqlDialect, 'to_char', [$processedArgs->at(0), $processedArgs->at(1)->dateFormatSpecifierForMemSQL()], [], $state, $config)
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForChr(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $sqlDialect->generateCast($sqlDialect->generateFunctionCallWithArgs('char', $processedArgs, [], $state, $config), 'char', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForConcat(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config)->map({arg |
+    'coalesce(' + $arg + ', \'\')'
+  });
+  $sqlDialect->generateFunctionCallWithArgs('concat', $processedArgs, [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForConvertTimeZone(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let srcTimeZone = '\''+ if($config.dbConfig.dbTimeZone->isEmpty(), | 'GMT', |  $config.dbConfig.dbTimeZone->toOne()) + '\'';
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let convertTz = $sqlDialect->generateFunctionCallWithArgs('convert_tz', [$processedArgs->at(0), $srcTimeZone, $processedArgs->at(1)], [], $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('to_char', [$convertTz, $processedArgs->at(2)->dateFormatSpecifierForMemSQL()], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForLagLead(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  assert($processedArgs->size() <= 2, format('MemSQL does not support default value argument in %s.',  $f.name.parts->toOne()));
+  simpleFunctionProcessor($f.name.parts->toOne()).processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForDateTrunc(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let microSecCall = $sqlDialect->keyword('microsecond', $state, $config) + ' ' + $sqlDialect->keyword('from', $state, $config) + ' ' + $processedArgs->at(1);
+  let microSecInterval = $sqlDialect->keyword('interval', $state, $config) + ' ((' + $sqlDialect->generateFunctionCallWithArgs('extract', [$microSecCall], [], $state, $config) + ') / 1000) * 1000 ' + $sqlDialect->keyword('microsecond', $state, $config);
+  if($processedArgs->at(0)->toLower()->removeQuotes($sqlDialect) == 'millisecond',
+   // SELECT date_add(date_trunc('second', TIMESTAMP('2025-01-01 12:34:56.789')), INTERVAL ((extract(MICROSECOND FROM TIMESTAMP('2025-01-01 12:34:56.789'))) / 1000) * 1000 microsecond) AS result
+   | $sqlDialect->generateFunctionCallWithArgs('date_add', [$sqlDialect->generateFunctionCallWithArgs('date_trunc', ['\'second\'', $processedArgs->at(1)], [], $state, $config), $microSecInterval], [], $state, $config),
+   | simpleFunctionProcessor($f.name.parts->toOne()).processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForDateDiff(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $processedArgs->dateDiffHandlerForMemSQL($sqlDialect);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::memSQL::dateDiffHandlerForMemSQL(p: String[*], sqlDialect:SqlDialect[1]): String[1]
+{
+  let timeUnits = ['year', 'month', 'day', 'week', 'hour', 'minute', 'second', 'millisecond'];
+  let indexOfUnit = $timeUnits->indexOf($p->at(0)->removeQuotes($sqlDialect)->toLower());
+  let unitFunctionsList = [
+
+    { | format('(%s)', [
+        'cast((extract(year from %s) - extract(year from %s)) as signed integer)'
+     ])},
+
+    { | format('(%s * 12 + (%s))', [
+        ['year', $p->at(1), $p->at(2)]->dateDiffHandlerForMemSQL($sqlDialect),
+        'cast((extract(month from %s) - extract(month from %s)) as signed integer)'
+     ])},
+
+    { | format('(%s)', [
+        'datediff(%s, %s)'
+     ])},
+
+    { | format('(cast(%s DIV 7 as signed integer))', [
+        ['day', '%s', '%s']->dateDiffHandlerForMemSQL($sqlDialect)
+     ])},
+
+    { | format('cast((%s * 24 + (%s)) as signed integer)', [
+        ['day', $p->at(1), $p->at(2)]->dateDiffHandlerForMemSQL($sqlDialect),
+        'cast((extract(hour from %s) - extract(hour from %s)) as signed integer)'
+     ])},
+
+    { | format('cast((%s * 60 + (%s)) as signed integer)', [
+        ['hour', $p->at(1), $p->at(2)]->dateDiffHandlerForMemSQL($sqlDialect),
+        'cast((extract(minute from %s) - extract(minute from %s)) as signed integer)'
+     ])},
+
+    { | format('cast((%s * 60 + (%s)) as signed integer)', [
+        ['minute', $p->at(1), $p->at(2)]->dateDiffHandlerForMemSQL($sqlDialect),
+        'cast((extract(second from %s) - extract(second from %s)) as signed integer)'
+     ])},
+
+    { | format('cast((%s * 1000 + (%s)) as signed integer)', [
+        ['second', $p->at(1), $p->at(2)]->dateDiffHandlerForMemSQL($sqlDialect),
+        'cast((extract(microsecond from %s) - extract(microsecond from %s))/1000 as signed integer)'
+     ])}
+
+  ];
+
+  format($unitFunctionsList->at($indexOfUnit)->eval(), [$p->at(2), $p->at(1)]);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForDateAdd(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let refinedInterval = if($processedArgs->at(2)->removeQuotes($sqlDialect) == 'MILLISECOND',
+    | ($processedArgs->at(1)->removeQuotes($sqlDialect)->parseInteger() * 1000)->toString(),
+    | $processedArgs->at(1)->removeQuotes($sqlDialect)
+  );
+  let intervalString='INTERVAL ' + $refinedInterval + ' ' + if($processedArgs->at(2)->removeQuotes($sqlDialect) == 'MILLISECOND', | 'MICROSECOND', | $processedArgs->at(2)->removeQuotes($sqlDialect));
+  let dateAddCall = generateFunctionCallWithArgs($sqlDialect, 'date_add', [$processedArgs->at(0),$intervalString->removeQuotes($sqlDialect)], [], $state, $config) ;
+  let dateUnit = $processedArgs->at(2)->removeQuotes($sqlDialect);
+  if($dateUnit == 'DAY' || $dateUnit == 'MONTH' || $dateUnit == 'YEAR' || $dateUnit == 'WEEK' ,
+    | $sqlDialect->generateCast($dateAddCall, 'date', $state, $config),
+    | $sqlDialect->generateCast($dateAddCall, 'datetime(6)', $state, $config)
+   );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::dateFormatSpecifierForMemSQL(f:String[1]): String[1]
+{
+  let formatSubs = [
+    pair('Month', 'MONTH'),
+    pair('Day', 'DY'),
+    pair('YYYY', 'YYYY'),
+    pair('MM', 'MM'),
+    pair('DD', 'DD'),
+    pair('Mon', 'MON'),
+    pair('HH24', 'HH24'),
+    pair('HH12', 'HH'),
+    pair('HH', 'HH'),
+    pair('MI', 'MI'),
+    pair('SS', 'SS'),
+    pair('MS', 'FF3'),
+    pair('US', 'FF6')
+    // TODO: Handle more format specifiers
+  ];
+
+  $formatSubs->fold({i, a|$a->replace($i.first, $i.second)}, $f);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::dateLiteralNodeProcessorForMemSQL(): NodeProcessor<DateLiteral>[1]
+{
+  nodeProcessor(
+    DateLiteral,
+    {sqlDialect, d, state, config |
+      $d.value->convertDateToSqlStringForMemSQL($config.dbConfig.dbTimeZone)
+    },
+    {n | true}
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::timestampLiteralNodeProcessorForMemSQL(): NodeProcessor<TimestampLiteral>[1]
+{
+  nodeProcessor(
+    TimestampLiteral,
+    {sqlDialect, t, state, config |
+      $t.value->convertDateToSqlStringForMemSQL($config.dbConfig.dbTimeZone)
+    },
+    {n | true}
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::convertDateToSqlStringForMemSQL(date:Date[1], dbTimeZone:String[0..1]):String[1]
+{
+  //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
+  let timeZone = if( $dbTimeZone->isEmpty(), | 'GMT', |  $dbTimeZone->toOne());
+  if($date->hasSecond(),
+    | if ($date->hasSubsecond(),
+        | let d= format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date);
+          format('TIMESTAMP(\'%s\')',$d);,
+        | let d= format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date);
+          format('TIMESTAMP(\'%s\')',$d);
+        ),
+    | if ($date->hasMonth() || $date->hasDay(),
+        | let d = format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date);
+          format('DATE(\'%s\')',$d);,
+        | fail('MemSQL doesn\'t support YEAR and YEAR-MONTH'); '';
+      )
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForTimeBucket(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let transformed_arg = newMap([
+    pair(DurationUnit.YEARS->toString(), 'year'),
+    pair(DurationUnit.MONTHS->toString(), 'month'),
+    pair(DurationUnit.WEEKS->toString(), 'week'),
+    pair(DurationUnit.DAYS->toString(), 'day'),
+    pair(DurationUnit.HOURS->toString(), 'hour'),
+    pair(DurationUnit.MINUTES->toString(), 'minute'),
+    pair(DurationUnit.SECONDS->toString(), 'second'),
+    pair(DurationUnit.MICROSECONDS->toString(), 'microsecond')
+  ]);    
+  let params = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let intervalString = 'INTERVAL ' + $params->at(1) +' ' + $transformed_arg->get($params->at(2)->removeQuotes($sqlDialect))->orElse('to be handled..');
+  // Default origin in MemSQL is 2000-01-03 00:00:00 which is non-standard.
+  $sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'time_bucket', [$intervalString, $params->at(0), '\'1970-01-01 00:00:00\''], $f, $state, $config), 'datetime(6)', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLVariablePlaceholderPrefixSuffixMap(): Map<String, Pair<String, String>>[1]
+{
+  [
+    pair('String',      pair('\'', '\'')),
+    pair('Integer',     pair('', '')),
+    pair('Decimal',     pair('', '')),
+    pair('Number',      pair('', '')),
+    pair('SQLNull',     pair('', '')),
+    pair('Float',       pair('', '')),
+    pair('StrictDate',  pair('DATE \'', '\'')),
+    pair('DateTime',    pair('TIMESTAMP \'', '\'')),
+    pair('Date',        pair('TIMESTAMP \'', '\'')),
+    pair('Boolean',     pair('', '')),
+    pair('Enum',        pair('', ''))
+  ]->newMap();
+}
+
+// --------------------------------------------------------------------------

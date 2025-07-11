@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-databricks</artifactId>
-        <version>4.89.5-SNAPSHOT</version>
+        <version>4.89.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-relationalStore-databricks-PCT</artifactId>
@@ -48,7 +48,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <skip>false</skip>
-                            <forkCount>4</forkCount>
+                            <forkCount>2</forkCount>
                             <reuseForks>false</reuseForks>
                             <systemPropertyVariables>
                                 <AWS_ACCESS_KEY_ID>${env.AWS_ACCESS_KEY_ID}</AWS_ACCESS_KEY_ID>

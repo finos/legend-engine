@@ -80,9 +80,9 @@ public class ExtendWindowFunc extends AbstractNative implements Native
                 "        return new org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame(\n" +
                 "                x instanceof Root_meta_pure_functions_relation_Rows ? org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType.rows : org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType.range,\n" +
                 "                x._offsetFrom() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +
-                "                x._offsetFrom() instanceof Root_meta_pure_functions_relation_FrameIntValue ? (int)((Root_meta_pure_functions_relation_FrameIntValue) x._offsetFrom())._value() : -1,\n" +
+                "                x._offsetFrom() instanceof Root_meta_pure_functions_relation_FrameIntValue ? (int)((Root_meta_pure_functions_relation_FrameIntValue) x._offsetFrom())._value() : (x._offsetFrom() instanceof Root_meta_pure_functions_relation_FrameNumericValue ? ((Root_meta_pure_functions_relation_FrameNumericValue) x._offsetFrom())._value() : -1),\n" +
                 "                x._offsetTo() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +
-                "                x._offsetTo() instanceof Root_meta_pure_functions_relation_FrameIntValue ? (int)((Root_meta_pure_functions_relation_FrameIntValue) x._offsetTo())._value() : -1\n" +
+                "                x._offsetTo() instanceof Root_meta_pure_functions_relation_FrameIntValue ? (int)((Root_meta_pure_functions_relation_FrameIntValue) x._offsetTo())._value() : (x._offsetTo() instanceof Root_meta_pure_functions_relation_FrameNumericValue ? ((Root_meta_pure_functions_relation_FrameNumericValue) x._offsetTo())._value() : -1)\n" +
                 "        );\n" +
                 "    } \n" +
                 "}" +

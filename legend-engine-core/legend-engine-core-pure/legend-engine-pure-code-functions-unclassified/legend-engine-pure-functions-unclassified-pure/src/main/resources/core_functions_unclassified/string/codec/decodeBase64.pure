@@ -19,14 +19,16 @@ native function <<PCT.function>> {doc.doc = 'Decodes a Base64-encoded string and
 
 function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBase64<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals('Hello, World!', $f->eval(|'SGVsbG8sIFdvcmxkIQ'->decodeBase64()));
-  assertEquals('Hello, World!', $f->eval(|'SGVsbG8sIFdvcmxkIQ='->decodeBase64()));
   assertEquals('Hello, World!', $f->eval(|'SGVsbG8sIFdvcmxkIQ=='->decodeBase64()));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('Hello, World!', $f->eval(|'SGVsbG8sIFdvcmxkIQ'->decodeBase64()));
 }
 
 function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   let testString = 'Any Random String';
-  let encodedString = $f->eval(|$testString->encodeBase64());
-  assertEquals($testString, $f->eval(|$encodedString->decodeBase64()));
+  assertEquals($testString, $f->eval(|$testString->encodeBase64()->decodeBase64()));
 }

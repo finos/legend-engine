@@ -174,7 +174,7 @@ public class LegendH2Extensions
 
     public static String legend_h2_extension_base64_encode(String string)
     {
-        return string == null ? null : Base64.encodeBase64URLSafeString(string.getBytes(StandardCharsets.UTF_8));
+        return string == null ? null : Base64.encodeBase64String(string.getBytes(StandardCharsets.UTF_8));
     }
 
     public static String legend_h2_extension_reverse_string(String string)
