@@ -1019,6 +1019,76 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
         );
     }
 
+    @Test
+    public void testSelectWhenColumnNotFound()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->select(~[ied,id])\n" +
+                        "}",
+                "COMPILATION error at [7:27-29]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
+        );
+    }
+
+    @Test
+    public void testSelectWhenColumnsFound()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->select(~[id,other])\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testEvalWhenColumnNotFound()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(row | eval(~ied, $row)->isEmpty())\n" +
+                        "}",
+                "COMPILATION error at [7:37-39]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
+        );
+    }
+
+    @Test
+    public void testEvalInfersCorrectReturnType()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(row | eval(~id, $row)->toOne() <= 0)\n" +
+                        "}"
+        );
+    }
+
     @Override
     public String getDuplicatedElementTestCode()
     {

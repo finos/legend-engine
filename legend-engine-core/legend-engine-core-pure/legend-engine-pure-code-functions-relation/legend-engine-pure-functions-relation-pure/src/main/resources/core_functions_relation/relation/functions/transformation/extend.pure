@@ -12,11 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::variant::navigation::*;
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], f:FuncColSpec<{T[1]->Any[0..1]},Z>[1]):Relation<T+Z>[1];
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], fs:FuncColSpecArray<{T[1]->Any[*]},Z>[1]):Relation<T+Z>[1];
+native function <<PCT.function>>
+{
+    doc.doc='Extend the given relation with a new column, and its value is computed with the given function'
+}
+meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], f:FuncColSpec<{T[1]->Any[0..1]},Z>[1]):Relation<T+Z>[1];
+
+native function <<PCT.function>>
+{
+    doc.doc='Extend the given relation with a set of new columns, and their values is computed with their associated function'
+}
+meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], fs:FuncColSpecArray<{T[1]->Any[*]},Z>[1]):Relation<T+Z>[1];
 
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
@@ -24,8 +34,17 @@ native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpec<{Relation<T>[1],_Window<T>[1],T[1]->Any[0..1]},R>[1]):Relation<T+R>[1];
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpecArray<{Relation<T>[1],_Window<T>[1],T[1]->Any[*]},R>[1]):Relation<T+R>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpec<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
-native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpecArray<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
+native function <<PCT.function>>
+{
+    doc.doc='OLAP - Extend the given relation with a new column, and its value is aggregated using the given function using the values collected from the given window'
+}
+meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpec<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
+
+native function <<PCT.function>>
+{
+    doc.doc='OLAP - Extend the given relation with a set of new columns, and their values are aggregated using their associated function using the values collected from the given window'
+}
+meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpecArray<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
 
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendStrShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -1276,4 +1295,59 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   '   4,4,D,D,4\n'+
                   '   9,5,I,I,9\n'+
                   '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "[10,11,12]"
+     5, "[13,14,15]"
+   #;
+
+   let expr = {|
+                  $tds->extend(~atCol0:x | $x.payload->get(0))
+                      ->extend(~atCol1:x | $x.payload->get(1))
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,atCol0,atCol1\n'+
+                '   1,[1,2,3],1,2\n'+
+                '   2,[4,5,6],4,5\n'+
+                '   3,[7,8,9],7,8\n'+
+                '   4,[10,11,12],10,11\n'+
+                '   5,[13,14,15],13,14\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "{""boolean"":true,  ""integer"":1, ""string"":""hello""}"
+     2, "{""boolean"":false, ""integer"":2, ""string"":""world""}"
+     3, "{""boolean"":true,  ""integer"":3, ""string"":""world""}"
+   #;
+
+   let expr = {|
+                  $tds->extend(~[
+                                  booleanKey:x | $x.payload->get('boolean'),
+                                  integerKey:x | $x.payload->get('integer'),
+                                  stringKey:x | $x.payload->get('string')
+                                ])
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,booleanKey,integerKey,stringKey\n'+
+                '   1,{"boolean":true,"integer":1,"string":"hello"},true,1,"hello"\n'+
+                '   2,{"boolean":false,"integer":2,"string":"world"},false,2,"world"\n'+
+                '   3,{"boolean":true,"integer":3,"string":"world"},true,3,"world"\n'+
+                '#', $res->toString());
 }

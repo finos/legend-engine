@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.89.6-SNAPSHOT</version>
+    <version>4.90.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -107,7 +107,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.52.2</legend.pure.version>
+        <legend.pure.version>5.52.4</legend.pure.version>
         <legend.shared.version>0.27.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -134,7 +134,7 @@
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
         <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
-        <project.build.outputTimestamp>1751631104</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1752237018</project.build.outputTimestamp>
         <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1 -Duser.timezone=GMT</surefire.vm.params>
         <surefire.reports.directory />
         <publish.server.id>central</publish.server.id>

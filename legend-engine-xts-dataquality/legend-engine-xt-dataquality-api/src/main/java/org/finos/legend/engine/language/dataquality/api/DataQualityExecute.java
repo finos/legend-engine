@@ -196,6 +196,7 @@ public class DataQualityExecute
         }
         catch (Exception ex)
         {
+            LOGGER.error("Unable to execute data quality validations", ex);
             return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, identity.getName());
         }
     }
