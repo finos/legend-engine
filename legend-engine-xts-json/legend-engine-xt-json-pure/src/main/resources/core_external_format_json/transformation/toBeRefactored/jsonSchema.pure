@@ -80,7 +80,7 @@ function meta::external::format::json::schema::generation::toJSONSchema( input:J
 function <<Generation.Transformation>> meta::external::format::json::schema::generation::internal_toJSONSchema(input:JSONSchemaConfig[1] ) : JSONSchemaOutput[*]
 {
 
-   let possibleElement = forgivingPathToElement($input.class->toOne());
+   let possibleElement = lenientPathToElement($input.class->toOne());
    assertNotEmpty($possibleElement, | $input.class->toOne() + ' was not found');
 
    let element = $possibleElement->toOne();
