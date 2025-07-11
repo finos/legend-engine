@@ -31,6 +31,7 @@ import meta::pure::router::store::metamodel::clustering::*;
 import meta::pure::router::utils::*;
 import meta::core::runtime::*;
 import meta::pure::store::*;
+import meta::pure::metamodel::relation::*;
 
 Class meta::pure::router::clustering::AnalyticsDecision
 {
@@ -601,7 +602,7 @@ function <<access.private>> meta::pure::router::clustering::clusteredVSToBeRepla
    let clusteredVSToBeReplaced = $allParams->filter(p|$p->instanceOf(StoreMappingClusteredValueSpecification))->cast(@StoreMappingClusteredValueSpecification)->filter(c|!$c.store->instanceOf( meta::pure::mapping::aggregationAware::AggregationAwareStore))->init();
    if($clusteredVSToBeReplaced->forAll(c | $c.val->byPassValueSpecificationWrapper()->instanceOf(FunctionExpression)
                                         && $c.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression).func->functionReturnType().rawType->isNotEmpty()
-                                        && $c.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression).func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet)),
+                                        && ($c.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression).func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet) || $c.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression).func->functionReturnType().rawType->toOne()->_subTypeOf(Relation))),
       | $clusteredVSToBeReplaced,
       | []);
 }
