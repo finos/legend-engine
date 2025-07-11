@@ -1873,6 +1873,23 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
     }
 
+    private SQLExecutionNode getFirstSQLExecutionNode(ExecutionNode node)
+    {
+        if (node instanceof SQLExecutionNode)
+        {
+            return (SQLExecutionNode) node;
+        }
+        for (ExecutionNode child : node.childNodes())
+        {
+            ExecutionNode result = getFirstSQLExecutionNode(child);
+            if (result != null)
+            {
+                return (SQLExecutionNode) result;
+            }
+        }
+        return null;
+    }
+
     private List<DelayedGraphFetchResultWithExecInfo> submitTasksToExecutorIfPossible(RelationalTempTableGraphFetchExecutionNode node, RealizedRelationalResult realizedRelationalResult, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone, RelationalGraphObjectsBatch relationalGraphObjectsBatch)
     {
         List<DelayedGraphFetchResultWithExecInfo> submittedTasks = FastList.newList();
@@ -2022,9 +2039,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
                     if (node.parentTempTableStrategy != null)
                     {
-                        try (Scope ignored1 = GlobalTracer.get().buildSpan("create temp table").withTag("parent tempTableName", node.parentTempTableName).withTag("databaseType", node.executionNodes.get(0) instanceof SQLExecutionNode ? ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTypeName() : null).startActive(true))
+                        SQLExecutionNode firstSQLExecutionNode = getFirstSQLExecutionNode(node);
+                        try (Scope ignored1 = GlobalTracer.get().buildSpan("create temp table").withTag("parent tempTableName", node.parentTempTableName).withTag("databaseType", firstSQLExecutionNode.getDatabaseTypeName()).startActive(true))
                         {
-                            String databaseTimeZone = node.executionNodes.get(0) instanceof SQLExecutionNode ? ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone() : null;
+                            String databaseTimeZone = firstSQLExecutionNode.getDatabaseTimeZone();
                             if (node.parentTempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
                             {
                                 try
