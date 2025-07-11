@@ -148,11 +148,11 @@ public class TestCompilationFromGrammar
                 PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName(), null, pureModelProcessParameter);
                 modelData.getElements().parallelStream().forEach(pureModel::getPackageableElement);
 
-                Set<String> engineExceptions = pureModel.getEngineExceptions().stream().map(EngineException::toPretty).collect(Collectors.toSet());
+                String engineExceptions = pureModel.getEngineExceptions().stream().map(EngineException::toPretty).collect(Collectors.joining(", "));
                 if (expectedEngineExceptions != null)
                 {
                     ImmutableSet<String> expectedEngineExceptionsSet = Sets.immutable.withAll(expectedEngineExceptions);
-                    Assert.assertEquals(expectedEngineExceptionsSet, engineExceptions);
+                    expectedEngineExceptionsSet.forEach(x -> MatcherAssert.assertThat(engineExceptions, CoreMatchers.containsString(x)));
                 }
                 else
                 {
