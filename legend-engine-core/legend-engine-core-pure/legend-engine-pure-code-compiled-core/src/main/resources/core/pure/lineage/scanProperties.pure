@@ -70,6 +70,14 @@ function  meta::pure::lineage::scanProperties::defaultScanConfig(): ScanConfig[1
   ^ScanConfig(scanClasses=false, explodeMilestonedProperties= true);
 }
 
+function meta::pure::lineage::scanProperties::getRootClass(p:PropertyPathTree[1]) : Class<Any>[0..1]
+{
+  if($p.value->instanceOf(String) && $p.display == 'root' && $p.children->size() == 1 && $p.children.value->toOne()->instanceOf(Class),
+      | $p.children.value->toOne()->cast(@Class<Any>),
+      | []
+  )
+}
+
 // embedd dummyProp for every classOnlyAccess as a hack not to alter current structure of propertyPathTree
 Class meta::pure::lineage::scanProperties::DummyClass
 {
