@@ -752,7 +752,7 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
    meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$mergedPaths);
    meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::SimpleClass2,$mergedPaths);
    meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::SimpleClass,$mergedPaths);
-   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::ClassWithFunctionReferences,$standardSchema,true);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::ClassWithFunctionReferences,$standardSchema);
 
 }
 

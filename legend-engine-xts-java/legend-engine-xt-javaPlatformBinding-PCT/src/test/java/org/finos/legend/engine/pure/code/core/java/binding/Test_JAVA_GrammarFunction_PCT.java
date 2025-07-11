@@ -63,9 +63,9 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:45cc92-98); error compiling generated Java code:", AdapterQualifier.needsInvestigation),
 
             // let
-            one("meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_", "Can't resolve the builder for function 'letAsLastStatement'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "Can't resolve the builder for function 'letChainedWithAnotherFunction'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "Can't resolve the builder for function 'letWithParam'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_", "Error in 'test::testFunction': Function does not exist 'letAsLastStatement()'", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "Error in 'test::testFunction': Function does not exist 'letChainedWithAnotherFunction(Class<TestClass>[1])'", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "Error in 'test::testFunction': Function does not exist 'letWithParam(String[1])'", AdapterQualifier.needsInvestigation),
 
             // Minus
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\"", AdapterQualifier.needsInvestigation),

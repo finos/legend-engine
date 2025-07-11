@@ -779,7 +779,7 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
                 "    }\n" +
                 "  }\n" +
                 ")\n"));
-        Assert.assertEquals("Can't resolve the builder for function 'summation' - stack:[Lambda, new lambda, Applying summation]", e.getMessage());
+        Assert.assertEquals("Function does not exist 'summation(Float[*])'", e.getMessage());
     }
 
     @Override
