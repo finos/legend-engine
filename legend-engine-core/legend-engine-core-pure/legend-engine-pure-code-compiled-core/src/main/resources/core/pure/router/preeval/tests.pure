@@ -27,6 +27,7 @@ import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::router::preeval::*;
 import meta::pure::router::preeval::tests::*;
 import meta::core::runtime::*;
+
 Class meta::pure::router::preeval::tests::Person
 {
   firstName : String[1];
@@ -1258,6 +1259,54 @@ function <<test.Test>> meta::pure::router::preeval::tests::testEvalWithArgs3():B
   assertRoundTrip($input, $expected);
 }
 
+function <<test.Test>> meta::pure::router::preeval::tests::testEvalWithArgs4():Boolean[1]
+{
+  let input = {a:Integer[1]|{b:Integer[1]|{c:Integer[1]|$c+1}->eval($b)}->eval($a)};
+
+  let expected = {a:Integer[1]| $a+1 };
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testEvalWithArgs5():Boolean[1]
+{
+  let input = {a:Integer[1]|meta::pure::router::preeval::tests::myTestFunc2ThatDoesSomethingViaEval($a)};
+
+  let expected = {a:Integer[1]| $a == 1 };
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::myTestFunc2ThatDoesSomethingViaEval<P>(q:P[1]):Boolean[1]
+{
+  meta::pure::router::preeval::tests::myTestFunc2ThatDoesSomething_P_1__Boolean_1_->eval($q)
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::myTestFunc2ThatDoesSomething<P>(z:P[1]):Boolean[1]
+{
+  $z == 1;
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::tesColumnEvalOnRelation():Boolean[1]
+{
+  let input = {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>[1] |
+                $rel->filter(row|$rel->genericType().typeArguments->at(0).rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->at(0)->eval($row)->isEmpty())};
+
+  let expected = {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>[1] |
+                   $rel->filter(row|$row.FIRSTNAME->isEmpty())};
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::tesColumnEvalOnRelationWithCast():Boolean[1]
+{
+  let input = {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>[1] |
+                $rel->filter(row|$rel->genericType().typeArguments->at(0).rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->at(0)->cast(@meta::pure::metamodel::relation::Column<Nil,String|*>)->eval($row)->toOne()->length() > 10)};
+
+  let expected = {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>[1] |
+                   $rel->filter(row|$row.FIRSTNAME->toOne()->length() > 10)};
+  assertRoundTrip($input, $expected);
+}
+
 function <<test.Test>> meta::pure::router::preeval::tests::testProjectWithInferredParameterType():Boolean[1]
 {
   let input = {|meta::pure::router::preeval::tests::myFunc888()};
@@ -1511,6 +1560,54 @@ function meta::pure::router::preeval::tests::getTestRuntimeWithModelConnection(s
 {
   // Need element as string to allow roundtrip to pass. When using ^ModelStore(), preeval evaluates it to a instance, however expected as it as a new function
   ^Runtime(connectionStores=^ConnectionStore(element = 'DummyStore', connection=^meta::external::store::model::ModelConnection(instances=newMap(pair($sourceClass, list($inputs))))));
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testGetGenericType():Boolean[1]
+{
+  let input    = { |
+      meta::pure::router::preeval::tests::Person.all()
+    ->project([
+        col({p:meta::pure::router::preeval::tests::Person[1]|$p->genericType()->genericTypeClass()->elementToPath()}, 'type')
+        ])
+    };
+
+  let expected = { |
+      meta::pure::router::preeval::tests::Person.all()
+      ->project([
+          ^BasicColumnSpecification<meta::pure::router::preeval::tests::Person>(name = 'type', func = {p:meta::pure::router::preeval::tests::Person[1]|'meta::pure::router::preeval::tests::Person'})
+          ])
+
+    ;};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testInline():Boolean[1]
+{
+  let input    = { x:String[1]|
+    $x->meta::pure::router::preeval::tests::myTestFuncThatDoesEval() && $x->meta::pure::router::preeval::tests::myTestFuncThatDelegates()
+    };
+
+  let expected = {x:String[1]|
+    ($x == 1) && ($x == 1);
+    };
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::myTestFuncThatDoesEval<P>(value:P[1]):Boolean[1]
+{
+  meta::pure::router::preeval::tests::myTestFuncThatDoesSomething_P_1__Boolean_1_->eval($value)
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::myTestFuncThatDelegates<P>(other:P[1]):Boolean[1]
+{
+  $other->meta::pure::router::preeval::tests::myTestFuncThatDoesSomething();
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::myTestFuncThatDoesSomething<P>(k:P[1]):Boolean[1]
+{
+  $k == 1;
 }
 
 function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(input : FunctionDefinition<Any>[1], expectedOrig : FunctionDefinition<Any>[1]):Boolean[1]

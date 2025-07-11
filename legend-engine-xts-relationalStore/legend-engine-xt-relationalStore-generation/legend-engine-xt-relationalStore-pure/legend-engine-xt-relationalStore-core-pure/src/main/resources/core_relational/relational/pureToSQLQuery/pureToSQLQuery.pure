@@ -606,7 +606,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
   let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
 
   let paths = $operation.select->cast(@TdsSelectSqlQuery).paths;
-  let name = $fe.propertyName->cast(@InstanceValue).values->toOne()->cast(@String);
+  let name = $fe.func.name->toOne();
   let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
   let propertyMapping = if($matchedPath->isEmpty(), |[], |$matchedPath.second.propertyMapping);
 
