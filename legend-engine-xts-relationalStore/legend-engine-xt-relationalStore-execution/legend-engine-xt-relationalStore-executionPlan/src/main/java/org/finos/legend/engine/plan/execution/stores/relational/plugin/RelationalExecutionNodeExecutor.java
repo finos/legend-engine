@@ -1881,10 +1881,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
         for (ExecutionNode child : node.childNodes())
         {
-            ExecutionNode result = getFirstSQLExecutionNode(child);
+            SQLExecutionNode result = getFirstSQLExecutionNode(child);
             if (result != null)
             {
-                return (SQLExecutionNode) result;
+                return result;
             }
         }
         return null;
