@@ -172,6 +172,10 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_ is not supported yet!\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\"", AdapterQualifier.assertErrorMismatch),
             one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "\"meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
 
+            // HashCode
+            one("meta::pure::functions::hashCode::tests::testHashCode_Function_1__Boolean_1_", "\"meta::pure::functions::hash::hashCode_Any_MANY__Integer_1_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.unsupportedFeature),
+
             // UUID
             one("meta::pure::functions::string::generation::tests::generateGuid::testGenerateGuidWithRelation_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation)
     );
