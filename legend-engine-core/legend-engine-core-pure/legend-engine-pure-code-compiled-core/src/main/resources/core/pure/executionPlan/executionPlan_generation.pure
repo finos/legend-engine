@@ -144,7 +144,7 @@ function meta::pure::executionPlan::preprocessFunction(f:FunctionDefinition<Any>
                                               packageableRuntime:meta::pure::runtime::PackageableRuntime[1] | $packageableRuntime.runtimeValue,
                                               any:Any[1] | []
                                             ]));
-          if($runtime.preprocessFunction->isEmpty(), | $f, | $runtime.preprocessFunction->toOne()->eval($f, $runtime));,
+          if($runtime.preprocessFunction->isEmpty(), | $f, | $runtime.preprocessFunction->at(0)->toOne()->eval($f, $runtime->at(0)));,
         | $f);
 }
 
