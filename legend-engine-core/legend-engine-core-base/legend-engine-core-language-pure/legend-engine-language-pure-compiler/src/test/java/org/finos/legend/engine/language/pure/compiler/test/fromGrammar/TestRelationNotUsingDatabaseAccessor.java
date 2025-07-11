@@ -189,7 +189,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.name])->extend(over(~mycol, ~mycol->desceeending()), ~newCol:x|$x.mycol:y|$y->count())\n" +
-                        "}", "COMPILATION error at [4:81-92]: Can't resolve the builder for function 'desceeending' - stack:[Function 'test::f__Any_MANY_' Third Pass, Applying extend, Applying over, Applying desceeending]"
+                        "}", "COMPILATION error at [4:81-92]: Function does not exist 'desceeending(ColSpec<(mycol:String[1])>[1])'"
         );
     }
 
