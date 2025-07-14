@@ -463,6 +463,11 @@ public class RelationNativeImplementation
         }
     }
 
+    public static <T> Relation<? extends Object> groupBy(Relation<? extends T> rel, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
+    {
+        return groupBy(rel, Lists.mutable.empty(), aggColSpecTrans, es);
+    }
+
     public static <T> Relation<? extends Object> groupBy(Relation<? extends T> rel, ColSpec<?> cols, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
     {
         return groupBy(rel, Lists.mutable.with(cols._name()), aggColSpecTrans, es);
@@ -478,7 +483,7 @@ public class RelationNativeImplementation
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
         TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
 
-        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = tds.sort(cols.collect(name -> new SortInfo(name, SortDirection.ASC)).toList());
+        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = cols.isEmpty() ? tds.wrapFullTDS() : tds.sort(cols.collect(name -> new SortInfo(name, SortDirection.ASC)).toList());
 
         MutableSet<String> columnsToRemove = tds.getColumnNames().clone().toSet();
         columnsToRemove.removeAll(cols.toSet());

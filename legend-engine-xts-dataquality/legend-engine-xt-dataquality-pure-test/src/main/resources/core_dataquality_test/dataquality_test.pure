@@ -319,7 +319,8 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     '      }',
           'nonEmptyDataset',
           {|{rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200), LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
-                    $rel->extend(~DQ_COUNT: row | $rel->size())->select(~DQ_COUNT)->rename(~DQ_COUNT,~COUNT)->filter(row|$row.COUNT == 0)->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.COUNT->isEmpty(), | '', |$row.COUNT->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
+                    $rel->groupBy(~COUNT : x | 1 : y | $y->count())->filter(row|$row.COUNT == 0)
+                        ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.COUNT->isEmpty(), | '', |$row.COUNT->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                         ->extend(~DQ_DEFECT_ID: row | generateGuid())
                         ->extend(~DQ_RULE_NAME: row | 'nonEmptyDataset')
             }
@@ -461,7 +462,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     '      }',
           'nonEmptyDataset',
           {|{rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200), LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
-                    $rel->extend(~DQ_COUNT: row | $rel->size())->select(~DQ_COUNT)->rename(~DQ_COUNT,~COUNT)->filter(row|$row.COUNT == 0)
+                    $rel->groupBy(~COUNT : x | 1 : y | $y->count())->filter(row|$row.COUNT == 0)
             }
             ->meta::pure::functions::lang::eval(#>{meta::external::dataquality::tests::domain::db.personTable}#->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME]));},
             'meta::external::dataquality::tests::domain::DataQualityRuntime'        
