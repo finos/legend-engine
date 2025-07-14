@@ -41,10 +41,14 @@ public class Test_Relational_DuckDB_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: Values list \"subselect\" does not have a column named \"2011__|__newCol\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: Values list \"subselect\" does not have a column named \"2000__|__newCol\"", AdapterQualifier.needsInvestigation),
 
-            // Pure to SQL translation for window function using range frame needs to be implemented
-            one("meta::pure::functions::relation::tests::over::testRange_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_CurrentRow_WithMultiplePartitions_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation)
+            // Null values not supported in source TDS
+            one("meta::pure::functions::relation::tests::over::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::relation::tests::over::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::relation::tests::over::testRange_NPreceding_UnboundedFollowing_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
+
+            // Result TDS decimal precision tolerance needs to be implemented
+            one("meta::pure::functions::relation::tests::over::testRange_WithNumbers_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   menu_category,menu_cogs_usd,sum_cogs\n   Beverage,0.5,10.65\n   Beverage,0.65,9.65\n   Beverage,0.75,9.0\n   Dessert,0.5,10.65\n   Dessert,1.0,11.25\n   Dessert,1.25,10.25\n   Dessert,2.5,9.5\n   Dessert,3.0,7.0\n   Snack,1.25,10.25\n   Snack,2.25,11.75\n   Snack,4.0,4.0\n#'\nactual:   '#TDS\n   menu_category,menu_cogs_usd,sum_cogs\n   Beverage,0.5,10.649999976158142\n   Beverage,0.65,9.649999976158142\n   Beverage,0.75,9.0\n   Dessert,0.5,10.649999976158142\n   Dessert,1.0,11.25\n   Dessert,1.25,10.25\n   Dessert,2.5,9.5\n   Dessert,3.0,7.0\n   Snack,1.25,10.25\n   Snack,2.25,11.75\n   Snack,4.0,4.0\n#'\"", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()

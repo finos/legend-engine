@@ -172,7 +172,7 @@ public abstract class AggregationShared extends Shared
                         CoreInstance aggregateValue = subList.get(k);
                         if (orderByCurrentRowValue == null)
                         {
-                            if (offsetFrom != null && offsetTo != null && currentPartitionValueAsObject == null) // Rows with NULL in the ORDER BY column are included in an explicit-offset frame boundary only when the ORDER BY value of the current row is NULL.
+                            if (currentPartitionValueAsObject == null) // Rows with NULL in the ORDER BY column are included in frame boundary only when the ORDER BY value of the current row is NULL.
                             {
                                 aggregationValues.add(aggregateValue);
                             }
@@ -248,8 +248,8 @@ public abstract class AggregationShared extends Shared
                             }
                             else // RANGE BETWEEN N PRECEDING/FOLLOWING AND N PRECEDING/FOLLOWING
                             {
-                                Number lowerBound = sortDirection == SortDirection.ASC ? repoPrimitiveHandler.plus(currentRowValue, offsetFrom) : repoPrimitiveHandler.minus(currentRowValue, offsetFrom);
-                                Number upperBound = sortDirection == SortDirection.ASC ? repoPrimitiveHandler.plus(currentRowValue, offsetTo) : repoPrimitiveHandler.minus(currentRowValue, offsetTo);
+                                Number lowerBound = sortDirection == SortDirection.ASC ? repoPrimitiveHandler.plus(currentRowValue, offsetFrom) : repoPrimitiveHandler.minus(currentRowValue, offsetTo);
+                                Number upperBound = sortDirection == SortDirection.ASC ? repoPrimitiveHandler.plus(currentRowValue, offsetTo) : repoPrimitiveHandler.minus(currentRowValue, offsetFrom);
                                 if (currentPartitionValueAsObject != null)
                                 {
                                     Number currentPartitionValue = (Number) currentPartitionValueAsObject;

@@ -3101,23 +3101,42 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
             | ^meta::relational::metamodel::FrameLiteralValue(value = ^Literal(value = $v->abs()), direction = meta::relational::metamodel::FrameValueDirection.FOLLOWING)));
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::processRowsWindowFrame(rows: meta::pure::functions::relation::Rows[1]):meta::relational::metamodel::Frame[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processFrameNumericValue(n: meta::pure::functions::relation::FrameNumericValue[1]):meta::relational::metamodel::FrameValue[1]
 {
-   let originalOffsetFrom = $rows.offsetFrom;
-   let originalOffsetTo = $rows.offsetTo;
-   assert(!($originalOffsetFrom->instanceOf(meta::pure::functions::relation::FrameIntValue) &&
+   let v = $n.value;
+   if($v == 0,
+      | ^meta::relational::metamodel::FrameCurrentRowValue(),
+      | if ($v < 0,
+            | ^meta::relational::metamodel::FrameLiteralValue(value = ^Literal(value = $v->abs()), direction = meta::relational::metamodel::FrameValueDirection.PRECEDING),
+            | ^meta::relational::metamodel::FrameLiteralValue(value = ^Literal(value = $v->abs()), direction = meta::relational::metamodel::FrameValueDirection.FOLLOWING)));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processWindowFrame(frame: meta::pure::functions::relation::Frame[1]):meta::relational::metamodel::Frame[1]
+{
+   let frameType = $frame->match([
+                                   rows: meta::pure::functions::relation::Rows[1] | meta::relational::metamodel::FrameType.ROWS,
+                                   range: meta::pure::functions::relation::_Range[1] | meta::relational::metamodel::FrameType.RANGE
+                                 ]); 
+   let originalOffsetFrom = $frame.offsetFrom;
+   let originalOffsetTo = $frame.offsetTo;
+   assert(!(($originalOffsetFrom->instanceOf(meta::pure::functions::relation::FrameIntValue) &&
           $originalOffsetTo->instanceOf(meta::pure::functions::relation::FrameIntValue) &&
-          ($originalOffsetFrom->cast(@meta::pure::functions::relation::FrameIntValue).value > $originalOffsetTo->cast(@meta::pure::functions::relation::FrameIntValue).value)),
+          ($originalOffsetFrom->cast(@meta::pure::functions::relation::FrameIntValue).value > $originalOffsetTo->cast(@meta::pure::functions::relation::FrameIntValue).value)) ||
+          ($originalOffsetFrom->instanceOf(meta::pure::functions::relation::FrameNumericValue) &&
+          $originalOffsetTo->instanceOf(meta::pure::functions::relation::FrameNumericValue) &&
+          ($originalOffsetFrom->cast(@meta::pure::functions::relation::FrameNumericValue).value > $originalOffsetTo->cast(@meta::pure::functions::relation::FrameNumericValue).value))),
           | 'Invalid window frame boundary - lower bound of window frame cannot be greater than the upper bound!');
-   let offsetFrom = $originalOffsetFrom->match(([
+   let offsetFrom = $originalOffsetFrom->match([
                                                   i: meta::pure::functions::relation::FrameIntValue[1] | $i->processFrameIntValue(),
+                                                  n: meta::pure::functions::relation::FrameNumericValue[1] | $n->processFrameNumericValue(),
                                                   u: meta::pure::functions::relation::UnboundedFrameValue[1] | ^meta::relational::metamodel::UnboundedFrameValue(direction = meta::relational::metamodel::FrameValueDirection.PRECEDING)
-                                                ]));
-   let offsetTo = $originalOffsetTo->match(([
+                                               ]);
+   let offsetTo = $originalOffsetTo->match([
                                                   i: meta::pure::functions::relation::FrameIntValue[1] | $i->processFrameIntValue(),
+                                                  n: meta::pure::functions::relation::FrameNumericValue[1] | $n->processFrameNumericValue(),
                                                   u: meta::pure::functions::relation::UnboundedFrameValue[1] | ^meta::relational::metamodel::UnboundedFrameValue(direction = meta::relational::metamodel::FrameValueDirection.FOLLOWING)
-                                            ]));
-   ^meta::relational::metamodel::Frame(offsetFrom = $offsetFrom, offsetTo = $offsetTo, frameType = meta::relational::metamodel::FrameType.ROWS);
+                                           ]);
+   ^meta::relational::metamodel::Frame(offsetFrom = $offsetFrom, offsetTo = $offsetTo, frameType = $frameType);
 }
 
 function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(
@@ -3144,12 +3163,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(
    let windowElement = $partitionKeys->map(columnName|findAliasOrFail($columnName, $mainSelect).relationalElement);
    let sortElements = $sortInfo->map(si|^SortByInfo(sortByElement=findAliasOrFail($si.column, $mainSelect).relationalElement, 
                                                     sortDirection = if($si.direction.name == meta::pure::tds::SortDirection.DESC.name,| meta::relational::metamodel::SortDirection.DESC,| meta::relational::metamodel::SortDirection.ASC)));
-   let newFrame = if($frame->isEmpty(),
-                         | [],
-                         | $frame->toOne()->match([
-                                                    rows: meta::pure::functions::relation::Rows[1] | $rows->processRowsWindowFrame(),
-                                                    range: meta::pure::functions::relation::_Range[1] | fail('Range window frame is not supported yet!'); [];
-                                                  ]));
+   let newFrame = if($frame->isEmpty(), | [], | $frame->toOne()->processWindowFrame());
    let window = ^meta::relational::metamodel::WindowColumn(
       columnName = $newColumnName,
       func=^DynaFunction(name='PLACEHOLDER'),
