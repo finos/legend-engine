@@ -104,6 +104,8 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", GroupBy::new),
                 Tuples.pair("groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", GroupBy::new),
                 Tuples.pair("groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", GroupBy::new),
+                Tuples.pair("groupBy_Relation_1__AggColSpec_1__Relation_1_", GroupBy::new),
+                Tuples.pair("groupBy_Relation_1__AggColSpecArray_1__Relation_1_", GroupBy::new),
                 Tuples.pair("pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", Pivot::new),
                 Tuples.pair("pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", Pivot::new),
                 Tuples.pair("pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", Pivot::new),

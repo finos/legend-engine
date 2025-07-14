@@ -624,54 +624,77 @@ function meta::external::dataquality::buildSelectExpression(inputRel: ValueSpeci
 //we need to create an expression that will produce 1 row with the count if the relation is empty otherwise return no rows.
 function meta::external::dataquality::buildOneRowIfEmptyExpression(inputRel: ValueSpecification[1]):FunctionExpression[1]
 {
-  //get the row count as DQ_COUNT column
+  //get COUNT of relation
   let inputRelType = $inputRel.genericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>);
-  let dqCountColSpec = ^InstanceValue(values=^ColSpec<Integer>(name='DQ_COUNT'), genericType=^GenericType(rawType=ColSpec, typeArguments = ^GenericType(rawType=Integer)), multiplicity=PureOne)->evaluateAndDeactivate();
-  let newRelTypeWithDqCount = $inputRelType->addColumns(~[DQ_COUNT: Integer[1]])->evaluateAndDeactivate();
-  let withDqCount = buildDqCountExpression($inputRel, $inputRelType, $newRelTypeWithDqCount);
-
-  //select only the DQ_COUNT column
-  let newRelTypeWithOnlyDqCount = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $newRelTypeWithDqCount.columns->filter(col | 'DQ_COUNT' == ($col.name->toOne())));
-  let withOnlyCount = buildSelectExpression($withDqCount, $dqCountColSpec);
-
-  //rename the DQ_COUNT column to COUNT (this is needed as we can't directly use aggregate functions like count(*) in the WHERE clause of a query)
-  let relTypeWithRenamedCount = $newRelTypeWithOnlyDqCount->addColumns(~[COUNT: Integer[1]])->evaluateAndDeactivate();
-  let newRelTypeWithCount = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $relTypeWithRenamedCount.columns->filter(col | 'COUNT' == ($col.name->toOne())));
-  let withRenameCount = buildRenameDqCountExpression($withOnlyCount, $dqCountColSpec, $newRelTypeWithCount);
+  let newRelTypeWithCount = $inputRelType->addColumns(~[COUNT: Integer[1]])->evaluateAndDeactivate();
+  let newRelTypeWithOnlyCount = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $newRelTypeWithCount.columns->filter(col | 'COUNT' == ($col.name->toOne())));
+  let withCount = buildGetRowCountExpression($inputRel, $inputRelType, $newRelTypeWithOnlyCount);
 
   //filter where COUNT == 0
-  buildFilterOnEmptyCountExpression($withRenameCount, $newRelTypeWithCount);
+  buildFilterOnEmptyCountExpression($withCount, $newRelTypeWithOnlyCount);
 }
 
-function meta::external::dataquality::buildDqCountExpression(rel: ValueSpecification[1], relType: meta::pure::metamodel::relation::RelationType<Any>[1], newRelType: meta::pure::metamodel::relation::RelationType<Any>[1]):FunctionExpression[1]
-{
-  let rowCountFunction = ^SimpleFunctionExpression
-  (
-      func = size_Relation_1__Integer_1_,
-      multiplicity = PureOne,
-      genericType  = ^GenericType(rawType=Integer),
-      importGroup  = system::imports::coreImport,
-      parametersValues = [
-        ^VariableExpression(name='rel', genericType=^GenericType(rawType=$relType), multiplicity=PureOne)->evaluateAndDeactivate()
-      ]
-  )->evaluateAndDeactivate();
-
-  $rel->buildExtendExpression('DQ_COUNT', $rowCountFunction, 'row', $relType, $newRelType, Integer);
-}
-
-function meta::external::dataquality::buildRenameDqCountExpression(rel: ValueSpecification[1], columnToRename: InstanceValue[1], newRelType: meta::pure::metamodel::relation::RelationType<Any>[1]):FunctionExpression[1]
+function meta::external::dataquality::buildGetRowCountExpression(rel: ValueSpecification[1], relType: meta::pure::metamodel::relation::RelationType<Any>[1], newRelType: meta::pure::metamodel::relation::RelationType<Any>[1]):FunctionExpression[1]
 {
   ^SimpleFunctionExpression
   (
-      func = rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_,
+      func = groupBy_Relation_1__AggColSpec_1__Relation_1_,
       multiplicity = PureOne,
-      genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType)),
+      genericType  = ^GenericType(rawType=$newRelType),
       importGroup  = system::imports::coreImport,
       parametersValues = [
         $rel,
-        $columnToRename,
-        ^InstanceValue(values=^ColSpec<Integer>(name='COUNT'), genericType=^GenericType(rawType=ColSpec, typeArguments = ^GenericType(rawType=Integer)), multiplicity=PureOne)->evaluateAndDeactivate()
+        buildAggColSpecCountExpression($rel, $relType, $newRelType)
       ]
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::buildAggColSpecCountExpression(rel: ValueSpecification[1], relType: meta::pure::metamodel::relation::RelationType<Any>[1], newRelType: meta::pure::metamodel::relation::RelationType<Any>[1]):FunctionExpression[1]
+{
+  let param1 = buildAggColSpecCountFirstParam($relType);
+  let param2 = buildAggColSpecCountSecondParam();
+  ^SimpleFunctionExpression
+  (
+      func = aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType = AggColSpec, typeArguments = [$param1.genericType, $param2.genericType, ^GenericType(rawType=$newRelType)]),
+      importGroup  = system::imports::coreImport,
+      parametersValues = [
+        $param1,
+        $param2,
+        ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = 'COUNT')->evaluateAndDeactivate(),
+        ^InstanceValue(genericType = ^GenericType(rawType = $newRelType), multiplicity = PureOne)->evaluateAndDeactivate()
+      ]
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::buildAggColSpecCountFirstParam(relType: meta::pure::metamodel::relation::RelationType<Any>[1]):InstanceValue[1]
+{
+  let expression = ^VariableExpression(name = 'x', genericType = ^GenericType(rawType = $relType), multiplicity = PureOne);
+  ^InstanceValue(
+      genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(parameters = $expression, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer)))),
+      multiplicity = PureOne,
+      values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer), parameters = $expression), ^InstanceValue(genericType = ^GenericType(rawType = Integer), multiplicity = PureOne, values = 1))
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::buildAggColSpecCountSecondParam():InstanceValue[1]
+{
+  let countExpression = ^SimpleFunctionExpression
+  (
+      func = count_Any_MANY__Integer_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType = Integer),
+      importGroup  = system::imports::coreImport,
+      parametersValues = [
+        ^VariableExpression(name = 'y', genericType = ^GenericType(rawType = Integer), multiplicity = ZeroMany)
+      ]
+  )->evaluateAndDeactivate();
+  let expression = ^VariableExpression(name = 'y', genericType = ^GenericType(rawType = Integer), multiplicity = ZeroMany);
+  ^InstanceValue(
+      genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(parameters = $expression, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer)))),
+      multiplicity = PureOne,
+      values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer), parameters = $expression), $countExpression)
   )->evaluateAndDeactivate();
 }
 

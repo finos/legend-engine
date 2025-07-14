@@ -59,17 +59,15 @@ public class GroupBy extends AggregationShared
         TestTDS tds = getTDS(params, 0, processorSupport);
 
         RelationType<?> relationType = getRelationType(params, 0);
-
-        // Col Ids
-        Object cols = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
-        ListIterable<String> ids = getColumnIds(cols);
+        boolean containsGroupByCols = params.size() == 3;
+        int aggSpecParamIndex = containsGroupByCols ? 2 : 1;
 
         // Build TDS
-        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> orderedSource = tds.sort(ids.collect(c -> new SortInfo(c, SortDirection.ASC)));
+        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> orderedSource = getOrderedSource(params, processorSupport, tds, containsGroupByCols);
         TestTDS result = orderedSource.getOne()._distinct(orderedSource.getTwo());
 
         // Aggregations
-        CoreInstance aggSpec = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport);
+        CoreInstance aggSpec = Instance.getValueForMetaPropertyToOneResolved(params.get(aggSpecParamIndex), M3Properties.values, processorSupport);
         if (aggSpec instanceof AggColSpec)
         {
             result.addColumn(processOneAggColSpec(orderedSource, Lists.fixedSize.empty(), null, (AggColSpec<?, ?, ?>) aggSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null));
@@ -84,6 +82,20 @@ public class GroupBy extends AggregationShared
         }
 
         return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(result, returnGenericType, repository, processorSupport), false, processorSupport);
+    }
+
+    private Pair<TestTDS, MutableList<Pair<Integer, Integer>>> getOrderedSource(ListIterable<? extends CoreInstance> params, ProcessorSupport processorSupport, TestTDS tds, boolean containsGroupByCols)
+    {
+        if (containsGroupByCols)
+        {
+            // Col Ids
+            Object cols = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
+            ListIterable<String> ids = getColumnIds(cols);
+
+            // Build TDS
+            return tds.sort(ids.collect(c -> new SortInfo(c, SortDirection.ASC)));
+        }
+        return tds.wrapFullTDS();
     }
 
 }
