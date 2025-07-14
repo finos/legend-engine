@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -55,6 +56,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Mu
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.PrimitiveType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
@@ -474,11 +476,51 @@ public class CompileContext
     {
         Pair<SimpleFunctionExpression, List<ValueSpecification>> functionExpression;
         functionExpression = this.pureModel.handlers.buildFunctionExpression(functionName, parameters, sourceInformation, valueSpecificationBuilder);
-        if (fControl != null)
+        if (fControl != null && functionExpression != null)
         {
             testFunction(fControl, valueSpecificationBuilder.getProcessingContext(), functionExpression.getOne());
         }
         return functionExpression;
+    }
+
+    public String getMismatchFunctionExpressionDetailMessage(String functionName, List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
+    {
+        FunctionExpressionBuilder expressionBuilder = this.pureModel.handlers.getExpressionBuilder(functionName, sourceInformation, valueSpecificationBuilder);
+
+        String msg = "";
+
+        if (expressionBuilder != null)
+        {
+            List<String> matchParamSize = expressionBuilder.handlers().stream()
+                    .filter(x -> x.getParametersSize() == parameters.size())
+                    .map(x -> functionDescriptorToId(x.getFunc(), valueSpecificationBuilder.getContext().pureModel.getExecutionSupport().getProcessorSupport())).collect(Collectors.toList());
+
+            List<String> mismatchParamSize = expressionBuilder.handlers().stream()
+                    .filter(x -> x.getParametersSize() != parameters.size())
+                    .map(x -> functionDescriptorToId(x.getFunc(), valueSpecificationBuilder.getContext().pureModel.getExecutionSupport().getProcessorSupport())).collect(Collectors.toList());
+
+            if (!matchParamSize.isEmpty())
+            {
+                msg += "Functions that can match if parameter types or multiplicities are changed:\n\t\t" + String.join("\n\t\t", matchParamSize) + "\n";
+            }
+
+            if (!mismatchParamSize.isEmpty())
+            {
+                msg += "Functions that can match if number of parameters are changed:\n\t\t" + String.join("\n\t\t", mismatchParamSize) + "\n";
+            }
+        }
+
+        return msg;
+    }
+
+    private static String functionDescriptorToId(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> function, ProcessorSupport processorSupport)
+    {
+        FunctionType type = (FunctionType) function._classifierGenericType()._typeArguments().getOnly()._rawType();
+        String returnType = org.finos.legend.pure.m3.navigation.generictype.GenericType.print(type._returnType(), false, processorSupport) + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(type._returnMultiplicity(), true);
+        String parameters = type._parameters()
+                .collect(x -> org.finos.legend.pure.m3.navigation.generictype.GenericType.print(x._genericType(), false, processorSupport) + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(x._multiplicity(), true))
+                .makeString(",");
+        return function._functionName() + "(" + parameters + "):" + returnType;
     }
 
     public void collectPrerequisiteElementsFromFunctionName(Set<PackageableElementPointer> prerequisiteElements, String functionName, int parametersSize)
@@ -518,10 +560,7 @@ public class CompileContext
         {
             case 0:
             {
-                // Since we have tried to find basic function initially, this means the function builder is not found, we report error
-                String message = "Can't resolve the builder for function '" + functionName + "' - stack:" + processingContext.getStack();
-                LOGGER.error(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAPH_MISSING_FUNCTION, message).toString());
-                throw new EngineException(message, sourceInformation, EngineErrorType.COMPILATION);
+                return null; // error reporting will happen later, and with a more well define msg
             }
             case 1:
             {

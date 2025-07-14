@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
@@ -851,10 +852,35 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
             processingContext.addInferredVariables(letName, ve);
         }
 
-        org.eclipse.collections.api.tuple.Pair<SimpleFunctionExpression, List<ValueSpecification>> func = this.context.buildFunctionExpression(this.context.pureModel.buildNameForAppliedFunction(appliedFunction.function), appliedFunction.fControl, appliedFunction.parameters, appliedFunction.sourceInformation, this);
+        String functionName = this.context.pureModel.buildNameForAppliedFunction(appliedFunction.function);
+        org.eclipse.collections.api.tuple.Pair<SimpleFunctionExpression, List<ValueSpecification>> func = this.context.buildFunctionExpression(functionName, appliedFunction.fControl, appliedFunction.parameters, appliedFunction.sourceInformation, this);
+
         processingContext.pop();
-        Assert.assertTrue(func != null, () -> "Can't find a match for function '" + appliedFunction.function + "(?)'", appliedFunction.sourceInformation, EngineErrorType.COMPILATION);
-        Assert.assertTrue(func.getOne() != null, () -> "Can't find a match for function '" + appliedFunction.function + "(" + (func.getTwo() == null ? "?" : LazyIterate.collect(func.getTwo(), v -> (v._genericType() == null ? "?" : org.finos.legend.pure.m3.navigation.generictype.GenericType.print(v._genericType(), context.pureModel.getExecutionSupport().getProcessorSupport())) + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(v._multiplicity())).makeString(",")) + ")'", appliedFunction.sourceInformation, EngineErrorType.COMPILATION);
+
+        if (func == null || func.getOne() == null)
+        {
+            List<ValueSpecification> paramVs;
+
+            if (func != null && func.getTwo() != null)
+            {
+                paramVs = func.getTwo();
+            }
+            else
+            {
+                paramVs = appliedFunction.parameters.stream().map(p -> p.accept(this)).collect(Collectors.toList());
+            }
+
+            String paramTypeString = LazyIterate.collect(paramVs, v -> (v._genericType() == null ? "?" : org.finos.legend.pure.m3.navigation.generictype.GenericType.print(v._genericType(), context.pureModel.getExecutionSupport().getProcessorSupport())) + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(v._multiplicity())).makeString(",");
+
+            Assert.assertTrue(func != null, () -> "Function does not exist '" + appliedFunction.function + "(" + paramTypeString + ")'", appliedFunction.sourceInformation, EngineErrorType.COMPILATION);
+
+            Assert.assertTrue(func.getOne() != null, () ->
+            {
+                String matchingMsg = this.context.getMismatchFunctionExpressionDetailMessage(functionName, appliedFunction.parameters, appliedFunction.sourceInformation, this);
+                return "Can't find a match for function '" + appliedFunction.function + "(" + paramTypeString + ")'.\n" + matchingMsg;
+            }, appliedFunction.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
         SimpleFunctionExpression result = func.getOne();
         result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation));
         MilestoningDatePropagationHelper.updateMilestoningContextFromValidSources(result, processingContext);

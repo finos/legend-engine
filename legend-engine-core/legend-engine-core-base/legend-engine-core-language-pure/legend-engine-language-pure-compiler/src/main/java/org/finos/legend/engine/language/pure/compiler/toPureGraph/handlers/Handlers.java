@@ -2198,8 +2198,17 @@ public class Handlers
 
     public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
-        FunctionExpressionBuilder builder = valueSpecificationBuilder.getContext().resolveFunctionBuilder(functionName, this.registeredMetaPackages, this.map, sourceInformation, valueSpecificationBuilder.getProcessingContext());
-        return builder.buildFunctionExpression(parameters, sourceInformation, valueSpecificationBuilder);
+        FunctionExpressionBuilder builder = getExpressionBuilder(functionName, sourceInformation, valueSpecificationBuilder);
+        if (builder != null)
+        {
+            return builder.buildFunctionExpression(parameters, sourceInformation, valueSpecificationBuilder);
+        }
+        return null;
+    }
+
+    public FunctionExpressionBuilder getExpressionBuilder(String functionName, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
+    {
+        return valueSpecificationBuilder.getContext().resolveFunctionBuilder(functionName, this.registeredMetaPackages, this.map, sourceInformation, valueSpecificationBuilder.getProcessingContext());
     }
 
     public void collectPrerequisiteElementsFromUserDefinedFunctionHandlers(Set<PackageableElementPointer> prerequisiteElements, String functionName, int parametersSize)
