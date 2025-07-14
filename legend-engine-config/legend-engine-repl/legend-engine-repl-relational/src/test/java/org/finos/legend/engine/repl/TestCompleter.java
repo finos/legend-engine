@@ -80,7 +80,7 @@ public class TestCompleter
     public void testDeepWithCompilationError()
     {
         Assert.assertEquals("COMPILATION error at [5:26-49]: Can't find a match for function 'plus(Any[2])'.\n" +
-                "Functions that can match if parameter types or multiplicities are change:\n" +
+                "Functions that can match if parameter types or multiplicities are changed:\n" +
                 "\t\tplus(String[*]):String[1]\n" +
                 "\t\tplus(Integer[*]):Integer[1]\n" +
                 "\t\tplus(Float[*]):Float[1]\n" +

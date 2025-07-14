@@ -3178,7 +3178,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "    between($val, %2020-01-01, %2021-01-01);\n" +
                 "}",
         "COMPILATION error at [3:5-11]: Can't find a match for function 'between(Integer[1],StrictDate[1],StrictDate[1])'.\n" +
-                "Functions that can match if parameter types or multiplicities are change:\n" +
+                "Functions that can match if parameter types or multiplicities are changed:\n" +
                 "\t\tbetween(StrictDate[0..1],StrictDate[0..1],StrictDate[0..1]):Boolean[1]\n" +
                 "\t\tbetween(DateTime[0..1],DateTime[0..1],DateTime[0..1]):Boolean[1]\n" +
                 "\t\tbetween(Number[0..1],Number[0..1],Number[0..1]):Boolean[1]\n" +
@@ -3193,7 +3193,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "    between(1, 2);\n" +
                         "}",
                 "COMPILATION error at [3:5-11]: Can't find a match for function 'between(Integer[1],Integer[1])'.\n" +
-                        "Functions that can match if number of parameters are change:\n" +
+                        "Functions that can match if number of parameters are changed:\n" +
                         "\t\tbetween(StrictDate[0..1],StrictDate[0..1],StrictDate[0..1]):Boolean[1]\n" +
                         "\t\tbetween(DateTime[0..1],DateTime[0..1],DateTime[0..1]):Boolean[1]\n" +
                         "\t\tbetween(Number[0..1],Number[0..1],Number[0..1]):Boolean[1]\n" +
@@ -3208,7 +3208,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "    abs($val);\n" +
                         "}",
                 "COMPILATION error at [3:5-7]: Can't find a match for function 'abs(Integer[0..1])'.\n" +
-                        "Functions that can match if parameter types or multiplicities are change:\n" +
+                        "Functions that can match if parameter types or multiplicities are changed:\n" +
                         "\t\tabs(Float[1]):Float[1]\n" +
                         "\t\tabs(Integer[1]):Integer[1]\n" +
                         "\t\tabs(Decimal[1]):Decimal[1]\n" +

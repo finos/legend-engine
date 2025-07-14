@@ -501,12 +501,12 @@ public class CompileContext
 
             if (!matchParamSize.isEmpty())
             {
-                msg += "Functions that can match if parameter types or multiplicities are change:\n\t\t" + String.join("\n\t\t", matchParamSize) + "\n";
+                msg += "Functions that can match if parameter types or multiplicities are changed:\n\t\t" + String.join("\n\t\t", matchParamSize) + "\n";
             }
 
             if (!mismatchParamSize.isEmpty())
             {
-                msg += "Functions that can match if number of parameters are change:\n\t\t" + String.join("\n\t\t", mismatchParamSize) + "\n";
+                msg += "Functions that can match if number of parameters are changed:\n\t\t" + String.join("\n\t\t", mismatchParamSize) + "\n";
             }
         }
 
