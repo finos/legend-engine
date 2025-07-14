@@ -71,12 +71,20 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
 
 function  meta::external::function::activator::snowflakeApp::generation::generateInputParamsStub(f:Function<Any>[1], includeParamName:Boolean[1]):String[1]
 {  
-  let params = $f->functionType().parameters->evaluateAndDeactivate();   
-  assertEmpty($params->filter(p | $p.multiplicity != PureOne), 'not implemented, only multiplicity PureOne for snowflake app params is supported: ' + $params->filter(p | $p.multiplicity != PureOne)->map(p|$p.name)->joinStrings(', '));
-  let typeMap = inputTypeMap();
-  
-  '(' + $params->map(p|if($includeParamName,|'"' + $p.name + '" ',|'') + if($p.genericType.rawType->toOne()->instanceOf(Enumeration), | 'VARCHAR', | $typeMap->get($p.genericType.rawType->toOne())->toOne('Relational type missing for type: ' + $p.genericType.rawType->toOne()->toString()))
-  )->joinStrings(',') + ')';    
+  let params = $f->functionType().parameters->evaluateAndDeactivate();
+    let typeMap = inputTypeMap();
+
+    '(' + $params->map(p |
+          let baseType = if($p.genericType.rawType->toOne()->instanceOf(Enumeration),
+                       | 'VARCHAR',
+                       | $typeMap->get($p.genericType.rawType->toOne())->toOne('Relational type missing for type: ' + $p.genericType.rawType->toOne()->toString())
+          );
+          let sqlType = if($p.multiplicity == PureOne,
+                      | $baseType,
+                      | 'ARRAY'
+          );
+          (if($includeParamName, | '"' + $p.name + '" ', | '') + $sqlType);
+    )->joinStrings(',') + ')';
 }
 
 

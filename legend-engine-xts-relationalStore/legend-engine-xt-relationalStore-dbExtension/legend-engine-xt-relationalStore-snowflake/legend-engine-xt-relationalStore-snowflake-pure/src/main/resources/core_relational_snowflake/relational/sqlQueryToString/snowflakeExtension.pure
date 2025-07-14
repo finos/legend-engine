@@ -434,7 +434,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    $s->match([
       o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForSnowflake($sgc),
       a:SemiStructuredArrayFlatten[1] | $a->processSemiStructuredArrayFlattenForSnowflake($sgc),
-      a:SemiStructuredArrayFlattenOutput[1] | $a->processSemiStructuredArrayFlattenOutputForSnowflake($sgc)
+      a:SemiStructuredArrayFlattenOutput[1] | $a->processSemiStructuredArrayFlattenOutputForSnowflake($sgc),
+      a:SemiStructuredArrayFlattenUDTF[1]| $a->processSemiStructuredArrayFlattenForSnowflakeUDTF($sgc)
    ])
 }
 
@@ -458,15 +459,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function <<access.private>>  meta::relational::functions::sqlQueryToString::snowflake::replaceVarPlaceHolderForAppGeneration(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
 {
   assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
-  assertFalse($v->isCollectionPlaceHolder() || $v->isOptionalPlaceHolder(), 'only variables of multiplicity one can be used');
-
   $v.name;
 }
 
 function <<access.private>>  meta::relational::functions::sqlQueryToString::snowflake::replaceProcedurevariable(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
 {
   assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
-  assertFalse($v->isCollectionPlaceHolder() || $v->isOptionalPlaceHolder(), 'only variables of multiplicity one can be used');
   ':'+$v.name;
 }
 
@@ -491,6 +489,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
    let processedNavigation = $s.navigation->processOperation($sgc);
    'flatten(input => ' + $processedNavigation + ', outer => true, recursive => false, mode => \'array\')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredArrayFlattenForSnowflakeUDTF(s:SemiStructuredArrayFlattenUDTF[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   let processedNavigation = $s.param;
+   'Table(Flatten(input => ' + $processedNavigation + '))';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredArrayFlattenOutputForSnowflake(s:SemiStructuredArrayFlattenOutput[1], sgc:SqlGenerationContext[1]): String[1]

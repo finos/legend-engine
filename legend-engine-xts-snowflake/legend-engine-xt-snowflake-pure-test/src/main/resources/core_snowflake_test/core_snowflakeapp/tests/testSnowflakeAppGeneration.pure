@@ -106,12 +106,20 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   checkSnowflakeAppGrammar($function, $expected);
 }
 
-// not supported yet
-function <<test.Test, test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParams():Boolean[1]
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParams():Boolean[1]
 {
-  let expected = '';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".AGE in (select "root".value from Table(Flatten(input => ages)) as "root") $$;';
 
   let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParams(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingContains():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".AGE in (select "root".value from Table(Flatten(input => ages)) as "root") $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingContains(Integer[*]):TabularDataSet[1];\n';
 
   checkSnowflakeAppGrammar($function, $expected);
 }

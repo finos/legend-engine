@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::relational::postProcessor::*;
@@ -43,7 +44,21 @@ function meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionPara
 
 function <<access.private>> meta::relational::postProcessor::replaceVarPlaceHolder(v: VarPlaceHolder[1]): RelationalOperationElement[1]
 {  
-  ^TableFunctionParamPlaceHolder(var=$v);
+  if($v.name->startsWith('inFilterClause_'),
+    | let paramName = $v.name->substring(15,$v.name->length());
+      let flatten = ^SemiStructuredArrayFlattenUDTF(param=$paramName);
+
+      let tableAlias=^TableAlias(name='root',relationalElement=^DynaFunction(name='equal',parameters=[^Literal(value=1),^Literal(value='1')]));
+      let columnSelected=^TableAliasColumn(column=^Column(type=^meta::relational::metamodel::datatype::Varchar(size=200),name='value'),alias=$tableAlias);
+
+      let res=^TableAlias(relationalElement=$flatten,name='root');
+    
+      let req = ^RootJoinTreeNode(alias=$res);
+
+      let s=^SelectSQLQuery(data=$req, columns=$columnSelected);,
+    |
+      ^TableFunctionParamPlaceHolder(var=$v);  
+  );  
 }
 
 function <<access.private>> meta::relational::postProcessor::replaceLiteral(l: Literal[1]): RelationalOperationElement[1]

@@ -513,6 +513,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           c:ColumnName[1]|$dbConfig.identifierProcessor($c.name->toOne()),
                                           s:SemiStructuredObjectNavigation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           s:SemiStructuredArrayFlatten[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
+                                          s:SemiStructuredArrayFlattenUDTF[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           s:SemiStructuredArrayFlattenOutput[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           t:TableFunctionParamPlaceHolder[1] | $dbConfig.tableFunctionParamProcessor($t, $sgc),
                                           d:DataTypeInfo[1] | $dbConfig.dataTypeToSqlText($d.dataType),
