@@ -49,6 +49,7 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             pack("meta::pure::functions::relation::tests::distinct", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
             pack("meta::pure::functions::relation::tests::filter", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
             pack("meta::pure::functions::relation::tests::groupBy", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
+            pack("meta::pure::functions::relation::tests::aggregate", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
             pack("meta::pure::functions::relation::tests::join", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
             pack("meta::pure::functions::relation::tests::limit", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),
             pack("meta::pure::functions::relation::tests::pivot", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.needsInvestigation),

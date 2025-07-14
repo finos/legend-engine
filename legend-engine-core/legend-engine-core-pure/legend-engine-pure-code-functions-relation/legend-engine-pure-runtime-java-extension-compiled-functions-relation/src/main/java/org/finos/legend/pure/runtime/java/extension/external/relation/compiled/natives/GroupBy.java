@@ -24,7 +24,7 @@ public class GroupBy extends AbstractNative implements Native
 {
     public GroupBy()
     {
-        super("groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", "groupBy_Relation_1__AggColSpec_1__Relation_1_");
+        super("groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", "aggregate_Relation_1__AggColSpec_1__Relation_1_");
     }
 
     @Override

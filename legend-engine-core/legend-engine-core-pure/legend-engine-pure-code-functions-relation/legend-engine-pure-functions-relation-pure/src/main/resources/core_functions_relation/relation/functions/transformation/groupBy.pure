@@ -15,18 +15,6 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function <<PCT.function>> 
-{
-    doc.doc='Groups the entire given relation and adds new column where its value is aggregated using the reduce (second) function using the values collected from the map (first) function'
-}
-meta::pure::functions::relation::groupBy<T,K,V,R>(r:Relation<T>[1], agg:meta::pure::metamodel::relation::AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<R>[1];
-
-native function <<PCT.function>>
-{
-    doc.doc='Groups the entire given relation and adds new column(s) where their values are aggregated using the reduce (second) function using the values collected from the map (first) function'
-}
-meta::pure::functions::relation::groupBy<T,K,V,R>(r:Relation<T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<R>[1];
-
 native function <<PCT.function>>
 {
     doc.doc='Groups the given relation with the given columns and adds new column where its value is aggregated using the reduce (second) function using the values collected from the map (first) function'
@@ -311,65 +299,4 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '   5,9,I\n'+
                   '#', $resSorted->sort(~grp->ascending())->select(~[grp, YoCol, newColSorted])->toString()
 );
-}
-
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_NoGroupByCols_AggColSpec<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {
-                |#TDS
-                  id, grp, name
-                  1, 2, A
-                  2, 1, B
-                  3, 3, C
-                #->groupBy(~idSum : x | $x.id : y | $y->plus());
-               };
-
-    let res =  $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   idSum\n'+
-                  '   6\n'+
-                  '#', $res->toString());
-}
-
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_NoGroupByCols_AggColSpecArray<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {
-                |#TDS
-                  id, grp, code
-                  1, 2, A
-                  2, 1, A
-                  3, 3, A
-                #->groupBy(~[idSum : x | $x.id : y | $y->plus(), codes : x | $x.code : y | $y->joinStrings(':')]);
-               };
-
-    let res =  $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   idSum,codes\n'+
-                  '   6,A:A:A\n'+
-                  '#', $res->toString());
-}
-
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_NoGroupByCols_WithFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    /*
-      NOTE:- this works because it currently produces a WHERE on a sub query (if it produced WHERE directly on main query it would fail as we can't query by aggregated fields)
-      however ideally this should be generating HAVING instead of WHERE. TODO - look into fixing this
-    */
-    let expr = {
-                |#TDS
-                  id, grp, name
-                  1, 2, A
-                  2, 1, B
-                  3, 3, C
-                #->groupBy(~idSum : x | $x.id : y | $y->plus())->filter(r | $r.idSum == 6);
-               };
-
-    let res =  $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   idSum\n'+
-                  '   6\n'+
-                  '#', $res->toString());
 }

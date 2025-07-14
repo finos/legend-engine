@@ -825,7 +825,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     }
 
     @Test
-    public void testGroupByNoGroupingCols()
+    public void testAggregate()
     {
         test(
                 "###Relational\n" +
@@ -836,7 +836,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "###Pure\n" +
                         "function test::f():Any[*]\n" +
                         "{\n" +
-                        "   #>{a::A.tb}#->groupBy(~new : x|$x.id : y|$y->sum())\n" +
+                        "   #>{a::A.tb}#->aggregate(~new : x|$x.id : y|$y->sum())\n" +
                         "}"
         );
     }

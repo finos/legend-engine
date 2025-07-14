@@ -638,7 +638,7 @@ function meta::external::dataquality::buildGetRowCountExpression(rel: ValueSpeci
 {
   ^SimpleFunctionExpression
   (
-      func = groupBy_Relation_1__AggColSpec_1__Relation_1_,
+      func = aggregate_Relation_1__AggColSpec_1__Relation_1_,
       multiplicity = PureOne,
       genericType  = ^GenericType(rawType=$newRelType),
       importGroup  = system::imports::coreImport,
