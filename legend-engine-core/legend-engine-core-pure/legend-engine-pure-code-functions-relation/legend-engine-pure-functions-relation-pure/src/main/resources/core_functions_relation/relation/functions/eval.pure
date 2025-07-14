@@ -20,7 +20,7 @@ function <<PCT.function, functionType.NormalizeRequiredFunction>> meta::pure::fu
   $col->genericType().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns->toOne()->cast(@Column<Nil,Z|*>)->eval($row);
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::evalColumn::testSimpleEvalColumn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::eval::testSimpleEval<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
               | #TDS
