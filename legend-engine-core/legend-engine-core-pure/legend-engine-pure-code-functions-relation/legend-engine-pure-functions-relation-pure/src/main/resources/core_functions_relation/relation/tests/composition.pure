@@ -644,3 +644,56 @@ meta::pure::functions::relation::tests::composition::testOLAPCastExtractCastAggW
                   '   9,5,I,9\n'+
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testProjectDistinct<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {|
+        [
+            ^PersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Smith'),
+            ^PersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Smith'),
+            ^PersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Hill'),
+            ^PersonTypeForCompositionTests(firstName = 'Anthony', lastName = 'Allen')
+        ]->project(~[
+            first : x | $x.firstName->toLower(),
+            last  : x | $x.lastName
+        ])
+        ->distinct();
+    };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   first,last\n'+
+                  '   anthony,Allen\n'+
+                  '   peter,Hill\n'+
+                  '   peter,Smith\n'+
+                  '#', $res->sort([~first->ascending(), ~last->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testProjectJoinWithProjectProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, name
+              1, George
+              2, Pierre
+              3, Sachin
+              4, David
+            #;
+
+  let tds2 = #TDS
+              id, col, other
+              1, More George 1, 1
+              1, More George 2, 2
+              4, More David, 1
+            #;
+
+  let expr = {|$tds->project(~[id1 : x | $x.id, name1 : x | $x.name])->join($tds2->project(~[id2 : x | $x.id, col : x | $x.col, other : x | $x.other]), JoinKind.INNER, {x,y| $x.id1 == $y.id2})->project(~[id : x | $x.id1, name : x | $x.col])};
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   id,name\n'+
+                '   1,More George 1\n'+
+                '   1,More George 2\n'+
+                '   4,More David\n'+
+                '#', $res->sort([~id->ascending(),~name->ascending()])->toString());
+}
