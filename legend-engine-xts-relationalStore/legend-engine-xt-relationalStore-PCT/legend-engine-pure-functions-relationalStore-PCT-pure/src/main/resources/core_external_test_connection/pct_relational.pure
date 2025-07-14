@@ -60,10 +60,11 @@ function <<PCT.adapter>> {PCT.adapterName='MemSQL'} meta::relational::tests::pct
 function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
 {
   $f->match([
-    z:FunctionDefinition<Any>[1]|$z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions()),
+    z:FunctionDefinition<Any>[1] |if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement),|$z,|[])->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions()));,
     x:SimpleFunctionExpression[1]|let res = $x.parametersValues->map(p|$p->extractDependentFunctions());
-                                  $res->concatenate(if(!$x.func->hasStereotype('function', PCT),|$x.func,|[]));,
-    a:Any[1]|[]
+                                  $res->concatenate($x.func->extractDependentFunctions());,
+    i: InstanceValue[1] | $i.values->map(p|$p->extractDependentFunctions()),                                  
+    a:Any[1] | []
   ]);  
 }
 
@@ -146,6 +147,7 @@ function meta::relational::tests::pct::process::resultToType(preResultFinal: Any
 
   if ([
         pair(|$preResultFinal->isEmpty() || $preResultFinal == TDSNull, |[]),
+        pair(|$preResultFinal->toOne()->instanceOf(String) && $mult->isToMany(), |$preResultFinal->toOne()->cast(@String)->fromJson()->toMany(^InstanceValue(genericType = $type, multiplicity = $mult)->reactivate()->head())),
         pair(|$resultType->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toOne()->toString())),
         pair(|$resultType->subTypeOf(Date), |buildDate($preResultFinal->toOne()->toString())),
         pair(|$resultType->subTypeOf(Decimal), |$preResultFinal->toOne()->cast(@Number)->toDecimal()),

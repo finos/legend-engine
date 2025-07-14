@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::variant::navigation::*;
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
@@ -698,4 +699,120 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testP
                 '   1,More George 2\n'+
                 '   4,More David\n'+
                 '#', $res->sort([~id->ascending(),~name->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[2,1,3]"
+     2, "[5,6,4]"
+     3, "[9,8,7]"
+     4, "[10,11,12]"
+     5, "[15,13,14]"
+   #;
+
+   let expr = {|
+                  $tds->extend(~sorted:x | $x.payload->toMany(@Integer)->sort())
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,sorted\n'+
+                '   1,[2,1,3],[1,2,3]\n'+
+                '   2,[5,6,4],[4,5,6]\n'+
+                '   3,[9,8,7],[7,8,9]\n'+
+                '   4,[10,11,12],[10,11,12]\n'+
+                '   5,[15,13,14],[13,14,15]\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "[10,11,12]"
+     5, "[13,14,15]"
+   #;
+
+   let expr = {|
+                  $tds->extend(~reversed:x | $x.payload->toMany(@Integer)->reverse())
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,reversed\n'+
+                '   1,[1,2,3],[3,2,1]\n'+
+                '   2,[4,5,6],[6,5,4]\n'+
+                '   3,[7,8,9],[9,8,7]\n'+
+                '   4,[10,11,12],[12,11,10]\n'+
+                '   5,[13,14,15],[15,14,13]\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
+{
+  doc.doc='Extends a given TDS where the new column value is extracted from a variant array using the value\'s index number and then reference the new column in a filter expression.'
+}
+meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "[10,11,12]"
+     5, "[13,14,15]"
+   #;
+
+   let expr = {|
+                  $tds->extend(~atCol0:x | $x.payload->get(0)->to(@Integer))
+                      ->filter(x | $x.atCol0 < 7)
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,atCol0\n'+
+                '   1,[1,2,3],1\n'+
+                '   2,[4,5,6],4\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
+{
+  doc.doc='Filter the given TDS by inspecting the values of a variant array.  The values are inspected calling another function, demonstrating function composition when operating on variants.'
+}
+meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "[10,11,12]"
+     5, "[13,14,15]"
+   #;
+
+   let expr = {|
+                  $tds->filter(x | $x.payload->toMany(@Integer)->meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_filterValues())
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload\n'+
+                '   2,[4,5,6]\n'+
+                '   4,[10,11,12]\n'+
+                '#', $res->toString());
+}
+
+function meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_filterValues(val: Integer[*]):Boolean[1]
+{
+  $val->filter(y | $y->mod(2) == 0)->size() == 2;
 }

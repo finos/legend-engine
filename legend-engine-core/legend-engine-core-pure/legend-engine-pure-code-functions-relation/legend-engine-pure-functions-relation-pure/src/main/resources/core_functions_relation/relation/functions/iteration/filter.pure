@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
@@ -58,4 +60,73 @@ function <<PCT.test>> meta::pure::functions::relation::tests::filter::testSimple
                   '   val\n'+
                   '   5\n'+
                   '#', $res->sort(~val->ascending())->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "[10,11,12]"
+     5, "[13,14,15]"
+   #;
+
+   let expr = {|
+                  $tds->filter(x | $x.payload->get(0)->to(@Integer) < 7)
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload\n'+
+                '   1,[1,2,3]\n'+
+                '   2,[4,5,6]\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "{""boolean"":true,  ""integer"":1, ""string"":""hello""}"
+     2, "{""boolean"":false, ""integer"":2, ""string"":""world""}"
+     3, "{""boolean"":true,  ""integer"":3, ""string"":""world""}"
+   #;
+
+   let expr = {|
+                  $tds->filter(x | $x.payload->get('boolean')->to(@Boolean)->toOne() && $x.payload->get('integer')->to(@Integer) == 1)
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload\n'+
+                '   1,{"boolean":true,"integer":1,"string":"hello"}\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "[10,11,12]"
+     5, "[13,14,15]"
+   #;
+
+   let expr = {|
+                  $tds->filter(x | $x.payload->toMany(@Integer)->filter(y | $y->mod(2) == 0)->size() == 2)
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload\n'+
+                '   2,[4,5,6]\n'+
+                '   4,[10,11,12]\n'+
+                '#', $res->toString());
 }

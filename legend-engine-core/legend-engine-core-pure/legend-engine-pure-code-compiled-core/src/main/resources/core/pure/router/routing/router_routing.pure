@@ -788,6 +788,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     sum_Float_MANY__Float_1_,
     sum_Integer_MANY__Integer_1_,
     sum_Number_MANY__Number_1_,
+    sort_T_m__T_m_,
     averageRank_Any_MANY__Map_1_,
     denseRank_Any_MANY__Map_1_,
     rank_Any_MANY__Map_1_,

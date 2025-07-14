@@ -1377,7 +1377,7 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_filter<T|m>(f:
    #;
 
    let expr = {|
-                  $tds->extend(~divBy2:x | $x.payload->toMany(@Integer)->filter(t | $t->mod(2) == 0))
+                  $tds->extend(~divBy2:x | $x.payload->toMany(@Integer)->filter(t | $t->mod(2) == 0)->toVariant())
               };
 
    let res =  $f->eval($expr);
@@ -1385,9 +1385,9 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_filter<T|m>(f:
    assertEquals('#TDS\n'+
                 '   id,payload,divBy2\n'+
                 '   1,[1,2,3],[2]\n'+
-                '   2,[4,5,6],[4, 6]\n'+
+                '   2,[4,5,6],[4,6]\n'+
                 '   3,[7,8,9],[8]\n'+
-                '   4,[10,11,12],[10, 12]\n'+
+                '   4,[10,11,12],[10,12]\n'+
                 '   5,[13,14,15],[14]\n'+
                 '#', $res->toString());
 }
@@ -1408,18 +1408,18 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_map<T|m>(f:Fun
    #;
 
    let expr = {|
-                  $tds->extend(~payloadMod:x | $x.payload->toMany(@Integer)->map(t | $t->mod(2)))
+                  $tds->extend(~payloadMod:x | $x.payload->toMany(@Integer)->map(t | $t->mod(2))->toVariant())
               };
 
    let res =  $f->eval($expr);
 
    assertEquals('#TDS\n'+
                 '   id,payload,payloadMod\n'+
-                '   1,[1,2,3],[1, 0, 1]\n'+
-                '   2,[4,5,6],[0, 1, 0]\n'+
-                '   3,[7,8,9],[1, 0, 1]\n'+
-                '   4,[10,11,12],[0, 1, 0]\n'+
-                '   5,[13,14,15],[1, 0, 1]\n'+
+                '   1,[1,2,3],[1,0,1]\n'+
+                '   2,[4,5,6],[0,1,0]\n'+
+                '   3,[7,8,9],[1,0,1]\n'+
+                '   4,[10,11,12],[0,1,0]\n'+
+                '   5,[13,14,15],[1,0,1]\n'+
                 '#', $res->toString());
 }
 
