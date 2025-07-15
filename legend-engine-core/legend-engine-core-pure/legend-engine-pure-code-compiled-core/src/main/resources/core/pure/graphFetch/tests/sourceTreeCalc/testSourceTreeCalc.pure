@@ -1770,6 +1770,7 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionMapping
 
 ###Pure
 // Union mapping where sources are a mix between root class and property access
+import meta::pure::graphFetch::tests::sourceTreeCalc::*;
 Class meta::pure::graphFetch::tests::sourceTreeCalc::Asset
 {
   calcTyp: Float[0..1];
@@ -1810,21 +1811,38 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
 {
   let tree = #{meta::pure::graphFetch::tests::sourceTreeCalc::Debt{principleRedemptionSchedule{startDate,redempPrice,redempAmount,endDate}}}#;
 
-  let expectedString = 'Asset\n' +
-                        '(\n' +
-                        '  calcTyp\n' +
-                        '  putSch\n' +
-                        '  (\n' +
-                        '    putScheduleDt\n' +
-                        '    putSchedulePct\n' +
-                        '  )\n' +
-                        '  redempVal\n' +
-                        ')';
+  // let expectedString = 'Asset\n' +
+  //                       '(\n' +
+  //                       '  calcTyp\n' +
+  //                       '  putSch\n' +
+  //                       '  (\n' +
+  //                       '    putScheduleDt\n' +
+  //                       '    putSchedulePct\n' +
+  //                       '  )\n' +
+  //                       '  redempVal\n' +
+  //                       ')';
+  let expectedTree = #{
+    Asset 
+    {
+      calcTyp,
+      putSch 
+      {
+        BO 
+        {
+          calcTyp,
+          redempVal
+        },
+        putScheduleDt,
+        putSchedulePct
+      },
+      redempVal
+    }
+  }#;
 
   let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree,
                                                                 meta::pure::graphFetch::tests::sourceTreeCalc::MappingUnionFromRootClassAndProperty,
                                                                 meta::pure::extension::defaultExtensions());
-  assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+  assertEquals($expectedTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
 }
 
 
@@ -2745,6 +2763,7 @@ function meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::getCompany
 {
   $company.employees.employees->map(e | ^CompanyIntermediate(company = $company, employee = $e));
 }
+
 ###Mapping
 Mapping meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyMapping
 (
@@ -2754,7 +2773,7 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyMapp
     employees: $src->meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::getCompanyIntermediate()
   }
 
-  *meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::EmployeeTarget : Pure 
+  meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::EmployeeTarget : Pure 
   {
     ~src meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyIntermediate
     division : $src.company.employees.division->toOne(),
