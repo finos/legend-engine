@@ -968,9 +968,9 @@ public class Handlers
                                 h("meta::pure::tds::project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
                                 // meta::pure::tds::project<T>(set:T[*], columnSpecifications:ColumnSpecification<T>[*]):TabularDataSet[1]
                                 h("meta::pure::tds::project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true),
+                                h("meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_", true, ps -> ProjectReturnInference(ps, this.pureModel), ps -> true),
                                 //meta::pure::functions::relation::project<C,T>(cl:C[*], x:FuncColSpecArray<{C[1]->Any[*]},T>[1]):Relation<T>[1];
-                                h("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", true, ps -> ProjectReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_", true, ps -> ProjectReturnInference(ps, this.pureModel), ps -> true)
+                                h("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", true, ps -> ProjectReturnInference(ps, this.pureModel), ps -> true)
                         )
                 )
         );
