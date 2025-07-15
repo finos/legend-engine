@@ -77,32 +77,18 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
         //Digest should be provided for unitemporal snapshot without partition and for unitemporal snapshot with partition, with delete strategy = DELETE_UPDATED
         if (!digestField().isPresent())
         {
-            this.partitioningStrategy().accept(new PartitioningStrategyVisitor<Void>()
+            deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
             {
                 @Override
-                public Void visitPartitioning(PartitioningAbstract partitionStrategy)
+                public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
                 {
-                    deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
-                    {
-                        @Override
-                        public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
-                        {
-                            return null;
-                        }
-
-                        @Override
-                        public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
-                        {
-                            throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for Partitioning when delete strategy = DELETE_UPDATED");
-                        }
-                    });
                     return null;
                 }
 
                 @Override
-                public Void visitNoPartitioning(NoPartitioningAbstract noPartitionStrategy)
+                public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
                 {
-                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for NoPartitioning");
+                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory when delete strategy = DELETE_UPDATED");
                 }
             });
         }
@@ -119,31 +105,16 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
             @Override
             public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
             {
-                partitioningStrategy().accept(new PartitioningStrategyVisitor<Void>()
+                deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
                 {
                     @Override
-                    public Void visitPartitioning(PartitioningAbstract partitionStrategy)
+                    public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
                     {
-                        deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
-                        {
-                            @Override
-                            public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
-                            {
-                                return null;
-                            }
-
-                            @Override
-                            public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
-                            {
-                                validateDigestBasedMergeResolver();
-                                return null;
-                            }
-                        });
                         return null;
                     }
 
                     @Override
-                    public Void visitNoPartitioning(NoPartitioningAbstract noPartitionStrategy)
+                    public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
                     {
                         validateDigestBasedMergeResolver();
                         return null;
