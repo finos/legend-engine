@@ -507,62 +507,16 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          ]);
 
          let inlinedPropertyTree = $propertyPaths.result->buildPropertyTree()->inlineQualifiedPropertyNodes();
-
-         println('inlinedPropertyTree');
-         println($inlinedPropertyTree->meta::pure::lineage::scanProperties::propertyTree::printTree(' '));
-        //  println($inlinedPropertyTree,2);
-         println('owner');
-         println($owner.name);
-         
-        //  let childProperties = $owner->meta::pure::functions::meta::allNestedProperties2()->filter(p | let pt = $p->functionReturnType(); $pt.rawType->isNotEmpty() && $pt.rawType->toOne()->instanceOf(Class););
-        //  let childPropertiesMap = $childProperties->map(p | $p.genericType.rawType)->zip($childProperties)->newMap();
-
-        //  //TODO: only do the following if teh root of inlinePropertyTree is not owner
-        //  println(meta::pure::lineage::scanProperties::getRootClass($inlinedPropertyTree) == $owner);
-        //  let newTree = findSubTreeChawda($inlinedPropertyTree, $childPropertiesMap);
-        //  println('newTree');
-        // //  $newTree->map(t | $t->meta::pure::lineage::scanProperties::propertyTree::printTree(' ')->println());
-        //   $newTree->map(t | $t->println());
-        //  println('newTree done');
-
-        // println('blah---------------------');
-        //  let blah = $newTree->map(t | $t->buildPropertyPathUptoOwner($owner,$childPropertiesMap));
-        //  let newInlinedPropertyTree = ^PropertyPathTree(display='root', value='root', children = ^PropertyPathTree(display = $owner.name->toOne(), value = $owner, children = $blah));
-        //   println('newInlinedPropertyTree');
-        //  println($newInlinedPropertyTree->meta::pure::lineage::scanProperties::propertyTree::printTree(' '));
-
-        //   // ^PropertyPathTree(display='root',
-        //   //                               value='root',
-        //   //                               children = $grpByClass->keys()->map(c|^PropertyPathTree(display=$c.name->toOne(), value=$c, children=$grpByClass->get($c).values->recurseBuildTree()))//filteredPropertyLists->recurse()
-        //   //                              );
-
-        //  println('-------------------------');
-        //  // Property tree root node may not start at owner (e.g. when the source of a mapping is wrapped in a new class and passed to a property mapping).
-        //  // Here we try and find the part of the tree that starts at the owner - in usual case we will return the same tree but now also handle case mentioned above.
-        //  // Due to subTypes we could end up returning multiple trees hence we check if there is only one and start there, otherwise continue with old behaviour.
-
-
-         
-
-        //  let treeStartingAtOwner = findSubTreeWithOwner($inlinedPropertyTree, $owner);
-
-        //  let inlinedGraphTree = if($treeStartingAtOwner->size() == 1,
-        //                             | $treeStartingAtOwner->toOne()->propertyTreeToGraphFetchTree($owner)->removeDummyProperties(),
-        //                             | $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties()
-        //                         );
-
-        let inlinedGraphTree = if(meta::pure::lineage::scanProperties::getRootClass($inlinedPropertyTree) != $owner,
-                                  |   println('HERE');let childProperties = $owner->meta::pure::functions::meta::allNestedProperties2();//->filter(p | let pt = $p->functionReturnType(); $pt.rawType->isNotEmpty() && $pt.rawType->toOne()->instanceOf(Class););
+    
+         // Property tree root node may not start at owner (e.g. when the source of a mapping is wrapped in a new class and passed to a property mapping).
+         // Here we try and find the parts of the tree that could be child trees of the owner and then construct a property tree starting at the owner.
+        let inlinedGraphTree = if(!isTreeRootOwner($inlinedPropertyTree, $owner),
+                                  |   let childProperties = $owner->meta::pure::functions::meta::allNestedProperties()->filter(p | let pt = $p->functionReturnType(); $pt.rawType->isNotEmpty() && $pt.rawType->toOne()->instanceOf(Class););
                                       let childPropertiesMap = $childProperties->map(p | $p.genericType.rawType)->zip($childProperties)->newMap();
-                                      let newTree = findSubTreeChawda($inlinedPropertyTree, $childPropertiesMap);
-                                      println($newTree->size());
-                                               $newTree->map(t | $t->meta::pure::lineage::scanProperties::propertyTree::printTree(' ')->println());
-
-                                      let blah = $newTree->map(t | $t->buildPropertyPathUptoOwner($owner,$childPropertiesMap));
-                                      let newInlinedPropertyTree = ^PropertyPathTree(display='root', value='root', children = ^PropertyPathTree(display = $owner.name->toOne(), value = $owner, children = $blah));
+                                      let propertyTreesBelongingToOwner = meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner($inlinedPropertyTree, $owner, $childPropertiesMap);
+                                      let propertyTreesUptoOwner = $propertyTreesBelongingToOwner->map(t | $t->buildPropertyPathUptoOwner($owner,$childPropertiesMap));
+                                      let newInlinedPropertyTree = ^PropertyPathTree(display='root', value='root', children = ^PropertyPathTree(display = $owner.name->toOne(), value = $owner, children = $propertyTreesUptoOwner));
                                       $newInlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties();,
-
-
                                   | $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties()
 
                                 );
@@ -711,43 +665,38 @@ function <<access.private>> meta::pure::graphFetch::addPassThroughSubTreesAtPath
    );
 }
 
-function meta::pure::graphFetch::findSubTreeWithOwner(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1]) : PropertyPathTree[*]
+function meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1], t : Map<Type, AbstractProperty<Any>>[1]) : PropertyPathTree[*]
 {
   $pTree.value->match([
-    node:PropertyPathNode[1] | if($ownerClass == $node.class || $node.class->isStrictSubType($ownerClass),
+    node:PropertyPathNode[1] | if($ownerClass == $node.class || $node.class->isStrictSubType($ownerClass) || $t->get($node.class)->isNotEmpty(), 
                                   | $pTree,
-                                  | $pTree.children->map(ch | findSubTreeWithOwner($ch, $ownerClass))
+                                  | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass, $t))
                                 ),
-    clz:Class<Any>[1] | if($clz == $ownerClass || $ownerClass->isStrictSubType($clz),
-                          | $pTree,
-                          | $pTree.children->map(ch | findSubTreeWithOwner($ch, $ownerClass))
-                        ),
-    any:Any[1] | $pTree.children->map(ch | findSubTreeWithOwner($ch, $ownerClass))
+    clz : Class<Any>[1] | if($clz == $ownerClass || $ownerClass->isStrictSubType($clz) || $t->get($clz)->isNotEmpty(),
+                            | $pTree;,
+                            | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass,  $t))
+                          ),
+    any : Any[1] | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass, $t))
   ]);
 }
 
-function meta::pure::graphFetch::findSubTreeChawda(pTree:PropertyPathTree[1], t : Map<Type, AbstractProperty<Any>>[1]) : PropertyPathTree[*]
+function meta::pure::graphFetch::isTreeRootOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1]):Boolean[1]
 {
-  $pTree.value->match([
-    node:PropertyPathNode[1] | if($t->get($node.class)->isNotEmpty(), 
-                                  | $pTree,
-                                  | $pTree.children->map(ch | findSubTreeChawda($ch, $t))
-                                ),
-    clz : Class<Any>[1] | if($t->get($clz)->isNotEmpty(),
-                            | $pTree,
-                            | $pTree.children->map(ch | findSubTreeChawda($ch, $t))
-                          ),
-    any : Any[1] | $pTree.children->map(ch | findSubTreeChawda($ch, $t))
-  ])
+  let treeOwner = meta::pure::lineage::scanProperties::getRootClass($pTree);
+  if($treeOwner->isEmpty(), 
+    | true,
+    | $treeOwner->toOne() == $owner || $treeOwner->toOne()->isStrictSubType($owner)
+  );
 }
+
 
 function meta::pure::graphFetch::buildPropertyPathUptoOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1], t : Map<Type, AbstractProperty<Any>>[1]): PropertyPathTree[1]
 {
   let root = $pTree.value->cast(@PropertyPathNode);
   let prop = $root.property;
-  let propOwner = $prop.owner;
+  let propOwner = $prop->meta::pure::functions::meta::ownerClass();//$prop.owner;
 
-  if($propOwner == $owner, 
+  if($propOwner == $owner || $propOwner->isStrictSubType($owner), 
     | $pTree,
     | let findProp = $t->get($prop.owner)->toOne();
       let newclz = $findProp->toOne()->functionReturnType();
