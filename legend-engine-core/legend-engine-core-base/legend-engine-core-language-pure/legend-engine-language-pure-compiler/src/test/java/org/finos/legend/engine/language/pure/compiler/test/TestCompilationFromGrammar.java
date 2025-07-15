@@ -15,8 +15,10 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -34,6 +36,8 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
@@ -1084,6 +1088,30 @@ public class TestCompilationFromGrammar
                         "      ])->pivot(~[country, city], ~[total: x|$x.treePlanted : x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(year2:Integer)>)->filter(x|$x.year2 == 2000)\n" +
                         "}"
         );
+    }
+
+    @Test
+    public void testRelationMultiplicityInference()
+    {
+        Pair<PureModelContextData, PureModel> result = TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Report{country : String[0..1]; city: String[1]; year: Integer[0..1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Report.all()->project(~[\n" +
+                        "        country: x|$x.country,\n" +
+                        "        city : x|$x.city,\n" +
+                        "        year: x|$x.year->map(y|$y)\n" +
+                        "   ])\n" +
+                        "}"
+        );
+
+        SimpleFunctionExpression s = (SimpleFunctionExpression) result.getTwo().getConcreteFunctionDefinition_safe("test::f__Any_MANY_")._expressionSequence().getOnly();
+        RelationType<?> relType = (RelationType<?>) s._genericType()._typeArguments().getOnly()._rawType();
+        MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity> multiplicities = relType._columns().collect(c -> c._classifierGenericType()._multiplicityArguments().getOnly()).toList();
+        Assert.assertTrue(org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isZeroToOne(multiplicities.get(0)));
+        Assert.assertTrue(org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isToOne(multiplicities.get(1)));
+        Assert.assertTrue(org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isZeroToOne(multiplicities.get(2)));
     }
 
     @Test

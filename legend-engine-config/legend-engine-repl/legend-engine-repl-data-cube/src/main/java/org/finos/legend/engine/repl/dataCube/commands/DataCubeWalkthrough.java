@@ -140,7 +140,7 @@ public class DataCubeWalkthrough implements Command
     {
         public static final MutableList<String> SELECT_ALL = Lists.mutable.empty();
         public static final MutableList<String> FILTER = Lists.mutable.with("filter(x|$x.Year == 2010)");
-        public static final MutableList<String> EXTEND = Lists.mutable.withAll(FILTER).with("extend(~Total: x|$x.Gold + $x.Silver + $x.Bronze)");
+        public static final MutableList<String> EXTEND = Lists.mutable.withAll(FILTER).with("extend(~Total: x|$x.Gold->toOne() + $x.Silver->toOne() + $x.Bronze->toOne())");
         public static final MutableList<String> GROUP_BY = Lists.mutable.withAll(EXTEND).with("groupBy(~Country, ~Total: x|$x.Total: x|$x->sum())");
         public static final MutableList<String> SORT = Lists.mutable.withAll(GROUP_BY).with("sort(~Total->descending())");
         public static final MutableList<String> LIMIT = Lists.mutable.withAll(SORT).with("limit(3)");

@@ -65,7 +65,8 @@ public class TestCompleter
     @Test
     public void testArrowDeep()
     {
-        Assert.assertEquals("[contains , contains(], [startsWith , startsWith(], [endsWith , endsWith(], [toLower , toLower(], [toUpper , toUpper(], [lpad , lpad(], [rpad , rpad(], [parseInteger , parseInteger(], [parseFloat , parseFloat(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(f|$f.col->")));
+        Assert.assertEquals("[contains , contains(], [startsWith , startsWith(], [endsWith , endsWith(], [toLower , toLower(], [toUpper , toUpper(], [lpad , lpad(], [rpad , rpad(], [parseInteger , parseInteger(], [parseFloat , parseFloat(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200) NOT NULL))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(f|$f.col->")));
+        Assert.assertEquals("[count , count(], [joinStrings , joinStrings(], [uniqueValueOnly , uniqueValueOnly(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(f|$f.col->")));
     }
 
     @Test
