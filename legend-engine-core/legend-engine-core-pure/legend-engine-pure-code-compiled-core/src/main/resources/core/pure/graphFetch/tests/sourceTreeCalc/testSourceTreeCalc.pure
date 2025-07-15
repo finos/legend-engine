@@ -2675,3 +2675,89 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::tes
       b2: $src.c2.e
     }
 )
+
+###Pure 
+import meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::testIntermediateNested():Boolean[1]
+{
+  let tree = #{meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyTarget{employees{division, fullName}}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyMapping, meta::pure::extension::defaultExtensions());
+
+  let expected = #{
+      Company
+      {
+        employees
+        {
+          division,
+          employees
+          {
+            firstName,
+            lastName
+          }
+        }
+      }
+   }#;
+
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::Employee 
+{
+  firstName: String[1];
+  lastName : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::EmployeeTarget
+{
+  fullName : String[1];
+  division : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::EmployeeDetails
+{
+  employees : Employee[*];
+  city : String[1];
+  division : String[1];
+
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::Company
+{
+  employees : EmployeeDetails[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyTarget 
+{
+  employees : EmployeeTarget[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyIntermediate
+{
+  company : Company[1];
+  employee : Employee[0..1];
+}
+
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::getCompanyIntermediate(company: Company[1]) : CompanyIntermediate[*]
+{
+  $company.employees.employees->map(e | ^CompanyIntermediate(company = $company, employee = $e));
+}
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::Company
+    employees: $src->meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::getCompanyIntermediate()
+  }
+
+  *meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::EmployeeTarget : Pure 
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyIntermediate
+    division : $src.company.employees.division->toOne(),
+    fullName : $src.employee.firstName->toOne() + $src.employee.lastName->toOne()
+  }
+)
