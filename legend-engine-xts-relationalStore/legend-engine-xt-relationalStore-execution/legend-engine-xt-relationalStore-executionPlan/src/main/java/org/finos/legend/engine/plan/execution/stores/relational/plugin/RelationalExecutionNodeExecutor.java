@@ -522,15 +522,22 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                         return relationalPrimitiveResult;
                     }
 
-                    if (relationalPrimitiveResult.getResultSet().next())
+                    try
                     {
-                        List<org.eclipse.collections.api.block.function.Function<Object, Object>> transformers = relationalPrimitiveResult.getTransformers();
-                        Object convertedValue = transformers.get(0).valueOf(relationalPrimitiveResult.getResultSet().getObject(1));
-                        return new ConstantResult(convertedValue);
+                        if (relationalPrimitiveResult.getResultSet().next())
+                        {
+                            List<org.eclipse.collections.api.block.function.Function<Object, Object>> transformers = relationalPrimitiveResult.getTransformers();
+                            Object convertedValue = transformers.get(0).valueOf(relationalPrimitiveResult.getResultSet().getObject(1));
+                            return new ConstantResult(convertedValue);
+                        }
+                        else
+                        {
+                            throw new RuntimeException("Result set is empty for allocation node");
+                        }
                     }
-                    else
+                    finally
                     {
-                        throw new RuntimeException("Result set is empty for allocation node");
+                        relationalPrimitiveResult.close();
                     }
                 }
                 return relationalPrimitiveResult;
