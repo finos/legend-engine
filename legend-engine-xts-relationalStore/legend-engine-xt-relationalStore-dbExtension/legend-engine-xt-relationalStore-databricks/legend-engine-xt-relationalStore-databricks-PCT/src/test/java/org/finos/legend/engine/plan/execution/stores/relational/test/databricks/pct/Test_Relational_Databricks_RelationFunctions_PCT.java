@@ -100,6 +100,9 @@ public class Test_Relational_Databricks_RelationFunctions_PCT extends PCTReportC
             one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Databricks\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Databricks\"", AdapterQualifier.unsupportedFeature),
 
+            //aggregate
+            pack("meta::pure::functions::relation::tests::aggregate", "[MISSING_GROUP_BY] The query does not include a GROUP BY clause. Add GROUP BY or turn it into the window functions using OVER clauses.", AdapterQualifier.unsupportedFeature),
+
             //join
             one("meta::pure::functions::relation::tests::join::testSimpleJoin_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Databricks\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::join::testJoin_forFailedJoinWhenNoRowsMatchJoinCondition_Function_1__Boolean_1_", "\"Common table expression not supported on DB Databricks\"", AdapterQualifier.unsupportedFeature),
