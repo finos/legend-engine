@@ -122,6 +122,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
                 .deduplicationStrategy(unitemporalSnapshot.deduplicationStrategy())
                 .versioningStrategy(unitemporalSnapshot.versioningStrategy().accept(new VersionStrategyCaseConverter()))
+                .deleteStrategy(unitemporalSnapshot.deleteStrategy())
                 .build();
     }
 
@@ -387,7 +388,6 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         {
             return Partitioning.builder()
                     .addAllPartitionFields(applyCase(partitionStrategy.partitionFields()))
-                    .deleteStrategy(partitionStrategy.deleteStrategy())
                     .putAllPartitionValuesByField(applyCase(partitionStrategy.partitionValuesByField()))
                     .addAllPartitionSpecList(applyCaseForListOfMap(partitionStrategy.partitionSpecList()))
                     .derivePartitionSpec(partitionStrategy.derivePartitionSpec())

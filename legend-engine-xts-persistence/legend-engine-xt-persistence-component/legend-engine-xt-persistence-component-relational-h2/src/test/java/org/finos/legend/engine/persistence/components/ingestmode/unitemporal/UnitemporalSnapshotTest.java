@@ -686,8 +686,8 @@ class UnitemporalSnapshotTest extends BaseTest
                         .build())
                 .partitioningStrategy(Partitioning.builder()
                     .addAllPartitionFields(Collections.singletonList(dateName))
-                    .deleteStrategy(DeleteAllStrategy.builder().build())
                     .build())
+                .deleteStrategy(DeleteAllStrategy.builder().build())
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -750,7 +750,6 @@ class UnitemporalSnapshotTest extends BaseTest
         Partitioning partitioning = Partitioning.builder()
             .addAllPartitionFields(Collections.singletonList(dateName))
             .addAllPartitionSpecList(partitionSpecList)
-            .deleteStrategy(DeleteAllStrategy.builder().build())
             .build();
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
@@ -761,6 +760,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeOutName(batchTimeOutName)
                 .build())
             .partitioningStrategy(partitioning)
+            .deleteStrategy(DeleteAllStrategy.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -841,7 +841,6 @@ class UnitemporalSnapshotTest extends BaseTest
         Partitioning partitioning = Partitioning.builder()
                 .addAllPartitionFields(Collections.singletonList(dateName))
                 .derivePartitionSpec(true)
-                .deleteStrategy(DeleteAllStrategy.builder().build())
                 .build();
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
@@ -852,6 +851,7 @@ class UnitemporalSnapshotTest extends BaseTest
                         .dateTimeOutName(batchTimeOutName)
                         .build())
                 .partitioningStrategy(partitioning)
+                .deleteStrategy(DeleteAllStrategy.builder().build())
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -911,12 +911,12 @@ class UnitemporalSnapshotTest extends BaseTest
                 .build())
             .partitioningStrategy(Partitioning.builder()
                 .addAllPartitionFields(Collections.singletonList(dateName))
-                .deleteStrategy(DeleteAllStrategy.builder().build())
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
                 .performStageVersioning(true)
                 .build())
+            .deleteStrategy(DeleteAllStrategy.builder().build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 
@@ -950,5 +950,68 @@ class UnitemporalSnapshotTest extends BaseTest
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+    }
+
+
+    /*
+    Scenario: Test milestoning Logic without Partition with delete all when staging table pre populated
+    Empty batch handling - default
+    */
+    @Test
+    void testUnitemporalSnapshotMilestoningLogicWithoutPartitionWithDeleteAll() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestName)
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .dateTimeInName(batchTimeInName)
+                        .dateTimeOutName(batchTimeOutName)
+                        .build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
+        String dataPass1 = basePathForInput + "without_partition/no_version/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "without_partition/no_version/expected_pass1.csv";
+        // 1. Load staging table
+        loadBasicStagingData(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 3);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
+        String dataPass2 = basePathForInput + "without_partition/no_version/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "without_partition/no_version/expected_pass2.csv";
+        // 1. Load staging table
+        loadBasicStagingData(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(4, 0, 1, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
+
+        options = options.withCleanupStagingData(true);
+
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "without_partition/no_version/expected_pass3.csv";
+        // 1. Load Staging table
+        loadBasicStagingData(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 4);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
     }
 }

@@ -15,7 +15,9 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteAllStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteUpdatedStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteUpdatedStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandling;
@@ -56,6 +58,13 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
         return DeleteTargetData.builder().build();
     }
 
+
+    @Value.Default
+    default DeleteStrategy deleteStrategy()
+    {
+        return DeleteUpdatedStrategy.builder().build();
+    }
+
     @Override
     default <T> T accept(IngestModeVisitor<T> visitor)
     {
@@ -73,20 +82,6 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                 @Override
                 public Void visitPartitioning(PartitioningAbstract partitionStrategy)
                 {
-                    partitionStrategy.deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
-                    {
-                        @Override
-                        public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
-                        {
-                            return null;
-                        }
-
-                        @Override
-                        public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
-                        {
-                            throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for Partitioning when delete strategy = DELETE_UPDATED");
-                        }
-                    });
                     return null;
                 }
 
@@ -94,6 +89,21 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                 public Void visitNoPartitioning(NoPartitioningAbstract noPartitionStrategy)
                 {
                     throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for NoPartitioning");
+                }
+            });
+
+            deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
+            {
+                @Override
+                public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
+                {
+                    return null;
+                }
+
+                @Override
+                public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
+                {
+                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for Partitioning when delete strategy = DELETE_UPDATED");
                 }
             });
         }
@@ -115,7 +125,7 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                     @Override
                     public Void visitPartitioning(PartitioningAbstract partitionStrategy)
                     {
-                        partitionStrategy.deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
+                        deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
                         {
                             @Override
                             public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)

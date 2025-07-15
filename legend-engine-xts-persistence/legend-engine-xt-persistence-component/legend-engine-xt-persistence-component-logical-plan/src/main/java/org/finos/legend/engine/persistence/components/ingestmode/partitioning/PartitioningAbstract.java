@@ -38,12 +38,6 @@ public interface PartitioningAbstract extends PartitioningStrategy
         return true;
     }
 
-    @Value.Default
-    default DeleteStrategy deleteStrategy()
-    {
-        return DeleteUpdatedStrategy.builder().build();
-    }
-
     List<String> partitionFields();
 
     List<Map<String, Object>> partitionSpecList(); // [ {date: D1, Id: ID1, Name: N1}, {date: D2, Id: ID2, Name: N2}, ....]
