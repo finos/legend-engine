@@ -74,7 +74,7 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     @Value.Check
     default void validate()
     {
-        //Digest should be provided for unitemporal snapshot without partition and for unitemporal snapshot with partition, with delete strategy = DELETE_UPDATED
+        //Digest should be provided for unitemporal snapshot with delete strategy = DELETE_UPDATED
         if (!digestField().isPresent())
         {
             deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
