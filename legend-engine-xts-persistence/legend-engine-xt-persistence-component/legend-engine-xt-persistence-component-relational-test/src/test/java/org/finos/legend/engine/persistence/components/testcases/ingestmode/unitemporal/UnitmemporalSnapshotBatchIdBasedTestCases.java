@@ -525,5 +525,23 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
         verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionWithDeletePartitionWithEmptyStaging(operations);
     }
 
+
+    @Test
+    void testUnitemporalSnapshotNoPartitionsWithDeleteAll()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__DELETE_ALL__NO_DEDUP__NO_VERSION();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithNoPartitionsAndDeleteAll(operations);
+    }
+
+
+    public abstract void verifyUnitemporalSnapshotWithNoPartitionsAndDeleteAll(GeneratorResult operations);
+
     public abstract RelationalSink getRelationalSink();
 }
