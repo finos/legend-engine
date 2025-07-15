@@ -1091,14 +1091,13 @@ public class TestCompilationFromGrammar
     }
 
     @Test
-    public void testRelationMultiplicityInference()
+    public void testColumnExpressionMultiplicityInference()
     {
         Pair<PureModelContextData, PureModel> result = TestCompilationFromGrammarTestSuite.test(
                 "###Pure\n" +
-                        "Class test::Report{country : String[0..1]; city: String[1]; year: Integer[0..1];}" +
                         "function test::f():Any[*]\n" +
                         "{\n" +
-                        "   test::Report.all()->project(~[\n" +
+                        "   1->cast(@Relation<(country:String[0..1], city:String[1], year:Integer[0..1])>)->project(~[\n" +
                         "        country: x|$x.country,\n" +
                         "        city : x|$x.city,\n" +
                         "        year: x|$x.year->map(y|$y)\n" +
