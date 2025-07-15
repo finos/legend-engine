@@ -82,6 +82,20 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                 @Override
                 public Void visitPartitioning(PartitioningAbstract partitionStrategy)
                 {
+                    deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
+                    {
+                        @Override
+                        public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
+                        {
+                            return null;
+                        }
+
+                        @Override
+                        public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
+                        {
+                            throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for Partitioning when delete strategy = DELETE_UPDATED");
+                        }
+                    });
                     return null;
                 }
 
@@ -89,21 +103,6 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                 public Void visitNoPartitioning(NoPartitioningAbstract noPartitionStrategy)
                 {
                     throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for NoPartitioning");
-                }
-            });
-
-            deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
-            {
-                @Override
-                public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
-                {
-                    return null;
-                }
-
-                @Override
-                public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
-                {
-                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for Partitioning when delete strategy = DELETE_UPDATED");
                 }
             });
         }
