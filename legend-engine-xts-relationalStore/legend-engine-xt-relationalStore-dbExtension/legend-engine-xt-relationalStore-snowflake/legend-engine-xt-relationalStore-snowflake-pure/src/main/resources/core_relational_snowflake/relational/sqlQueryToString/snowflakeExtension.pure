@@ -435,7 +435,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForSnowflake($sgc),
       a:SemiStructuredArrayFlatten[1] | $a->processSemiStructuredArrayFlattenForSnowflake($sgc),
       a:SemiStructuredArrayFlattenOutput[1] | $a->processSemiStructuredArrayFlattenOutputForSnowflake($sgc),
-      a:SemiStructuredInClauseFlattener[1]| $a->processSemiStructuredInClauseFlattenerForSnowflake($sgc)
+      a:SemiStructuredArrayFlattenRelation[1]| $a->processSemiStructuredArrayFlattenRelationForSnowflake($sgc)
    ])
 }
 
@@ -491,7 +491,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    'flatten(input => ' + $processedNavigation + ', outer => true, recursive => false, mode => \'array\')';
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredInClauseFlattenerForSnowflake(s:SemiStructuredInClauseFlattener[1], sgc:SqlGenerationContext[1]): String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredArrayFlattenRelationForSnowflake(s:SemiStructuredArrayFlattenRelation[1], sgc:SqlGenerationContext[1]): String[1]
 {
    let processedNavigation = $s.param;
    'Table(Flatten(input => ' + $processedNavigation + '))';
