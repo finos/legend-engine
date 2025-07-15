@@ -22,7 +22,7 @@ Class meta::relational::functions::pureToSqlQuery::metamodel::VarCrossSetPlaceHo
    crossSetImplementation: CrossSetImplementation[1];
 }
 
-Class meta::relational::functions::pureToSqlQuery::metamodel::SemiStructuredArrayFlattenUDTF extends Relation
+Class meta::relational::functions::pureToSqlQuery::metamodel::SemiStructuredInClauseFlattener extends Relation
 {
    param: String[1];
 }
