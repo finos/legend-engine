@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::relational::postProcessor::*;
@@ -25,7 +26,7 @@ import meta::relational::mapping::*;
 
 function meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder(query:SQLQuery[1]): PostProcessorResult[1]
 {
-  let transformFunc = {r: RelationalOperationElement[1] |  
+  let transformFunc = {r: RelationalOperationElement[1] |
                         $r->match([
                           l: Literal[1] | $l->replaceLiteral(),
                           v: VarPlaceHolder[1] | $v->replaceVarPlaceHolder(),
@@ -36,14 +37,29 @@ function meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionPara
                         ]);
                       };
 
-  let transformedQuery = $query->transform($transformFunc, ^Map<RelationalOperationElement, RelationalOperationElement>()).first; 
-  
-  ^PostProcessorResult(query = $transformedQuery->cast(@SQLQuery)); 
+  let transformedQuery = $query->transform($transformFunc, ^Map<RelationalOperationElement, RelationalOperationElement>()).first;
+
+  ^PostProcessorResult(query = $transformedQuery->cast(@SQLQuery));
 }
 
 function <<access.private>> meta::relational::postProcessor::replaceVarPlaceHolder(v: VarPlaceHolder[1]): RelationalOperationElement[1]
-{  
-  ^TableFunctionParamPlaceHolder(var=$v);
+{
+  let clause = meta::relational::postProcessor::prefixForWrapperAllocationNodeName();
+  if($v.name->startsWith($clause),
+    | let paramName = $v.name->substring($clause->length(),$v.name->length());
+      let flatten = ^SemiStructuredArrayFlattenRelation(param=$paramName);
+
+      let tableAlias=^TableAlias(name='root',relationalElement=^DynaFunction(name='equal',parameters=[^Literal(value=1),^Literal(value='1')]));
+      let columnSelected=^TableAliasColumn(column=^Column(type=^meta::relational::metamodel::datatype::Varchar(size=200),name='value'),alias=$tableAlias);
+
+      let res=^TableAlias(relationalElement=$flatten,name='root');
+    
+      let req = ^RootJoinTreeNode(alias=$res);
+
+      let s=^SelectSQLQuery(data=$req, columns=$columnSelected);,
+    |
+      ^TableFunctionParamPlaceHolder(var=$v);  
+  );  
 }
 
 function <<access.private>> meta::relational::postProcessor::replaceLiteral(l: Literal[1]): RelationalOperationElement[1]
