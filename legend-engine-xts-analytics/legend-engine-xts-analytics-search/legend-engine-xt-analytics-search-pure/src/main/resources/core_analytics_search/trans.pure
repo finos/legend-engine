@@ -241,7 +241,7 @@ function meta::analytics::search::transformation::service::buildDatabaseColumnDo
     relationTree = false,
     reportLineage = true
   );
-  let allLineage = $funcDefinition->meta::analytics::lineage::computeLineage($mapping, $runtime, meta::analytics::search::transformation::getExtensions(), $lineageConfig);
+  let allLineage = $funcDefinition->meta::analytics::lineage::computeLineageLegacy($mapping, $runtime, meta::analytics::search::transformation::getExtensions(), $lineageConfig);
   let columnLineage = $allLineage.reportLineage->meta::analytics::lineage::transformColumns();
   let tables = $columnLineage->map(l|
     $l.columns->map(c|

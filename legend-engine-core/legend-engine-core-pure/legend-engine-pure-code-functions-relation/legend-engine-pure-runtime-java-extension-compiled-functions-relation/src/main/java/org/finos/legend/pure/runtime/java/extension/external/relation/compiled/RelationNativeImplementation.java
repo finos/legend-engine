@@ -45,6 +45,7 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.n
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
@@ -281,7 +282,7 @@ public class RelationNativeImplementation
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
         TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
-        return new TDSContainer((TestTDSCompiled) aggregateTDS(null, tds.wrapFullTDS(), aggColSpecTrans, false, es).injectInto((TestTDS) tds, TestTDS::addColumn), ps);
+        return new TDSContainer((TestTDSCompiled) aggregateTDS(null, Lists.fixedSize.empty(), tds.wrapFullTDS(), aggColSpecTrans, false, es).injectInto((TestTDS) tds, TestTDS::addColumn), ps);
     }
 
     public static <T> Relation<? extends T> extendWinFunc(Relation<? extends T> rel, Window window, MutableList<ColFuncSpecTrans2> colFunc, ExecutionSupport es)
@@ -301,9 +302,10 @@ public class RelationNativeImplementation
         TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
 
         Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = window.getPartition().isEmpty() ? tds.wrapFullTDS() : tds.sort(window.getPartition().collect(part -> new SortInfo(part, SortDirection.ASC)).toList());
-        final Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortedPartitions = TestTDS.sortPartitions(window.getSorts(), sortRes);
+        MutableList<SortInfo> sortInfos = window.getSorts();
+        final Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortedPartitions = TestTDS.sortPartitions(sortInfos, sortRes);
 
-        return new TDSContainer((TestTDSCompiled) aggregateTDS(window, sortedPartitions, aggColSpecTrans, false, es).injectInto(sortedPartitions.getOne(), TestTDS::addColumn), ps);
+        return new TDSContainer((TestTDSCompiled) aggregateTDS(window, sortInfos, sortedPartitions, aggColSpecTrans, false, es).injectInto(sortedPartitions.getOne(), TestTDS::addColumn), ps);
     }
 
 
@@ -358,7 +360,7 @@ public class RelationNativeImplementation
     {
         int size = tds.getTwo().size();
         int k = 0;
-        Object frame = window.convert(((CompiledExecutionSupport) es).getProcessorSupport(), new CompiledPrimitiveBuilder());
+        Object frame = window.convert(((CompiledExecutionSupport) es).getProcessorSupport(), new CompiledPrimitiveHandler());
         for (int j = 0; j < size; j++)
         {
             Pair<Integer, Integer> r = tds.getTwo().get(j);
@@ -461,6 +463,11 @@ public class RelationNativeImplementation
         }
     }
 
+    public static <T> Relation<? extends Object> groupBy(Relation<? extends T> rel, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
+    {
+        return groupBy(rel, Lists.mutable.empty(), aggColSpecTrans, es);
+    }
+
     public static <T> Relation<? extends Object> groupBy(Relation<? extends T> rel, ColSpec<?> cols, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
     {
         return groupBy(rel, Lists.mutable.with(cols._name()), aggColSpecTrans, es);
@@ -476,13 +483,13 @@ public class RelationNativeImplementation
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
         TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
 
-        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = tds.sort(cols.collect(name -> new SortInfo(name, SortDirection.ASC)).toList());
+        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = cols.isEmpty() ? tds.wrapFullTDS() : tds.sort(cols.collect(name -> new SortInfo(name, SortDirection.ASC)).toList());
 
         MutableSet<String> columnsToRemove = tds.getColumnNames().clone().toSet();
         columnsToRemove.removeAll(cols.toSet());
         TestTDS distinctTDS = sortRes.getOne()._distinct(sortRes.getTwo()).removeColumns(columnsToRemove);
 
-        return new TDSContainer((TestTDSCompiled) aggregateTDS(null, sortRes, aggColSpecTransAll, true, es).injectInto(distinctTDS, TestTDS::addColumn), ps);
+        return new TDSContainer((TestTDSCompiled) aggregateTDS(null, Lists.fixedSize.empty(), sortRes, aggColSpecTransAll, true, es).injectInto(distinctTDS, TestTDS::addColumn), ps);
     }
 
     public static <T> Relation<? extends Object> pivot(Relation<? extends T> rel, ColSpec<?> pivotCols, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
@@ -520,21 +527,21 @@ public class RelationNativeImplementation
                 case M3Paths.String:
                 {
                     String[] finalRes = new String[size];
-                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalRes[j] = (String) o, true);
+                    performMapReduce(null, Lists.fixedSize.empty(), aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalRes[j] = (String) o, true);
                     existing.addColumn(aggColSpecTrans.newColName, DataType.STRING, finalRes);
                     break;
                 }
                 case M3Paths.Integer:
                 {
                     long[] finalResLong = new long[size];
-                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalResLong[j] = (long) o, true);
+                    performMapReduce(null, Lists.fixedSize.empty(), aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalResLong[j] = (long) o, true);
                     existing.addColumn(aggColSpecTrans.newColName, DataType.LONG, finalResLong);
                     break;
                 }
                 case M3Paths.Float:
                 {
                     double[] finalResDouble = new double[size];
-                    performMapReduce(null, aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalResDouble[j] = (double) o, true);
+                    performMapReduce(null, Lists.fixedSize.empty(), aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalResDouble[j] = (double) o, true);
                     existing.addColumn(aggColSpecTrans.newColName, DataType.DOUBLE, finalResDouble);
                     break;
                 }
@@ -598,7 +605,7 @@ public class RelationNativeImplementation
         return sourceTds.getRowCount();
     }
 
-    private static MutableList<ColumnValue> aggregateTDS(Window window, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes, MutableList<? extends AggColSpecTrans> aggColSpecTransAll, boolean compress, ExecutionSupport es)
+    private static MutableList<ColumnValue> aggregateTDS(Window window, MutableList<SortInfo> sortInfos, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes, MutableList<? extends AggColSpecTrans> aggColSpecTransAll, boolean compress, ExecutionSupport es)
     {
         int size = compress ? sortRes.getTwo().size() : (int) sortRes.getOne().getRowCount();
         boolean[] nulls = new boolean[(int) size];
@@ -609,18 +616,18 @@ public class RelationNativeImplementation
             {
                 case M3Paths.String:
                     String[] finalRes = new String[size];
-                    performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> finalRes[j] = (String) o, compress);
+                    performMapReduce(window, sortInfos, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> finalRes[j] = (String) o, compress);
                     columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.STRING, finalRes));
                     break;
                 case M3Paths.Integer:
                     long[] finalResLong = new long[size];
-                    performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> processWithNull(j, o, nulls, () -> finalResLong[j] = (long) o), compress);
+                    performMapReduce(window, sortInfos, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> processWithNull(j, o, nulls, () -> finalResLong[j] = (long) o), compress);
                     columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.LONG, finalResLong, nulls));
                     break;
                 case M3Paths.Float:
                 case M3Paths.Number:
                     double[] finalResDouble = new double[size];
-                    performMapReduce(window, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> processWithNull(j, o, nulls, () -> finalResDouble[j] = (double) o), compress);
+                    performMapReduce(window, sortInfos, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> processWithNull(j, o, nulls, () -> finalResDouble[j] = (double) o), compress);
                     columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.DOUBLE, finalResDouble, nulls));
                     break;
                 default:
@@ -630,55 +637,200 @@ public class RelationNativeImplementation
         return columnValues;
     }
 
-    private static void performMapReduce(Window window, AggColSpecTrans map, Function2 reduce, ExecutionSupport es, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes, Procedure2<Integer, Object> setter, boolean compress)
+    private static void performMapReduce(Window window, MutableList<SortInfo> sortInfos, AggColSpecTrans map, Function2 reduce, ExecutionSupport es, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes, Procedure2<Integer, Object> setter, boolean compress)
     {
         int cursor = 0;
         int size = sortRes.getTwo().size();
+        CompiledPrimitiveHandler compiledPrimitiveHandler = new CompiledPrimitiveHandler();
         for (int j = 0; j < size; j++)
         {
             Pair<Integer, Integer> r = sortRes.getTwo().get(j);
-            MutableList<Object> subList = org.eclipse.collections.impl.factory.Lists.mutable.empty();
-            TDSContainer winTDS = new TDSContainer((TestTDSCompiled) sortRes.getOne().slice(r.getOne(), r.getTwo()), ((CompiledExecutionSupport) es).getProcessorSupport());
-            Object frame = window == null ? null : window.convert(((CompiledExecutionSupport) es).getProcessorSupport(), new CompiledPrimitiveBuilder());
-            for (int i = 0; i < r.getTwo() - r.getOne(); i++)
+            MutableList<Object> subList = Lists.mutable.empty();
+            Integer partitionStartIndex = r.getOne();
+            Integer partitionEndIndex = r.getTwo();
+            int partitionSize = partitionEndIndex - partitionStartIndex;
+            TestTDSCompiled sourceTDS = (TestTDSCompiled) sortRes.getOne().slice(partitionStartIndex, partitionEndIndex);
+            TDSContainer winTDS = new TDSContainer(sourceTDS, ((CompiledExecutionSupport) es).getProcessorSupport());
+            Object convertedFrame = window == null ? null : window.convert(((CompiledExecutionSupport) es).getProcessorSupport(), compiledPrimitiveHandler);
+            Frame frame = window == null ? null : window.getFrame();
+            if (window != null && frame.getFrameType() == FrameType.range)
             {
-                Object res = map.eval(winTDS, frame, new RowContainer(winTDS.tds, i), es);
-                subList.add(res);
-            }
-
-            // Write result
-            if (compress)
-            {
-                subList.removeIf(Objects::isNull);
-                Object result = reduce.value(subList, es);
-                setter.value(j, result);
-            }
-            else
-            {
-                if (window == null)
+                if (sortInfos.size() != 1)
                 {
-                    subList.removeIf(Objects::isNull);
-                    Object result = reduce.value(subList, es);
-                    for (int i = 0; i < r.getTwo() - r.getOne(); i++)
-                    {
-                        setter.value(cursor++, result);
-                    }
+                    throw new RuntimeException("There must be exactly one sort info for range frame, but found " + sortInfos.size());
                 }
-                else
+                SortInfo sortInfo = sortInfos.get(0);
+                String orderByColumnName = sortInfo.getColumnName();
+                SortDirection sortDirection = sortInfo.getDirection();
+                Number offsetFrom = frame.getOffsetFrom();
+                Number offsetTo = frame.getOffsetTo(0);
+                MutableList<Object> orderByValues = Lists.mutable.empty();
+                for (int i = 0; i < partitionSize; i++)
                 {
-                    for (int i = 0; i < r.getTwo() - r.getOne(); i++)
+                    Object orderByRowValue = sourceTDS.getValueAsCoreInstance(orderByColumnName, i);
+                    orderByValues.add(orderByRowValue);
+                    Object res = map.eval(winTDS, convertedFrame, new RowContainer(winTDS.tds, i), es);
+                    subList.add(res);
+                }
+
+                for (int i = 0; i < partitionSize; i++)
+                {
+                    MutableList<Object> aggregationValues = Lists.mutable.empty();
+                    Object orderByCurrentRowValue = orderByValues.get(i);
+                    for (int k = 0; k < partitionSize; k++)
                     {
-                        Frame windowFrame = window.getFrame();
-                        if (i + windowFrame.getOffsetTo(subList.size()) < 0 || i + windowFrame.getOffsetFrom() >= subList.size())
+                        Object currentPartitionValueAsObject = orderByValues.get(k);
+                        Object aggregateValue = subList.get(k);
+                        if (orderByCurrentRowValue == null)
                         {
-                            setter.value(cursor++, null);
+                            if (currentPartitionValueAsObject == null) // Rows with NULL in the ORDER BY column are included in frame boundary only when the ORDER BY value of the current row is NULL.
+                            {
+                                aggregationValues.add(aggregateValue);
+                            }
+                        }
+                        else if (orderByCurrentRowValue instanceof Number)
+                        {
+                            Number currentRowValue = (Number) orderByCurrentRowValue;
+                            if (offsetFrom == null && offsetTo == null) // RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+                            {
+                                aggregationValues.add(aggregateValue);
+                            }
+                            else if (offsetFrom == null) // RANGE BETWEEN UNBOUNDED PRECEDING AND N PRECEDING/FOLLOWING
+                            {
+                                if (sortDirection == SortDirection.ASC)
+                                {
+                                    Number upperBound = compiledPrimitiveHandler.plus(currentRowValue, offsetTo);
+                                    if (currentPartitionValueAsObject != null)
+                                    {
+                                        Number currentPartitionValue = (Number) currentPartitionValueAsObject;
+                                        if (compiledPrimitiveHandler.lessThanEqual(currentPartitionValue, upperBound))
+                                        {
+                                            aggregationValues.add(aggregateValue);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    Number lowerBound = compiledPrimitiveHandler.minus(currentRowValue, offsetTo);
+                                    if (currentPartitionValueAsObject == null) // When the ORDER BY clause specifies NULLS FIRST, which is default when sort order is DESC, rows with NULL in the ORDER BY column are included in UNBOUNDED PRECEDING frames.
+                                    {
+                                        aggregationValues.add(aggregateValue);
+                                    }
+                                    else
+                                    {
+                                        Number currentPartitionValue = (Number) currentPartitionValueAsObject;
+                                        if (compiledPrimitiveHandler.lessThanEqual(lowerBound, currentPartitionValue))
+                                        {
+                                            aggregationValues.add(aggregateValue);
+                                        }
+                                    }
+                                }
+                            }
+                            else if (offsetTo == null) // RANGE BETWEEN N PRECEDING/FOLLOWING AND UNBOUNDED FOLLOWING
+                            {
+                                if (sortDirection == SortDirection.ASC)
+                                {
+                                    Number lowerBound = compiledPrimitiveHandler.plus(currentRowValue, offsetFrom);
+                                    if (currentPartitionValueAsObject == null) // When the ORDER BY clause specifies NULLS LAST, which is default when sort order is ASC, rows with NULL in the ORDER BY column are included in UNBOUNDED FOLLOWING frames.
+                                    {
+                                        aggregationValues.add(aggregateValue);
+                                    }
+                                    else
+                                    {
+                                        Number currentPartitionValue = (Number) currentPartitionValueAsObject;
+                                        if (compiledPrimitiveHandler.lessThanEqual(lowerBound, currentPartitionValue))
+                                        {
+                                            aggregationValues.add(aggregateValue);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    Number upperBound = compiledPrimitiveHandler.minus(currentRowValue, offsetFrom);
+                                    if (currentPartitionValueAsObject != null)
+                                    {
+                                        Number currentPartitionValue = (Number) currentPartitionValueAsObject;
+                                        if (compiledPrimitiveHandler.lessThanEqual(currentPartitionValue, upperBound))
+                                        {
+                                            aggregationValues.add(aggregateValue);
+                                        }
+                                    }
+                                }
+                            }
+                            else // RANGE BETWEEN N PRECEDING/FOLLOWING AND N PRECEDING/FOLLOWING
+                            {
+                                Number lowerBound = sortDirection == SortDirection.ASC ? compiledPrimitiveHandler.plus(currentRowValue, offsetFrom) : compiledPrimitiveHandler.minus(currentRowValue, offsetTo);
+                                Number upperBound = sortDirection == SortDirection.ASC ? compiledPrimitiveHandler.plus(currentRowValue, offsetTo) : compiledPrimitiveHandler.minus(currentRowValue, offsetFrom);
+                                if (currentPartitionValueAsObject != null)
+                                {
+                                    Number currentPartitionValue = (Number) currentPartitionValueAsObject;
+                                    if (compiledPrimitiveHandler.lessThanEqual(lowerBound, currentPartitionValue) && compiledPrimitiveHandler.lessThanEqual(currentPartitionValue, upperBound))
+                                    {
+                                        aggregationValues.add(aggregateValue);
+                                    }
+                                }
+                            }
                         }
                         else
                         {
-                            MutableList<Object> framed = framedList(subList, window.getFrame(), i);
-                            framed.removeIf(Objects::isNull);
-                            Object result = reduce.value(framed, es);
+                            throw new RuntimeException("Non-numeric values for order by column are not currently supported for range frame, but found: " + orderByCurrentRowValue.getClass());
+                        }
+                    }
+
+                    aggregationValues.removeIf(Objects::isNull);
+                    if (aggregationValues.isEmpty())
+                    {
+                        setter.value(cursor++, null);
+                    }
+                    else
+                    {
+                        Object result = reduce.value(aggregationValues, es);
+                        setter.value(cursor++, result);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < partitionSize; i++)
+                {
+                    Object res = map.eval(winTDS, convertedFrame, new RowContainer(winTDS.tds, i), es);
+                    subList.add(res);
+                }
+
+                // Write result
+                if (compress)
+                {
+                    subList.removeIf(Objects::isNull);
+                    Object result = reduce.value(subList, es);
+                    setter.value(j, result);
+                }
+                else
+                {
+                    if (window == null)
+                    {
+                        subList.removeIf(Objects::isNull);
+                        Object result = reduce.value(subList, es);
+                        for (int i = 0; i < partitionSize; i++)
+                        {
                             setter.value(cursor++, result);
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < partitionSize; i++)
+                        {
+                            Frame windowFrame = window.getFrame();
+                            if (i + (Integer) windowFrame.getOffsetTo(subList.size()) < 0 || i + (Integer) windowFrame.getOffsetFrom() >= subList.size())
+                            {
+                                setter.value(cursor++, null);
+                            }
+                            else
+                            {
+                                MutableList<Object> framed = framedList(subList, windowFrame, i);
+                                framed.removeIf(Objects::isNull);
+                                Object result = reduce.value(framed, es);
+                                setter.value(cursor++, result);
+                            }
                         }
                     }
                 }

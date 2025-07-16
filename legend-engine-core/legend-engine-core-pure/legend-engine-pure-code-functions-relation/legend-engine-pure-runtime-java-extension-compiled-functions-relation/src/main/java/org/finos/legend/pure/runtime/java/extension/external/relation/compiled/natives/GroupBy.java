@@ -24,19 +24,24 @@ public class GroupBy extends AbstractNative implements Native
 {
     public GroupBy()
     {
-        super("groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_");
+        super("groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", "aggregate_Relation_1__AggColSpec_1__Relation_1_");
     }
 
     @Override
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
+        boolean containsGroupByCols = transformedParams.size() == 3;
+        int aggSpecParamIndex = containsGroupByCols ? 2 : 1;
         StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.groupBy");
         result.append('(');
         result.append(transformedParams.get(0));
         result.append(", ");
-        result.append(transformedParams.get(1));
-        result.append(", ");
-        result.append("Lists.mutable.with(" + transformedParams.get(2) + ")");
+        if (containsGroupByCols)
+        {
+            result.append(transformedParams.get(1));
+            result.append(", ");
+        }
+        result.append("Lists.mutable.with(" + transformedParams.get(aggSpecParamIndex) + ")");
 
         processAggColSpec(result, false);
 

@@ -15,10 +15,11 @@
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared;
 
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.CompiledSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.ValCoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
 
-public class CompiledPrimitiveBuilder implements Frame.PrimitiveBuilder
+public class CompiledPrimitiveHandler implements Frame.PrimitiveHandler
 {
     @Override
     public CoreInstance build(String val)
@@ -27,8 +28,26 @@ public class CompiledPrimitiveBuilder implements Frame.PrimitiveBuilder
     }
 
     @Override
-    public CoreInstance build(int val)
+    public CoreInstance build(Number val)
     {
-        return new ValCoreInstance(String.valueOf(val), "Integer");
+        return ValCoreInstance.toCoreInstance(val);
+    }
+
+    @Override
+    public Number plus(Number left, Number right)
+    {
+        return CompiledSupport.plus(left, right);
+    }
+
+    @Override
+    public Number minus(Number left, Number right)
+    {
+        return CompiledSupport.minus(left, right);
+    }
+
+    @Override
+    public boolean lessThanEqual(Number left, Number right)
+    {
+        return CompiledSupport.lessThanEqual(left, right);
     }
 }

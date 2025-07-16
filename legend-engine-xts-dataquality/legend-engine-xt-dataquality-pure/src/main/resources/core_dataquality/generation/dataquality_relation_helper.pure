@@ -77,6 +77,37 @@ function meta::external::dataquality::assertRelationNotEmpty<T>(rel:Relation<T>[
 //   ->relationEmpty()
 // }
 
+//TODO: these functions need the NormalizeRequiredFunction stereotype as without this the generic type of the colspec is being evaluated as GenericTypeOperation instead of GenericType which isn't being preevaled correctly - once we fix/handle this we can remove this stereotype from these functions
+function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::rowsWithEmptyColumn<T,Z>(rel:Relation<T>[1], col:ColSpec<(?:Z)⊆T>[1]):Relation<T>[1]
+{
+  $rel->filter(row | eval($col,$row)->isEmpty());
+}
+
+function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::rowsWithNonEmptyColumn<T,Z>(rel:Relation<T>[1], col:ColSpec<(?:Z)⊆T>[1]):Relation<T>[1]
+{
+  $rel->filter(row | eval($col,$row)->isNotEmpty());
+}
+
+function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::rowsWithValueOutsideRange<T>(rel:Relation<T>[1], col:ColSpec<(?:Number)⊆T>[1], min:Integer[1], max:Integer[1]):Relation<T>[1]
+{
+  $rel->filter(row | (eval($col,$row)->toOne() < $min) || (eval($col,$row)->toOne() > $max));
+}
+
+function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::rowsWithNegativeValue<T>(rel:Relation<T>[1], col:ColSpec<(?:Number)⊆T>[1]):Relation<T>[1]
+{
+  $rel->filter(row | eval($col,$row)->toOne() <= 0);
+}
+
+function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::rowsWithColumnLongerThan<T>(rel:Relation<T>[1], col:ColSpec<(?:String)⊆T>[1], length: Integer[1]):Relation<T>[1]
+{
+  $rel->filter(row | eval($col,$row)->toOne()->length() > $length);
+}
+
+function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::rowsWithColumnDiffersFromPattern<T>(rel:Relation<T>[1], col:ColSpec<(?:String)⊆T>[1], pattern: String[1]):Relation<T>[1]
+{
+  $rel->filter(row | !eval($col,$row)->toOne()->matches($pattern));
+}
+
 
 function <<PCT.test>> meta::external::dataquality::testRelationNotEmpty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {

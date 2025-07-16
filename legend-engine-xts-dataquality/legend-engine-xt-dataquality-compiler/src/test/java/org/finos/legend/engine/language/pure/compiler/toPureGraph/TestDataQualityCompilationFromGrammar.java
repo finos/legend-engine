@@ -376,6 +376,59 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "}", "COMPILATION error at [111:24-66]: Assertion should end in either assertRelationEmpty or assertRelationNotEmpty functions");
     }
 
+    @Test
+    public void testRowsWithNegativeValueWhenColumnNotFound()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->rowsWithNegativeValue(~ied)\n" +
+                        "}",
+                "COMPILATION error at [7:41-43]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
+        );
+    }
+
+    @Test
+    public void testRowsWithNegativeValueWhenColumnNotNumber()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->rowsWithNegativeValue(~other)\n" +
+                        "}",
+                "COMPILATION error at [7:41-45]: The column 'other' must be of type Number, found: Varchar"
+        );
+    }
+
+    @Test
+    public void testRowsWithColumnLongerThanWhenColumnNotString()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->rowsWithColumnLongerThan(~id, 40)\n" +
+                        "}",
+                "COMPILATION error at [7:44-45]: The column 'id' must be of type String, found: Int"
+        );
+    }
 
 
     private static final String COMPILATION_PREREQUISITE_CODE = "###Connection\n" +

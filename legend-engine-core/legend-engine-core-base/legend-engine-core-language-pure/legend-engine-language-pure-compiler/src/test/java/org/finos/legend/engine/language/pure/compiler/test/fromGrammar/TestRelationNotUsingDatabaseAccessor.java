@@ -14,9 +14,13 @@
 
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.navigation.function.Function;
 import org.finos.legend.pure.m3.navigation.generictype.GenericType;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
@@ -49,7 +53,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
     @Test
     public void testProject()
     {
-        test(
+        Pair<PureModelContextData, PureModel> data = test(
                 "###Pure\n" +
                         "Class test::Person{name : String[1];}" +
                         "function test::f():Any[*]\n" +
@@ -57,6 +61,27 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "   test::Person.all()->project(~[mycol:x|$x.name])\n" +
                         "}"
         );
+        
+        ConcreteFunctionDefinition<?> func = data.getTwo().getConcreteFunctionDefinition_safe("test::f__Any_MANY_");
+        String functionName = ((SimpleFunctionExpression) func._expressionSequence().getOnly())._func()._name();
+        Assert.assertEquals("project_C_MANY__FuncColSpecArray_1__Relation_1_", functionName);
+    }
+    
+    @Test
+    public void testProjectOnRelation()
+    {
+        Pair<PureModelContextData, PureModel> data = test(
+                "###Pure\n" +
+                        "Class test::Person{name : String[1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   1->cast(@Relation<(name:String)>)->project(~[mycol:x|$x.name])\n" +
+                        "}"
+        );
+
+        ConcreteFunctionDefinition<?> func = data.getTwo().getConcreteFunctionDefinition_safe("test::f__Any_MANY_");
+        String functionName = ((SimpleFunctionExpression) func._expressionSequence().getOnly())._func()._name();
+        Assert.assertEquals("project_Relation_1__FuncColSpecArray_1__Relation_1_", functionName);
     }
 
     @Test
@@ -189,7 +214,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.name])->extend(over(~mycol, ~mycol->desceeending()), ~newCol:x|$x.mycol:y|$y->count())\n" +
-                        "}", "COMPILATION error at [4:81-92]: Can't resolve the builder for function 'desceeending' - stack:[Function 'test::f__Any_MANY_' Third Pass, Applying extend, Applying over, Applying desceeending]"
+                        "}", "COMPILATION error at [4:81-92]: Function does not exist 'desceeending(ColSpec<(mycol:String[1])>[1])'"
         );
     }
 

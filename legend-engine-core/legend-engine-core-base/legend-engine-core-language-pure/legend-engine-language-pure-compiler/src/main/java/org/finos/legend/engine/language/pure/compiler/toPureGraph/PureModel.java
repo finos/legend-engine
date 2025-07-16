@@ -519,6 +519,9 @@ public class PureModel implements IPureModel
         registerElementForPathToElement("meta::pure::tds", Lists.mutable.with(
                 "TDSRow"
         ));
+        registerElementForPathToElement("meta::pure::metamodel::relation", Lists.mutable.with(
+                "Column"
+        ));
         this.extensions.getExtraElementForPathToElementRegisters().forEach(register -> register.value(this::registerElementForPathToElement));
     }
 
