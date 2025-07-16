@@ -309,9 +309,15 @@ function <<access.private>> meta::protocols::pure::vX_X_X::invocation::execution
                    |if ($c == 'Boolean',
                         |{a:Any[1]|if($a=='false'||$a==false,|false,|true);},
                         |if ($c->contains('::'),
-                             |let t = $c->pathToElement()->cast(@Enumeration<Any>);
-                              {a:Any[1]|$t->extractEnumValue($a->toString())};,
-                             |{a:Any[1]|$a}
+                          {|
+                            let element = $c->pathToElement();
+                            if ($element->instanceOf(PrimitiveType) && $element->toOne()->cast(@Type)->isExtendedPrimitiveType(),
+                              |$element->cast(@Type)->bypassExtendedPrimitives().name->toOne()->dataTypeTransformer(),
+                              |let t = $element->cast(@Enumeration<Any>);
+                              {a:Any[1]|$t->extractEnumValue($a->toString())};
+                            );
+                          },
+                          |{a:Any[1]|$a}
                          )
                     )
                )

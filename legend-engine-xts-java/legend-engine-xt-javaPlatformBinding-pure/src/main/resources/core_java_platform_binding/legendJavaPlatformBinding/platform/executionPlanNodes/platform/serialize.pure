@@ -146,7 +146,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::platform::serializ
    returnType() {
       if($this.property == checkedProperty('value') || $this.property == checkedProperty('source'),
          | $this.fieldSet->at(0).subType->toOne(),
-         | $this.property->functionReturnType().rawType->toOne()->bypassExtendedPrimitives ()
+         | $this.property->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()
       );
    }:meta::pure::metamodel::type::Type[1];
 

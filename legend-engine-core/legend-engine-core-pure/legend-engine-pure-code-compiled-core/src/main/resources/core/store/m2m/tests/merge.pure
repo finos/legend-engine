@@ -56,6 +56,37 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ExcludeAl
        assertEquals('Pierre', $res.values->at(0).firstName);
 }
 
+Class meta::pure::mapping::modelToModel::test::merge::SourcePersonWithFirstName_ExtendedPrimitives
+{
+   firstName: meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString[1];
+}
+
+
+Class meta::pure::mapping::modelToModel::test::merge::SourcePersonWithLastName_ExtendedPrimitives
+{
+   lastName: meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString[1];
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ExcludeAlloy>> meta::pure::mapping::modelToModel::test::merge::testMergeMultiInstanceWithExtendedPrimitives():Any[*]
+{
+   let instances = newMap(pair(SourcePersonWithFirstName_ExtendedPrimitives, list([^SourcePersonWithFirstName_ExtendedPrimitives(firstName='Pierre'->cast(@meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString))])))
+                         ->put(SourcePersonWithLastName_ExtendedPrimitives, list([^SourcePersonWithLastName_ExtendedPrimitives(lastName='Doe'->cast(@meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString))]))  ;
+
+   let res = execute(
+            |Person_ExtendedPrimitives.all(),
+            meta::pure::mapping::modelToModel::test::merge::MergeModelMappingSource_ExtendedPrimitives,
+            ^Runtime(
+              connectionStores = [
+                ^ConnectionStore(
+                  element=^ModelStore(),
+                  connection=^ModelConnection(instances=$instances))]),
+            meta::pure::extension::defaultExtensions()
+            );
+       assertEquals(1, $res.values->size());
+       assertEquals('Doe', $res.values->at(0).lastName);
+       assertEquals('Pierre', $res.values->at(0).firstName);
+}
 
 
 ###Mapping
@@ -80,6 +111,27 @@ Mapping meta::pure::mapping::modelToModel::test::merge::MergeModelMappingSource
    Person[p2] : Pure
             {
                ~src SourcePersonWithLastName
+               lastName :  $src.lastName
+            }
+
+)
+
+Mapping meta::pure::mapping::modelToModel::test::merge::MergeModelMappingSource_ExtendedPrimitives
+(
+   *Person_ExtendedPrimitives : Operation
+           {
+              merge_OperationSetImplementation_1__SetImplementation_MANY_(p1,p2)
+           }
+
+   Person_ExtendedPrimitives[p1] : Pure
+            {
+               ~src SourcePersonWithFirstName_ExtendedPrimitives
+               firstName : $src.firstName
+            }
+
+   Person_ExtendedPrimitives[p2] : Pure
+            {
+               ~src SourcePersonWithLastName_ExtendedPrimitives
                lastName :  $src.lastName
             }
 

@@ -89,11 +89,30 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    testTypeFilterAsserts($res);
 }
 
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::filter::testTypeFilterWithExtendedPrimitives():Any[*]
+{
+    let res = execute(
+            |Person_ExtendedPrimitives.all()->project([f|$f.lastName],['lastName']),
+            filterMapping_ExtendedPrimitives,
+            ^Runtime(connectionStores = ^ConnectionStore(element=^ModelStore(), connection=^ModelConnection(instances= newMap(
+                                                                                                      pair(_Person_ExtendedPrimitives , list([^_Person_ExtendedPrimitives(fullName='Pierre Doe'->cast(@meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString), firm=^_Firm_ExtendedPrimitives(name='X'->cast(@meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString))),
+                                                                                                                           ^_Person_ExtendedPrimitives(fullName='A. Only One'->cast(@meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString), firm=^_Firm_ExtendedPrimitives(name='X'->cast(@meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString)))]
+                                                                                                                          )
+                                                                                                      )
+                                                                                            )
+                                                   )
+             )),
+             meta::pure::extension::defaultExtensions()
+          );
+   testTypeFilterAsserts($res);
+}
+
 function meta::pure::mapping::modelToModel::test::filter::testTypeFilterAsserts(res:Result<TabularDataSet|1>[1]):Boolean[1]
 {
    assertEquals(1, $res.values->at(0).rows->size());
    assertEquals('A. Only One', $res.values->at(0).rows->at(0).get('lastName'));
 }
+
 ###Mapping
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
@@ -111,6 +130,23 @@ Mapping meta::pure::mapping::modelToModel::test::filter::filterMapping
    Firm : Pure
    {
       ~src _Firm
+      legalName : $src.name,
+      employees : $src.employees
+   }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::filter::filterMapping_ExtendedPrimitives
+(
+   Person_ExtendedPrimitives : Pure
+   {
+      ~src _Person_ExtendedPrimitives
+      ~filter $src.fullName->startsWith('A')
+      lastName : $src.fullName
+   }
+
+   Firm_ExtendedPrimitives : Pure
+   {
+      ~src _Firm_ExtendedPrimitives
       legalName : $src.name,
       employees : $src.employees
    }

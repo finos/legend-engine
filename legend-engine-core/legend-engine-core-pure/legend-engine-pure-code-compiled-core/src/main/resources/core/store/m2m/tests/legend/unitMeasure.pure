@@ -14,9 +14,17 @@
 
 import meta::pure::unit::*;
 
+Primitive meta::pure::mapping::modelToModel::test::units::dest::ExtendedString extends String
+
 Class meta::pure::mapping::modelToModel::test::units::dest::HealthProfile
 {
    fullName: String[1];
+   weight: Mass~Kilogram[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::units::dest::HealthProfile_ExtendedPrimitives
+{
+   fullName: meta::pure::mapping::modelToModel::test::units::dest::ExtendedString[1];
    weight: Mass~Kilogram[1];
 }
 
@@ -35,6 +43,12 @@ Class meta::pure::mapping::modelToModel::test::units::dest::ClassWithPound
 Class meta::pure::mapping::modelToModel::test::units::src::_HealthProfile
 {
    fullName: String[1];
+   weight: Mass~Kilogram[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::units::src::_HealthProfile_ExtendedPrimitives
+{
+   fullName: meta::pure::mapping::modelToModel::test::units::dest::ExtendedString[1];
    weight: Mass~Kilogram[1];
 }
 

@@ -46,6 +46,27 @@ meta::pure::mapping::modelToModel::test::alloy::units::testUnitToUnitIdentityMap
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_19_0' }
+meta::pure::mapping::modelToModel::test::alloy::units::testUnitToUnitIdentityMappingWithExtendedPrimitives():Any[*]
+{
+   let tree = #{HealthProfile_ExtendedPrimitives {fullName, weight} }#;
+
+   let result = execute(
+      |HealthProfile_ExtendedPrimitives.all()->graphFetch($tree)->serialize($tree),
+      instanceIdentityMapping_ExtendedPrimitives,
+      ^Runtime(connectionStores= ^ConnectionStore(
+                                element=^ModelStore(),
+                                connection=^JsonModelConnection(
+                                class=_HealthProfile_ExtendedPrimitives,
+                                url='data:application/json,{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'
+                             ))
+      ),meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent('{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_19_0' }
 meta::pure::mapping::modelToModel::test::alloy::units::testModelToModelMappingOfUnitToUnitTypeAndValue():Any[*]
 {
    let tree = #{DecomposedHealthProfile {fullName, weightUnit, weightValue} }#;
@@ -182,6 +203,16 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::units::instanceIdentityM
    HealthProfile : Pure
             {
                ~src _HealthProfile
+               fullName : $src.fullName,
+               weight : $src.weight
+            }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::units::instanceIdentityMapping_ExtendedPrimitives
+(
+  HealthProfile_ExtendedPrimitives : Pure
+            {
+               ~src _HealthProfile_ExtendedPrimitives
                fullName : $src.fullName,
                weight : $src.weight
             }

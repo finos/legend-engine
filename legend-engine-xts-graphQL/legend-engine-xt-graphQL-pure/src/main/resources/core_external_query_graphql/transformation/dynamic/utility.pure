@@ -179,6 +179,6 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::u
 {
   if($type1 == Enumeration || $type2 == Enumeration,
     | assertEquals($type1, $type2, $message),
-    | assertEquals($type1->toOne()->bypassExtendedPrimitives (), $type2->toOne()->bypassExtendedPrimitives (), $message)
+    | assertEquals($type1->bypassExtendedPrimitives (), $type2->bypassExtendedPrimitives (), $message)
   )
 }

@@ -132,6 +132,43 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
    }:ProductClassification[1];
 }
 
+Primitive meta::relational::tests::milestoning::ExtendedString extends String
+Primitive meta::relational::tests::milestoning::ExtendedInteger extends Integer
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Product_ExtendedPrimitives{
+   id : meta::relational::tests::milestoning::ExtendedInteger[1];
+   name : meta::relational::tests::milestoning::ExtendedString[1];
+   type : meta::relational::tests::milestoning::ExtendedString[1];
+   inlinedExchangeName : meta::relational::tests::milestoning::ExtendedString[0..1];
+   inlinedExchangeNameQp() {$this.inlinedExchangeName} : String[0..1];
+   inlinedCreatedBy : meta::relational::tests::milestoning::ExtendedString[0..1];
+   classification : ProductClassification_ExtendedPrimitives[1];
+   classificationTypeStr(){$this.classification($this.businessDate).type} : String[1];
+   classificationExchangeName1(){$this.classification($this.businessDate).exchange(%2019-1-1).name} : String[1];
+   classificationExchangeName2(){$this.classification(%2019-1-1).exchange($this.businessDate).name} : String[1];
+   classificationExchangeName3(){$this.classification($this.businessDate->adjust(1, DurationUnit.DAYS)).exchange($this.businessDate->adjust(1, DurationUnit.DAYS)).name} : String[1];
+   biTemporalClassification : BiTemporalProductClassification[0..1];
+   synonyms : ProductSynonym[1..*];
+   exchange : Exchange[1];
+   newActivity : NewActivityInfo[0..1];
+   cancelActivity : NewActivityInfo[0..1];
+   cancelProductActivity : NewProductActivityInfo[0..1];
+   cancelProductActivityCreatedBy : String[0..1];
+   stockProductName : String[0..1];
+   classificationType : ProductClassificationType[0..1];
+   isBrexitClassificationTypeExchange : Boolean[0..1];
+   referenceSystem : System[0..1];
+   referenceSystems : System[*];
+   externalReferenceSystem : ExternalSystem[0..1];
+   synonymsByType(type:String[1]){
+      $this.synonymsAllVersions->filter(s|$s.type==$type)
+   }:ProductSynonym[*];
+
+   classificationWithDateConstant(){
+      $this.classification(%9999-12-31)
+   }:ProductClassification_ExtendedPrimitives[1];
+}
+
 Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductWithConstraint1 extends meta::relational::tests::milestoning::Product
 [
    CST
@@ -243,6 +280,16 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
    system : System[1];
    exchange : Exchange[1];
    exchangeName : String[1];
+   product : Product[1];
+   biTemporalProduct : BiTemporalProduct[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductClassification_ExtendedPrimitives{
+   type : meta::relational::tests::milestoning::ExtendedString[1];
+   description : meta::relational::tests::milestoning::ExtendedString[1];
+   system : System[1];
+   exchange : Exchange[1];
+   exchangeName : meta::relational::tests::milestoning::ExtendedString[1];
    product : Product[1];
    biTemporalProduct : BiTemporalProduct[0..1];
 }

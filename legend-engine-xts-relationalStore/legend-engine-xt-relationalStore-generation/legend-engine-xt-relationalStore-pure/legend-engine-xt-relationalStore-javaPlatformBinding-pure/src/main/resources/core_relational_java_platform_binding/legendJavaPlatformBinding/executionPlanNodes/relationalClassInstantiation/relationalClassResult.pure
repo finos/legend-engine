@@ -363,7 +363,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                ->map({propIndex |
                   let prop = $allProperties->at($propIndex);
                   let propertyName = $prop.name->toOne();
-                  let propertyType = $prop->genericType().typeArguments->at(1).rawType->toOne()->bypassExtendedPrimitives ();
+                  let propertyType = $prop->genericType().typeArguments->at(1).rawType->toOne()->bypassExtendedPrimitives();
                   let propertyMultiplicity = $prop.multiplicity;
                   '    propertyIndex = this.propertyIndices.get(' + $s->toString() + ').get(' + $propIndex->toString() + ');\n'+
                   if ($propertyType == String,     | '    propertyGetter = this.getResultSetPropertyGetterForStringProperty(resultSet, propertyIndex, resultSetMetaData.getColumnType(propertyIndex), "' + $propertyName + '");\n',
@@ -468,7 +468,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
    $propertyCount->range()->map({propIndex |
       let prop = $properties->at($propIndex);
       let propertyName = $prop.name->toOne();
-      let propertyType = $prop->genericType().typeArguments->at(1).rawType->toOne()->bypassExtendedPrimitives ();
+      let propertyType = $prop->genericType().typeArguments->at(1).rawType->toOne()->bypassExtendedPrimitives();
       let propertyMultiplicity = $prop.multiplicity;
       let stringJavaType = $pureTypeToJavaTypeStringMap->eval($propertyType);
 

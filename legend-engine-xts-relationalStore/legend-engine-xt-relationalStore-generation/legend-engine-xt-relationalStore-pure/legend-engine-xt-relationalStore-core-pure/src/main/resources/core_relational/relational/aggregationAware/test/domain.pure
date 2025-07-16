@@ -34,6 +34,12 @@ Class meta::relational::tests::aggregationAware::domain::Employee
    lastName: String[0..1];
 }
 
+Class meta::relational::tests::aggregationAware::domain::Employee_ExtendedPrimitives
+{
+   firstName: String[0..1];
+   lastName: String[0..1];
+}
+
 Class meta::relational::tests::aggregationAware::domain::Product
 {
    productId: Integer[1];

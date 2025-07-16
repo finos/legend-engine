@@ -357,7 +357,7 @@ function <<access.private>> meta::external::store::mongodb::executionPlan::platf
    let nodeParameter    = j_parameter(jsonNode(), 'node');
    let jThis            = j_this($proto);
    let exception        = j_parameter(javaIllegalArgumentException(), 'ex');
-   let methodName       = 'accept' + $type.name->toOne();
+   let methodName       = 'accept' + $type->bypassExtendedPrimitives().name->toOne();
    let pureDate         = $conventions->className(PureDate);
 
    let newAcceptMethod = javaMethod('private', $javaType, $methodName, $nodeParameter,

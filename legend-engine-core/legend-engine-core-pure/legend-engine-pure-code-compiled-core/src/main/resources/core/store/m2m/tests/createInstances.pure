@@ -45,7 +45,30 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    assertSameElements(['abcd','efgh'], $res.values->at(0).employees.lastName);
 }
 
-
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::createInstances::testCreateInstancesWithExtendedPrimitives():Any[*]
+{
+    let res = execute(
+            |Firm_ExtendedPrimitives.all()->filter(f|$f.employees->exists(e|$e.lastName == 'efgh')),
+            createInstancesModelMapping_ExtendedPrimitives,
+            ^Runtime(
+              connectionStores = [
+                ^ConnectionStore(
+                  element=^ModelStore(),
+                  connection = ^ModelConnection(
+                    instances= newMap(
+                                  pair(_Firm_ExtendedPrimitives , list([
+                                                    ^_Firm_ExtendedPrimitives (name='A'->cast(@meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString))
+                                                ])
+                                  )
+                    )
+                  )
+                )
+              ]
+            ),
+             meta::pure::extension::defaultExtensions()
+          );
+   assertSameElements(['abcd','efgh'], $res.values->at(0).employees.lastName);
+}
 
 function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::simple::testCartesianOnAssociation():Any[*]
 {
@@ -172,6 +195,34 @@ Mapping meta::pure::mapping::modelToModel::test::createInstances::createInstance
                employees[p2] : $src
             }
 
+)
+
+Mapping meta::pure::mapping::modelToModel::test::createInstances::createInstancesModelMapping_ExtendedPrimitives
+(
+   *Person_ExtendedPrimitives : Operation
+           {
+              	meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(p1,p2)
+           }
+
+   Person_ExtendedPrimitives[p1] : Pure
+   {
+      ~src _Firm_ExtendedPrimitives
+      lastName : 'abcd'->cast(@meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString)
+   }
+
+   Person_ExtendedPrimitives[p2] : Pure
+   {
+      ~src _Firm_ExtendedPrimitives
+      lastName : 'efgh'->cast(@meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString)
+   }
+
+   Firm_ExtendedPrimitives : Pure
+            {
+               ~src _Firm_ExtendedPrimitives
+               legalName : $src.name,
+               employees[p1] : $src,
+               employees[p2] : $src
+            }
 )
 
 
