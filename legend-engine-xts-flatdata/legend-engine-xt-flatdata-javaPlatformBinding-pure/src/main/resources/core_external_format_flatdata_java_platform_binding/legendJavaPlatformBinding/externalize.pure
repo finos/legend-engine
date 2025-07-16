@@ -158,7 +158,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
                 let fieldName    = j_string($indexedField.second.label);
                 let property     = $fieldToPropertyMap->get($indexedField.second)->toOne();
                 let propOptional = !$property.multiplicity->hasLowerBound();
-                let propType     = $property->functionReturnType().rawType->toOne();
+                let propType     = $property->functionReturnType().rawType->toOne()->bypassExtendedPrimitives();
                 let propJavaType = $conventions->pureTypeToJavaType($property);
                 let getter       = $objectParam->j_invoke($conventions->getterName($property), [], $propJavaType);
 

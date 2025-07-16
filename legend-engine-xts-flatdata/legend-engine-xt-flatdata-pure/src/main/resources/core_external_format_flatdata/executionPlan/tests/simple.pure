@@ -248,6 +248,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('Full Name\nJohn Doe', $result);
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testBindingAndM2MChainedWithExtendedPrimitives(): Boolean[1]
+{
+  let binding = getTestBinding_ExtendedPrimitives();
+  let tree    = #{meta::external::format::flatdata::executionPlan::test::TargetPerson_ExtendedPrimitives{fullName}}#;
+  let query   = {data:String[1]| meta::external::format::flatdata::executionPlan::test::TargetPerson_ExtendedPrimitives.all()->graphFetch($tree)->from(meta::external::format::flatdata::executionPlan::test::M2MMapping_ExtendedPrimitives, getRuntimeWithModelQueryConnection(meta::external::format::flatdata::executionPlan::test::Person_ExtendedPrimitives, $binding, $data))->externalize(getTargetPersonTestBinding_ExtendedPrimitives(), $tree);};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('Full Name\nJohn Doe', $result);
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testBindingAndM2MChainedWithChecked(): Boolean[1]
 {
   let binding = getTestBinding();
@@ -282,6 +294,8 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 import meta::legend::*;
 import meta::external::format::shared::binding::*;
 
+Primitive meta::external::format::flatdata::executionPlan::test::ExtendedString extends String
+
 Class meta::external::format::flatdata::executionPlan::test::Person
 [
    $this.firstName->length() > 1
@@ -294,6 +308,20 @@ Class meta::external::format::flatdata::executionPlan::test::Person
 Class meta::external::format::flatdata::executionPlan::test::TargetPerson
 {
   fullName : String[1];
+}
+
+Class meta::external::format::flatdata::executionPlan::test::Person_ExtendedPrimitives
+[
+   $this.firstName->length() > 1
+]
+{
+   firstName : meta::external::format::flatdata::executionPlan::test::ExtendedString[1];
+   lastName  : meta::external::format::flatdata::executionPlan::test::ExtendedString[1];
+}
+
+Class meta::external::format::flatdata::executionPlan::test::TargetPerson_ExtendedPrimitives
+{
+  fullName : meta::external::format::flatdata::executionPlan::test::ExtendedString[1];
 }
 
 function meta::external::format::flatdata::executionPlan::test::getTestBinding():Binding[1]
@@ -309,6 +337,32 @@ function meta::external::format::flatdata::executionPlan::test::getTestBinding()
     '  ];\n' +
     '}\n\n' +
     'SchemaSet meta::external::format::flatdata::executionPlan::test::TestSchema\n' +
+    '{\n' +
+    '  format: FlatData;\n' +
+    '  schemas: [\n' +
+    '    {\n' +
+    '      content: \'section Person: DelimitedWithHeadings {  delimiter: \\\',\\\';  scope.untilEof;   nullString: \\\'\\\';    Record  { \\\'First Name\\\' : STRING; \\\'Last Name\\\' : STRING; }}\';\n' +
+    '    }\n' +
+    '  ];\n' +
+    '}\n';
+
+  compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
+}
+
+
+function meta::external::format::flatdata::executionPlan::test::getTestBinding_ExtendedPrimitives():Binding[1]
+{
+  let schema =
+    '###ExternalFormat\n' +
+    'Binding meta::external::format::flatdata::executionPlan::test::TestBinding_ExtendedPrimitives\n' +
+    '{\n' +
+    '  schemaSet: meta::external::format::flatdata::executionPlan::test::TestSchema_ExtendedPrimitives;\n' +
+    '  contentType: \'application/x.flatdata\';\n' +
+    '  modelIncludes: [\n' +
+    '    meta::external::format::flatdata::executionPlan::test::Person_ExtendedPrimitives\n' +
+    '  ];\n' +
+    '}\n\n' +
+    'SchemaSet meta::external::format::flatdata::executionPlan::test::TestSchema_ExtendedPrimitives\n' +
     '{\n' +
     '  format: FlatData;\n' +
     '  schemas: [\n' +
@@ -346,6 +400,32 @@ function meta::external::format::flatdata::executionPlan::test::getTargetPersonT
   compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
 }
 
+
+function meta::external::format::flatdata::executionPlan::test::getTargetPersonTestBinding_ExtendedPrimitives():Binding[1]
+{
+  let schema =
+    '###ExternalFormat\n' +
+    'Binding meta::external::format::flatdata::executionPlan::test::TargetPersonTestBinding_ExtendedPrimitives\n' +
+    '{\n' +
+    '  schemaSet: meta::external::format::flatdata::executionPlan::test::TargetPersonTestSchema_ExtendedPrimitives;\n' +
+    '  contentType: \'application/x.flatdata\';\n' +
+    '  modelIncludes: [\n' +
+    '    meta::external::format::flatdata::executionPlan::test::TargetPerson_ExtendedPrimitives\n' +
+    '  ];\n' +
+    '}\n\n' +
+    'SchemaSet meta::external::format::flatdata::executionPlan::test::TargetPersonTestSchema_ExtendedPrimitives\n' +
+    '{\n' +
+    '  format: FlatData;\n' +
+    '  schemas: [\n' +
+    '    {\n' +
+    '      content: \'section TargetPerson: DelimitedWithHeadings {  delimiter: \\\',\\\';  scope.untilEof;   Record  { \\\'Full Name\\\' : STRING; }}\';\n' +
+    '    }\n' +
+    '  ];\n' +
+    '}\n';
+
+  compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
+}
+
 ###Mapping
 import meta::external::format::flatdata::executionPlan::test::*;
 
@@ -355,5 +435,14 @@ Mapping meta::external::format::flatdata::executionPlan::test::M2MMapping
   {
     ~src Person
     fullName : $src.firstName + ' ' + $src.lastName;
+  }
+)
+
+Mapping meta::external::format::flatdata::executionPlan::test::M2MMapping_ExtendedPrimitives
+(
+  TargetPerson_ExtendedPrimitives: Pure
+  {
+    ~src Person_ExtendedPrimitives
+    fullName : ($src.firstName + ' ' + $src.lastName)->cast(@meta::external::format::flatdata::executionPlan::test::ExtendedString);
   }
 )

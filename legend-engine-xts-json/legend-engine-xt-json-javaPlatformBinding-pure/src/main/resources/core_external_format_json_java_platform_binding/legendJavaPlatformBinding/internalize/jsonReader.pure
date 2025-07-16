@@ -198,7 +198,7 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
               let variable       = j_variable($listType, '_' + $conventions->fieldName($p));
               let fieldName      = $bindingDetail.fieldNameForProperty($p);
 
-              let propertyType   = $p.genericType.rawType->toOne();
+              let propertyType   = $p.genericType.rawType->toOne()->bypassExtendedPrimitives();
               let lParam         = j_parameter(javaString(), 'm');
               let defectRecorder = j_lambda($lParam, $defectsVariable->j_invoke('add', $conventions->className(DataQualityBasicDefectClass)->j_invoke('newInvalidInputErrorDefect', [j_string($fieldName)->j_plus(j_string(': '))->j_plus($lParam), j_string($class->elementToPath())], $conventions->defectClass()), javaVoid()));     
 

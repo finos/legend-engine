@@ -15,6 +15,10 @@
 import meta::pure::profiles::*;
 import meta::relational::tests::model::simple::*;
 
+Primitive meta::relational::tests::model::simple::ExtendedString extends String
+Primitive meta::relational::tests::model::simple::ExtendedInteger extends Integer
+Primitive meta::relational::tests::model::simple::ExtendedFloat extends Float
+
 Class meta::relational::tests::model::simple::EntityWithAddress
 {
     address : Address[0..1];
@@ -86,6 +90,29 @@ Class meta::relational::tests::model::simple::Firm extends EntityWithAddress
    }:Boolean[1];
 }
 
+Class meta::relational::tests::model::simple::Firm_ExtendedPrimitives extends EntityWithAddress
+{
+    <<equality.Key>> legalName : ExtendedString[1];
+
+    nameAndAddress(){
+       $this.legalName + ',' + $this.address->toOne().name
+    }:String[1];
+
+    isFirmX(){
+       if ($this.legalName->toOne() == 'Firm X', | 'Yes', | 'No')
+    }:String[1];
+
+    nameAndMaskedAddress(){
+       if ($this.legalName == 'Firm X', | $this.legalName + ' , Top Secret', |  $this.legalName + ',' + $this.address->toOne().name)
+    }:String[1];
+
+    nickName : String[0..1];
+
+   isFirmXGroup(){
+      $this.legalName->in(['Firm X', 'Firm X & Co.', 'Firm X and Group'])
+   }:Boolean[1];
+}
+
 Class meta::relational::tests::model::simple::PersonNameParameter
 {
    lastNameFirst:Boolean[1];
@@ -150,6 +177,45 @@ Class meta::relational::tests::model::simple::Person extends EntityWithAddress, 
     activeEmployment: Boolean[0..1];
 }
 
+Class meta::relational::tests::model::simple::Person_ExtendedPrimitives extends EntityWithAddress, EntityWithLocations
+{
+    firstName : ExtendedString[1];
+    lastName : ExtendedString[1];
+    otherNames : ExtendedString[*];
+
+    name(){$this.firstName+' '+$this.lastName}:String[1];
+    nameWithTitle(title:String[1]){$title+' '+$this.firstName+' '+$this.lastName}:String[1];
+    nameWithPrefixAndSuffix(prefix:String[0..1], suffixes:String[*])
+    {
+        if($prefix->isEmpty(),
+           | if($suffixes->isEmpty(),
+                | $this.firstName + ' ' + $this.lastName,
+                | $this.firstName + ' ' + $this.lastName + ', ' + $suffixes->joinStrings(', ')),
+           | if($suffixes->isEmpty(),
+                | $prefix->toOne() + ' ' + $this.firstName + ' ' + $this.lastName,
+                | $prefix->toOne() + ' ' + $this.firstName + ' ' + $this.lastName + ', ' + $suffixes->joinStrings(', ')))
+    }:String[1];
+
+    fullName(lastNameFirst:Boolean[1])
+    {
+        if($lastNameFirst, | $this.lastName + ', ' + $this.firstName, | $this.firstName + ' ' + $this.lastName)
+    }:String[1];
+
+    parameterizedName(personNameParameter:PersonNameParameter[1])
+    {
+        if($personNameParameter.lastNameFirst, | $personNameParameter.nested.prefix+' '+$this.lastName + ', ' + $this.firstName, | $this.firstName + ' ' + $this.lastName)
+    }:String[1];
+
+    extraInformation : String[0..1];
+    manager : Person[0..1];
+    age : ExtendedInteger[0..1];
+    constant() { 'constant' } : String[1];
+
+    nickName : String[0..1];
+
+    activeEmployment: Boolean[0..1];
+}
+
 Class <<temporal.businesstemporal>> meta::relational::tests::model::simple::TemporalEntityWithAddress
 {
     name : String[1];
@@ -188,6 +254,16 @@ Class meta::relational::tests::model::simple::FirmExtension extends Firm
 Class meta::relational::tests::model::simple::Interaction
 {
    id : String[1];
+   source : Person[0..1];
+   target : Person[0..1];
+   active : Boolean[1];
+   time : Integer[1];
+   longestInteractionBetweenSourceAndTarget : Integer[1];
+}
+
+Class meta::relational::tests::model::simple::Interaction_ExtendedPrimitives
+{
+   id : ExtendedString[1];
    source : Person[0..1];
    target : Person[0..1];
    active : Boolean[1];
@@ -275,6 +351,12 @@ Association meta::relational::tests::model::simple::Employment
 {
     firm : Firm[0..1];
     employees : Person[*];
+}
+
+Association meta::relational::tests::model::simple::Employment_ExtendedPrimitives
+{
+    firm : Firm_ExtendedPrimitives[0..1];
+    employees : Person_ExtendedPrimitives[*];
 }
 
 Association meta::relational::tests::model::simple::Firm_TemporalEntityWithAddress

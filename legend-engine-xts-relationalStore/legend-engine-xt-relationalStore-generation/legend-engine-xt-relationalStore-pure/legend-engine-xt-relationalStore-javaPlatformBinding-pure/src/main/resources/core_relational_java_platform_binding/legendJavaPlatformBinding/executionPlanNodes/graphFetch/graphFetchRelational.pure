@@ -430,7 +430,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                                  $allProperties->size()->range()->map({propIndex |
                                     let prop = $allProperties->at($propIndex);
                                     let propertyName = $prop.name->toOne();
-                                    let propertyType = $prop->functionReturnType().rawType->toOne()->bypassExtendedPrimitives ();
+                                    let propertyType = $prop->functionReturnType().rawType->toOne()->bypassExtendedPrimitives();
                                     let propertyMultiplicity = $prop.multiplicity;
 
                                     [
@@ -478,7 +478,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                      {|
                         let property = $node.graphFetchTree->cast(@PropertyGraphFetchTree).property;
                         let propertyName = $property.name->toOne();
-                        let propertyType = $property->functionReturnType().rawType->toOne()->bypassExtendedPrimitives ();
+                        let propertyType = $property->functionReturnType().rawType->toOne()->bypassExtendedPrimitives();
 
 
                         [
@@ -609,7 +609,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                   {|
                      let property     = $node.graphFetchTree->cast(@PropertyGraphFetchTree).property;
                      let propertyName = $property.name->toOne();
-                     let propertyType = $property->functionReturnType().rawType->toOne()->bypassExtendedPrimitives ();
+                     let propertyType = $property->functionReturnType().rawType->toOne()->bypassExtendedPrimitives();
 
                      let typeMap = newMap([
                         pair(String,     pair(javaString(), j_long(20))),
@@ -965,7 +965,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
       $propertyCount->range()->map({propIndex |
       let prop = $properties->at($propIndex);
       let propertyName = $prop.name->toOne();
-      let propertyType = $prop->genericType().typeArguments->at(1).rawType->toOne()->bypassExtendedPrimitives ();
+      let propertyType = $prop->genericType().typeArguments->at(1).rawType->toOne()->bypassExtendedPrimitives();
       let propertyMultiplicity = $prop.multiplicity;
       let javaType = if ($propertyType->instanceOf(meta::pure::metamodel::type::Enumeration),
                          | $conventions->className($propertyType),

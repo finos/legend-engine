@@ -131,7 +131,7 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                                                   name = $p.name->toOne(),
                                                                   type = $cType,
                                                                   sourceDataType = $cType->match([
-                                                                                              p : PrimitiveType[1] | $pureToDbMap->get($cType)->toOne(),
+                                                                                              p : PrimitiveType[1] | $pureToDbMap->get($cType->toOne()->bypassExtendedPrimitives()),
                                                                                               e : Enumeration<Any>[1] | $query->cast(@TdsSelectSqlQuery).columns->cast(@Alias)->filter(c | $c.name == '\"' + $p.name->toOne() + '\"').relationalElement->cast(@TableAliasColumn).column->cast(@Column).type->toOne(),
                                                                                               a : Any[*] | []
                                                                                            ])
