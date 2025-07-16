@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opentracing.Span;
 
+import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.sql.Array;
 import java.sql.Connection;
@@ -474,28 +475,42 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         {
             result = resultSet.getDate(columnIndex);
         }
+        else if (resultDBColumnsMetaData.isArrayColumn(columnIndex))
+        {
+            Array array = resultSet.getArray(columnIndex);
+            if (array == null)
+            {
+                result =  null;
+            }
+            else
+            {
+                try
+                {
+                    result = OBJECT_MAPPER.writeValueAsString(array.getArray());
+                }
+                catch (IOException e)
+                {
+                    throw new UncheckedIOException(String.format("Unable to process variant result as JSON from column '%s' with value: %s", this.resultSetMetaData.getColumnLabel(columnIndex), array), e);
+                }
+            }
+        }
         else if (resultDBColumnsMetaData.isVariantColumn(columnIndex))
         {
             Object object = resultSet.getObject(columnIndex);
-            try
+            if (object == null)
             {
-                if (object instanceof Array)
-                {
-                    Array array = (Array) object;
-                    result = OBJECT_MAPPER.writeValueAsString(array.getArray());
-                }
-                else if (object != null)
+                result =  null;
+            }
+            else
+            {
+                try
                 {
                     result = OBJECT_MAPPER.readTree(object.toString()).toString();
                 }
-                else
+                catch (JsonProcessingException e)
                 {
-                    result = null;
+                    throw new UncheckedIOException(String.format("Unable to process variant result as JSON from column '%s' with value: %s", this.resultSetMetaData.getColumnLabel(columnIndex), object), e);
                 }
-            }
-            catch (JsonProcessingException e)
-            {
-                throw new UncheckedIOException(String.format("Unable to process variant result as JSON from column '%s' with value: %s", this.resultSetMetaData.getColumnLabel(columnIndex), object), e);
             }
         }
         else
