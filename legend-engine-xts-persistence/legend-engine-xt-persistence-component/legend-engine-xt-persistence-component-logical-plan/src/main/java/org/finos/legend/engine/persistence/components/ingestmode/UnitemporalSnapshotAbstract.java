@@ -15,7 +15,9 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteAllStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteUpdatedStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteUpdatedStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandling;
@@ -56,6 +58,13 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
         return DeleteTargetData.builder().build();
     }
 
+
+    @Value.Default
+    default DeleteStrategy deleteStrategy()
+    {
+        return DeleteUpdatedStrategy.builder().build();
+    }
+
     @Override
     default <T> T accept(IngestModeVisitor<T> visitor)
     {
@@ -65,35 +74,21 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     @Value.Check
     default void validate()
     {
-        //Digest should be provided for unitemporal snapshot without partition and for unitemporal snapshot with partition, with delete strategy = DELETE_UPDATED
+        //Digest should be provided for unitemporal snapshot with delete strategy = DELETE_UPDATED
         if (!digestField().isPresent())
         {
-            this.partitioningStrategy().accept(new PartitioningStrategyVisitor<Void>()
+            deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
             {
                 @Override
-                public Void visitPartitioning(PartitioningAbstract partitionStrategy)
+                public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
                 {
-                    partitionStrategy.deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
-                    {
-                        @Override
-                        public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
-                        {
-                            return null;
-                        }
-
-                        @Override
-                        public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
-                        {
-                            throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for Partitioning when delete strategy = DELETE_UPDATED");
-                        }
-                    });
                     return null;
                 }
 
                 @Override
-                public Void visitNoPartitioning(NoPartitioningAbstract noPartitionStrategy)
+                public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
                 {
-                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for NoPartitioning");
+                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory when delete strategy = DELETE_UPDATED");
                 }
             });
         }
@@ -110,31 +105,16 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
             @Override
             public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
             {
-                partitioningStrategy().accept(new PartitioningStrategyVisitor<Void>()
+                deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
                 {
                     @Override
-                    public Void visitPartitioning(PartitioningAbstract partitionStrategy)
+                    public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
                     {
-                        partitionStrategy.deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
-                        {
-                            @Override
-                            public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
-                            {
-                                return null;
-                            }
-
-                            @Override
-                            public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
-                            {
-                                validateDigestBasedMergeResolver();
-                                return null;
-                            }
-                        });
                         return null;
                     }
 
                     @Override
-                    public Void visitNoPartitioning(NoPartitioningAbstract noPartitionStrategy)
+                    public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
                     {
                         validateDigestBasedMergeResolver();
                         return null;

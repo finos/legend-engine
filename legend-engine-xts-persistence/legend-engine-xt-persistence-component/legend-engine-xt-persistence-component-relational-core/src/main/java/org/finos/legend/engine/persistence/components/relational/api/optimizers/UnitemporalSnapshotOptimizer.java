@@ -66,12 +66,12 @@ public class UnitemporalSnapshotOptimizer
                     .digestField(unitemporalSnapshot.digestField())
                     .transactionMilestoning(unitemporalSnapshot.transactionMilestoning())
                     .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
+                    .deleteStrategy(unitemporalSnapshot.deleteStrategy())
                     .partitioningStrategy(Partitioning.builder()
                         .addAllPartitionFields(partition.partitionFields())
                         .addAllPartitionSpecList(derivePartitionSpecList(partition.partitionFields(), partition.maxPartitionSpecFilters()))
                         .derivePartitionSpec(partition.derivePartitionSpec())
                         .maxPartitionSpecFilters(partition.maxPartitionSpecFilters())
-                        .deleteStrategy(partition.deleteStrategy())
                         .build())
                     .build();
             }

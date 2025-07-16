@@ -686,8 +686,8 @@ class UnitemporalSnapshotTest extends BaseTest
                         .build())
                 .partitioningStrategy(Partitioning.builder()
                     .addAllPartitionFields(Collections.singletonList(dateName))
-                    .deleteStrategy(DeleteAllStrategy.builder().build())
                     .build())
+                .deleteStrategy(DeleteAllStrategy.builder().build())
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -750,7 +750,6 @@ class UnitemporalSnapshotTest extends BaseTest
         Partitioning partitioning = Partitioning.builder()
             .addAllPartitionFields(Collections.singletonList(dateName))
             .addAllPartitionSpecList(partitionSpecList)
-            .deleteStrategy(DeleteAllStrategy.builder().build())
             .build();
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
@@ -761,6 +760,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeOutName(batchTimeOutName)
                 .build())
             .partitioningStrategy(partitioning)
+            .deleteStrategy(DeleteAllStrategy.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -841,7 +841,6 @@ class UnitemporalSnapshotTest extends BaseTest
         Partitioning partitioning = Partitioning.builder()
                 .addAllPartitionFields(Collections.singletonList(dateName))
                 .derivePartitionSpec(true)
-                .deleteStrategy(DeleteAllStrategy.builder().build())
                 .build();
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
@@ -852,6 +851,7 @@ class UnitemporalSnapshotTest extends BaseTest
                         .dateTimeOutName(batchTimeOutName)
                         .build())
                 .partitioningStrategy(partitioning)
+                .deleteStrategy(DeleteAllStrategy.builder().build())
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -911,12 +911,12 @@ class UnitemporalSnapshotTest extends BaseTest
                 .build())
             .partitioningStrategy(Partitioning.builder()
                 .addAllPartitionFields(Collections.singletonList(dateName))
-                .deleteStrategy(DeleteAllStrategy.builder().build())
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
                 .performStageVersioning(true)
                 .build())
+            .deleteStrategy(DeleteAllStrategy.builder().build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 

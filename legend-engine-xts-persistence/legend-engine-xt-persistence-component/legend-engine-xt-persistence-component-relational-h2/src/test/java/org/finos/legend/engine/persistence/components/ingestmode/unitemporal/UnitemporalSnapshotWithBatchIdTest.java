@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteAllStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
@@ -533,5 +534,67 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 0);
+    }
+
+
+    /*
+    Scenario: Test milestoning Logic without Partition and delete all strategy when staging table pre populated
+    Empty batch handling - DeleteTargetData
+    */
+    @Test
+    void testUnitemporalSnapshotMilestoningLogicWithoutPartitionAndDeleteAll() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName};
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestName)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .build())
+                .emptyDatasetHandling(DeleteTargetData.builder().build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .deleteStrategy(DeleteAllStrategy.builder().build())
+                .versioningStrategy(NoVersioningStrategy.builder().failOnDuplicatePrimaryKeys(true).build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
+        String dataPass1 = basePathForInput + "without_partition_delete_all/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "without_partition_delete_all/expected_pass1.csv";
+        // 1. Load staging table
+        loadBasicStagingData(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 3);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
+        String dataPass2 = basePathForInput + "without_partition_delete_all/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "without_partition_delete_all/expected_pass2.csv";
+        // 1. Load staging table
+        loadBasicStagingData(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(3, 0, 1, 2, 1);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "without_partition_delete_all/expected_pass3.csv";
+        // 1. Load Staging table
+        loadBasicStagingData(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 3);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
     }
 }
