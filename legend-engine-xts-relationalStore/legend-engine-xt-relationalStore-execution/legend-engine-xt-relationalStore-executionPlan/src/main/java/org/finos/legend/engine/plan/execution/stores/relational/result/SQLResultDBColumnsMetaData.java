@@ -62,7 +62,7 @@ public class SQLResultDBColumnsMetaData
                 arrayColumns[i - 1] = true;
             }
             // Variant types are not standardized across databases, so we check for common types
-            else if ( columnIsOfType(i, "JSON", "SEMISTRUCTURED") // duckdb
+            else if (columnIsOfType(i, "JSON", "SEMISTRUCTURED") // duckdb
                    || columnIsOfType(i, "VARIANT", "SEMISTRUCTURED") // snowflake
             )
             {
