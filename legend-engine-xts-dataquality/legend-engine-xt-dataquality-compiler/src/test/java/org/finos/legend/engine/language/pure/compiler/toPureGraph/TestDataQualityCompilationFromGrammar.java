@@ -355,11 +355,11 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      {\n" +
                 "         name: 'idLength';\n" +
                 "         description: 'id length';\n" +
-                "         assertion: row|$row.FIRSTNAME->length();\n" +
+                "         assertion: row|$row.FIRSTNAME->toOne()->length();\n" +
                 "         type: ROW_LEVEL;\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [111:24-48]: Assertion should return Boolean");
+                "}", "COMPILATION error at [111:24-57]: Assertion should return Boolean");
 
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
