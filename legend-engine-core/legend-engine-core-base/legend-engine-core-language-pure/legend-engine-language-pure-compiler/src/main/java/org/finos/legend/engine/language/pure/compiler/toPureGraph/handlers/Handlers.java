@@ -1023,6 +1023,10 @@ public class Handlers
                 )
         );
 
+        register(
+                h("meta::pure::functions::relation::unbounded__UnboundedFrameValue_1_", false, ps -> res("meta::pure::functions::relation::UnboundedFrameValue", "one"), ps -> true)
+        );
+
         register(m(
                 h("meta::pure::functions::relation::rows_Integer_1__Integer_1__Rows_1_", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
                 h("meta::pure::functions::relation::rows_UnboundedFrameValue_1__Integer_1__Rows_1_", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue") && typeOne(ps.get(1), "Integer")),

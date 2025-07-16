@@ -57,14 +57,9 @@ public class SQLResultDBColumnsMetaData
             }
             // Variant types are not standardized across databases, so we check for common types
             else if (
-                    columnIsOfType(i, Types.JAVA_OBJECT, "SEMISTRUCTURED")
-                            || columnIsOfType(i, "JSON", "SEMISTRUCTURED") // duckdb
+                            columnIsOfType(i, "JSON", "SEMISTRUCTURED") // duckdb
                             || columnIsOfType(i, "VARIANT", "SEMISTRUCTURED") // snowflake
-                            || columnIsOfType(i, "ARRAY", "ARRAY") // snowflake
-                            || columnIsOfType(i, "OBJECT", "OBJECT") // snowflake
-                            || columnIsOfType(i, "STRUCT", "OBJECT") // snowflake
                             || columnIsOfType(i, Types.ARRAY, "ARRAY")
-                            || columnIsOfType(i, Types.STRUCT, "OBJECT")
             )
             {
                 variantColumns[i - 1] = true;

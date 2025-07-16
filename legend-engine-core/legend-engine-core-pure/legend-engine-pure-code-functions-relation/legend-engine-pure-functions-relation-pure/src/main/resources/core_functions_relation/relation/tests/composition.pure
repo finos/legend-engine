@@ -713,7 +713,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
    #;
 
    let expr = {|
-                  $tds->extend(~sorted:x | $x.payload->toMany(@Integer)->sort())
+                  $tds->extend(~sorted:x | $x.payload->toMany(@Integer)->sort()->toVariant())
               };
 
    let res =  $f->eval($expr);
@@ -740,7 +740,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
    #;
 
    let expr = {|
-                  $tds->extend(~reversed:x | $x.payload->toMany(@Integer)->reverse())
+                  $tds->extend(~reversed:x | $x.payload->toMany(@Integer)->reverse()->toVariant())
               };
 
    let res =  $f->eval($expr);
