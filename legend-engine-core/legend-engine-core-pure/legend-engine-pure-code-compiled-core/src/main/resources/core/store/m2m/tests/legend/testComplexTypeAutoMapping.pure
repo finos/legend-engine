@@ -108,7 +108,7 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
   let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree, ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type' , includeType=true , includeEnumType=false , removePropertiesWithNullValues=false , removePropertiesWithEmptySets=false , fullyQualifiedTypePath=false , includeObjectReference=false))};
 
   let result = executeReflectively($query);
-  assertEquals('{"builder":{"_type":"json"},"values":{"@type":"Person","firstName":"John","lastName":"Doe","firm":{"@type":"ExtendedFirm","id":"Firm A","address":{"@type":"ExtendedAddress","street":"A"}}}}'', $result);
+  assertEquals('{"builder":{"_type":"json"},"values":{"@type":"Person","firstName":"John","lastName":"Doe","firm":{"@type":"ExtendedFirm","id":"Firm A","address":{"@type":"ExtendedAddress","street":"A"}}}}', $result);
 }
 
 function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::alloy::autoMapping::testComplexTypePassThroughWithConcatenateFunction():Boolean[1]
