@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::relational::extension::*;
 import meta::relational::functions::pureToSqlQuery::union::*;
 import meta::external::query::sql::metamodel::extension::*;
-import meta::external::store::relational::sqlDialectTranslation::utils::*;
-import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlPlanning::*;
 import meta::pure::extension::*;
 import meta::relational::runtime::*;
@@ -47,14 +47,26 @@ function meta::relational::functions::toPostgresModel::newState(extensions: Exte
   ^ModelConversionState(isRootSelect = true, processingSelect = false, processingFilter = false, extensions = $extensions, dynaFunctionConverterMap = getDynaFunctionConverterMap());
 }
 
-function meta::relational::functions::toPostgresModel::convertSqlQuery(select:SelectSQLQuery[1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Query[1]
+function meta::relational::functions::toPostgresModel::convertRelationalOperationElement(r:RelationalOperationElement[1], extensions:Extension[*]):Node[1]
 {
-  convertSqlQuery($select, $state, [])
+  let state = newState($extensions);
+  $r->match(
+    [
+      s:SelectSQLQuery[1]| $s->convertSelectSqlQuery($state),
+      r:RelationalOperationElement[1]| $r->convertElement($state)
+    ]
+  );
 }
 
-function meta::relational::functions::toPostgresModel::convertSqlQuery(select:SelectSQLQuery[1], state:ModelConversionState[1], extensions: Extension[*]):meta::external::query::sql::metamodel::Query[1]
+function meta::relational::functions::toPostgresModel::convertSqlQuery(s:SQLQuery[1], extensions:Extension[*]):meta::external::query::sql::metamodel::Query[1]
 {
-  let withQueries = $select.commonTableExpressions->map(e| ^WithQuery(name = $e.name->toIdentifier(), query = $e.sqlQuery->convertSqlQuery(newState($extensions))));
+  assert($s->instanceOf(SelectSQLQuery), format('Postgres Model Conversion not supported for %s yet!', $s->type().name));
+  $s->cast(@SelectSQLQuery)->convertSelectSqlQuery(newState($extensions));
+}
+
+function meta::relational::functions::toPostgresModel::convertSelectSqlQuery(select:SelectSQLQuery[1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Query[1]
+{
+  let withQueries = $select.commonTableExpressions->map(e| ^WithQuery(name = $e.name->toIdentifier(), query = $e.sqlQuery->convertSelectSqlQuery(newState($state.extensions))));
   let with = if($withQueries->isNotEmpty(), | ^With(withQueries = $withQueries), | []);
   ^Query(with = $with, queryBody = $select->convertElement($state)->cast(@QuerySpecification));
 }
@@ -368,7 +380,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('sqlNull',                   {p:meta::external::query::sql::metamodel::Expression[*]| ^NullLiteral()}),
     pair('isDistinct',                {p:meta::external::query::sql::metamodel::Expression[*]| let count = functionCall('count', $p); ^ComparisonExpression(left = ^$count(distinct = true), operator = ComparisonOperator.EQUAL, right = $count);}),
     pair('count',                     {p:meta::external::query::sql::metamodel::Expression[*]| if($p->isNotEmpty(), | functionCall('count', $p), | functionCall('count', ^AllColumnsReference()))}),
-    pair('size',                      functionCall('count')),
+    pair('size',                      {p:meta::external::query::sql::metamodel::Expression[*]| if($p->isNotEmpty(), | functionCall('count', $p), | functionCall('count', ^AllColumnsReference()))}),
     pair('max',                       functionCall('max')),
     pair('min',                       functionCall('min')),
     pair('stdDevSample',              functionCall('stddev_samp')),

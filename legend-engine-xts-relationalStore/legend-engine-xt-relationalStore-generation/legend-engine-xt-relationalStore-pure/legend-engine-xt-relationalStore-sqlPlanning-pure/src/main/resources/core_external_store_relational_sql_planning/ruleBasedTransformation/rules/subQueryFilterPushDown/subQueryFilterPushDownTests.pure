@@ -218,7 +218,7 @@ function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBased
   );
 }
 
-function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownOfComplexOperations(): Boolean[1]
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownOfComplexOperations(): Boolean[1]
 {
   // Filter push down of complex operations
   runSqlRuleBasedTransformationTest(
@@ -234,7 +234,7 @@ function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBase
     '      personTable AS root\n' +
     '  ) AS root\n' +
     'WHERE\n' +
-    '  len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)',
+    '  char_length(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND char_length(root.FIRSTNAME) < 10)',
 
     'SELECT\n' +
     '  root.*\n' +
@@ -247,16 +247,16 @@ function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBase
     '    FROM\n' +
     '      personTable AS root\n' +
     '    WHERE\n' +
-    '      len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)\n' + // Complex Filter pushed into subquery
+    '      char_length(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND char_length(root.FIRSTNAME) < 10)\n' + // Complex Filter pushed into subquery
     '  ) AS root\n' +
     'WHERE\n' +
-    '  len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)',
+    '  char_length(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND char_length(root.FIRSTNAME) < 10)',
 
     subQueryFilterPushDownRule()
   );
 }
 
-function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownOfOperationsOnMultipleColumns(): Boolean[1]
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownOfOperationsOnMultipleColumns(): Boolean[1]
 {
   // Filter push down of operations on multiple columns
   runSqlRuleBasedTransformationTest(
@@ -272,7 +272,7 @@ function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBase
     '      personTable AS root\n' +
     '  ) AS root\n' +
     'WHERE\n' +
-    '  (len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)) AND root.AGE = 22 AND len(root.FIRSTNAME) >= 0',
+    '  (char_length(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND char_length(root.FIRSTNAME) < 10)) AND root.AGE = 22 AND char_length(root.FIRSTNAME) >= 0',
 
     'SELECT\n' +
     '  root.*\n' +
@@ -285,16 +285,16 @@ function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBase
     '    FROM\n' +
     '      personTable AS root\n' +
     '    WHERE\n' +
-    '      (len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)) AND root.AGE = 22 AND len(root.FIRSTNAME) >= 0\n' + // Filters on multiple columns pushed into subquery
+    '      (char_length(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND char_length(root.FIRSTNAME) < 10)) AND root.AGE = 22 AND char_length(root.FIRSTNAME) >= 0\n' + // Filters on multiple columns pushed into subquery
     '  ) AS root\n' +
     'WHERE\n' +
-    '  (len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)) AND root.AGE = 22 AND len(root.FIRSTNAME) >= 0',
+    '  (char_length(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND char_length(root.FIRSTNAME) < 10)) AND root.AGE = 22 AND char_length(root.FIRSTNAME) >= 0',
 
     subQueryFilterPushDownRule()
   );
 }
 
-function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushdownForOrClauses(): Boolean[1]
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushdownForOrClauses(): Boolean[1]
 {
   // No push down for OR clauses
   runSqlRuleBasedTransformationTest(
@@ -310,7 +310,7 @@ function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBase
     '      personTable AS root\n' +
     '  ) AS root\n' +
     'WHERE\n' +
-    '  len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10) OR root.AGE = 22',
+    '  char_length(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND char_length(root.FIRSTNAME) < 10) OR root.AGE = 22',
 
     'SELECT\n' +
     '  root.*\n' +
@@ -324,7 +324,7 @@ function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBase
     '      personTable AS root\n' +
     '  ) AS root\n' +
     'WHERE\n' +
-    '  len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10) OR root.AGE = 22',
+    '  char_length(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND char_length(root.FIRSTNAME) < 10) OR root.AGE = 22',
 
     subQueryFilterPushDownRule()
   );
@@ -658,7 +658,7 @@ function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBased
   );
 }
 
-function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithGroupBy(): Boolean[1]
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithGroupBy(): Boolean[1]
 {
   // Filter push down with group by (filters to where clause)
   runSqlRuleBasedTransformationTest(
@@ -826,7 +826,7 @@ function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBased
   );
 }
 
-function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushDownWithWindowColumn(): Boolean[1]
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushDownWithWindowColumn(): Boolean[1]
 {
   // No push down with window column
   runSqlRuleBasedTransformationTest(
@@ -853,7 +853,7 @@ function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBase
     '      root.FIRSTNAME AS FIRSTNAME,\n' +
     '      root.LASTNAME AS LASTNAME,\n' +
     '      root.AGE AS AGE,\n' +
-    '      RANK() OVER (\n' +
+    '      rank() OVER (\n' +
     '      PARTITION BY\n' +
     '        root.FIRSTNAME\n' +
     '      ORDER BY\n' +
@@ -869,7 +869,7 @@ function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBase
   );
 }
 
-function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithNestedWindowColumn(): Boolean[1]
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithNestedWindowColumn(): Boolean[1]
 {
   // Push down with nested window column
   runSqlRuleBasedTransformationTest(
@@ -909,7 +909,7 @@ function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBase
     '          root.FIRSTNAME AS FIRSTNAME,\n' +
     '          root.LASTNAME AS LASTNAME,\n' +
     '          root.AGE AS AGE,\n' +
-    '          RANK() OVER (\n' +
+    '          rank() OVER (\n' +
     '          PARTITION BY\n' +
     '            root.FIRSTNAME\n' +
     '          ORDER BY\n' +

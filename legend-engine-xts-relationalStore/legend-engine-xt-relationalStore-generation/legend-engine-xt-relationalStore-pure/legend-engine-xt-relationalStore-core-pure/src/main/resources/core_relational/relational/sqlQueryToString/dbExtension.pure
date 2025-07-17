@@ -387,11 +387,6 @@ function meta::relational::functions::sqlQueryToString::ddlSqlQueryToString(ddlS
                          d:DropTableSQL[1]| $dbConfig.translateDropTable($d)])
 }
 
-function meta::relational::functions::sqlQueryToString::useDialectTranslation(r:RelationalOperationElement[1], dbType:DatabaseType[1]):Boolean[1]
-{
-  $dbType->in([DatabaseType.H2]) && (!$r->instanceOf(SQLQuery) || $r->instanceOf(SelectSQLQuery));
-}
-
 function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
 {
   if(useDialectTranslation($sqlQuery, $dbType),
@@ -404,7 +399,7 @@ function meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty(s
 {
   if(useDialectTranslation($sqlQuery, $dbType),
     // TODO: Use pretty format processing here. Skipping for now as it leads to lots of SQL assert diffs.
-    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, $extensions),
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, false, $extensions),
     | sqlQueryToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, ^Format(newLine='\n', indent='\t'), $extensions);
   );
 }
@@ -412,7 +407,15 @@ function meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty(s
 function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], format:Format[1], extensions:Extension[*]):String[1]
 {
   if(useDialectTranslation($sqlQuery, $dbType),
-    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, $extensions),
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, false, $extensions),
+    | processOperation($sqlQuery, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), $format, ^Config(), $extensions)
+  );
+}
+
+function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], format:Format[1], shouldOptimize:Boolean[1], extensions:Extension[*]):String[1]
+{
+  if(useDialectTranslation($sqlQuery, $dbType),
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, $shouldOptimize, $extensions),
     | processOperation($sqlQuery, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), $format, ^Config(), $extensions)
   );
 }
@@ -428,7 +431,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
 function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
 {
   if(useDialectTranslation($relationalOperationElement, $dbType),
-    | meta::relational::functions::sqlDialectTranslation::relOpToString($relationalOperationElement, $dbType, false, $dbTimeZone, $quoteIdentifiers, $extensions),
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($relationalOperationElement, $dbType, false, $dbTimeZone, $quoteIdentifiers, false, $extensions),
     | processOperation($relationalOperationElement, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers), ^Format(newLine='', indent=''), ^Config(), $extensions);
   );
 }

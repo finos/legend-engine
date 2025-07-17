@@ -55,14 +55,18 @@ Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeI
 
 function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(query: Query[1], functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1]): Query[1]
 {
-  let castedFunctionRegistry = $functionRegistry->values()->map(sqlFunc | pair($sqlFunc.name->toOne(), $sqlFunc))->newMap();
-  $query->inferTypes(typeInferenceTransformFunction($castedFunctionRegistry))->cast(@Query);
+  $query->inferTypes_internal($functionRegistry)->cast(@Query);
 }
 
 function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(expr: meta::external::query::sql::metamodel::Expression[1], functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1]): meta::external::query::sql::metamodel::Expression[1]
 {
-  let castedFunctionRegistry = $functionRegistry->values()->map(sqlFunc | pair($sqlFunc.name->toOne(), $sqlFunc))->newMap();
-  $expr->inferTypes(typeInferenceTransformFunction($castedFunctionRegistry))->cast(@meta::external::query::sql::metamodel::Expression);
+  $expr->inferTypes_internal($functionRegistry)->cast(@meta::external::query::sql::metamodel::Expression);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes_internal(node: Node[1], functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1]): Node[1]
+{
+  let nameKeyedFunctionRegistry = $functionRegistry->values()->map(sqlFunc | pair($sqlFunc.name->toOne()->toLower(), $sqlFunc))->newMap();
+  $node->inferTypes(typeInferenceTransformFunction($nameKeyedFunctionRegistry));
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(node: Node[1], transformFunction: Function<{Node[1]->Node[1]}>[1]): Node[1]
@@ -151,7 +155,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedFunctionCall(f: FunctionCall[1], functionRegistry: Map<String, SqlFunction>[1]): TypedSqlExpression[1]
 {
-  let funcName = $f.name.parts->joinStrings('.');
+  let funcName = $f.name.parts->joinStrings('.')->toLower();
   let sqlFunction = $functionRegistry->get($funcName)->toOne('Function registry does not contain function - ' + $funcName);
   let funcArgs = $f.arguments;
   if ($funcArgs->forAll(x | $x->instanceOf(TypedSqlExpression)),

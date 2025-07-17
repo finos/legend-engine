@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::relational::functions::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlPlanning::*;
 import meta::pure::metamodel::variant::*;
 import meta::pure::executionPlan::featureFlag::*;
 import meta::pure::executionPlan::connection::*;
@@ -44,6 +47,7 @@ import meta::relational::milestoning::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::metamodel::variant::*;
+import meta::relational::functions::toPostgresModel::*;
 
 function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1], extensions:Extension[*]):ExecutionNode[1]
 {
@@ -187,7 +191,7 @@ function <<access.private>> meta::relational::mapping::getRelationalTypeFromRela
 
 function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], enumMapSupportFunctions:String[*], extensions:Extension[*]):ExecutionNode[1]
 {
-   let sql = sqlQueryToString($query, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
+   let sql = toSqlString($query, $connection, false, $extensions);
 
    ^SQLExecutionNode
    (
@@ -349,8 +353,8 @@ function meta::relational::mapping::execution(store: Database[1], f:ValueSpecifi
 
    let sqlQueryToStringStart = now();
    let sql = if($relationalExecutionContext.insertDriverTablePkInTempTable->isEmpty(),
-                |sqlQueryToStringPretty($postProcessorResult.query, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions),
-                |meta::relational::functions::toDDL::buildInsertSQLQueryResultIntoTable
+                | toSqlString($postProcessorResult.query, $connection, true, $extensions),
+                | meta::relational::functions::toDDL::buildInsertSQLQueryResultIntoTable
                                                     (
                                                        $relationalExecutionContext.insertDriverTablePkInTempTable->toOne(),
                                                        $postProcessorResult.query->cast(@SelectSQLQuery),
@@ -373,6 +377,25 @@ function meta::relational::mapping::execution(store: Database[1], f:ValueSpecifi
 
    $postProcessorResult.resultPostProcessor->fold({pp,res| $pp->eval($res)},$result);
 
+}
+
+function meta::relational::mapping::useDialectTranslation(r:RelationalOperationElement[1], dbType:DatabaseType[1]):Boolean[1]
+{
+  $dbType->in([DatabaseType.H2]) && (!$r->instanceOf(SQLQuery) || $r->instanceOf(SelectSQLQuery))// && false;
+}
+
+function meta::relational::mapping::toSqlString(s:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], pretty:Boolean[1], extensions:Extension[*]):String[1]
+{
+  if(useDialectTranslation($s, $connection.type),
+    | let query = $s->convertSqlQuery($extensions);
+      let optimizedQuery = $query->planSqlStatement(^SqlPlanningConfig(dbType = $connection.type->toString()), $extensions);
+      // TODO: Not using pretty format processing here now as it leads to lots of SQL assert diffs.
+      $optimizedQuery->toSqlDialect($connection, false, $extensions);,
+    | if($pretty,
+        | sqlQueryToStringPretty($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions),
+        | sqlQueryToString($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions)
+      )
+  )
 }
 
 function meta::relational::mapping::sqlCommentPureExecution(): String[1]
