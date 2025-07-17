@@ -331,11 +331,14 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
       javaMethod('public', javaVoid(), $name, [$value]),
       {|
          let iReferencedObject = $conventions->className(IReferencedObject);
-         let start = if((!$value.type->meta::external::language::java::metamodel::isClass('java.lang.Object')),
-                        | j_if($value->j_instanceof($iReferencedObject),
-                             $fWriter->j_invoke('startObject', [$value->j_invoke('typePath$', [], javaString()), $value->j_cast($iReferencedObject)->j_invoke($iReferencedObject.methods->toOne().name, [], javaString())]),
-                             $fWriter->j_invoke('startObject', $value->j_invoke('typePath$', [], javaString()))
-                          ),
+         let start = if((!$value.type-> meta::external::language::java::metamodel::isClass('java.lang.Object')),
+                        | if($tree->toOne()->instanceOf(SerializeTop),
+                              | j_if($value->j_instanceof($iReferencedObject),
+                                 $fWriter->j_invoke('startObject', [$value->j_invoke('typePath$', [], javaString()), $value->j_cast($iReferencedObject)->j_invoke($iReferencedObject.methods->toOne().name, [], javaString())]),
+                                 $fWriter->j_invoke('startObject', $value->j_invoke('typePath$', [], javaString()))
+                              ),
+                              | $fWriter->j_invoke('startObject', $value->j_invoke('typePath$', [], javaString()))
+                            ),
                         | $fWriter->j_invoke('startObject', j_string($class->elementToPath()))
                      );
          let end   = $fWriter->j_invoke('endObject', []);
