@@ -97,6 +97,20 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
   assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe","firm":{"id":"Firm A updated","address":{"street":"A"}}}}', $result);
 }
 
+function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::alloy::autoMapping::testAutomappedSubtypes():Boolean[1]
+{
+  let tree    = #{Person{firstName, lastName, firm {id, address {street}}}}#;
+  let mapping = testComplexTypePassThroughWithMultipleProperties();
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(element=^meta::external::store::model::ModelStore(), connection=^meta::external::store::model::JsonModelConnection(
+                                            class=SPerson,
+                                            url='data:application/json,{"fullName":"John Doe", "firm" : {"@type": "ExtendedFirm", "firmName": "XYZ", "id" : "Firm A", "address" : {"@type": "ExtendedAddress", "city": "XYZ", "street": "A"}}, "address1": {"street": "Person Street A"}}'
+                                        )));
+  let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree, ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type' , includeType=true , includeEnumType=false , removePropertiesWithNullValues=false , removePropertiesWithEmptySets=false , fullyQualifiedTypePath=false , includeObjectReference=false))};
+
+  let result = executeReflectively($query);
+  assertEquals('{"builder":{"_type":"json"},"values":{"@type":"Person","firstName":"John","lastName":"Doe","firm":{"@type":"ExtendedFirm","id":"Firm A","address":{"@type":"ExtendedAddress","street":"A"}}}}', $result);
+}
+
 function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::alloy::autoMapping::testComplexTypePassThroughWithConcatenateFunction():Boolean[1]
 {
   let tree    = #{Person{firstName, lastName, firm {id, address {street}}, addresses {street}}}#;
@@ -236,6 +250,11 @@ Class meta::pure::mapping::modelToModel::test::alloy::autoMapping::model::Firm
   address  : Address[1];
 }
 
+Class meta::pure::mapping::modelToModel::test::alloy::autoMapping::model::ExtendedFirm extends Firm
+{
+  firmName: String[1];
+}
+
 Class meta::pure::mapping::modelToModel::test::alloy::autoMapping::model::BigFirm extends Firm
 {
   size     : Integer[1];
@@ -249,6 +268,11 @@ Class meta::pure::mapping::modelToModel::test::alloy::autoMapping::model::Corpor
 Class meta::pure::mapping::modelToModel::test::alloy::autoMapping::model::Address
 {
   street   : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::autoMapping::model::ExtendedAddress extends Address
+{
+  city: String[1];
 }
 
 function meta::pure::mapping::modelToModel::test::alloy::autoMapping::mapping::testComplexTypePassThroughSimple(): Mapping[1]
