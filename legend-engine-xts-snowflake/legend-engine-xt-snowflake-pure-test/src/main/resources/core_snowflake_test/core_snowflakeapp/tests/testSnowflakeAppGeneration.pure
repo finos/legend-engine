@@ -135,7 +135,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testInputDataTypes():Boolean[1]
 {
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("str" VARCHAR,"int" INTEGER,"bool" BOOLEAN,"dt" TIMESTAMP) RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", case when "root".boolean is null then null else case when "root".boolean = 1 then true else false end end as "Boolean", "root"."DATE" as "Date", cast("root".dateTime as TIMESTAMP) as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("str" VARCHAR,"int" INTEGER,"bool" BOOLEAN,"dt" TIMESTAMP) RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", case when "root".boolean is null then null else case when "root".boolean = 1 then true else false end end as "Boolean", "root".date as "Date", cast("root".dateTime as TIMESTAMP) as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
 
   let function = 'function : meta::external::function::activator::snowflakeApp::tests::testReturnType(String[1], Integer[1], Boolean[1], DateTime[1]):TabularDataSet[1];\n';
 
@@ -144,7 +144,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testReturnDataTypes():Boolean[1]
 {
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", case when "root".boolean is null then null else case when "root".boolean = 1 then true else false end end as "Boolean", "root"."DATE" as "Date", cast("root".dateTime as TIMESTAMP) as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", case when "root".boolean is null then null else case when "root".boolean = 1 then true else false end end as "Boolean", "root".date as "Date", cast("root".dateTime as TIMESTAMP) as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
 
   let function = 'function : meta::external::function::activator::snowflakeApp::tests::testDataType():TabularDataSet[1];\n';
 
