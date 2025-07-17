@@ -61,18 +61,18 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Values of types \"INTEGER\" and \"DATE\" are not comparable; SQL statement:\nselect 1 in (1, 2, 5, 2, 'a', true, DATE'2014-02-01', 'c') [90110-214]", AdapterQualifier.needsInvestigation),
 
             // Max
-            one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "No matched function in function registry for - max(DoubleSqlType, DoubleSqlType, DoubleSqlType, DoubleSqlType, DoubleSqlType).", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_", "No matched function in function registry for - max(IntegerSqlType, IntegerSqlType, IntegerSqlType, IntegerSqlType, IntegerSqlType).", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for array_max().", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for array_max().", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'", AdapterQualifier.unsupportedFeature),
 
             // MaxBy
             one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for maxBy().\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::math::tests::maxBy::testSimpleGroupByMaxBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for maxBy().\"", AdapterQualifier.needsImplementation),
 
             // Min
-            one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "No matched function in function registry for - min(DoubleSqlType, DoubleSqlType, DoubleSqlType, DoubleSqlType, DoubleSqlType).", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "No matched function in function registry for - min(IntegerSqlType, IntegerSqlType, IntegerSqlType, IntegerSqlType, IntegerSqlType).", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for array_min().", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for array_min().", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
 

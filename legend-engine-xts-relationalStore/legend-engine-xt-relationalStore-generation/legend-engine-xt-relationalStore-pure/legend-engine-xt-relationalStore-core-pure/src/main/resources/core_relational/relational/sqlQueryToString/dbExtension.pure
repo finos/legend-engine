@@ -91,7 +91,7 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    tableFunctionParamProcessor(r:RelationalOperationElement[1], sgc:SqlGenerationContext[1])
    {
-    assert($this.dbExtension.tableFunctionParamProcessor->isNotEmpty(), '[unsupported-api] table function param processeing not supported for Database Type: ' + $this.dbType->toString());
+    assert($this.dbExtension.tableFunctionParamProcessor->isNotEmpty(), '[unsupported-api] table function param processing not supported for Database Type: ' + $this.dbType->toString());
     $this.dbExtension.tableFunctionParamProcessor->toOne()->eval($r, $sgc);
    }: String[1];
 
@@ -221,13 +221,13 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    lambdaParameterProcessor(r:RelationalLambdaParameter[1], sgc:SqlGenerationContext[1])
    {
-    assert($this.dbExtension.lambdaParameterProcessor->isNotEmpty(), '[unsupported-api] relational lambda parameter processeing not supported for Database Type: ' + $this.dbType->toString());
+    assert($this.dbExtension.lambdaParameterProcessor->isNotEmpty(), '[unsupported-api] relational lambda parameter processing not supported for Database Type: ' + $this.dbType->toString());
     $this.dbExtension.lambdaParameterProcessor->toOne()->eval($r, $sgc);
    }: String[1];
 
    lambdaProcessor(r:RelationalLambda[1], sgc:SqlGenerationContext[1])
    {
-    assert($this.dbExtension.lambdaProcessor->isNotEmpty(), '[unsupported-api] relational lambda processeing not supported for Database Type: ' + $this.dbType->toString());
+    assert($this.dbExtension.lambdaProcessor->isNotEmpty(), '[unsupported-api] relational lambda processing not supported for Database Type: ' + $this.dbType->toString());
     $this.dbExtension.lambdaProcessor->toOne()->eval($r, $sgc);
    }: String[1];
 }
@@ -1068,6 +1068,13 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   add,
   adjust,
   and,
+  array_max,
+  array_min,
+  array_sum,
+  array_sort,
+  array_reverse,
+  array_size,
+  array_append,
   ascii,
   asin,
   atan,

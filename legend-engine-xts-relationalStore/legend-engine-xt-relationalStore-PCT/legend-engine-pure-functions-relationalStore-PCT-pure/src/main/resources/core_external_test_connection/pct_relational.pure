@@ -60,10 +60,11 @@ function <<PCT.adapter>> {PCT.adapterName='MemSQL'} meta::relational::tests::pct
 function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
 {
   $f->match([
-    z:FunctionDefinition<Any>[1]|$z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions()),
+    z:FunctionDefinition<Any>[1] |if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z,|[])->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions()));,
     x:SimpleFunctionExpression[1]|let res = $x.parametersValues->map(p|$p->extractDependentFunctions());
-                                  $res->concatenate(if(!$x.func->hasStereotype('function', PCT),|$x.func,|[]));,
-    a:Any[1]|[]
+                                  $res->concatenate($x.func->extractDependentFunctions());,
+    i: InstanceValue[1] | $i.values->map(p|$p->extractDependentFunctions()),                                  
+    a:Any[1] | []
   ]);  
 }
 
@@ -123,7 +124,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
                   print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString('[',',',']'),|''));
                   $resultFinal;,
-                | 
+                |
                     let tdsString = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->map(c | $c.name + $c.type->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
                                   $res.result.rows->map(x|
                                         range($x.values->size())->map(z |
@@ -146,6 +147,7 @@ function meta::relational::tests::pct::process::resultToType(preResultFinal: Any
 
   if ([
         pair(|$preResultFinal->isEmpty() || $preResultFinal == TDSNull, |[]),
+        pair(|$preResultFinal->toOne()->instanceOf(String) && $mult->isToMany() && $preResultFinal->toOne()->cast(@String)->startsWith('[') && $preResultFinal->toOne()->cast(@String)->endsWith(']'), |$preResultFinal->toOne()->cast(@String)->fromJson()->toMany($type)),
         pair(|$resultType->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toOne()->toString())),
         pair(|$resultType->subTypeOf(Date), |buildDate($preResultFinal->toOne()->toString())),
         pair(|$resultType->subTypeOf(Decimal), |$preResultFinal->toOne()->cast(@Number)->toDecimal()),
@@ -153,9 +155,56 @@ function meta::relational::tests::pct::process::resultToType(preResultFinal: Any
         pair(|$resultType->subTypeOf(Float), |$preResultFinal->toOne()->cast(@Number)->toFloat()),
         pair(|$resultType->subTypeOf(Number), |$preResultFinal->toOne()->cast(@Number)),
         pair(|$resultType == Variant, |$preResultFinal->toOne()->cast(@String)->fromJson()),
-        pair(|$resultType->in([List, Map]), |$preResultFinal->toOne()->cast(@String)->fromJson()->to(^InstanceValue(genericType = $type, multiplicity = PureZero)->reactivate()->head()))
+        pair(|$resultType->in([List, Map]), |$preResultFinal->toOne()->cast(@String)->fromJson()->to($type))
       ],
     | $preResultFinal->toOne()
+  );
+}
+
+function meta::relational::tests::pct::process::toMany(var: Variant[1], type: GenericType[1]):Any[*]
+{
+  // compile time has hard time doing dynamic toMany so this is to compensate
+  if([
+      pair(|$type.rawType == Integer, |$var->toMany(@Integer)),
+      pair(|$type.rawType == Float, |$var->toMany(@Float)),
+      pair(|$type.rawType == String, |$var->toMany(@String)),
+      pair(|$type.rawType == StrictDate, |$var->toMany(@StrictDate)),
+      pair(|$type.rawType == DateTime, |$var->toMany(@DateTime)),
+      pair(|$type.rawType == Boolean, |$var->toMany(@Boolean)),
+      pair(|$type.rawType == Variant, |$var->toMany(@Variant))
+    ],
+    | fail('Not supported: ' + $type->meta::pure::metamodel::serialization::grammar::printGenericType()); [];
+  );
+}
+
+function meta::relational::tests::pct::process::to(var: Variant[1], type: GenericType[1]):Any[0..1]
+{
+  // compile time has hard time doing dynamic to so this is to compensate
+  if([
+      pair(|$type.rawType == Integer, |$var->to(@Integer)),
+      pair(|$type.rawType == Float, |$var->to(@Float)),
+      pair(|$type.rawType == String, |$var->to(@String)),
+      pair(|$type.rawType == StrictDate, |$var->to(@StrictDate)),
+      pair(|$type.rawType == DateTime, |$var->to(@DateTime)),
+      pair(|$type.rawType == Boolean, |$var->to(@Boolean)),
+
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == Integer, |$var->to(@List<Integer>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == Float, |$var->to(@List<Float>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == String, |$var->to(@List<String>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == StrictDate, |$var->to(@List<StrictDate>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == DateTime, |$var->to(@List<DateTime>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == Boolean, |$var->to(@List<Boolean>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == Variant, |$var->to(@List<Variant>)),
+
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == Integer, |$var->to(@Map<String,Integer>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == Float, |$var->to(@Map<String,Float>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == String, |$var->to(@Map<String,String>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == StrictDate, |$var->to(@Map<String,StrictDate>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == DateTime, |$var->to(@Map<String,DateTime>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == Boolean, |$var->to(@Map<String,Boolean>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == Variant, |$var->to(@Map<String,Variant>))
+    ],
+    | fail('Not supported: ' + $type->meta::pure::metamodel::serialization::grammar::printGenericType()); [];
   );
 }
 

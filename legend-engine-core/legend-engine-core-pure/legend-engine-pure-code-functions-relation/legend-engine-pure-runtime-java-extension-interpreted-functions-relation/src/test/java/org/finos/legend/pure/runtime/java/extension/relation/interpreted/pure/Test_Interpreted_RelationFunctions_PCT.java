@@ -31,7 +31,9 @@ public class Test_Interpreted_RelationFunctions_PCT extends PCTReportConfigurati
     private static final ReportScope reportScope = RelationCodeRepositoryProvider.relationFunctions;
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "interpreted";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with();
+    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,payload,divBy2\n   1,[1,2,3],[2]\n   2,[4,5,6],[4,6]\n   3,[7,8,9],[8]\n   4,[10,11,12],[10,12]\n   5,[13,14,15],[14]\n#'\nactual:   '#TDS\n   id,payload,divBy2\n   1,[1,2,3],2\n   2,[4,5,6],[4,6]\n   3,[7,8,9],8\n   4,[10,11,12],[10,12]\n   5,[13,14,15],14\n#'\"")
+    );
 
     public static Test suite()
     {

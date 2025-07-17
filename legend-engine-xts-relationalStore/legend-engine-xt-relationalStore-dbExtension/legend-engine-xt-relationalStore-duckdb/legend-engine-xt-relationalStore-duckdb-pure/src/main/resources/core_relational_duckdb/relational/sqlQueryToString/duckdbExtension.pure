@@ -124,12 +124,27 @@ function meta::relational::functions::sqlQueryToString::duckDB::translateCreateT
       +');';
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDynaFunctionVariantTransformer(vars: String[*]): String[1]
+{
+  $vars->match([
+    zero:String[0] | 'null',
+    one:String[1]  | $one,
+    many:String[*] | $many->joinStrings('array_value(', ',', ')')
+  ]);
+}
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDynaFunctionToSqlForDuckDB(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
 
   [
+    dynaFnToSql('array_max',              $allStates,            ^ToSql(format='array_aggregate(%s, \'max\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_min',              $allStates,            ^ToSql(format='array_aggregate(%s, \'min\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='array_aggregate(%s, \'sum\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='array_sort(%s)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='array_reverse(%s)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(len(%s), 0)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)', transform= {vals:String[*] | $vals->init()->getDynaFunctionVariantTransformer()->concatenate($vals->last())})),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(cast(%s as BIGINT) & cast(%s as BIGINT))')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ cast(%s as BIGINT))')),

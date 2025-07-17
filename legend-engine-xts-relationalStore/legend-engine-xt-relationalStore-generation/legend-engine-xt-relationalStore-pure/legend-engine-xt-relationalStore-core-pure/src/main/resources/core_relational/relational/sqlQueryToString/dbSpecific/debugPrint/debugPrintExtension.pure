@@ -220,11 +220,27 @@ function meta::relational::functions::sqlQueryToString::debugPrint::h2ReservedWo
    ];
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::getDynaFunctionVariantTransformer(vars: String[*]): String[1]
+{
+  $vars->match([
+    zero:String[0] | 'null',
+    one:String[1]  | $one,
+    many:String[*] | $many->joinStrings('array_value(', ',', ')')
+  ]);
+}
+
 function meta::relational::functions::sqlQueryToString::debugPrint::getDynaFunctionToSqlForH2(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
 
   [
+    dynaFnToSql('array_max',              $allStates,            ^ToSql(format='array_aggregate(%s, \'max\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_min',              $allStates,            ^ToSql(format='array_aggregate(%s, \'min\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='array_aggregate(%s, \'sum\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='array_sort(%s)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='array_reverse(%s)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='len(%s)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)', transform= {vals:String[*] | $vals->init()->getDynaFunctionVariantTransformer()->concatenate($vals->last())})),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='every(%s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),        

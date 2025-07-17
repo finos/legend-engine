@@ -31,6 +31,7 @@ public class SQLResultDBColumnsMetaData
     private final boolean[] timeStampColumns;
     private final boolean[] dateColumns;
     private final boolean[] variantColumns;
+    private final boolean[] arrayColumns;
 
     SQLResultDBColumnsMetaData(List<SQLResultColumn> resultColumns, ResultSetMetaData rsMetaData) throws SQLException
     {
@@ -40,6 +41,7 @@ public class SQLResultDBColumnsMetaData
         this.timeStampColumns = new boolean[size];
         this.dateColumns = new boolean[size];
         this.variantColumns = new boolean[size];
+        this.arrayColumns = new boolean[size];
 
         for (int i = 1; i <= size; i++)
         {
@@ -55,13 +57,13 @@ public class SQLResultDBColumnsMetaData
                 dateColumns[i - 1] = true;
 
             }
+            else if (columnIsOfType(i, Types.ARRAY, "ARRAY"))
+            {
+                arrayColumns[i - 1] = true;
+            }
             // Variant types are not standardized across databases, so we check for common types
-            else if (
-                    columnIsOfType(i, Types.JAVA_OBJECT, "SEMISTRUCTURED")
-                            || columnIsOfType(i, "JSON", "SEMISTRUCTURED")
-                            || columnIsOfType(i, "VARIANT", "SEMISTRUCTURED")
-                            || columnIsOfType(i, Types.ARRAY, "ARRAY")
-                            || columnIsOfType(i, Types.STRUCT, "OBJECT")
+            else if (columnIsOfType(i, "JSON", "SEMISTRUCTURED") // duckdb
+                   || columnIsOfType(i, "VARIANT", "SEMISTRUCTURED") // snowflake
             )
             {
                 variantColumns[i - 1] = true;
@@ -78,6 +80,11 @@ public class SQLResultDBColumnsMetaData
     boolean isDateColumn(int index)
     {
         return dateColumns[index - 1];
+    }
+
+    boolean isArrayColumn(int index)
+    {
+        return arrayColumns[index - 1];
     }
 
     boolean isVariantColumn(int index)

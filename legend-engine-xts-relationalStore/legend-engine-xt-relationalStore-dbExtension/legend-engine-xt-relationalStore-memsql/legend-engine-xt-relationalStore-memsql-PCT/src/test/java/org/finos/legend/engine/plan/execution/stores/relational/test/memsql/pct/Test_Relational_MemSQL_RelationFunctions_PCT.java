@@ -164,9 +164,21 @@ public class Test_Relational_MemSQL_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "Operation 'RANGE PRECEDING without UNBOUNDED' is not allowed.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::over::testRange_WithNumbers_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "Operation 'RANGE FOLLOWING without UNBOUNDED' is not allowed.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "Operation 'RANGE FOLLOWING without UNBOUNDED' is not allowed.", AdapterQualifier.unsupportedFeature),
-            
-            one("meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "\"Datatype to SQL text not supported for Database Type: MemSQL\"", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_", "\"Datatype to SQL text not supported for Database Type: MemSQL\"", AdapterQualifier.needsImplementation)
+
+            one("meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+
+            one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_", "\"[unsupported-api] relational lambda processing not supported for Database Type: MemSQL\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature)
     );
 
     public static Test suite()
