@@ -111,6 +111,12 @@ function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQ
       'FuncTests - string_agg(0/0)',
       'Expected - {"columnNames":["age","result"],"rows":[{"values":[18,"Anthony,John"]},{"values":[20,"Fabrice"]},{"values":[{"key":[]},"Oliver"]},{"values":[30,{"key":[]}]}]}\n'+
       'Actual - {"columnNames":["age","result"],"rows":[{"values":[20,"Fabrice"]},{"values":[18,"John,Anthony"]},{"values":[{"key":[]},"Oliver"]},{"values":[30,{"key":[]}]}]}'
+    ),
+    // TODO : Remove this test after the version issue for like is resolved.
+    pair(
+      'SQLStructureTests - LikeIgnoreCase',
+      'Expected - {"columnNames":["name"],"rows":[{"values":["abc65%"]}]}\n' +
+      'Actual - {"columnNames":["name"],"rows":[]}'
     ),  
     pair('FuncTests - split_part(0/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
     pair('FuncTests - split_part(1/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
@@ -141,7 +147,9 @@ function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQ
     pair('FuncTests - make_timestamp(1/1)', 'MemSQL SQL Dialect does not support the function - make_timestamp'),
     pair('FuncTests - covar_samp(0/0)', 'MemSQL SQL Dialect does not support the function - covar_samp'),
     pair('FuncTests - covar_pop(0/0)', 'MemSQL SQL Dialect does not support the function - covar_pop'),
-    pair('FuncTests - corr(0/0)', 'MemSQL SQL Dialect does not support the function - corr')                           
+    pair('FuncTests - corr(0/0)', 'MemSQL SQL Dialect does not support the function - corr'),
+    pair('SQLStructureTests - AsOfJoin', 'MemSQL SQL Dialect does not support AsOfJoin!'),                           
+    pair('SQLStructureTests - LikeEscapeChar', 'MemSQL SQL Dialect does not support custom escape char with like')
 
   ]->newMap()->cast(@Map<String, String>)
 }
@@ -238,7 +246,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     functionCallProcessor_default(),
     subQueryExpressionProcessor_default(),
     trimProcessor_default(),
-    likePredicateProcessor_default(),
+    likePredicateProcessorForMemSQL(),
     allColumnsReferenceNodeProcessor_default(),
     inClauseVariablePlaceholderProcessor_default(),
     variablePlaceholderProcessor_default(),
@@ -1416,7 +1424,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   nodeProcessor(
     AsOfJoin,
-    {sqlDialect, a, state, config | format('AsOfJoins are not supported by %s!', $sqlDialect.dbType)}
+    {sqlDialect, j, state, config |
+      failWithMessage('MemSQL SQL Dialect does not support AsOfJoin!');
+    },
+    {n: AsOfJoin[1] | true}
   );
 }
 
@@ -1428,7 +1439,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair('integer', 'signed integer'),
     pair('bigint', 'signed integer'),
     pair('int2', 'signed integer'),
-    pair('small int', 'signed integer'),
+    pair('smallint', 'signed integer'),
     pair('int', 'signed integer'),
     pair('int4', 'signed integer'),
     pair('int8', 'signed integer'),
@@ -1610,6 +1621,19 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(TimeBucket, customFunctionProcessor(processorForTimeBucket_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_))
 
   ])
+}
+
+// Like Predicate in MemSQL is case insenstive which is non-standard. To Enforce case sensitivity the input string is treated as Binary String.
+function meta::external::store::relational::sqlDialectTranslation::memSQL::likePredicateProcessorForMemSQL(): NodeProcessor<LikePredicate>[1]
+{
+  nodeProcessor(
+    LikePredicate,
+    {sqlDialect, l, state, config |
+      assert($l.escape->isEmpty() || $l.escape == literal('\\'), 'MemSQL SQL Dialect does not support custom escape char with like');
+      if(!$l.ignoreCase, | $sqlDialect->keyword('binary', $state, $config), | '') + ' ' + $sqlDialect->executeNodeProcessor($l.value, $state, $config) + ' ' +  $sqlDialect->keyword('like', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($l.pattern, $state, $config);
+    },
+    {n | true}
+  )
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForCbrt(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]

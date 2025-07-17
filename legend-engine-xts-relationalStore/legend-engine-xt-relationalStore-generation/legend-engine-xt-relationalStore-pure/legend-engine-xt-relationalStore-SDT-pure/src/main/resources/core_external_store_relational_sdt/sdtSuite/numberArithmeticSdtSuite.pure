@@ -101,3 +101,19 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArith
     'NumberArithmetic - precedence2'
   )
 }
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArithmetic::negativeExpression(): SqlDialectTest[1]
+{
+  // -(2 * (3 + 4))  =>  -14
+  testConfigForSimpleExpression(
+    ^NegativeExpression(
+      value = ^ArithmeticExpression(
+        left = ^IntegerLiteral(value = 2),
+        right = ^ArithmeticExpression(left = ^IntegerLiteral(value = 3), right = ^IntegerLiteral(value = 4), type = ArithmeticType.ADD),
+        type = ArithmeticType.MULTIPLY
+      )
+    ),
+    -14,
+    'NumberArithmetic - negativeExpression'
+  )
+}
