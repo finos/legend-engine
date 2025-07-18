@@ -327,19 +327,19 @@ public class SchemaEvolution
             String mainFieldName = mainField.name();
             if (!collectionContainsElement(stagingFieldNames, mainFieldName))
             {
-                //Modify the column to nullable in main table
-                if (!mainField.nullable())
+                if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.ALLOW_MISSING_COLUMNS))
                 {
-                    if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.MARK_MISSING_COLUMN_AS_NULLABLE))
+                    //Modify the column to nullable in main table
+                    if (!mainField.nullable())
                     {
                         mainField = mainField.withNullable(true);
                         operations.add(Alter.of(mainDataset, AlterAbstract.AlterOperation.NULLABLE_COLUMN, mainField, Optional.empty()));
                         modifiedFields.add(mainField);
                     }
-                    else
-                    {
-                        throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" is missing from incoming schema, but user capability does not allow marking it to nullable", mainField.name()));
-                    }
+                }
+                else
+                {
+                    throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" is missing from incoming schema, but user capability does not allow missing columns", mainField.name()));
                 }
             }
         }

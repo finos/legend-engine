@@ -275,6 +275,24 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getMainTableWithNullableNameBatchUpdateTimeField()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(nullableName)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
     public static DatasetDefinition getMainTableWithBatchUpdateTimeFieldWithDecimalIncome()
     {
         return DatasetDefinition.builder()
