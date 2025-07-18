@@ -679,7 +679,7 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Nullability change required in main table column since column missing in staging table
-    // and column_nullability_changed capability not allowed --> throws exception
+    // and ALLOW_MISSING_COLUMN capability not allowed --> throws exception
     // Missing column
     // biz_date
     @Test
@@ -705,11 +705,11 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Column \"biz_date\" is missing from incoming schema, but user capability does not allow marking it to nullable", e.getMessage());
+            Assertions.assertEquals("Column \"biz_date\" is missing from incoming schema, but user capability does not allow missing columns", e.getMessage());
         }
     }
 
-    //Column missing in staging table is already nullable column in main table --> no change require
+    //Column missing in staging table is already nullable column in main table --> throw exception
     // Missing column
     // biz_date
     @Test
@@ -728,11 +728,15 @@ public class SchemaEvolutionTest extends IngestModeTest
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, false);
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-        RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-        SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-        List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-        Assertions.assertEquals(0, sqlsForSchemaEvolution.size());
+        try
+        {
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Column \"biz_date\" is missing from incoming schema, but user capability does not allow missing columns", e.getMessage());
+        }
     }
 
 
