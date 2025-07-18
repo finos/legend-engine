@@ -666,7 +666,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.MARK_MISSING_COLUMN_AS_NULLABLE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ALLOW_MISSING_COLUMNS);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, false);
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);

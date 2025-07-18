@@ -751,7 +751,7 @@ class SchemaEvolutionTest extends BaseTest
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.MARK_MISSING_COLUMN_AS_NULLABLE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ALLOW_MISSING_COLUMNS);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};

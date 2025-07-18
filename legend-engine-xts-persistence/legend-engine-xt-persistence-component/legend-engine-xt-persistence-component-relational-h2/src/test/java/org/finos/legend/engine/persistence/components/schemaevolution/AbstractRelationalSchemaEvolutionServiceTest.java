@@ -268,7 +268,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
     }
 
     @Test
-    void testMakeMainColumnNullable() throws Exception
+    void testMissingNonNullableColumnMakeMainColumnNullable() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
         DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionMakeMainColumnNullableStagingTable();
@@ -286,7 +286,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .build();
 
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.MARK_MISSING_COLUMN_AS_NULLABLE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ALLOW_MISSING_COLUMNS);
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
@@ -305,6 +305,46 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
         Assertions.assertEquals("YES", getIsColumnNullableFromTable(h2Sink, mainTableName, nameName));
         Assertions.assertEquals(SchemaEvolutionStatus.SUCCEEDED, result.status());
         Assertions.assertEquals(Arrays.asList("ALTER TABLE \"TEST\".\"main\" ALTER COLUMN \"name\" SET NULL"), result.executedSchemaEvolutionSqls());
+    }
+
+    @Test
+    void testMissingNullableColumnNoAction() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithNullableNameBatchUpdateTimeField();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionMakeMainColumnNullableStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ALLOW_MISSING_COLUMNS);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        Assertions.assertDoesNotThrow(() -> evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+
+        List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
+        List<String> expectedSchema = Arrays.asList(schema);
+        Assertions.assertTrue(actualSchema.size() == expectedSchema.size() && actualSchema.containsAll(expectedSchema) && expectedSchema.containsAll(actualSchema));
+        Assertions.assertEquals("YES", getIsColumnNullableFromTable(h2Sink, mainTableName, nameName));
+        Assertions.assertEquals(SchemaEvolutionStatus.SUCCEEDED, result.status());
+        Assertions.assertTrue(result.executedSchemaEvolutionSqls().isEmpty());
     }
 
     @Test
@@ -582,6 +622,104 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
         catch (IncompatibleSchemaChangeException e)
         {
             Assertions.assertEquals("Column \"name\" cannot be changed from nullable to non-nullable", e.getMessage());
+        }
+    }
+
+    @Test
+    void testMissingNullableColumnFail() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithNullableNameBatchUpdateTimeField();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionMakeMainColumnNullableStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        try
+        {
+            evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Column \"name\" is missing from incoming schema, but user capability does not allow missing columns", e.getMessage());
+        }
+
+        try
+        {
+            SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Column \"name\" is missing from incoming schema, but user capability does not allow missing columns", e.getMessage());
+        }
+    }
+
+    @Test
+    void testMissingNonNullableColumnFail() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionMakeMainColumnNullableStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        try
+        {
+            evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Column \"name\" is missing from incoming schema, but user capability does not allow missing columns", e.getMessage());
+        }
+
+        try
+        {
+            SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Column \"name\" is missing from incoming schema, but user capability does not allow missing columns", e.getMessage());
         }
     }
 }
