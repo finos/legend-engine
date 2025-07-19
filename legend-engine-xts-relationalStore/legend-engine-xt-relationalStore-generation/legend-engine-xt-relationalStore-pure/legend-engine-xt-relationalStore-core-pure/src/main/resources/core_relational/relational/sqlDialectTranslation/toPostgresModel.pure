@@ -112,19 +112,38 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
       );,
     | []
   );
-  
-  let query = ^QuerySpecification(
-    select  = ^Select(
+
+  let select = ^Select(
                 distinct = if($s.distinct->isNotEmpty(), |$s.distinct->toOne(), |false), 
                 selectItems = if($s.columns->isEmpty(), | ^AllColumns(), | $s.columns->map(c|$c->convertElement(^$newState(processingSelect = true))->match([s:SelectItem[1] | $s, e: meta::external::query::sql::metamodel::Expression[1] | ^SingleColumn(expression = $e)])))
-              ),
-    from    = $from,
-    where   = $s.filteringOperation->convertOptionalElementToExpression(^$newState(processingFilter = true)),
-    groupBy = $s.groupBy->map(g|$g->convertElementToExpression($newState)),
-    orderBy = convertOrderBy($s.orderBy, $newState),
-    having  = $s.havingOperation->convertOptionalElementToExpression($newState),
-    limit   = convertLimit($s, $newState),
-    offset  = $s.fromRow->convertOptionalElementToExpression($newState)
+              );
+  let where = $s.filteringOperation->convertOptionalElementToExpression(^$newState(processingFilter = true));
+  let groupBy = $s.groupBy->map(g|$g->convertElementToExpression($newState));
+  let orderBy = convertOrderBy($s.orderBy, $newState);
+  let having = $s.havingOperation->convertOptionalElementToExpression($newState);
+  let limit = convertLimit($s, $newState);
+  let offset = $s.fromRow->convertOptionalElementToExpression($newState);
+
+  let query = if($s.qualifyOperation->isNotEmpty(),
+                | ^QualifyQuerySpecification(
+                    select  = $select,
+                    from    = $from,
+                    where   = $where,
+                    groupBy = $groupBy,
+                    orderBy = $orderBy,
+                    having  = $having,
+                    limit   = $limit,
+                    offset  = $offset,
+                    qualify = $s.qualifyOperation->toOne()->convertElementToExpression($newState));,
+                | ^QuerySpecification(
+                    select  = $select,
+                    from    = $from,
+                    where   = $where,
+                    groupBy = $groupBy,
+                    orderBy = $orderBy,
+                    having  = $having,
+                    limit   = $limit,
+                    offset  = $offset)
   );
 
   if($state.isRootSelect,

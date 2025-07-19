@@ -159,7 +159,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(
       'SQLStructureTests - AsOfJoin',
       'Postgres SQL Dialect does not support AsOfJoin!'
-    )                                
+    ),
+    pair(
+      'SQLStructureTests - Qualify',
+      'Postgres does not support QUALIFY grammar'
+    )
   ]->newMap()->cast(@Map<String, String>)
 }
 

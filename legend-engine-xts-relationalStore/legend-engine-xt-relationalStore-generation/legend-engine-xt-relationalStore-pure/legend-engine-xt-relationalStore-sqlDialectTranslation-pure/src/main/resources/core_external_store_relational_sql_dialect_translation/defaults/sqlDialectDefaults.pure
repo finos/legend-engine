@@ -699,57 +699,86 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::sel
   )
 }
 
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::querySpecificationProcessorHelper_default(sqlDialect:SqlDialect[1], querySpec:QualifyQuerySpecification[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let sep0 = $state.separator(0, $config);
+  let sep1 = $state.separator(1, $config);
+
+  // Select
+  $sqlDialect->executeNodeProcessor($querySpec.select, $state, $config) +
+
+  // From
+  $querySpec.from->executeIfNotEmptyElseReturnEmptyString({|
+    $sep0 + $sqlDialect->keyword('from', $state, $config) +
+    $sep1 + $querySpec.from->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
+  }) +
+
+  // Where
+  $querySpec.where->executeIfNotEmptyElseReturnEmptyString({|
+    $sep0 + $sqlDialect->keyword('where', $state, $config) +
+    $sep1 + $sqlDialect->executeNodeProcessor($querySpec.where->toOne(), $state->increaseLevel(), $config)
+  }) +
+
+  // Group By
+  $querySpec.groupBy->executeIfNotEmptyElseReturnEmptyString({|
+    $sep0 + $sqlDialect->keyword('group by', $state, $config) +
+    $sep1 + $querySpec.groupBy->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
+  }) +
+
+  // Having
+  $querySpec.having->executeIfNotEmptyElseReturnEmptyString({|
+    $sep0 + $sqlDialect->keyword('having', $state, $config) +
+    $sep1 + $querySpec.having->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
+  }) +
+
+  // Qualify
+  $querySpec.qualify->executeIfNotEmptyElseReturnEmptyString({|
+    $sep0 + $sqlDialect->keyword('qualify', $state, $config) +
+    $sep1 + $querySpec.qualify->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
+  }) +
+
+  // Order By
+  $querySpec.orderBy->executeIfNotEmptyElseReturnEmptyString({|
+    $sep0 + $sqlDialect->keyword('order by', $state, $config) +
+    $sep1 + $querySpec.orderBy->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
+  }) +
+
+  // Limit
+  $querySpec.limit->executeIfNotEmptyElseReturnEmptyString({|
+    $sep0 + $sqlDialect->keyword('limit', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($querySpec.limit->toOne(), $state->increaseLevel(), $config)
+  }) +
+
+  // Offset
+  $querySpec.offset->executeIfNotEmptyElseReturnEmptyString({|
+    $sep0 + $sqlDialect->keyword('offset', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($querySpec.offset->toOne(), $state->increaseLevel(), $config)
+  });
+}
+
 function meta::external::store::relational::sqlDialectTranslation::defaults::querySpecificationProcessor_default(): NodeProcessor<QuerySpecification>[1]
 {
   nodeProcessor(
     QuerySpecification,
     {sqlDialect, querySpec, state, config |
-      let sep0 = $state.separator(0, $config);
-      let sep1 = $state.separator(1, $config);
-
-      // Select
-      $sqlDialect->executeNodeProcessor($querySpec.select, $state, $config) +
-
-      // From
-      $querySpec.from->executeIfNotEmptyElseReturnEmptyString({|
-        $sep0 + $sqlDialect->keyword('from', $state, $config) +
-        $sep1 + $querySpec.from->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
-      }) +
-
-      // Where
-      $querySpec.where->executeIfNotEmptyElseReturnEmptyString({|
-        $sep0 + $sqlDialect->keyword('where', $state, $config) +
-        $sep1 + $sqlDialect->executeNodeProcessor($querySpec.where->toOne(), $state->increaseLevel(), $config)
-      }) +
-
-      // Group By
-      $querySpec.groupBy->executeIfNotEmptyElseReturnEmptyString({|
-        $sep0 + $sqlDialect->keyword('group by', $state, $config) +
-        $sep1 + $querySpec.groupBy->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
-      }) +
-
-      // Having
-      $querySpec.having->executeIfNotEmptyElseReturnEmptyString({|
-        $sep0 + $sqlDialect->keyword('having', $state, $config) +
-        $sep1 + $sqlDialect->executeNodeProcessor($querySpec.having->toOne(), $state->increaseLevel(), $config)
-      }) +
-
-      // Order By
-      $querySpec.orderBy->executeIfNotEmptyElseReturnEmptyString({|
-        $sep0 + $sqlDialect->keyword('order by', $state, $config) +
-        $sep1 + $querySpec.orderBy->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
-      }) +
-
-      // Limit
-      $querySpec.limit->executeIfNotEmptyElseReturnEmptyString({|
-        $sep0 + $sqlDialect->keyword('limit', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($querySpec.limit->toOne(), $state->increaseLevel(), $config)
-      }) +
-
-      // Offset
-      $querySpec.offset->executeIfNotEmptyElseReturnEmptyString({|
-        $sep0 + $sqlDialect->keyword('offset', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($querySpec.offset->toOne(), $state->increaseLevel(), $config)
-      });
+      let qualifyQuerySpec = ^QualifyQuerySpecification(
+        select = $querySpec.select,
+        from = $querySpec.from,
+        where = $querySpec.where,
+        groupBy = $querySpec.groupBy,
+        having = $querySpec.having,
+        orderBy = $querySpec.orderBy,
+        limit = $querySpec.limit,
+        offset = $querySpec.offset
+      );
+      querySpecificationProcessorHelper_default($sqlDialect, $qualifyQuerySpec, $state, $config);
     }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::qualifyQuerySpecificationProcessor_default(): NodeProcessor<QualifyQuerySpecification>[1]
+{
+  nodeProcessor(
+    QualifyQuerySpecification,
+    {sqlDialect, querySpec, state, config | querySpecificationProcessorHelper_default($sqlDialect, $querySpec, $state, $config)}
   )
 }
 
