@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -27,7 +28,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_relation_RelationFunctionInstanceSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_PurePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_relation_RelationFunctionPropertyMapping_Impl;
@@ -48,6 +48,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Lambda
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -57,8 +58,8 @@ import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
-import org.finos.legend.pure.m4.exception.PureCompilationException;
 
+import java.util.Iterator;
 import java.util.function.Function;
 
 public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping>
@@ -139,17 +140,51 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     public PropertyMapping visit(XStorePropertyMapping propertyMapping)
     {
         ProcessingContext ctx = new ProcessingContext("Create Xstore Property Mapping");
-
-        InstanceSetImplementation sourceSet = (InstanceSetImplementation) allClassMappings.detect(c -> c._id().equals(propertyMapping.source));
-        if (sourceSet == null)
+        InstanceSetImplementation sourceSet = null;
+        InstanceSetImplementation targetSet = null;
+        String propertyMappingTargetId = HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping);
+        if (StringUtils.isEmpty(propertyMapping.source) && StringUtils.isEmpty(propertyMappingTargetId))
         {
-            throw new EngineException("Can't find class mapping '" + propertyMapping.source + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+            String source = !this.parent._association()._originalMilestonedProperties().isEmpty() ? this.parent._association()._originalMilestonedProperties().toList().get(0)._name() : this.parent._association()._properties().toList().get(0)._name();
+            String target = !this.parent._association()._originalMilestonedProperties().isEmpty() ? this.parent._association()._originalMilestonedProperties().toList().get(1)._name() : this.parent._association()._properties().toList().get(1)._name();
+            Iterator<SetImplementation> iter = allClassMappings.iterator();
+            while (sourceSet == null || targetSet == null && iter.hasNext())
+            {
+                SetImplementation c = iter.next();
+                RichIterable<? extends Property<?, ?>> candidateProperties = !c._class()._originalMilestonedProperties().isEmpty() ? c._class()._originalMilestonedProperties() : c._class()._propertiesFromAssociations();
+                for (Property<?, ?> candidateProperty: candidateProperties)
+                {
+                    if (candidateProperty._owner() instanceof Association)
+                    {
+                        Association association = (Association) candidateProperty._owner();
+                        MutableList<? extends Property<?, ?>> associationProperties = !association._originalMilestonedProperties().isEmpty() ? association._originalMilestonedProperties().toList() : association._properties().toList();
+                        if (associationProperties.get(0)._name().equals(source) && associationProperties.get(1)._name().equals(target))
+                        {
+                            if (sourceSet == null && candidateProperty._name().equals(target))
+                            {
+                                sourceSet = (InstanceSetImplementation) c;
+                            }
+                            else if (targetSet == null && candidateProperty._name().equals(source))
+                            {
+                                targetSet = (InstanceSetImplementation) c;
+                            }
+                        }
+                    }
+                }
+            }
         }
-
-        InstanceSetImplementation targetSet = (InstanceSetImplementation) allClassMappings.detect(c -> c._id().equals(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping)));
-        if (targetSet == null)
+        else
         {
-            throw new EngineException("Can't find class mapping '" + propertyMapping.target + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+            sourceSet = (InstanceSetImplementation) allClassMappings.detect(c -> c._id().equals(propertyMapping.source));
+            if (sourceSet == null)
+            {
+                throw new EngineException("Can't find class mapping '" + propertyMapping.source + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            targetSet = (InstanceSetImplementation) allClassMappings.detect(c -> c._id().equals(propertyMappingTargetId));
+            if (targetSet == null)
+            {
+                throw new EngineException("Can't find class mapping '" + propertyMapping.target + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+            }
         }
 
         Class thisClass = sourceSet._mappingClass() == null ? sourceSet._class() : sourceSet._mappingClass();
