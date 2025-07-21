@@ -233,9 +233,7 @@ function <<access.private>> meta::relational::tests::csv::formatDateTime(date: D
 
 function meta::relational::tests::csv::escapeCSVString(string:String[1]):String[1]
 {
-   if($string->contains(',') || $string->contains('"') || $string->contains('\n') || $string->contains('\r'),
-      | '"' + $string->replace('"', '""') + '"',
-      | $string);
+   $string->meta::pure::functions::relation::toCSVString();
 }
 
 function meta::relational::mapping::findPropertySequence(v:ValueSpecification[1]):Pair<Class<Any>,AbstractProperty<Any>>[*]
@@ -309,7 +307,7 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
                         | $propertyMappingFromRouter,
                         | // this should only been done in the builder but will refactor as part of other fixes;
                           $currentPropertyMapping
-                            ->filter(c | 
+                            ->filter(c |
                               $c->match([
                                 is: InlineEmbeddedRelationalInstanceSetImplementation[1] | $is.parent->classMappingById($is.inlineSetImplementationId)->toOne().class->_subTypeOf($propertyOwnerClass),
                                 a: Any[1] | true
@@ -444,7 +442,7 @@ function meta::relational::mapping::transformRelationFunctionSemiStructuredPrope
     r: RelationFunctionPropertyMapping[1] |
       let cm = $classMapping->cast(@RelationFunctionInstanceSetImplementation);
       let newSetId = $classMapping.id + '_' + $r.property.name->toOne();
-      if($r.transformer->isNotEmpty() && $r.transformer->toOne()->instanceOf(BindingTransformer), 
+      if($r.transformer->isNotEmpty() && $r.transformer->toOne()->instanceOf(BindingTransformer),
         | let dummySet = ^RootRelationalInstanceSetImplementation
                           (
                             id = 'generated_dummy_rfss_parent_set_' + $newSetId,
@@ -452,7 +450,7 @@ function meta::relational::mapping::transformRelationFunctionSemiStructuredPrope
                             userDefinedPrimaryKey = true,
                             parent = $cm.parent,
                             class = $cm.class,
-                            mainTableAlias = ^TableAlias(name = $cm.id, relationalElement = ^RelationFunction(owner = $cm))                
+                            mainTableAlias = ^TableAlias(name = $cm.id, relationalElement = ^RelationFunction(owner = $cm))
                           );
           let s = ^SemiStructuredEmbeddedRelationalInstanceSetImplementation
           (
@@ -467,7 +465,7 @@ function meta::relational::mapping::transformRelationFunctionSemiStructuredPrope
             property = $r.property->cast(@Property<Nil,Any|*>),
             relationalOperationElement = getTransformedRelationFunctionRelOp($cm, $r),
             transformer = $r.transformer
-          );, 
+          );,
         | $r
       );,
     p: PropertyMapping[*] | $p
@@ -476,7 +474,7 @@ function meta::relational::mapping::transformRelationFunctionSemiStructuredPrope
 
 function meta::relational::mapping::transformRelationPropertyMappingsToRelational(propertyMappings:RelationFunctionPropertyMapping[*], classMapping:RelationFunctionInstanceSetImplementation[1]):RelationalPropertyMapping[*]
 {
-  $propertyMappings->map(r| 
+  $propertyMappings->map(r|
     ^RelationalPropertyMapping(
       owner = $r.owner,
       targetSetImplementationId = $r.targetSetImplementationId,
@@ -489,14 +487,4 @@ function meta::relational::mapping::transformRelationPropertyMappingsToRelationa
       relationalOperationElement = getTransformedRelationFunctionRelOp($classMapping, $r)
     );
   );
-}
-
-function <<test.Test>> meta::relational::tests::csv::testsEscapeCSVString():Boolean[1]
-{
-  assertEquals('', ''->escapeCSVString());
-  assertEquals('1', '1'->escapeCSVString());
-  assertEquals('hello world', 'hello world'->escapeCSVString());
-  assertEquals('"hello\nworld"', 'hello\nworld'->escapeCSVString());
-  assertEquals('"hello, world"', 'hello, world'->escapeCSVString());
-  assertEquals('"""hello world"""', '"hello world"'->escapeCSVString());
 }
