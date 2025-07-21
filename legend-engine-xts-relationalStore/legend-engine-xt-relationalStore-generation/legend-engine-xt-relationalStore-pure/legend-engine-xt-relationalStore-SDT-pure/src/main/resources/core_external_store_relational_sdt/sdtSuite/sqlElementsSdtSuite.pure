@@ -21,6 +21,7 @@ import meta::external::store::relational::sqlDialectTranslation::tests::utils::*
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sdt::framework::*;
 import meta::external::query::sql::metamodel::extension::tests::*;
+import meta::external::query::sql::metamodel::extension::*;
 
 // Tests on Select
 
@@ -1166,42 +1167,8 @@ function meta::external::store::relational::sdt::framework::testConfigForUnion(d
 
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testQualify(): SqlDialectTest[1]
 {
-  let identifier = 'SQLStructureTests - Qualify';
-
-  let queryBody = ^meta::external::query::sql::metamodel::extension::QualifyQuerySpecification(
-    select = ^Select(
-      distinct = false,
-      selectItems = [
-        ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id'))),
-        ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name'))),
-        ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))),
-        ^SingleColumn(
-          expression = ^FunctionCall(
-            arguments = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
-            distinct = false,
-            name = ^QualifiedName(parts = 'sum'),
-            window = ^meta::external::query::sql::metamodel::Window(partitions = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')))
-          ),
-          alias = 'sumCol'
-        )
-    ]),
-    from = ^Table(name = ^QualifiedName(parts = 'testTable')),
-    qualify = ^ComparisonExpression(
-      left = ^FunctionCall(
-        arguments = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
-        distinct = false,
-        name = ^QualifiedName(parts = 'sum'),
-        window = ^meta::external::query::sql::metamodel::Window(partitions = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')))
-      ),
-      operator = ComparisonOperator.GREATER_THAN,
-      right = literal(3)
-    )
-  );
-
-  let expected = ^TestResult(columnNames = ['id', 'name', 'dept', 'sumCol'], rows = [^TestResultRow(values = [1, 'John', 'Engg', 4]), ^TestResultRow(values = [3, 'Jessie', 'Engg', 4])]);
-
   ^SqlDialectTest(
-    identifier = $identifier,
+    identifier = 'SQLStructureTests - Qualify',
     setupStatements = [
       ^DropTestTable(tableName = 'testTable', isTempTable = true),
       ^CreateTestTable(tableName = 'testTable', columns = [pair('id', ^ColumnType(name = 'integer')), pair('name', ^ColumnType(name = 'varchar')), pair('dept', ^ColumnType(name = 'varchar'))], isTempTable = true),
@@ -1209,8 +1176,36 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
     ],
     teardownStatements = ^DropTestTable(tableName = 'testTable', isTempTable = true),
     testQuery = ^Query(
-      queryBody = $queryBody
+      queryBody = ^ExtendedQuerySpecification(
+        select = ^Select(
+          distinct = false,
+          selectItems = [
+            ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id'))),
+            ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name'))),
+            ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))),
+            ^SingleColumn(
+              expression = ^FunctionCall(
+                arguments = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+                distinct = false,
+                name = ^QualifiedName(parts = 'sum'),
+                window = ^meta::external::query::sql::metamodel::Window(partitions = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')))
+              ),
+              alias = 'sumCol'
+            )
+        ]),
+        from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+        qualify = ^ComparisonExpression(
+          left = ^FunctionCall(
+            arguments = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+            distinct = false,
+            name = ^QualifiedName(parts = 'sum'),
+            window = ^meta::external::query::sql::metamodel::Window(partitions = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')))
+          ),
+          operator = ComparisonOperator.GREATER_THAN,
+          right = literal(3)
+        )
+      )
     ),
-    expectedResult = $expected
+    expectedResult = ^TestResult(columnNames = ['id', 'name', 'dept', 'sumCol'], rows = [^TestResultRow(values = [1, 'John', 'Engg', 4]), ^TestResultRow(values = [3, 'Jessie', 'Engg', 4])])
   );
 }

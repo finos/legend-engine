@@ -173,7 +173,7 @@ Enum meta::external::query::sql::metamodel::extension::TemporalUnit
   MICROSECOND
 }
 
-Class meta::external::query::sql::metamodel::extension::QualifyQuerySpecification extends meta::external::query::sql::metamodel::QuerySpecification
+Class meta::external::query::sql::metamodel::extension::ExtendedQuerySpecification extends meta::external::query::sql::metamodel::QuerySpecification
 {
   <<equality.Key>> qualify: meta::external::query::sql::metamodel::Expression[0..1];
 }

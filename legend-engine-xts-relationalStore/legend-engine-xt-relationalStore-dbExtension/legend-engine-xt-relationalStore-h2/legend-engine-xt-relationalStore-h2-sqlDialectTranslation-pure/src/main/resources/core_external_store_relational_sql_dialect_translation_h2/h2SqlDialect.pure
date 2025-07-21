@@ -186,7 +186,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     lateralJoinProcessorForH2(),
     asOfJoinProcessorForH2(),
     querySpecificationProcessorForH2(),
-    qualifyQuerySpecificationProcessorForH2(),
+    extendedQuerySpecificationProcessorForH2(),
     semiStructuredArrayFlattenProcessorForH2()
   ]
 }
@@ -670,7 +670,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   )
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::querySpecificationProcessorHelperForH2(sqlDialect:SqlDialect[1], querySpec:QualifyQuerySpecification[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::querySpecificationProcessorHelperForH2(sqlDialect:SqlDialect[1], querySpec:QuerySpecification[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   if(containsSupportedFullOuterJoin($querySpec),
     | convertFullOuterJoin($querySpec, $sqlDialect, $state, $config),
@@ -713,10 +713,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       }) +
 
       // Qualify
-      $querySpec.qualify->executeIfNotEmptyElseReturnEmptyString({|
-        $sep0 + $sqlDialect->keyword('qualify', $state, $config) +
-        $sep1 + $sqlDialect->executeNodeProcessor($querySpec.qualify->toOne(), $state->increaseLevel(), $config)
-      }) +
+      renderQualify($sqlDialect, $querySpec, $state, $config, $sep0, $sep1) +
 
       // Order By
       $querySpec.orderBy->executeIfNotEmptyElseReturnEmptyString({|
@@ -740,27 +737,15 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   nodeProcessor(
     QuerySpecification,
-    {sqlDialect, querySpec, state, config |
-      let qualifyQuerySpec = ^QualifyQuerySpecification(
-        select = $querySpec.select,
-        from = $querySpec.from,
-        where = $querySpec.where,
-        groupBy = $querySpec.groupBy,
-        having = $querySpec.having,
-        orderBy = $querySpec.orderBy,
-        limit = $querySpec.limit,
-        offset = $querySpec.offset
-      );
-      querySpecificationProcessorHelperForH2($sqlDialect, $qualifyQuerySpec, $state, $config);
-    }
+    {sqlDialect, querySpec, state, config | querySpecificationProcessorHelperForH2($sqlDialect, $querySpec, $state, $config);}
   )
 }
 
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::qualifyQuerySpecificationProcessorForH2(): NodeProcessor<QualifyQuerySpecification>[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::extendedQuerySpecificationProcessorForH2(): NodeProcessor<ExtendedQuerySpecification>[1]
 {
   nodeProcessor(
-    QualifyQuerySpecification,
+    ExtendedQuerySpecification,
     {sqlDialect, querySpec, state, config | querySpecificationProcessorHelperForH2($sqlDialect, $querySpec, $state, $config)}
   )
 }

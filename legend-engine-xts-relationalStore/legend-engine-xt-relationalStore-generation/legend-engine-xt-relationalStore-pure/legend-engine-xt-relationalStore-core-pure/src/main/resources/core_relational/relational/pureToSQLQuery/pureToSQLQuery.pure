@@ -3267,12 +3267,14 @@ function meta::relational::functions::pureToSqlQuery::processTdsFilter(f:Functio
                                                                 ^$select(columns=$finalColumns, filteringOperation=$filter);
                                    };
 
-        if($queryRootMutated,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty(),| $placeNestedFilters->eval($select)
-                                                                                           ,| $nestMainFilter->eval($select));
+        if($queryRootMutated,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty() || $mainSelect->selectHasWindow(),
+                                                    | $placeNestedFilters->eval($select),
+                                                    | $nestMainFilter->eval($select));
                                ^$res(select = $updatedSelect);
 
-                            ,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty(),|$placeRootFilters->eval($select)
-                                                                                           ,|$placeMainFilterAtRoot->eval($select));
+                            ,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty() || $mainSelect->selectHasWindow(),
+                                                    | $placeRootFilters->eval($select),
+                                                    | $placeMainFilterAtRoot->eval($select));
 
                                ^$res(select = $updatedSelect,
                                      currentTreeNode = if($mainQuery.currentTreeNode->isNotEmpty(),| $mainQuery.currentTreeNode->toOne()->findOneNode($mainSelect.data->toOne(), $res.select.data->toOne()), |[]),

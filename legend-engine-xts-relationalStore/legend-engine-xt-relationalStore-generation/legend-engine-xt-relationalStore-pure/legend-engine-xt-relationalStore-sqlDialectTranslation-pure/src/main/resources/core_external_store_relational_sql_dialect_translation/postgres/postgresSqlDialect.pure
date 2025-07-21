@@ -162,7 +162,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     ),
     pair(
       'SQLStructureTests - Qualify',
-      'Postgres does not support QUALIFY grammar'
+      'Execution error at (resource:/core_external_store_relational_sql_dialect_translation/sqlDialect.pure line:154 column:47), \"Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::ExtendedQuerySpecification\" not implemented in SqlDialect for database type \"Postgres\"\"'
     )
   ]->newMap()->cast(@Map<String, String>)
 }
