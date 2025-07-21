@@ -232,9 +232,7 @@ function <<access.private>> meta::relational::tests::csv::formatDateTime(date: D
 
 function meta::relational::tests::csv::escapeCSVString(string:String[1]):String[1]
 {
-   if($string->contains(',') || $string->contains('"') || $string->contains('\n') || $string->contains('\r'),
-      | '"' + $string->replace('"', '""') + '"',
-      | $string);
+   $string->meta::pure::functions::relation::toCSVString();
 }
 
 function meta::relational::mapping::findPropertySequence(v:ValueSpecification[1]):Pair<Class<Any>,AbstractProperty<Any>>[*]
@@ -444,14 +442,4 @@ function meta::relational::mapping::transformRelationPropertyMappingsToRelationa
                               relationalOperationElement = $relOpElement
                             );
                         );
-}
-
-function <<test.Test>> meta::relational::tests::csv::testsEscapeCSVString():Boolean[1]
-{
-  assertEquals('', ''->escapeCSVString());
-  assertEquals('1', '1'->escapeCSVString());
-  assertEquals('hello world', 'hello world'->escapeCSVString());
-  assertEquals('"hello\nworld"', 'hello\nworld'->escapeCSVString());
-  assertEquals('"hello, world"', 'hello, world'->escapeCSVString());
-  assertEquals('"""hello world"""', '"hello world"'->escapeCSVString());
 }
