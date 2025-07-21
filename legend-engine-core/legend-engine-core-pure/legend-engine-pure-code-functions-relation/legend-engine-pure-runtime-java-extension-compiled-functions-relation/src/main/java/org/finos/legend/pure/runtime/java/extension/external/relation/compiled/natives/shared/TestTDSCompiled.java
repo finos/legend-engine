@@ -28,7 +28,6 @@ import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
-import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 
@@ -47,9 +46,9 @@ public class TestTDSCompiled extends TestTDS
         super(columnOrdered, columnType, rows);
     }
 
-    public TestTDSCompiled(CsvReader.Result result, CoreInstance classifierGenericType, ModelRepository modelRepository, ProcessorSupport processorSupport)
+    public TestTDSCompiled(CsvReader.Result result, CoreInstance classifierGenericType, ProcessorSupport processorSupport)
     {
-        super(result, modelRepository, processorSupport);
+        super(result, processorSupport);
         this.classifierGenericType = classifierGenericType;
     }
 

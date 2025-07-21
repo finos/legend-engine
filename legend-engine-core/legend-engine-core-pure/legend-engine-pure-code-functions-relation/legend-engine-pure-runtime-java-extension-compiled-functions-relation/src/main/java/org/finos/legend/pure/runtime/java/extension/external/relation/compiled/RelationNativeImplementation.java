@@ -67,7 +67,7 @@ public class RelationNativeImplementation
         }
         return value instanceof TDSContainer ?
                 ((TDSContainer) value).tds :
-                new TestTDSCompiled(readCsv((((CoreInstance) value).getValueForMetaPropertyToOne("csv")).getName()), ((CoreInstance) value).getValueForMetaPropertyToOne(M3Properties.classifierGenericType), ((CoreInstance) value).getRepository(), ((CompiledExecutionSupport) es).getProcessorSupport());
+                new TestTDSCompiled(readCsv((((CoreInstance) value).getValueForMetaPropertyToOne("csv")).getName()), ((CoreInstance) value).getValueForMetaPropertyToOne(M3Properties.classifierGenericType), ((CompiledExecutionSupport) es).getProcessorSupport());
     }
 
 

@@ -50,7 +50,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.function.Function;
-import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
@@ -168,12 +167,12 @@ public abstract class TestTDS
 
     public abstract TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows);
 
-    public TestTDS(String csv, ModelRepository modelRepository, ProcessorSupport processorSupport)
+    public TestTDS(String csv, ProcessorSupport processorSupport)
     {
-        this(readCsv(csv), modelRepository, processorSupport);
+        this(readCsv(csv), processorSupport);
     }
 
-    public TestTDS(CsvReader.Result result, ModelRepository modelRepository, ProcessorSupport processorSupport)
+    public TestTDS(CsvReader.Result result, ProcessorSupport processorSupport)
     {
         this.rowCount = result.numRows();
 
@@ -184,12 +183,37 @@ public abstract class TestTDS
             int typeIndex = name.indexOf(':');
             if (typeIndex != -1)
             {
-                type = name.substring(typeIndex + 1).equals(M3Paths.Variant) ? DataType.CUSTOM : type;
+                String specifiedType = name.substring(typeIndex + 1);
+                switch (specifiedType)
+                {
+                    case M3Paths.Boolean:
+                        type = DataType.BOOLEAN_AS_BYTE;
+                        break;
+                    case M3Paths.Integer:
+                        type = DataType.LONG;
+                        break;
+                    case M3Paths.DateTime:
+                        type = DataType.DATETIME_AS_LONG;
+                        break;
+                    case M3Paths.Float:
+                        type = DataType.DOUBLE;
+                        break;
+                    case M3Paths.String:
+                        type = DataType.STRING;
+                        break;
+                    case M3Paths.Variant:
+                        type = DataType.CUSTOM;
+                        break;
+                    default:
+                }
+
                 name = name.substring(0, typeIndex);
             }
+
             columnsOrdered.add(name);
             columnType.put(name, type);
-            dataByColumnName.put(name, c.data());
+            Object data = getDataAsType(c, type, rowCount);
+            dataByColumnName.put(name, data);
             boolean[] isNullFlag = new boolean[(int) this.rowCount];
             isNullByColumn.put(name, isNullFlag);
             switch (type)
@@ -197,7 +221,7 @@ public abstract class TestTDS
                 case LONG:
                     for (int i = 0; i < this.rowCount; i++)
                     {
-                        isNullFlag[i] = ((long[]) c.data())[i] == LONG_NULL_SENTINEL;
+                        isNullFlag[i] = ((long[]) data)[i] == LONG_NULL_SENTINEL;
                     }
                     break;
                 case BOOLEAN_AS_BYTE:
@@ -205,7 +229,7 @@ public abstract class TestTDS
                     dataByColumnName.put(name, booleans);
                     for (int i = 0; i < this.rowCount; i++)
                     {
-                        byte booleanAsByte = ((byte[]) c.data())[i];
+                        byte booleanAsByte = ((byte[]) data)[i];
                         booleans[i] = booleanAsByte == 1;
                         isNullFlag[i] = booleanAsByte == BOOLEAN_AS_BYTE_SENTINEL;
                     }
@@ -213,7 +237,7 @@ public abstract class TestTDS
                 case DOUBLE:
                     for (int i = 0; i < this.rowCount; i++)
                     {
-                        isNullFlag[i] = ((double[]) c.data())[i] == DOUBLE_NULL_SENTINEL;
+                        isNullFlag[i] = ((double[]) data)[i] == DOUBLE_NULL_SENTINEL;
                     }
                     break;
                 case CUSTOM:
@@ -221,29 +245,29 @@ public abstract class TestTDS
                     dataByColumnName.put(name, variants);
                     for (int i = 0; i < this.rowCount; i++)
                     {
-                        Object data = c.data();
+                        Object origData = c.data();
                         String value;
                         switch (c.dataType()) // check original type
                         {
                             case LONG:
-                                long lVal = ((long[]) data)[i];
+                                long lVal = ((long[]) origData)[i];
                                 value = lVal == LONG_NULL_SENTINEL ? null : Long.toString(lVal);
                                 break;
                             case DOUBLE:
-                                double dVal = ((double[]) data)[i];
+                                double dVal = ((double[]) origData)[i];
                                 value = dVal == DOUBLE_NULL_SENTINEL ? null : Double.toString(dVal);
                                 break;
                             case BOOLEAN_AS_BYTE:
-                                byte bVal = ((byte[]) data)[i];
+                                byte bVal = ((byte[]) origData)[i];
                                 value = bVal == BOOLEAN_AS_BYTE_SENTINEL ? null : Boolean.toString(bVal == 1);
                                 break;
                             case STRING:
-                                value = ((String[]) data)[i];
+                                value = ((String[]) origData)[i];
                                 break;
                             default:
                                 throw new RuntimeException("ERROR " + c.dataType() + " not supported yet on variant!");
                         }
-                        variants[i] = value == null ? null : VariantInstanceImpl.newVariant(value, modelRepository, processorSupport);
+                        variants[i] = value == null ? null : VariantInstanceImpl.newVariant(value, null, processorSupport);
                     }
                     break;
                 case STRING:
@@ -254,7 +278,7 @@ public abstract class TestTDS
                     dataByColumnName.put(name, dates);
                     for (int i = 0; i < this.rowCount; i++)
                     {
-                        long value = ((long[]) c.data())[i];
+                        long value = ((long[]) data)[i];
                         dates[i] = value == DATE_TIME_AS_LONG_SENTINEL ? null : DateFunctions.fromDate(new Date(value / 1000000));
                     }
                     break;
@@ -262,6 +286,32 @@ public abstract class TestTDS
                     throw new RuntimeException(c.dataType() + " not supported yet!");
             }
         });
+    }
+
+    private Object getDataAsType(CsvReader.ResultColumn c, DataType type, long rowCount)
+    {
+        if (rowCount == 0)
+        {
+            switch (type)
+            {
+                case LONG:
+                    return new long[0];
+                case BOOLEAN_AS_BYTE:
+                    return new byte[0];
+                case DOUBLE:
+                    return new double[0];
+                case STRING:
+                    return new String[0];
+                case CUSTOM:
+                    return new Variant[0];
+                case DATETIME_AS_LONG:
+                    return new PureDate[0];
+                default:
+                    throw new RuntimeException("ERROR " + type + " not supported yet!");
+            }
+        }
+        // else do proper conversion...
+        return c.data();
     }
 
     protected TestTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows)
@@ -401,17 +451,20 @@ public abstract class TestTDS
         columnOrdered = columnOrdered.distinct();
         TestTDS res = newTDS(columnOrdered, columnTypes, (int) (rowCount * otherTDS.rowCount));
 
-        for (int i = 0; i < this.rowCount; i++)
+        if (res.rowCount != 0)
         {
-            for (int j = 0; j < otherTDS.rowCount; j++)
+            for (int i = 0; i < this.rowCount; i++)
             {
-                for (String column : this.dataByColumnName.keysView())
+                for (int j = 0; j < otherTDS.rowCount; j++)
                 {
-                    res.setValue(column, i * (int) otherTDS.rowCount + j, this, i);
-                }
-                for (String column : otherTDS.dataByColumnName.keysView())
-                {
-                    res.setValue(column, i * (int) otherTDS.rowCount + j, otherTDS, j);
+                    for (String column : this.dataByColumnName.keysView())
+                    {
+                        res.setValue(column, i * (int) otherTDS.rowCount + j, this, i);
+                    }
+                    for (String column : otherTDS.dataByColumnName.keysView())
+                    {
+                        res.setValue(column, i * (int) otherTDS.rowCount + j, otherTDS, j);
+                    }
                 }
             }
         }
