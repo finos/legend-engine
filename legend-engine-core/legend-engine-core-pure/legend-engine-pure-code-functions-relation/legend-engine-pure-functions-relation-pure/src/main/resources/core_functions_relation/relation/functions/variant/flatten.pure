@@ -1,0 +1,194 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::variant::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::functions::relation::variant::*;
+
+function <<PCT.function>>
+{
+    doc.doc='Flatten the given variant values into a relation with a single column containing the flattened values.  The output relation will have a column of the given name (2nd parameter), the column type will be of the values flattened, and will have onw row per value on the input.'
+}
+meta::pure::functions::relation::variant::flatten<T, Z>(valueToFlatten: T[*], columnWithFlattenedValue: ColSpec<Z=(?:T)>[1]):Relation<Z>[1]
+{
+    let csv = $columnWithFlattenedValue.name + ':' + $valueToFlatten->type()->elementToPath() + '\n' + $valueToFlatten->map(v|$v->s()->toCSVString())->joinStrings('\n');
+    $csv->stringToTDS()->cast(@Relation<Z>);
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_Integer<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let tds = $f->eval(|[1,2,3,4]->flatten(~integer));
+
+    $tds->filter(x | $x.integer > 2);
+
+    assertEquals(
+        '#TDS\n'+
+        '   integer\n'+
+        '   1\n'+
+        '   2\n'+
+        '   3\n'+
+        '   4\n'+
+        '#',
+        $tds->toString()
+    );
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_String<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let tds = $f->eval(|['h', 'e', 'l', 'l', 'o']->flatten(~string));
+    assertEquals(
+        '#TDS\n'+
+        '   string\n'+
+        '   h\n'+
+        '   e\n'+
+        '   l\n'+
+        '   l\n'+
+        '   o\n'+
+        '#',
+        $tds->toString()
+    );
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Array<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let tds = $f->eval(|fromJson('[[1, 2], [3, 4], [5, 6]]')->toMany(@Variant)->flatten(~variant));
+    assertEquals(
+        '#TDS\n'+
+        '   variant\n'+
+        '   [1,2]\n'+
+        '   [3,4]\n'+
+        '   [5,6]\n'+
+        '#',
+        $tds->toString()
+    );
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Map<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let tds = $f->eval(|fromJson('[{"hello": [1, 2]}, {"variant": [3, 4]}]')->toMany(@Variant)->flatten(~variant));
+    assertEquals(
+        '#TDS\n'+
+        '   variant\n'+
+        '   {"hello":[1,2]}\n'+
+        '   {"variant":[3,4]}\n'+
+        '#',
+        $tds->toString()
+    );
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let tds = $f->eval(|fromJson('[{"hello": {"variant": [1, 2]}}]')->get(0)->get('hello')->get('variant')->toMany(@Integer)->flatten(~integers));
+    assertEquals(
+        '#TDS\n'+
+        '   integers\n'+
+        '   1\n'+
+        '   2\n'+
+        '#',
+        $tds->toString()
+    );
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "[10,11,12]"
+     5, "[13,14,15]"
+   #;
+
+   let expr = {|
+                  $tds->lateral(x | $x.payload->toMany(@Integer)->flatten(~integers))
+              };
+
+   let res =  $f->eval($expr);
+
+    assertEquals('#TDS\n' +
+                 '   id,payload,integers\n' +
+                 '   1,[1,2,3],1\n' +
+                 '   1,[1,2,3],2\n' +
+                 '   1,[1,2,3],3\n' +
+                 '   2,[4,5,6],4\n' +
+                 '   2,[4,5,6],5\n' +
+                 '   2,[4,5,6],6\n' +
+                 '   3,[7,8,9],7\n' +
+                 '   3,[7,8,9],8\n' +
+                 '   3,[7,8,9],9\n' +
+                 '   4,[10,11,12],10\n' +
+                 '   4,[10,11,12],11\n' +
+                 '   4,[10,11,12],12\n' +
+                 '   5,[13,14,15],13\n' +
+                 '   5,[13,14,15],14\n' +
+                 '   5,[13,14,15],15\n' +
+                 '#', $res->sort([~id->ascending(), ~integers->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[{""key"":[ {""innerKey"": [-2, -1, 0]}, {""innerKey"": [1, 2, 3]}]},  {""key"":[ {""innerKey"": [4, 5, 6]}]}, {""key"":[ {""innerKey"": [7, 8, 9]}]}]"
+     2, "[{""key"":[ {""innerKey"": [1, 2, 3]}]},  {""key"":[ {""innerKey"": [10, 11, 12]}]}, {""key"":[ {""innerKey"": [13, 14, 15]}]}]"
+     3, "[{""key"":[ {""innerKey"": [4, 5, 6]}]},  {""key"":[ {""innerKey"": [16, 17, 18]}]}, {""key"":[ {""innerKey"": [19, 20, 21]}]}]"
+   #;
+
+   let expr = {|
+                  $tds->lateral(x | $x.payload->toMany(@Variant)->flatten(~firstFlattened))
+                        ->lateral(x | $x.firstFlattened->get('key')->toMany(@Variant)->flatten(~secondFlattened))
+                        ->lateral(x | $x.secondFlattened->get('innerKey')->toMany(@Integer)->flatten(~value))
+              };
+
+   let res =  $f->eval($expr);
+
+    assertEquals('#TDS\n' +
+                 '   id,payload,firstFlattened,secondFlattened,value\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"innerKey":[-2,-1,0]},-2\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"innerKey":[-2,-1,0]},-1\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"innerKey":[-2,-1,0]},0\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"innerKey":[1,2,3]},1\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"innerKey":[1,2,3]},2\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"innerKey":[1,2,3]},3\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[4,5,6]}]},{"innerKey":[4,5,6]},4\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[4,5,6]}]},{"innerKey":[4,5,6]},5\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[4,5,6]}]},{"innerKey":[4,5,6]},6\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[7,8,9]}]},{"innerKey":[7,8,9]},7\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[7,8,9]}]},{"innerKey":[7,8,9]},8\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[7,8,9]}]},{"innerKey":[7,8,9]},9\n' +
+                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[1,2,3]}]},{"innerKey":[1,2,3]},1\n' +
+                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[1,2,3]}]},{"innerKey":[1,2,3]},2\n' +
+                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[1,2,3]}]},{"innerKey":[1,2,3]},3\n' +
+                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[10,11,12]}]},{"innerKey":[10,11,12]},10\n' +
+                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[10,11,12]}]},{"innerKey":[10,11,12]},11\n' +
+                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[10,11,12]}]},{"innerKey":[10,11,12]},12\n' +
+                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[13,14,15]}]},{"innerKey":[13,14,15]},13\n' +
+                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[13,14,15]}]},{"innerKey":[13,14,15]},14\n' +
+                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[13,14,15]}]},{"innerKey":[13,14,15]},15\n' +
+                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[4,5,6]}]},{"innerKey":[4,5,6]},4\n' +
+                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[4,5,6]}]},{"innerKey":[4,5,6]},5\n' +
+                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[4,5,6]}]},{"innerKey":[4,5,6]},6\n' +
+                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[16,17,18]}]},{"innerKey":[16,17,18]},16\n' +
+                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[16,17,18]}]},{"innerKey":[16,17,18]},17\n' +
+                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[16,17,18]}]},{"innerKey":[16,17,18]},18\n' +
+                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[19,20,21]}]},{"innerKey":[19,20,21]},19\n' +
+                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[19,20,21]}]},{"innerKey":[19,20,21]},20\n' +
+                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[19,20,21]}]},{"innerKey":[19,20,21]},21\n' +
+                 '#', $res->sort([~id->ascending(), ~value->ascending()])->toString());
+}
