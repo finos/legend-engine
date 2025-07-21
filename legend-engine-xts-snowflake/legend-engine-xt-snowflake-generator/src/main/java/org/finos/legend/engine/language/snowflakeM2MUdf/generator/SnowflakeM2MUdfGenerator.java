@@ -168,16 +168,39 @@ public class SnowflakeM2MUdfGenerator
                 "import java.nio.charset.StandardCharsets;\n" +
                 "import com.snowflake.snowpark_java.types.SnowflakeFile;\n" +
                 "import org.finos.legend.engine.execution.m2m.plan.SnowflakeM2MUdfPlanExecutor;\n" +
+                "import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;\n" +
+                "import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;\n" +
+                "import org.finos.legend.engine.shared.core.identity.Identity;\n" +
+                "import com.fasterxml.jackson.databind.ObjectMapper;\n" +
+                "import org.finos.legend.engine.shared.core.ObjectMapperFactory;\n" +
+                "import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;\n" +
+                "import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;\n" +
+                "import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;\n" +
+                "import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;\n" +
                 "\n" +
                 "class PlanExecutor {\n" +
                 "    public static final String filename = \"@" + deploymentStage + directoryLocation + "/" + EXECUTION_PLAN_FILENAME + "\";\n" +
+                "    private static ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();\n" +
+                "    public static EngineJavaCompiler engineJavaCompiler;\n" +
+                "    public static SingleExecutionPlan singleExecutionPlan;\n" +
+                "    public static String parameter;\n" +
+                "    \n" +
                 "    public static String executeWithInputFromPlan(String input) {\n" +
                 "        try \n" +
                 "        {\n" +
-                "             SnowflakeFile sfFile = SnowflakeFile.newInstance(filename, false);\n" +
-                "             InputStream stream = sfFile.getInputStream();\n" +
-                "             String plan = new String(stream.readAllBytes(), StandardCharsets.UTF_8);\n" +
-                "             return SnowflakeM2MUdfPlanExecutor.executeWithArgs(plan, input);\n" +
+                "             if(singleExecutionPlan == null){\n" +
+                "                 SnowflakeFile sfFile = SnowflakeFile.newInstance(filename, false);\n" +
+                "                 InputStream stream = sfFile.getInputStream();\n" +
+                "                 String plan = new String(stream.readAllBytes(), StandardCharsets.UTF_8);\n" +
+                "                 singleExecutionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);\n" +
+                "                 parameter = ((FunctionParametersValidationNode) singleExecutionPlan.rootExecutionNode.executionNodes.get(0)).functionParameters.get(0).name;\n" +
+                "                 try {\n" +
+                "                     engineJavaCompiler = JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());\n" +
+                "                 } catch (JavaCompileException e) {\n" +
+                "                     throw new RuntimeException(e);\n" +
+                "                 }\n" +
+                "             }\n" +
+                "             return SnowflakeM2MUdfPlanExecutor.executeSnowflakeM2MUdfPlanWithArg(singleExecutionPlan, engineJavaCompiler, parameter, input);\n" +
                 "        }\n" +
                 "        catch (IOException e)\n" +
                 "        {\n" +
