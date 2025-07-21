@@ -14,71 +14,36 @@
 
 package org.finos.legend.engine.execution.m2m.plan;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToPureFormatSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 public class SnowflakeM2MUdfPlanExecutor
 {
-    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-
-    public static String executeWithArgs(String plan, Object... args)
+    public static String executeSnowflakeM2MUdfPlanWithArg(SingleExecutionPlan singleExecutionPlan, EngineJavaCompiler engineJavaCompiler, String parameter, Object arg)
     {
-        try
+        Map<String, Object> parameters = Maps.mutable.empty();
+        parameters.put(parameter,arg);
+        PlanExecutor.ExecuteArgs executeArgs = PlanExecutor.ExecuteArgs.newArgs().withPlan(singleExecutionPlan).withParams(parameters).build();
+        PlanExecutor executor = PlanExecutor.newPlanExecutorBuilder().isJavaCompilationAllowed(false).withAvailableStoreExecutors().build();
+        try (JavaHelper.ThreadContextClassLoaderScope scope = engineJavaCompiler == null ? null : JavaHelper.withCurrentThreadContextClassLoader(engineJavaCompiler.getClassLoader()))
         {
-            Map<String, Object> parameters = Maps.mutable.empty();
-            SingleExecutionPlan singleExecutionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);
-            if (singleExecutionPlan != null && singleExecutionPlan.rootExecutionNode != null)
-            {
-                List<ExecutionNode> executionNodes = singleExecutionPlan.rootExecutionNode.executionNodes;
-                if (executionNodes != null && !executionNodes.isEmpty())
-                {
-                    if (executionNodes.get(0) instanceof FunctionParametersValidationNode)
-                    {
-                        List<Variable> functionParameters = ((FunctionParametersValidationNode) executionNodes.get(0)).functionParameters;
-                        if (functionParameters.size() != args.length)
-                        {
-                            throw new EngineException("Number of function parameters does not match number of arguments");
-                        }
-                        int i = 0;
-                        for (Variable parameter : functionParameters)
-                        {
-                            parameters.put(parameter.name, args[i]);
-                            i++;
-                        }
-                    }
-                }
-            }
-            PlanExecutor.ExecuteArgs executeArgs = PlanExecutor.ExecuteArgs.newArgs().withPlan(singleExecutionPlan).withParams(parameters).build();
-            PlanExecutor executor = PlanExecutor.newPlanExecutorBuilder().isJavaCompilationAllowed(true).withAvailableStoreExecutors().build();
-            try (JsonStreamingResult jsonResult = (JsonStreamingResult) executor.executeWithArgs(executeArgs))
-            {
-                JsonStreamToPureFormatSerializer resultStream = (JsonStreamToPureFormatSerializer) jsonResult.getSerializer(SerializationFormat.PURE);
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                resultStream.stream(out);
-                return out.toString();
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
+            JsonStreamingResult jsonResult = (JsonStreamingResult) executor.executeWithArgs(executeArgs);
+            JsonStreamToPureFormatSerializer resultStream = (JsonStreamToPureFormatSerializer) jsonResult.getSerializer(SerializationFormat.PURE);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            resultStream.stream(out);
+            return out.toString();
         }
-        catch (JsonProcessingException e)
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
