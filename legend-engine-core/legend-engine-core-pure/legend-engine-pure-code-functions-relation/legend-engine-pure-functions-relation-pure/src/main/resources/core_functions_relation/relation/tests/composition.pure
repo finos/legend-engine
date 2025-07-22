@@ -818,7 +818,7 @@ function meta::pure::functions::relation::tests::composition::testVariantColumn_
 }
 
 function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>>
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
   {
     doc.doc='Qualify grammar should be produced instead of subselect.'
   }
@@ -851,7 +851,7 @@ meta::pure::functions::relation::tests::composition::testExtendWindowFilter<T|m>
 }
 
 function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>>
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation, PCTRelationQualifier.olap>>
   {
     doc.doc='Produces qualify and having grammar together.'
   }
