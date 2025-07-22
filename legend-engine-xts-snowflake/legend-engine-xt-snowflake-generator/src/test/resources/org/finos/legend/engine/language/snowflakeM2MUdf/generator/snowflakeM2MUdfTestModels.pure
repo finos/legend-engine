@@ -70,7 +70,13 @@ function test::query::getFirmDetailsWithInput(input: String[1]): String[1]
         }
       }
     }#
-  )->serialize(
+  )->from(
+       test::mapping::firmMapping,
+       test::model::Firms->getRuntimeWithModelQueryConnection(
+         'application/json',
+         $input
+       )
+     )->serialize(
     #{
       test::model::Firms{
         firms{
@@ -82,9 +88,6 @@ function test::query::getFirmDetailsWithInput(input: String[1]): String[1]
         }
       }
     }#
-  )->from(
-    test::mapping::firmMapping,
-    test::runtime::testRuntimeWithInput
   )
 }
 
