@@ -75,9 +75,10 @@ function meta::relational::functions::sqlQueryToString::snowflake::createFunctio
     'Function ' +
     if($createFunc.schemaName->isEmpty(),|'',|$createFunc.schemaName->toOne() + '.') +
     $createFunc.name +
-    +'('+ $createFunc.parameters+ ')'+ 
-    +'\nRETURNS TABLE('+ $createFunc.return+ ')\nLANGUAGE SQL'+
-    if($createFunc.copyGrants, |' COPY GRANTS',|'') +
+    +'('+ $createFunc.parameters+ ')\n'+ 
+    if($createFunc.copyGrants, |'COPY GRANTS',|'') +
+    +'\nRETURNS TABLE('+ $createFunc.return+ ')\n'+
+    'LANGUAGE SQL'+
     '\nAS $$\n' +
      $createFunc.generatedSQL+
     ' $$;'
