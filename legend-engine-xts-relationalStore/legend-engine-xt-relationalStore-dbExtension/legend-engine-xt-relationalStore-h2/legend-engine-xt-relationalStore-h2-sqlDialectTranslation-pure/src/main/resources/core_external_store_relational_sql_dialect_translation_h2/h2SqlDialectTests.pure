@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
 import meta::external::query::sql::metamodel::*;
+import meta::external::query::sql::metamodel::extension::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::h2::*;
 import meta::external::store::relational::sqlDialectTranslation::h2::tests::*;
 import meta::external::store::relational::sqlDialectTranslation::h2::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testDialect(): SqlDialect[1]
 {
@@ -174,4 +175,43 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
         )
       ]
     )->inferTypes($config.functionRegistry), $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testQualifyQueryProcessingForH2(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  assertEquals('SELECT dept, sum(id) OVER (PARTITION BY dept) AS sumCol FROM testTable QUALIFY sum(id) OVER (PARTITION BY dept) > 3', $dialect->executeNodeProcessor(
+    ^Query(
+      queryBody = ^ExtendedQuerySpecification(
+        select = ^Select(
+          distinct = false,
+          selectItems = [
+            ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))),
+            ^SingleColumn(
+              expression = ^FunctionCall(
+                arguments = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+                distinct = false,
+                name = ^QualifiedName(parts = 'sum'),
+                window = ^meta::external::query::sql::metamodel::Window(partitions = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')))
+              ),
+              alias = 'sumCol'
+            )
+        ]),
+        from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+        qualify = ^ComparisonExpression(
+          left = ^FunctionCall(
+            arguments = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+            distinct = false,
+            name = ^QualifiedName(parts = 'sum'),
+            window = ^meta::external::query::sql::metamodel::Window(partitions = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')))
+          ),
+          operator = ComparisonOperator.GREATER_THAN,
+          right = literal(3)
+        )
+      )
+    )->inferTypes($config.functionRegistry), $state, $config)
+  );
 }
