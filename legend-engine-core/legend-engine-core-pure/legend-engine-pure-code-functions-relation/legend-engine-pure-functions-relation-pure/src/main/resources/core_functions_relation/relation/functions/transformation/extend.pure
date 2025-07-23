@@ -1300,6 +1300,37 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> 
 {
+  doc.doc='Extends a given TDS where the new column value is pass thru of a variant column'
+}
+meta::pure::functions::relation::tests::extend::testVariantColumn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "[10,11,12]"
+     5, "[13,14,15]"
+   #;
+
+   let expr = {|
+                  $tds->extend(~passthru:x | $x.payload)
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,passthru\n'+
+                '   1,[1,2,3],[1,2,3]\n'+
+                '   2,[4,5,6],[4,5,6]\n'+
+                '   3,[7,8,9],[7,8,9]\n'+
+                '   4,[10,11,12],[10,11,12]\n'+
+                '   5,[13,14,15],[13,14,15]\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
+{
   doc.doc='Extends a given TDS where the new column value is extracted from a variant array using the value\'s index number'
 }
 meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

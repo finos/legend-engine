@@ -5657,7 +5657,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let newElement = if($expressionToRoute->isVariantInput($vars),
     |
         let select = $mainQuery.select;
-        $expressionToRoute->cast(@FunctionExpression)->processFunctionExpressionForNonPropertyFunction($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = [])), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne();,
+        $expressionToRoute->cast(@FunctionExpression)->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = [])), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne();,
     |
         processTdsLambda($expressionToRoute, $mainQuery.select.columns, false, $vars, $state, $currentPropertyMapping, $paths, $context)->at(0);
   );
