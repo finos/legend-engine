@@ -22,7 +22,7 @@ import meta::external::function::activator::snowflakeApp::tests::model::simple::
 
 function meta::external::function::activator::snowflakeApp::tests::checkSnowflakeAppGrammar(function:String[1],  expected:String[1]): Boolean[1]
 {
-  let model = readFile('/core_snowflake_test/core_snowflakeapp/showcase/showcaseElements.txt')->toOne();
+  let model = readFile('/core_snowflake_test/core_snowflakeapp/showcase/showcaseElements.legend')->toOne();
 
   let grammar = '###Snowflake\n' +
                 'SnowflakeApp meta::external::function::activator::snowflakeApp::tests::FirstApp\n' +
@@ -151,6 +151,33 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   checkSnowflakeAppGrammar($function, $expected);
 }
 
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionToCheckBackslashMatching():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'\\\\\' $$;';
+
+  let function = 'function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionToCheckBackslashMatching():TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionToCheckBackslashMatchingInEnum():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".PERSONCODE = \'\\\\\' $$;';
+
+  let function = 'function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionToCheckBackslashMatchingInEnum():TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionToCheckBackslashMatchingWithMixedCharacters():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'\\aman\\deep\' $$;';
+
+  let function = 'function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionToCheckBackslashMatchingWithMixedCharacters():TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
 //function <<test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testUdtfOnUdtf():Any[*]
 //{
 // let result  = meta::legend::compileLegendGrammar(readFile('/core_relational_snowflake/relational/tests/tabularFunctionModel.txt')->toOne());
@@ -163,6 +190,24 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction():TabularDataSet[1]
 {
     PersonX.all()->filter(p|$p.firstName == 'haha')->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionToCheckBackslashMatching():TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.firstName == '\\')->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionToCheckBackslashMatchingInEnum():TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.personCode == PersonCode.BackSlash)->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionToCheckBackslashMatchingWithMixedCharacters():TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.firstName == '\\aman\\deep')->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
     ->from(simpleRelationalMapping, testRuntime(dbInc))
 }
 
@@ -236,7 +281,7 @@ function meta::external::function::activator::snowflakeApp::tests::assertSnowfla
       function = $function
    );
 
-  let generatedQuery = if($extensions->isNotEmpty(),| $app->generateArtifact($extensions),|$app->generateArtifact());  
+  let generatedQuery = if($extensions->isNotEmpty(),| $app->generateArtifact($extensions),|$app->generateArtifact());
   assertEquals($expected, $generatedQuery);
 }
 
@@ -244,11 +289,11 @@ function meta::external::function::activator::snowflakeApp::tests::testDataType(
 {
   meta::external::function::activator::snowflakeApp::tests::DataTypeClass.all()->project(
     [col(x|$x.bigInt, 'Big Int') ,
-    col(x|$x.boolean,'Boolean'),  
+    col(x|$x.boolean,'Boolean'),
     col(x|$x.date,'Date') ,
-    col(x|$x.dateTime, 'Date Time'), 
+    col(x|$x.dateTime, 'Date Time'),
     col(x|$x.decimal, 'Decimal') ,
-    col(x|$x.integer, 'Integer') , 
+    col(x|$x.integer, 'Integer') ,
     col(x|$x.string, 'String') ]
   )
   ->from(meta::external::function::activator::snowflakeApp::tests::DatatypeDBMapping, testRuntimeWithTimeZone(dbInc));
@@ -258,11 +303,11 @@ function meta::external::function::activator::snowflakeApp::tests::testReturnTyp
 {
   meta::external::function::activator::snowflakeApp::tests::DataTypeClass.all()->project(
     [col(x|$x.bigInt, 'Big Int') ,
-    col(x|$x.boolean,'Boolean'),  
+    col(x|$x.boolean,'Boolean'),
     col(x|$x.date,'Date') ,
-    col(x|$x.dateTime, 'Date Time'), 
+    col(x|$x.dateTime, 'Date Time'),
     col(x|$x.decimal, 'Decimal') ,
-    col(x|$x.integer, 'Integer') , 
+    col(x|$x.integer, 'Integer') ,
     col(x|$x.string, 'String') ]
 
 )->from(meta::external::function::activator::snowflakeApp::tests::DatatypeDBMapping, testRuntimeWithTimeZone(dbInc));
