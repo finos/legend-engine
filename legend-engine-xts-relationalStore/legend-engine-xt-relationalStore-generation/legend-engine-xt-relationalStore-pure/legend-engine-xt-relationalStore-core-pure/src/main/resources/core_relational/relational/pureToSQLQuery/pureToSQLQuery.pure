@@ -3255,9 +3255,9 @@ function meta::relational::functions::pureToSqlQuery::processTdsFilter(f:Functio
                                  };
         let placeRootFilters = {select: SelectSQLQuery[1]|let filteringOperation = $select.filteringOperation;
                                                           let filter = $filteringOperation->concatenate($mainSelect.havingOperation)->concatenate($mainSelect.qualifyOperation)->andFilters($extensions);
-                                                          if ($select->selectHasWindow(),
-                                                            | ^$select(columns=$finalColumns, filteringOperation=$mainQueryFilter, qualifyOperation=$filter);,
-                                                            | ^$select(columns=$finalColumns, filteringOperation=$mainQueryFilter, havingOperation=$filter);
+                                                          if ($filteringOperation->getWindowColsFromOperation()->isEmpty(),
+                                                            | ^$select(columns=$finalColumns, filteringOperation=$mainQueryFilter, havingOperation=$filter),
+                                                            | ^$select(columns=$finalColumns, filteringOperation=$mainQueryFilter, qualifyOperation=$filter)
                                                           );
                                 };
         let nestMainFilter = {select: SelectSQLQuery[1]|let newSelect = nestFilters($select,$mainQueryFilter,[]);
@@ -3267,12 +3267,12 @@ function meta::relational::functions::pureToSqlQuery::processTdsFilter(f:Functio
                                                                 ^$select(columns=$finalColumns, filteringOperation=$filter);
                                    };
 
-        if($queryRootMutated,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty() || $mainSelect->selectHasWindow(),
+        if($queryRootMutated,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty(),
                                                     | $placeNestedFilters->eval($select),
                                                     | $nestMainFilter->eval($select));
                                ^$res(select = $updatedSelect);
 
-                            ,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty() || $mainSelect->selectHasWindow(),
+                            ,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty() || !$select.filteringOperation->getWindowColsFromOperation()->isEmpty(),
                                                     | $placeRootFilters->eval($select),
                                                     | $placeMainFilterAtRoot->eval($select));
 
@@ -3300,9 +3300,17 @@ function meta::relational::functions::pureToSqlQuery::nestFilters(newQuery:Selec
    ^$newQuery(data = ^$data(alias = ^$alias(relationalElement =^$nestedSelect(filteringOperation = $newFilters, havingOperation = $newHaving))));
 }
 
-function meta::relational::functions::pureToSqlQuery::selectHasWindow(query: SelectSQLQuery[1]): Boolean[1]
+function meta::relational::functions::pureToSqlQuery::getWindowColsFromOperation(operation: RelationalOperationElement[*]): WindowColumn[*]
 {
-  $query.columns->filter(c|$c->instanceOf(Alias) && $c->cast(@Alias).relationalElement->instanceOf(WindowColumn))->isNotEmpty();
+  if($operation->isEmpty(),
+    | [],
+    | $operation->cast(@DynaFunction).parameters->map(o|$o->match([
+                                                                    d:DynaFunction[1] | $d->getWindowColsFromOperation(),
+                                                                    w:WindowColumn[1] | $w,
+                                                                    a:Any[*] | []
+                                                                ])
+                                                    );
+  );
 }
 
 function meta::relational::functions::pureToSqlQuery::addPkForAggregation(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], existingQuery:SelectWithCursor[1], state:State[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
