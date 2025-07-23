@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-snowflake</artifactId>
-        <version>4.91.0</version>
+        <version>4.91.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-snowflake-m2mudf-plan-executor</artifactId>
