@@ -29,6 +29,7 @@ Class meta::pure::functions::relation::tests::composition::PersonTypeForComposit
 {
   firstName : String[1];
   lastName  : String[1];
+  id: Integer[0..1];
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testExtendFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -93,6 +94,43 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testF
                       '#', $res->sort(~firstName->ascending())->toString());
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testFilterPostProject_explodedProperty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                     [
+                        ^FirmTypeForCompositionTests
+                        (
+                            legalName = 'Firm X',
+                            employees = [
+                                ^PersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Smith', id = 1),
+                                ^PersonTypeForCompositionTests(firstName = 'John', lastName = 'Johnson', id = 2),
+                                ^PersonTypeForCompositionTests(firstName = 'John', lastName = 'Hill', id = 3),
+                                ^PersonTypeForCompositionTests(firstName = 'Anthony', lastName = 'Allen')
+                            ]
+                        ),
+                        ^FirmTypeForCompositionTests
+                        (
+                            legalName = 'Firm A',
+                            employees = [
+                                ^PersonTypeForCompositionTests(firstName = 'Fabrice', lastName = 'Roberts', id = 1)
+                            ]
+                        )
+                     ]
+                     ->project(~[
+                        legalName : x | $x.legalName,
+                        id : x | $x.employees.id
+                     ])
+                     ->filter(x | $x.id <= 1);
+                  };
+
+        let res =  $f->eval($expr);
+
+        assertEquals( '#TDS\n' +
+                      '   legalName,id\n' +
+                      '   Firm A,1\n' +
+                      '   Firm X,1\n' +
+                      '#', $res->sort(~legalName->ascending())->toString());
+}
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
