@@ -873,7 +873,7 @@ meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilt
                 #->groupBy(~[grp, rank], ~sumId:x|$x.id:x|$x->plus())
                  ->filter(x|$x.rank <= 2)
                  ->extend(over(~grp), ~sumRank:{p,w,r|$r.rank}:y|$y->plus())
-                 ->filter(x|$x.grp == 'A')
+                 ->filter(x|$x.sumRank == 3)
               };
 
     let res =  $f->eval($expr);
@@ -883,6 +883,4 @@ meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilt
                   '   A,1,9,3\n'+
                   '   A,2,8,3\n'+
                   '#', $res->sort(~rank->ascending())->toString());
-
-    true;
 }
