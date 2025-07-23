@@ -68,10 +68,7 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.logic
 import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.StandardFileFormat;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeDataTypeMapping;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeDataTypeToDefaultSizeMapping;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeIcebergDataTypeToDefaultSizeMapping;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeJdbcPropertiesToLogicalDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.*;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CastFunctionVisitor;
@@ -95,6 +92,7 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ToArrayFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.TryCastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.executor.TabularData;
+import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
@@ -207,8 +205,9 @@ public class SnowflakeSink extends AnsiSqlSink
 
         EXPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(new HashMap<>());
 
-        INSTANCE = new SnowflakeSink(new SnowflakeDataTypeToDefaultSizeMapping());
-        ICEBERG_INSTANCE = new SnowflakeSink(new SnowflakeIcebergDataTypeToDefaultSizeMapping());
+        INSTANCE = new SnowflakeSink(new SnowflakeDataTypeMapping(), new SnowflakeDataTypeToDefaultSizeMapping());
+        ICEBERG_INSTANCE = new SnowflakeSink(new SnowflakeIcebergDataTypeMapping(),
+                new SnowflakeIcebergDataTypeToDefaultSizeMapping());
     }
 
     public static RelationalSink get()
@@ -245,7 +244,7 @@ public class SnowflakeSink extends AnsiSqlSink
         }
     }
 
-    private SnowflakeSink(DataTypeToDefaultSizeMapping dataTypeToDefaultSizeMapping)
+    private SnowflakeSink(DataTypeMapping dataTypeMapping, DataTypeToDefaultSizeMapping dataTypeToDefaultSizeMapping)
     {
         super(
             CAPABILITIES,
@@ -263,7 +262,7 @@ public class SnowflakeSink extends AnsiSqlSink
                 List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForDoesDatasetExist);
                 return results.size() > 0;
             },
-            (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
+            (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, dataTypeMapping),
             (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping(), true));
     }
 
