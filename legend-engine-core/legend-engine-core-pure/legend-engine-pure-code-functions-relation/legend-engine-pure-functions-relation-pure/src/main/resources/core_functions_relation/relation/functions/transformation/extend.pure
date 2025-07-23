@@ -1314,7 +1314,7 @@ meta::pure::functions::relation::tests::extend::testVariantColumn<T|m>(f:Functio
    #;
 
    let expr = {|
-                  $tds->extend(~passthru:x | $x.payload)
+                  $tds->extend(~passthru:x | $x.payload)->sort(~id->ascending())
               };
 
    let res =  $f->eval($expr);
