@@ -467,8 +467,9 @@ function meta::pure::lineage::scanRelations::generateRelationTreeFromRelationalO
                                           let orderByColumns = $sel.orderBy->map(o | $o.column->extractTableAliasColumns());
                                           let groupByColumns = $sel.groupBy->map(o | $o->extractTableAliasColumns());
                                           let havingColumns  = $sel.havingOperation->map(o | $o->extractTableAliasColumns());
+                                          let qualifyColumns = $sel.qualifyOperation->map(o | $o->extractTableAliasColumns());
 
-                                          let allColumns     = $projectColumns->concatenate($filterColumns)->concatenate($orderByColumns)->concatenate($groupByColumns)->concatenate($havingColumns)->removeDuplicates();
+                                          let allColumns     = $projectColumns->concatenate($filterColumns)->concatenate($orderByColumns)->concatenate($groupByColumns)->concatenate($havingColumns)->concatenate($qualifyColumns)->removeDuplicates();
                                           if($debug.debug, | print($debug.space + 'Processed Columns - ' + $allColumns->map(tac | $tac.alias.name + '.' + $tac.column.name)->joinStrings('[',', ', ']') + '\n');, |[]);
 
                                           let result         = if($sel.data->isEmpty(),

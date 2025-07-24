@@ -198,7 +198,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     querySpecificationProcessor_default(),
     unionProcessor_default(),
     tableSubqueryProcessor_default(),
-    tablePlaceholderProcessor_default()
+    tablePlaceholderProcessor_default(),
+    extendedQuerySpecificationProcessor_default()
   ]
 }
 

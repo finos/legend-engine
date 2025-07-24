@@ -138,6 +138,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
 
                                     let transformedGb   = $s.groupBy->map(gb | $gb->transformAliasName($m));
                                     let transformedHav  = $s.havingOperation->map(hav | $hav->transformAliasName($m));
+                                    let transformedQual = $s.qualifyOperation->map(qual | $qual->transformAliasName($m));
                                     let transformedOb   = $s.orderBy->map(ob | ^$ob(column= $ob.column->transformAliasName($m)));
 
                                     let transformedFilteringOp = $s.filteringOperation->map(f | $f->transformAliasName($m));
@@ -148,6 +149,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                                                     savedFilteringOperation = $transformedSf,
                                                     groupBy=$transformedGb,
                                                     havingOperation=$transformedHav,
+                                                    qualifyOperation=$transformedQual,
                                                     orderBy = $transformedOb,
                                                     filteringOperation= $transformedFilteringOp);
       

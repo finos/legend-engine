@@ -149,8 +149,11 @@ function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQ
     pair('FuncTests - covar_pop(0/0)', 'MemSQL SQL Dialect does not support the function - covar_pop'),
     pair('FuncTests - corr(0/0)', 'MemSQL SQL Dialect does not support the function - corr'),
     pair('SQLStructureTests - AsOfJoin', 'MemSQL SQL Dialect does not support AsOfJoin!'),                           
-    pair('SQLStructureTests - LikeEscapeChar', 'MemSQL SQL Dialect does not support custom escape char with like')
-
+    pair('SQLStructureTests - LikeEscapeChar', 'MemSQL SQL Dialect does not support custom escape char with like'),
+    pair(
+      'SQLStructureTests - Qualify',
+      'Execution error at (resource:/core_external_store_relational_sql_dialect_translation/sqlDialect.pure line:154 column:47), \"Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::ExtendedQuerySpecification\" not implemented in SqlDialect for database type \"MemSQL\"\"'
+    )
   ]->newMap()->cast(@Map<String, String>)
 }
 

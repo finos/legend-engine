@@ -90,7 +90,7 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::try
        | let elementsInSubSelect = $subSelect->extractRelationalElements(false);
          let subSelectHasUnknownElementsOrWindowColumns = (!$elementsInSubSelect.noUnknownElement) || $elementsInSubSelect.elements->exists(x | $x->instanceOf(WindowColumn));
          let subSelectHasFromOrToRow = $subSelect.fromRow->isNotEmpty() || $subSelect.toRow->isNotEmpty();
-         let cannotPushFiltersIntoSubQuery = $subSelectHasUnknownElementsOrWindowColumns || $subSelectHasFromOrToRow || ($subSelect.filteringOperation->size() > 1) || ($subSelect.havingOperation->size() > 1);
+         let cannotPushFiltersIntoSubQuery = $subSelectHasUnknownElementsOrWindowColumns || $subSelectHasFromOrToRow || ($subSelect.filteringOperation->size() > 1) || ($subSelect.havingOperation->size() > 1) || ($subSelect.qualifyOperation->size() > 1);
          if ($cannotPushFiltersIntoSubQuery,
              | $subSelect,
              | $filteringPairs.values->fold({fp, aggSelect | $aggSelect->tryAddingSingleFilterToSubQuery($fp, $extensions)}, $subSelect);
@@ -237,6 +237,7 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::ext
         ->concatenate($s.filteringOperation)
         ->concatenate($s.groupBy)
         ->concatenate($s.havingOperation)
+        ->concatenate($s.qualifyOperation)
         ->concatenate($s.orderBy.column)
         ->concatenate($s.fromRow)
         ->concatenate($s.toRow)

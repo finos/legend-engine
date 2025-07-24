@@ -1159,6 +1159,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                     filteringOperation = $viewQueryReprocessed.filteringOperation,
                                     groupBy = $viewQueryReprocessed.groupBy,
                                     havingOperation = $viewQueryReprocessed.havingOperation,
+                                    qualifyOperation = $viewQueryReprocessed.qualifyOperation,
                                     orderBy = $viewQueryReprocessed.orderBy,
                                     fromRow = $viewQueryReprocessed.fromRow,
                                     toRow = ^Literal(value=20)
@@ -1268,6 +1269,7 @@ function <<access.private>> meta::relational::testDataGeneration::executionPlan:
                                                          filteringOperation= $s.filteringOperation->map(f | $f->fixRelations($oldToNewPairs)),
                                                          groupBy = $s.groupBy->map(g | $g->fixRelations($oldToNewPairs)),
                                                          havingOperation = $s.havingOperation->map(h | $h->fixRelations($oldToNewPairs)),
+                                                         qualifyOperation = $s.qualifyOperation->map(q | $q->fixRelations($oldToNewPairs)),
                                                          orderBy = $s.orderBy->map(o | ^$o(column = $o.column->fixRelations($oldToNewPairs)))
                                                       );
                                           if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);,
@@ -1324,6 +1326,7 @@ function <<access.private>> meta::relational::testDataGeneration::executionPlan:
                                                          filteringOperation= $s.filteringOperation->map(f | $f->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()),
                                                          groupBy = $s.groupBy->map(g | $g->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()),
                                                          havingOperation = $s.havingOperation->map(h | $h->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()),
+                                                         qualifyOperation = $s.qualifyOperation->map(q | $q->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()),
                                                          orderBy = $s.orderBy->map(o | ^$o(column = $o.column->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()))
                                                       );
                                           if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);,
