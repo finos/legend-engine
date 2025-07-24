@@ -478,7 +478,7 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
       from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'cte')))
     )
   );
-  assertEquals($expected, convertSelectSqlQuery($query, newState()));
+  assertEquals($expected, convertSqlQuery($query, newState()));
 }
 
 function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertUnion(): Boolean[1]

@@ -152,3 +152,16 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
   $j.left->match([a: AliasedRelation[1] | true, sj: Join[1] | $sj->isJoinSupportedForJoinFilterPushDown(), a: Any[*] | false]) &&
   $j.right->instanceOf(AliasedRelation)
 }
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::extractOrderedJoins(qs: QuerySpecification[1]): Join[1..*]
+{
+  extractOrderedJoins($qs.from->toOne()->cast(@Join))
+}
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::extractOrderedJoins(j: Join[1]): Join[1..*]
+{
+  $j.left->match([
+    l: Join[1] | $l->extractOrderedJoins(),
+    a: Any[*]  | []
+  ])->concatenate($j)->toOneMany()
+}
