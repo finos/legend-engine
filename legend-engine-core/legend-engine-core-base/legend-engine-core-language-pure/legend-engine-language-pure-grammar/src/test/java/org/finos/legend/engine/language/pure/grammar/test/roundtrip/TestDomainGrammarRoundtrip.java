@@ -1416,17 +1416,51 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testCast()
     {
-        test("function abc::cast(): Any[1]\n" +
+        test("function abc::cast(): Float[1]\n" +
                 "{\n" +
                 "  1->cast(@Float)\n" +
                 "}\n");
-        test("function abc::cast(): Any[1]\n" +
+        test("function abc::cast(): Float[1]\n" +
                 "{\n" +
                 "  1->cast(1.0)\n" +
                 "}\n");
-        test("function abc::cast(): Any[1]\n" +
+        test("function abc::cast(): String[1]\n" +
                 "{\n" +
                 "  1->cast('String')\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testTo()
+    {
+        test("function abc::to(): Float[1]\n" +
+                "{\n" +
+                "  toVariant(1)->to(@Float)\n" +
+                "}\n");
+        test("function abc::to(): Float[1]\n" +
+                "{\n" +
+                "  toVariant(1)->to(1.0)\n" +
+                "}\n");
+        test("function abc::to(): String[1]\n" +
+                "{\n" +
+                "  toVariant(1)->to('String')\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testToMany()
+    {
+        test("function abc::to(): Float[*]\n" +
+                "{\n" +
+                "  toVariant(1)->toMany(@Float)\n" +
+                "}\n");
+        test("function abc::to(): Float[*]\n" +
+                "{\n" +
+                "  toVariant(1)->toMany(1.0)\n" +
+                "}\n");
+        test("function abc::to(): String[*]\n" +
+                "{\n" +
+                "  toVariant(1)->toMany('String')\n" +
                 "}\n");
     }
 }
