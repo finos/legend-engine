@@ -3302,14 +3302,14 @@ function meta::relational::functions::pureToSqlQuery::nestFilters(newQuery:Selec
 
 function meta::relational::functions::pureToSqlQuery::getWindowColsFromOperation(operation: RelationalOperationElement[*]): WindowColumn[*]
 {
-  if($operation->isEmpty(),
-    | [],
+  if($operation->isNotEmpty() && $operation->toOne()->instanceOf(DynaFunction),
     | $operation->cast(@DynaFunction).parameters->map(o|$o->match([
                                                                     d:DynaFunction[1] | $d->getWindowColsFromOperation(),
                                                                     w:WindowColumn[1] | $w,
                                                                     a:Any[*] | []
-                                                                ])
-                                                    );
+                                                                  ])
+                                                     ),
+    | []
   );
 }
 
