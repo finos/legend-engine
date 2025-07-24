@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::store::relational::runtime::*;
 import meta::relational::extension::*;
 import meta::relational::functions::pureToSqlQuery::union::*;
 import meta::external::query::sql::metamodel::extension::*;
@@ -27,35 +26,8 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::functions::pureToSqlQuery::*;
-import meta::relational::functions::toPostgresModel::*;
 import meta::relational::functions::sqlDialectTranslation::*;
-
-function meta::relational::functions::sqlDialectTranslation::getDialectTranslationConfig(connection:DatabaseConnection[1], pretty:Boolean[1], extensions:Extension[*]):SqlDialectTranslationConfig[1]
-{
-  getDialectTranslationConfig($connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
-}
-
-function meta::relational::functions::sqlDialectTranslation::getDialectTranslationConfig(dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):SqlDialectTranslationConfig[1]
-{
-  getDialectTranslationConfig($dbType, ^FormatConfig(pretty = false, upperCaseKeywords = false), $dbTimeZone, $quoteIdentifiers, $extensions);
-}
-
-function meta::relational::functions::sqlDialectTranslation::getDialectTranslationConfig(dbType:DatabaseType[1], pretty:Boolean[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):SqlDialectTranslationConfig[1]
-{
-  getDialectTranslationConfig($dbType, ^FormatConfig(pretty = $pretty, upperCaseKeywords = false), $dbTimeZone, $quoteIdentifiers, $extensions);
-}
-
-function meta::relational::functions::sqlDialectTranslation::getDialectTranslationConfig(dbType:DatabaseType[1], format:FormatConfig[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):SqlDialectTranslationConfig[1]
-{
-  let extraNodeProcessorsByDb = $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).sqlDialectTranslation_nodeProcessorsMapByDbType);
-  
-  ^SqlDialectTranslationConfig(
-    dbConfig = ^DbConfig(dbType = $dbType->toString(), dbTimeZone = $dbTimeZone, quoteIdentifiers = if($quoteIdentifiers->isEmpty(), | false, | $quoteIdentifiers->toOne())),
-    formatConfig = $format,
-    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(),
-    extraNodeProcessors = if($extraNodeProcessorsByDb->isNotEmpty(), | $extraNodeProcessorsByDb->toOne()->get($dbType), |[])
-  );
-}
+import meta::relational::functions::toPostgresModel::*;
 
 function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], extensions:Extension[*]):String[1]
 {
@@ -64,37 +36,42 @@ function meta::relational::functions::sqlDialectTranslation::relOpToString(r:Rel
 
 function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], pretty:Boolean[1], extensions:Extension[*]):String[1]
 {
-  relOpToString($r, $dbType, ^FormatConfig(pretty = $pretty, upperCaseKeywords = false), [], [], false, $extensions);
+  relOpToString($r, $dbType, ^FormatConfig(pretty = $pretty, upperCaseKeywords = false), [], [], $extensions);
 }
 
 function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
 {
-  relOpToString($r, $dbType, false, $dbTimeZone, $quoteIdentifiers, false, $extensions);
+  relOpToString($r, $dbType, false, $dbTimeZone, $quoteIdentifiers, $extensions);
 }
 
-function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], pretty:Boolean[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], shouldOptimize:Boolean[1], extensions:Extension[*]):String[1]
+function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], pretty:Boolean[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
 {
-  relOpToString($r, $dbType, ^FormatConfig(pretty = $pretty, upperCaseKeywords = false), $dbTimeZone, $quoteIdentifiers, false, $extensions);
+  relOpToString($r, $dbType, ^FormatConfig(pretty = $pretty, upperCaseKeywords = false), $dbTimeZone, $quoteIdentifiers, $extensions);
 }
 
 function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], format:FormatConfig[1], extensions:Extension[*]):String[1]
 {
-  relOpToString($r, $dbType, $format, [], [], false, $extensions);
+  relOpToString($r, $dbType, $format, [], [], $extensions);
 }
 
-function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], format:FormatConfig[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], shouldOptimize:Boolean[1], extensions:Extension[*]):String[1]
+function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], format:FormatConfig[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
 {
-  let config = getDialectTranslationConfig($dbType, $format, $dbTimeZone, $quoteIdentifiers, $extensions);
-  let node = $r->convertRelationalOperationElement($extensions);
-  let optimizedNode = if($shouldOptimize && $node->instanceOf(Query), 
-    | $node->cast(@Query)->planSqlStatement(^SqlPlanningConfig(dbType = $dbType->toString()), $extensions),
-    | $node
+  let extraNodeProcessorsByDb = $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).sqlDialectTranslation_nodeProcessorsMapByDbType);
+  let config = ^SqlDialectTranslationConfig(
+    dbConfig = ^DbConfig(dbType = $dbType->toString(), dbTimeZone = $dbTimeZone, quoteIdentifiers = if($quoteIdentifiers->isEmpty(), | false, | $quoteIdentifiers->toOne())),
+    formatConfig = $format,
+    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(),
+    extraNodeProcessors = if($extraNodeProcessorsByDb->isNotEmpty(), | $extraNodeProcessorsByDb->toOne()->get($dbType), |[])
   );
-  $optimizedNode->generateSqlDialect($config, $extensions);
+  relOpToString($r, $config, $extensions);
 }
 
-function meta::relational::functions::sqlDialectTranslation::toSqlDialect(n:Node[1], connection:DatabaseConnection[1], pretty:Boolean[1], extensions:Extension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], config:SqlDialectTranslationConfig[1], extensions:Extension[*]):String[1]
 {
-  let config = getDialectTranslationConfig($connection, $pretty, $extensions);
-  $n->generateSqlDialect($config, $extensions);
+  $r->match(
+    [
+      s:SelectSQLQuery[1]| convertSqlQuery($s, newState($extensions), $extensions),
+      r:RelationalOperationElement[1]| convertElement($r, newState($extensions))
+    ]
+  )->generateSqlDialect($config, $extensions);
 }

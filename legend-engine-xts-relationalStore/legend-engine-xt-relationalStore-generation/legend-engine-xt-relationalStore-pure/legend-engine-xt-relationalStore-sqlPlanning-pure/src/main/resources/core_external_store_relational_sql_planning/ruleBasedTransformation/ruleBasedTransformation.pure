@@ -79,7 +79,7 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
         let transformed = $rules->fold({t, agg |
           print(if(!$debug.debug, |'', | $debug->indent().space + range(50)->map(x | '-')->joinStrings() + '\n'));
           print(if(!$debug.debug, |'', | $debug->indent().space + 'Running rule: ' + $t.name + '\n'));
-          let res = $t.transformSqlQuery($agg.query, $config, $debug->indent(), $extensions);
+          let res = $t->executeSubTypeQualifierAndCast('transformSqlQuery', [list($agg.query), list($config), list($debug->indent()), list($extensions)], @TransformedQuery);
           if ($res.hasChanged,
               | print(if(!$debug.debug, |'', | $debug->indent().space + 'Rule Result: Query Changed\n'));
                 print(if(!$debug.debug, |'', | $debug->indent().space + 'Updated Query: ' + $res.query->printDebugQuery($config, $extensions) + '\n'));,
@@ -111,7 +111,7 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
   let allTransformers = $defaultTransformers->concatenate($extensionTransformers);
 
   let filteredTransformers = $allTransformers->filter({t |
-    if ($t.databaseSupport.isDatabaseTypeSupported($config.dbType),
+    if ($t.databaseSupport->meta::external::store::relational::sqlPlanning::utils::executeSubTypeQualifierAndCast('isDatabaseTypeSupported', list($config.dbType), @Boolean) == true,
         | // Transformer supported for database type
           if ($t.enabledByDefault,
               | // TODO: Check if excluded in connection
@@ -127,8 +127,7 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
 function meta::external::store::relational::sqlPlanning::ruleBasedTransformation::defaultRuleBasedSqlTransformers(): RuleBasedSqlTransformer[*]
 {
   [
-    meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::joinFilterPushDownRule(),
-    meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::subQueryFilterPushDownRule()
+    // meta::external::store::relational::sqlPlanning::ruleBasedTransformation::filterPushDown::filterPushDownSqlTransformer()
   ]
 }
 
