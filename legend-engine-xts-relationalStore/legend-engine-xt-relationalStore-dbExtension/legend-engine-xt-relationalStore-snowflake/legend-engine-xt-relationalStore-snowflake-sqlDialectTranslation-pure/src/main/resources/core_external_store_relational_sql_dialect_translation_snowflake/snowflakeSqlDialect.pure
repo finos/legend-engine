@@ -141,20 +141,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       'CastOperation - Decimal',
       'Expected - {"columnNames":["result"],"rows":[{"values":[123.0]}]}\n' +
       'Actual - {"columnNames":["result"],"rows":[{"values":[123]}]}'
-    ),
-    // Snowflake SQL Dialect requires custom handling of TrimProcessor, These tests will be removed after the implementation.
-    pair(
-      'SQLStructureTests - TrimBoth',
-      'Execution error at ??'
-    ),
-    pair(
-      'SQLStructureTests - TrimLeading',
-      'Execution error at ??'
-    ),
-    pair(
-      'SQLStructureTests - TrimTrailing',
-      'Execution error at ??'
-    )                 
+    )
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -247,7 +234,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     betweenPredicateProcessor_default(),
     functionCallProcessor_default(),
     subQueryExpressionProcessor_default(),
-    trimProcessor_default(),
+    trimProcessorForSnowflake(),
     bitwiseBinaryExpressionNodeProcessorForSnowflake(),
     bitwiseNotExpressionNodeProcessorForSnowflake(),
     bitwiseShiftExpressionNodeProcessorForSnowflake(),
@@ -705,6 +692,23 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   let params = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   $sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'time_slice', $params, $f, $state, $config), 'timestamp', $state, $config);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::snowflake::trimProcessorForSnowflake(): NodeProcessor<Trim>[1]
+{
+  nodeProcessor(
+    Trim,
+    {sqlDialect, t, state, config |
+      if($t.mode == TrimMode.BOTH,
+        | generateFunctionCallWithArgs($sqlDialect, 'trim', [$sqlDialect->executeNodeProcessor($t.value, $state, $config), $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)], $state, $config),
+        | if($t.mode.name == TrimMode.LEADING,
+          | generateFunctionCallWithArgs($sqlDialect, 'ltrim', [$sqlDialect->executeNodeProcessor($t.value, $state, $config), $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)], $state, $config),
+          | generateFunctionCallWithArgs($sqlDialect, 'rtrim', [$sqlDialect->executeNodeProcessor($t.value, $state, $config), $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)], $state, $config)
+        )
+      );
+    },
+    {n | true}
+  )
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::bitwiseBinaryExpressionNodeProcessorForSnowflake(): NodeProcessor<BitwiseBinaryExpression>[1]
