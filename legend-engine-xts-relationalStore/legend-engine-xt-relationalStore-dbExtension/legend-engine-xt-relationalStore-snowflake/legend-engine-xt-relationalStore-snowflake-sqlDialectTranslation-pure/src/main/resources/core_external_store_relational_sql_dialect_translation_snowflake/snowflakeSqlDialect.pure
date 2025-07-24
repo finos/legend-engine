@@ -699,9 +699,9 @@ function meta::external::store::relational::sqlDialectTranslation::snowflake::tr
   nodeProcessor(
     Trim,
     {sqlDialect, t, state, config |
-      if($t.mode.name == 'BOTH',
+      if($t.mode == TrimMode.BOTH,
         | generateFunctionCallWithArgs($sqlDialect, 'trim', [$sqlDialect->executeNodeProcessor($t.value, $state, $config), $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)], $state, $config),
-        | if($t.mode.name == 'LEADING',
+        | if($t.mode.name == TrimMode.LEADING,
           | generateFunctionCallWithArgs($sqlDialect, 'ltrim', [$sqlDialect->executeNodeProcessor($t.value, $state, $config), $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)], $state, $config),
           | generateFunctionCallWithArgs($sqlDialect, 'rtrim', [$sqlDialect->executeNodeProcessor($t.value, $state, $config), $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)], $state, $config)
         )
