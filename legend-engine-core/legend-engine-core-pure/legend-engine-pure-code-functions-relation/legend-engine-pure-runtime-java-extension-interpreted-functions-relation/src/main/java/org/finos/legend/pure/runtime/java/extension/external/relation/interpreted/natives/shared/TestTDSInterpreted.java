@@ -41,7 +41,7 @@ public class TestTDSInterpreted extends TestTDS
 
     public TestTDSInterpreted(CsvReader.Result result, ModelRepository repository, ProcessorSupport processorSupport)
     {
-        super(result, repository, processorSupport);
+        super(result, processorSupport);
         this.modelRepository = repository;
         this.processorSupport = processorSupport;
     }
@@ -51,7 +51,6 @@ public class TestTDSInterpreted extends TestTDS
         super(columnOrdered, columnType, rows);
         this.modelRepository = repository;
         this.processorSupport = processorSupport;
-
     }
 
     public TestTDSInterpreted(ModelRepository repository, ProcessorSupport processorSupport)

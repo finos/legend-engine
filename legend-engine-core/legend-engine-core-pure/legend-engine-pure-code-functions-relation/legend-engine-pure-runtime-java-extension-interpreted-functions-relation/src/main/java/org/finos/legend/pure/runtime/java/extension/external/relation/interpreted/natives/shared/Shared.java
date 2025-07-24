@@ -67,6 +67,22 @@ public abstract class Shared extends NativeFunction
 
     public static CoreInstance getReturnGenericType(Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, ProcessorSupport processorSupport)
     {
-        return GenericType.makeTypeArgumentAsConcreteAsPossible(functionExpressionCallStack.peek().getValueForMetaPropertyToOne("genericType"), resolvedTypeParameters.get(0), resolvedMultiplicityParameters.get(0), processorSupport);
+        CoreInstance result = functionExpressionCallStack.peek().getValueForMetaPropertyToOne("genericType");
+
+        for (int i = resolvedTypeParameters.size() - 1; i >= 0; i--)
+        {
+            MutableMap<String, CoreInstance> resolvedTypeParameter = resolvedTypeParameters.elementAt(i);
+            MutableMap<String, CoreInstance> resolvedMultiplicityParameter = resolvedMultiplicityParameters.elementAt(i);
+            if (resolvedTypeParameter.notEmpty() || resolvedMultiplicityParameter.notEmpty())
+            {
+                result = GenericType.makeTypeArgumentAsConcreteAsPossible(result, resolvedTypeParameter, resolvedMultiplicityParameter, processorSupport);
+                if (GenericType.isGenericTypeFullyConcrete(result, processorSupport))
+                {
+                    return result;
+                }
+            }
+        }
+
+        return result;
     }
 }

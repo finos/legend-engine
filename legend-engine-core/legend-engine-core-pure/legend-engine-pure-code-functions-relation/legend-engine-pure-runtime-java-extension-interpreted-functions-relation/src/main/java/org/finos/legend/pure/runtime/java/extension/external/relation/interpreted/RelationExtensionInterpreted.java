@@ -70,7 +70,6 @@ import org.finos.legend.pure.runtime.java.interpreted.extension.InterpretedExten
 import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.lang.cast.Cast;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
-import org.finos.legend.pure.runtime.java.shared.variant.VariantInstanceImpl;
 
 public class RelationExtensionInterpreted extends BaseInterpretedExtension
 {

@@ -1,0 +1,76 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+
+function <<PCT.function>>
+{
+    doc.doc='Perform a lateral join, where the given function is applied to each row of the first relation, and the result is a relation that is joined with the second relation based on the function\'s output.'
+}
+meta::pure::functions::relation::lateral<T,V>(rel:Relation<T>[1], f:Function<{T[1]->Relation<V>[1]}>[1]):Relation<T+V>[1]
+{
+   let flattenResults = $rel->size()->range()->map(rowNum |
+                                     let lateralParam = $rel->slice($rowNum, $rowNum + 1);
+                                     let lateralResult = $lateralParam->map(row | $f->eval($row))->at(0);
+                                     $lateralParam->join($lateralResult, JoinKind.INNER, {x, y | true});
+                                 )->cast(@Relation<T+V>);
+
+   let columns = $flattenResults->genericType().typeArguments->at(0).rawType->cast(@RelationType<T+V>).columns;
+   let accumulator = $columns->map(c | $c.name->toOne() + ':' + $c.classifierGenericType->toOne().typeArguments->at(1).rawType->toOne()->elementToPath())->joinStrings(',')->stringToTDS()->cast(@Relation<T+V>);
+
+   $flattenResults->fold({tds, acc | $acc->concatenate($tds)}, $accumulator);
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::lateral::testLateralJoin<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {|
+    let t1 = #TDS
+              departmentId, departmentName
+              1, Engineering
+              2, Support
+              3, Sales
+            #;
+    let t2 = #TDS
+              employeeId, employeeName, department
+              101, Rafael, 1
+              102, Pierre, 1
+              103, Jake, 1
+              104, John, 2
+              105, Jane, 2
+              106, Alice, 3
+              107, Bob, 3
+              108, Charlie, 3
+              109, David, 3
+              999, NonExistent, 4
+            #;
+    $t1->lateral(x | $t2->filter(y| $y.department == $x.departmentId))
+       ->sort([~departmentId->ascending(),~employeeId->ascending()]);
+  };
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   departmentId,departmentName,employeeId,employeeName,department\n'+
+                '   1,Engineering,101,Rafael,1\n'+
+                '   1,Engineering,102,Pierre,1\n'+
+                '   1,Engineering,103,Jake,1\n'+
+                '   2,Support,104,John,2\n'+
+                '   2,Support,105,Jane,2\n'+
+                '   3,Sales,106,Alice,3\n'+
+                '   3,Sales,107,Bob,3\n'+
+                '   3,Sales,108,Charlie,3\n'+
+                '   3,Sales,109,David,3\n'+
+                '#', $res->toString());
+}
