@@ -1089,6 +1089,81 @@ public class TestCompilationFromGrammar
                         "}"
         );
     }
+    
+    @Test
+    public void testMultiplicityInferenceForProjectGraphToRelation()
+    {
+        Pair<PureModelContextData, PureModel> result = TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Class {\n" +
+                        "   nestedZeroOne: test::NestedClass[0..1];\n" +
+                        "   nestedOne: test::NestedClass[1];\n" +
+                        "   nestedTwo: test::NestedClass[2];\n" +
+                        "   nestedMany: test::NestedClass[*];\n" +
+                        "   mulZeroOne: String[0..1];\n" +
+                        "   mulOne: String[1];\n" +
+                        "   mulOneTwo: Integer[1..2];\n" +
+                        "   mulOneMany: String[1..*];\n" +
+                        "   mulZeroMany: String[0..*];\n" +
+                        "}\n" +
+                        "Class test::NestedClass {\n" +
+                        "   mulZeroOne: String[0..1];\n" +
+                        "   mulOne: String[1];\n" +
+                        "   mulOneTwo: Integer[1..2];\n" +
+                        "   mulOneMany: String[1..*];\n" +
+                        "   mulZeroMany: String[0..*];\n" +
+                        "}\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Class.all()->project(~[\n" +
+                        "        mulZeroOne: x|$x.mulZeroOne,\n" +
+                        "        mulOne: x|$x.mulOne,\n" +
+                        "        mulOneTwo: x|$x.mulOneTwo,\n" +
+                        "        mulOneMany: x|$x.mulOneMany,\n" +
+                        "        mulZeroMany: x|$x.mulZeroMany,\n" +
+                        "        nestedOneMulZeroOne: x|$x.nestedOne.mulZeroOne,\n" +
+                        "        nestedOneMulOne: x|$x.nestedOne.mulOne,\n" +
+                        "        nestedOneMulOneTwo: x|$x.nestedOne.mulOneTwo,\n" +
+                        "        nestedOneMulOneMany: x|$x.nestedOne.mulOneMany,\n" +
+                        "        nestedOneMulZeroMany: x|$x.nestedOne.mulZeroMany,\n" +
+                        "        nestedTwoMulZeroOne: x|$x.nestedTwo.mulZeroOne,\n" +
+                        "        nestedTwoMulOne: x|$x.nestedTwo.mulOne,\n" +
+                        "        nestedTwoMulOneTwo: x|$x.nestedTwo.mulOneTwo,\n" +
+                        "        nestedTwoMulOneMany: x|$x.nestedTwo.mulOneMany,\n" +
+                        "        nestedTwoMulZeroMany: x|$x.nestedTwo.mulZeroMany,\n" +
+                        "        nestedManyMulZeroOne: x|$x.nestedMany.mulZeroOne,\n" +
+                        "        nestedManyMulOne: x|$x.nestedMany.mulOne,\n" +
+                        "        nestedManyMulOneTwo: x|$x.nestedMany.mulOneTwo,\n" +
+                        "        nestedManyMulOneMany: x|$x.nestedMany.mulOneMany,\n" +
+                        "        nestedManyMulZeroMany: x|$x.nestedMany.mulZeroMany\n" +
+                        "      ])\n" +
+                        "}"
+        );
+        
+        SimpleFunctionExpression s = (SimpleFunctionExpression) result.getTwo().getConcreteFunctionDefinition_safe("test::f__Any_MANY_")._expressionSequence().getOnly();
+        RelationType<?> relType = (RelationType<?>) s._genericType()._typeArguments().getOnly()._rawType();
+        MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity> multiplicities = relType._columns().collect(c -> c._classifierGenericType()._multiplicityArguments().getOnly()).toList();
+        
+        MutableList<Boolean> isToOne = Lists.mutable.with(
+                false, true, true, true, false,
+                false, true, true, true, false,
+                false, true, false, false, false,
+                false, false, false, false, false
+        );
+        isToOne.forEachWithIndex((b, i) -> assertMultiplicity(multiplicities.get(i), b));
+    }
+    
+    private void assertMultiplicity(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity m, Boolean isToOne)
+    {
+        if (isToOne)
+        {
+            Assert.assertTrue(org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isToOne(m));
+        }
+        else
+        {
+            Assert.assertTrue(org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isZeroToOne(m));
+        }
+    }
 
     @Test
     public void testColumnExpressionMultiplicityInference()
