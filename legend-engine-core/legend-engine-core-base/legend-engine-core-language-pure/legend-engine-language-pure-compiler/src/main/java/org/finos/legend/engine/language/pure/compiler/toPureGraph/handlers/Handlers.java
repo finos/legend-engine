@@ -329,6 +329,41 @@ public class Handlers
         return getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel);
     }
 
+    private Multiplicity flattenMultiplicity(Multiplicity m, PureModel pm)
+    {
+        return (m._lowerBound()._value() >= 1) ? pm.getMultiplicity("one") : pm.getMultiplicity("zeroone");
+    }
+        
+    // Graph projections of the form $x.firm.employees have 1..Many or 0..Many multiplicity but project is supposed to 
+    // return a flattened, exploded relation. Hence, we have a special inference to override inferred multiplicity from 
+    // the passed FuncColSpec.
+    public TypeAndMultiplicity GraphProjectReturnInference(List<ValueSpecification> ps, PureModel pureModel)
+    {
+        RelationType<?> relTypeFromColSpec = (RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType();
+        ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
+        try
+        {
+            RelationType<?> newRelType = _RelationType.build(
+                    Lists.mutable
+                        .withAll(relTypeFromColSpec._columns())
+                        .collect(c -> _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), flattenMultiplicity(_Column.getColumnMultiplicity(c), pureModel), null, processorSupport)),
+                    null,
+                    processorSupport
+            );
+            return res(
+                    new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
+                            ._rawType(pureModel.getType(M3Paths.Relation))
+                            ._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))._rawType(newRelType))),
+                    "one",
+                    pureModel
+            );
+        }
+        catch (PureCompilationException e)
+        {
+            throw new EngineException(e.getInfo(), null, EngineErrorType.COMPILATION);
+        }
+    }
+
     private static TypeAndMultiplicity getTypeAndMultiplicity(MutableList<RelationType<?>> types, PureModel pureModel)
     {
         ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
@@ -970,7 +1005,7 @@ public class Handlers
                                 h("meta::pure::tds::project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true),
                                 h("meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_", true, ps -> ProjectReturnInference(ps, this.pureModel), ps -> true),
                                 //meta::pure::functions::relation::project<C,T>(cl:C[*], x:FuncColSpecArray<{C[1]->Any[*]},T>[1]):Relation<T>[1];
-                                h("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", true, ps -> ProjectReturnInference(ps, this.pureModel), ps -> true)
+                                h("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", true, ps -> GraphProjectReturnInference(ps, this.pureModel), ps -> true)
                         )
                 )
         );
