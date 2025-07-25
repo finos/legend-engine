@@ -43,7 +43,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       pureTypeToDatabaseTypeConverter = convert_GenericType_1__DataType_1_,
       buildDummyConnection = meta::relational::functions::sqlQueryToString::duckDB::buildDummyConnection__RelationalDatabaseConnection_1_,
       lambdaParameterProcessor = buildLambdaParameter_RelationalLambdaParameter_1__SqlGenerationContext_1__String_1_,
-      lambdaProcessor = buildLambda_RelationalLambda_1__SqlGenerationContext_1__String_1_
+      lambdaProcessor = buildLambda_RelationalLambda_1__SqlGenerationContext_1__String_1_,
+      columnNameQuotes = '"'
    );
 }
 
