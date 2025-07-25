@@ -15,8 +15,6 @@ function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::d
   ^DbExtensionLoader(dbType = DatabaseType.Databricks, loader = createDbExtensionForDatabricks__DbExtension_1_);
 }
 
-//comment
-
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::databricksReservedWords():String[*]
 {
     //https://docs.databricks.com/sql/language-manual/sql-ref-reserved-words.html
