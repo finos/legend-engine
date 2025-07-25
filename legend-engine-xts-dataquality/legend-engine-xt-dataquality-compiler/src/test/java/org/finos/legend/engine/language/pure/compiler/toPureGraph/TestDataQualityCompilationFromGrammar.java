@@ -181,7 +181,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         type: ROW_LEVEL;\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", " at [104:1-115:1]: Error in 'meta::external::dataquality::Validation': Execution error at (resource: lines:104c1-115c1), \"Constraint :[mustEndWithRuntime] violated in the Class DataQualityRelationValidation\"");
+                "}");
     }
 
     @Test
