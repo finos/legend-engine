@@ -56,11 +56,11 @@ function meta::external::dataquality::tests::doTest(tree:String[1], expected:Fun
   if ($assertJson, | assertLambdaJSONEquals($expected, $actual), | true);
 }
 
-function meta::external::dataquality::tests::doRelationTest(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]):Boolean[1]
+function meta::external::dataquality::tests::doRelationTest(dq:String[1], validationName:String[0..1], expected:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]):Boolean[1]
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
-  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, []);
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, [], true);
 
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
 }
@@ -83,7 +83,7 @@ function meta::external::dataquality::tests::doRelationTestWithLimit(dq:String[1
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
 }
 
-function meta::external::dataquality::tests::doRelationTestWithoutDQColumns(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]):Boolean[1]
+function meta::external::dataquality::tests::doRelationTestWithoutDQColumns(dq:String[1], validationName:String[0..1], expected:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]):Boolean[1]
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
