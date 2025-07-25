@@ -581,8 +581,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationStoreAccess
               (
                 columns = $relation.columns->map(c | ^Alias(name = $c->cast(@Column).name->toOne()->addQuotesIfNecessary(), relationalElement=^TableAliasColumn(alias = $tableAlias, column = $c->cast(@Column)))),
                 data = $node
-              ),
-              currentTreeNode = $node
+              )
             );
 
   let milestonedRes = if($operation.milestoningContext->isNotEmpty(), | applyMilestoningTypeFilters($res, $operation.milestoningContext->toOne(), $state, false, $extensions), | $res);
@@ -4282,7 +4281,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationFunctionCla
   let newState = defaultState($state.mapping, $state.inScopeVars);
   let cursor = $relationExpression->processValueSpecification([], $newCursor, $vars, $newState, $joinType, $nodeId, ^List<ColumnGroup>(), $context, $extensions)->toOne()->cast(@SelectWithCursor);
   let newSelect = $cursor.select->moveSelectQueryToSubSelect($cursor.currentTreeNode, [], $nodeId, $context, $extensions);
-  ^$cursor(select = $newSelect, currentTreeNode = $newSelect.data);
+  ^$cursor(select = $newSelect, currentTreeNode = []);
 }
 
 function meta::relational::functions::pureToSqlQuery::getAllExpressionSetImplementations(expression:FunctionExpression[1]):RootRelationalInstanceSetImplementation[*]
