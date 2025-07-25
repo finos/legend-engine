@@ -18,6 +18,10 @@ Class meta::pure::functions::relation::_Range extends Frame
 {
 }
 
+Class meta::pure::functions::relation::_RangeInterval extends Frame
+{
+}
+
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -61,4 +65,37 @@ function
     meta::pure::functions::relation::_range(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):_Range[1]
 {
   ^_Range(offsetFrom = $offsetFrom, offsetTo = $offsetTo);
+}
+
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    {
+         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
+    }
+    meta::pure::functions::relation::_range(offsetFrom:Integer[1], offsetFromDurationUnit:DurationUnit[1], offsetTo:Integer[1], offsetToDurationUnit:DurationUnit[1]):_RangeInterval[1]
+{
+  ^_RangeInterval(offsetFrom = ^FrameIntervalValue(value=$offsetFrom, durationUnit=$offsetFromDurationUnit), offsetTo = ^FrameIntervalValue(value=$offsetTo, durationUnit=$offsetToDurationUnit));
+}
+
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    {
+         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
+    }
+    meta::pure::functions::relation::_range(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:Integer[1], offsetToDurationUnit:DurationUnit[1]):_RangeInterval[1]
+{
+  ^_RangeInterval(offsetFrom = $offsetFrom, offsetTo = ^FrameIntervalValue(value=$offsetTo, durationUnit=$offsetToDurationUnit));
+}
+
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    {
+         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
+    }
+    meta::pure::functions::relation::_range(offsetFrom:Integer[1], offsetFromDurationUnit:DurationUnit[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):_RangeInterval[1]
+{
+  ^_RangeInterval(offsetFrom = ^FrameIntervalValue(value=$offsetFrom, durationUnit=$offsetFromDurationUnit), offsetTo = $offsetTo);
 }

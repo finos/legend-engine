@@ -75,6 +75,24 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    );
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processFrameValueForSnowflake(frameValue:meta::relational::metamodel::FrameValue[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   $frameValue->match([
+                        u: meta::relational::metamodel::UnboundedFrameValue[1] | 'UNBOUNDED ' + $u.direction->processFrameValueDirection(),
+                        c: meta::relational::metamodel::FrameCurrentRowValue[1] | 'CURRENT ROW',
+                        i: meta::relational::metamodel::FrameIntervalValue[1] | 'INTERVAL \'' + $i.value->processOperation($sgc) + ' ' + $i.durationUnit->toString() + '\' ' + $i.direction->processFrameValueDirection(),
+                        l: meta::relational::metamodel::FrameLiteralValue[1] | $l.value->processOperation($sgc) + ' ' + $l.direction->processFrameValueDirection()
+                      ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processWindowFrameForSnowflake(frame:meta::relational::metamodel::Frame[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let frameType = if($frame.frameType == meta::relational::metamodel::FrameType.ROWS, | 'ROWS BETWEEN', | 'RANGE BETWEEN');
+   let offsetFrom = $frame.offsetFrom->processFrameValueForSnowflake($sgc);
+   let offsetTo = $frame.offsetTo->processFrameValueForSnowflake($sgc);
+   $frameType + ' ' + $offsetFrom + ' AND ' + $offsetTo;
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processWindowColumnForSnowflake(w:WindowColumn[1], sgc:SqlGenerationContext[1]):String[1]
 {
    let partitionTranslation = if($w.window.partition->isNotEmpty(),
@@ -84,7 +102,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
         |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name, | ''))->joinStrings(', '),
         |'');
    let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
-        |$w.window.frame->toOne()->processWindowFrame($sgc),
+        |$w.window.frame->toOne()->processWindowFrameForSnowflake($sgc),
         |'');
    let withinGroupTranslation = if($w.func.name->equal('joinStrings') && $w.window.sortBy->isNotEmpty() && $w.window.frame->isNotEmpty() && $w.window.frame->toOne().offsetFrom->instanceOf(meta::relational::metamodel::UnboundedFrameValue) && $w.window.frame->toOne().offsetTo->instanceOf(meta::relational::metamodel::UnboundedFrameValue),
         | ' WITHIN GROUP(' + $orderByTranslation + ')',
