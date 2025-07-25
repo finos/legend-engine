@@ -99,7 +99,23 @@ Mapping simple::mapping::H2Mapping
   }
 )
 
+Mapping simple::relationFunctionMapping::H2Mapping
+(
+  *simple::model::Person: Relation 
+  {
+    ~func simple::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    firm: Binding simple::store::FirmBinding : FIRM_DETAILS
+  }
+)
+
 ###Pure
+function simple::personFunction():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{simple::store::H2DB.PERSON_SCHEMA.PERSON_TABLE}#->select(~[FIRSTNAME, LASTNAME, FIRM_DETAILS]);
+}
+
 function simple::singleSemiStructuredPropertyAccess(): TabularDataSet[1]
 {
     simple::model::Person.all()->project([

@@ -14,12 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.BindingTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
 
 public class RelationFunctionPropertyMapping extends PropertyMapping
 {
     public String column;
+    public BindingTransformer bindingTransformer;
     
     @Override
     public <T> T accept(PropertyMappingVisitor<T> visitor)

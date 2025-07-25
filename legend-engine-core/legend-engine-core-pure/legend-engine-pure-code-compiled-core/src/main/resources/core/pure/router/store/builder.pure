@@ -37,7 +37,7 @@ Class meta::pure::router::store::routing::Void extends ValueSpecification
 function meta::pure::router::store::routing::enrichStoreMappingRoutedValueSpecification(routedVs: StoreMappingRoutedValueSpecification[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):StoreMappingRoutedValueSpecification[1]
 {
    let routingStrategy = $routedVs.routingStrategy->cast(@StoreMappingRoutingStrategy);
-   let setsInScope = $routingStrategy.sets->map(s|^$s(sets = $s.sets->routeRelationFunctionSetImplementations($routedVs.mapping, $routedVs.runtime, $extensions)));
+   let setsInScope = $routingStrategy.sets;
    let newRoutedVs = ^$routedVs(routingStrategy = ^$routingStrategy(sets = $setsInScope));
    let mapping     = $newRoutedVs.mapping;
    let runtime     = $newRoutedVs.runtime;

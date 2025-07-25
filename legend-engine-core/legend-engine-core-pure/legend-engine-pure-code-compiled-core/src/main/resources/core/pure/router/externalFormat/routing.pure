@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::extension::*;
 import meta::external::format::shared::utils::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::externalFormat::metamodel::*;
@@ -30,13 +31,13 @@ import meta::core::runtime::*;
 function meta::pure::router::externalFormat::routing::getExternalFormatRoutingStrategy(binding:meta::external::format::shared::binding::Binding[1]):ExternalFormatRoutingStrategy[1]
 {
   ^ExternalFormatRoutingStrategy(binding         = $binding,
-                                 processClass    = meta::pure::router::externalFormat::routing::processClass_Class_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
+                                 processClass    = meta::pure::router::externalFormat::routing::processClass_Class_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__Extension_MANY__DebugContext_1__RoutingState_1_,
                                  processProperty = meta::pure::router::externalFormat::routing::processProperty_Property_1__FunctionExpression_1__RoutingState_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_,
                                  wrapValueSpec   = meta::pure::router::externalFormat::routing::wrapValueSpecification_ValueSpecification_1__RoutingStrategy_1__String_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExtendedRoutedValueSpecification_1_,
                                  toString        = {strategy:RoutingStrategy[1] | 'ExternalFormatRoutingStrategy'});
 }
 
-function <<access.private>> meta::pure::router::externalFormat::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
+function <<access.private>> meta::pure::router::externalFormat::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    print(if($debug.debug,|$debug.space+'~>C) (ExternalFormatRoutingStrategy) '+$state.value->toOne()->toString()+'\n',|''));
    $state;
