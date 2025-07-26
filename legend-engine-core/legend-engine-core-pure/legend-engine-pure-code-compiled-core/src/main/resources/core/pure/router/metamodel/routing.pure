@@ -37,10 +37,10 @@ import meta::pure::store::*;
 Class <<typemodifiers.abstract>> meta::pure::router::metamodel::RoutingStrategy
 {
    // Process Class
-   processClass : Function<{Class<Any>[1], InstanceValue[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], DebugContext[1] -> RoutingState[1]}>[1];
-   processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1])
+   processClass : Function<{Class<Any>[1], InstanceValue[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], Extension[*], DebugContext[1] -> RoutingState[1]}>[1];
+   processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1])
    {
-     $this.processClass->eval($c, $i, $state, $executionContext, $debug)
+     $this.processClass->eval($c, $i, $state, $executionContext, $extensions, $debug)
    }: RoutingState[1];
 
    processRelationStoreAccessor : Function<{RelationStoreAccessor<Any>[1], InstanceValue[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], DebugContext[1] -> RoutingState[1]}>[0..1];
