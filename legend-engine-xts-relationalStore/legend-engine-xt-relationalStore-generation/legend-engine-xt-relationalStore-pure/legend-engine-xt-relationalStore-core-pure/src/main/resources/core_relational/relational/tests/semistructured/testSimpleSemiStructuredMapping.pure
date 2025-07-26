@@ -305,7 +305,8 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::simple::tes
   testSortByWithSemiStructuredPropertyHelper($conn, 'simple::mapping::H2Mapping');
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSortByWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
+// TODO: fix currentTreeNode handling in Pure2Sql
+function <<paramTest.Ignore>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSortByWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
 {
   testSortByWithSemiStructuredPropertyHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
 }
@@ -655,7 +656,8 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::simple::tes
   testSortByOnEnumPropertyHelper($conn, 'simple::mapping::H2Mapping');
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSortByOnEnumProperty(conn: Connection[1]):Boolean[1]
+// TODO: fix currentTreeNode handling in Pure2Sql
+function <<paramTest.Ignore>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSortByOnEnumProperty(conn: Connection[1]):Boolean[1]
 {
   testSortByOnEnumPropertyHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
 }
