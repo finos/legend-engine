@@ -16,7 +16,7 @@ unquotedIdentifier:                         VALID_STRING
                                             | AND | OR
                                             | MILESTONING | BUSINESS_MILESTONING | BUSINESS_MILESTONING_FROM | BUSINESS_MILESTONING_THRU
                                             | OUT_IS_INCLUSIVE | THRU_IS_INCLUSIVE | INFINITY_DATE | BUS_SNAPSHOT_DATE
-                                            | PROCESSING_MILESTONING | PROCESSING_MILESTONING_IN | PROCESSING_MILESTONING_OUT
+                                            | PROCESSING_MILESTONING | PROCESSING_MILESTONING_IN | PROCESSING_MILESTONING_OUT | PROCESSING_SNAPSHOT_DATE
                                             | SCOPE | ENUMERATION_MAPPING | ASSOCIATION_MAPPING | OTHERWISE | INLINE | BINDING | TABULAR_FUNC
 ;
 
@@ -95,28 +95,33 @@ milestoningSpecification:                   (relationalIdentifier | COMMA | BOOL
 businessMilestoning:                        BUSINESS_MILESTONING
                                                 PAREN_OPEN
                                                     (
-                                                        businessMilestoningFrom
-                                                        | bussinessSnapshotDate
+                                                        businessMilestoningFromThru
+                                                        | businessSnapshotDate
                                                     )
                                                 PAREN_CLOSE
 ;
-businessMilestoningFrom:                    BUSINESS_MILESTONING_FROM EQUAL identifier COMMA
+businessMilestoningFromThru:                BUSINESS_MILESTONING_FROM EQUAL identifier COMMA
                                             BUSINESS_MILESTONING_THRU EQUAL identifier
                                             (COMMA THRU_IS_INCLUSIVE EQUAL BOOLEAN)?
                                             (COMMA INFINITY_DATE EQUAL DATE)?
 ;
-bussinessSnapshotDate:                      BUS_SNAPSHOT_DATE EQUAL identifier
+businessSnapshotDate:                       BUS_SNAPSHOT_DATE EQUAL identifier
 ;
 processingMilestoning:                      PROCESSING_MILESTONING
                                                 PAREN_OPEN
-                                                    PROCESSING_MILESTONING_IN EQUAL identifier COMMA
-                                                    PROCESSING_MILESTONING_OUT EQUAL identifier
-                                                    (COMMA OUT_IS_INCLUSIVE EQUAL BOOLEAN)?
-                                                    (COMMA INFINITY_DATE EQUAL DATE)?
+                                                    (
+                                                        processingMilestoningInOut
+                                                        | processingSnapshotDate
+                                                    )
                                                 PAREN_CLOSE
 ;
-
-
+processingMilestoningInOut:                 PROCESSING_MILESTONING_IN EQUAL identifier COMMA
+                                            PROCESSING_MILESTONING_OUT EQUAL identifier
+                                            (COMMA OUT_IS_INCLUSIVE EQUAL BOOLEAN)?
+                                            (COMMA INFINITY_DATE EQUAL DATE)?
+;
+processingSnapshotDate:                     PROCESSING_SNAPSHOT_DATE EQUAL identifier
+;
 // -------------------------------------- VIEW --------------------------------------
 
 view:                                       VIEW stereotypes? taggedValues?  relationalIdentifier

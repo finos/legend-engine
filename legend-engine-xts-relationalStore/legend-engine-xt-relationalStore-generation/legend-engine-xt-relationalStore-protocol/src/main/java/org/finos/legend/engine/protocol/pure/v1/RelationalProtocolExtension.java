@@ -79,6 +79,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingSnapshotMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.DatabaseInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.executionContext.RelationalExecutionContext;
@@ -190,11 +191,12 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtype(ExtractSubQueriesAsCTEsPostProcessor.class, "ExtractSubQueriesAsCTEsPostProcessor")
                         .build(),
 
-                //Post Processor Parameter
+                //Milestoning
                 ProtocolSubTypeInfo.newBuilder(Milestoning.class)
                         .withSubtype(BusinessMilestoning.class, "businessMilestoning")
                         .withSubtype(BusinessSnapshotMilestoning.class, "businessSnapshotMilestoning")
                         .withSubtype(ProcessingMilestoning.class, "processingMilestoning")
+                        .withSubtype(ProcessingSnapshotMilestoning.class, "processingSnapshotMilestoning")
                         .build()
         ));
     }

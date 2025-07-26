@@ -951,6 +951,13 @@ public class HelperRelationalBuilder
             purePm._outIsInclusive(processingMilestoning.outIsInclusive);
             return purePm;
         }
+        else if (milestoning instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingSnapshotMilestoning)
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingSnapshotMilestoning processingSnapshotMilestoning = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingSnapshotMilestoning) milestoning;
+            Root_meta_relational_metamodel_relation_ProcessingSnapshotMilestoning_Impl purePsm = new Root_meta_relational_metamodel_relation_ProcessingSnapshotMilestoning_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::relation::ProcessingSnapshotMilestoning"));
+            purePsm._snapshotDate(getMilestoneColumn(processingSnapshotMilestoning.snapshotDate, columns, milestoning.sourceInformation));
+            return purePsm;
+        }
         return null;
     }
 
