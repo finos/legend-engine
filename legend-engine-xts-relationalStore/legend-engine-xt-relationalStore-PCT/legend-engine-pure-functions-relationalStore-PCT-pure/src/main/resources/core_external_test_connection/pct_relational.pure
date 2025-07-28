@@ -768,7 +768,8 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
                                       ]
                                     )
                                 );
-                            )->joinStrings(',')
+              )->joinStrings(',')
+            )->joinStrings('\n');
 
   ^$state
   (
