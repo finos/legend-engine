@@ -699,7 +699,7 @@ function <<access.private>> meta::relational::milestoning::replaceThisMilestonin
 function <<access.private>> meta::relational::milestoning::isThisMilestonedGeneratedDateProperty(f:FunctionExpression[1], t:SingleDateTemporalStrategy[0..1]):Boolean[1]
 {
    if($f.parametersValues->size() > 0 ,| let lhs = $f.parametersValues->at(0)->byPassRouterInfo();
-                                         $f->isMilestonedGeneratedDateProperty() && $lhs->isThisVariableExpression();
+                                         $f->isMilestonedGeneratedDateProperty() && $lhs->isVariableExpression();
                                       ,| false)
 }
 
@@ -719,9 +719,9 @@ function <<access.private>> meta::relational::milestoning::isNonThisRootVariable
                                   v:ValueSpecification[1] | false])
 }
 
-function <<access.private>> meta::relational::milestoning::isThisVariableExpression(v:ValueSpecification[1]):Boolean[1]
+function <<access.private>> meta::relational::milestoning::isVariableExpression(v:ValueSpecification[1]):Boolean[1]
 {
-   $v->instanceOf(VariableExpression) && $v->cast(@VariableExpression).name == 'this'
+   $v->instanceOf(VariableExpression)
 }
 
 function meta::relational::milestoning::relationalElementIsMilestoned(relationalOperationElement : RelationalOperationElement[1]):Boolean[1]
