@@ -330,7 +330,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('castBoolean',               castExpression('boolean')),
     pair('convertVarchar128',         castExpression('varchar(128)')),
     pair('parseFloat',                castExpression('float')),
-    pair('parseDecimal',              castExpression('decimal(5,2)')),
+    pair('parseDecimal',              castExpression('decimal')),
     pair('parseInteger',              castExpression('integer')),
     pair('parseBoolean',              castExpression('boolean')),
     pair('toString',                  castExpression('varchar')),
