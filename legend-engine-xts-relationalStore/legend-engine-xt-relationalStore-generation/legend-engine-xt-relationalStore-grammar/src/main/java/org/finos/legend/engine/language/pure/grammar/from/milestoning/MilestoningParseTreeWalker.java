@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDate;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDateTime;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingSnapshotMilestoning;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.regex.Matcher;
@@ -35,10 +36,10 @@ public class MilestoningParseTreeWalker
 {
     public static Milestoning visitBusinessMilestoning(MilestoningSpecificationSourceCode code, RelationalParserGrammar.BusinessMilestoningContext milestoningCtx)
     {
-        if (milestoningCtx.businessMilestoningFrom() != null)
+        if (milestoningCtx.businessMilestoningFromThru() != null)
         {
             BusinessMilestoning milestoning = new BusinessMilestoning();
-            RelationalParserGrammar.BusinessMilestoningFromContext businessMilestoningCtx = milestoningCtx.businessMilestoningFrom();
+            RelationalParserGrammar.BusinessMilestoningFromThruContext businessMilestoningCtx = milestoningCtx.businessMilestoningFromThru();
 
             milestoning.sourceInformation = code.getWalkerSourceInformation().getSourceInformation(businessMilestoningCtx);
             milestoning.from = businessMilestoningCtx.identifier(0).getText();
@@ -50,9 +51,9 @@ public class MilestoningParseTreeWalker
             }
             return milestoning;
         }
-        else if (milestoningCtx.bussinessSnapshotDate() != null)
+        else if (milestoningCtx.businessSnapshotDate() != null)
         {
-            RelationalParserGrammar.BussinessSnapshotDateContext businessMilestoningCtx = milestoningCtx.bussinessSnapshotDate();
+            RelationalParserGrammar.BusinessSnapshotDateContext businessMilestoningCtx = milestoningCtx.businessSnapshotDate();
             BusinessSnapshotMilestoning milestoning = new BusinessSnapshotMilestoning();
             milestoning.sourceInformation = code.getWalkerSourceInformation().getSourceInformation(businessMilestoningCtx);
             milestoning.snapshotDate = PureGrammarParserUtility.fromIdentifier(businessMilestoningCtx.identifier());
@@ -63,16 +64,29 @@ public class MilestoningParseTreeWalker
 
     public static Milestoning visitProcessingMilestoning(MilestoningSpecificationSourceCode code, RelationalParserGrammar.ProcessingMilestoningContext milestoningCtx)
     {
-        ProcessingMilestoning milestoning = new ProcessingMilestoning();
-        milestoning.sourceInformation = code.getWalkerSourceInformation().getSourceInformation(milestoningCtx);
-        milestoning.in = milestoningCtx.identifier(0).getText();
-        milestoning.out = milestoningCtx.identifier(1).getText();
-        milestoning.outIsInclusive = milestoningCtx.OUT_IS_INCLUSIVE() != null && Boolean.parseBoolean(milestoningCtx.BOOLEAN().getText());
-        if (milestoningCtx.INFINITY_DATE() != null)
+        if (milestoningCtx.processingMilestoningInOut() != null)
         {
-            milestoning.infinityDate = visitDate(milestoningCtx.DATE().getText(), code.getWalkerSourceInformation().getSourceInformation(milestoningCtx.DATE().getSymbol()));
+            ProcessingMilestoning milestoning = new ProcessingMilestoning();
+            RelationalParserGrammar.ProcessingMilestoningInOutContext processingMilestoningCtx = milestoningCtx.processingMilestoningInOut();
+            milestoning.sourceInformation = code.getWalkerSourceInformation().getSourceInformation(milestoningCtx);
+            milestoning.in = processingMilestoningCtx.identifier(0).getText();
+            milestoning.out = processingMilestoningCtx.identifier(1).getText();
+            milestoning.outIsInclusive = processingMilestoningCtx.OUT_IS_INCLUSIVE() != null && Boolean.parseBoolean(processingMilestoningCtx.BOOLEAN().getText());
+            if (processingMilestoningCtx.INFINITY_DATE() != null)
+            {
+                milestoning.infinityDate = visitDate(processingMilestoningCtx.DATE().getText(), code.getWalkerSourceInformation().getSourceInformation(processingMilestoningCtx.DATE().getSymbol()));
+            }
+            return milestoning;
         }
-        return milestoning;
+        else if (milestoningCtx.processingSnapshotDate() != null)
+        {
+            ProcessingSnapshotMilestoning milestoning = new ProcessingSnapshotMilestoning();
+            RelationalParserGrammar.ProcessingSnapshotDateContext processingMilestoningCtx = milestoningCtx.processingSnapshotDate();
+            milestoning.sourceInformation = code.getWalkerSourceInformation().getSourceInformation(processingMilestoningCtx);
+            milestoning.snapshotDate = PureGrammarParserUtility.fromIdentifier(processingMilestoningCtx.identifier());
+            return milestoning;
+        }
+        throw new EngineException("Unsupported syntax", code.getWalkerSourceInformation().getSourceInformation(milestoningCtx), EngineErrorType.PARSER);
     }
 
     private static CDate visitDate(String val, SourceInformation sourceInformation)
