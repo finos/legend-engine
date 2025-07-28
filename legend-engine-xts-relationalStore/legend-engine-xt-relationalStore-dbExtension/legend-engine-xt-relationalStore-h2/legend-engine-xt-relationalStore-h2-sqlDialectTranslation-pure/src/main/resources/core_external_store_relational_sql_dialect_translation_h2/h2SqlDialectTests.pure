@@ -60,7 +60,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let state = testSqlDialectTranslationState();
   let config = testSqlDialectTranslationConfig(false);
 
-  let q1 = ^QuerySpecification(
+  let q1 = ^ExtendedQuerySpecification(
     select = ^Select(selectItems = [^SingleColumn(expression = ^ArithmeticExpression(left = literal(101), right = literal(102), type = ArithmeticType.ADD))])
   );
   assertEquals('SELECT 101 + 102', $dialect->executeNodeProcessor($q1, $state, $config));
