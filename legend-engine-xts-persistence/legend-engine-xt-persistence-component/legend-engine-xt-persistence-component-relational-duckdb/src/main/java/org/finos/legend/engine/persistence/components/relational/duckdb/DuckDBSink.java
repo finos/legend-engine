@@ -134,6 +134,7 @@ public class DuckDBSink extends AnsiSqlSink
         implicitDataTypeMapping.put(DataType.REAL, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT)));
         implicitDataTypeMapping.put(DataType.BIGINT, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT)));
         implicitDataTypeMapping.put(DataType.INTEGER, new HashSet<>(Arrays.asList(DataType.INT, DataType.TINYINT, DataType.SMALLINT)));
+        implicitDataTypeMapping.put(DataType.JSON, Collections.singleton(DataType.VARIANT));
         implicitDataTypeMapping.put(DataType.SMALLINT, Collections.singleton(DataType.TINYINT));
         implicitDataTypeMapping.put(DataType.VARCHAR, new HashSet<>(Arrays.asList(DataType.CHAR, DataType.STRING, DataType.TEXT)));
         implicitDataTypeMapping.put(DataType.TIMESTAMP, Collections.singleton(DataType.DATETIME));
