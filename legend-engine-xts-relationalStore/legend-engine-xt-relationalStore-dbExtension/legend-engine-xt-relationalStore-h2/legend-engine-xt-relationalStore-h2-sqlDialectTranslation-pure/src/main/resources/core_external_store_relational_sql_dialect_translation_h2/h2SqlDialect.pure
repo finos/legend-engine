@@ -261,7 +261,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     sortItemProcessor_default(),
     selectProcessorForH2(),
     withQueryProcessor_default(),
-    windowFrameProcessor_default()
+    windowFrameProcessorForH2()
   ]
 }
 
@@ -757,6 +757,47 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     v:VariablePlaceholder[1]| $sqlDialect->executeNodeProcessor($v, $state->increaseLevel(), $config),
     fmoh:FreeMarkerOperation[1]| $sqlDialect->executeNodeProcessor($fmoh, $state->increaseLevel(), $config)
   ])
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::windowFrameProcessorForH2(): NodeProcessor<meta::external::query::sql::metamodel::WindowFrame>[1]
+{
+  nodeProcessor(
+    meta::external::query::sql::metamodel::WindowFrame,
+    {sqlDialect, f, state, config |
+      let mode = if(
+        [
+          pair(|$f.mode == WindowFrameMode.RANGE, |'range'),
+          pair(|$f.mode == WindowFrameMode.ROWS,  |'rows')
+        ],
+        | fail('Unhandled WindowFrameMode - ' + $f.mode->toString()); '';
+      );
+      let between = if ($f.end->isEmpty(), | '', | $sqlDialect->keyword('between', $state, $config) + ' ');
+      let processFrameBound = {b: FrameBound[1] |
+        if(
+          [
+            pair(|$b.type == FrameBoundType.UNBOUNDED_PRECEDING, |$sqlDialect->keyword('unbounded preceding', $state, $config)),
+            pair(|$b.type == FrameBoundType.PRECEDING, |if($b.durationUnit->isEmpty(), |'', |$sqlDialect->keyword('interval', $state, $config) + ' \'') +
+                                                        $sqlDialect->executeNodeProcessor($b.value->toOne(), [], $state, $config) +
+                                                        if($b.durationUnit->isEmpty(), |'', |'\' ' + $sqlDialect->keyword($b.durationUnit->toOne().value, $state, $config)) +
+                                                        ' ' +
+                                                        $sqlDialect->keyword('preceding', $state, $config)),
+            pair(|$b.type == FrameBoundType.CURRENT_ROW, |$sqlDialect->keyword('current row', $state, $config)),
+            pair(|$b.type == FrameBoundType.UNBOUNDED_FOLLOWING, |$sqlDialect->keyword('unbounded following', $state, $config)),
+            pair(|$b.type == FrameBoundType.FOLLOWING, |if($b.durationUnit->isEmpty(), |'', |$sqlDialect->keyword('interval', $state, $config) + ' \'') +
+                                                        $sqlDialect->executeNodeProcessor($b.value->toOne(), [], $state, $config) +
+                                                        if($b.durationUnit->isEmpty(), |'', |'\' ' + $sqlDialect->keyword($b.durationUnit->toOne().value, $state, $config)) +
+                                                        ' ' +
+                                                        $sqlDialect->keyword('following', $state, $config))
+          ],
+          | fail('Unhandled FrameBoundType - ' + $b.type->toString()); '';
+        )
+      };
+      let start = $processFrameBound->eval($f.start);
+      let and = if ($f.end->isEmpty(), | '', | ' ' + $sqlDialect->keyword('and', $state, $config));
+      let end = if ($f.end->isEmpty(), | '', | ' ' + $processFrameBound->eval($f.end););
+      $sqlDialect->keyword($mode, $state, $config) + ' ' + $between + $start + $and + $end;
+    }
+  )
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::selectProcessorForH2(): NodeProcessor<Select>[1]

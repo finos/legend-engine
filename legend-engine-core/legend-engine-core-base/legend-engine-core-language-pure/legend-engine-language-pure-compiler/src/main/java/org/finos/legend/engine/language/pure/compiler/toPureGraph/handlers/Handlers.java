@@ -1070,10 +1070,19 @@ public class Handlers
         ));
 
         register(m(
-                h("meta::pure::functions::relation::_range_Number_1__Number_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::relation::_range_UnboundedFrameValue_1__Number_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue") && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::relation::_range_Number_1__UnboundedFrameValue_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::relation::_range_UnboundedFrameValue_1__UnboundedFrameValue_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue"))
+                        m(
+                                h("meta::pure::functions::relation::_range_Number_1__Number_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                                h("meta::pure::functions::relation::_range_UnboundedFrameValue_1__Number_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue") && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                                h("meta::pure::functions::relation::_range_Number_1__UnboundedFrameValue_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_Number"))),
+                                h("meta::pure::functions::relation::_range_UnboundedFrameValue_1__UnboundedFrameValue_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue"))
+                        ),
+                        m(
+                                h("meta::pure::functions::relation::_range_Integer_1__DurationUnit_1__UnboundedFrameValue_1___RangeInterval_1_", false, ps -> res("meta::pure::functions::relation::_RangeInterval", "one"), ps -> ps.size() == 3 && typeOne(ps.get(0), "Integer")),
+                                h("meta::pure::functions::relation::_range_UnboundedFrameValue_1__Integer_1__DurationUnit_1___RangeInterval_1_", false, ps -> res("meta::pure::functions::relation::_RangeInterval", "one"), ps -> ps.size() == 3)
+                        ),
+                        m(
+                                h("meta::pure::functions::relation::_range_Integer_1__DurationUnit_1__Integer_1__DurationUnit_1___RangeInterval_1_", false, ps -> res("meta::pure::functions::relation::_RangeInterval", "one"), ps -> ps.size() == 4)
+                        )
         ));
 
         register(m(
@@ -1086,9 +1095,12 @@ public class Handlers
                                 h("meta::pure::functions::relation::over_ColSpecArray_1__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
                                 h("meta::pure::functions::relation::over_ColSpec_1__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
                                 h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_MANY___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_SortInfo_1___RangeInterval_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> ps.size() == 2 && typeOne(ps.get(1), "meta::pure::functions::relation::_RangeInterval")),
                                 h("meta::pure::functions::relation::over_SortInfo_1___Range_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true)),
                         m(
+                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_1___RangeInterval_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> ps.size() == 3 && typeOne(ps.get(0), taxoMap.get("cov_relation_ColSpec")) && typeOne(ps.get(2), "meta::pure::functions::relation::_RangeInterval")),
                                 h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_1___Range_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_1___RangeInterval_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> ps.size() == 3 && typeOne(ps.get(0), taxoMap.get("cov_relation_ColSpecArray")) && typeOne(ps.get(2), "meta::pure::functions::relation::_RangeInterval")),
                                 h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_1___Range_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
                                 h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_MANY__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
                                 h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_MANY__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true))
@@ -2718,7 +2730,7 @@ public class Handlers
         map.put("cov_relation_FuncColSpec", Sets.mutable.with("FuncColSpec", "Nil"));
         map.put("cov_relation_JoinKind", Sets.mutable.with("JoinKind", "Nil"));
         map.put("cov_relation_SortInfo", Sets.mutable.with("SortInfo", "Nil"));
-        map.put("cov_relation_Frame", Sets.mutable.with("Frame", "_Range", "Rows", "Nil"));
+        map.put("cov_relation_Frame", Sets.mutable.with("Frame", "_Range", "_RangeInterval", "Rows", "Nil"));
         map.put("cov_collection_Pair", Sets.mutable.with("Pair", "PureFunctionToProcessFunctionPair", "PureFunctionToProcessFunctionPair", "PureFunctionToMongoDBFunctionPair", "PureFunctionToLambdaComparisonOperatorPair", "PureFunctionToServiceStoreFunctionPair", "OldAliasToNewAlias", "PureFunctionToRelationalFunctionPair", "PureFunctionTDSToRelationalFunctionPair", "Nil"));
         map.put("cov_mapping_Mapping", Sets.mutable.with("Mapping", "Nil"));
         map.put("cov_extension_Extension", Sets.mutable.with("Extension", "Nil"));
