@@ -643,8 +643,8 @@ function <<access.private>> meta::relational::milestoning::resolveMilestoningDat
                                                                                           a: Any[*]                | resolveMilestoningDateParams($temporalStrategy, $i.values->cast(@ValueSpecification), $currentMilestoningContext, $state, $vars, $context, $extensions)
                                                                                        ]),
                                                                  f: FunctionExpression[1] | let singleTemporalStrategy = $dp.first;
-                                                                                            let isThisMilestonedGeneratedDateProperty = $f->isThisMilestonedGeneratedDateProperty($singleTemporalStrategy);
-                                                                                            if($isThisMilestonedGeneratedDateProperty && $currentMilestoningContext->isNotEmpty(),| let tp = TemporalMilestoningContext.properties->filter(p|$p.name->toOne() == $f.func.name)->toOne();
+                                                                                            let isMilestonedGeneratedDateProperty = $f->isMilestonedGeneratedDateProperty($singleTemporalStrategy);
+                                                                                            if($isMilestonedGeneratedDateProperty && $currentMilestoningContext->isNotEmpty(),| let tp = TemporalMilestoningContext.properties->filter(p|$p.name->toOne() == $f.func.name)->toOne();
                                                                                                                                                                                     $tp->eval($currentMilestoningContext)->map(d|^DateWrapper(date=$d->cast(@RelationalOperationElement)));
                                                                                                                                                                                  ,|if($f->isNonThisRootVariableExpression(),| 
                                                                                                                                                                                           if($state.functionExpressionStack->last()->evaluateAndDeactivate().func->in([
@@ -691,13 +691,6 @@ function <<access.private>> meta::relational::milestoning::replaceThisMilestonin
             ])
 }
 
-function <<access.private>> meta::relational::milestoning::isThisMilestonedGeneratedDateProperty(f:FunctionExpression[1], t:SingleDateTemporalStrategy[0..1]):Boolean[1]
-{
-   if($f.parametersValues->size() > 0 ,| let lhs = $f.parametersValues->at(0)->byPassRouterInfo();
-                                         $f->isMilestonedGeneratedDateProperty() && $lhs->isThisVariableExpression();
-                                      ,| false)
-}
-
 function <<access.private>> meta::relational::milestoning::referencesVariableExpression(v:ValueSpecification[1]):Boolean[1]
 {
    $v->byPassRouterInfo()->match([f:FunctionExpression[1] | $f.parametersValues->fold({x, y| $x->referencesVariableExpression() || $y }, false),
@@ -710,13 +703,8 @@ function <<access.private>> meta::relational::milestoning::referencesVariableExp
 function <<access.private>> meta::relational::milestoning::isNonThisRootVariableExpression(v:ValueSpecification[1]):Boolean[1]
 {
    $v->byPassRouterInfo()->match([f:FunctionExpression[1] | if($f.parametersValues->isNotEmpty(),|$f.parametersValues->at(0)->isNonThisRootVariableExpression(),|false),
-                                  v:VariableExpression[1] | true && $v.name != 'this',
+                                  v:VariableExpression[1] | $v.name != 'this',
                                   v:ValueSpecification[1] | false])
-}
-
-function <<access.private>> meta::relational::milestoning::isThisVariableExpression(v:ValueSpecification[1]):Boolean[1]
-{
-   $v->instanceOf(VariableExpression) && $v->cast(@VariableExpression).name == 'this'
 }
 
 function meta::relational::milestoning::relationalElementIsMilestoned(relationalOperationElement : RelationalOperationElement[1]):Boolean[1]
