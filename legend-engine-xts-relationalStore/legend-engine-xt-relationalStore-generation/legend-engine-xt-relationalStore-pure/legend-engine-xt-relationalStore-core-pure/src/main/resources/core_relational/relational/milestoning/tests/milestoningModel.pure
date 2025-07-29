@@ -298,7 +298,7 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
    exchangeName : String[1];
    product : Product[1];
    biTemporalProduct : BiTemporalProduct[0..1];
-   derivedProperty(){$this.exchange($this.businessDate).name} : String[1];
+   exchangeName1(){$this.exchange($this.businessDate).name} : String[1];
 }
 
 Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductClassification_ExtendedPrimitives{
