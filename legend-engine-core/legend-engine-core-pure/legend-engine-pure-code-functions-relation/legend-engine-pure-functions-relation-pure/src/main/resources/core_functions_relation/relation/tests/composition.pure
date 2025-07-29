@@ -933,31 +933,31 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                   1, 2, A
                   2, 1, null
                   3, 3, C
-                  4, 4, null
+                  4, 4, V
                   5, 2, E
                   6, 1, F
                   7, 3, G
                   8, 1, null
                   9, 5, I
                   10, 0, J
-                #->extend(over(~grp), ~newCol:{p,w,r|$r.name->joinStrings('')})
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.name}:y|$y->joinStrings(':'))
                };
 
 
-    let res =  $f->eval($expr);
+    let res =  $f->eval($expr)->extend(~newColSorted:r|$r.newCol->toOne()->split(':')->sort()->joinStrings(''))->select(~[id, grp, name, newColSorted]);
 
     assertEquals( '#TDS\n'+
-                  '   id,grp,name,newCol\n'+
+                  '   id,grp,name,newColSorted\n'+
                   '   10,0,J,J\n'+
-                  '   2,1,null,J\n'+
-                  '   6,1,F,\n'+
-                  '   8,1,null,F\n'+
-                  '   1,2,A,J\n'+
-                  '   5,2,E,\n'+
-                  '   3,3,C,J\n'+
-                  '   7,3,G,\n'+
-                  '   4,4,null,J\n'+
-                  '   9,5,I,J\n'+
+                  '   2,1,null,Fnullnull\n'+
+                  '   6,1,F,Fnullnull\n'+
+                  '   8,1,null,Fnullnull\n'+
+                  '   1,2,A,AE\n'+
+                  '   5,2,E,AE\n'+
+                  '   3,3,C,CG\n'+
+                  '   7,3,G,CG\n'+
+                  '   4,4,V,V\n'+
+                  '   9,5,I,I\n'+
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
@@ -976,24 +976,23 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                   8, 1
                   9, 5
                   null, 0
-                #->extend(over(~grp), ~newCol:{p,w,r|$r.id->plus()})
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->plus())
                };
-
 
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
                   '   id,grp,newCol\n'+
-                  '   null,0,0\n'+
-                  '   8,1,0\n'+
-                  '   null,1,0\n'+
-                  '   null,1,0\n'+
-                  '   1,2,0\n'+
-                  '   5,2,0\n'+
-                  '   3,3,0\n'+
-                  '   7,3,0\n'+
-                  '   4,4,0\n'+
-                  '   9,5,0\n'+
+                  '   null,0,null\n'+
+                  '   8,1,8\n'+
+                  '   null,1,8\n'+
+                  '   null,1,8\n'+
+                  '   1,2,6\n'+
+                  '   5,2,6\n'+
+                  '   3,3,10\n'+
+                  '   7,3,10\n'+
+                  '   4,4,4\n'+
+                  '   9,5,9\n'+
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 

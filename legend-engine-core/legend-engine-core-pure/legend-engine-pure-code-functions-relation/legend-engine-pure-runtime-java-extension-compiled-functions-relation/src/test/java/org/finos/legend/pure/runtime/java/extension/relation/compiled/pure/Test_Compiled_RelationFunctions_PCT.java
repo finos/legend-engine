@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.code.core.RelationCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
+import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
@@ -30,7 +31,10 @@ public class Test_Compiled_RelationFunctions_PCT extends PCTReportConfiguration
     private static final ReportScope reportScope = RelationCodeRepositoryProvider.relationFunctions;
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "compiled";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.empty();
+    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            one("meta::pure::functions::relation::tests::composition::testExtendAddOnNull_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,grp,newCol\n   null,0,null\n   8,1,8\n   null,1,8\n   null,1,8\n   1,2,6\n   5,2,6\n   3,3,10\n   7,3,10\n   4,4,4\n   9,5,9\n#'\nactual:   '#TDS\n   id,grp,newCol\n   null,0,0\n   8,1,8\n   null,1,8\n   null,1,8\n   1,2,6\n   5,2,6\n   3,3,10\n   7,3,10\n   4,4,4\n   9,5,9\n#'\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,grp,name,newColSorted\n   10,0,J,J\n   2,1,null,Fnullnull\n   6,1,F,Fnullnull\n   8,1,null,Fnullnull\n   1,2,A,AE\n   5,2,E,AE\n   3,3,C,CG\n   7,3,G,CG\n   4,4,V,V\n   9,5,I,I\n#'\nactual:   '#TDS\n   id,grp,name,newColSorted\n   10,0,J,J\n   2,1,null,F\n   6,1,F,F\n   8,1,null,F\n   1,2,A,AE\n   5,2,E,AE\n   3,3,C,CG\n   7,3,G,CG\n   4,4,V,V\n   9,5,I,I\n#'\"", AdapterQualifier.needsInvestigation)
+            );
 
     public static Test suite()
     {
