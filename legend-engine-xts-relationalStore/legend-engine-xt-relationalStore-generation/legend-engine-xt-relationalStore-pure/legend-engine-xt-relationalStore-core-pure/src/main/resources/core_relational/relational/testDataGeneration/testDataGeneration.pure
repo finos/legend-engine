@@ -572,8 +572,9 @@ function <<access.protected>> meta::relational::testDataGeneration::generateRela
              $current->put($t.relation->cast(@NamedRelation)->toOne(), $currentColumns->concatenate($t.columns)->removeDuplicatesBy(x | $x.name)->list());,
            | let pkColumns = $t.relation->match([tab:Table[1]|$tab.primaryKey, view:View[1]|$view.primaryKey]);
              let nonNullableColumns = $t.relation.columns->cast(@Column)->filter(y|$y.nullable == false);
-             let temporalMilestoningColumns = $t.relation->match([t:Table[1]|$t.milestoning->filter(x|$x->instanceOf(TemporalMilestoning))->map(x|$x->meta::pure::milestoning::getAllTemporalColumns()), a:Any[1]|[]]);
+             let temporalMilestoningColumns = $t.relation->match([t:Table[1]|$t.milestoning->filter(x|$x->instanceOf(TemporalMilestoning))->map(x|$x->getMilestoningDateColumns()), a:Any[1]|[]]);
              $current->put($t.relation->cast(@NamedRelation)->toOne(), $pkColumns->concatenate($nonNullableColumns)->concatenate($temporalMilestoningColumns)->concatenate($t.columns)->removeDuplicatesBy(x | $x.name)->list());
+
         ),
       | $current
    );
@@ -764,7 +765,7 @@ function meta::relational::testDataGeneration::getRelationalCSVDataFromQuery(que
 
   let relationalCSVTables = $finalTableToColumnsMap->keyValues()->map(tableColumnsPair | let table = $tableColumnsPair.first;
                                                                                          let primaryKeys = $table.primaryKey->sortBy(pk | $pk.name);
-                                                                                         let milestoningColumns = $table->meta::relational::milestoning::getMilestoningDateColumns()->sortBy(c | $c.name);
+                                                                                         let milestoningColumns = $table.milestoning->map(m|$m->meta::relational::milestoning::getMilestoningDateColumns())->sortBy(c | $c.name);
                                                                                          let columns = $primaryKeys->concatenate($tableColumnsPair.second.values->sortBy(c | $c->cast(@Column).name))->concatenate($milestoningColumns)->removeDuplicates();
                                                                                        ^meta::relational::metamodel::data::RelationalCSVTable(schema = $table.schema.name, table = $table.name, values = $columns->map(c|$c->cast(@Column).name)->joinStrings(','));
                                                                               )->sortBy(t | $t.schema + $t.table);
@@ -1159,6 +1160,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                     filteringOperation = $viewQueryReprocessed.filteringOperation,
                                     groupBy = $viewQueryReprocessed.groupBy,
                                     havingOperation = $viewQueryReprocessed.havingOperation,
+                                    qualifyOperation = $viewQueryReprocessed.qualifyOperation,
                                     orderBy = $viewQueryReprocessed.orderBy,
                                     fromRow = $viewQueryReprocessed.fromRow,
                                     toRow = ^Literal(value=20)
@@ -1268,6 +1270,7 @@ function <<access.private>> meta::relational::testDataGeneration::executionPlan:
                                                          filteringOperation= $s.filteringOperation->map(f | $f->fixRelations($oldToNewPairs)),
                                                          groupBy = $s.groupBy->map(g | $g->fixRelations($oldToNewPairs)),
                                                          havingOperation = $s.havingOperation->map(h | $h->fixRelations($oldToNewPairs)),
+                                                         qualifyOperation = $s.qualifyOperation->map(q | $q->fixRelations($oldToNewPairs)),
                                                          orderBy = $s.orderBy->map(o | ^$o(column = $o.column->fixRelations($oldToNewPairs)))
                                                       );
                                           if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);,
@@ -1324,6 +1327,7 @@ function <<access.private>> meta::relational::testDataGeneration::executionPlan:
                                                          filteringOperation= $s.filteringOperation->map(f | $f->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()),
                                                          groupBy = $s.groupBy->map(g | $g->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()),
                                                          havingOperation = $s.havingOperation->map(h | $h->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()),
+                                                         qualifyOperation = $s.qualifyOperation->map(q | $q->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()),
                                                          orderBy = $s.orderBy->map(o | ^$o(column = $o.column->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()))
                                                       );
                                           if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);,

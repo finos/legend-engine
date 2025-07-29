@@ -299,6 +299,38 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     'meta::external::dataquality::tests::domain::DataQualityRuntime'
     )
 }
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_relationValidation_row_level_all_validations():Boolean[1]
+{
+  doRelationTestWithoutDQColumns(
+    '###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->toOne(), $x.LASTNAME->toOne()]->joinStrings())->from(meta::external::dataquality::tests::domain::DataQualityRuntime);' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'validFirstName\';' +
+    '             description: \'first name should not be empty\';' +
+    '             assertion: row2|$row2.FIRSTNAME->isNotEmpty();' +
+    '             type: ROW_LEVEL;' +
+    '          },' +
+    '          {' +
+    '             name: \'validLastName\';' +
+    '             description: \'last name should not be empty\';' +
+    '             assertion: row2|$row2.LASTNAME->isNotEmpty();' +
+    '             type: ROW_LEVEL;' +
+    '          }' +    
+    '         ];' +
+    '      }',
+    [],
+    {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->meta::pure::functions::multiplicity::toOne(), $x.LASTNAME->meta::pure::functions::multiplicity::toOne()]->joinStrings())
+                                                    ->filter(row2|$row2.LASTNAME->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::boolean::not())->concatenate(
+      #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->meta::pure::functions::multiplicity::toOne(), $x.LASTNAME->meta::pure::functions::multiplicity::toOne()]->joinStrings())
+                                                    ->filter(row2|$row2.FIRSTNAME->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::boolean::not()))
+                                                    },
+    'meta::external::dataquality::tests::domain::DataQualityRuntime'
+    )
+}
 // --------------------------------------   row level tests for backward compatibility end ------------------------------------------------------------------------------------------------
 
 
@@ -457,7 +489,12 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     '             name: \'nonEmptyDataset\';' +
     '             description: \'dataset should not be empty\';' +
     '             assertion: rel|$rel->meta::external::dataquality::assertRelationNotEmpty();' +
-    '          }' +
+    '          },' +
+    '          {' +
+    '             name: \'nameNotEmpty\';' +
+    '             description: \'dataset should have name\';' +
+    '             assertion: rel|$rel->meta::external::dataquality::assertRelationEmpty(~[FIRSTNAME,LASTNAME]);' +
+    '          }' +    
     '         ];' +
     '      }',
           'nonEmptyDataset',
@@ -492,6 +529,57 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
             ->meta::pure::functions::lang::eval(#>{meta::external::dataquality::tests::domain::db.personTable}#->filter(row|$row.AGE >= $age)->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME]));},
           'meta::external::dataquality::tests::domain::DataQualityRuntime'        
     );
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_relationValidation_all_validations():Boolean[1]
+{
+  doRelationTest(
+    '###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::external::dataquality::tests::domain::DataQualityRuntime);' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'notEmpty\';' +
+    '             description: \'data is not empty\';' +
+    '             assertion: rel|$rel->meta::external::dataquality::assertRelationNotEmpty();' +
+    '          },' +
+    '          {' +
+    '             name: \'invalidFirstName\';' +
+    '             description: \'first name is not valid\';' +
+    '             assertion: rel|$rel->filter(row|$row.FIRSTNAME == \'invalid\')->meta::external::dataquality::assertRelationEmpty(~[FIRSTNAME]);' +
+    '          },' +
+    '          {' +
+    '             name: \'invalidLastName\';' +
+    '             description: \'last name is not valid\';' +
+    '             assertion: rel|$rel->filter(row|$row.LASTNAME == \'invalid\')->meta::external::dataquality::assertRelationEmpty(~[FIRSTNAME,LASTNAME]);' +
+    '             type: AGGREGATE;' +
+    '          }' +        
+    '         ];' +
+    '      }',
+          [],
+          {|{rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
+                $rel->filter(row|$row.LASTNAME == 'invalid')
+                    ->select(~[FIRSTNAME,LASTNAME])
+                    ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.LASTNAME->isEmpty(), | '', |$row.LASTNAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
+                    ->extend(~DQ_DEFECT_ID: row | generateGuid())
+                    ->extend(~DQ_RULE_NAME: row | 'invalidLastName')}
+                ->meta::pure::functions::lang::eval(#>{meta::external::dataquality::tests::domain::db.personTable}#->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME]))->concatenate(
+            {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
+                $rel->filter(row|$row.FIRSTNAME == 'invalid')
+                    ->select(~[FIRSTNAME])
+                    ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
+                    ->extend(~DQ_DEFECT_ID: row | generateGuid())
+                    ->extend(~DQ_RULE_NAME: row | 'invalidFirstName')}
+                ->meta::pure::functions::lang::eval(#>{meta::external::dataquality::tests::domain::db.personTable}#->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME]))->concatenate(
+            {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
+                $rel->aggregate(~COUNT : x | 1 : y | $y->count())->filter(row|$row.COUNT == 0)
+                    ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.COUNT->isEmpty(), | '', |$row.COUNT->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
+                    ->extend(~DQ_DEFECT_ID: row | generateGuid())
+                    ->extend(~DQ_RULE_NAME: row | 'notEmpty')}
+                ->meta::pure::functions::lang::eval(#>{meta::external::dataquality::tests::domain::db.personTable}#->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME]))));},
+          'meta::external::dataquality::tests::domain::DataQualityRuntime'        
+    )
 }
 
 function <<test.Test>> meta::external::dataquality::tests::testFromFunctionListIsComplete():Boolean[1]

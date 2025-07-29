@@ -34,6 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingSnapshotMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.*;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
@@ -473,6 +474,11 @@ public class HelperRelationalGrammarComposer
                     (processingMilestoning.outIsInclusive != null && processingMilestoning.outIsInclusive ? ", OUT_IS_INCLUSIVE = true" : "") +
                     (processingMilestoning.infinityDate != null ? (", INFINITY_DATE = " + processingMilestoning.infinityDate.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context.toPureGrammarComposerContext()).build())) : "") +
                     ")";
+        }
+        else if (milestoning instanceof ProcessingSnapshotMilestoning)
+        {
+            ProcessingSnapshotMilestoning processingSnapshotMilestoning = (ProcessingSnapshotMilestoning) milestoning;
+            return getTabString(baseIndentation) + "processing(PROCESSING_SNAPSHOT_DATE = " + processingSnapshotMilestoning.snapshotDate + ")";
         }
         return null;
     }

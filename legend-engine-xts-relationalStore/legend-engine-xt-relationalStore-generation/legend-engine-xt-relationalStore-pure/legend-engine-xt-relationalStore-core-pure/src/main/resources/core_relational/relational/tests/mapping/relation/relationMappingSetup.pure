@@ -37,9 +37,164 @@ Database meta::relational::tests::mapping::relation::testDB
     GROUPNAME VARCHAR(30)
   )
 )
+
+###Relational
+Database meta::relational::tests::mapping::relation::MilestonedDB
+(
+  Table PERSON_TABLE_PROCESSING_SNAPSHOT
+  (
+    milestoning
+    (
+      processing(PROCESSING_SNAPSHOT_DATE = SNAPSHOTDATE)
+    )
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    SALARY INTEGER,
+    FIRMID INTEGER,
+    SNAPSHOTDATE DATE
+  )
+
+  Table PERSON_TABLE_BUSINESS_SNAPSHOT
+  (
+    milestoning
+    (
+      business(BUS_SNAPSHOT_DATE = SNAPSHOTDATE)
+    )
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    SALARY INTEGER,
+    FIRMID INTEGER,
+    SNAPSHOTDATE DATE
+  )
+
+  Table PERSON_TABLE_PROCESSING_TEMPORAL
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    SALARY INTEGER,
+    FIRMID INTEGER,
+    IN_Z DATE,
+    OUT_Z DATE
+  )
+
+  Table PERSON_TABLE_BUSINESS_TEMPORAL
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    SALARY INTEGER,
+    FIRMID INTEGER,
+    FROM_Z DATE,
+    THRU_Z DATE
+  )
+
+  Table PERSON_TABLE_BITEMPORAL
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z),
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    SALARY INTEGER,
+    FIRMID INTEGER,
+    IN_Z DATE,
+    OUT_Z DATE,
+    FROM_Z DATE,
+    THRU_Z DATE
+  )
+
+  Table FIRM_TABLE_PROCESSING_SNAPSHOT
+  (
+    milestoning
+    (
+      processing(PROCESSING_SNAPSHOT_DATE = SNAPSHOTDATE)
+    )
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100),
+    SNAPSHOTDATE DATE
+  )
+
+  Table FIRM_TABLE_BUSINESS_SNAPSHOT
+  (
+    milestoning
+    (
+      business(BUS_SNAPSHOT_DATE = SNAPSHOTDATE)
+    )
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100),
+    SNAPSHOTDATE DATE
+  )
+
+  Table FIRM_TABLE_PROCESSING_TEMPORAL
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100),
+    IN_Z DATE,
+    OUT_Z DATE
+  )
+
+  Table FIRM_TABLE_BUSINESS_TEMPORAL
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100),
+    FROM_Z DATE,
+    THRU_Z DATE
+  )
+
+  Table FIRM_TABLE_BITEMPORAL
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z),
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100),
+    IN_Z DATE,
+    OUT_Z DATE,
+    FROM_Z DATE,
+    THRU_Z DATE,
+    SNAPSHOTDATE DATE
+  )
+)
  
 ###Pure
 Class meta::relational::tests::mapping::relation::Person
+{
+  firstName: String[1];
+  age: Integer[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::relation::ProcessingTemporalPerson
+{
+  firstName: String[1];
+  age: Integer[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::BusinessTemporalPerson
+{
+  firstName: String[1];
+  age: Integer[1];
+}
+
+Class <<temporal.bitemporal>> meta::relational::tests::mapping::relation::BiTemporalPerson
 {
   firstName: String[1];
   age: Integer[1];
@@ -56,7 +211,28 @@ Class meta::relational::tests::mapping::relation::ExtendedPerson extends meta::r
   groupName: String[1];
 }
 
+Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::GroupByClass
+{
+  firmId: Integer[1];
+  sum: Integer[1];
+}
+
 Class meta::relational::tests::mapping::relation::Firm
+{
+  legalName: String[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::relation::ProcessingTemporalFirm
+{
+  legalName: String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::BusinessTemporalFirm
+{
+  legalName: String[1];
+}
+
+Class <<temporal.bitemporal>> meta::relational::tests::mapping::relation::BiTemporalFirm
 {
   legalName: String[1];
 }
@@ -67,9 +243,33 @@ Association meta::relational::tests::mapping::relation::Person_Firm
   firm: meta::relational::tests::mapping::relation::Firm[1];
 }
 
+Association meta::relational::tests::mapping::relation::ProcessingTemporalPerson_ProcessingTemporalFirm
+{
+  ptEmployees: meta::relational::tests::mapping::relation::ProcessingTemporalPerson[*];
+  ptFirm: meta::relational::tests::mapping::relation::ProcessingTemporalFirm[1];
+}
+
+Association meta::relational::tests::mapping::relation::BusinessTemporalPerson_BusinessTemporalFirm
+{
+  biztEmployees: meta::relational::tests::mapping::relation::BusinessTemporalPerson[*];
+  biztFirm: meta::relational::tests::mapping::relation::BusinessTemporalFirm[1];
+}
+
+Association meta::relational::tests::mapping::relation::BiTemporalPerson_BiTemporalFirm
+{
+  btEmployees: meta::relational::tests::mapping::relation::BiTemporalPerson[*];
+  btFirm: meta::relational::tests::mapping::relation::BiTemporalFirm[1];
+}
+
+Association meta::relational::tests::mapping::relation::BusinessTemporalPerson_ProcessingTemporalFirm
+{
+  btEmployees: meta::relational::tests::mapping::relation::BusinessTemporalPerson[*];
+  ptFirm: meta::relational::tests::mapping::relation::BusinessTemporalFirm[1];
+}
+
 ###Mapping
 import meta::relational::tests::mapping::relation::*;
-Mapping meta::relational::tests::mapping::relation::simpleMapping
+Mapping meta::relational::tests::mapping::relation::SimpleMapping
 (
   *Person[person]: Relation
   {
@@ -93,7 +293,7 @@ Mapping meta::relational::tests::mapping::relation::simpleMapping
   }
 )
 
-Mapping meta::relational::tests::mapping::relation::mixedMapping
+Mapping meta::relational::tests::mapping::relation::MixedMapping
 (
   *Person[person]: Relation
   {
@@ -123,15 +323,147 @@ Mapping meta::relational::tests::mapping::relation::mixedMapping
   }
 )
 
-Mapping meta::relational::tests::mapping::relation::complexMapping
+Mapping meta::relational::tests::mapping::relation::WindowColumnMapping
 (
   *ExtendedPerson[person]: Relation
   {
-    ~func meta::relational::tests::mapping::relation::complexPersonFunction__Relation_1_
+    ~func meta::relational::tests::mapping::relation::personFunctionWithJoinAndWindowColumn__Relation_1_
     firstName: 'FIRST NAME',
     groupName: GROUPNAME,
     age: AGE,
     rank: RANK
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::GroupByMapping
+(
+  *GroupByClass: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithGroupBy__Relation_1_
+    firmId: FIRMID,
+    sum: SUM
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::SnapshotMilestonedMapping
+(
+  *ProcessingTemporalPerson[ptPerson]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithProcessingSnapshotMilestoning():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *BusinessTemporalPerson[biztPerson]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithBusinessSnapshotMilestoning():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *BiTemporalPerson[btPerson]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithBiTemporalMilestoning():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *ProcessingTemporalFirm[ptFirm]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::firmFunctionWithProcessingSnapshotMilestoning():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  *BusinessTemporalFirm[biztFirm]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::firmFunctionWithBusinessSnapshotMilestoning():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  ProcessingTemporalPerson_ProcessingTemporalFirm: XStore
+  {
+    ptEmployees[ptFirm, ptPerson]: $this.id == $that.firmId,
+    ptFirm[ptPerson, ptFirm]: $this.firmId == $that.id
+  }
+
+  BusinessTemporalPerson_BusinessTemporalFirm: XStore
+  {
+    biztEmployees[biztFirm, biztPerson]: $this.id == $that.firmId,
+    biztFirm[biztPerson, biztFirm]: $this.firmId == $that.id
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::TemporalMilestonedMapping
+(
+  *ProcessingTemporalPerson[ptPerson]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithProcessingTemporalMilestoning():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *BusinessTemporalPerson[biztPerson]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithBusinessTemporalMilestoning():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *BiTemporalPerson[btPerson]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithBiTemporalMilestoning():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *ProcessingTemporalFirm[ptFirm]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::firmFunctionWithProcessingTemporalMilestoning():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  *BusinessTemporalFirm[biztFirm]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::firmFunctionWithBusinessTemporalMilestoning():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  *BiTemporalFirm[btFirm]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::firmFunctionWithBiTemporalMilestoning():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  ProcessingTemporalPerson_ProcessingTemporalFirm: XStore
+  {
+    ptEmployees[ptFirm, ptPerson]: $this.id == $that.firmId,
+    ptFirm[ptPerson, ptFirm]: $this.firmId == $that.id
+  }
+
+  BusinessTemporalPerson_BusinessTemporalFirm: XStore
+  {
+    biztEmployees[biztFirm, biztPerson]: $this.id == $that.firmId,
+    biztFirm[biztPerson, biztFirm]: $this.firmId == $that.id
+  }
+
+  BiTemporalPerson_BiTemporalFirm: XStore
+  {
+    btEmployees[btFirm, btPerson]: $this.id == $that.firmId,
+    btFirm[btPerson, btFirm]: $this.firmId == $that.id
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::MultipleMilestonedTablesMapping
+(
+  *ProcessingTemporalPerson: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithMultipleMilestonedTables():Relation<Any>[1]
+    firstName: FIRSTNAME
   }
 )
 
@@ -171,9 +503,204 @@ function meta::relational::tests::mapping::relation::firmFunction(): Relation<An
     ->select(~[ID, legalName])
 }
 
-function meta::relational::tests::mapping::relation::complexPersonFunction(): Relation<Any>[1]
+function meta::relational::tests::mapping::relation::personFunctionWithJoinAndWindowColumn(): Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
     ->join(#>{meta::relational::tests::mapping::relation::testDB.groupMembershipTable}#, JoinKind.INNER, {x,y| $x.ID == $y.PERSONID})
     ->extend(over(~GROUPID, ~SALARY->ascending()), ~[RANK:{p,w,r| $p->rank($w, $r)}]);
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithGroupBy(): Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->groupBy(~FIRMID, ~SUM:x|$x.AGE:y|$y->sum())
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithProcessingSnapshotMilestoning():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.PERSON_TABLE_PROCESSING_SNAPSHOT}#->select(~[FIRSTNAME, SALARY, FIRMID]);
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithProcessingTemporalMilestoning():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.PERSON_TABLE_PROCESSING_TEMPORAL}#->select(~[FIRSTNAME, SALARY, FIRMID]);
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithBusinessSnapshotMilestoning():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.PERSON_TABLE_BUSINESS_SNAPSHOT}#->select(~[FIRSTNAME, SALARY, FIRMID]);
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithBusinessTemporalMilestoning():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.PERSON_TABLE_BUSINESS_TEMPORAL}#->select(~[FIRSTNAME, SALARY, FIRMID]);
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithBiTemporalMilestoning():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.PERSON_TABLE_BITEMPORAL}#->select(~[FIRSTNAME, SALARY, FIRMID]);
+}
+
+function meta::relational::tests::mapping::relation::firmFunctionWithProcessingSnapshotMilestoning():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.FIRM_TABLE_PROCESSING_SNAPSHOT}#->select(~[ID, LEGALNAME]);
+}
+
+function meta::relational::tests::mapping::relation::firmFunctionWithProcessingTemporalMilestoning():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.FIRM_TABLE_PROCESSING_TEMPORAL}#->select(~[ID, LEGALNAME]);
+}
+
+function meta::relational::tests::mapping::relation::firmFunctionWithBusinessSnapshotMilestoning():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.FIRM_TABLE_BUSINESS_SNAPSHOT}#->select(~[ID, LEGALNAME]);
+}
+
+function meta::relational::tests::mapping::relation::firmFunctionWithBusinessTemporalMilestoning():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.FIRM_TABLE_BUSINESS_TEMPORAL}#->select(~[ID, LEGALNAME]);
+}
+
+function meta::relational::tests::mapping::relation::firmFunctionWithBiTemporalMilestoning():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.FIRM_TABLE_BITEMPORAL}#->select(~[ID, LEGALNAME]);
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithMultipleMilestonedTables():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::MilestonedDB.PERSON_TABLE_PROCESSING_TEMPORAL}#->select(~[FIRSTNAME, SALARY, FIRMID])->join(
+    #>{meta::relational::tests::mapping::relation::MilestonedDB.FIRM_TABLE_PROCESSING_TEMPORAL}#->select(~[ID, LEGALNAME]),
+    JoinKind.INNER, 
+    {x,y| $x.FIRMID == $y.ID}
+  );
+}
+
+function <<meta::pure::profiles::test.BeforePackage>> meta::relational::tests::mapping::relation::setUp():Boolean[1]
+{
+  createTablesAndFillDb();
+}
+
+function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boolean[1]
+{
+  let connection = meta::external::store::relational::tests::testRuntime(testDB).connectionByElement(testDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+  
+  executeInDb('Drop table if exists PersonTable;', $connection);
+  executeInDb('Create Table PersonTable(id INT, "FIRST NAME" VARCHAR(200), age INT, firmId INT, birthdate DATE, salary DOUBLE, isMale BIT);', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (1, \'Peter\',   23,  1, \'2000-11-01\', 14.34, 1);', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (2, \'John\',    30,  1, \'1994-11-01\', 72.40, 1);', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (3, \'Jane\',    23,  2, \'2000-11-01\', 48.00, 0);', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (4, \'Anthony\', 19,  3, \'2005-11-01\', 64.90, 1);', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (5, \'Fabrice\', 45,  4, \'1979-11-01\', 19.29, 1);', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (6, \'Oliver\',  26,  4, \'1998-11-01\', 42.34, 1);', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (7, \'David\',   52,  5, \'1972-11-01\', 88.88, 1);', $connection);
+
+  executeInDb('Drop table if exists FirmTable;', $connection);
+  executeInDb('Create Table FirmTable(id INT, legalName VARCHAR(200), addressId INT, ceoId INT);', $connection);
+  executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (1, \'Firm X\', 8, 1);', $connection);
+  executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (2, \'Firm A\', 9, 5);', $connection);
+  executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (3, \'Firm B\', 10, 3);', $connection);
+  executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (4, \'Firm C\', 11, 7);', $connection);
+  executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (5, \'Firm D\', 11, 2);', $connection);
+
+  executeInDb('Drop table if exists GroupMembershipTable;', $connection);
+  executeInDb('Create Table GroupMembershipTable(groupid INT, personid INT, groupname VARCHAR(30));', $connection);
+  executeInDb('insert into GroupMembershipTable (groupid, personid, groupname) values (1, 1, \'Group A\');', $connection);
+  executeInDb('insert into GroupMembershipTable (groupid, personid, groupname) values (1, 2, \'Group A\');', $connection);
+  executeInDb('insert into GroupMembershipTable (groupid, personid, groupname) values (2, 3, \'Group B\');', $connection);
+  executeInDb('insert into GroupMembershipTable (groupid, personid, groupname) values (3, 4, \'Group C\');', $connection);
+  executeInDb('insert into GroupMembershipTable (groupid, personid, groupname) values (3, 5, \'Group C\');', $connection);
+  executeInDb('insert into GroupMembershipTable (groupid, personid, groupname) values (3, 6, \'Group C\');', $connection);
+  executeInDb('insert into GroupMembershipTable (groupid, personid, groupname) values (4, 7, \'Group D\');', $connection);
+
+  executeInDb('Drop table if exists PERSON_TABLE_PROCESSING_SNAPSHOT;', $connection);
+  executeInDb('Create Table PERSON_TABLE_PROCESSING_SNAPSHOT(ID INT, FIRSTNAME VARCHAR(200), SALARY INT, FIRMID INT, SNAPSHOTDATE DATE);', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (1, \'Peter\',   23,  1, \'2025-01-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (2, \'John\',    30,  1, \'2024-11-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (3, \'Jane\',    23,  2, \'2024-10-15\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (4, \'Anthony\', 19,  3, \'2025-01-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (5, \'Fabrice\', 45,  4, \'2023-11-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (6, \'Oliver\',  26,  4, \'2024-01-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (7, \'David\',   52,  5, \'2025-01-01\');', $connection);
+
+  executeInDb('Drop table if exists PERSON_TABLE_BUSINESS_SNAPSHOT;', $connection);
+  executeInDb('Create Table PERSON_TABLE_BUSINESS_SNAPSHOT(ID INT, FIRSTNAME VARCHAR(200), SALARY INT, FIRMID INT, SNAPSHOTDATE DATE);', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (1, \'Peter\',   23,  1, \'2025-01-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (2, \'John\',    30,  1, \'2024-11-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (3, \'Jane\',    23,  2, \'2024-10-15\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (4, \'Anthony\', 19,  3, \'2025-01-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (5, \'Fabrice\', 45,  4, \'2023-11-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (6, \'Oliver\',  26,  4, \'2024-01-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_SNAPSHOT(ID, FIRSTNAME, SALARY, FIRMID, SNAPSHOTDATE) values (7, \'David\',   52,  5, \'2025-01-01\');', $connection);
+  
+  executeInDb('Drop table if exists FIRM_TABLE_PROCESSING_SNAPSHOT;', $connection);
+  executeInDb('Create Table FIRM_TABLE_PROCESSING_SNAPSHOT(ID INT, LEGALNAME VARCHAR(200), SNAPSHOTDATE DATE);', $connection);
+  executeInDb('insert into FIRM_TABLE_PROCESSING_SNAPSHOT(ID, LEGALNAME, SNAPSHOTDATE) values (1, \'Firm X\', \'2025-01-01\');', $connection);
+  executeInDb('insert into FIRM_TABLE_PROCESSING_SNAPSHOT(ID, LEGALNAME, SNAPSHOTDATE) values (2, \'Firm A\', \'2024-11-01\');', $connection);
+  executeInDb('insert into FIRM_TABLE_PROCESSING_SNAPSHOT(ID, LEGALNAME, SNAPSHOTDATE) values (3, \'Firm B\', \'2024-11-01\');', $connection);
+  executeInDb('insert into FIRM_TABLE_PROCESSING_SNAPSHOT(ID, LEGALNAME, SNAPSHOTDATE) values (4, \'Firm C\', \'2025-01-01\');', $connection);
+  executeInDb('insert into FIRM_TABLE_PROCESSING_SNAPSHOT(ID, LEGALNAME, SNAPSHOTDATE) values (5, \'Firm D\', \'2025-01-01\');', $connection);
+
+  executeInDb('Drop table if exists FIRM_TABLE_BUSINESS_SNAPSHOT;', $connection);
+  executeInDb('Create Table FIRM_TABLE_BUSINESS_SNAPSHOT(ID INT, LEGALNAME VARCHAR(200), SNAPSHOTDATE DATE);', $connection);
+  executeInDb('insert into FIRM_TABLE_BUSINESS_SNAPSHOT(ID, LEGALNAME, SNAPSHOTDATE) values (1, \'Firm X\', \'2025-01-01\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BUSINESS_SNAPSHOT(ID, LEGALNAME, SNAPSHOTDATE) values (2, \'Firm A\', \'2024-11-01\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BUSINESS_SNAPSHOT(ID, LEGALNAME, SNAPSHOTDATE) values (3, \'Firm B\', \'2024-11-01\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BUSINESS_SNAPSHOT(ID, LEGALNAME, SNAPSHOTDATE) values (4, \'Firm C\', \'2025-11-01\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BUSINESS_SNAPSHOT(ID, LEGALNAME, SNAPSHOTDATE) values (5, \'Firm D\', \'2025-01-01\');', $connection);
+
+  executeInDb('Drop table if exists PERSON_TABLE_PROCESSING_TEMPORAL;', $connection);
+  executeInDb('Create Table PERSON_TABLE_PROCESSING_TEMPORAL(ID INT, FIRSTNAME VARCHAR(200), SALARY INT, FIRMID INT, IN_Z DATE, OUT_Z DATE);', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z) values (1, \'Peter\',   23,  1, \'2024-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z) values (2, \'John\',    30,  1, \'2025-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z) values (3, \'Jane\',    23,  2, \'2024-11-01\', \'2025-01-02\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z) values (4, \'Anthony\', 19,  3, \'2025-01-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z) values (5, \'Fabrice\', 45,  4, \'2024-11-01\', \'2025-01-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z) values (6, \'Oliver\',  26,  4, \'2024-11-01\', \'2024-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_PROCESSING_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z) values (7, \'David\',   52,  5, \'2023-11-01\', \'2024-01-01\');', $connection);
+
+  executeInDb('Drop table if exists PERSON_TABLE_BUSINESS_TEMPORAL;', $connection);
+  executeInDb('Create Table PERSON_TABLE_BUSINESS_TEMPORAL(ID INT, FIRSTNAME VARCHAR(200), SALARY INT, FIRMID INT, FROM_Z DATE, THRU_Z DATE);', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, FROM_Z, THRU_Z) values (1, \'Peter\',   23,  1, \'2024-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, FROM_Z, THRU_Z) values (2, \'John\',    30,  1, \'2025-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, FROM_Z, THRU_Z) values (3, \'Jane\',    23,  2, \'2024-11-01\', \'2025-01-02\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, FROM_Z, THRU_Z) values (4, \'Anthony\', 19,  3, \'2025-01-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, FROM_Z, THRU_Z) values (5, \'Fabrice\', 45,  4, \'2024-11-01\', \'2025-01-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, FROM_Z, THRU_Z) values (6, \'Oliver\',  26,  4, \'2024-11-01\', \'2024-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BUSINESS_TEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, FROM_Z, THRU_Z) values (7, \'David\',   52,  5, \'2023-11-01\', \'2024-01-01\');', $connection);
+  
+  executeInDb('Drop table if exists FIRM_TABLE_PROCESSING_TEMPORAL;', $connection);
+  executeInDb('Create Table FIRM_TABLE_PROCESSING_TEMPORAL(ID INT, LEGALNAME VARCHAR(200), IN_Z DATE, OUT_Z DATE);', $connection);
+  executeInDb('insert into FIRM_TABLE_PROCESSING_TEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z) values (1, \'Firm X\', \'2024-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into FIRM_TABLE_PROCESSING_TEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z) values (2, \'Firm A\', \'2025-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into FIRM_TABLE_PROCESSING_TEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z) values (3, \'Firm B\', \'2024-11-01\', \'2025-01-01\');', $connection);
+  executeInDb('insert into FIRM_TABLE_PROCESSING_TEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z) values (4, \'Firm C\', \'2024-11-01\', \'2024-12-31\');', $connection);
+  executeInDb('insert into FIRM_TABLE_PROCESSING_TEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z) values (5, \'Firm D\', \'2024-11-01\', \'2025-01-01\');', $connection);
+
+  executeInDb('Drop table if exists FIRM_TABLE_BUSINESS_TEMPORAL;', $connection);
+  executeInDb('Create Table FIRM_TABLE_BUSINESS_TEMPORAL(ID INT, LEGALNAME VARCHAR(200), FROM_Z DATE, THRU_Z DATE);', $connection);
+  executeInDb('insert into FIRM_TABLE_BUSINESS_TEMPORAL(ID, LEGALNAME, FROM_Z, THRU_Z) values (1, \'Firm X\', \'2024-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BUSINESS_TEMPORAL(ID, LEGALNAME, FROM_Z, THRU_Z) values (2, \'Firm A\', \'2025-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BUSINESS_TEMPORAL(ID, LEGALNAME, FROM_Z, THRU_Z) values (3, \'Firm B\', \'2024-11-01\', \'2025-01-01\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BUSINESS_TEMPORAL(ID, LEGALNAME, FROM_Z, THRU_Z) values (4, \'Firm C\', \'2024-11-01\', \'2024-12-31\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BUSINESS_TEMPORAL(ID, LEGALNAME, FROM_Z, THRU_Z) values (5, \'Firm D\', \'2024-11-01\', \'2025-01-01\');', $connection);
+
+  executeInDb('Drop table if exists PERSON_TABLE_BITEMPORAL;', $connection);
+  executeInDb('Create Table PERSON_TABLE_BITEMPORAL(ID INT, FIRSTNAME VARCHAR(200), SALARY INT, FIRMID INT, IN_Z DATE, OUT_Z DATE, FROM_Z DATE, THRU_Z DATE);', $connection);
+  executeInDb('insert into PERSON_TABLE_BITEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (1, \'Peter\',   23,  1, \'2024-11-01\', \'9999-12-31\', \'2024-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BITEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (2, \'John\',    30,  1, \'2025-11-01\', \'9999-12-31\', \'2025-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BITEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (3, \'Jane\',    23,  2, \'2024-11-01\', \'2025-01-02\', \'2024-11-01\', \'2025-01-02\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BITEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (4, \'Anthony\', 19,  3, \'2025-01-01\', \'9999-12-31\', \'2025-01-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BITEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (5, \'Fabrice\', 45,  4, \'2024-11-01\', \'2025-01-01\', \'2024-11-01\', \'2025-01-01\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BITEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (6, \'Oliver\',  26,  4, \'2024-11-01\', \'2024-12-31\', \'2024-11-01\', \'2024-12-31\');', $connection);
+  executeInDb('insert into PERSON_TABLE_BITEMPORAL(ID, FIRSTNAME, SALARY, FIRMID, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (7, \'David\',   52,  5, \'2023-11-01\', \'2024-01-01\', \'2023-11-01\', \'2024-01-01\');', $connection);
+  
+  executeInDb('Drop table if exists FIRM_TABLE_BITEMPORAL;', $connection);
+  executeInDb('Create Table FIRM_TABLE_BITEMPORAL(ID INT, LEGALNAME VARCHAR(200), IN_Z DATE, OUT_Z DATE, FROM_Z DATE, THRU_Z DATE);', $connection);
+  executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (1, \'Firm X\', \'2024-11-01\', \'9999-12-31\', \'2024-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (2, \'Firm A\', \'2025-11-01\', \'9999-12-31\', \'2025-11-01\', \'9999-12-31\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (3, \'Firm B\', \'2024-11-01\', \'2025-01-01\', \'2024-11-01\', \'2025-01-01\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (4, \'Firm C\', \'2024-11-01\', \'2024-12-31\', \'2024-11-01\', \'2024-12-31\');', $connection);
+  executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (5, \'Firm D\', \'2024-11-01\', \'2025-01-01\', \'2024-11-01\', \'2025-01-01\');', $connection);
+
+  true;
 }
