@@ -2322,7 +2322,8 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                          leftSideOfFilter = if($firstSel.leftSideOfFilter->isEmpty(),|[],|$newRoot),
                          filteringOperation = [],
                          havingOperation = [],
-                         groupBy = []
+                         groupBy = [],
+                         qualifyOperation = []
                    ),
          currentTreeNode = $newRoot
        );,
@@ -3204,7 +3205,10 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(
                               );
    let newPath = pair($newColumnName, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));
 
-   ^$mainSelect(columns = $mainSelect.columns->concatenate($windowColumn), paths +=$newPath)->isolateSubSelectIfNotLastOperation($operation, $f, $state.functionExpressionStack, $extensions);
+   if ($f->cast(@SimpleFunctionExpression).func == meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_,
+    | ^$operation(select = ^$mainSelect(columns = $mainSelect.columns->concatenate($windowColumn), paths +=$newPath)),
+    | ^$mainSelect(columns = $mainSelect.columns->concatenate($windowColumn), paths +=$newPath)->isolateSubSelectIfNotLastOperation($operation, $f, $state.functionExpressionStack, $extensions);
+  );
 }
 
 function meta::relational::functions::pureToSqlQuery::extractName(o:Any[0..1]):String[1]
@@ -3256,9 +3260,12 @@ function meta::relational::functions::pureToSqlQuery::processTdsFilter(f:Functio
                                                            let newSelect = nestFilters($select,$mainQueryFilter,$filter);
                                                            ^$newSelect(columns=$finalColumns, filteringOperation=$select.filteringOperation);
                                  };
-        let placeRootFilters = {select: SelectSQLQuery[1]|let havingFilter=$select.filteringOperation;
-                                                          let filter = $havingFilter->concatenate($mainSelect.havingOperation)->andFilters($extensions);
-                                                           ^$select(columns=$finalColumns, filteringOperation=$mainQueryFilter, havingOperation=$filter);
+        let placeRootFilters = {select: SelectSQLQuery[1]|let filteringOperation = $select.filteringOperation;
+                                                          let filter = $filteringOperation->concatenate($mainSelect.havingOperation)->concatenate($mainSelect.qualifyOperation)->andFilters($extensions);
+                                                          if ($filteringOperation->getWindowColsFromOperation()->isEmpty(),
+                                                            | ^$select(columns=$finalColumns, filteringOperation=$mainQueryFilter, havingOperation=$filter),
+                                                            | ^$select(columns=$finalColumns, filteringOperation=$mainQueryFilter, qualifyOperation=$filter)
+                                                          );
                                 };
         let nestMainFilter = {select: SelectSQLQuery[1]|let newSelect = nestFilters($select,$mainQueryFilter,[]);
                                                         ^$newSelect(columns=$finalColumns, filteringOperation=$select.filteringOperation->concatenate($newSelect.filteringOperation)->andFilters($extensions));
@@ -3267,12 +3274,14 @@ function meta::relational::functions::pureToSqlQuery::processTdsFilter(f:Functio
                                                                 ^$select(columns=$finalColumns, filteringOperation=$filter);
                                    };
 
-        if($queryRootMutated,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty(),| $placeNestedFilters->eval($select)
-                                                                                           ,| $nestMainFilter->eval($select));
+        if($queryRootMutated,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty(),
+                                                    | $placeNestedFilters->eval($select),
+                                                    | $nestMainFilter->eval($select));
                                ^$res(select = $updatedSelect);
 
-                            ,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty(),|$placeRootFilters->eval($select)
-                                                                                           ,|$placeMainFilterAtRoot->eval($select));
+                            ,| let updatedSelect = if(!$mainSelect.groupBy->isEmpty() || !$mainSelect.pivot->isEmpty() || !$select.filteringOperation->getWindowColsFromOperation()->isEmpty(),
+                                                    | $placeRootFilters->eval($select),
+                                                    | $placeMainFilterAtRoot->eval($select));
 
                                ^$res(select = $updatedSelect,
                                      currentTreeNode = if($mainQuery.currentTreeNode->isNotEmpty(),| $mainQuery.currentTreeNode->toOne()->findOneNode($mainSelect.data->toOne(), $res.select.data->toOne()), |[]),
@@ -3296,6 +3305,19 @@ function meta::relational::functions::pureToSqlQuery::nestFilters(newQuery:Selec
    let newFilters = $filters->reprocessAliases($oldToNew);
    let newHaving = $having->reprocessAliases($oldToNew);
    ^$newQuery(data = ^$data(alias = ^$alias(relationalElement =^$nestedSelect(filteringOperation = $newFilters, havingOperation = $newHaving))));
+}
+
+function meta::relational::functions::pureToSqlQuery::getWindowColsFromOperation(operation: RelationalOperationElement[*]): WindowColumn[*]
+{
+  if($operation->isNotEmpty() && $operation->toOne()->instanceOf(DynaFunction),
+    | $operation->cast(@DynaFunction).parameters->map(o|$o->match([
+                                                                    d:DynaFunction[1] | $d->getWindowColsFromOperation(),
+                                                                    w:WindowColumn[1] | $w,
+                                                                    a:Any[*] | []
+                                                                  ])
+                                                     ),
+    | []
+  );
 }
 
 function meta::relational::functions::pureToSqlQuery::addPkForAggregation(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], existingQuery:SelectWithCursor[1], state:State[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
