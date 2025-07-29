@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.test.postgres.pct;
 
 import junit.framework.Test;
+import org.checkerframework.checker.units.qual.A;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
@@ -74,8 +75,8 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Postgres\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::tests::composition::testExtendAddOnNull_Function_1__Boolean_1_", "must appear in the GROUP BY clause or be used in an aggregate function", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,grp,name,newCol\n   10,0,J,J\n   2,1,null,J\n   6,1,F,\n   8,1,null,F\n   1,2,A,J\n   5,2,E,\n   3,3,C,J\n   7,3,G,\n   4,4,null,J\n   9,5,I,J\n#'\nactual:   '#TDS\n   id,grp,name,newCol\n   10,0,J,J\n   2,1,null,null\n   6,1,F,F\n   8,1,null,null\n   1,2,A,A\n   5,2,E,E\n   3,3,C,C\n   7,3,G,G\n   4,4,null,null\n   9,5,I,I\n#'\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_", "\"QUALIFY grammar is not supported\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_", "\"QUALIFY grammar is not supported\"", AdapterQualifier.unsupportedFeature),
 
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Postgres\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Postgres\"", AdapterQualifier.unsupportedFeature),

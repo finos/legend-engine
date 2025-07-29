@@ -18,6 +18,7 @@ import meta::relational::tests::milestoning::inheritance::*;
 Class meta::relational::tests::milestoning::Order{
    id : Integer[1];
    product : Product[*];
+   processingTemporalProduct : ProcessingTemporalProduct[1];
    biTemporalProduct : BiTemporalProduct[*];
    orderDate : Date[0..1];
    description : OrderDescription[1];
@@ -169,6 +170,21 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
    }:ProductClassification_ExtendedPrimitives[1];
 }
 
+Class <<temporal.processingtemporal>> meta::relational::tests::milestoning::ProcessingTemporalProduct{
+   id : Integer[1];
+   name : String[1];
+   type : String[1];
+   classification : ProcessingTemporalProductClassification[1];
+   classificationTypeStr(){$this.classification($this.processingDate).type} : String[1];
+   classificationExchangeName1(){$this.classification($this.processingDate).exchange(%2019-1-1).name} : String[1];
+   classificationExchangeName2(){$this.classification(%2019-1-1).exchange($this.processingDate).name} : String[1];
+   classificationExchangeName3(){$this.classification($this.processingDate->adjust(1, DurationUnit.DAYS)).exchange($this.processingDate->adjust(1, DurationUnit.DAYS)).name} : String[1];
+   biTemporalClassification : BiTemporalProductClassification[0..1];
+   classificationWithDateConstant(){
+      $this.classification(%9999-12-31)
+   }:ProcessingTemporalProductClassification[1];
+}
+
 Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductWithConstraint1 extends meta::relational::tests::milestoning::Product
 [
    CST
@@ -290,6 +306,16 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
    system : System[1];
    exchange : Exchange[1];
    exchangeName : meta::relational::tests::milestoning::ExtendedString[1];
+   product : Product[1];
+   biTemporalProduct : BiTemporalProduct[0..1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::milestoning::ProcessingTemporalProductClassification {
+   type : String[1];
+   description : String[1];
+   system : System[1];
+   exchange : Exchange[1];
+   exchangeName : String[1];
    product : Product[1];
    biTemporalProduct : BiTemporalProduct[0..1];
 }

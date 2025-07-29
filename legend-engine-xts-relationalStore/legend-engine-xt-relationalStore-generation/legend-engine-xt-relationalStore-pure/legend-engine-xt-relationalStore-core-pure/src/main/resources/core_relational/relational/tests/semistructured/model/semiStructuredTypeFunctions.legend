@@ -125,6 +125,22 @@ Mapping typeFunctions::mapping::H2Mapping
   }
 )
 
+Mapping typeFunctions::relationFunctionMapping::H2Mapping
+(
+  *typeFunctions::model::Order: Relation 
+  {
+    ~func typeFunctions::orderFunction():Relation<Any>[1]
+    orderId: ORDERID,
+    orderName: ORDERNAME,
+    customer: Binding typeFunctions::store::CustomerBinding : CUSTOMER
+  }
+)
+
+###Pure
+function typeFunctions::orderFunction():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{typeFunctions::store::H2DB.ORDER_SCHEMA.ORDER_TABLE}#->select(~[ORDERID, ORDERNAME, CUSTOMER]);
+}
 
 ###Pure
 function typeFunctions::semiStructuredTypeNameFunctionUsageInProjectWithFunctions(): TabularDataSet[1]

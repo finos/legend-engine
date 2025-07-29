@@ -454,8 +454,9 @@ function <<access.private>> meta::protocols::pure::v1_33_0::transformation::from
    let transformInfinityDate = {m:TemporalMilestoning[0..1]|if($m.infinityDate->isEmpty(),|[],|$m.infinityDate->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::valueSpecification::transformAny([], $open, PureOne, $extensions)->cast(@meta::protocols::pure::v1_33_0::metamodel::valueSpecification::raw::CDate))};
 
    $m->match($extensions.serializerExtension('v1_33_0')->cast(@meta::protocols::pure::v1_33_0::extension::SerializerExtension_v1_33_0).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::v1_33_0::extension::RelationalModuleSerializerExtension).transfers_milestoning_transformMilestoning->concatenate([
-                b:BusinessMilestoning[1]|^meta::protocols::pure::v1_33_0::metamodel::store::relational::BusinessMilestoning( _type = 'businessMilestoning', from = $b.from.name, thru = $b.thru.name, infinityDate=$transformInfinityDate->eval($b),thruIsInclusive = $b.thruIsInclusive),
-                s:BusinessSnapshotMilestoning[1]| ^meta::protocols::pure::v1_33_0::metamodel::store::relational::BusinessSnapshotMilestoning( _type = 'businessSnapshotMilestoning', snapshotDate =  $s.snapshotDate.name),
-                p:ProcessingMilestoning[1]|^meta::protocols::pure::v1_33_0::metamodel::store::relational::ProcessingMilestoning( _type = 'processingMilestoning', in = $p.in.name, out = $p.out.name, infinityDate=$transformInfinityDate->eval($p),outIsInclusive = $p.outIsInclusive)
+                b: BusinessMilestoning[1]|^meta::protocols::pure::v1_33_0::metamodel::store::relational::BusinessMilestoning( _type = 'businessMilestoning', from = $b.from.name, thru = $b.thru.name, infinityDate=$transformInfinityDate->eval($b),thruIsInclusive = $b.thruIsInclusive),
+                bs:BusinessSnapshotMilestoning[1]| ^meta::protocols::pure::v1_33_0::metamodel::store::relational::BusinessSnapshotMilestoning( _type = 'businessSnapshotMilestoning', snapshotDate =  $bs.snapshotDate.name),
+                p: ProcessingMilestoning[1]|^meta::protocols::pure::v1_33_0::metamodel::store::relational::ProcessingMilestoning( _type = 'processingMilestoning', in = $p.in.name, out = $p.out.name, infinityDate=$transformInfinityDate->eval($p),outIsInclusive = $p.outIsInclusive),
+                ps:ProcessingSnapshotMilestoning[1]| ^meta::protocols::pure::v1_33_0::metamodel::store::relational::ProcessingSnapshotMilestoning( _type = 'processingSnapshotMilestoning', snapshotDate =  $ps.snapshotDate.name)
              ])->toOneMany());
 }

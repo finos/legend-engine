@@ -473,6 +473,8 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "  (\n" +
                 "    milestoning\n" +
                 "    (\n" +
+                // processing snapshot
+                "      processing(PROCESSING_SNAPSHOT_DATE = PROCESSING_DATE),\n" +
                 // processing
                 "      processing(PROCESSING_IN = dummy, PROCESSING_OUT = dummy),\n" +
                 "      processing(PROCESSING_IN = dummy, PROCESSING_OUT = dummy, OUT_IS_INCLUSIVE = false, INFINITY_DATE = %9999-12-30T19:00:00.0000),\n" +
@@ -495,6 +497,7 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "  (\n" +
                 "    milestoning\n" +
                 "    (\n" +
+                "      processing(PROCESSING_SNAPSHOT_DATE = PROCESSING_DATE),\n" +
                 "      processing(PROCESSING_IN = dummy, PROCESSING_OUT = dummy),\n" +
                 "      processing(PROCESSING_IN = dummy, PROCESSING_OUT = dummy, INFINITY_DATE = %9999-12-30T19:00:00.0000),\n" +
                 "      processing(PROCESSING_IN = dummy, PROCESSING_OUT = dummy, OUT_IS_INCLUSIVE = true, INFINITY_DATE = %9999-12-30T19:00:00.0000),\n" +

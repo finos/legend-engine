@@ -323,6 +323,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectSQLQueryForMemSQL(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
   assertEmpty($sq.pivot, 'pivot is not supported');
+  assertEmpty($sq.qualifyOperation, 'QUALIFY grammar is not supported');
   let s = if($sq.fromRow->isNotEmpty() && $sq.toRow->isEmpty(), |$sq->rewriteSliceAsWindowFunction(), |$sq);
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));

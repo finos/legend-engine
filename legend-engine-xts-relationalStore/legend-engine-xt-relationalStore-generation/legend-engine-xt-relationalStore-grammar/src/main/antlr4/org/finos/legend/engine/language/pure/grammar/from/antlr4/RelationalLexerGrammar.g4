@@ -43,6 +43,7 @@ PROCESSING_MILESTONING_IN:                  'PROCESSING_IN';
 PROCESSING_MILESTONING_OUT:                 'PROCESSING_OUT';
 OUT_IS_INCLUSIVE:                           'OUT_IS_INCLUSIVE';
 INFINITY_DATE:                              'INFINITY_DATE';
+PROCESSING_SNAPSHOT_DATE:                   'PROCESSING_SNAPSHOT_DATE';
 
 // Mapping
 ASSOCIATION_MAPPING:                        'AssociationMapping';
