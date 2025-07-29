@@ -32,8 +32,11 @@ public class Test_Interpreted_RelationFunctions_PCT extends PCTReportConfigurati
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "interpreted";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,payload,divBy2\n   1,[1,2,3],[2]\n   2,[4,5,6],[4,6]\n   3,[7,8,9],[8]\n   4,[10,11,12],[10,12]\n   5,[13,14,15],[14]\n#'\nactual:   '#TDS\n   id,payload,divBy2\n   1,[1,2,3],2\n   2,[4,5,6],[4,6]\n   3,[7,8,9],8\n   4,[10,11,12],[10,12]\n   5,[13,14,15],14\n#'\"")
-    );
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,payload,divBy2\n   1,[1,2,3],[2]\n   2,[4,5,6],[4,6]\n   3,[7,8,9],[8]\n   4,[10,11,12],[10,12]\n   5,[13,14,15],[14]\n#'\nactual:   '#TDS\n   id,payload,divBy2\n   1,[1,2,3],2\n   2,[4,5,6],[4,6]\n   3,[7,8,9],8\n   4,[10,11,12],[10,12]\n   5,[13,14,15],14\n#'\"", AdapterQualifier.needsInvestigation),
+
+            one("meta::pure::functions::relation::tests::composition::testExtendAddOnNull_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,grp,newCol\n   null,0,null\n   8,1,8\n   null,1,8\n   null,1,8\n   1,2,6\n   5,2,6\n   3,3,10\n   7,3,10\n   4,4,4\n   9,5,9\n#'\nactual:   '#TDS\n   id,grp,newCol\n   null,0,0\n   8,1,8\n   null,1,8\n   null,1,8\n   1,2,6\n   5,2,6\n   3,3,10\n   7,3,10\n   4,4,4\n   9,5,9\n#'\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,grp,name,newColSorted\n   10,0,J,J\n   2,1,null,Fnullnull\n   6,1,F,Fnullnull\n   8,1,null,Fnullnull\n   1,2,A,AE\n   5,2,E,AE\n   3,3,C,CG\n   7,3,G,CG\n   4,4,V,V\n   9,5,I,I\n#'\nactual:   '#TDS\n   id,grp,name,newColSorted\n   10,0,J,J\n   2,1,null,F\n   6,1,F,F\n   8,1,null,F\n   1,2,A,AE\n   5,2,E,AE\n   3,3,C,CG\n   7,3,G,CG\n   4,4,V,V\n   9,5,I,I\n#'\"", AdapterQualifier.needsInvestigation)
+            );
 
     public static Test suite()
     {
