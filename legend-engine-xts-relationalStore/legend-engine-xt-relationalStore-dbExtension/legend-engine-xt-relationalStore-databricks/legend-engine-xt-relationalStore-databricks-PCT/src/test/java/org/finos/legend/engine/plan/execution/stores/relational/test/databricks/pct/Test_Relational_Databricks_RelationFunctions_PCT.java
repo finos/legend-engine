@@ -135,7 +135,7 @@ public class Test_Relational_Databricks_RelationFunctions_PCT extends PCTReportC
             one("meta::pure::functions::relation::tests::select::testMultiColsSelect_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Databricks\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::select::testSelectAll_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Databricks\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::select::testSingleColSelect_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Databricks\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"Column names with spaces not supported for Database Type: Databricks\""),
+            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "\"Column names with spaces not supported for Database Type: Databricks\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Databricks\"", AdapterQualifier.unsupportedFeature),
 
             //size
