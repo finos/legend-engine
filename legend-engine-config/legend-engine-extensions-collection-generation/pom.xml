@@ -486,6 +486,21 @@
         </dependency>
         <!-- Peristence -->
 
+        <!-- DataQuality -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-protocol</artifactId>
+        </dependency>
+        <!-- DataQuality -->
+
         <!-- Dataspace -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
