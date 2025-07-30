@@ -46,18 +46,8 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_", "\"pivot is not supported\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_", "\"pivot is not supported\"", AdapterQualifier.unsupportedFeature),
 
-            // BUG: Column name with special characters is not properly escaped
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.", AdapterQualifier.needsInvestigation),
-
             // Postgres doesn't support asOf Join (May want to compensate with an OLAP equivalent if required
             pack("meta::pure::functions::relation::tests::asOfJoin", "\"AsOfJoins are not supported in the generic generator!\"", AdapterQualifier.unsupportedFeature),
-
-            // Null values not supported in source TDS
-            one("meta::pure::functions::relation::tests::over::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::relation::tests::over::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::relation::tests::over::testRange_NPreceding_UnboundedFollowing_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
 
             // Postgres does not support range frame with explicit offsets on either side
             one("meta::pure::functions::relation::tests::over::testRange_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: RANGE FOLLOWING is only supported with UNBOUNDED", AdapterQualifier.unsupportedFeature),
@@ -76,6 +66,10 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: RANGE PRECEDING is only supported with UNBOUNDED", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::over::testRange_WithNumbers_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: RANGE FOLLOWING is only supported with UNBOUNDED", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: RANGE FOLLOWING is only supported with UNBOUNDED", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: RANGE PRECEDING is only supported with UNBOUNDED", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: RANGE PRECEDING is only supported with UNBOUNDED", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRange_NPreceding_UnboundedFollowing_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: RANGE PRECEDING is only supported with UNBOUNDED", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: RANGE FOLLOWING is only supported with UNBOUNDED", AdapterQualifier.unsupportedFeature),
 
             one("meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
