@@ -174,7 +174,7 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
       orderBy = ^SortItem(
         sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ADDRESSID'])),
         ordering = SortItemOrdering.ASCENDING,
-        nullOrdering = SortItemNullOrdering.UNDEFINED
+        nullOrdering = SortItemNullOrdering.LAST
       ),
       partitions = [
         ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID']))
