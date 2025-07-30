@@ -753,19 +753,23 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
 
   // Create CSV out of TDS data
   let cols = $tds->columns();
-  let csv = $state.schema.name+'\n' + 
+  let csv = $state.schema.name+'\n' +
             $relAccessor.sourceElement->cast(@Table).name + '\n' +
             $cols->map(x|$x.name)->joinStrings(',' ) + '\n' +
             $tds->map(
-              x | $cols->map(c|$c->eval($x)->toOne()->match(
-                                [
-                                  x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS}', $x),
-                                  s : Variant[1] | '"' + $s->toString() + '"',
-                                  z : Any[1] | $z->toString()
-                                ]
-                ))->joinStrings(',')
-            )
-            ->joinStrings('\n');
+              x | $cols->map(c| let val = $c->eval($x);
+                                if ($val == [],
+                                  | 'null',
+                                  | $val->toOne()->match(
+                                      [
+                                        x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS}', $x),
+                                        s : Variant[1] | '"' + $s->toString() + '"',
+                                        z : Any[1] | $z->toString()
+                                      ]
+                                    )
+                                );
+              )->joinStrings(',')
+            )->joinStrings('\n');
 
   ^$state
   (
