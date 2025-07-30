@@ -33,6 +33,7 @@ import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationEx
 import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
 import org.finos.legend.engine.generation.PowerBIArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
+import org.finos.legend.engine.generation.dataquality.DataQualityValidationArtifactGenerationExtension;
 import org.finos.legend.engine.language.bigqueryFunction.compiler.toPureGraph.BigQueryFunctionCompilerExtension;
 import org.finos.legend.engine.language.bigqueryFunction.grammar.from.BigQueryFunctionGrammarParserExtension;
 import org.finos.legend.engine.language.bigqueryFunction.grammar.to.BigQueryFunctionGrammarComposer;
@@ -555,6 +556,7 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends ArtifactGenerationExtension>>empty()
                 .with(DataSpaceAnalyticsArtifactGenerationExtension.class)
+                .with(DataQualityValidationArtifactGenerationExtension.class)
                 .with(SearchDocumentArtifactGenerationExtension.class)
                 .with(OpenApiArtifactGenerationExtension.class)
                 .with(SnowflakeAppArtifactGenerationExtension.class)
@@ -604,6 +606,7 @@ public class TestExtensions
                 .with("core_external_store_relational_postgres_sql_model")
                 .with("core_external_store_relational_postgres_sql_model_extensions")
                 .with("core_external_compiler")
+                .with("core_external_execution")
                 .with("core_external_language_daml")
                 .with("core_external_language_haskell")
                 .with("core_function_activator")
