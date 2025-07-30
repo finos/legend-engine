@@ -125,7 +125,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::windowFunction():Boole
      meta::relational::tests::simpleRelationalMappingInc,
      DatabaseType.BigQuery,
      meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.LASTNAME as `lastName`, avg(1.0 * `root`.AGE) OVER (Partition By `root`.FIRSTNAME Order By `root`.LASTNAME ASC) as `ageAverageWindow` from personTable as `root`', $result);
+   assertEquals('select `root`.LASTNAME as `lastName`, avg(1.0 * `root`.AGE) OVER (Partition By `root`.FIRSTNAME Order By `root`.LASTNAME ASC NULLS LAST) as `ageAverageWindow` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::bigQuery::tests::testParseDateTime():Boolean[1]

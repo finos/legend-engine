@@ -108,7 +108,7 @@ function <<test.Test>> meta::relational::databricks::tests::windowFunction():Boo
      meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
      DatabaseType.Databricks,
      meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.lastName as `lastName`, avg(1.0 * `root`.age) OVER (Partition By `root`.firstName Order By `root`.lastName ASC) as `ageAverageWindow` from test_schema.test_table as `root`', $result);
+   assertEquals('select `root`.lastName as `lastName`, avg(1.0 * `root`.age) OVER (Partition By `root`.firstName Order By `root`.lastName ASC NULLS LAST) as `ageAverageWindow` from test_schema.test_table as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::getDateTime():Boolean[1]
