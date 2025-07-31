@@ -271,7 +271,12 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
-    default List<Procedure3<EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> getExtraPackageableRuntimeProcessors()
+    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> getExtraRuntimeValueProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, Root_meta_core_runtime_EngineRuntime, CompileContext>> getExtraRuntimeThirdPassProcessors()
     {
         return Collections.emptyList();
     }

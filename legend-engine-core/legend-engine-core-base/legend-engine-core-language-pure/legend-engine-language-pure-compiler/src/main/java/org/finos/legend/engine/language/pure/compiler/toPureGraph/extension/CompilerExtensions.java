@@ -131,7 +131,8 @@ public class CompilerExtensions
     private final ImmutableList<BiConsumer<PureModel, MappingValidatorContext>> extraMappingPostValidators;
     private final ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> extraValueSpecificationBuilderForFuncExpr;
     private final ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> extraRelationStoreAccessorProcessors;
-    private final ImmutableList<Procedure3<EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> extraPackageableRuntimeProcessors;
+    private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> extraRuntimeValueProcessors;
+    private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, Root_meta_core_runtime_EngineRuntime, CompileContext>> extraRuntimeSecondPassProcessors;
 
     private final Map<String, IncludedMappingHandler> extraIncludedMappingHandlers;
     private final MutableMap<String, MutableSet<String>> extraSubTypesForFunctionMatching;
@@ -178,7 +179,8 @@ public class CompilerExtensions
         this.extraIncludedMappingHandlers = Maps.mutable.empty();
         this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
         this.extraRelationStoreAccessorProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRelationStoreAccessorProcessors);
-        this.extraPackageableRuntimeProcessors = this.extensions.flatCollect(CompilerExtension::getExtraPackageableRuntimeProcessors);
+        this.extraRuntimeValueProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRuntimeValueProcessors);
+        this.extraRuntimeSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRuntimeThirdPassProcessors);
         this.extraSubTypesForFunctionMatching = Maps.mutable.empty();
         this.extensions.forEach(
                 e -> e.getExtraSubtypesForFunctionMatching().keysView().forEach(
@@ -393,9 +395,14 @@ public class CompilerExtensions
         return this.extraMappingPostValidators.castToList();
     }
 
-    public List<Procedure3<EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> getExtraPackageableRuntimeProcessors()
+    public List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> getExtraRuntimeValueProcessors()
     {
-        return this.extraPackageableRuntimeProcessors.castToList();
+        return this.extraRuntimeValueProcessors.castToList();
+    }
+
+    public List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, Root_meta_core_runtime_EngineRuntime, CompileContext>> getExtraRuntimeThirdPassProcessors()
+    {
+        return this.extraRuntimeSecondPassProcessors.castToList();
     }
 
     public ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> getExtraValueSpecificationBuilderForFuncExpr()

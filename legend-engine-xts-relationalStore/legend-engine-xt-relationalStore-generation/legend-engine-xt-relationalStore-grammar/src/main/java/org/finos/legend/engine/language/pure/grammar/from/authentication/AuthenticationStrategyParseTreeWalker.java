@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.OAuthAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 
@@ -106,6 +107,19 @@ public class AuthenticationStrategyParseTreeWalker
         {
             authStrategy.additionalGcpScopes = ListIterate.collect(additionalGcpScopesRefContext.gcpScopesArray().STRING(), ctx -> PureGrammarParserUtility.fromGrammarString(ctx.getText(), true));
         }
+        return authStrategy;
+    }
+
+    public OAuthAuthenticationStrategy visitOAuthAuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.OAuthContext authCtx)
+    {
+        OAuthAuthenticationStrategy authStrategy = new OAuthAuthenticationStrategy();
+        authStrategy.sourceInformation = code.getSourceInformation();
+        // oauthKey
+        AuthenticationStrategyParserGrammar.OAuthKeyContext oAuthKeyContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.oAuthKey(), "oauthKey", authStrategy.sourceInformation);
+        authStrategy.oauthKey = PureGrammarParserUtility.fromGrammarString(oAuthKeyContext.STRING().getText(), true);
+        // scopeName
+        AuthenticationStrategyParserGrammar.OAuthScopeNameContext credentialKeyCtx = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.oAuthScopeName(), "scopeName", authStrategy.sourceInformation);
+        authStrategy.scopeName = PureGrammarParserUtility.fromGrammarString(credentialKeyCtx.STRING().getText(), true);
         return authStrategy;
     }
 }
