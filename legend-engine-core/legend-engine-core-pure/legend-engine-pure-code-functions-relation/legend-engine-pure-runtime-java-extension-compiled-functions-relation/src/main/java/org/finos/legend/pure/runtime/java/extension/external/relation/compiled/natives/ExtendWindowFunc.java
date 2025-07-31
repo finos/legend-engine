@@ -77,13 +77,32 @@ public class ExtendWindowFunc extends AbstractNative implements Native
                 "    @Override\n" +
                 "    public org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame valueOf(Root_meta_pure_functions_relation_Frame x)\n" +
                 "    {\n" +
-                "        return new org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame(\n" +
-                "                x instanceof Root_meta_pure_functions_relation_Rows ? org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType.rows : org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType.range,\n" +
-                "                x._offsetFrom() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +
-                "                x._offsetFrom() instanceof Root_meta_pure_functions_relation_FrameIntValue ? (int)((Root_meta_pure_functions_relation_FrameIntValue) x._offsetFrom())._value() : (x._offsetFrom() instanceof Root_meta_pure_functions_relation_FrameNumericValue ? ((Root_meta_pure_functions_relation_FrameNumericValue) x._offsetFrom())._value() : -1),\n" +
-                "                x._offsetTo() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +
-                "                x._offsetTo() instanceof Root_meta_pure_functions_relation_FrameIntValue ? (int)((Root_meta_pure_functions_relation_FrameIntValue) x._offsetTo())._value() : (x._offsetTo() instanceof Root_meta_pure_functions_relation_FrameNumericValue ? ((Root_meta_pure_functions_relation_FrameNumericValue) x._offsetTo())._value() : -1)\n" +
-                "        );\n" +
+                "        if (x instanceof Root_meta_pure_functions_relation_Rows){\n" +
+                "            return new org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Rows(\n" +
+                "                    x._offsetFrom() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +
+                "                    x._offsetFrom() instanceof Root_meta_pure_functions_relation_FrameIntValue ? (int)((Root_meta_pure_functions_relation_FrameIntValue) x._offsetFrom())._value() : -1,\n" +
+                "                    x._offsetTo() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +
+                "                    x._offsetTo() instanceof Root_meta_pure_functions_relation_FrameIntValue ? (int)((Root_meta_pure_functions_relation_FrameIntValue) x._offsetTo())._value() : -1\n" +
+                "            );\n" +
+                "        }\n" +
+                "        else if (x instanceof Root_meta_pure_functions_relation__Range){\n" +
+                "            return new org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Range(\n" +
+                "                    x._offsetFrom() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +
+                "                    x._offsetFrom() instanceof Root_meta_pure_functions_relation_FrameNumericValue ? ((Root_meta_pure_functions_relation_FrameNumericValue) x._offsetFrom())._value() : -1,\n" +
+                "                    x._offsetTo() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +
+                "                    x._offsetTo() instanceof Root_meta_pure_functions_relation_FrameNumericValue ? ((Root_meta_pure_functions_relation_FrameNumericValue) x._offsetTo())._value() : -1\n" +
+                "            );\n" +
+                "        }\n" +
+                "        else {\n" +
+                "            return new org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.RangeInterval(\n" +
+                "                    x._offsetFrom() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +
+                "                    x._offsetFrom() instanceof Root_meta_pure_functions_relation_FrameIntervalValue ? (long)((Root_meta_pure_functions_relation_FrameIntervalValue) x._offsetFrom())._value() : -1,\n" +
+                "                    x._offsetFrom() instanceof Root_meta_pure_functions_relation_FrameIntervalValue ? ((Root_meta_pure_functions_relation_FrameIntervalValue) x._offsetFrom())._durationUnit() : null,\n" +
+                "                    x._offsetTo() instanceof Root_meta_pure_functions_relation_UnboundedFrameValue,\n" +
+                "                    x._offsetTo() instanceof Root_meta_pure_functions_relation_FrameIntervalValue ? (long)((Root_meta_pure_functions_relation_FrameIntervalValue) x._offsetTo())._value() : -1,\n" +
+                "                    x._offsetTo() instanceof Root_meta_pure_functions_relation_FrameIntervalValue ? ((Root_meta_pure_functions_relation_FrameIntervalValue) x._offsetTo())._durationUnit() : null\n" +
+                "            );\n" +
+                "        }\n" +
                 "    } \n" +
                 "}" +
                 ").getFirst()");

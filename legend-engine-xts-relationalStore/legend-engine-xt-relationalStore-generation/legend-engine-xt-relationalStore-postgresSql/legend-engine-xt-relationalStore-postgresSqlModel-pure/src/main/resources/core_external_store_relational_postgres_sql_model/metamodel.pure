@@ -394,6 +394,7 @@ Class meta::external::query::sql::metamodel::FrameBound extends meta::external::
 {
   <<equality.Key>> type: meta::external::query::sql::metamodel::FrameBoundType[1];
   <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> durationUnit: meta::external::query::sql::metamodel::StringLiteral[0..1];
 }
 
 Enum meta::external::query::sql::metamodel::TrimMode
