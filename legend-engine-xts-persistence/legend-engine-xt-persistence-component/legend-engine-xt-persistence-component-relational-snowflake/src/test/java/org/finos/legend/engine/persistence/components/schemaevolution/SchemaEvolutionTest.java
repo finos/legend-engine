@@ -18,6 +18,11 @@ import org.finos.legend.engine.persistence.components.IngestModeTest;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
+import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
@@ -33,6 +38,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SchemaEvolutionTest extends IngestModeTest
@@ -397,6 +403,56 @@ public class SchemaEvolutionTest extends IngestModeTest
         expectedSchemaEvolutionAddColumn = "ALTER ICEBERG TABLE \"mydb\".\"main\" ALTER COLUMN \"description\" VARCHAR";
         Assertions.assertEquals(expectedSchemaEvolutionAddColumn, sqlsForSchemaEvolution.get(0));
     }
+
+    void testAlterClusterKey()
+    {
+        RelationalTransformer transformer = new RelationalTransformer(relationalSink, TransformOptions.builder().build());
+        Dataset datasetWithoutClusterKey = DatasetDefinition.builder()
+                .database(mainDbName)
+                .name(mainTableName)
+                .alias(mainTableAlias)
+                .schema(baseTableSchema)
+                .build();
+        Dataset datasetWithOneClusterKey = DatasetDefinition.builder()
+                .database(mainDbName)
+                .name(mainTableName)
+                .alias(mainTableAlias)
+                .schema(baseTableSchema.withClusterKeys(ClusterKey.of(FieldValue.builder().fieldName("id").build())))
+                .build();
+        Dataset datasetWithTwoClusterKey = DatasetDefinition.builder()
+                .database(mainDbName)
+                .name(mainTableName)
+                .alias(mainTableAlias)
+                .schema(baseTableSchema.withClusterKeys(ClusterKey.of(FieldValue.builder().fieldName("id").build()), ClusterKey.of(FieldValue.builder().fieldName("name").build())))
+                .build();
+        
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, Collections.emptySet(), false);
+
+        //Add cluster key
+        List<Operation> addClusterKeyOperations = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasetWithoutClusterKey, datasetWithOneClusterKey.schema()).logicalPlan().ops();
+        assertEquals(1, addClusterKeyOperations.size());
+        SqlPlan addClusterKeySqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(addClusterKeyOperations));
+        assertEquals("ALTER TABLE \"mydb\".\"main\" CLUSTER BY (\"id\")", addClusterKeySqlPlan.getSqlList().get(0));
+
+        //Add another cluster key
+        List<Operation> addAnotherClusterKeyOperations = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasetWithOneClusterKey, datasetWithTwoClusterKey.schema()).logicalPlan().ops();
+        assertEquals(1, addAnotherClusterKeyOperations.size());
+        SqlPlan addAnotherClusterKeySqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(addAnotherClusterKeyOperations));
+        assertEquals("ALTER TABLE \"mydb\".\"main\" CLUSTER BY (\"id\", \"name\")", addAnotherClusterKeySqlPlan.getSqlList().get(0));
+
+        // Change cluster key back to one cluster key
+        List<Operation> changeClusterKeyOperations = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasetWithTwoClusterKey, datasetWithOneClusterKey.schema()).logicalPlan().ops();
+        assertEquals(1, changeClusterKeyOperations.size());
+        SqlPlan changeClusterKeySqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(changeClusterKeyOperations));
+        assertEquals("ALTER TABLE \"mydb\".\"main\" CLUSTER BY (\"id\")", changeClusterKeySqlPlan.getSqlList().get(0));
+
+        // Remove cluster key
+        List<Operation> removeClusterKeyOperations = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasetWithOneClusterKey, datasetWithoutClusterKey.schema()).logicalPlan().ops();
+        assertEquals(1, removeClusterKeyOperations.size());
+        SqlPlan removeClusterKeySqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(removeClusterKeyOperations));
+        assertEquals("ALTER TABLE \"mydb\".\"main\" DROP CLUSTERING KEY", removeClusterKeySqlPlan.getSqlList().get(0));
+}
 
     private Sink getRelationSink(boolean icebergSink)
     {

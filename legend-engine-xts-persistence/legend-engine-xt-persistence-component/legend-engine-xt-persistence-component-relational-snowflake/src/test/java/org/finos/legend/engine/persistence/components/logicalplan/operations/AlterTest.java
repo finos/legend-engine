@@ -27,6 +27,14 @@ import org.finos.legend.engine.persistence.components.transformer.TransformOptio
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import org.finos.legend.engine.persistence.components.logicalplan.operations.AlterOptimizationKey;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.AlterOptimizationKeyAbstract;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
+import org.finos.legend.engine.persistence.components.relational.snowflake.SnowflakeSink;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -93,5 +101,32 @@ public class AlterTest
         Assertions.assertEquals(expectedAdd, list.get(0));
         Assertions.assertEquals(expectedChangeDataType, list.get(1));
         Assertions.assertEquals(expectedNullableColumn, list.get(2));
+    }
+
+    @Test
+    public void testAlterOptimizationKey()
+    {
+        RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get(), TransformOptions.builder().build());
+        DatasetDefinition dataset = DatasetDefinition.builder()
+            .database("my_db")
+            .group("my_schema")
+            .name("my_table")
+            .alias("my_alias")
+            .schema(schemaWithAllColumns)
+            .build();
+        
+        List<ClusterKey> newClusterKeys = new ArrayList<>();
+        newClusterKeys.add(ClusterKey.of(FieldValue.builder().fieldName("column").build()));
+        Operation addClusterKey = AlterOptimizationKey.of(dataset, AlterOptimizationKey.AlterOperation.ALTER_CLUSTER_KEY, newClusterKeys);
+        LogicalPlan addClusterKeyLogicalPlan = LogicalPlan.builder().addOps(addClusterKey).build();
+        SqlPlan addCLusterKeyPhysicalPlan = transformer.generatePhysicalPlan(addClusterKeyLogicalPlan);
+        String expectedAddClusterKeySqlString = "ALTER TABLE \"my_db\".\"my_schema\".\"my_table\" CLUSTER BY (\"column\")";
+        Assertions.assertEquals(expectedAddClusterKeySqlString, addCLusterKeyPhysicalPlan.getSqlList().get(0));
+
+        Operation dropClusterKey = AlterOptimizationKey.of(dataset, AlterOptimizationKey.AlterOperation.ALTER_CLUSTER_KEY, new ArrayList<>());
+        LogicalPlan dropClusterKeyLogicalPlan = LogicalPlan.builder().addOps(dropClusterKey).build();
+        SqlPlan dropClusterKeyPhysicalPlan = transformer.generatePhysicalPlan(dropClusterKeyLogicalPlan);
+        String expectedDropClusterKeySqlString = "ALTER TABLE \"my_db\".\"my_schema\".\"my_table\" DROP CLUSTERING KEY";
+        Assertions.assertEquals(expectedDropClusterKeySqlString, dropClusterKeyPhysicalPlan.getSqlList().get(0));
     }
 }
