@@ -3493,7 +3493,7 @@ function meta::relational::functions::pureToSqlQuery::isVariantInputWithInstance
       $v->match([
         fe: FunctionExpression[1] | $fe.parametersValues->head()->map(x | $x->isVariantInputWithInstanceValue($vars))->orElse(false);,
         ve: VariableExpression[1] | $vars->get($ve)->map(x | $x->isVariantInputWithInstanceValue($vars))->orElse(false);,
-        iv: InstanceValue[1]      | $iv.values->type()->instanceOf(PrimitiveType) && ($iv.values->size() > 1);, // todo should just return true?
+        iv: InstanceValue[1]      | $iv.values->type()->instanceOf(PrimitiveType);,
         any: Any[1] | false;
       ])
   );
