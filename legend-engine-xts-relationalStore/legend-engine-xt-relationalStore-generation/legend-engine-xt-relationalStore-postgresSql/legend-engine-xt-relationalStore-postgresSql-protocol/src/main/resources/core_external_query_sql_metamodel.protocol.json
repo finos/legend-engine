@@ -1,6 +1,7 @@
 {
   "purePackage": "meta::external::query::sql::metamodel",
   "javaPackage": "org.finos.legend.engine.protocol.sql.metamodel",
+  "pureFiles": ["/core_external_store_relational_postgres_sql_model/metamodel.pure"],
   "elementsToBeExcluded": [
   ]
 }

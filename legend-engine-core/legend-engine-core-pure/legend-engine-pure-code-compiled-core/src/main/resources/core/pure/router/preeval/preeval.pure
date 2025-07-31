@@ -1175,6 +1175,7 @@ function <<access.private>>  meta::pure::router::preeval::isInstanceValue(v: Any
       iv : InstanceValue[1]|
             $iv.values->forAll(subV|$subV->match([
                                             subVS : ValueSpecification[1]|$subVS->isInstanceValue($inScopeVars),
+                                            x:meta::pure::metamodel::relation::TDS<Any>[1]|false,
                                             a : Any[1]| true;
                                           ]));,
       ve : VariableExpression[1]|$inScopeVars->get($ve.name)->isNotEmpty(),

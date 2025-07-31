@@ -136,7 +136,8 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-sql-compiler</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-postgresSql-compiler</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

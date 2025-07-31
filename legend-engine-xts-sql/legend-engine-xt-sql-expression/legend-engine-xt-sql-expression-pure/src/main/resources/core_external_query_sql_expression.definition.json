@@ -1,0 +1,7 @@
+{
+  "name": "core_external_query_sql_expression",
+  "pattern": "(meta::external::query::sql::expression)(::.*)?",
+  "dependencies": [
+    "platform"
+  ]
+}
