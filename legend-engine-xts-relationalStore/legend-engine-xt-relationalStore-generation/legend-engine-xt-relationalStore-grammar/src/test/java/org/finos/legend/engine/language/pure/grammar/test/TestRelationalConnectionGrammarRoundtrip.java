@@ -31,7 +31,20 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  };\n" +
                 "  auth: DefaultH2;\n" +
                 "}\n");
-
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: OAuth\n" +
+                "  {\n" +
+                "    oauthKey: 'cjeib2f84ur';\n" +
+                "    scopeName: 'UserPass';\n" +
+                "  };\n" +
+                "}\n");
         test("###Connection\n" +
                 "RelationalDatabaseConnection simple::StaticConnection\n" +
                 "{\n" +

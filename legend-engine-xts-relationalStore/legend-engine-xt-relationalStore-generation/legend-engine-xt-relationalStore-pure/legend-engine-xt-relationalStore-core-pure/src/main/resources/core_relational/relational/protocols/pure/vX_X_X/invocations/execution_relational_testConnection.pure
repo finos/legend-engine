@@ -141,6 +141,12 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             // _type = 'gcpWorkloadIdentityFederationWithAWS',
             serviceAccountEmail = $b.serviceAccountEmail,
             additionalGcpScopes = $b.additionalGcpScopes
+         ),
+      o:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::OAuthAuthenticationStrategy[1] |
+         ^meta::pure::alloy::connections::alloy::authentication::OAuthAuthenticationStrategy(
+            // _type = 'oauth',
+            oauthKey = $o.oauthKey,
+            scopeName = $o.scopeName
          )
    ])->toOneMany());
 }

@@ -21,6 +21,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPApplicationDefaultCredentialsAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPWorkloadIdentityFederationAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.MiddleTierUserNamePasswordAuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.OAuthAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.TestDatabaseAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.UserNamePasswordAuthenticationStrategyKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.ApiTokenAuthenticationStrategy;
@@ -31,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.OAuthAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 
@@ -82,6 +84,11 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
                     gcpWorkloadIdentityFederationAuthenticationStrategy.serviceAccountEmail,
                     gcpWorkloadIdentityFederationAuthenticationStrategy.additionalGcpScopes
             );
+        }
+        else if (authenticationStrategy instanceof OAuthAuthenticationStrategy)
+        {
+            OAuthAuthenticationStrategy oAuthAuthenticationStrategy = (OAuthAuthenticationStrategy) authenticationStrategy;
+            return new OAuthAuthenticationStrategyKey(oAuthAuthenticationStrategy.oauthKey, oAuthAuthenticationStrategy.scopeName);
         }
         return null;
     }

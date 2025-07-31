@@ -33,3 +33,7 @@ SERVICE_ACCOUNT_EMAIL:                                      'serviceAccountEmail
 ADDITIONAL_GCP_SCOPES:                                                  'additionalGcpScopes';
 BRACKET_OPEN:                                               '[';
 BRACKET_CLOSE:                                              ']';
+
+O_AUTH:                                     'OAuth';
+O_AUTH_KEY:                                 'oauthKey';
+O_AUTH_SCOPE_NAME:                          'scopeName';

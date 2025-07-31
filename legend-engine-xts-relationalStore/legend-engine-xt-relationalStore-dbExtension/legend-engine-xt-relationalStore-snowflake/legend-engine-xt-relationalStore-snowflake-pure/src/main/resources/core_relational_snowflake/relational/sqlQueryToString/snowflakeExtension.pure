@@ -632,7 +632,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function meta::relational::functions::sqlQueryToString::snowflake::preAndFinallyExecutionSQLQueryForSnowflake(dbConfig:DbConfig[1], dc: DatabaseConnection[1]): meta::relational::mapping::PreAndFinallyExecutionSQLQuery[*]
 {
-  if(!($dc->instanceOf(RelationalDatabaseConnection) && $dc->cast(@RelationalDatabaseConnection).datasourceSpecification->instanceOf(SnowflakeDatasourceSpecification) && $dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).enableQueryTags == false),
+  if(!($dc->instanceOf(RelationalDatabaseConnection) && (($dc->cast(@RelationalDatabaseConnection).datasourceSpecification->instanceOf(SnowflakeDatasourceSpecification) && $dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).enableQueryTags == false) || !($dc->cast(@RelationalDatabaseConnection).datasourceSpecification->instanceOf(SnowflakeDatasourceSpecification)))),
     | let set = ^AlterSQL(object = ^Session(), operation = [^SetOperation(propertyName = 'QUERY_TAG', propertyValue = ^Literal(value = '{"executionTraceID" : "${execID}", "engineUser" : "${userId}", "referer" : "${referer}"}'))]);
       let setSQL =  $set.object->match([
                           s:Session[1] | 'ALTER SESSION SET ' + $set.operation->map(o | $o->cast(@SetOperation).propertyName + ' = ' + $o->cast(@SetOperation).propertyValue.value->processLiteralValue($dbConfig))->makeString('',', ', ';')

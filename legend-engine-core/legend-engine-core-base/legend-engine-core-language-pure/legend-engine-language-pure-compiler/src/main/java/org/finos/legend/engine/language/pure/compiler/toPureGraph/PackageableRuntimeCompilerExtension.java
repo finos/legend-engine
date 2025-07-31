@@ -30,6 +30,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public class PackageableRuntimeCompilerExtension implements CompilerExtension
@@ -66,10 +68,26 @@ public class PackageableRuntimeCompilerExtension implements CompilerExtension
     private PackageableElement packageableRuntimeFirstPass(PackageableRuntime packageableRuntime, CompileContext context)
     {
         Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl(packageableRuntime.name, SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
+
+        Optional<Root_meta_core_runtime_EngineRuntime> pureRuntimeOptional = context.getCompilerExtensions().getExtraRuntimeValueProcessors().stream()
+                .map(processor -> processor.value(packageableRuntime.runtimeValue, context))
+                .filter(Objects::nonNull)
+                .findFirst();
+
+        Root_meta_core_runtime_EngineRuntime compiledRuntime;
+        if (pureRuntimeOptional.isPresent())
+        {
+            compiledRuntime = pureRuntimeOptional.get();
+        }
+        else
+        {
+            // No processor recognized or compiled the runtimeValue, assume it is an EngineRuntime in this case.
+            compiledRuntime = new Root_meta_core_runtime_EngineRuntime_Impl("Root::meta::core::runtime::EngineRuntime", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), context.pureModel.getClass("meta::core::runtime::EngineRuntime"));
+        }
+
         GenericType packageableRuntimeGenericType = context.newGenericType(context.pureModel.getType("meta::pure::runtime::PackageableRuntime"));
         metamodel._classifierGenericType(packageableRuntimeGenericType);
-        Root_meta_core_runtime_EngineRuntime pureRuntime = new Root_meta_core_runtime_EngineRuntime_Impl("Root::meta::core::runtime::EngineRuntime", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), context.pureModel.getClass("meta::core::runtime::EngineRuntime"));
-        return metamodel._runtimeValue(pureRuntime);
+        return metamodel._runtimeValue(compiledRuntime);
     }
 
     private void packageableRuntimeThirdPass(PackageableRuntime packageableRuntime, CompileContext context)

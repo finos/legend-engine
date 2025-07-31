@@ -38,6 +38,12 @@ Class meta::protocols::pure::v1_20_0::metamodel::store::relational::connection::
     apiToken:String[1];
 }
 
+Class meta::protocols::pure::v1_20_0::metamodel::store::relational::connection::alloy::authentication::OAuthAuthenticationStrategy extends meta::protocols::pure::v1_20_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+   oauthKey:String[1];
+   scopeName:String[1];
+}
+
 Class meta::protocols::pure::v1_20_0::metamodel::store::relational::connection::alloy::authentication::TestDatabaseAuthenticationStrategy extends meta::protocols::pure::v1_20_0::metamodel::store::relational::connection::alloy::authentication::DefaultH2AuthenticationStrategy
 {
 }

@@ -752,6 +752,16 @@ public class HelperRelationalGrammarComposer
                     (auth.additionalGcpScopes != null && !auth.additionalGcpScopes.isEmpty() ? context.getIndentationString() + getTabString(baseIndentation + 1) + "additionalGcpScopes: [\n" + ListIterate.collect(auth.additionalGcpScopes, s -> context.getIndentationString() + getTabString(baseIndentation + 2) + convertString(s, true)).makeString(",\n") + "\n" + context.getIndentationString() + getTabString(baseIndentation + 2) + "];\n" : "") +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
+        else if (_auth instanceof OAuthAuthenticationStrategy)
+        {
+            OAuthAuthenticationStrategy auth = (OAuthAuthenticationStrategy) _auth;
+            int baseIndentation = 1;
+            return "OAuth" + "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "oauthKey: " + convertString(auth.oauthKey, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "scopeName: " + convertString(auth.scopeName, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+        }
         return null;
     }
 
