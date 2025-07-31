@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.result.serialization;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
