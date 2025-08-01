@@ -24,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.OAuthAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
@@ -108,7 +109,8 @@ public class SnowflakeCompilerExtension implements IRelationalCompilerExtension
     @Override
     public List<DatabaseAuthenticationFlowKey> getFlowKeys()
     {
-        return Lists.mutable.of(DatabaseAuthenticationFlowKey.newKey(DatabaseType.Snowflake, SnowflakeDatasourceSpecification.class, SnowflakePublicAuthenticationStrategy.class));
+        return Lists.mutable.of(DatabaseAuthenticationFlowKey.newKey(DatabaseType.Snowflake, SnowflakeDatasourceSpecification.class, SnowflakePublicAuthenticationStrategy.class),
+                                DatabaseAuthenticationFlowKey.newKey(DatabaseType.Snowflake, SnowflakeDatasourceSpecification.class, OAuthAuthenticationStrategy.class));
     }
 }
 

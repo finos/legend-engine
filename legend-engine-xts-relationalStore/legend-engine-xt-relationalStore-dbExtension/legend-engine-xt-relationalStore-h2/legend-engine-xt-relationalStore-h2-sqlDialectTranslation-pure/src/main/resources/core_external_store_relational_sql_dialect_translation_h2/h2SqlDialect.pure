@@ -186,6 +186,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     lateralJoinProcessorForH2(),
     asOfJoinProcessorForH2(),
     querySpecificationProcessorForH2(),
+    extendedQuerySpecificationProcessorForH2(),
     semiStructuredArrayFlattenProcessorForH2()
   ]
 }
@@ -260,7 +261,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     sortItemProcessor_default(),
     selectProcessorForH2(),
     withQueryProcessor_default(),
-    windowFrameProcessor_default()
+    windowFrameProcessorForH2()
   ]
 }
 
@@ -669,68 +670,83 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   )
 }
 
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::querySpecificationProcessorHelperForH2(sqlDialect:SqlDialect[1], querySpec:QuerySpecification[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  if(containsSupportedFullOuterJoin($querySpec),
+    | convertFullOuterJoin($querySpec, $sqlDialect, $state, $config),
+    | let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+
+      // Select
+      $sqlDialect->keyword('select', $state, $config) +
+
+      // Top
+      if($querySpec.offset->isEmpty() && !$querySpec.limit->isEmpty() && !$querySpec.limit->toOne()->instanceOf(NullLiteral),
+        | $sep0 + $sqlDialect->keyword('top', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($querySpec.limit->toOne(), $state->increaseLevel(), $config),
+        | ''
+      ) +
+
+      $sqlDialect->executeNodeProcessor($querySpec.select, $state, $config) +
+
+      // From
+      $querySpec.from->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('from', $state, $config) +
+        $sep1 + $querySpec.from->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
+      }) +
+
+      // Where
+      $querySpec.where->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('where', $state, $config) +
+        $sep1 + $sqlDialect->executeNodeProcessor($querySpec.where->toOne(), $state->increaseLevel(), $config)
+      }) +
+
+      // Group By
+      $querySpec.groupBy->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('group by', $state, $config) +
+        $sep1 + $querySpec.groupBy->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
+      }) +
+
+      // Having
+      $querySpec.having->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('having', $state, $config) +
+        $sep1 + $sqlDialect->executeNodeProcessor($querySpec.having->toOne(), $state->increaseLevel(), $config)
+      }) +
+
+      // Qualify
+      renderQualify($sqlDialect, $querySpec, $state, $config, $sep0, $sep1) +
+
+      // Order By
+      $querySpec.orderBy->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('order by', $state, $config) +
+        $sep1 + $querySpec.orderBy->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1);
+      }) +
+
+      // Take/Slice
+      $querySpec.offset->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('offset', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($querySpec.offset->toOne(), $state->increaseLevel(), $config) + ' ' + $sqlDialect->keyword('rows', $state, $config) +
+        $querySpec.limit->executeIfNotEmptyElseReturnEmptyString({|
+          $sep0 + $sqlDialect->keyword('fetch next', $state, $config) + ' ' +
+          $sqlDialect->executeNodeProcessor($querySpec.limit->toOne(), $state->increaseLevel(), $config) +
+          ' ' + $sqlDialect->keyword('rows only', $state, $config);
+        });
+      });
+  )
+}
+
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::querySpecificationProcessorForH2(): NodeProcessor<QuerySpecification>[1]
 {
   nodeProcessor(
     QuerySpecification,
-    {sqlDialect, querySpec, state, config |
-      if(containsSupportedFullOuterJoin($querySpec),
-        | convertFullOuterJoin($querySpec, $sqlDialect, $state, $config),
-        | let sep0 = $state.separator(0, $config);
-          let sep1 = $state.separator(1, $config);
+    {sqlDialect, querySpec, state, config | querySpecificationProcessorHelperForH2($sqlDialect, $querySpec, $state, $config);}
+  )
+}
 
-          // Select
-          $sqlDialect->keyword('select', $state, $config) +
 
-          // Top
-          if($querySpec.offset->isEmpty() && !$querySpec.limit->isEmpty() && !$querySpec.limit->toOne()->instanceOf(NullLiteral),
-            | $sep0 + $sqlDialect->keyword('top', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($querySpec.limit->toOne(), $state->increaseLevel(), $config),
-            | ''
-          ) +
-
-          $sqlDialect->executeNodeProcessor($querySpec.select, $state, $config) +
-
-          // From
-          $querySpec.from->executeIfNotEmptyElseReturnEmptyString({|
-            $sep0 + $sqlDialect->keyword('from', $state, $config) +
-            $sep1 + $querySpec.from->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
-          }) +
-
-          // Where
-          $querySpec.where->executeIfNotEmptyElseReturnEmptyString({|
-            $sep0 + $sqlDialect->keyword('where', $state, $config) +
-            $sep1 + $sqlDialect->executeNodeProcessor($querySpec.where->toOne(), $state->increaseLevel(), $config)
-          }) +
-
-          // Group By
-          $querySpec.groupBy->executeIfNotEmptyElseReturnEmptyString({|
-            $sep0 + $sqlDialect->keyword('group by', $state, $config) +
-            $sep1 + $querySpec.groupBy->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
-          }) +
-
-          // Having
-          $querySpec.having->executeIfNotEmptyElseReturnEmptyString({|
-            $sep0 + $sqlDialect->keyword('having', $state, $config) +
-            $sep1 + $sqlDialect->executeNodeProcessor($querySpec.having->toOne(), $state->increaseLevel(), $config)
-          }) +
-
-          // Order By
-          $querySpec.orderBy->executeIfNotEmptyElseReturnEmptyString({|
-            $sep0 + $sqlDialect->keyword('order by', $state, $config) +
-            $sep1 + $querySpec.orderBy->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1);
-          }) +
-
-          // Take/Slice
-          $querySpec.offset->executeIfNotEmptyElseReturnEmptyString({|
-            $sep0 + $sqlDialect->keyword('offset', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($querySpec.offset->toOne(), $state->increaseLevel(), $config) + ' ' + $sqlDialect->keyword('rows', $state, $config) +
-            $querySpec.limit->executeIfNotEmptyElseReturnEmptyString({|
-              $sep0 + $sqlDialect->keyword('fetch next', $state, $config) + ' ' + 
-              $sqlDialect->executeNodeProcessor($querySpec.limit->toOne(), $state->increaseLevel(), $config) +
-              ' ' + $sqlDialect->keyword('rows only', $state, $config);
-            });
-          });
-      );
-    }
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::extendedQuerySpecificationProcessorForH2(): NodeProcessor<ExtendedQuerySpecification>[1]
+{
+  nodeProcessor(
+    ExtendedQuerySpecification,
+    {sqlDialect, querySpec, state, config | querySpecificationProcessorHelperForH2($sqlDialect, $querySpec, $state, $config)}
   )
 }
 
@@ -741,6 +757,47 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     v:VariablePlaceholder[1]| $sqlDialect->executeNodeProcessor($v, $state->increaseLevel(), $config),
     fmoh:FreeMarkerOperation[1]| $sqlDialect->executeNodeProcessor($fmoh, $state->increaseLevel(), $config)
   ])
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::windowFrameProcessorForH2(): NodeProcessor<meta::external::query::sql::metamodel::WindowFrame>[1]
+{
+  nodeProcessor(
+    meta::external::query::sql::metamodel::WindowFrame,
+    {sqlDialect, f, state, config |
+      let mode = if(
+        [
+          pair(|$f.mode == WindowFrameMode.RANGE, |'range'),
+          pair(|$f.mode == WindowFrameMode.ROWS,  |'rows')
+        ],
+        | fail('Unhandled WindowFrameMode - ' + $f.mode->toString()); '';
+      );
+      let between = if ($f.end->isEmpty(), | '', | $sqlDialect->keyword('between', $state, $config) + ' ');
+      let processFrameBound = {b: FrameBound[1] |
+        if(
+          [
+            pair(|$b.type == FrameBoundType.UNBOUNDED_PRECEDING, |$sqlDialect->keyword('unbounded preceding', $state, $config)),
+            pair(|$b.type == FrameBoundType.PRECEDING, |if($b.durationUnit->isEmpty(), |'', |$sqlDialect->keyword('interval', $state, $config) + ' \'') +
+                                                        $sqlDialect->executeNodeProcessor($b.value->toOne(), [], $state, $config) +
+                                                        if($b.durationUnit->isEmpty(), |'', |'\' ' + $sqlDialect->keyword($b.durationUnit->toOne().value, $state, $config)) +
+                                                        ' ' +
+                                                        $sqlDialect->keyword('preceding', $state, $config)),
+            pair(|$b.type == FrameBoundType.CURRENT_ROW, |$sqlDialect->keyword('current row', $state, $config)),
+            pair(|$b.type == FrameBoundType.UNBOUNDED_FOLLOWING, |$sqlDialect->keyword('unbounded following', $state, $config)),
+            pair(|$b.type == FrameBoundType.FOLLOWING, |if($b.durationUnit->isEmpty(), |'', |$sqlDialect->keyword('interval', $state, $config) + ' \'') +
+                                                        $sqlDialect->executeNodeProcessor($b.value->toOne(), [], $state, $config) +
+                                                        if($b.durationUnit->isEmpty(), |'', |'\' ' + $sqlDialect->keyword($b.durationUnit->toOne().value, $state, $config)) +
+                                                        ' ' +
+                                                        $sqlDialect->keyword('following', $state, $config))
+          ],
+          | fail('Unhandled FrameBoundType - ' + $b.type->toString()); '';
+        )
+      };
+      let start = $processFrameBound->eval($f.start);
+      let and = if ($f.end->isEmpty(), | '', | ' ' + $sqlDialect->keyword('and', $state, $config));
+      let end = if ($f.end->isEmpty(), | '', | ' ' + $processFrameBound->eval($f.end););
+      $sqlDialect->keyword($mode, $state, $config) + ' ' + $between + $start + $and + $end;
+    }
+  )
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::selectProcessorForH2(): NodeProcessor<Select>[1]

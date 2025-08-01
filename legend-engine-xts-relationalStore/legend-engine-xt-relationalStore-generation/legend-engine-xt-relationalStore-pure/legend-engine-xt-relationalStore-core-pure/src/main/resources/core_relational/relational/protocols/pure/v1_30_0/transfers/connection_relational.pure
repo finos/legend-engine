@@ -163,6 +163,12 @@ function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connecti
             _type = 'gcpWorkloadIdentityFederation',
             serviceAccountEmail = $b.serviceAccountEmail,
             additionalGcpScopes = $b.additionalGcpScopes
+         ),
+      o:meta::pure::alloy::connections::alloy::authentication::OAuthAuthenticationStrategy[1] |
+         ^meta::protocols::pure::v1_30_0::metamodel::store::relational::connection::alloy::authentication::OAuthAuthenticationStrategy(
+            _type = 'oauth',
+            oauthKey = $o.oauthKey,
+            scopeName = $o.scopeName
          )
    ])->toOneMany())
 }

@@ -19,7 +19,7 @@ import meta::relational::metamodel::*;
 import meta::core::runtime::*;
 import meta::pure::mapping::*;
 
-function meta::relational::tests::semistructured::multiBinding::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+function meta::relational::tests::semistructured::multiBinding::semiStructuredExecute(conn: Connection[1], func: String[1], mapping:String[1], expected: String[1]):Boolean[1]
 {
   let csv =
         'PERSON_SCHEMA\n' +
@@ -36,17 +36,16 @@ function meta::relational::tests::semistructured::multiBinding::semiStructuredEx
         ;
 
   let model = '/core_relational/relational/tests/semistructured/model/semiStructuredMultiBindingMapping.legend';
+  let store = 'multiBinding::store::H2DB';
 
-  let m = 'multiBinding::mapping::H2Mapping';
-  let s = 'multiBinding::store::H2DB';
-
-   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
+  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $mapping, $store, $expected);
 }
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::multiBinding::testSemiStructuredPropertyAccessFromSingleBindingMapping(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'multiBinding::semiStructuredPropertyAccessFromSingleBindingMapping__TabularDataSet_1_',
+    'multiBinding::mapping::H2Mapping',
     'First Name,Address Name\n' +
     'Peter,A4\n' +
     'John,A5\n' +
@@ -62,6 +61,23 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::multiBindin
 {
   semiStructuredExecute($conn,
     'multiBinding::semiStructuredPropertyAccessFromMultipleBindingMapping__TabularDataSet_1_',
+    'multiBinding::relationFunctionMapping::H2Mapping',
+    'First Name,Firm Legal Name,Address Name\n' +
+    'Peter,Firm X,A4\n' +
+    'John,Firm X,A5\n' +
+    'John,Firm X,A6\n' +
+    'Anthony,Firm X,A7\n' +
+    'Fabrice,Firm A,A8\n' +
+    'Oliver,Firm B,A9\n' +
+    'David,Firm B,A10\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::multiBinding::relationFunctionMapping::testSemiStructuredPropertyAccessFromMultipleBindingMapping(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'multiBinding::semiStructuredPropertyAccessFromMultipleBindingMapping__TabularDataSet_1_',
+    'multiBinding::relationFunctionMapping::H2Mapping',
     'First Name,Firm Legal Name,Address Name\n' +
     'Peter,Firm X,A4\n' +
     'John,Firm X,A5\n' +
@@ -77,6 +93,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::multiBindin
 {
   semiStructuredExecute($conn,
     'multiBinding::semiStructuredRelOpWithJoinPropertyAccessFromMultipleBindingMapping__TabularDataSet_1_',
+    'multiBinding::mapping::H2Mapping',
     'First Name,Firm Legal Name,Address Name,Manager Firm Legal Name\n' +
     'Peter,Firm X,A4,Firm X\n' +
     'John,Firm X,A5,Firm X\n' +

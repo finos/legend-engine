@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::store::relational::sqlDialectTranslation::utils::*;
-import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::relational::extension::*;
 import meta::relational::functions::pureToSqlQuery::union::*;
 import meta::external::query::sql::metamodel::extension::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlPlanning::*;
 import meta::pure::extension::*;
 import meta::relational::runtime::*;
@@ -47,26 +47,14 @@ function meta::relational::functions::toPostgresModel::newState(extensions: Exte
   ^ModelConversionState(isRootSelect = true, processingSelect = false, processingFilter = false, extensions = $extensions, dynaFunctionConverterMap = getDynaFunctionConverterMap());
 }
 
-function meta::relational::functions::toPostgresModel::convertRelationalOperationElement(r:RelationalOperationElement[1], extensions:Extension[*]):Node[1]
+function meta::relational::functions::toPostgresModel::convertSqlQuery(select:SelectSQLQuery[1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Query[1]
 {
-  let state = newState($extensions);
-  $r->match(
-    [
-      s:SelectSQLQuery[1]| $s->convertSelectSqlQuery($state),
-      r:RelationalOperationElement[1]| $r->convertElement($state)
-    ]
-  );
+  convertSqlQuery($select, $state, [])
 }
 
-function meta::relational::functions::toPostgresModel::convertSqlQuery(s:SQLQuery[1], extensions:Extension[*]):meta::external::query::sql::metamodel::Query[1]
+function meta::relational::functions::toPostgresModel::convertSqlQuery(select:SelectSQLQuery[1], state:ModelConversionState[1], extensions: Extension[*]):meta::external::query::sql::metamodel::Query[1]
 {
-  assert($s->instanceOf(SelectSQLQuery), format('Postgres Model Conversion not supported for %s yet!', $s->type().name));
-  $s->cast(@SelectSQLQuery)->convertSelectSqlQuery(newState($extensions));
-}
-
-function meta::relational::functions::toPostgresModel::convertSelectSqlQuery(select:SelectSQLQuery[1], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Query[1]
-{
-  let withQueries = $select.commonTableExpressions->map(e| ^WithQuery(name = $e.name->toIdentifier(), query = $e.sqlQuery->convertSelectSqlQuery(newState($state.extensions))));
+  let withQueries = $select.commonTableExpressions->map(e| ^WithQuery(name = $e.name->toIdentifier(), query = $e.sqlQuery->convertSqlQuery(newState($extensions))));
   let with = if($withQueries->isNotEmpty(), | ^With(withQueries = $withQueries), | []);
   ^Query(with = $with, queryBody = $select->convertElement($state)->cast(@QuerySpecification));
 }
@@ -124,8 +112,8 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
       );,
     | []
   );
-  
-  let query = ^QuerySpecification(
+
+  let query = ^ExtendedQuerySpecification(
     select  = ^Select(
                 distinct = if($s.distinct->isNotEmpty(), |$s.distinct->toOne(), |false), 
                 selectItems = if($s.columns->isEmpty(), | ^AllColumns(), | $s.columns->map(c|$c->convertElement(^$newState(processingSelect = true))->match([s:SelectItem[1] | $s, e: meta::external::query::sql::metamodel::Expression[1] | ^SingleColumn(expression = $e)])))
@@ -136,7 +124,8 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
     orderBy = convertOrderBy($s.orderBy, $newState),
     having  = $s.havingOperation->convertOptionalElementToExpression($newState),
     limit   = convertLimit($s, $newState),
-    offset  = $s.fromRow->convertOptionalElementToExpression($newState)
+    offset  = $s.fromRow->convertOptionalElementToExpression($newState),
+    qualify = $s.qualifyOperation->convertOptionalElementToExpression($newState)
   );
 
   if($state.isRootSelect,
@@ -380,7 +369,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('sqlNull',                   {p:meta::external::query::sql::metamodel::Expression[*]| ^NullLiteral()}),
     pair('isDistinct',                {p:meta::external::query::sql::metamodel::Expression[*]| let count = functionCall('count', $p); ^ComparisonExpression(left = ^$count(distinct = true), operator = ComparisonOperator.EQUAL, right = $count);}),
     pair('count',                     {p:meta::external::query::sql::metamodel::Expression[*]| if($p->isNotEmpty(), | functionCall('count', $p), | functionCall('count', ^AllColumnsReference()))}),
-    pair('size',                      {p:meta::external::query::sql::metamodel::Expression[*]| if($p->isNotEmpty(), | functionCall('count', $p), | functionCall('count', ^AllColumnsReference()))}),
+    pair('size',                      functionCall('count')),
     pair('max',                       functionCall('max')),
     pair('min',                       functionCall('min')),
     pair('stdDevSample',              functionCall('stddev_samp')),
@@ -760,6 +749,11 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.UNBOUNDED_PRECEDING,
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.UNBOUNDED_FOLLOWING)),
                       c: meta::relational::metamodel::FrameCurrentRowValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = meta::external::query::sql::metamodel::FrameBoundType.CURRENT_ROW),
+                      i: meta::relational::metamodel::FrameIntervalValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = if($i.direction == meta::relational::metamodel::FrameValueDirection.PRECEDING,
+                                                                                                                                            | meta::external::query::sql::metamodel::FrameBoundType.PRECEDING,
+                                                                                                                                            | meta::external::query::sql::metamodel::FrameBoundType.FOLLOWING),
+                                                                                                                                value = $i.value->convertElementToExpression($state),
+                                                                                                                                durationUnit = ^meta::external::query::sql::metamodel::StringLiteral(value = $i.durationUnit->toString())->convertDurationUnit()),
                       l: meta::relational::metamodel::FrameLiteralValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = if($l.direction == meta::relational::metamodel::FrameValueDirection.PRECEDING,
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.PRECEDING,
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.FOLLOWING),
@@ -781,7 +775,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   let partitions = $w.window.partition->map(p|$p->convertElementToExpression($state));
   let orderBy = $w.window.sortBy->map(s|^SortItem(sortKey = $s.sortByElement->convertElementToExpression($state),
                                                   ordering = $s.sortDirection->convertSortDirection(),
-                                                  nullOrdering = SortItemNullOrdering.UNDEFINED
+                                                  nullOrdering = if($s.sortDirection == meta::relational::metamodel::SortDirection.ASC, | SortItemNullOrdering.LAST, | SortItemNullOrdering.FIRST)
                                                 ));
   let windowFrame = if($w.window.frame->isNotEmpty(),
                        | $w.window.frame->toOne()->convertWindowFrame($state),

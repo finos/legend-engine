@@ -194,4 +194,28 @@ public class TestSnowflakeConnectionGrammarCompiler
         Assert.assertEquals("legend-local-snowflake-privateKeyVaultReference-model-relational-tests-dbInc", authenticationStrategy._privateKeyVaultReference());
         Assert.assertEquals("legend-local-snowflake-passphraseVaultReference-model-relational-tests-dbInc", authenticationStrategy._passPhraseVaultReference());
     }
+
+    @Test
+    public void testSnowflakeConnectionWithOAuthAuthentication()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  type: Snowflake;\n" +
+                "  quoteIdentifiers: true;\n" +
+                "  specification: Snowflake\n" +
+                "      {\n" +
+                "           name: 'dbName';\n" +
+                "           account: 'account';\n" +
+                "           warehouse: 'warehouse';\n" +
+                "           region: 'region';\n" +
+                "      };\n" +
+                "  auth: OAuth\n" +
+                "  {\n" +
+                "    oauthKey: 'oauthKey';\n" +
+                "    scopeName: 'scopeName';\n" +
+                "  };\n" +
+                "}\n");
+    }
 }

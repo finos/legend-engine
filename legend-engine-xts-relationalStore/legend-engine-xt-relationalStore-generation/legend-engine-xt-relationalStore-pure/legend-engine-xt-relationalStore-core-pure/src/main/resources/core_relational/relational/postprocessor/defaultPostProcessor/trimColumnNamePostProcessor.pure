@@ -138,6 +138,7 @@ function meta::relational::postProcessor::reAliasColumnName::replace(r:Relationa
                                                        savedFilteringOperation = $s.savedFilteringOperation->map(sf|pair($sf.first->replace($m), $sf.second->replace($m))),
                                                        groupBy=$s.groupBy->map(gb|$gb->replace($m)),
                                                        havingOperation=$s.havingOperation->map(ho|$ho->replace($m)),
+                                                       qualifyOperation=$s.qualifyOperation->map(qo|$qo->replace($m)),
                                                        orderBy = $s.orderBy->map(ob|$ob->replace($m)),
                                                        filteringOperation= $s.filteringOperation->map(fo | $fo->replace($m)));
                                        if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);,
