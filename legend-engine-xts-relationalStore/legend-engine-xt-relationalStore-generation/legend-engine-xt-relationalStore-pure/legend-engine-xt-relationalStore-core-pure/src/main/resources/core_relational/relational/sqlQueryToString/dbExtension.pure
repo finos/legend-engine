@@ -152,7 +152,12 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    columnNameToIdentifier(s:String[1])
    {
-     if($this.dbExtension.columnNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.columnNameToIdentifier->toOne()->eval($s, $this));
+     let identifier = if($this.dbExtension.columnNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.columnNameToIdentifier->toOne()->eval($s, $this));
+     if($identifier == $s && $s->contains(' '),
+      | assert($this.dbExtension.columnNameQuotes->isNotEmpty(), 'Column names with spaces not supported for Database Type: ' + $this.dbType->toString());
+       let quotes = $this.dbExtension.columnNameQuotes->toOne();
+       $quotes + $s + $quotes;,
+      |$identifier);
    }: String[1];
 
    identifierProcessor(s:String[1])
@@ -287,6 +292,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    ddlCommandsTranslator : RelationalDDLCommandsTranslator[0..1];
    preAndFinallyExecutionSQLQuery: meta::pure::metamodel::function::Function<{DbConfig[1], meta::external::store::relational::runtime::DatabaseConnection[1] -> PreAndFinallyExecutionSQLQuery[*]}>[0..1];
    processTempTableName: meta::pure::metamodel::function::Function<{String[1], meta::external::store::relational::runtime::DatabaseConnection[1] -> String[1]}>[0..1];
+   columnNameQuotes: String[0..1];
 
    dataTypeToSqlText: meta::pure::metamodel::function::Function<{meta::relational::metamodel::datatype::DataType[1] -> String[1]}>[0..1];
 
