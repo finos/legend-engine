@@ -46,6 +46,7 @@ import org.finos.legend.engine.language.functionJar.grammar.from.FunctionJarGram
 import org.finos.legend.engine.language.functionJar.grammar.to.FunctionJarGrammarComposer;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension;
+import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension;
 import org.finos.legend.engine.language.hostedService.compiler.toPureGraph.HostedServiceCompilerExtension;
 import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceArtifactGenerationExtension;
 import org.finos.legend.engine.language.hostedService.grammar.from.HostedServiceGrammarParserExtension;
@@ -96,26 +97,51 @@ import org.finos.legend.engine.language.snowflake.grammar.from.SnowflakeGrammarP
 import org.finos.legend.engine.language.snowflake.grammar.to.SnowflakeGrammarComposer;
 import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifactGenerationExtension;
 import org.finos.legend.engine.language.snowflakeM2MUdf.generator.SnowflakeM2MUdfArtifactGenerationExtension;
-import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParserExtension;
-import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarComposerExtension;
+import org.finos.legend.engine.language.sql.expression.protocol.SQLExpressionProtocolExtension;
+import org.finos.legend.engine.language.sql.expression.grammar.parser.SQLExpressionGrammarParserExtension;
+import org.finos.legend.engine.language.sql.expression.grammar.serializer.SQLExpressionGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
 import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJarProtocolExtension;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceProtocolExtension;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionProtocolExtension;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBPureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.AuthenticationProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.BigQueryProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.DatabricksProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.PersistenceCloudProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.PersistenceRelationalProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.RedshiftProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.SpannerProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.TrinoProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.snowflake.SnowflakeProtocolExtension;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.ElasticsearchV7ProtocolExtension;
 import org.finos.legend.engine.pure.code.core.CoreLegendPureCoreExtension;
 import org.finos.legend.engine.pure.code.core.LegendPureCoreExtension;
 import org.finos.legend.engine.pure.code.core.ServiceLegendPureCoreExtension;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.sql.compiler.SQLCompilerExtension;
+import org.finos.legend.engine.tds.accessor.compiler.TDSAccessorCompilerExtension;
+import org.finos.legend.engine.tds.accessor.grammar.parser.TDSRelationAccessorGrammarExtension;
+import org.finos.legend.engine.tds.accessor.grammar.serializer.TDSRelationAccessorGrammarComposerExtension;
+import org.finos.legend.engine.tds.accessor.protocol.TDSContainerPureProtocolExtension;
 import org.finos.legend.pure.code.core.ArrowLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.DeephavenJavaBindingLegendPureCoreExtension;
 import org.finos.legend.pure.code.core.DeephavenLegendPureCoreExtension;
@@ -331,34 +357,35 @@ public class TestExtensions
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends PureProtocolExtension>>empty()
-                .with(org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
+                .with(CorePureProtocolExtension.class)
+                .with(DataSpaceProtocolExtension.class)
+                .with(TDSContainerPureProtocolExtension.class)
                 .with(SnowflakeProtocolExtension.class)
                 .with(HostedServiceProtocolExtension.class)
                 .with(FunctionJarProtocolExtension.class)
                 .with(BigQueryFunctionProtocolExtension.class)
                 .with(MemSqlFunctionProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.PersistenceCloudProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.PersistenceRelationalProtocolExtension.class)
+                .with(DiagramProtocolExtension.class)
+                .with(GenerationProtocolExtension.class)
+                .with(PersistenceProtocolExtension.class)
+                .with(PersistenceCloudProtocolExtension.class)
+                .with(PersistenceRelationalProtocolExtension.class)
+                .with(RelationalProtocolExtension.class)
+                .with(BigQueryProtocolExtension.class)
+                .with(SpannerProtocolExtension.class)
+                .with(TrinoProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.BigQueryProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.SpannerProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.TrinoProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.SnowflakeProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.DatabricksProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.RedshiftProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.AuthenticationProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
-                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension.class)
-                .with(org.finos.legend.engine.language.sql.grammar.integration.SQLPureProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.store.elasticsearch.v7.ElasticsearchV7ProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBPureProtocolExtension.class)
+                .with(DatabricksProtocolExtension.class)
+                .with(RedshiftProtocolExtension.class)
+                .with(ServiceProtocolExtension.class)
+                .with(ServiceStoreProtocolExtension.class)
+                .with(AuthenticationProtocolExtension.class)
+                .with(TextProtocolExtension.class)
+                .with(GraphQLPureProtocolExtension.class)
+                .with(SQLExpressionProtocolExtension.class)
+                .with(ElasticsearchV7ProtocolExtension.class)
+                .with(MongoDBPureProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.deephaven.metamodel.DeephavenProtocolExtension.class)
                 ;
     }
@@ -381,6 +408,7 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PureGrammarParserExtension>>empty()
                 .with(CorePureGrammarParser.class)
                 .with(DataSpaceParserExtension.class)
+                .with(TDSRelationAccessorGrammarExtension.class)
                 .with(SnowflakeGrammarParserExtension.class)
                 .with(HostedServiceGrammarParserExtension.class)
                 .with(FunctionJarGrammarParserExtension.class)
@@ -397,7 +425,7 @@ public class TestExtensions
                 .with(ServiceParserExtension.class)
                 .with(AuthenticationGrammarParserExtension.class)
                 .with(GraphQLGrammarParserExtension.class)
-                .with(SQLGrammarParserExtension.class)
+                .with(SQLExpressionGrammarParserExtension.class)
                 .with(ServiceStoreGrammarParserExtension.class)
                 .with(TextParserExtension.class)
                 .with(ElasticsearchGrammarParserExtension.class)
@@ -413,6 +441,7 @@ public class TestExtensions
                 .with(CorePureGrammarComposer.class)
                 .with(DataSpaceGrammarComposerExtension.class)
                 .with(SnowflakeGrammarComposer.class)
+                .with(TDSRelationAccessorGrammarComposerExtension.class)
                 .with(HostedServiceGrammarComposer.class)
                 .with(FunctionJarGrammarComposer.class)
                 .with(PostDeploymentActionGrammarComposer.class)
@@ -435,7 +464,7 @@ public class TestExtensions
                 .with(ServiceGrammarComposerExtension.class)
                 .with(ServiceStoreGrammarComposerExtension.class)
                 .with(GraphQLPureGrammarComposerExtension.class)
-                .with(SQLPureGrammarComposerExtension.class)
+                .with(SQLExpressionGrammarComposerExtension.class)
                 .with(AuthenticationGrammarComposerExtension.class)
                 .with(TextGrammarComposerExtension.class)
                 .with(ElasticsearchGrammarComposerExtension.class)
@@ -454,6 +483,7 @@ public class TestExtensions
                 .with(FunctionJarCompilerExtension.class)
                 .with(BigQueryFunctionCompilerExtension.class)
                 .with(MemSqlFunctionCompilerExtension.class)
+                .with(TDSAccessorCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TextCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.CoreCompilerExtension.class)
@@ -483,7 +513,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.RedshiftCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DatabricksCompilerExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLCompilerExtension.class)
-                .with(org.finos.legend.engine.language.sql.grammar.integration.SQLCompilerExtension.class)
+                .with(SQLCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationCompilerExtension.class)
                 .with(org.finos.legend.engine.language.stores.elasticsearch.v7.compiler.ElasticsearchCompilerExtension.class)
@@ -578,6 +608,8 @@ public class TestExtensions
                 .with("core")
                 .with("core_generation")
                 .with("core_service")
+                .with("core_external_extensions")
+                .with("core_external_query_sql")
                 .with("core_functions_unclassified")
                 .with("core_analytics_binding")
                 .with("core_analytics_class")
@@ -603,6 +635,7 @@ public class TestExtensions
                 .with("core_external_query_graphql_metamodel")
                 .with("core_external_store_relational_postgres_sql_model")
                 .with("core_external_store_relational_postgres_sql_model_extensions")
+                .with("core_external_query_sql_expression")
                 .with("core_external_compiler")
                 .with("core_external_execution")
                 .with("core_external_language_daml")

@@ -133,7 +133,7 @@ function <<access.private>> meta::protocols::generation::pure::addProperties(sou
 
 function <<access.private>> meta::protocols::generation::pure::isTypeInScope(type:Type[1], pureFile:String[1]):Boolean[1]
 {
-  $type == Any || ($type != SourceInformation && !$type->hasStereotype('excluded', ProtocolInfo) && ($type->sourceInformation().source == $pureFile));
+  $type == Any || $type->instanceOf(meta::pure::metamodel::type::PrimitiveType) || ($type != SourceInformation && !$type->hasStereotype('excluded', ProtocolInfo) && ($type->sourceInformation().source == $pureFile));
 }
 
 function <<access.private>> meta::protocols::generation::pure::isPropertyInScope(p:Property<Nil,Any|*>[1], pureFile:String[1]):Boolean[1]

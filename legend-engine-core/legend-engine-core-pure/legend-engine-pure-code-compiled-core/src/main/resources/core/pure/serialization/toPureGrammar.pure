@@ -65,9 +65,9 @@ function meta::pure::metamodel::serialization::grammar::printFunctionDefinitionE
 function meta::pure::metamodel::serialization::grammar::printLambdaParameters(func:Function<Any>[1], showTypeForVars:Boolean[1]):String[1]
 {
    let funcType = $func->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType);
-   $funcType.parameters->evaluateAndDeactivate()->map(v |
-                                                          $v.name +
-                                                          if($showTypeForVars,
+
+   $funcType.parameters->evaluateAndDeactivate()->map(v | $v.name +
+                                                          if($showTypeForVars && !$v.genericType.rawType->isEmpty(),
                                                             |': ' + printGenericType($v.genericType) + '[' + printMultiplicity($v.multiplicity) + ']',
                                                             |''
                                                           );
@@ -132,6 +132,11 @@ function <<access.private>> meta::pure::metamodel::serialization::grammar::print
   );
 }
 
+function meta::pure::metamodel::serialization::grammar::printSortInfo(s:SortInfo<Any>[1]):String[1]
+{
+  '~' + $s.column.name->printColName() + '->meta::pure::functions::relation::'+if($s.direction == SortType.ASC,|'ascending',|'descending')+'()';
+}
+
 function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:InstanceValue[1], configuration:Configuration[0..1], context:GContext[1]):String[1]
 {
    if ($i.multiplicity == PureOne && $i.values->isEmpty(),
@@ -140,6 +145,8 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                               $configuration.extensions.extraInstanceValueHandlers->concatenate([
                                     f:FunctionDefinition<Any>[1] | $f->printFunctionDefinition($configuration, ^$context(space = $context.space + '    ')),
                                     f:FunctionExpression[1]      | $f->printPropertyOrFunctionExpression($configuration, $context),
+                                    w:_Window<Any>[1] | 'over(~['+$w.partition->joinStrings(',')+']'+if($w.sortInfo->isEmpty(),|'',|','+$w.sortInfo->toOne()->printSortInfo())+')',
+                                    s:SortInfo<Any>[1] | $s->printSortInfo(),
                                     cs:ColSpec<Any>[1] | '~' + $cs.name->printColName(),
                                     fsc:FuncColSpec<Any, Any>[1] | '~' + $fsc.name->printColName() + ':' + $fsc.function->cast(@FunctionDefinition<Any>)->printFunctionDefinition($configuration, ^GContext(space='')),
                                     asc:AggColSpec<Any, Any, Any>[1] | '~' + $asc.name->printColName() + ':' + $asc.map->cast(@FunctionDefinition<Any>)->printFunctionDefinition($configuration, ^GContext(space='')) + ':' + $asc.reduce->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^GContext(space='')),
@@ -171,7 +178,8 @@ function <<access.private>> meta::pure::metamodel::serialization::grammar::print
                                         p:Property<Nil,Any|*>[1]   | printProperty($p, $functionExpression.parametersValues->at(0), $configuration, $context),
                                         q:QualifiedProperty<Any>[1]| printProperty($q, $functionExpression.parametersValues, $configuration, $context),
                                         c:Column<Nil,Any|*>[1]     | printColumn($c, $functionExpression.parametersValues->at(0), $configuration, $context),
-                                        a:Any[1]                   | printFunctionExpression($functionExpression, $configuration, $context)
+                                        a:Any[1]                   | printFunctionExpression($functionExpression, $configuration, $context),
+                                        a:Any[0]                   | ''
                                     ]);
 }
 
@@ -207,7 +215,7 @@ function meta::pure::metamodel::serialization::grammar::printColSpec(functionExp
 
 function meta::pure::metamodel::serialization::grammar::printColName(name:String[1]):String[1]
 {
-  if($name->contains(' '),|'\''+$name+'\'',|$name);
+  if($name->contains(' ') || $name->contains('('),|'\''+$name+'\'',|$name);
 }
 
 function meta::pure::metamodel::serialization::grammar::printFunctionExpression(functionExpression:FunctionExpression[1], configuration:Configuration[0..1], _context:GContext[1]):String[1]
@@ -296,7 +304,7 @@ function meta::pure::metamodel::serialization::grammar::printProperty(p:Property
 
 function meta::pure::metamodel::serialization::grammar::printColumn(c:Column<Nil,Any|*>[1], o:ValueSpecification[1], configuration:Configuration[0..1], context:GContext[1]):String[1]
 {
-   $o->printValueSpecification($configuration, $context) + '.' + $c.name->toOne();
+   $o->printValueSpecification($configuration, $context) + '.' + $c.name->toOne()->printColName();
 }
 
 function meta::pure::metamodel::serialization::grammar::printProperty(p:QualifiedProperty<Any>[1], params:ValueSpecification[*], configuration:Configuration[0..1], context:GContext[1]):String[1]

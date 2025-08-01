@@ -1,0 +1,136 @@
+import meta::pure::store::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::datatype::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::*;
+import meta::relational::grammar::serialization::*;
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function meta::relational::grammar::serialization::printDatabase(d:Database[1]):String[1]
+{
+  'Database ' + $d->elementToPath() + '\n' +
+  '('+
+   $d.schemas->map(
+      s | '\n  Schema '+$s.name + '\n  ('+ $s.tables->map(x|
+              '\n    Table '+$x.name+' ('+
+                  $x.columns->map(z|let c = $z->cast(@meta::relational::metamodel::Column);
+                                    if($c.name->contains(' '),|'"'+$c.name+'"',|$c.name) + ' ' + $c.type->match([
+                                                          x : Varchar[1] | 'VARCHAR(' + $x.size->toString() + ')',
+                                                          d : meta::relational::metamodel::datatype::Decimal[1] | 'DECIMAL(' + $d.precision->toString() + ',' + $d.scale->toString() + ')',
+                                                          z : Any[1] | $z->type().name->toOne()
+                                                        ]
+                                                      ) + if ($x.primaryKey->contains($c),
+                                                                |' PRIMARY KEY',
+                                                                |if ($c.nullable->isNotEmpty() && $c.nullable->toOne(), |'', |' NOT NULL')
+                                                          );
+                                 )->joinStrings(', ')+
+              ')'
+                  )->joinStrings('') + '\n  )'
+          )->joinStrings('')+
+    $d.joins->map(
+      j | 'Join '+$j.name+'('+$j.operation->printRelationalOperationElement(false)+')'
+    )->joinStrings(' ')+
+  '\n)';
+}
+
+function meta::relational::grammar::serialization::printMapping(d:Mapping[1]):String[1]
+{
+  'Mapping '+$d->elementToPath()+
+  '('+
+    $d.classMappings->map(si|
+      $si.class->elementToPath() + '['+$si.id+']:' + $si->match(
+        [
+          rs:RootRelationalInstanceSetImplementation[1] | 'Relational {'+
+              $rs.propertyMappings->cast(@RelationalPropertyMapping)->map(pm|
+                $pm.property.name->toOne() + if($pm.targetSetImplementationId == '',|'',|'['+$pm.targetSetImplementationId+']') + ':'+$pm.relationalOperationElement->printRelationalOperationElement(true))->joinStrings(', ')
+          +'}'
+        ]
+      )
+    )->joinStrings(' ')+
+  ')';
+}
+
+function meta::relational::grammar::serialization::printRelationalOperationElement(d:RelationalOperationElement[1], forMapping:Boolean[1]):String[1]
+{
+  $d->match(
+    [
+      t:TableAliasColumn[1]|if($forMapping,|'['+$t.alias.database->toOne()->elementToPath()+']',|'')+$t.alias.relationalElement->cast(@Table).schema.name->toOne()+'.'+$t.alias.relationalElement->cast(@Table).name+'.'+$t.column.name,
+      x:RelationalOperationElementWithJoin[1]|'['+$x.joinTreeNode.database->toOne()->elementToPath()+']@'+$x.joinTreeNode.joinName->toOne(),
+      v:DynaFunction[1]|$v.name + '('+$v.parameters->map(p|$p->printRelationalOperationElement($forMapping))->joinStrings(',')+')'
+    ]
+  )
+}
+
+function meta::relational::grammar::serialization::printRelationalDatabaseConnection(connection:meta::external::store::relational::runtime::RelationalDatabaseConnection[1]):String[1]
+{
+  '^meta::external::store::relational::runtime::RelationalDatabaseConnection('+
+  'type='+$connection.type->meta::pure::metamodel::serialization::grammar::printValueSpecification([], ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+','+
+  'authenticationStrategy = '+$connection.authenticationStrategy->printNew()+','+ //^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),'+
+  'datasourceSpecification = '+$connection.datasourceSpecification->printNew()+ //^meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification(path = \'\')'+
+  ')'
+}
+
+function meta::relational::grammar::serialization::printNew(a:Any[1]):String[1]
+{  
+  $a->match(
+    [
+       i:Integer[1] | $i->toString(),
+       x:String[1] | '\''+$x+'\'',
+       a:Any[1] |
+         let _type = $a->type()->cast(@Class<Any>);
+         let properties = $_type->meta::pure::functions::meta::hierarchicalProperties();
+         '^'+$a->type()->elementToPath()+'('+
+          $properties->map(p| let value = $p->eval($a);
+                              if ($value->isEmpty(),
+                                |'',
+                                |$p.name->toOne() + '=' + $value->map(w|$w->printNew())->joinStrings(',')
+                              );
+                       )->filter(v|$v != '')->joinStrings(',')+
+        ')';
+    ]
+  );
+}
+
+function meta::relational::grammar::serialization::relationGrammarConfiguration():meta::pure::metamodel::serialization::grammar::Configuration[1]
+{
+  ^meta::pure::metamodel::serialization::grammar::Configuration
+  (
+    fullPath = true,
+    extensions = meta::relational::grammar::serialization::relationGrammarExtension()  
+  );
+}
+
+function meta::relational::grammar::serialization::relationGrammarExtension():meta::pure::metamodel::serialization::grammar::GrammarExtension[1]
+{
+    ^meta::pure::metamodel::serialization::grammar::GrammarExtension(
+        extraConnectionHandlers =
+          [
+            x:RelationalDatabaseConnection[0..1] |
+                $x->toOne()->printRelationalDatabaseConnection(); 
+          ],
+        extraInstanceValueHandlers = 
+          [
+            x:RelationStoreAccessor<Any>[1]|
+              let table = $x.sourceElement->cast(@Table);  
+              let schema = $table.schema;
+              let schemaName = if ($schema.name == 'default', |'', |$schema.name + '.');
+              '#>{' + $x.store->elementToPath() + '.' + $schemaName + $table.name->toOne() + '}#';
+              ,
+            t:meta::pure::metamodel::relation::TDS<Any>[1]|'#TDS{\n'+$t.csv->replace(' ','')+'}#';
+          ]
+    );
+}

@@ -77,6 +77,8 @@ function meta::relational::extension::relationalExtension() : meta::pure::extens
 
       serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
 
+      grammarSerializerExtensions = meta::relational::grammar::serialization::relationGrammarExtension(),
+
       executionPlan_execution_processNode =
                                 {mapping:Mapping[1], runtime: Runtime[1], parametersValues:Pair<VariableExpression, Any>[*], extensions:meta::pure::extension::Extension[*] |
                                    [
