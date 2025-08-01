@@ -43,7 +43,7 @@ public class Test_Relational_DuckDB_RelationFunctions_PCT extends PCTReportConfi
 
             // Result TDS decimal precision tolerance needs to be implemented
             one("meta::pure::functions::relation::tests::over::testRange_WithNumbers_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   menu_category,menu_cogs_usd,sum_cogs\n   Beverage,0.5,10.65\n   Beverage,0.65,9.65\n   Beverage,0.75,9.0\n   Dessert,0.5,10.65\n   Dessert,1.0,11.25\n   Dessert,1.25,10.25\n   Dessert,2.5,9.5\n   Dessert,3.0,7.0\n   Snack,1.25,10.25\n   Snack,2.25,11.75\n   Snack,4.0,4.0\n#'\nactual:   '#TDS\n   menu_category,menu_cogs_usd,sum_cogs\n   Beverage,0.5,10.649999976158142\n   Beverage,0.65,9.649999976158142\n   Beverage,0.75,9.0\n   Dessert,0.5,10.649999976158142\n   Dessert,1.0,11.25\n   Dessert,1.25,10.25\n   Dessert,2.5,9.5\n   Dessert,3.0,7.0\n   Snack,1.25,10.25\n   Snack,2.25,11.75\n   Snack,4.0,4.0\n#'\"", AdapterQualifier.needsInvestigation)
-        );
+    );
 
     public static Test suite()
     {
