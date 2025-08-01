@@ -15,7 +15,6 @@
 package org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct;
 
 import junit.framework.Test;
-import org.checkerframework.checker.units.qual.A;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
@@ -60,10 +59,7 @@ public class Test_Relational_H2_RelationFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_", "\"Match failure: FoldRelationalLambdaObject instanceOf FoldRelationalLambda\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_", "\"Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation),
-
-            one("meta::pure::functions::relation::tests::over::testRange_NPreceding_UnboundedFollowing_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   p,o,i,newCol\n   0,1,10,50\n   0,1,10,50\n   0,null,30,30\n   100,1,10,110\n   100,2,20,110\n   100,3,30,100\n   100,null,20,50\n   100,null,30,50\n   200,1,10,110\n   200,1,10,110\n   200,3,30,90\n   200,3,30,90\n   200,null,10,30\n   200,null,20,30\n   300,1,10,30\n   300,2,20,30\n#'\nactual:   '#TDS\n   p,o,i,newCol\n   0,1,10,20\n   0,1,10,20\n   0,null,30,50\n   100,1,10,60\n   100,2,20,60\n   100,3,30,50\n   100,null,20,110\n   100,null,30,110\n   200,1,10,80\n   200,1,10,80\n   200,3,30,60\n   200,3,30,60\n   200,null,10,110\n   200,null,20,110\n   300,1,10,30\n   300,2,20,30\n#'\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   p,o,i,newCol\n   300,2,20,30\n   300,1,10,30\n   200,null,20,30\n   200,null,10,30\n   200,3,30,90\n   200,3,30,90\n   200,1,10,110\n   200,1,10,110\n   100,null,30,50\n   100,null,20,50\n   100,3,30,100\n   100,2,20,110\n   100,1,10,110\n   0,null,30,30\n   0,1,10,50\n   0,1,10,50\n#'\nactual:   '#TDS\n   p,o,i,newCol\n   300,2,20,30\n   300,1,10,30\n   200,null,20,110\n   200,null,10,110\n   200,3,30,60\n   200,3,30,60\n   200,1,10,80\n   200,1,10,80\n   100,null,30,110\n   100,null,20,110\n   100,3,30,50\n   100,2,20,60\n   100,1,10,60\n   0,null,30,50\n   0,1,10,20\n   0,1,10,20\n#'\"", AdapterQualifier.needsInvestigation)
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation)
         );
 
     public static Test suite()
