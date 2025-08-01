@@ -119,9 +119,9 @@ public class AlterTest
         newClusterKeys.add(ClusterKey.of(FieldValue.builder().fieldName("column").build()));
         Operation addClusterKey = AlterOptimizationKey.of(dataset, AlterOptimizationKey.AlterOperation.ALTER_CLUSTER_KEY, newClusterKeys);
         LogicalPlan addClusterKeyLogicalPlan = LogicalPlan.builder().addOps(addClusterKey).build();
-        SqlPlan addCLusterKeyPhysicalPlan = transformer.generatePhysicalPlan(addClusterKeyLogicalPlan);
+        SqlPlan addClusterKeyPhysicalPlan = transformer.generatePhysicalPlan(addClusterKeyLogicalPlan);
         String expectedAddClusterKeySqlString = "ALTER TABLE \"my_db\".\"my_schema\".\"my_table\" CLUSTER BY (\"column\")";
-        Assertions.assertEquals(expectedAddClusterKeySqlString, addCLusterKeyPhysicalPlan.getSqlList().get(0));
+        Assertions.assertEquals(expectedAddClusterKeySqlString, addClusterKeyPhysicalPlan.getSqlList().get(0));
 
         Operation dropClusterKey = AlterOptimizationKey.of(dataset, AlterOptimizationKey.AlterOperation.ALTER_CLUSTER_KEY, new ArrayList<>());
         LogicalPlan dropClusterKeyLogicalPlan = LogicalPlan.builder().addOps(dropClusterKey).build();

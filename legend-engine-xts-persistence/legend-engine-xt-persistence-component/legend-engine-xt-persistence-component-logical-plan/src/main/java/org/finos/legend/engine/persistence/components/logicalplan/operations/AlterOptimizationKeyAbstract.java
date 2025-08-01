@@ -17,7 +17,6 @@ package org.finos.legend.engine.persistence.components.logicalplan.operations;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 
-import java.util.Optional;
 import java.util.List;
 
 import static org.immutables.value.Value.Immutable;

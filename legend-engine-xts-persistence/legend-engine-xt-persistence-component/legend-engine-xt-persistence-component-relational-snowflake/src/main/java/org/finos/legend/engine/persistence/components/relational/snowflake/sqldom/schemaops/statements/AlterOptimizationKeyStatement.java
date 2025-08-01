@@ -56,20 +56,18 @@ public class AlterOptimizationKeyStatement implements DDLStatement
         builder.append(WHITE_SPACE);
         table.genSqlWithoutAlias(builder);
 
-        builder.append(WHITE_SPACE);
-
         switch (operation)
         {
             case ALTER_CLUSTER_KEY:
                 if (clusterKeys.isEmpty())
                 {
-                    builder.append(WHITE_SPACE + DROP.get() + WHITE_SPACE + "CLUSTERING KEY");
+                    builder.append(WHITE_SPACE + DROP.get() + WHITE_SPACE + Clause.CLUSTERING_KEY.get());
                 }
                 else
                 {
                     builder.append(WHITE_SPACE + Clause.CLUSTER_BY.get() + WHITE_SPACE);
                     builder.append(OPEN_PARENTHESIS);
-                    SqlGen.genSqlList(builder, clusterKeys, WHITE_SPACE, COMMA);
+                    SqlGen.genSqlList(builder, clusterKeys, EMPTY, COMMA);
                     builder.append(CLOSING_PARENTHESIS);
                 }
                 break;
