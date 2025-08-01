@@ -63,10 +63,10 @@ function meta::analytics::mapping::modelCoverage::getAllPropertyInfo(classMappin
                $qp->isSupportedProperty() &&
                (
                   $rootClassMappings.class->contains($returnType)
-                  || $returnType->instanceOf(PrimitiveType)
+                  || $returnType->instanceOf(PrimitiveType) || $returnType->instanceOf(Enumeration)
                );
    );
-
+   
    newMap(
       $classMappings->filter(c | $c->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation)
       ->map(x|$x->allPropertyMappings()).property
