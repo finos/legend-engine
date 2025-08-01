@@ -55,12 +55,18 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_", "\"\nexpected: 2\nactual:   2.0\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'", AdapterQualifier.needsImplementation),
 
+            one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'array_aggregate(DECIMAL(2,1), STRING_LITERAL)'.", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'array_aggregate(INTEGER_LITERAL, STRING_LITERAL)'.", AdapterQualifier.needsInvestigation),
+
             // MaxBy
-            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "ava.sql.SQLException: Binder Error: No function matches the given name and argument types 'max_by(INTEGER, INTEGER, INTEGER, INTEGER)'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'max_by(INTEGER, INTEGER, INTEGER, INTEGER)'", AdapterQualifier.unsupportedFeature),
 
             // Min
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'", AdapterQualifier.unsupportedFeature),
+
+            one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'array_aggregate(DECIMAL(2,1), STRING_LITERAL)'.", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'array_aggregate(INTEGER_LITERAL, STRING_LITERAL)'.", AdapterQualifier.needsInvestigation),
 
             // MinBy
             one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'min_by(INTEGER, INTEGER, INTEGER, INTEGER)'", AdapterQualifier.unsupportedFeature),

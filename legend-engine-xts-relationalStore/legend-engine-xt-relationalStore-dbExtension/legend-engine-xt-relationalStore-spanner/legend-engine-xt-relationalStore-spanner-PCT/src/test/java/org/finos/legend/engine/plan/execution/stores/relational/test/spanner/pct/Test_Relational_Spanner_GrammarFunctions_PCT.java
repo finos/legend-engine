@@ -94,7 +94,6 @@ public class Test_Relational_Spanner_GrammarFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::collection::tests::range::testReverseRange_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'range_Integer_1__Integer_1__Integer_1__Integer_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
 
             //size
-            one("meta::pure::functions::collection::tests::size::testSizeEmpty_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::size::testSize_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
 
             //compare
@@ -131,6 +130,8 @@ public class Test_Relational_Spanner_GrammarFunctions_PCT extends PCTReportConfi
             //times
             one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: int64 overflow: 2 * 9223372036854775807 - Statement: 'select (2 * 9223372036854775807)'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\"\nexpected: 353791.470D\nactual:   353791.47\"", AdapterQualifier.needsInvestigation),
+
+            one("meta::pure::functions::collection::tests::size::testSizeEmpty_Function_1__Boolean_1_", "INVALID_ARGUMENT: Unable to resolve argument type. Please consider adding an explicit cast - Statement: 'select count(null)'", AdapterQualifier.needsInvestigation),
 
             // map / variant
             one("meta::pure::functions::collection::tests::map::testMap_FromVariantAsPrimitive_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
