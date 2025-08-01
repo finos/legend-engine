@@ -69,12 +69,25 @@ public class SnowflakeJdbcHelper extends JdbcHelper
             }
             else
             {
-                //Clustering Key Format = LINEAR(c1, c2)
+                // Clustering Key Format = LINEAR(c1, c2)
                 String clusteringKeyString = clusteringKey.toString();
-                String[] clusterKeys = clusteringKeyString.substring(7, clusteringKeyString.length() - 1).split(",");
-                return Arrays.stream(clusterKeys)
+                String prefix = "LINEAR(";
+                String suffix = ")";
+                if (clusteringKeyString.startsWith(prefix) && clusteringKeyString.endsWith(suffix))
+                {
+                    String keysPart = clusteringKeyString.substring(prefix.length(), clusteringKeyString.length() - suffix.length());
+                    String[] clusterKeys = Arrays.stream(keysPart.split(","))
+                                                .map(String::trim)
+                                                .toArray(String[]::new);
+                    // Use clusterKeys safely
+                    return Arrays.stream(clusterKeys)
                         .map(column -> ClusterKey.of(FieldValue.builder().fieldName(column).build()))
                         .collect(Collectors.toList());
+                }
+                else
+                {
+                    throw new IllegalArgumentException("Invalid clustering key format: " + clusteringKeyString);
+                }
             }
         }
         catch (Exception e)
