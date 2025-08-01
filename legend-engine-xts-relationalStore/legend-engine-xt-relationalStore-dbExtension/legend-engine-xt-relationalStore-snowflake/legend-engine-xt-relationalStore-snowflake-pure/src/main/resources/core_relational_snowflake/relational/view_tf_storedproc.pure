@@ -79,6 +79,7 @@ function meta::relational::functions::sqlQueryToString::snowflake::createFunctio
     if($createFunc.copyGrants, |'COPY GRANTS',|'') +
     +'\nRETURNS TABLE('+ $createFunc.return+ ')\n'+
     'LANGUAGE SQL'+
+    '\nEXECUTE AS CALLER'+
     '\nAS $$\n' +
      $createFunc.generatedSQL+
     ' $$;'
