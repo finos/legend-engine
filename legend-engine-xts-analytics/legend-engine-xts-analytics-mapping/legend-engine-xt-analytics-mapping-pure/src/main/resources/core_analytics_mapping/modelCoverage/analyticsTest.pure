@@ -30,10 +30,12 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
 {
   let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping);
   let mappedEntityForFirm = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::Firm');
-  assert($mappedEntityForFirm.properties->size() == 4);
+  assert($mappedEntityForFirm.properties->size() == 6);
   assertContains($mappedEntityForFirm.properties.name, 'id');
-  // qualified property
+  assertContains($mappedEntityForFirm.properties.name, 'incType');
+  // qualified properties
   assertContains($mappedEntityForFirm.properties.name, 'employeeSize');
+  assertContains($mappedEntityForFirm.properties.name, 'derivedIncType');
   // embedded relational mapping
   assertContains($mappedEntityForFirm.properties.name, 'employees');
   assertContains($result.mappedEntities.path, $mappedEntityForFirm.properties->filter(p|$p.name == 'employees')->toOne()->cast(@EntityMappedProperty).entityPath);
@@ -318,6 +320,12 @@ Class meta::analytics::mapping::modelCoverage::test::Firm extends meta::analytic
   id: Decimal[1];
   employees: meta::analytics::mapping::modelCoverage::test::Person[1..*];
   incType: meta::analytics::mapping::modelCoverage::test::IncType[1];
+  incType2: meta::analytics::mapping::modelCoverage::test::IncType[0..1];
+  derivedIncType() {if(
+  $this.incType2->isNotEmpty(),
+    |$this.incType2->toOne(),
+    |$this.incType
+  )}: meta::analytics::mapping::modelCoverage::test::IncType[1];
   employeeSize() {$this.employees->count()}: Number[1];
 }
 
@@ -388,11 +396,17 @@ Mapping meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping
     )
     ~mainTable [meta::analytics::mapping::modelCoverage::test::sampleDB]FirmTable
     id: [meta::analytics::mapping::modelCoverage::test::sampleDB]FirmTable.id,
+    incType: EnumerationMapping IncTypeMapping: 'corp',
     employees
     (
       firstName: [meta::analytics::mapping::modelCoverage::test::sampleDB]PersonTable.firstName
     ),
     address: [meta::analytics::mapping::modelCoverage::test::sampleDB]@firm_address
+  }
+  meta::analytics::mapping::modelCoverage::test::IncType: EnumerationMapping IncTypeMapping
+  {
+    LLC: ['llc'],
+    Corp: ['corp']
   }
   *meta::analytics::mapping::modelCoverage::test::Person: Relational
   {
