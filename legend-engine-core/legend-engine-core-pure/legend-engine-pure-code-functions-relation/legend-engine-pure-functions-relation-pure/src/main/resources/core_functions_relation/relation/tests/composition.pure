@@ -1017,9 +1017,9 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
     assertEquals( '#TDS\n'+
                   '   id,grp,name,newColSorted\n'+
                   '   10,0,J,J\n'+
-                  '   2,1,null,Fnullnull\n'+
-                  '   6,1,F,Fnullnull\n'+
-                  '   8,1,null,Fnullnull\n'+
+                  '   2,1,null,F\n'+
+                  '   6,1,F,F\n'+
+                  '   8,1,null,F\n'+
                   '   1,2,A,AE\n'+
                   '   5,2,E,AE\n'+
                   '   3,3,C,CG\n'+
