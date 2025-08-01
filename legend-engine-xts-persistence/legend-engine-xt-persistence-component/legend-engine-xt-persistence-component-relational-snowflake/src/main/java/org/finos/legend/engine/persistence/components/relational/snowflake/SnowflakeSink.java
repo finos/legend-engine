@@ -36,6 +36,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.AlterOptimizationKey;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Show;
@@ -70,6 +71,7 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.optmi
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.*;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.AlterVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.AlterOptimizationKeyVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ClusterKeyVisitor;
@@ -171,6 +173,7 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
         logicalPlanVisitorByClass.put(Create.class, new SQLCreateVisitor());
         logicalPlanVisitorByClass.put(ClusterKey.class, new ClusterKeyVisitor());
+        logicalPlanVisitorByClass.put(AlterOptimizationKey.class, new AlterOptimizationKeyVisitor());
         logicalPlanVisitorByClass.put(Alter.class, new AlterVisitor());
         logicalPlanVisitorByClass.put(Show.class, new ShowVisitor());
         logicalPlanVisitorByClass.put(BatchEndTimestamp.class, new BatchEndTimestampVisitor());
