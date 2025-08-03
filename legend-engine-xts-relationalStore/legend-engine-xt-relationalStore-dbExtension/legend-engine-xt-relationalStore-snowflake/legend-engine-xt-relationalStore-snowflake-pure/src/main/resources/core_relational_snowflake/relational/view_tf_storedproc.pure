@@ -57,9 +57,11 @@ function meta::relational::functions::sqlQueryToString::snowflake::createProcedu
     +'('+ $createProc.parameters+ ')'+ 
     +'\nRETURNS TABLE('+ $createProc.return+ ')\nLANGUAGE SQL'+
     if($createProc.copyGrants, |' COPY GRANTS',|'') +
+    '\nEXECUTE AS CALLER'+
     '\nAS $$\n' +
     ' DECLARE\n    ' +
-    $createProc.declarations->map(v| $v.name+ ' '+ $v.type->toOne())->joinStrings('',';\n   ', ';') +
+    $createProc.declarations->map(v| $v.name+ ' '+ $v.type->toOne())->joinStrings('',';\n    ', ';') +
+    '\n    finalResult RESULTSET;'+
     '\n BEGIN\n'+
     '   '+$createProc.declarations->map(v| $v->meta::relational::functions::sqlQueryToString::processOperation($dbConfig.dbType, $extensions))->joinStrings('',';\n   ',';') +
     '\n   finalResult := ('+ $createProc.generatedSQL+ ');'+
