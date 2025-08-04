@@ -123,6 +123,8 @@ public class SnowflakeM2MUdfGenerator
         sqlCommands.add(generatePutSqlCommand(EXECUTION_PLAN_FILENAME));
         //Add udf create or replace statement
         sqlCommands.add(generateCreateFunctionQuery(inputStub));
+        //Add grant statement
+        sqlCommands.add(generateGrantStatement());
 
         String executionPlan;
         try
@@ -216,6 +218,11 @@ public class SnowflakeM2MUdfGenerator
     private static String generatePutSqlCommand(String fileName)
     {
         return String.format("PUT file://%s/%s @%S%s AUTO_COMPRESS = FALSE OVERWRITE = TRUE",TEMP_DIR,fileName,deploymentStage,directoryLocation);
+    }
+
+    private static String generateGrantStatement()
+    {
+        return "GRANT USAGE ON FUNCTION " + database + "." + deploymentSchema + "." + udfName + "(VARCHAR) to role PUBLIC;";
     }
 
     private static String getVersion()
