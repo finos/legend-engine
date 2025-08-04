@@ -130,10 +130,12 @@ public class TestSnowflakeM2MUdfGenerator
                 "    }\n" +
                 "}\n" +
                 "';";
+        String expectedGrantCommand = "GRANT USAGE ON FUNCTION dbName.legend_native_apps_1.MYUDF(VARCHAR) to role PUBLIC;";
         String expectedDeployedLocation = "https://app.region.privatelink.snowflakecomputing.com/region/account/data/databases/DBNAME/schemas/LEGEND_NATIVE_APPS_1/user-function/MYUDF(VARCHAR)";
         Assert.assertEquals(expectedExecutionJarPutCommand, ((SnowflakeM2MUdfContent)artifact.content).sqlCommands.get(0));
         Assert.assertEquals(expectedExecutionPlanPutCommand, ((SnowflakeM2MUdfContent)artifact.content).sqlCommands.get(1));
         Assert.assertEquals(expectedCreateCommand, ((SnowflakeM2MUdfContent)artifact.content).sqlCommands.get(2));
+        Assert.assertEquals(expectedGrantCommand, ((SnowflakeM2MUdfContent)artifact.content).sqlCommands.get(3));
         Assert.assertEquals(expectedDeployedLocation, artifact.deployedLocation);
     }
 
