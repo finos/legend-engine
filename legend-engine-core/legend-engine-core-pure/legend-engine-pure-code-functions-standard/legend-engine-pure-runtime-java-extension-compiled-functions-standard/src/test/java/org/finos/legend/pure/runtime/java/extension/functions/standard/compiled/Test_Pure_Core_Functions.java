@@ -27,7 +27,8 @@ public class Test_Pure_Core_Functions
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         executionSupport.getConsole().disable();
         TestSuite suite = new TestSuite();
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::functions::relation", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditionsModular(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::milestoning", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditionsModular(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::functions", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditionsModular(ci, executionSupport.getProcessorSupport()) && !PCTTools.isPCTTest(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
 
