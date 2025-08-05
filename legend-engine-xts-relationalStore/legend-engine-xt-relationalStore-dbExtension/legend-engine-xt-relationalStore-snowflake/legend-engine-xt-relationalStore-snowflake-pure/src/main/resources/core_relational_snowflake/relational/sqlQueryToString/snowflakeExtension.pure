@@ -535,7 +535,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredArrayFlattenRelationForSnowflake(s:SemiStructuredArrayFlattenRelation[1], sgc:SqlGenerationContext[1]): String[1]
 {
-   let processedNavigation = $s.param;
+   let processedNavigation = $s.navigation->processOperation($sgc);
    'Table(Flatten(input => ' + $processedNavigation + '))';
 }
 

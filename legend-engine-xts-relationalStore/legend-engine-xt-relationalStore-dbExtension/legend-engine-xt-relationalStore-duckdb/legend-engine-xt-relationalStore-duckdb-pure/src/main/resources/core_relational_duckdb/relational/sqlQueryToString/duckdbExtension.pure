@@ -1,3 +1,4 @@
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::functions::sqlQueryToString::duckDB::*;
 import meta::relational::functions::sqlQueryToString::default::*;
@@ -444,8 +445,17 @@ function meta::relational::functions::sqlQueryToString::duckDB::processJoinStrin
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredElementForDuckDB(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
 {
    $s->match([
-      o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForDuckDB($sgc)
+      o:SemiStructuredObjectNavigation[1]     | $o->processSemiStructuredObjectNavigationForDuckDB($sgc),
+      f:SemiStructuredArrayFlatten[1]         | $f->processSemiStructuredArrayFlattenForDuckDB($sgc),
+      f:SemiStructuredArrayFlattenRelation[1] | ^SemiStructuredArrayFlatten(navigation = $f.navigation)->processSemiStructuredArrayFlattenForDuckDB($sgc)
    ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredArrayFlattenForDuckDB(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // https://duckdb.org/docs/stable/sql/query_syntax/unnest.html
+   let processedNavigation = $s.navigation->processOperation($sgc);
+   '(select unnest(' + $processedNavigation + ', recursive := false) as VALUE)';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredObjectNavigationForDuckDB(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]

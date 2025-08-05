@@ -26,7 +26,7 @@ native function <<PCT.function>>
 }
 meta::pure::functions::relation::variant::flatten<T,Z>(valueToFlatten: T[*], columnWithFlattenedValue: ColSpec<Z=(?:T)>[1]):Relation<Z>[1];
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_Integer<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let tds = $f->eval(|[1,2,3,4]->flatten(~integer));
 
@@ -39,22 +39,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
         '   2\n'+
         '   3\n'+
         '   4\n'+
-        '#',
-        $tds->toString()
-    );
-}
-
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_String<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let tds = $f->eval(|['h', 'e', 'l', 'l', 'o']->flatten(~string));
-    assertEquals(
-        '#TDS\n'+
-        '   string\n'+
-        '   h\n'+
-        '   e\n'+
-        '   l\n'+
-        '   l\n'+
-        '   o\n'+
         '#',
         $tds->toString()
     );

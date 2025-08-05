@@ -391,7 +391,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::debug
    $s->match([
       o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForH2($sgc),
       a:SemiStructuredArrayFlatten[1] | $a->processSemiStructuredArrayFlattenForH2($sgc),
-      a:SemiStructuredArrayFlattenOutput[1] | $a->processSemiStructuredArrayFlattenOutputForH2($sgc)
+      a:SemiStructuredArrayFlattenOutput[1] | $a->processSemiStructuredArrayFlattenOutputForH2($sgc),
+      a:SemiStructuredArrayFlattenRelation[1] | $a->processSemiStructuredArrayFlattenRelationForH2($sgc)
    ])
 }
 
@@ -418,18 +419,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::debug
   ])->concatenate($elementAccess);
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::processSemiStructuredArrayFlattenRelationForH2(s:SemiStructuredArrayFlattenRelation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+  'table(' + processSemiStructuredArrayFlattenForH2(^SemiStructuredArrayFlatten(navigation = $s.navigation), $sgc) + ')';  
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::processSemiStructuredArrayFlattenForH2(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
 {
-  let rootTableAndColumnName = $s->meta::relational::functions::pureToSqlQuery::findTableForColumnInAlias([]);
-
-  let jsonPaths = $s.navigation->match([  // assumes input to ssaf is always sson
-    s: SemiStructuredObjectNavigation[1] | $s->propertyAccessForSemiStructuredObjectNavigationH2($sgc)
-  ]);
-
-  let schema = $rootTableAndColumnName.first.schema.name;
-
   let processedNavigation = $s.navigation->processOperation($sgc);
-  'legend_h2_extension_flatten_array(' + '\'' + $rootTableAndColumnName.first->processOperation($sgc) + '\',\'' + $rootTableAndColumnName.second->processColumnName($sgc.dbConfig) + '\',ARRAY[\'' + $jsonPaths->joinStrings('\',\'') + '\'])';
+  'flatten(' + $processedNavigation + ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::processSemiStructuredArrayFlattenOutputForH2(s:SemiStructuredArrayFlattenOutput[1], sgc:SqlGenerationContext[1]): String[1]
