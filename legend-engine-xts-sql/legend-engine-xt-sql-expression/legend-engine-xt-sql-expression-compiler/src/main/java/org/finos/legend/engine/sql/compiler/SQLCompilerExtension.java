@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,10 +26,14 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingCont
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.sql.expression.protocol.SQLExpressionProtocol;
+import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_expression_SQLExpression_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_Query;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_Statement;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.generated.core_external_query_sql_binding_fromPure_fromPure;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 import java.util.Map;
@@ -54,18 +58,22 @@ public class SQLCompilerExtension implements CompilerExtension
         return Maps.mutable.with("SQL", (obj, context, processingContext) ->
                 {
                     String sqlText = ((SQLExpressionProtocol)obj).sql;
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> x = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_String_1__Function_1_(sqlText, context.getExecutionSupport());
+                    Root_meta_external_query_sql_metamodel_Statement statement = new ModifiedTranslator().translate(SQLGrammarParser.newInstance().parseStatement(sqlText), context.pureModel);
+
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> x = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__Function_1_((Root_meta_external_query_sql_metamodel_Query)statement, context.pureModel.getExecutionSupport());
                     org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType relationType = ((FunctionType)x._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType()._typeArguments().getFirst();
 
+                    GenericType genericType = context.pureModel.getGenericType("meta::external::query::sql::expression::SQLExpression")._typeArguments(Lists.mutable.with(relationType));
                     return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
-                            ._genericType(context.pureModel.getGenericType("meta::external::query::sql::expression::SQLExpression")._typeArguments(Lists.mutable.with(relationType)))
+                            ._genericType(genericType)
                             ._multiplicity(context.pureModel.getMultiplicity("one"))
                             ._values(
                                     Lists.mutable.with(
                                             new Root_meta_external_query_sql_expression_SQLExpression_Impl<Object>("", null, context.pureModel.getClass("meta::external::query::sql::expression::SQLExpression"))
+                                                    ._classifierGenericType(genericType)
                                                     ._sqlString(sqlText)
+                                                    ._linkedStatement(statement)
                                                     ._pureFunction(x)
-
                                     )
                             );
                 }
@@ -83,4 +91,5 @@ public class SQLCompilerExtension implements CompilerExtension
     {
         return new SQLCompilerExtension();
     }
+
 }

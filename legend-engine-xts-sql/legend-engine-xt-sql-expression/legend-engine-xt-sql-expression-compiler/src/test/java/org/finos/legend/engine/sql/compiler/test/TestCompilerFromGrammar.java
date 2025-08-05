@@ -24,7 +24,6 @@ import static org.junit.Assert.*;
 
 public class TestCompilerFromGrammar
 {
-
     @Test
     public void testSimple()
     {
@@ -45,6 +44,22 @@ public class TestCompilerFromGrammar
                 "}","COMPILATION error at [5:22-23]: The column 'ba' can't be found in the relation (a:Integer)");
     }
 
+    @Test
+    public void testTable()
+    {
+        testCompile("" +
+                "###Relational\n" +
+                "Database pack::DB" +
+                "(\n" +
+                "   Table myTab(a Varchar(200))" +
+                ")\n" +
+                "###Pure\n" +
+                "function pack::f():Boolean[1]\n" +
+                "{\n" +
+                "   #SQL{select a from tb('pack::DB.myTab')}#;" +
+                "   true;" +
+                "}");
+    }
 
     private void testCompile(String code)
     {
