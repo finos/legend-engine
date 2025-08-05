@@ -93,7 +93,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='every(%s)')),
-    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),    
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateH2()})),
@@ -115,7 +115,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(current_date()) - 1), current_date())')),
     dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='dateadd(DAY, -(mod(dayofweek(%s)+5, 7)), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='dateadd(DAY, -(dayofyear(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
-    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='TO_CHAR(RANDOM_UUID())')),   
+    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='TO_CHAR(RANDOM_UUID())')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
@@ -176,7 +176,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   // Map of Column to Literals of VarPlaceHolder
   let keyValues = $upsertQuery.equalityStatements->keyValues()->sortBy(kv | $kv.first);
   let columnNames = $keyValues->map(kv | $kv.first)->joinStrings(', ');
-  let literalValues = $keyValues->map(kv | meta::relational::functions::sqlQueryToString::processLiteralValue($kv.second.value, $sgc.dbConfig))->joinStrings(', ');
+  let literalValues = $keyValues->map(kv | meta::relational::functions::sqlQueryToString::processOperation($kv.second, $sgc))->joinStrings(', ');
 
   'merge into ' + $upsertQuery.data.name + ' (' + $columnNames + ') values (' + $literalValues + ')';
 }
@@ -273,7 +273,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   let jsonPaths = $s.navigation->match([  // assumes input to ssaf is always sson
     s: SemiStructuredObjectNavigation[1] | $s->propertyAccessForSemiStructuredObjectNavigationH2($sgc)
   ]);
-  
+
   let schema = $rootTableAndColumnName.first.schema.name;
 
   let processedNavigation = $s.navigation->processOperation($sgc);

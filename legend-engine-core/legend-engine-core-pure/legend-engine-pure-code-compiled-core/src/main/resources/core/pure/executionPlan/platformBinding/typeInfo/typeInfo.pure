@@ -111,7 +111,7 @@ function meta::pure::executionPlan::platformBinding::typeInfo::addForClass(info:
                              {p, i|
                                 $i->addBasicTypeInfoIfMissing($p.genericType.rawType->toOne())
                                   ->addPropertyForClassIfMissing($class, $p);
-                             }, 
+                             },
                              $basic
                           ),
                         | $basic
@@ -128,7 +128,7 @@ function meta::pure::executionPlan::platformBinding::typeInfo::addForClass(info:
                         | $class.propertiesFromAssociations->fold({p,i | $i->addPropertyForClassIfMissing($class, $p)}, $plusDerived),
                         | $plusDerived
                      );
-   
+
    $withAssoc->forClass($class).supertypes->fold({c, set | $set->addForClass($c, $includeSimple, $includeComplex, $includeDerived, $includeAssociations)}, $withAssoc);
 }
 
@@ -213,11 +213,16 @@ function meta::pure::executionPlan::platformBinding::typeInfo::allProperties(inf
    $info->allProperties($info->forClass($class))
 }
 
+function meta::pure::executionPlan::platformBinding::typeInfo::allPropertiesWithoutGeneratedMilestoning(info:TypeInfoSet[1], class:Class<Any>[1]): Property<Nil,Any|*>[*]
+{
+   $info->allProperties($info->forClass($class))->filter(p | !$p->hasGeneratedMilestoningPropertyStereotype())
+}
+
 function meta::pure::executionPlan::platformBinding::typeInfo::allProperties(info:TypeInfoSet[1], classInfo:ClassTypeInfo[1]): Property<Nil,Any|*>[*]
 {
    $classInfo.supertypes->fold(
       {supertype, properties|
-         let notOverriden = $info->forClass($supertype).properties->filter(p| !$p.name->in($properties.name));   
+         let notOverriden = $info->forClass($supertype).properties->filter(p| !$p.name->in($properties.name));
          $properties->concatenate($notOverriden);
       },
       $classInfo.properties
@@ -233,7 +238,7 @@ function meta::pure::executionPlan::platformBinding::typeInfo::allQualifiedPrope
 {
    $classInfo.supertypes->fold(
       {supertype, qualifiedProperties|
-         let notOverriden = $info->forClass($supertype).qualifiedProperties->filter(p| !$p.name->in($qualifiedProperties.name));   
+         let notOverriden = $info->forClass($supertype).qualifiedProperties->filter(p| !$p.name->in($qualifiedProperties.name));
          $qualifiedProperties->concatenate($notOverriden);
       },
       $classInfo.qualifiedProperties
@@ -279,7 +284,7 @@ function meta::pure::executionPlan::platformBinding::typeInfo::enumDependenciesV
 {
    let directProperties     = $info->allProperties($class);
    let dependencyProperties = $info->classDependenciesViaPropertiesWithSubTypes($class)->map(c| $info->allProperties($c));
-   
+
    $directProperties
       ->concatenate($dependencyProperties)
       ->filter(p| $p.genericType.rawType->toOne()->instanceOf(Enumeration))
@@ -295,7 +300,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
       {|
          let forThisClass        = $info->allProperties($class)->filter(p| $p.genericType.rawType->toOne()->instanceOf(Class));
          let forThisWithSubtypes = $forThisClass->concatenate($class->getSpecializations()->filter(s |  $info.typeInfos->exists(ti | $ti.type == $s->cast(@Type)))->map(g | $info->allProperties($g)->filter(p| $p.genericType.rawType->toOne()->instanceOf(Class))));
-         
+
          let forChildren         = $forThisWithSubtypes.genericType.rawType->cast(@Class<Any>)->removeDuplicatesBy(classEqualityKey())->map(c| $info->classPropertiesRecursiveWithsubTypes($c, $visitedClasses->concatenate($class)));
          $forThisWithSubtypes->concatenate($forChildren);
       }
@@ -316,12 +321,12 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
                                       ),
       st: SubTypeGraphFetchTree[1]  |  $st.subTypeClass,
       r: RootGraphFetchTree<Any>[1] | $r.class,
-      p: PropertyGraphFetchTree[1]  | $p.property.genericType.rawType->concatenate($p.subType) 
+      p: PropertyGraphFetchTree[1]  | $p.property.genericType.rawType->concatenate($p.subType)
    ]);
    let withThisType = $types->fold({t, tis| $tis->addBasicTypeInfoIfMissing($t)}, $info);
-   
+
    let classes = $types->filter(t| $t->instanceOf(Class))->cast(@Class<Any>);
-   
+
    let milestoneProperties = $classes.properties->filter(p|$p->isPrimitiveValueProperty() && $p->hasGeneratedMilestoningPropertyStereotype());
    let withMilestoning     = $withThisType->addProperties($milestoneProperties);
 
@@ -333,14 +338,14 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
       gft  : GraphFetchTree[1]                  | []
    ]);
    let withRequiredQualifiers = $requiredQP->fold({qp,tis |$tis->addQualifiedPropertyForTypeIfMissing($qp)}, $withMilestoning);
-   
+
    let withPropertySubtrees= $tree.subTrees->map(x | $x->meta::pure::graphFetch::routing::byPassClusteringInfo())->cast(@PropertyGraphFetchTree)->fold(
       {pgft, tis|
-         if($pgft.property->instanceOf(QualifiedProperty), 
-            | $tis->addQualifiedPropertyForTypeIfMissing($pgft.property->cast(@QualifiedProperty<Any>)), 
+         if($pgft.property->instanceOf(QualifiedProperty),
+            | $tis->addQualifiedPropertyForTypeIfMissing($pgft.property->cast(@QualifiedProperty<Any>)),
             | $classes->fold({c, tis2| $tis2->addPropertyForClassIfDefined($c, $pgft.property.name->toOne(), false)}, $tis)
          )->typeInfoFromTree($pgft);
-      }, 
+      },
       $withRequiredQualifiers
    );
 
@@ -348,11 +353,11 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
       |  $tree.subTypeTrees->map(x | $x->meta::pure::graphFetch::routing::byPassClusteringInfo())->cast(@SubTypeGraphFetchTree)->fold(
                 {strgft, tis|
                      $tis->typeInfoFromTree($strgft);
-                }, 
+                },
                 $withPropertySubtrees
             );,
       | $withPropertySubtrees);
-   $withSubTypeTrees;  
+   $withSubTypeTrees;
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::constraintInfoFromTree(typeInfos:TypeInfoSet[1], tree:GraphFetchTree[1]): TypeInfoSet[1]
@@ -423,7 +428,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
                        | $set.class
                     );
          $updatedTypes->addForClass($type, true, false, false, false);
-      }, 
+      },
       $info
    );
 }
@@ -435,7 +440,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addPropertyForTypeIfMissing(info:TypeInfoSet[1], property:Property<Nil,Any|*>[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {
-    
+
    $property.owner->match([
       {c: Class<Any>[1] |
          $info->addPropertyForClassIfMissing($c, $property, $isNewInstanceAllowed);
@@ -445,7 +450,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
          let c1 = $a.properties->at(1).genericType.rawType->cast(@Class<Any>)->toOne();
          let p2 = $a.properties->at(1);
          let c2 = $a.properties->at(0).genericType.rawType->cast(@Class<Any>)->toOne();
-         
+
          $info->addPropertyForClassIfMissing($c1, $p1)->addPropertyForClassIfMissing($c2, $p2, $isNewInstanceAllowed);
       }
    ]);
@@ -454,9 +459,9 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addPropertyForClassIfDefined(info:TypeInfoSet[1], class:Class<Any>[1], propertyName:String[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {
    let property = $class.properties->concatenate($class.propertiesFromAssociations)->filter(p| $p.name == $propertyName);
-   
+
    $property->match([
-      {p:Property<Nil,Any|*>[1] | 
+      {p:Property<Nil,Any|*>[1] |
          $p.owner->match([
             {c: Class<Any>[1] |
                $info->addPropertyForClassIfMissing($c, $p, $isNewInstanceAllowed);
@@ -466,12 +471,12 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
                let c1 = $a.properties->at(1).genericType.rawType->cast(@Class<Any>)->toOne();
                let p2 = $a.properties->at(1);
                let c2 = $a.properties->at(0).genericType.rawType->cast(@Class<Any>)->toOne();
-            
+
                $info->addPropertyForClassIfMissing($c1, $p1)->addPropertyForClassIfMissing($c2, $p2, $isNewInstanceAllowed);
             }
          ]);
       },
-      {none:Property<Nil,Any|*>[0] | 
+      {none:Property<Nil,Any|*>[0] |
          $class->getGeneralizations()->fold({c, tis| $tis->addPropertyForClassIfDefined($c, $propertyName, $isNewInstanceAllowed)}, $info);
       },
       {multiple:Property<Nil,Any|*>[*] |
@@ -483,18 +488,18 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addPropertyForClassIfMissing(info:TypeInfoSet[1], class:Class<Any>[1], property:Property<Nil,Any|*>[1]): TypeInfoSet[1]
 {
-  addPropertyForClassIfMissing($info, $class, $property, false);  
+  addPropertyForClassIfMissing($info, $class, $property, false);
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addPropertyForClassIfMissing(info:TypeInfoSet[1], class:Class<Any>[1], property:Property<Nil,Any|*>[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
-{   
+{
    let enriched  = $info->addBasicTypeInfoIfMissing($class, $isNewInstanceAllowed);
    let ti        = $enriched->forClass($class);
    let rtnType   = $property->functionReturnType().rawType->toOne();
    let enriched2 = if($rtnType->instanceOf(Class) || $rtnType->instanceOf(Enumeration), | $enriched->addBasicTypeInfoIfMissing($rtnType, $isNewInstanceAllowed), | $enriched);
 
-   let withProperty = if($ti.properties->exists(p| $p.name == $property.name), 
-      | $enriched2, 
+   let withProperty = if($ti.properties->exists(p| $p.name == $property.name),
+      | $enriched2,
       |$enriched2->addOrReplace(^$ti(properties=$ti.properties->concatenate($property)->sortProperties($class)))
    );
 
@@ -573,7 +578,7 @@ function<<access.private>> meta::pure::executionPlan::platformBinding::typeInfo:
 
 function<<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addBasicTypeInfoIfMissing(info:TypeInfoSet[1], type:Type[1], isNewInstanceAllowed:Boolean[1]):TypeInfoSet[1]
 {
-   
+
    addBasicTypeInfoIfMissing($info,[],$type, $isNewInstanceAllowed);
 }
 
@@ -581,11 +586,11 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 {
   addBasicTypeInfoIfMissing($info, $seenClasses, $type, false);
 }
-   
+
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addBasicTypeInfoIfMissing(info:TypeInfoSet[1], seenClasses:Class<Any>[*], type:Type[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {
    if($info.typeInfos.type->contains($type),
-      {| 
+      {|
          $type->match([
            c: Class<Any>[1]  | let newTypeInfos = $info.typeInfos->fold({typeInfo, typeInfoList | if($typeInfo.type == $type,
                                                                                                     | let cti = $typeInfo->cast(@ClassTypeInfo);
@@ -597,7 +602,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 
          ])
       },
-      {| 
+      {|
          $type->match([
             e : Enumeration<Any>[1] | $info->addEnumerationTypeInfo($e),
             c : Class<Any>[1]       | $info->addBasicClassTypeInfo($c, $seenClasses, $isNewInstanceAllowed),
@@ -672,7 +677,7 @@ function  <<access.private>> meta::pure::executionPlan::platformBinding::typeInf
 function  <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::getSpecializations(class:Type[1]):Class<Any>[*]
 {
    let specializations = $class.specializations->map(g | $g.specific->filter(t|$t->instanceOf(Class))->cast(@Class<Any>));
-  
+
    $specializations
       ->concatenate($specializations->map(g| $g->getSpecializations()))
       ->filter(meta::pure::metamodel::type::Any->isNotClassFn())

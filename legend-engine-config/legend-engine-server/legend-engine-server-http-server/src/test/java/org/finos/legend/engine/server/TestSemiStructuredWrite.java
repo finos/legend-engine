@@ -154,7 +154,7 @@ public class TestSemiStructuredWrite
     protected void insertTestData(Statement statement) throws SQLException
     {
         statement.execute("Drop table if exists Person_Table;");
-        statement.execute("Create Table Person_Table(FIRM VARCHAR(100) , FIRST_NAME VARCHAR(100) , KERBEROS VARCHAR(100) , LAST_NAME VARCHAR(100))");
+        statement.execute("Create Table Person_Table(FIRM VARCHAR(100) , FIRST_NAME VARCHAR(100) , KERBEROS VARCHAR(100) , LAST_NAME VARCHAR(100), IN_Z TIMESTAMP, OUT_Z TIMESTAMP)");
     }
 
     @Test
@@ -176,6 +176,26 @@ public class TestSemiStructuredWrite
         Result result = planExecutor.execute(executionPlan, inputMap);
         Assert.assertTrue("Success - 1 rows updated!".equals(((ConstantResult)result).getValue()), () -> String.format("Write Failed. Result: %s", ((ConstantResult)result).getValue()));
 
+    }
+
+    @Test
+    public  void testSemiStructuredWriteWithProcessingDate() throws Exception
+    {
+        String input = "{\n" +
+                "  \"kerberos\": \"kerberos 98\",\n" +
+                "  \"firstName\": \"firstName 98\",\n" +
+                "  \"lastName\": \"lastName 56\",\n" +
+                "  \"firm\": {\n" +
+                "    \"name\": \"name 71\",\n" +
+                "    \"numberOfEmployees\": 54\n" +
+                "  }\n" +
+                "}";
+        String plan = readContent(modelResourcePathSemiStructuredWithProcessingDate());
+        SingleExecutionPlan executionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);
+        Map inputMap = Maps.mutable.empty();
+        inputMap.put("jsonString",input);
+        Result result = planExecutor.execute(executionPlan, inputMap);
+        Assert.assertTrue("Success - 1 rows updated!".equals(((ConstantResult)result).getValue()), () -> String.format("Write Failed. Result: %s", ((ConstantResult)result).getValue()));
     }
 
     public void testStatement(String s)
@@ -200,6 +220,11 @@ public class TestSemiStructuredWrite
     public String modelResourcePathSemiStructured()
     {
         return "/org/finos/legend/engine/server/testSemiStructured.json";
+    }
+
+    public String modelResourcePathSemiStructuredWithProcessingDate()
+    {
+        return "/org/finos/legend/engine/server/testSemiStructuredWithProcessingDate.json";
     }
 
     private String readContent(String resourcePath)

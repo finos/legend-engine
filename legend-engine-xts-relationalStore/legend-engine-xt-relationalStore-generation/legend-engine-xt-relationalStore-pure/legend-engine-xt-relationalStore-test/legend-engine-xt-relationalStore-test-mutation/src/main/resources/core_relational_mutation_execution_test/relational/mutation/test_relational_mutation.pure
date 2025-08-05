@@ -1,0 +1,505 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::pure::extension::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::toString::*;
+
+import meta::relational::mutation::executionPlan::test::*;
+
+function <<access.private>> meta::relational::mutation::executionPlan::test::testMutationPlanGenerationHelper(mutationFunctionName: String[1], formatStringParameters: String[*]): Boolean[1]
+{
+  let domainElements = buildTestDomainElements();
+  let mutationFunction = $domainElements->filter(d | $d.name->startsWith($mutationFunctionName))->toOne()->cast(@FunctionDefinition<Any>);
+
+  let extensions = requiredMutationExtensions();
+  let actualPlanAsString = executionPlan($mutationFunction, $extensions)->planToString($extensions);
+  assertEquals(baseExecutionPlan()->format($formatStringParameters), $actualPlanAsString);
+}
+
+function <<access.private>> meta::relational::mutation::executionPlan::test::testMutationPlanGenerationWithMilestoningHelper(mutationFunctionName: String[1], formatStringParameters: String[*]): Boolean[1]
+{
+  let domainElements = buildTestDomainElementsWithProcessingMilestoning();
+  let mutationFunction = $domainElements->filter(d | $d.name->startsWith($mutationFunctionName))->toOne()->cast(@FunctionDefinition<Any>);
+
+  let extensions = requiredMutationExtensions();
+  let actualPlanAsString = executionPlan($mutationFunction, $extensions)->planToString($extensions);
+  assertEquals(baseExecutionPlan()->format($formatStringParameters), $actualPlanAsString);
+}
+
+function <<test.Test>> meta::relational::mutation::executionPlan::test::testSimpleMutationPlanGeneration(): Boolean[1]
+{
+  let additionalColumnGenerator =
+    ',\n' +
+    '    (\n' +
+    '          generatedColumnName_LAST_NAME,\n' +
+    '              PureExp\n' +
+    '          (\n' +
+    '            type = String\n' +
+    '            requires = [generatedVariableSingleRecordFromStream(meta::relational::mutation::executionPlan::test::Person[1])]\n' +
+    '            expression = $generatedVariableSingleRecordFromStream.lastName\n' +
+    '          )\n' +
+    '    )';
+
+  testMutationPlanGenerationHelper(
+    'completeGraphFetchTreeH2PersonMutation',
+    [
+      'merge into Person_Table (FIRM, FIRST_NAME, KERBEROS, LAST_NAME) values (\'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\', \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\')',
+      $additionalColumnGenerator,
+      'H2'
+    ]
+  );
+
+  testMutationPlanGenerationHelper(
+    'completeGraphFetchTreeMemSQLPersonMutation',
+    [
+      'insert into Person_Table (FIRM, FIRST_NAME, KERBEROS, LAST_NAME) values (\'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\', \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\') on duplicate key update FIRM = \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', FIRST_NAME = \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', LAST_NAME = \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\'',
+      $additionalColumnGenerator,
+      'MemSQL'
+    ]
+  );
+
+  testMutationPlanGenerationWithMilestoningHelper(
+    'completeGraphFetchTreeH2PersonMutation',
+    [
+      'merge into Person_Table (FIRM, FIRST_NAME, KERBEROS, LAST_NAME, in_z, out_z) values (\'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\', \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\', current_timestamp(), \'9999-12-31T23:59:59.9999\')',
+      $additionalColumnGenerator,
+      'H2'
+    ]
+  );
+
+  testMutationPlanGenerationWithMilestoningHelper(
+    'completeGraphFetchTreeMemSQLPersonMutation',
+    [
+      'insert into Person_Table (FIRM, FIRST_NAME, KERBEROS, LAST_NAME, in_z, out_z) values (\'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\', \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\', now(), \'9999-12-31T23:59:59.9999\') on duplicate key update FIRM = \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', FIRST_NAME = \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', LAST_NAME = \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\', in_z = now(), out_z = \'9999-12-31T23:59:59.9999\'',
+      $additionalColumnGenerator,
+      'MemSQL'
+    ]
+  );
+
+}
+
+function <<test.Test>> meta::relational::mutation::executionPlan::test::testMutationPlanGenerationRespectsGraphFetchTree(): Boolean[1]
+{
+  testMutationPlanGenerationHelper(
+    'incompleteGraphFetchTreeH2PersonMutation',
+    [
+      'merge into Person_Table (FIRM, FIRST_NAME, KERBEROS) values (\'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\')',
+      '',
+      'H2'
+    ]
+  );
+
+  testMutationPlanGenerationHelper(
+    'incompleteGraphFetchTreeMemSQLPersonMutation',
+    [
+      'insert into Person_Table (FIRM, FIRST_NAME, KERBEROS) values (\'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\') on duplicate key update FIRM = \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', FIRST_NAME = \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\'',
+      '',
+      'MemSQL'
+    ]
+  );
+}
+
+function meta::relational::mutation::executionPlan::test::buildTestDomainElements(): PackageableElement[*]
+{
+  meta::legend::compile(
+    '###Pure\n'+
+    'Class meta::relational::mutation::executionPlan::test::Person\n'+
+    '{\n'+
+    ' kerberos  : String[1];\n'+
+    ' firstName : String[1];\n'+
+    ' lastName  : String[1];\n'+
+    ' firm      : meta::relational::mutation::executionPlan::test::Firm[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class meta::relational::mutation::executionPlan::test::Firm\n'+
+    '{\n'+
+    ' name              : String[1];\n'+
+    ' numberOfEmployees : Integer[1];\n'+
+    '}\n'+
+    '\n'+
+    'function meta::relational::mutation::executionPlan::test::completeGraphFetchTreeH2PersonMutation(jsonString: String[1]): meta::relational::mutation::executionPlan::test::Person[*]\n'+
+    '{\n'+
+    '  meta::relational::mutation::executionPlan::test::Person->internalize(meta::relational::mutation::executionPlan::test::Person_Binding, $jsonString)->graphFetch(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#)->meta::pure::mutation::save(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#, meta::relational::mutation::executionPlan::test::Person_Mapping, meta::relational::mutation::executionPlan::test::H2Runtime);\n'+
+    '}\n'+
+    '\n'+
+    'function meta::relational::mutation::executionPlan::test::completeGraphFetchTreeMemSQLPersonMutation(jsonString: String[1]): meta::relational::mutation::executionPlan::test::Person[*]\n'+
+    '{\n'+
+    '  meta::relational::mutation::executionPlan::test::Person->internalize(meta::relational::mutation::executionPlan::test::Person_Binding, $jsonString)->graphFetch(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#)->meta::pure::mutation::save(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#, meta::relational::mutation::executionPlan::test::Person_Mapping, meta::relational::mutation::executionPlan::test::MemSQLRuntime);\n'+
+    '}\n'+
+    '\n'+
+    'function meta::relational::mutation::executionPlan::test::incompleteGraphFetchTreeH2PersonMutation(jsonString: String[1]): meta::relational::mutation::executionPlan::test::Person[*]\n'+
+    '{\n'+
+    '  meta::relational::mutation::executionPlan::test::Person->internalize(meta::relational::mutation::executionPlan::test::Person_Binding, $jsonString)->graphFetch(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#)->meta::pure::mutation::save(#{meta::relational::mutation::executionPlan::test::Person{firstName, kerberos, firm{name}}}#, meta::relational::mutation::executionPlan::test::Person_Mapping, meta::relational::mutation::executionPlan::test::H2Runtime);\n'+
+    '}\n'+
+    '\n'+
+    'function meta::relational::mutation::executionPlan::test::incompleteGraphFetchTreeMemSQLPersonMutation(jsonString: String[1]): meta::relational::mutation::executionPlan::test::Person[*]\n'+
+    '{\n'+
+    '  meta::relational::mutation::executionPlan::test::Person->internalize(meta::relational::mutation::executionPlan::test::Person_Binding, $jsonString)->graphFetch(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#)->meta::pure::mutation::save(#{meta::relational::mutation::executionPlan::test::Person{firstName, kerberos, firm{name}}}#, meta::relational::mutation::executionPlan::test::Person_Mapping, meta::relational::mutation::executionPlan::test::MemSQLRuntime);\n'+
+    '}\n'+
+    '\n'+
+    '###Relational\n'+
+    'Database meta::relational::mutation::executionPlan::test::Person_Store\n'+
+    '(\n'+
+    '  Table Person_Table\n'+
+    '  (\n'+
+    '    KERBEROS VARCHAR(32) PRIMARY KEY,\n'+
+    '    FIRST_NAME VARCHAR(32),\n'+
+    '    LAST_NAME VARCHAR(32),\n'+
+    '    FIRM VARCHAR(1000)\n'+
+    '  )\n'+
+    ')\n'+
+    '\n'+
+    '###ExternalFormat\n'+
+    'Binding meta::relational::mutation::executionPlan::test::Firm_Binding\n'+
+    '{\n'+
+    '  schemaId: firmJSONBinding;\n'+
+    '  contentType: \'application/json\';\n'+
+    '  modelIncludes: [\n'+
+    '    meta::relational::mutation::executionPlan::test::Firm\n'+
+    '  ];\n'+
+    '}\n'+
+    '\n'+
+    'Binding meta::relational::mutation::executionPlan::test::Person_Binding\n'+
+    '{\n'+
+    '  schemaId: firmJSONBinding;\n'+
+    '  contentType: \'application/json\';\n'+
+    '  modelIncludes: [\n'+
+    '    meta::relational::mutation::executionPlan::test::Person,\n'+
+    '    meta::relational::mutation::executionPlan::test::Firm\n'+
+    '  ];\n'+
+    '}\n'+
+    '\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping meta::relational::mutation::executionPlan::test::Person_Mapping\n'+
+    '(\n'+
+    '  *meta::relational::mutation::executionPlan::test::Person: Relational\n'+
+    '  {\n'+
+    '    ~primaryKey\n'+
+    '    (\n'+
+    '      [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table.KERBEROS\n'+
+    '    )\n'+
+    '    ~mainTable [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table\n'+
+    '    kerberos: [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table.KERBEROS,\n'+
+    '    firstName: [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table.FIRST_NAME,\n'+
+    '    lastName: [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table.LAST_NAME,\n'+
+    '    firm: Binding meta::relational::mutation::executionPlan::test::Firm_Binding : [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table.FIRM\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'RelationalDatabaseConnection meta::relational::mutation::executionPlan::test::H2Connection\n'+
+    '{\n'+
+    '  store: meta::relational::mutation::executionPlan::test::Person_Store;\n'+
+    '  type: H2;\n'+
+    '  specification: LocalH2 {\n'+
+    '  };\n'+
+    '  auth: Test {};\n'+
+    '}\n'+
+    '\n'+
+    'RelationalDatabaseConnection meta::relational::mutation::executionPlan::test::MemSQLConnection\n'+
+    '{\n'+
+    '  store: meta::relational::mutation::executionPlan::test::Person_Store;\n'+
+    '  type: MemSQL;\n'+
+    '  specification: Static\n'+
+    '  {\n'+
+    '    name: \'person_schema\';\n'+
+    '    host: \'test_memsql_database\';\n'+
+    '    port: 3306;\n'+
+    '  };\n'+
+    '  auth: DelegatedKerberos;\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime meta::relational::mutation::executionPlan::test::H2Runtime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    meta::relational::mutation::executionPlan::test::Person_Mapping\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    meta::relational::mutation::executionPlan::test::Person_Store:\n'+
+    '    [\n'+
+    '      connection_1: meta::relational::mutation::executionPlan::test::H2Connection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}\n'+
+    '\n'+
+    'Runtime meta::relational::mutation::executionPlan::test::MemSQLRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    meta::relational::mutation::executionPlan::test::Person_Mapping\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    meta::relational::mutation::executionPlan::test::Person_Store:\n'+
+    '    [\n'+
+    '      connection_1: meta::relational::mutation::executionPlan::test::MemSQLConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}'
+  );
+}
+
+function meta::relational::mutation::executionPlan::test::buildTestDomainElementsWithProcessingMilestoning(): PackageableElement[*]
+{
+  meta::legend::compile(
+    '###Pure\n'+
+    'Class <<meta::pure::profiles::temporal.processingtemporal>> meta::relational::mutation::executionPlan::test::Person\n'+
+    '{\n'+
+    ' kerberos  : String[1];\n'+
+    ' firstName : String[1];\n'+
+    ' lastName  : String[1];\n'+
+    ' firm      : meta::relational::mutation::executionPlan::test::Firm[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class meta::relational::mutation::executionPlan::test::Firm\n'+
+    '{\n'+
+    ' name              : String[1];\n'+
+    ' numberOfEmployees : Integer[1];\n'+
+    '}\n'+
+    '\n'+
+    'function meta::relational::mutation::executionPlan::test::completeGraphFetchTreeH2PersonMutation(jsonString: String[1]): meta::relational::mutation::executionPlan::test::Person[*]\n'+
+    '{\n'+
+    '  meta::relational::mutation::executionPlan::test::Person->internalize(meta::relational::mutation::executionPlan::test::Person_Binding, $jsonString)->graphFetch(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#)->meta::pure::mutation::save(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#, meta::relational::mutation::executionPlan::test::Person_Mapping, meta::relational::mutation::executionPlan::test::H2Runtime);\n'+
+    '}\n'+
+    '\n'+
+    'function meta::relational::mutation::executionPlan::test::completeGraphFetchTreeMemSQLPersonMutation(jsonString: String[1]): meta::relational::mutation::executionPlan::test::Person[*]\n'+
+    '{\n'+
+    '  meta::relational::mutation::executionPlan::test::Person->internalize(meta::relational::mutation::executionPlan::test::Person_Binding, $jsonString)->graphFetch(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#)->meta::pure::mutation::save(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#, meta::relational::mutation::executionPlan::test::Person_Mapping, meta::relational::mutation::executionPlan::test::MemSQLRuntime);\n'+
+    '}\n'+
+    '\n'+
+    'function meta::relational::mutation::executionPlan::test::incompleteGraphFetchTreeH2PersonMutation(jsonString: String[1]): meta::relational::mutation::executionPlan::test::Person[*]\n'+
+    '{\n'+
+    '  meta::relational::mutation::executionPlan::test::Person->internalize(meta::relational::mutation::executionPlan::test::Person_Binding, $jsonString)->graphFetch(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#)->meta::pure::mutation::save(#{meta::relational::mutation::executionPlan::test::Person{firstName, kerberos, firm{name}}}#, meta::relational::mutation::executionPlan::test::Person_Mapping, meta::relational::mutation::executionPlan::test::H2Runtime);\n'+
+    '}\n'+
+    '\n'+
+    'function meta::relational::mutation::executionPlan::test::incompleteGraphFetchTreeMemSQLPersonMutation(jsonString: String[1]): meta::relational::mutation::executionPlan::test::Person[*]\n'+
+    '{\n'+
+    '  meta::relational::mutation::executionPlan::test::Person->internalize(meta::relational::mutation::executionPlan::test::Person_Binding, $jsonString)->graphFetch(#{meta::relational::mutation::executionPlan::test::Person{firstName, lastName, kerberos, firm{name, numberOfEmployees}}}#)->meta::pure::mutation::save(#{meta::relational::mutation::executionPlan::test::Person{firstName, kerberos, firm{name}}}#, meta::relational::mutation::executionPlan::test::Person_Mapping, meta::relational::mutation::executionPlan::test::MemSQLRuntime);\n'+
+    '}\n'+
+    '\n'+
+    '###Relational\n'+
+    'Database meta::relational::mutation::executionPlan::test::Person_Store\n'+
+    '(\n'+
+    '  Table Person_Table\n'+
+    '  (\n'+
+    'milestoning\n'+
+    '(\n'+
+      'processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z),\n'+
+      'business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31T23:59:59.9999)\n'+
+    ')\n'+
+    '    KERBEROS VARCHAR(32) PRIMARY KEY,\n'+
+    '    FIRST_NAME VARCHAR(32),\n'+
+    '    LAST_NAME VARCHAR(32),\n'+
+    '    FIRM VARCHAR(1000),\n'+
+    '    in_z TIMESTAMP,\n'+
+    '    out_z TIMESTAMP,\n'+
+    '    from_z TIMESTAMP,\n'+
+    '    thru_z TIMESTAMP\n'+
+    '  )\n'+
+    ')\n'+
+    '\n'+
+    '###ExternalFormat\n'+
+    'Binding meta::relational::mutation::executionPlan::test::Firm_Binding\n'+
+    '{\n'+
+    '  schemaId: firmJSONBinding;\n'+
+    '  contentType: \'application/json\';\n'+
+    '  modelIncludes: [\n'+
+    '    meta::relational::mutation::executionPlan::test::Firm\n'+
+    '  ];\n'+
+    '}\n'+
+    '\n'+
+    'Binding meta::relational::mutation::executionPlan::test::Person_Binding\n'+
+    '{\n'+
+    '  schemaId: firmJSONBinding;\n'+
+    '  contentType: \'application/json\';\n'+
+    '  modelIncludes: [\n'+
+    '    meta::relational::mutation::executionPlan::test::Person,\n'+
+    '    meta::relational::mutation::executionPlan::test::Firm\n'+
+    '  ];\n'+
+    '}\n'+
+    '\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping meta::relational::mutation::executionPlan::test::Person_Mapping\n'+
+    '(\n'+
+    '  *meta::relational::mutation::executionPlan::test::Person: Relational\n'+
+    '  {\n'+
+    '    ~primaryKey\n'+
+    '    (\n'+
+    '      [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table.KERBEROS\n'+
+    '    )\n'+
+    '    ~mainTable [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table\n'+
+    '    kerberos: [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table.KERBEROS,\n'+
+    '    firstName: [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table.FIRST_NAME,\n'+
+    '    lastName: [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table.LAST_NAME,\n'+
+    '    firm: Binding meta::relational::mutation::executionPlan::test::Firm_Binding : [meta::relational::mutation::executionPlan::test::Person_Store]Person_Table.FIRM\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'RelationalDatabaseConnection meta::relational::mutation::executionPlan::test::H2Connection\n'+
+    '{\n'+
+    '  store: meta::relational::mutation::executionPlan::test::Person_Store;\n'+
+    '  type: H2;\n'+
+    '  specification: LocalH2 {\n'+
+    '  };\n'+
+    '  auth: Test {};\n'+
+    '}\n'+
+    '\n'+
+    'RelationalDatabaseConnection meta::relational::mutation::executionPlan::test::MemSQLConnection\n'+
+    '{\n'+
+    '  store: meta::relational::mutation::executionPlan::test::Person_Store;\n'+
+    '  type: MemSQL;\n'+
+    '  specification: Static\n'+
+    '  {\n'+
+    '    name: \'person_schema\';\n'+
+    '    host: \'test_memsql_database\';\n'+
+    '    port: 3306;\n'+
+    '  };\n'+
+    '  auth: DelegatedKerberos;\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime meta::relational::mutation::executionPlan::test::H2Runtime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    meta::relational::mutation::executionPlan::test::Person_Mapping\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    meta::relational::mutation::executionPlan::test::Person_Store:\n'+
+    '    [\n'+
+    '      connection_1: meta::relational::mutation::executionPlan::test::H2Connection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}\n'+
+    '\n'+
+    'Runtime meta::relational::mutation::executionPlan::test::MemSQLRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    meta::relational::mutation::executionPlan::test::Person_Mapping\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    meta::relational::mutation::executionPlan::test::Person_Store:\n'+
+    '    [\n'+
+    '      connection_1: meta::relational::mutation::executionPlan::test::MemSQLConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}'
+  );
+}
+
+function <<access.private>> meta::relational::mutation::executionPlan::test::requiredMutationExtensions(): Extension[*]
+{
+  meta::relational::extension::relationalExtensions()
+                    ->concatenate(meta::external::format::shared::externalFormatExtension())
+                    ->concatenate(meta::external::format::json::extension::jsonSchemaFormatExtension())
+                    ->concatenate(meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()]));
+}
+
+function <<access.private>> meta::relational::mutation::executionPlan::test::baseExecutionPlan(): String[1]
+{
+  'Sequence\n' +
+  '(\n' +
+  '  type = String\n' +
+  '  (\n' +
+  '    FunctionParametersValidationNode\n' +
+  '    (\n' +
+  '      functionParameters = [jsonString:String[1]]\n' +
+  '    )\n' +
+  '    RelationalSave\n' +
+  '    (\n' +
+  '      type = String\n' +
+  '      requires = [jsonString(String[1])]\n' +
+  '      sql = %s\n' +
+  '      generatedVariableName = generatedVariableSingleRecordFromStream\n' +
+  '      columnValueGenerators =\n' +
+  '      [\n' +
+  '    (\n' +
+  '          generatedColumnName_FIRM,\n' +
+  '              ExternalFormat_Externalize\n' +
+  '          (\n' +
+  '            type = String\n' +
+  '            resultSizeRange = 1\n' +
+  '            checked = false\n' +
+  '            binding = meta::relational::mutation::executionPlan::test::Firm_Binding\n' +
+  '\n' +
+  '            (\n' +
+  '              PureExp\n' +
+  '              (\n' +
+  '                type = Class[impls=]\n' +
+  '                       as meta::relational::mutation::executionPlan::test::Firm\n' +
+  '                requires = [generatedVariableSingleRecordFromStream(meta::relational::mutation::executionPlan::test::Person[1])]\n' +
+  '                expression = $generatedVariableSingleRecordFromStream.firm\n' +
+  '              )\n' +
+  '            )\n' +
+  '          )\n' +
+  '    ),\n' +
+  '    (\n' +
+  '          generatedColumnName_FIRST_NAME,\n' +
+  '              PureExp\n' +
+  '          (\n' +
+  '            type = String\n' +
+  '            requires = [generatedVariableSingleRecordFromStream(meta::relational::mutation::executionPlan::test::Person[1])]\n' +
+  '            expression = $generatedVariableSingleRecordFromStream.firstName\n' +
+  '          )\n' +
+  '    ),\n' +
+  '    (\n' +
+  '          generatedColumnName_KERBEROS,\n' +
+  '              PureExp\n' +
+  '          (\n' +
+  '            type = String\n' +
+  '            requires = [generatedVariableSingleRecordFromStream(meta::relational::mutation::executionPlan::test::Person[1])]\n' +
+  '            expression = $generatedVariableSingleRecordFromStream.kerberos\n' +
+  '          )\n' +
+  '    )%s\n' +
+  '  ]\n' +
+  '      connection = RelationalDatabaseConnection(type = "%s")\n' +
+  '\n' +
+  '    \n' +
+  '      (\n' +
+  '        ExternalFormat_Internalize\n' +
+  '        (\n' +
+  '          type = Class[impls=]\n' +
+  '                 as meta::relational::mutation::executionPlan::test::Person\n' +
+  '          resultSizeRange = *\n' +
+  '          binding = meta::relational::mutation::executionPlan::test::Person_Binding[application/json]\n' +
+  '          enableConstraints = true\n' +
+  '          checked = false\n' +
+  '          graphFetchTree = #{meta::relational::mutation::executionPlan::test::Person{firm{name,numberOfEmployees},firstName,kerberos,lastName}}#\n' +
+  '\n' +
+  '          (\n' +
+  '            VariableResolution\n' +
+  '            (\n' +
+  '              type = String\n' +
+  '              varName = jsonString\n' +
+  '\n' +
+  '            )\n' +
+  '          )\n' +
+  '        )\n' +
+  '      ) \n' +
+  '    )\n' +
+  '  )\n' +
+  ')\n'
+}
+

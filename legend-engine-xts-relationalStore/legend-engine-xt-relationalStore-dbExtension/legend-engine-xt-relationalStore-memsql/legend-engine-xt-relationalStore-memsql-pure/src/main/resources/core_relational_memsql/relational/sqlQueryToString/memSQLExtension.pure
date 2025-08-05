@@ -127,7 +127,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('previousDayOfWeek',         $allStates,            ^ToSql(format='adddate(%s, INTERVAL case when %s - dayofweek(%s) >= 0 then %s - dayofweek(%s) - 7 else %s - dayofweek(%s) end DAY)', transform={p:String[1..2] | $p->formatMostRecentMemSQL('curdate()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                   $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('quarterNumber',             $allStates,            ^ToSql(format='quarter(%s)')),
-    dynaFnToSql('rem',                       $allStates,            ^ToSql(format='mod(%s, %s)')), 
+    dynaFnToSql('rem',                       $allStates,            ^ToSql(format='mod(%s, %s)')),
     dynaFnToSql('repeatString',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | 'rpad(\'\', char_length(' + $p->at(0) + ') * ' + $p->at(1) + ', ' +  $p->at(0) + ')'})),
     dynaFnToSql('right',                     $allStates,            ^ToSql(format='right(%s, %s)')),
     dynaFnToSql('round',                     $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
@@ -301,17 +301,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processUpsertSQLQueryForMemSQL(upsertQuery:UpsertSQLQuery[1], sgc:SqlGenerationContext[1]):String[1]
 {
-  // Map of Column to Literals of VarPlaceHolder
+  // Map of Column to RelationalOperational
   let keyValues = $upsertQuery.equalityStatements->keyValues()->sortBy(kv | $kv.first);
   let columnNames = $keyValues->map(kv | $kv.first)->joinStrings(', ');
-  let literalValues = $keyValues->map(kv | meta::relational::functions::sqlQueryToString::processLiteralValue($kv.second.value, $sgc.dbConfig))->joinStrings(', ');
+  let relationalValues = $keyValues->map(kv | meta::relational::functions::sqlQueryToString::processOperation($kv.second, $sgc))->joinStrings(', ');
 
   let primaryKeyColumnNames = $upsertQuery.data.primaryKey->map(pk | $pk.name);
   let nonPrimaryKeyKeyValues = $keyValues->filter(kv | !$kv.first->in($primaryKeyColumnNames))
-                                          ->map(kv | $kv.first + ' = ' + meta::relational::functions::sqlQueryToString::processLiteralValue($kv.second.value, $sgc.dbConfig))
+                                          ->map(kv | $kv.first + ' = ' + meta::relational::functions::sqlQueryToString::processOperation($kv.second, $sgc))
                                           ->joinStrings(', ');
 
-  'insert into ' + $upsertQuery.data.name + ' (' + $columnNames + ') values (' + $literalValues + ') on duplicate key update ' + $nonPrimaryKeyKeyValues;
+  $keyValues->map(opElement | meta::relational::functions::sqlQueryToString::processOperation($opElement.second, $sgc) );
+
+  'insert into ' + $upsertQuery.data.name + ' (' + $columnNames + ') values (' + $relationalValues + ') on duplicate key update ' + $nonPrimaryKeyKeyValues;
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectSQLQueryForMemSQL(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
