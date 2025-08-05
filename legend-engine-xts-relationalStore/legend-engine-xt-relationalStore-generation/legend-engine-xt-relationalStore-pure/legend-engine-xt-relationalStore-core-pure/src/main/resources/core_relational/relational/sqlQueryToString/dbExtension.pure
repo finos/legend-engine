@@ -97,7 +97,10 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    lateralJoinProcessor(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*])
    {
-     if($this.dbExtension.lateralJoinProcessor->isEmpty(), |meta::relational::functions::sqlQueryToString::default::processJoinTreeNodeWithLateralJoinDefault($j, $dbConfig, $format, $extensions), |$this.dbExtension.lateralJoinProcessor->toOne()->eval($j, $dbConfig, $format, $extensions));
+     assert($this.dbExtension.lateralJoinProcessor->isNotEmpty(), '[unsupported-api] Lateral operation not supported for Database Type: ' + $this.dbType->toString());
+     assert(processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) == '1 = 1', | 'Internal error! Lateral join clause should be 1 = 1');
+
+     $this.dbExtension.lateralJoinProcessor->toOne()->eval($j, $dbConfig, ^$format(newLine='\n')->indent(), $extensions);
    }: String[1];
 
    joinProcessor(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*])

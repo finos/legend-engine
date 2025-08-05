@@ -14,9 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared;
 
-import io.deephaven.csv.CsvSpecs;
-import io.deephaven.csv.reading.CsvReader;
-import io.deephaven.csv.sinks.SinkFactory;
+import java.util.Stack;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
@@ -29,9 +27,6 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.natives.NativeFunction;
-
-import java.io.ByteArrayInputStream;
-import java.util.Stack;
 
 public abstract class Shared extends NativeFunction
 {

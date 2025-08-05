@@ -61,7 +61,7 @@ function <<PCT.adapter>> {PCT.adapterName='MemSQL'} meta::relational::tests::pct
 function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
 {
   $f->match([
-    z:FunctionDefinition<Any>[1] |if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z,|[])->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions()));,
+    z:FunctionDefinition<Any>[1] |if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions())),|[]);,
     x:SimpleFunctionExpression[1]|let res = $x.parametersValues->map(p|$p->extractDependentFunctions());
                                   $res->concatenate($x.func->extractDependentFunctions());,
     i: InstanceValue[1] | $i.values->map(p|$p->extractDependentFunctions()),                                  
@@ -126,8 +126,9 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                   print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString('[',',',']'),|''));
                   $resultFinal;,
                 |
+                    let relType = $f->functionReturnType().typeArguments->at(0).rawType->cast(@RelationType<Any>).columns->map(x | pair($x.name->toOne(), $x->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()))->newMap();
                     let tdsString = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns
-                                  ->map(c | $c.name + $c.type->map(t | ':' + if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->orElse(''))->joinStrings(',') + '\n' +
+                                  ->map(c | $c.name + $relType->get($c.name)->map(t | ':' + $t->elementToPath())->orElse(''))->joinStrings(',') + '\n' +
                                   $res.result.rows->map(x|
                                         range($x.values->size())->map(z |
                                             $x.values->at($z)->match([

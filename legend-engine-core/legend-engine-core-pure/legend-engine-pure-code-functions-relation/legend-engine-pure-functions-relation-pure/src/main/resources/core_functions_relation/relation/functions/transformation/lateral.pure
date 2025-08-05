@@ -16,23 +16,11 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
 
-function <<PCT.function>>
+native function <<PCT.function>>
 {
     doc.doc='Perform a lateral join, where the given function is applied to each row of the first relation, and the result is a relation that is joined with the second relation based on the function\'s output.'
 }
-meta::pure::functions::relation::lateral<T,V>(rel:Relation<T>[1], f:Function<{T[1]->Relation<V>[1]}>[1]):Relation<T+V>[1]
-{
-   let flattenResults = $rel->size()->range()->map(rowNum |
-                                     let lateralParam = $rel->slice($rowNum, $rowNum + 1);
-                                     let lateralResult = $lateralParam->map(row | $f->eval($row))->at(0);
-                                     $lateralParam->join($lateralResult, JoinKind.INNER, {x, y | true});
-                                 )->cast(@Relation<T+V>);
-
-   let columns = $flattenResults->genericType().typeArguments->at(0).rawType->cast(@RelationType<T+V>).columns;
-   let accumulator = $columns->map(c | $c.name->toOne() + ':' + $c.classifierGenericType->toOne().typeArguments->at(1).rawType->toOne()->elementToPath())->joinStrings(',')->stringToTDS()->cast(@Relation<T+V>);
-
-   $flattenResults->fold({tds, acc | $acc->concatenate($tds)}, $accumulator);
-}
+meta::pure::functions::relation::lateral<T,V>(rel:Relation<T>[1], f:Function<{T[1]->Relation<V>[1]}>[1]):Relation<T+V>[1];
 
 function <<PCT.test>> meta::pure::functions::relation::tests::lateral::testLateralJoin<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
@@ -56,8 +44,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::lateral::testLater
               109, David, 3
               999, NonExistent, 4
             #;
-    $t1->lateral(x | $t2->filter(y| $y.department == $x.departmentId))
-       ->sort([~departmentId->ascending(),~employeeId->ascending()]);
+    $t1->lateral(x | $t2->filter(y| $y.department == $x.departmentId));
   };
   let res =  $f->eval($expr);
 
@@ -72,5 +59,45 @@ function <<PCT.test>> meta::pure::functions::relation::tests::lateral::testLater
                 '   3,Sales,107,Bob,3\n'+
                 '   3,Sales,108,Charlie,3\n'+
                 '   3,Sales,109,David,3\n'+
-                '#', $res->toString());
+                '#', $res->sort([~departmentId->ascending(),~employeeId->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {|
+    let t1 = #TDS
+              departmentId, departmentName
+              1, Engineering
+              2, Support
+              3, Sales
+            #;
+    let t2 = #TDS
+              employeeId, employeeName, department
+              101, Rafael, 1
+              102, Pierre, 1
+              103, Jake, 1
+              104, John, 2
+              105, Jane, 2
+              106, Alice, 3
+              107, Bob, 3
+              108, Charlie, 3
+              109, David, 3
+              999, NonExistent, 4
+            #;
+    $t2->lateral(x | $t1->filter(y| $x.department == $y.departmentId));
+  };
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   employeeId,employeeName,department,departmentId,departmentName\n'+
+                '   101,Rafael,1,1,Engineering\n'+
+                '   102,Pierre,1,1,Engineering\n'+
+                '   103,Jake,1,1,Engineering\n'+
+                '   104,John,2,2,Support\n'+
+                '   105,Jane,2,2,Support\n'+
+                '   106,Alice,3,3,Sales\n'+
+                '   107,Bob,3,3,Sales\n'+
+                '   108,Charlie,3,3,Sales\n'+
+                '   109,David,3,3,Sales\n'+
+                '#', $res->sort([~departmentId->ascending(),~employeeId->ascending()])->toString());
 }

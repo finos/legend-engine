@@ -33,6 +33,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       joinProcessor = meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForDuckDB_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierForDuckDB_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
@@ -504,4 +505,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       $lambda.parameters->at(0).name,
       $lambda.body->processOperation($sgc)
    ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processJoinTreeNodeWithLateralJoinForDuckDB(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+   ', ' + $format.separator() + ' lateral '
+   + $j.alias
+         ->map(a|^$a(name = '"' + $a.name + '"'))
+         ->toOne()->processOperation($dbConfig, ^$format(newLine = '')->indent(), $extensions) + $format.separator();
 }

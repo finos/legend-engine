@@ -20,15 +20,11 @@ import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::variant::navigation::*;
 import meta::pure::functions::relation::variant::*;
 
-function <<PCT.function>>
+native function <<PCT.function>>
 {
     doc.doc='Flatten the given variant values into a relation with a single column containing the flattened values.  The output relation will have a column of the given name (2nd parameter), the column type will be of the values flattened, and will have onw row per value on the input.'
 }
-meta::pure::functions::relation::variant::flatten<T, Z>(valueToFlatten: T[*], columnWithFlattenedValue: ColSpec<Z=(?:T)>[1]):Relation<Z>[1]
-{
-    let csv = $columnWithFlattenedValue.name + ':' + $valueToFlatten->type()->elementToPath() + '\n' + $valueToFlatten->map(v|$v->s()->toCSVString())->joinStrings('\n');
-    $csv->stringToTDS()->cast(@Relation<Z>);
-}
+meta::pure::functions::relation::variant::flatten<T,Z>(valueToFlatten: T[*], columnWithFlattenedValue: ColSpec<Z=(?:T)>[1]):Relation<Z>[1];
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_Integer<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
@@ -154,6 +150,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                   $tds->lateral(x | $x.payload->toMany(@Variant)->flatten(~firstFlattened))
                         ->lateral(x | $x.firstFlattened->get('key')->toMany(@Variant)->flatten(~secondFlattened))
                         ->lateral(x | $x.secondFlattened->get('innerKey')->toMany(@Integer)->flatten(~value))
+                        ->sort([~id->ascending(), ~value->ascending()])
               };
 
    let res =  $f->eval($expr);
@@ -190,5 +187,5 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                  '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[19,20,21]}]},{"innerKey":[19,20,21]},19\n' +
                  '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[19,20,21]}]},{"innerKey":[19,20,21]},20\n' +
                  '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[19,20,21]}]},{"innerKey":[19,20,21]},21\n' +
-                 '#', $res->sort([~id->ascending(), ~value->ascending()])->toString());
+                 '#', $res->toString());
 }

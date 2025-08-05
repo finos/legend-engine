@@ -48,8 +48,10 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.function.Function;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
@@ -184,28 +186,7 @@ public abstract class TestTDS
             if (typeIndex != -1)
             {
                 String specifiedType = name.substring(typeIndex + 1);
-                switch (specifiedType)
-                {
-                    case M3Paths.Boolean:
-                        type = DataType.BOOLEAN_AS_BYTE;
-                        break;
-                    case M3Paths.Integer:
-                        type = DataType.LONG;
-                        break;
-                    case M3Paths.DateTime:
-                        type = DataType.DATETIME_AS_LONG;
-                        break;
-                    case M3Paths.Float:
-                        type = DataType.DOUBLE;
-                        break;
-                    case M3Paths.String:
-                        type = DataType.STRING;
-                        break;
-                    case M3Paths.Variant:
-                        type = DataType.CUSTOM;
-                        break;
-                    default:
-                }
+                type = pureToTDSType(specifiedType, type);
 
                 name = name.substring(0, typeIndex);
             }
@@ -267,7 +248,7 @@ public abstract class TestTDS
                             default:
                                 throw new RuntimeException("ERROR " + c.dataType() + " not supported yet on variant!");
                         }
-                        variants[i] = value == null ? null : VariantInstanceImpl.newVariant(value, null, processorSupport);
+                        variants[i] = value == null ? null : VariantInstanceImpl.newVariant(value, processorSupport);
                     }
                     break;
                 case STRING:
@@ -286,6 +267,38 @@ public abstract class TestTDS
                     throw new RuntimeException(c.dataType() + " not supported yet!");
             }
         });
+    }
+
+    private static DataType pureToTDSType(String specifiedType)
+    {
+        return Objects.requireNonNull(pureToTDSType(specifiedType, null), () -> "ERROR " + specifiedType + " not supported yet!");
+    }
+
+    private static DataType pureToTDSType(String specifiedType, DataType type)
+    {
+        switch (specifiedType)
+        {
+            case M3Paths.Boolean:
+                type = DataType.BOOLEAN_AS_BYTE;
+                break;
+            case M3Paths.Integer:
+                type = DataType.LONG;
+                break;
+            case M3Paths.DateTime:
+                type = DataType.DATETIME_AS_LONG;
+                break;
+            case M3Paths.Float:
+                type = DataType.DOUBLE;
+                break;
+            case M3Paths.String:
+                type = DataType.STRING;
+                break;
+            case M3Paths.Variant:
+                type = DataType.CUSTOM;
+                break;
+            default:
+        }
+        return type;
     }
 
     private Object getDataAsType(CsvReader.ResultColumn c, DataType type, long rowCount)
@@ -734,6 +747,39 @@ public abstract class TestTDS
     public Pair<TestTDS, MutableList<Pair<Integer, Integer>>> wrapFullTDS()
     {
         return Tuples.pair(this.copy(), Lists.mutable.with(Tuples.pair(0, (int) this.getRowCount())));
+    }
+
+    public TestTDS addColumn(String name, CoreInstance type)
+    {
+        DataType dataType = pureToTDSType(PackageableElement.getUserPathForPackageableElement(type));
+
+        Object res;
+
+        switch (dataType)
+        {
+            case LONG:
+                res = new long[(int) this.rowCount];
+                break;
+            case BOOLEAN_AS_BYTE:
+                res = new boolean[(int) this.rowCount];
+                break;
+            case DOUBLE:
+                res = new double[(int) this.rowCount];
+                break;
+            case STRING:
+                res = new String[(int) this.rowCount];
+                break;
+            case DATETIME_AS_LONG:
+                res = new PureDate[(int) this.rowCount];
+                break;
+            case CUSTOM:
+                res = new Variant[(int) this.rowCount];
+                break;
+            default:
+                throw new RuntimeException("ERROR " + dataType + " not supported yet!");
+        }
+
+        return addColumn(name, dataType, res);
     }
 
     public TestTDS addColumn(String name, DataType dataType, Object res)

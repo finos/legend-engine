@@ -24,10 +24,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
-import org.finos.legend.pure.m3.navigation.M3Properties;
-import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
-import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.type.Type;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -41,9 +38,11 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.interprete
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Extend;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Filter;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.First;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Flatten;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.GroupBy;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Join;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Last;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.LateralJoin;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Limit;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Map;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.NTile;
@@ -85,6 +84,8 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_", Extend::new),
                 Tuples.pair("extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_", Extend::new),
                 Tuples.pair("extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_", Extend::new),
+                Tuples.pair("flatten_T_MANY__ColSpec_1__Relation_1_", Flatten::new),
+                Tuples.pair("lateral_Relation_1__Function_1__Relation_1_", LateralJoin::new),
                 Tuples.pair("first_Relation_1___Window_1__T_1__T_$0_1$_", First::new),
                 Tuples.pair("last_Relation_1___Window_1__T_1__T_$0_1$_", Last::new),
                 Tuples.pair("nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_", Nth::new),

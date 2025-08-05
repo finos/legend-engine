@@ -345,17 +345,10 @@ function meta::relational::functions::sqlQueryToString::debugPrint::processJoinT
   // keeping consistent with snowflake
   assert(processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) == '1 = 1', | 'Filter in column projections is not supported. Use a Post Filter if filtering is necessary');
 
-  assert($j.alias.relationalElement->instanceOf(SemiStructuredArrayFlatten), | 'Lateral join in H2 should be followed by flatten operation');
-
-  let lhs = ^TableAliasColumn(column = ^Column(name = '__INPUT__', type = ^meta::relational::metamodel::datatype::SemiStructured()),alias = $j.alias);
-  let rhs = $j.alias.relationalElement->cast(@SemiStructuredArrayFlatten).navigation->cast(@SemiStructuredObjectNavigation);
-  let joinOperation = ^DynaFunction(name= 'equal', parameters = [$lhs, ^$rhs(returnType=String, avoidCastIfPrimitive=false)]);
-
-  ' ' + $format.separator() + 'left outer join '
+  ', LATERAL ' + $format.separator()
   + $j.alias
         ->map(a|^$a(name = '"' + $a.name + '"'))
-        ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
-        + ' ' + 'on (' + processOperation($joinOperation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')';
+        ->toOne()->processOperation($dbConfig, ^$format(newLine = '')->indent(), $extensions) + $format.separator();
 }
 
 function meta::relational::functions::sqlQueryToString::debugPrint::processExtractFromSemiStructuredParamsForH2(params:String[3]):String[1]

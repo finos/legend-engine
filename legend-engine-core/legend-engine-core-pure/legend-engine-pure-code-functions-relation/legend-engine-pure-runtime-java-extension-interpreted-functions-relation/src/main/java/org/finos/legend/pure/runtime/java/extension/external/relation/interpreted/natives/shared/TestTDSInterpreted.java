@@ -14,8 +14,14 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared;
 
+import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.newBooleanLiteral;
+import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.newDateLiteral;
+import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.newFloatLiteral;
+import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.newIntegerLiteral;
+import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.newStringLiteral;
 import io.deephaven.csv.parsers.DataType;
 import io.deephaven.csv.reading.CsvReader;
+import java.math.BigDecimal;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
@@ -29,10 +35,6 @@ import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
-
-import java.math.BigDecimal;
-
-import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.*;
 
 public class TestTDSInterpreted extends TestTDS
 {
