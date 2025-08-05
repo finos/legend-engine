@@ -46,8 +46,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
       selectSQLQueryProcessor = processSelectSQLQueryForPostgres_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslator = getDDLCommandsTranslatorForPostgres(),
-      columnNameQuotes = '"'
+      ddlCommandsTranslator = getDDLCommandsTranslatorForPostgres()
    );
 }
 
