@@ -284,7 +284,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   // Map of Column to Literals of VarPlaceHolder
   let keyValues = $upsertQuery.equalityStatements->keyValues()->sortBy(kv | $kv.first);
   let columnNames = $keyValues->map(kv | $kv.first)->joinStrings(', ');
-  let literalValues = $keyValues->map(kv | meta::relational::functions::sqlQueryToString::processLiteralValue($kv.second.value, $sgc.dbConfig))->joinStrings(', ');
+  let literalValues = $keyValues->map(kv | meta::relational::functions::sqlQueryToString::processOperation($kv.second, $sgc))->joinStrings(', ');
 
   'merge into ' + $upsertQuery.data.name + ' (' + $columnNames + ') values (' + $literalValues + ')';
 }
