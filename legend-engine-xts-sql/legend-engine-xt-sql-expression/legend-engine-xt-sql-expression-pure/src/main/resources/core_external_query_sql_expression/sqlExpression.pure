@@ -3,5 +3,11 @@ import meta::external::query::sql::metamodel::*;
 Class meta::external::query::sql::expression::SQLExpression<T> extends meta::pure::metamodel::relation::Relation<T>
 {
     sqlString: String[1];
+    linkedStatement : Statement[1];     // Managed by the compiler. Replace TableFunction with 'linked' table functions.
     pureFunction: Function<Any>[1];
+}
+
+Class meta::external::query::sql::expression::AccessorTableFunction extends meta::external::query::sql::metamodel::TableFunction
+{
+    store : meta::pure::store::Store[1];
 }

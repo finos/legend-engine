@@ -2,6 +2,8 @@
   "name": "core_external_query_sql_expression",
   "pattern": "(meta::external::query::sql::expression)(::.*)?",
   "dependencies": [
-    "platform"
+    "platform",
+    "platform_dsl_store",
+    "core_external_store_relational_postgres_sql_model"
   ]
 }
