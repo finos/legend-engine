@@ -250,7 +250,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
   let ext = ^meta::pure::metamodel::serialization::grammar::Configuration
             (
               fullPath = true,
-              extensions = meta::relational::grammar::serialization::relationGrammarExtension()
+              extensions = meta::relational::grammar::serialization::relationGrammarExtension()  
             );
   $f->match(
     [
