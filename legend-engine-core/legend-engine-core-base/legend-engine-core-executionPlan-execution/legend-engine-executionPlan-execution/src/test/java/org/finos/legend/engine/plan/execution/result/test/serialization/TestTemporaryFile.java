@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.result.test.serialization;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
 import org.junit.Assert;
 import org.junit.Test;

@@ -109,7 +109,7 @@
     <properties>
         <!-- Legend -->
         <legend.pure.version>5.55.0</legend.pure.version>
-        <legend.shared.version>0.27.0</legend.shared.version>
+        <legend.shared.version>0.28.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
         <!-- SONAR -->
@@ -159,8 +159,7 @@
         <commons-compress.version>1.21</commons-compress.version>
         <commons-csv.version>1.5</commons-csv.version>
         <commons-io.version>2.7</commons-io.version>
-        <commons-lang.version>2.6</commons-lang.version>
-        <commons-lang3.version>3.7</commons-lang3.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
         <commons-text.version>1.10.0</commons-text.version>
         <deephaven.version>0.36.1</deephaven.version>
         <deephaven-csv.version>0.12.0</deephaven-csv.version>
@@ -3473,11 +3472,7 @@
                 <artifactId>commons-compress</artifactId>
                 <version>${commons-compress.version}</version>
             </dependency>
-            <dependency>
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
-                <version>${commons-lang.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
