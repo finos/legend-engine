@@ -133,6 +133,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-postgresSql/legend-engine-xt-relationalStore-postgresSqlModel-pure", "external-store-relational-postgres-sql-model"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-postgresSql/legend-engine-xt-relationalStore-postgresSqlModel-extensions-pure", "external-store-relational-postgres-sql-model-extensions"))
                 .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-pure", "external-query-sql"))
+                .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-expression/legend-engine-xt-sql-expression-tests-pure", "external_query_sql_expression_tests"))
                 .with(this.buildCore("legend-engine-xts-deephaven/legend-engine-xt-deephaven-executionPlan-test", "deephaven_execution_test"))
                 .with(this.buildCore("legend-engine-xts-deephaven/legend-engine-xt-deephaven-pure", "deephaven_pure"))
                 .with(this.buildCore("legend-engine-xts-deephaven/legend-engine-xt-deephaven-javaPlatformBinding-pure", "deephaven-java-platform-binding"))

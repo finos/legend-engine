@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 package org.finos.legend.engine.code.core;
 
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class CoreExternalQuerySQLCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreExternalSQLExpressionTestsCodeRepositoryProvider implements CodeRepositoryProvider
 {
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_external_query_sql.definition.json");
+        return GenericCodeRepository.build("core_external_query_sql_expression_tests.definition.json");
     }
 }

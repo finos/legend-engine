@@ -10,6 +10,11 @@ function pack::f():Any[*]
   #SQL{select name from tb('pack::DB.myTab') as t where t.name = 'www'}#->from(test::test);
 }
 
+function pack::f2():Any[*]
+{
+  #SQL{select name from tb('pack::DB.myTab')}#->filter(x|$x.name == 'www2')->from(test::test);
+}
+
 
 ###Runtime
 Runtime test::test

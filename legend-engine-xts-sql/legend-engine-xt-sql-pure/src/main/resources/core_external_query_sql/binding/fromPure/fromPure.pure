@@ -201,7 +201,7 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
   let runtime = if ($sources.runtime->isNotEmpty(), | $sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(), | ^Runtime());
   let lambda = $context.lambda()->meta::pure::router::preeval::preval($extensions);
 
-  println('Generated Pure Function:'+$lambda->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
+//  println('Generated Pure Function:'+$lambda->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
 
   trace(| meta::pure::executionPlan::executionPlan($lambda, $mapping, $runtime, $extensions), 'generating plan');
 }
@@ -379,7 +379,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   if ($querySpec.from->isEmpty(),
     | let func = $querySpec.select.selectItems->processSelectItems($context, false)->at(0).first;
-      println('Generated Pure Function for column: '+$func->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
+//      println('Generated Pure Function for column: '+$func->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
       ^$_context(expression=$func.expressionSequence->evaluateAndDeactivate()->toOne());,
     | 
       let from = $querySpec.from->processFrom($context);
@@ -3974,7 +3974,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   if ($cloned.expression != $oldContext.expression,
     |
-      println('clone');
       let columns = meta::external::query::sql::transformation::queryToPure::resolveSchema($cloned.lambda(), $cloned.extensions);
       ^$cloned(columns = $columns);,
     | $cloned);

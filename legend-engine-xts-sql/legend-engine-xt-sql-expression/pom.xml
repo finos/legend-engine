@@ -30,5 +30,6 @@
         <module>legend-engine-xt-sql-expression-compiler</module>
         <module>legend-engine-xt-sql-expression-grammar</module>
         <module>legend-engine-xt-sql-expression-pure</module>
+        <module>legend-engine-xt-sql-expression-tests-pure</module>
     </modules>
 </project>

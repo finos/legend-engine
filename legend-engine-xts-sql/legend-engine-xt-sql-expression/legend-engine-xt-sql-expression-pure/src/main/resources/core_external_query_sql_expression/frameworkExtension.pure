@@ -3,7 +3,8 @@ import meta::external::query::sql::metamodel::*;
 import meta::pure::store::*;
 import meta::pure::router::routing::*;
 import meta::pure::extension::*;
-function meta::external::query::sql::transformation::queryToPure::tests::sqlExpressionFeatureExtension() : Extension[1]
+
+function meta::external::query::sql::expression::sqlExpressionFeatureExtension() : Extension[1]
 {
    let shared = ^Extension(
       type = 'sqlExpressionExtension',
