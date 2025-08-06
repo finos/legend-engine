@@ -277,6 +277,21 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUsedUndeclaredDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-sql-pure</dependency>
+                            </ignoredUsedUndeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -324,7 +339,6 @@
             <version>${project.version}</version>
         </dependency>
 
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
@@ -348,14 +362,8 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-core-extension</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relation</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

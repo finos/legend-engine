@@ -22,6 +22,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.code.core.SQLLegendPureCoreExtension;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
 import org.finos.legend.engine.entitlement.services.RelationalDatabaseEntitlementServiceExtension;
@@ -531,6 +532,7 @@ public class TestExtensions
                 .with(MongoDBLegendPureCoreExtension.class)
                 .with(FlatDataLegendPureCoreExtension.class)
                 .with(DeephavenLegendPureCoreExtension.class)
+                .with(SQLLegendPureCoreExtension.class)
                 .with(DeephavenJavaBindingLegendPureCoreExtension.class)
                 .with(ElasticsearchLegendPureCoreExtension.class)
                 .with(CoreLegendPureCoreExtension.class)
