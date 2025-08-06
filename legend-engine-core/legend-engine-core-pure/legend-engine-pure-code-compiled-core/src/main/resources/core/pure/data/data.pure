@@ -30,6 +30,25 @@ Class <<typemodifiers.abstract>> meta::pure::data::EmbeddedData
 {
 }
 
+Class meta::pure::data::RelationRowTestData
+{
+  values: String[*];
+}
+
+Class meta::pure::data::RelationData
+{
+  schema: String[1];
+  table: String[1];
+  columns: String[*];
+  rowValues: meta::pure::data::RelationRowTestData[*];
+}
+
+
+Class meta::pure::data::RelationAccessorData extends meta::pure::data::EmbeddedData
+{
+  data: meta::pure::data::RelationData[*];
+}
+
 Class meta::pure::data::DataElementReference extends EmbeddedData
 {
   dataElement : DataElement[1];

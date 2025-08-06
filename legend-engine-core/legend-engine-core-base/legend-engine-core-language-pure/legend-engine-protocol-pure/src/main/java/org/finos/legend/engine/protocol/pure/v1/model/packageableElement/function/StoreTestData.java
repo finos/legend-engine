@@ -26,11 +26,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.S
  * and/or one connection but for now the expectation is one store can be mocked
  */
 
-public class StoreTestData
+public class StoreTestData extends FunctionTestData
 {
-    public String doc;
+
     public StoreProviderPointer store;
-    public EmbeddedData data;
-    public SourceInformation sourceInformation;
+
 
 }
