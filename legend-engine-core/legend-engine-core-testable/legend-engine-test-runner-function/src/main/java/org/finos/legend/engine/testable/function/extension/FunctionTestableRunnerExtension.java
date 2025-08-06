@@ -17,6 +17,8 @@ package org.finos.legend.engine.testable.function.extension;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
@@ -37,6 +39,20 @@ public class FunctionTestableRunnerExtension implements TestableRunnerExtension
     {
         return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Function");
     }
+
+
+    @Override
+    public Boolean isElementTestable(PackageableElement element)
+    {
+        if (!(element instanceof Function))
+        {
+            return false;
+        }
+
+        Function function = (Function) element;
+        return !function.tests.isEmpty();
+    }
+
 
     @Override
     public TestRunner getTestRunner(Testable testable)

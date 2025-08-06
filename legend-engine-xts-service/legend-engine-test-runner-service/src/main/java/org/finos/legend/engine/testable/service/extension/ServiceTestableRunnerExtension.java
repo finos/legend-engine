@@ -17,6 +17,8 @@ package org.finos.legend.engine.testable.service.extension;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
@@ -43,6 +45,18 @@ public class ServiceTestableRunnerExtension implements TestableRunnerExtension
     public String getSupportedClassifierPath()
     {
         return ServiceProtocolExtension.SERVICE_CLASSIFIER_PATH;
+    }
+
+    @Override
+    public Boolean isElementTestable(PackageableElement element)
+    {
+        if (!(element instanceof Service))
+        {
+            return false;
+        }
+
+        Service service = (Service) element;
+        return service.test != null || service.testSuites != null;
     }
 
     @Override

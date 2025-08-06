@@ -15,6 +15,7 @@
 package org.finos.legend.engine.testable.extension;
 
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Testable;
 
 import java.util.List;
@@ -38,6 +39,26 @@ public class TestableRunnerExtensionLoader
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No testable runner for " + testable.getClass().getSimpleName()));
+    }
+
+    public static Boolean isElementTestable(String classifierPath, PackageableElement element)
+    {
+        return isElementTestable(classifierPath, element, getCurrentThreadClassLoader());
+    }
+
+    public static Boolean isElementTestable(String classifierPath, PackageableElement element, ClassLoader classLoader)
+    {
+        TestableRunnerExtension extension = extensions(classLoader).stream()
+                .filter(ext -> ext.getSupportedClassifierPath().equals(classifierPath))
+                .findFirst()
+                .orElse(null);
+
+        if (extension == null)
+        {
+            return false;
+        }
+
+        return extension.isElementTestable(element);
     }
 
     public static Map<String, ? extends TestableRunnerExtension> getClassifierPathToTestableRunnerMap()
