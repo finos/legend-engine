@@ -58,7 +58,14 @@ public class SnowflakeAppGenerator
                 sdlc = (AlloySDLC) sdlcInfo;
             }
         }
-        SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(), fullArtifact._createQuery(), fullArtifact._grantStatement(),  activator._permissionScheme().toString(), activator._description(), activator._deploymentSchema(), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), Lists.mutable.withAll(fullArtifact._tables()));
+        SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(),
+                                                            fullArtifact._createQuery(),
+                                                            fullArtifact._grantStatement(),
+                                                            activator._permissionScheme().toString(),
+                                                            activator._description(),
+                                                            activator._deploymentSchema(),
+                                                            ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(),
+                                                            Lists.mutable.withAll(fullArtifact._tables()), Lists.mutable.withAll(fullArtifact._utilDDLs()));
         List<ActionContent> actionContents = FunctionActivatorGenerator.generateActions(activator, pureModel, routerExtensions);
         if (activator._activationConfiguration() != null)
         {

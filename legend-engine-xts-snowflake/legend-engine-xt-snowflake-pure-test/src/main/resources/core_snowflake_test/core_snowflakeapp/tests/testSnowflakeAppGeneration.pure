@@ -20,7 +20,7 @@ import meta::pure::mapping::*;
 import meta::external::function::activator::snowflakeApp::tests::*;
 import meta::external::function::activator::snowflakeApp::tests::model::simple::*;
 
-function meta::external::function::activator::snowflakeApp::tests::checkSnowflakeAppGrammar(function:String[1],  expected:String[1]): Boolean[1]
+function meta::external::function::activator::snowflakeApp::tests::checkSnowflakeAppGrammar(function:String[1]): meta::external::function::activator::snowflakeApp::generation::Artifact[1]
 {
   let model = readFile('/core_snowflake_test/core_snowflakeapp/showcase/showcaseElements.legend')->toOne();
 
@@ -30,22 +30,36 @@ function meta::external::function::activator::snowflakeApp::tests::checkSnowflak
                 '  applicationName : \'App1\';\n' +
                 '  ownership : Deployment { identifier : \'12345\' };\n' +
                 '  description : \'bla bla\';\n' +
+                '  usageRole : \'PUBLIC\';\n' +
                 '  activationConfiguration : meta::external::function::activator::snowflakeApp::tests::MyConnection;\n' + $function + '}\n' + $model;
 
   let elements = meta::legend::compileLegendGrammar($grammar);
 
   let x = $elements->filter(f | $f->instanceOf(SnowflakeApp))->cast(@SnowflakeApp)->toOne();
 
-  assertEquals($x->generateFullArtifact().createQuery, $expected);
+  $x->generateFullArtifact();
 }
+
+function meta::external::function::activator::snowflakeApp::tests::checkSnowflakeAppGrammar(function:String[1],  expected:String[1]): Boolean[1]
+{
+  let artifact  = checkSnowflakeAppGrammar($function);
+  assertEquals($artifact.createQuery, $expected);
+}
+
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunction():Boolean[1]
 {
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'haha\' $$;';
+  let expectedGrant = 'GRANT USAGE ON FUNCTION %S.LEGEND_NATIVE_APPS.APP1() to role PUBLIC;';
 
   let function = '  function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction():TabularDataSet[1];\n';
 
-  checkSnowflakeAppGrammar($function, $expected);
+  let artifact = checkSnowflakeAppGrammar($function);
+
+  assertEquals($artifact.createQuery, $expected);
+
+  assertEquals($artifact.grantStatement, $expectedGrant);
+
 }
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithParams():Boolean[1]

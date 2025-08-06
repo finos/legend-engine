@@ -27,15 +27,26 @@ function meta::external::function::activator::snowflakeApp::tests::assertSnowfla
 
 function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], expected: String[1], extensions:meta::pure::extension::Extension[*]): Boolean[1]
 {
-  let app =  ^SnowflakeApp
+  let app = buildApp($function);  
+  let generatedQuery = if($extensions->isNotEmpty(),| $app->generateArtifact($extensions),|$app->generateArtifact());  
+  assertEquals($expected, $generatedQuery);
+}
+
+function meta::external::function::activator::snowflakeApp::tests::getSnowflakeArtifactForFunction(function: PackageableFunction<Any>[1], extensions:meta::pure::extension::Extension[*]): meta::external::function::activator::snowflakeApp::generation::Artifact[1]
+{
+  let app = buildApp($function);  
+  if($extensions->isNotEmpty(),| $app->generateFullArtifact($extensions),|$app->generateFullArtifact());  
+}
+
+function meta::external::function::activator::snowflakeApp::tests::buildApp(function: PackageableFunction<Any>[1]):SnowflakeApp[1]
+{
+  ^SnowflakeApp
    (
       applicationName = 'App1',
       ownership = ^DeploymentOwnership(id = 'owner1'),
       description = 'bla bla',
       activationConfiguration = defaultConfig(),
+      usageRole = 'PUBLIC',
       function = $function
    );
-
-  let generatedQuery = if($extensions->isNotEmpty(),| $app->generateArtifact($extensions),|$app->generateArtifact());  
-  assertEquals($expected, $generatedQuery);
 }
