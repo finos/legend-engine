@@ -23,7 +23,7 @@ function meta::external::powerbi::transformation::fromPure::generateArtifacts(pr
   ->concatenate($project.model->generateArtifacts());
 }
 
-function <<access.private>> meta::external::powerbi::transformation::fromPure::generateArtifacts(report: Report[1]):PowerBIArtifactGenerationOutput[*]
+function meta::external::powerbi::transformation::fromPure::generateArtifacts(report: Report[1]):PowerBIArtifactGenerationOutput[*]
 {
   let baseFolderPath=$report.name + '.Report/';
   ^PowerBIArtifactGenerationOutput(content=$report.platformMetadata->meta::json::toJSON()->replace('\\\/','\/')->replace('\"schema\"','\"$schema\"'),fileName=$baseFolderPath + '.platform',format='json')
@@ -49,10 +49,10 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::g
   ->concatenate(generateArtifacts($definition.tables, $definitionFolderBasePath));
 }
 
-function <<access.private>> meta::external::powerbi::transformation::fromPure::generateArtifacts(culture: Culture[1], definitionFolderBasePath: String[1]):PowerBIArtifactGenerationOutput[1]
+function meta::external::powerbi::transformation::fromPure::generateArtifacts(culture: Culture[1], definitionFolderBasePath: String[1]):PowerBIArtifactGenerationOutput[1]
 {
   let cultureFolderBasePath=$definitionFolderBasePath + 'cultures/';
-  ^PowerBIArtifactGenerationOutput(content=$culture->getCultureInfo(),fileName=$cultureFolderBasePath + $culture->toString() + '.tmdl',format='tmdl');
+  ^PowerBIArtifactGenerationOutput(content=$culture->getCultureInfo(),fileName=$cultureFolderBasePath + $culture->toCultureString() + '.tmdl',format='tmdl');
 }
 
 function <<access.private>> meta::external::powerbi::transformation::fromPure::generateArtifacts(tables: Table[*], definitionFolderBasePath: String[1]):PowerBIArtifactGenerationOutput[*]
@@ -61,26 +61,26 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::g
   $tables->map(t | ^PowerBIArtifactGenerationOutput(content=$t->toTMDL(),fileName=$tablesFolderBasePath + $t.name + '.tmdl',format='tmdl'));
 }
 
-function <<access.private>> meta::external::powerbi::transformation::fromPure::toTMDL(database: Database[1]):String[1]
+function meta::external::powerbi::transformation::fromPure::toTMDL(database: Database[1]):String[1]
 {
   'database\n\tcompatibilitylevel: ' + $database.compatibilityLevel->toString();
 }
 
-function <<access.private>> meta::external::powerbi::transformation::fromPure::toTMDL(definition: Definition[1]):String[1]
+function meta::external::powerbi::transformation::fromPure::toTMDL(definition: Definition[1]):String[1]
 {
   let newLineTab='\n\t';
-  'model Model' + $newLineTab + 'culture: ' + $definition.culture->toString() + $newLineTab + 'defaultPowerBIDataSourceVersion: ' + $definition.defaultDataSourceVersion->toString() + $newLineTab + 'sourceQueryCulture: ' + $definition.culture->toString() + '\n' + $definition.tables->getReferencesContent($definition.culture);
+  'model Model' + $newLineTab + 'culture: ' + $definition.culture->toCultureString() + $newLineTab + 'defaultPowerBIDataSourceVersion: ' + $definition.defaultDataSourceVersion->toString() + $newLineTab + 'sourceQueryCulture: ' + $definition.culture->toCultureString() + '\n' + $definition.tables->getReferencesContent($definition.culture);
 }
 
 function <<access.private>> meta::external::powerbi::transformation::fromPure::getReferencesContent(tables: Table[*], culture: Culture[1]):String[1]
 {
   let newLine='\n';
-  $tables->map(t | 'ref table ' + $t.name)->joinStrings($newLine) + $newLine +  'ref cultureInfo ' + $culture->toString();
+  $tables->map(t | 'ref table ' + $t.name)->joinStrings($newLine) + $newLine +  'ref cultureInfo ' + $culture->toCultureString();
 }
 
 function <<access.private>> meta::external::powerbi::transformation::fromPure::getCultureInfo(culture: Culture[1]):String[1]
 {
-  'cultureInfo ' + $culture->toString() + '\n\t' + 'linguisticMetadata={ \"Version\": \"1.0.0\", \"Language\": \"' + $culture->toString()->replace('_','-') + '\" }\n\t\tcontentType: json';
+  'cultureInfo ' + $culture->toCultureString() + '\n\t' + 'linguisticMetadata={ \"Version\": \"1.0.0\", \"Language\": \"' + $culture->toCultureString() + '\" }\n\t\tcontentType: json';
 }
 
 function <<access.private>> meta::external::powerbi::transformation::fromPure::toTMDL(table: Table[1]):String[1]
@@ -89,7 +89,7 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::t
   'table ' + $table.name +  $newLineTab + 'lineageTag: ' + $table.lineageTag + $newLineTab + $table.columns->map(c | $c->toTMDL())->joinStrings($newLineTab) + $newLineTab + $table.partition->toTMDL(); 
 }
 
-function <<access.private>> meta::external::powerbi::transformation::fromPure::toTMDL(column: Column[1]):String[1]
+function meta::external::powerbi::transformation::fromPure::toTMDL(column: Column[1]):String[1]
 {
   let newLineTabTab='\n\t\t';
   'column \'' + $column.name + '\'' + $newLineTabTab + 'dataType: ' + $column.dataType->toString() + $newLineTabTab + 'lineageTag: ' + $column.lineageTag + $newLineTabTab + 'sourceColumn: ' + $column.sourceColumn + $newLineTabTab + 'summarizeBy: none'; 
@@ -103,7 +103,7 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::t
 
 function <<access.private>> meta::external::powerbi::transformation::fromPure::toString(source: PartitionSource[1]):String[1]
 {
-  $source.datasourceSpecification->match([
+  $source.datasourceSpecification->toOne()->match([
     sfds: SnowflakeDatasourceSpecification[1] | $sfds->toPartitionSourceString($source.sqlQuery)
   ]);
 }
@@ -125,4 +125,9 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::b
          | $sfds.accountName + '.' + $sfds.organization->toOne('VPS snowflake connections need an organization to be specified') + '.' + $sfds.region + '.' + $sfds.cloudType->toOne('VPS snowflake connections need a cloudType to be specified') + '.privatelink.snowflakecomputing.com',
          | $sfds.accountName + '.' + $sfds.region + '.privatelink.snowflakecomputing.com'),
     | $sfds.accountName + '.' + $sfds.region + '.' + $sfds.cloudType->toOne('VPS snowflake connections need a cloudType to be specified') + '.snowflakecomputing.com');
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::toCultureString(culture: Culture[1]): String[1]
+{
+  $culture->toString()->replace('_','-');
 }

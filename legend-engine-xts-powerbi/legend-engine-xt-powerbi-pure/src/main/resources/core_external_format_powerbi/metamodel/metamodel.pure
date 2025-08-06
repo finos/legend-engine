@@ -130,7 +130,8 @@ Class meta::external::powerbi::metamodel::Partition
 Class meta::external::powerbi::metamodel::PartitionSource
 {
   sqlQuery: String[1];
-  datasourceSpecification: DatasourceSpecification[1];
+  dbType: String[1];
+  datasourceSpecification: DatasourceSpecification[0..1];
 }
 
 Class meta::external::powerbi::metamodel::ArtifactMetadata
