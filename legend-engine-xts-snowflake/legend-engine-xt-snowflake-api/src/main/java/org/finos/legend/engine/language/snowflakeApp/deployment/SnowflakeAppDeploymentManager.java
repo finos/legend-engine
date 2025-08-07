@@ -44,6 +44,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Map;
 
@@ -194,7 +195,10 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
             }
             catch (Exception e)
             {
-                throw new RuntimeException(e);
+                throw new RuntimeException(String.format("Error in processing UDTF generate statement. \n" +
+                                "Check if the Pure function has unexpected ${}. \n" +
+                                "Freemarker template failed with message: %s\n Template snippet: %s",
+                        e.getMessage(), content.createStatement), e);
             }
 
             if (content.grantStatement != null)
