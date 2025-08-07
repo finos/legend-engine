@@ -413,6 +413,23 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
+    public void testRowsWithNegativeValueForRelationStoreAccessor()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->rowsWithNegativeValue(~id)\n" +
+                        "}"
+        );
+    }
+
+    @Test
     public void testRowsWithColumnLongerThanWhenColumnNotString()
     {
         test(
