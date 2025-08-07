@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -441,7 +441,7 @@ public class HelperServiceBuilder
 
     private static void checkMappingRuntimeCompatibility(Supplier<String> context, Root_meta_core_runtime_Runtime pureRuntime, Runtime runtime, Mapping pureMapping, String mapping, SourceInformation sourceInformation, PureModel pureModel)
     {
-        boolean compatible = !(pureRuntime instanceof Root_meta_core_runtime_EngineRuntime) || HelperRuntimeBuilder.isRuntimeCompatibleWithMapping((Root_meta_core_runtime_EngineRuntime) pureRuntime, pureMapping);
+        boolean compatible = !(pureRuntime instanceof Root_meta_core_runtime_EngineRuntime) || HelperRuntimeBuilder.isEngineRuntimeCompatibleWithMapping((Root_meta_core_runtime_EngineRuntime) pureRuntime, pureMapping, pureModel);
 
         if (!compatible)
         {
