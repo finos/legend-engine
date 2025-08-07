@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-deephaven</artifactId>
-        <version>4.96.1</version>
+        <version>4.96.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
