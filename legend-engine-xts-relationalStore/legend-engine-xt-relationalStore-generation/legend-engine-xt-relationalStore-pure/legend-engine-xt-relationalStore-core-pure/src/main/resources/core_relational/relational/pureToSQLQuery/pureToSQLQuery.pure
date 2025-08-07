@@ -608,13 +608,13 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpression(
   $res;
 }
 
-function meta::relational::functions::pureToSqlQuery::findColumnOnOperationHerarchy(colFuncName: String[1], operation:SelectWithCursor[1]): RelationalOperationElement[0..1]
+function meta::relational::functions::pureToSqlQuery::findColumnOnOperationHierarchy(colFuncName: String[1], operation:SelectWithCursor[1]): RelationalOperationElement[0..1]
 {
   let foundColumnInSelect = $operation.select->findColumn($colFuncName);
   let foundColumn = if($foundColumnInSelect->isEmpty() && $operation.select.data->isNotEmpty(), |$operation.select.data->toOne().alias.relation()->findColumn($colFuncName), |$foundColumnInSelect);
 
   if ($foundColumn->isEmpty() && $operation.parent->isNotEmpty(),
-     | $colFuncName->findColumnOnOperationHerarchy($operation.parent->toOne()),
+     | $colFuncName->findColumnOnOperationHierarchy($operation.parent->toOne()),
      | $foundColumn
   );
 }
@@ -627,16 +627,14 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
   let leftSelect = $leftCursor.select;
 
   let colFuncName = $fe.func.name->toOne();
-  let tableAlias = $leftSelect.data->toOne().alias;
 
-  let foundColumn = $colFuncName->findColumnOnOperationHerarchy($leftCursor);
+  let foundColumn = $colFuncName->findColumnOnOperationHierarchy($leftCursor);
 
-  let colAlias = $foundColumn->toOne($colFuncName + ' not found')->match([c:Column[1]|^TableAliasColumn(alias = $tableAlias, column = $c), a:Alias[1]|$a.relationalElement, tcn:TableAliasColumn[1]|^$tcn(alias = $tableAlias)]);
+  let colAlias = $foundColumn->toOne($colFuncName + ' not found');//->match([c:Column[1]|^TableAliasColumn(alias = $leftSelect.data->toOne().alias, column = $c), a:Alias[1]|$a.relationalElement, tcn:TableAliasColumn[1]|^$tcn(alias = $leftSelect.data->toOne().alias)]);
   let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
 
-  let paths = $operation.select->cast(@TdsSelectSqlQuery).paths;
-  let name = $fe.func.name->toOne();
-  let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
+  let paths = $operation.select->filter(x | $x->instanceOf(TdsSelectSqlQuery))->cast(@TdsSelectSqlQuery).paths;
+  let matchedPath = $paths->filter(p|$p.first->toLower() == $colFuncName->toLower());
   let propertyMapping = if($matchedPath->isEmpty(), |[], |$matchedPath.second.propertyMapping);
 
   ^$leftSide(element = ^$operation(select=$newSelect), currentPropertyMapping=$propertyMapping);
@@ -2198,7 +2196,7 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpressionF
                         ]);
                   );
                   let cteReference = ^CommonTableExpressionReference(name = $varName, columns = $cteColumns);
-                  let cteAlias = ^TableAlias(name = 'root', relationalElement = $cteReference);
+                  let cteAlias = ^TableAlias(name = $varName + '_' +$nodeId, relationalElement = $cteReference);
                   
                   let cteReferenceSelect = ^TdsSelectSqlQuery
                   (
@@ -4477,6 +4475,7 @@ function meta::relational::functions::pureToSqlQuery::processRelation(r: Relatio
                s:SelectSQLQuery[1] | $s,
                t:Table[1] | $t,
                f:TabularFunction[1] | $f,
+               cte: CommonTableExpressionReference[1] | $cte,
                u:Union[1] | $u,
                v:View[1]  | let selectWithCursor = processRelationalMappingSpecification($v, $c, $joinType, $nodeId, $addPk, $pkOffset, true, $milestoningContext, ^$state(inFilter=false), $context, $extensions);
                             let select = $selectWithCursor.select;
@@ -5698,38 +5697,74 @@ function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecif
 
 function meta::relational::functions::pureToSqlQuery::processLateral(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let preLateralInput = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_d0'), $aggFromMap, $context, $extensions)
+   let lateralInput = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_d0'), $aggFromMap, $context, $extensions)
                         ->toOne()
                         ->cast(@SelectWithCursor);
 
-   let lateralInput = $preLateralInput.select->isolateTdsSelect($preLateralInput, 'lateralInput_' + $nodeId, $extensions);
+   let lateralInputSelect = $lateralInput.select->pushExtraFilteringOperation($extensions)->cast(@TdsSelectSqlQuery);
+   let lateralInputRootNode = $lateralInput.select.data->toOne();
 
    let lateral = processValueSpecification($expression.parametersValues->at(1), $currentPropertyMapping, ^$operation(parent = $lateralInput), $vars, $state, $joinType, buildNodeId($nodeId,'_d1'), $aggFromMap, $context, $extensions)
                   ->toOne()
                   ->cast(@SelectWithCursor);
 
-   let lateralIsolated = $lateral.select->isolateTdsSelect($lateral, 'lateralSelect_' + $nodeId, $extensions);             
+   let lateralSelect = $lateral.select->pushExtraFilteringOperation($extensions)->cast(@TdsSelectSqlQuery);
 
-   let leftAlias = $lateralInput.select.data->toOne().alias;
-   let rightAlias = $lateralIsolated.select.data->toOne().alias;
+   let lateralSelectRootNode = $lateral.select.data->toOne()->map(x |    
+          let alias = $x.alias;
+          if ($alias.relationalElement->instanceOf(SemiStructuredArrayFlatten),
+            | 
+              $x, 
+            |
+              ^$x(alias = ^$alias(relationalElement = $lateralSelect));
+          );
+        );
+
+   let lateralSelecColumns = $lateralSelectRootNode.alias->map(x |    
+          if ($x.relationalElement->instanceOf(SemiStructuredArrayFlatten),
+            | 
+              $lateralSelect.columns, 
+            |
+              $x->switchAliasForColumns($lateralSelect.columns);
+          );
+        );                   
 
    let join = ^Join(
      name = 'lateralJoin',
-     target = $rightAlias,
-     aliases = [pair($leftAlias, $rightAlias), pair($rightAlias, $leftAlias)],
+     target = $lateralSelectRootNode.alias,
+     aliases = [pair($lateralInputRootNode.alias, $lateralSelectRootNode.alias), pair($lateralSelectRootNode.alias, $lateralInputRootNode.alias)],
      operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)]) // True operation
    );
 
    let lateralJoinNode = ^JoinTreeNode(
      database = ^Database(),
      joinName = 'lateralJoin',
-     alias = $rightAlias,
+     alias = $lateralSelectRootNode.alias,
      join = $join,
      joinType = $joinType,
      lateral = true
    );
 
-   let res = applyJoinInTree($lateralInput.select.data->toOne(), $lateralInput.select.data->toOne(), $lateralJoinNode, $operation, $nodeId, $joinType, true, true, [], $state, $context, $extensions);  
+   let paths = $lateralInputSelect.paths->concatenate($lateralSelect.paths);
+
+   let resColumns = $lateralInputSelect.columns->concatenate($lateralSelecColumns);
+
+   let lateralJoinResNode = ^$lateralInputRootNode(childrenData += $lateralJoinNode);
+
+   let res = ^$lateralInput(select = ^$lateralInputSelect(
+                                     data = $lateralJoinResNode,
+                                     columns = $resColumns,
+                                     paths = $paths
+                      ),
+           currentTreeNode = $lateralInput->concatenate($lateral)->filter(q|$q.currentTreeNode->isNotEmpty())->map(q|$q.currentTreeNode->toOne()->findNode($q.select.data->toOne(), $lateralJoinResNode))->first()
+
+    );
+
+   print(if(!$context.debug, |'',
+            | $context.space+'Lateral Input Operation>  '+$lateralInputSelect->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'
+            + $context.space+'Lateral Operation>  '+ $lateralSelect->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'
+            + $context.space+'Lateral Result>  '+ $res.select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)
+        ));
 
    $res->validate([], $extensions);
    $res;
@@ -5737,25 +5772,30 @@ function meta::relational::functions::pureToSqlQuery::processLateral(expression:
 
 function meta::relational::functions::pureToSqlQuery::processVariantFlatten(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let isLateralFlatten = $state.functionExpressionStack->last()->evaluateAndDeactivate().func == meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_;
+   assert(!$state.inFilter, |'Flatten not supported on inside filter');
+
+   let isLateralFlatten = $state.functionExpressionStack->init()->last()->evaluateAndDeactivate().func == meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_;
 
    let columnName = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->toOne()->cast(@meta::pure::metamodel::relation::ColSpec<Any>).name;
 
    let flattenNavigation = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_d0'), $aggFromMap, $context, $extensions)->cast(@SelectWithCursor);                        
    let flattenNavigationSelect = $flattenNavigation.select->mergeSQLQueryData($nodeId, $state, $context, $extensions);
+   
+   let paramType = $expression.parametersValues->at(0).genericType->genericTypeToDataType();
 
-   let navigation = $state.inFilter->if(|$flattenNavigationSelect.filteringOperation,|$flattenNavigationSelect.columns)->toVariantFriendlyValue([]);
+   let navigation =$flattenNavigationSelect.columns->toVariantFriendlyValue($paramType);
+   
+   let column = ^Column(name = 'VALUE', type = ^meta::relational::metamodel::datatype::SemiStructured());
    let flattenOperation = if($isLateralFlatten, |^SemiStructuredArrayFlatten(navigation = $navigation), |^SemiStructuredArrayFlattenRelation(navigation = $navigation));
 
    let flattenTableAlias = ^TableAlias(relationalElement = $flattenOperation, name = 'flatten_' + $nodeId);
-   let node = ^RootJoinTreeNode(alias = $flattenTableAlias);
 
-   let paramType = $expression.parametersValues->at(0).genericType->genericTypeToDataType();  
-
-   let flattenedColumn = ^TableAliasColumn(alias = $flattenTableAlias, column = ^Column(name = 'VALUE', type = ^meta::relational::metamodel::datatype::SemiStructured()));
+   let flattenedColumn = ^TableAliasColumn(alias = $flattenTableAlias, column = $column);
    let flattenOutput = ^Alias(name = $columnName->addQuotesIfNecessary(), relationalElement = newDynaFunction('cast', [$flattenedColumn, ^DataTypeInfo(dataType = $paramType)]));
 
-   let resSelect = $state.inFilter->if(| ^$flattenNavigationSelect(data = $node, filteringOperation = $flattenOutput),| ^$flattenNavigationSelect(data = $node, columns = $flattenOutput));
+   let node = ^RootJoinTreeNode(alias = $flattenTableAlias, columns = $flattenOutput);
+
+   let resSelect = ^TdsSelectSqlQuery(data = $node, columns = $flattenOutput);
    
    $resSelect->validate($extensions);
    

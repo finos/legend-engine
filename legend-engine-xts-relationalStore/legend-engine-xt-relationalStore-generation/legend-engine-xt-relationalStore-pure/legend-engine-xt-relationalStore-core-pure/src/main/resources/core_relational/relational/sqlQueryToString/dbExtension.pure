@@ -473,6 +473,8 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           s:ViewSelectSQLQuery[1]|'('+$s.selectSQLQuery->processOperation($dbConfig, $format, $generationState, $config, $extensions)+')',
                                           t:Table[1]|$t->tableToString($dbConfig),
                                           tf:TabularFunction[1]|$tf->tabularFunctionToString($dbConfig),
+                                          cte: CommonTableExpressionReference[1] | $cte.name,
+                                          c: Column[1] | $c.name,
                                           js:JoinStrings[1] | $dbConfig.joinStringsProcessor($js, ^$sgc(config=^Config())),
                                           alias:Alias[1]|
                                                 let innerTerm = $alias.relationalElement->match([

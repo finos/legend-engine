@@ -519,7 +519,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processJoinTreeNodeWithLateralJoinForDuckDB(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
 {
-   ', ' + $format.separator() + ' lateral '
+   ', lateral '
    + $j.alias
          ->map(a|^$a(name = '"' + $a.name + '"'))
          ->toOne()->processOperation($dbConfig, ^$format(newLine = '')->indent(), $extensions) + $format.separator();
