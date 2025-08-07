@@ -34,6 +34,7 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
     public String permissionScope;
     public String deploymentSchema;
     public MutableList<String> usedTables = Lists.mutable.empty();
+    public MutableList<String> utilDDL = Lists.mutable.empty();
 
     public SnowflakeAppContent()
     {
@@ -67,6 +68,12 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
         this.ownership = ownership;
         this.creationTime = convertToValidDate(new Date());;
         this.usedTables = usedTables;
+    }
+
+    public SnowflakeAppContent(String applicationName, String createStatement, String grantStatement, String permissionScope, String description, String deploymentSchema, String ownership, MutableList<String> usedTables, MutableList<String> utilDDL)
+    {
+        this(applicationName, createStatement, grantStatement, permissionScope, description, deploymentSchema, ownership, usedTables);
+        this.utilDDL = utilDDL;
     }
 
 

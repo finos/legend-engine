@@ -1,3 +1,4 @@
+import meta::relational::metamodel::*;
 import meta::pure::runtime::*;
 import meta::relational::runtime::*;
 import meta::external::function::activator::snowflakeApp::generation::*;
@@ -13,6 +14,7 @@ Class meta::external::function::activator::snowflakeApp::generation::Artifact
 {
   createQuery:String[1];
   grantStatement:String[0..1];
+  utilDDLs:String[*];
   tables: String[*];
 }
 
@@ -33,16 +35,48 @@ function meta::external::function::activator::snowflakeApp::generation::generate
   let contextWithEnumPushDown = $context->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM);  
 
   let plan =  meta::pure::executionPlan::executionPlan($s.function->cast(@ConcreteFunctionDefinition<Any>), $contextWithEnumPushDown, $extensions, noDebug());
+  let variables = $plan.rootExecutionNode.childNodes->filter(n| $n->instanceOf(ConstantExecutionNode) && $n->cast(@ConstantExecutionNode).values->type()==VariableDeclaration)->cast(@ConstantExecutionNode)->first().values->cast(@VariableDeclaration);
   let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
   let generatedQueryNode = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(node|$node.sqlQuery->toLower()->startsWith('select'))->last()->toOne('candidate query not found');
-  let query = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.' + $deploymentSchema + '.' +$s.applicationName->toUpper() + $inputParamsStub + ' RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS $$ '+ $generatedQueryNode.sqlQuery +' $$;';
-  if($s.usageRole->isNotEmpty(),
-  |
-    let grant = 'GRANT USAGE ON FUNCTION %S.' + $deploymentSchema + '.'+ $s.applicationName->toUpper()+ generateInputParamsStub($s.function, false) +  ' to role '+ if($s.usageRole->isNotEmpty(), |$s.usageRole->toOne()->toUpper(),|'PUBLIC')+';' ; 
-    ^Artifact(createQuery = $query, grantStatement = $grant, tables = $generatedQueryNode.metadata->filter(m| $m->instanceOf(TableInfo))->cast(@TableInfo)->toOne('No table info found').info->map(i|$i.schema+'.'+$i.table));,
-  |  
-    ^Artifact(createQuery = $query, tables = $generatedQueryNode.metadata->filter(m| $m->instanceOf(TableInfo))->cast(@TableInfo)->toOne('No table info found').info->map(i|$i.schema+'.'+$i.table));
-  );
+  let usedTables =  $generatedQueryNode.metadata->filter(m| $m->instanceOf(TableInfo))->cast(@TableInfo)->toOne('No table info found').info->map(i|$i.schema+'.'+$i.table);
+  if($variables->isEmpty(),
+    |
+      let query = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.' + $deploymentSchema + '.' +$s.applicationName->toUpper() +'('+ $inputParamsStub + ') RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS $$ '+ $generatedQueryNode.sqlQuery +' $$;';
+      if($s.usageRole->isNotEmpty(),
+        |let grant = 'GRANT USAGE ON FUNCTION %S.' + $deploymentSchema + '.'+ $s.applicationName->toUpper() + '(' + generateInputParamsStub($s.function, false) +  ') to role '+ $s.usageRole->toOne()->toUpper() +';' ; 
+          ^Artifact(createQuery = $query, grantStatement = $grant, tables = $usedTables);,
+        | ^Artifact(createQuery = $query, tables = $usedTables);
+      );,
+    |
+      let procedure =  ^CreateProcedureSQL(
+                          parameters =$inputParamsStub->replace('"',''),
+                          return = $resultStub,
+                          declarations = $variables,
+                          schemaName = '${catalogSchemaName}.'+$deploymentSchema,
+                          name = $s.applicationName,
+                          generatedSQL= $generatedQueryNode.sqlQuery,
+                          secure = true,
+                          copyGrants = false
+                        );
+      let query = transformToString($procedure, $extensions);
+      if($s.usageRole->isNotEmpty(),
+        |let grant = 'GRANT USAGE ON PROCEDURE %S.' + $deploymentSchema + '.'+ $s.applicationName->toUpper()+ '(' + generateInputParamsStub($s.function, false) +  ') to role '+ $s.usageRole->toOne()->toUpper()+';' ; 
+          ^Artifact(createQuery = $query, grantStatement = $grant, utilDDLs = utilFunction($deploymentSchema, $s.usageRole->toOne()), tables = $usedTables);,
+        | ^Artifact(createQuery = $query, utilDDLs = utilFunction($deploymentSchema), tables = $usedTables);
+      );
+    );
+}
+
+
+function  meta::external::function::activator::snowflakeApp::generation::transformToString(element: CreateProcedureSQL[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   let dbExtension = meta::relational::functions::sqlQueryToString::loadDbExtension(DatabaseType.Snowflake);
+   let config = ^meta::relational::functions::sqlQueryToString::DbConfig(
+        quoteIdentifiers = false,
+        dbType=DatabaseType.Snowflake,
+        dbExtension = $dbExtension
+      );
+  $dbExtension.ddlCommandsTranslator.createProcedure->toOne()->eval($element, $config, $extensions)->toOne();
 }
 
 function meta::external::function::activator::snowflakeApp::generation::generateArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1]):String[1]
@@ -74,7 +108,7 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
   let params = $f->functionType().parameters->evaluateAndDeactivate();
     let typeMap = inputTypeMap();
 
-    '(' + $params->map(p |
+     $params->map(p |
           let baseType = if($p.genericType.rawType->toOne()->instanceOf(Enumeration),
                        | 'VARCHAR',
                        | $typeMap->get($p.genericType.rawType->toOne())->toOne('Relational type missing for type: ' + $p.genericType.rawType->toOne()->toString())
@@ -84,7 +118,7 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
                       | 'ARRAY'
           );
           (if($includeParamName, | '"' + $p.name + '" ', | '') + $sqlType);
-    )->joinStrings(',') + ')';
+    )->joinStrings(',') ;
 }
 
 
@@ -149,4 +183,26 @@ function meta::external::function::activator::snowflakeApp::generation::computeL
 {
   let fullAnalytics  = meta::external::function::activator::lineage::computeLineage($s.function, $extensions);
   meta::alloy::metadataServer::alloyToJSON($fullAnalytics);
+}
+
+function meta::external::function::activator::snowflakeApp::generation::utilFunction(schema:String[1]):String[*]
+{
+  'CREATE OR REPLACE FUNCTION ${catalogSchemaName}.'+ $schema + '.formatVector(data VARIANT)\n'+
+  '   RETURNS object\n'+
+  '   LANGUAGE JAVASCRIPT\n'+
+  ' AS\n'+
+  ' $$\n'+
+  '   const result = {};\n'+
+  '   DATA.forEach(item => {\n'+
+  '               const storeData = result[item.storeName.toLowerCase()] ?? {};\n'+
+  '               storeData[item.datasetName.toLowerCase()] = {lowBatch: item.lowBatch, highBatch: item.highBatch};\n'+
+  '               result[item.storeName.toLowerCase()] = storeData;\n'+
+                '});\n'+
+  '   return result;\n'+
+  ' $$;'
+}
+
+function meta::external::function::activator::snowflakeApp::generation::utilFunction(schema:String[1], usageRole:String[1]):String[*]
+{
+  utilFunction($schema)->concatenate('GRANT USAGE ON FUNCTION ${catalogSchemaName}.'+ $schema + '.formatVector(VARIANT) to role ' + $usageRole + ';' )
 }
