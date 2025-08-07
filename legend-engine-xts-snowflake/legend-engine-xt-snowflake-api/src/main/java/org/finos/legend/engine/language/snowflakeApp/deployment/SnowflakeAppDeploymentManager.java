@@ -44,7 +44,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Map;
 
@@ -163,7 +162,14 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         for (String s: statements)
         {
             Statement statement = jdbcConnection.createStatement();
-            statement.execute(s);
+            try
+            {
+                statement.execute(s);
+            }
+            catch (SQLException e)
+            {
+                throw new RuntimeException(String.format("Query execution failed with error: %s \n" + "Generated query: %s", e.getMessage(), s), e);
+            }
         }
     }
 
