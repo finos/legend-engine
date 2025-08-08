@@ -172,6 +172,11 @@ public class Handlers
         variable2.multiplicity = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
     }
 
+    public static Map<String, MutableSet<String>> getTaxoMap()
+    {
+        return taxoMap.asUnmodifiable();
+    }
+
     public static void aggInference(Object obj, GenericType gt, int mapOffset, int aggOffset, ValueSpecificationBuilder valueSpecificationBuilder)
     {
         LambdaFunction aggFirstLambda = null;
