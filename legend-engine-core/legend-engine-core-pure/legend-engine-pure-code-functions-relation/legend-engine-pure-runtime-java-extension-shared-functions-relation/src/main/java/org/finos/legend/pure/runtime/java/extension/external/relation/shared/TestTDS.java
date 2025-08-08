@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
+import java.util.stream.Stream;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
@@ -193,7 +194,7 @@ public abstract class TestTDS
 
             columnsOrdered.add(name);
             columnType.put(name, type);
-            Object data = getDataAsType(c, type, rowCount);
+            Object data = getDataAsType(c, type, (int) rowCount);
             dataByColumnName.put(name, data);
             boolean[] isNullFlag = new boolean[(int) this.rowCount];
             isNullByColumn.put(name, isNullFlag);
@@ -301,24 +302,38 @@ public abstract class TestTDS
         return type;
     }
 
-    private Object getDataAsType(CsvReader.ResultColumn c, DataType type, long rowCount)
+    private Object getDataAsType(CsvReader.ResultColumn c, DataType type, int rowCount)
     {
-        if (rowCount == 0)
+        // CSV parser, when all values are null, cannot infer type, and ends giving String[]
+        boolean allNull = false;
+        if (c.data() instanceof String[])
+        {
+            String[] data = (String[]) c.data();
+            allNull = Stream.of(data).allMatch(Objects::isNull);
+        }
+
+        if (rowCount == 0 || allNull)
         {
             switch (type)
             {
                 case LONG:
-                    return new long[0];
+                    long[] longs = new long[rowCount];
+                    Arrays.fill(longs, LONG_NULL_SENTINEL);
+                    return longs;
                 case BOOLEAN_AS_BYTE:
-                    return new byte[0];
+                    byte[] bytes = new byte[rowCount];
+                    Arrays.fill(bytes, BOOLEAN_AS_BYTE_SENTINEL);
+                    return bytes;
                 case DOUBLE:
-                    return new double[0];
+                    double[] doubles = new double[rowCount];
+                    Arrays.fill(doubles, DOUBLE_NULL_SENTINEL);
+                    return doubles;
                 case STRING:
-                    return new String[0];
+                    return new String[rowCount];
                 case CUSTOM:
-                    return new Variant[0];
+                    return new Variant[rowCount];
                 case DATETIME_AS_LONG:
-                    return new PureDate[0];
+                    return new PureDate[rowCount];
                 default:
                     throw new RuntimeException("ERROR " + type + " not supported yet!");
             }

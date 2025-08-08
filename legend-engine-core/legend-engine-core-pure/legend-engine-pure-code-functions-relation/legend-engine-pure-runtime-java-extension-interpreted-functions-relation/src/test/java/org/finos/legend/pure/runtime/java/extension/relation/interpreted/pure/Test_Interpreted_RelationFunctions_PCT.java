@@ -38,7 +38,7 @@ public class Test_Interpreted_RelationFunctions_PCT extends PCTReportConfigurati
 
             // inference problem
             one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Function_1__Boolean_1_",
-                    "\"Error instantiating the type 'SortInfo<X⊆(id:Integer, payload:Variant, firstFlattened:Variant, secondFlattened:Variant, value:Integer)>'. Could not resolve type for the property 'column': ColSpec<X⊆(id:Integer, payload:Variant, firstFlattened:Variant, secondFlattened:Variant, value:Integer)>\"")
+                    "Can't resolve some type parameters in: T")
     );
 
     public static Test suite()

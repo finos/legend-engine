@@ -4162,9 +4162,8 @@ function meta::relational::functions::pureToSqlQuery::processVariantFilter(f:Fun
 function meta::relational::functions::pureToSqlQuery::toVariantFriendlyValue(cols: RelationalOperationElement[*], dataType: meta::relational::metamodel::datatype::DataType[0..1]):RelationalOperationElement[1]
 {
   $cols->match([  
-    a: Literal[*] | newDynaFunction('cast', newDynaFunction('toVariantList', $a)->concatenate(^DataTypeInfo(dataType = ^meta::relational::metamodel::datatype::Array(type = $dataType)))),
     c: RelationalOperationElement[1] | $c,
-    any: RelationalOperationElement[*] | fail( 'Not handled as variant input: ' + $any->type()->elementToPath()); $any->toOne();
+    a: RelationalOperationElement[1..*] | newDynaFunction('cast', newDynaFunction('toVariantList', $a)->concatenate(^DataTypeInfo(dataType = ^meta::relational::metamodel::datatype::Array(type = $dataType))));
   ]);
 }
 

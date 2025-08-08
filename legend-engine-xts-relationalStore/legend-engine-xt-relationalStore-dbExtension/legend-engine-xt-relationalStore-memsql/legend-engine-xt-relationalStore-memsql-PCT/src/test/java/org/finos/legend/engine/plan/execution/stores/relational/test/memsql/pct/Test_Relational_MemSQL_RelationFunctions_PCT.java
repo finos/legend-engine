@@ -199,7 +199,13 @@ public class Test_Relational_MemSQL_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::tests::extend::testVariantColumn_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE", AdapterQualifier.needsInvestigation)
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE", AdapterQualifier.needsInvestigation),
+
+            // lateral
+            pack("meta::pure::functions::relation::tests::lateral", "[unsupported-api] Lateral operation not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
+
+            // flatten
+            pack("meta::pure::functions::relation::variant::tests::flatten", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature)
     );
 
     public static Test suite()
