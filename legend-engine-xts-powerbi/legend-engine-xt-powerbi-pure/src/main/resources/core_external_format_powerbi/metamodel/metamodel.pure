@@ -125,12 +125,17 @@ Class meta::external::powerbi::metamodel::Partition
 {
   mode: String[1];
   source: PartitionSource[1];
+  type: PartitionSourceType[1];
 }
 
 Class meta::external::powerbi::metamodel::PartitionSource
 {
-  sqlQuery: String[1];
-  datasourceSpecification: DatasourceSpecification[1];
+
+}
+
+Class meta::external::powerbi::metamodel::MPartitionSource extends PartitionSource
+{
+  expression: String[1];
 }
 
 Class meta::external::powerbi::metamodel::ArtifactMetadata
@@ -160,6 +165,15 @@ Enum meta::external::powerbi::metamodel::DataType
   Binary,
   Unknown,
   Variant
+}
+
+Enum meta::external::powerbi::metamodel::PartitionSourceType
+{
+  query,
+  calculated,
+  none,
+  m,
+  policyRange
 }
 
 Enum meta::external::powerbi::metamodel::Culture
