@@ -627,14 +627,23 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
   let leftSelect = $leftCursor.select;
 
   let colFuncName = $fe.func.name->toOne();
+  let tableAlias = $leftSelect.data.alias;
+  let foundColumnInSelect = $leftSelect->findColumn($colFuncName);
+  let foundColumn = if($foundColumnInSelect->isEmpty() && $tableAlias->isNotEmpty(), |$tableAlias->toOne().relation()->findColumn($colFuncName), |$foundColumnInSelect);
 
-  let foundColumn = $colFuncName->findColumnOnOperationHierarchy($leftCursor);
+  let colAlias = if ($foundColumn->isNotEmpty(),
+    |
+      $foundColumn->toOne()->match([c:Column[1]|^TableAliasColumn(alias = $tableAlias->toOne(), column = $c), a:Alias[1]|$a.relationalElement, tcn:TableAliasColumn[1]|^$tcn(alias = $tableAlias->toOne())]);
+    ,
+    |
+      $colFuncName->findColumnOnOperationHierarchy($leftCursor)->toOne('Column not found on query or hierarchy: ' + $colFuncName);
+  );
 
-  let colAlias = $foundColumn->toOne($colFuncName + ' not found');//->match([c:Column[1]|^TableAliasColumn(alias = $leftSelect.data->toOne().alias, column = $c), a:Alias[1]|$a.relationalElement, tcn:TableAliasColumn[1]|^$tcn(alias = $leftSelect.data->toOne().alias)]);
   let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
 
-  let paths = $operation.select->filter(x | $x->instanceOf(TdsSelectSqlQuery))->cast(@TdsSelectSqlQuery).paths;
-  let matchedPath = $paths->filter(p|$p.first->toLower() == $colFuncName->toLower());
+  let paths = $operation.select->filter(s | $s->instanceOf(TdsSelectSqlQuery))->cast(@TdsSelectSqlQuery).paths;
+  let name = $fe.func.name->toOne();
+  let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
   let propertyMapping = if($matchedPath->isEmpty(), |[], |$matchedPath.second.propertyMapping);
 
   ^$leftSide(element = ^$operation(select=$newSelect), currentPropertyMapping=$propertyMapping);
