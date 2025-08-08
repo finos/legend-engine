@@ -226,6 +226,13 @@
         </dependency>
         <!-- LOG -->
 
+        <!-- APACHE -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <!-- APACHE -->
+
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>
