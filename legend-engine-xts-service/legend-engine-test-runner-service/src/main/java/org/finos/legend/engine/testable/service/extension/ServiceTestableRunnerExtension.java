@@ -48,7 +48,7 @@ public class ServiceTestableRunnerExtension implements TestableRunnerExtension
     }
 
     @Override
-    public Boolean isElementTestable(PackageableElement element)
+    public Boolean isTestableEmpty(PackageableElement element)
     {
         if (!(element instanceof Service))
         {
@@ -56,7 +56,7 @@ public class ServiceTestableRunnerExtension implements TestableRunnerExtension
         }
 
         Service service = (Service) element;
-        return service.test != null || service.testSuites != null;
+        return service.test == null && service.testSuites == null;
     }
 
     @Override

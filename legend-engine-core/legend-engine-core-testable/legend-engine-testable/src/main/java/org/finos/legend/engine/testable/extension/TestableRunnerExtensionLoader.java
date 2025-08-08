@@ -41,15 +41,29 @@ public class TestableRunnerExtensionLoader
                 .orElseThrow(() -> new IllegalStateException("No testable runner for " + testable.getClass().getSimpleName()));
     }
 
-    public static Boolean isElementTestable(String classifierPath, PackageableElement element)
+    public static Boolean isTestable(PackageableElement element)
     {
-        return isElementTestable(classifierPath, element, getCurrentThreadClassLoader());
+        return isTestable(element, getCurrentThreadClassLoader());
     }
 
-    public static Boolean isElementTestable(String classifierPath, PackageableElement element, ClassLoader classLoader)
+    private static Boolean isTestable(PackageableElement element, ClassLoader classLoader)
+    {
+        return extensions(classLoader).stream().anyMatch(ext -> ext.group().contains(element.getClass().getSimpleName()));
+    }
+
+    /**
+     * Checks if the given testable element is empty, meaning it has no tests or test suites defined.
+     * If the element is not testable and thus does not have a corresponding extension, it returns false.
+     */
+    public static Boolean isTestableEmpty(PackageableElement element)
+    {
+        return isTestableEmpty(element, getCurrentThreadClassLoader());
+    }
+
+    private static Boolean isTestableEmpty(PackageableElement element, ClassLoader classLoader)
     {
         TestableRunnerExtension extension = extensions(classLoader).stream()
-                .filter(ext -> ext.getSupportedClassifierPath().equals(classifierPath))
+                .filter(ext -> ext.group().contains(element.getClass().getSimpleName()))
                 .findFirst()
                 .orElse(null);
 
@@ -58,7 +72,7 @@ public class TestableRunnerExtensionLoader
             return false;
         }
 
-        return extension.isElementTestable(element);
+        return extension.isTestableEmpty(element);
     }
 
     public static Map<String, ? extends TestableRunnerExtension> getClassifierPathToTestableRunnerMap()

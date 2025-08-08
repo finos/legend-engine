@@ -40,9 +40,8 @@ public class FunctionTestableRunnerExtension implements TestableRunnerExtension
         return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Function");
     }
 
-
     @Override
-    public Boolean isElementTestable(PackageableElement element)
+    public Boolean isTestableEmpty(PackageableElement element)
     {
         if (!(element instanceof Function))
         {
@@ -50,9 +49,8 @@ public class FunctionTestableRunnerExtension implements TestableRunnerExtension
         }
 
         Function function = (Function) element;
-        return !function.tests.isEmpty();
+        return function.tests.isEmpty();
     }
-
 
     @Override
     public TestRunner getTestRunner(Testable testable)
