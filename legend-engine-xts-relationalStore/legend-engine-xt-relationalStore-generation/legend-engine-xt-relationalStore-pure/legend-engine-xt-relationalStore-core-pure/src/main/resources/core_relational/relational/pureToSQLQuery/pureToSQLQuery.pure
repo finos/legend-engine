@@ -6448,6 +6448,28 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                     |let supportedFunction = findSupportedFunction($f, $vars, $state.supportedFunctions, $state.contextBasedSupportedFunctions);
                                      if($supportedFunction->isNotEmpty(),
                                        |
+                                          let inHandler =  {|
+                                            let valueParam = $f.parametersValues->at(0);
+                                              let valueArg = $valueParam->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
+
+                                              let collectionArg = $f.parametersValues->at(1)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context);
+                                              let mergedCollectionArg = $collectionArg->match([l:Literal[*] | ^LiteralList(values = $l), ll:LiteralList[1] | $ll]);
+
+                                              if($valueParam->isFunctionWithName('getEnum'),
+                                                | let enumPropertyMapping = getEnumExprPropertyMapping($valueParam->cast(@FunctionExpression), $paths);
+                                                  let mappedEnumValues = $mergedCollectionArg.values->map(a|$a.value->match([
+                                                    e: Enum[1]| if($enumPropertyMapping->isNotEmpty(),
+                                                                  | $enumPropertyMapping.transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($e)->distinct(),
+                                                                  | $e.name
+                                                                ),
+                                                    a: Any[1] | $a
+                                                  ]));
+                                                  let enumMappedCollectionArg = ^LiteralList(values=$mappedEnumValues->map(v|^Literal(value=$v)));
+                                                  newDynaFunction('in', $valueArg->concatenate($enumMappedCollectionArg));,
+                                                | newDynaFunction('in', $valueArg->concatenate($mergedCollectionArg));
+                                              );
+                                            };
+
                                           let overrides = [
                                             ^PureFunctionTDSToRelationalFunctionPair(first = equal_Any_MANY__Any_MANY__Boolean_1_, second = {|
                                               let params = $f.parametersValues->partition(p|$p->isFunctionWithName('getEnum'));
@@ -6479,27 +6501,8 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                             ^PureFunctionTDSToRelationalFunctionPair(first = plus_String_MANY__String_1_, second = {|
                                               ^JoinStrings(strings=$f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)))
                                             }),
-                                            ^PureFunctionTDSToRelationalFunctionPair(first = in_Any_1__Any_MANY__Boolean_1_, second = {|
-                                              let valueParam = $f.parametersValues->at(0);
-                                              let valueArg = $valueParam->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
-
-                                              let collectionArg = $f.parametersValues->at(1)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context);
-                                              let mergedCollectionArg = $collectionArg->match([l:Literal[*] | ^LiteralList(values = $l), ll:LiteralList[1] | $ll]);
-
-                                              if($valueParam->isFunctionWithName('getEnum'),
-                                                | let enumPropertyMapping = getEnumExprPropertyMapping($valueParam->cast(@FunctionExpression), $paths);
-                                                  let mappedEnumValues = $mergedCollectionArg.values->map(a|$a.value->match([
-                                                    e: Enum[1]| if($enumPropertyMapping->isNotEmpty(),
-                                                                  | $enumPropertyMapping.transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($e)->distinct(),
-                                                                  | $e.name
-                                                                ),
-                                                    a: Any[1] | $a
-                                                  ]));
-                                                  let enumMappedCollectionArg = ^LiteralList(values=$mappedEnumValues->map(v|^Literal(value=$v)));
-                                                  newDynaFunction('in', $valueArg->concatenate($enumMappedCollectionArg));,
-                                                | newDynaFunction('in', $valueArg->concatenate($mergedCollectionArg));
-                                              );
-                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = in_Any_$0_1$__Any_MANY__Boolean_1_, second = $inHandler),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = in_Any_1__Any_MANY__Boolean_1_, second = $inHandler),
                                             ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, second = {|
                                               newDynaFunction('coalesce', $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
                                             }),
