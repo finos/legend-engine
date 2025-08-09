@@ -14,7 +14,9 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled;
 
+import static org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS.readCsv;
 import io.deephaven.csv.parsers.DataType;
+import java.util.Objects;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
@@ -26,24 +28,41 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
+import org.finos.legend.pure.generated.PureCompiledLambda;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.generated.CoreGen;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.*;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpec;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpecArray;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationElementAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.TDSRelationAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
+import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity;
+import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.CompiledSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.SharedPureFunction;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.*;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.CompiledPrimitiveHandler;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.NullRowContainer;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.RowContainer;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.TDSContainer;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.TestTDSCompiled;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
@@ -52,10 +71,6 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.shared.win
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
-
-import java.util.Objects;
-
-import static org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS.readCsv;
 
 public class RelationNativeImplementation
 {
@@ -67,7 +82,7 @@ public class RelationNativeImplementation
         }
         return value instanceof TDSContainer ?
                 ((TDSContainer) value).tds :
-                new TestTDSCompiled(readCsv((((CoreInstance) value).getValueForMetaPropertyToOne("csv")).getName()), ((CoreInstance) value).getValueForMetaPropertyToOne(M3Properties.classifierGenericType), ((CoreInstance) value).getRepository(), ((CompiledExecutionSupport) es).getProcessorSupport());
+                new TestTDSCompiled(readCsv((((CoreInstance) value).getValueForMetaPropertyToOne("csv")).getName()), ((CoreInstance) value).getValueForMetaPropertyToOne(M3Properties.classifierGenericType), ((CompiledExecutionSupport) es).getProcessorSupport());
     }
 
 
@@ -176,6 +191,78 @@ public class RelationNativeImplementation
             return (T) new NullRowContainer();
         }
         return (T) new RowContainer(RelationNativeImplementation.getTDS(w, es), actualOffset);
+    }
+
+    public static Relation<? extends Object> lateralJoin(Relation<?> source, Function function, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+
+        TestTDSCompiled sourceTds = RelationNativeImplementation.getTDS(source, es);
+
+        RelationType<?> lateralResult = (RelationType<?>) ((FunctionType) function._classifierGenericType()._typeArguments().getOnly()._rawType())._returnType()._typeArguments().getOnly()._rawType();
+
+        TestTDS agg = lateralResult._columns().injectInto(sourceTds.newEmptyTDS(), (t, x) ->
+                t.addColumn(x._name(), x._classifierGenericType()._typeArguments().getLast()._rawType()));
+
+        for (int i = 0; i < sourceTds.getRowCount(); i++)
+        {
+            TestTDSCompiled row = (TestTDSCompiled) sourceTds.slice(i, i + 1);
+            RowContainer rowInput = new RowContainer(row, 0);
+            SharedPureFunction pureFunction = PureCompiledLambda.getPureFunction(function, es);
+            TestTDSCompiled resultTds = RelationNativeImplementation.getTDS(pureFunction.execute(Lists.fixedSize.of(rowInput), es), es);
+            TestTDS lateralJoined = row.join(resultTds);
+            agg = agg.concatenate(lateralJoined);
+        }
+
+        return new TDSContainer((TestTDSCompiled) agg, ps);
+    }
+
+    public static <T> Relation<? extends Object> flatten(RichIterable<T> toFlatten, String colName, String colType, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+
+        Column<?, ?> columnInstance = _Column.getColumnInstance(
+                colName,
+                false,
+                colType,
+                (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity) Multiplicity.newMultiplicity(0, 1, ps),
+                null,
+                ps
+        );
+
+        DataType colResType;
+        Object colRes;
+
+        switch (colType)
+        {
+            case M3Paths.String:
+                colResType = DataType.STRING;
+                colRes = toFlatten.toArray(new String[0]);
+                break;
+            case M3Paths.Integer:
+                colResType = DataType.LONG;
+                colRes = toFlatten.collectLong(Long.class::cast).toArray();
+                break;
+            case M3Paths.Float:
+                colResType = DataType.DOUBLE;
+                colRes = toFlatten.collectDouble(Double.class::cast).toArray();
+                break;
+            case M3Paths.Boolean:
+                colResType = DataType.BOOLEAN_AS_BYTE;
+                colRes = toFlatten.collectByte(x -> ((boolean) x) ? (byte) 1 : (byte) 0).toArray();
+                break;
+            case M3Paths.Variant:
+                colResType = DataType.CUSTOM;
+                colRes = toFlatten.toArray(new Variant[0]);
+                break;
+            default:
+                throw new PureExecutionException("Flatten does not support type: " + colType + ". Supported types are String, Integer, Float, Boolean, and Variant.");
+        }
+
+        TestTDSCompiled tds = new TestTDSCompiled();
+        tds.addColumn(columnInstance._name(), colResType, colRes);
+
+        return new TDSContainer(tds, ps);
     }
 
     public static <T, V> Relation<? extends Object> asOfJoin(Relation<? extends T> rel1, Relation<? extends V> rel2, Function3 pureFunction, LambdaFunction<?> _func, ExecutionSupport es)

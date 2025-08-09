@@ -47,7 +47,7 @@ function <<access.private>> meta::relational::postProcessor::replaceVarPlaceHold
   let clause = meta::relational::postProcessor::prefixForWrapperAllocationNodeName();
   if($v.name->startsWith($clause),
     | let paramName = $v.name->substring($clause->length(),$v.name->length());
-      let flatten = ^SemiStructuredArrayFlattenRelation(param=$paramName);
+      let flatten = ^SemiStructuredArrayFlattenRelation(navigation=^ColumnName(name = $paramName));
 
       let tableAlias=^TableAlias(name='root',relationalElement=^DynaFunction(name='equal',parameters=[^Literal(value=1),^Literal(value='1')]));
       let columnSelected=^TableAliasColumn(column=^Column(type=^meta::relational::metamodel::datatype::Varchar(size=200),name='value'),alias=$tableAlias);

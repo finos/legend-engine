@@ -71,7 +71,7 @@ function {doc.doc='Given the platform (ie DB agnostic) data types, convert to DB
         d : meta::relational::metamodel::datatype::Double[1] | 'DOUBLE',
         n : meta::relational::metamodel::datatype::Numeric[1] | format('NUMERIC(%d, %d)', [$n.precision, $n.scale]),
         b : meta::relational::metamodel::datatype::Bit[1] | 'BIT',
-        a : meta::relational::metamodel::datatype::Array[1] | if($a.type->isEmpty(), |'ARRAY', |'ARRAY(' + $a.type->toOne()->dataTypeToSqlTextSnowflake() + ')'),
+        a : meta::relational::metamodel::datatype::Array[1] | 'ARRAY', // todo SF does not like arrya type on some expressions... if($a.type->isEmpty(), |'ARRAY', |'ARRAY(' + $a.type->toOne()->dataTypeToSqlTextSnowflake() + ')'),
         o : meta::relational::metamodel::datatype::Object[1] | 'MAP(%s, %s)'->format([$o.keyType->dataTypeToSqlTextSnowflake(), $o.valueType->dataTypeToSqlTextSnowflake()]),
         s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARIANT'
     ]);

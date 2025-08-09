@@ -493,6 +493,20 @@ public class Handlers
         );
     };
 
+    public static final ParametersInference FlattenColInference = (parameters, valueSpecificationBuilder) ->
+    {
+        ValueSpecification toFlatten = parameters.get(0).accept(valueSpecificationBuilder);
+
+        ColSpec colSpec = (ColSpec) ((ClassInstance) parameters.get(1)).value;
+
+        Column<?, ?> columnInstance = _Column.getColumnInstance(colSpec.name, false, toFlatten._genericType(), valueSpecificationBuilder.getContext().pureModel.getMultiplicity("one"), SourceInformationHelper.toM3SourceInformation(parameters.get(1).sourceInformation), valueSpecificationBuilder.getContext().pureModel.getExecutionSupport().getProcessorSupport());
+
+        colSpec.genericType = CompileContext.convertGenericType(_Column.getColumnType(columnInstance));
+        colSpec.multiplicity = CompileContext.convertMultiplicity(_Column.getColumnMultiplicity(columnInstance));
+
+        return Lists.mutable.with(toFlatten, parameters.get(1).accept(valueSpecificationBuilder));
+    };
+
     public static final ParametersInference RenameColInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
@@ -1577,6 +1591,15 @@ public class Handlers
         register(grp(SelectColInference,
                         h("meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true),
                         h("meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true)
+                )
+        );
+
+        register(
+                h("meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(0)._genericType()._typeArguments().getOnly()._rawType(), (RelationType<?>) funcReturnType(ps.get(1))._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getOnly(), funcReturnType(ps.get(1))._typeArguments().getOnly()), ps -> true)
+        );
+
+        register(grp(FlattenColInference,
+                    h("meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> true)
                 )
         );
 

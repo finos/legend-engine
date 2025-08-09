@@ -680,8 +680,6 @@ function  <<access.private>> meta::external::format::json::schema::fromSchema::f
                                                                                                                      let forAllLambda = $IV.values->cast(@LambdaFunction<Any>)->toOne();
                                                                                                                      let initialParam = replaceFirstParameter($lambdaEs.parametersValues->at(0), $property);
                                                                                                                      let lambdaWithParam = ^$forAllLambda(expressionSequence=^InstanceValue(multiplicity=PureOne,genericType=^GenericType(rawType=Boolean),values=$lambdaParam->toOne()));
-                                                                                                                     println($lambdaWithParam->functionType().parameters);
-                                                                                                                     println($lambdaWithParam);
                                                                                                                      ^$lambdaEs(parametersValues=$initialParam->concatenate(^$IV(values=$lambdaWithParam)));,
                                                                                                                     |[]);,
                                                                                                              |let lambdaParam = $kvp.value->fragmentToValueSpecifcation($kvp.key.value,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);

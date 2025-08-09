@@ -174,7 +174,13 @@ public class Test_Relational_Databricks_RelationFunctions_PCT extends PCTReportC
             one("meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "\"Window function with range frame using interval is not supported for this database type: Databricks\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "\"Window function with range frame using interval is not supported for this database type: Databricks\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "\"Window function with range frame using interval is not supported for this database type: Databricks\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "\"Window function with range frame using interval is not supported for this database type: Databricks\"", AdapterQualifier.unsupportedFeature)
+            one("meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "\"Window function with range frame using interval is not supported for this database type: Databricks\"", AdapterQualifier.unsupportedFeature),
+
+            // lateral
+            pack("meta::pure::functions::relation::tests::lateral", "Common table expression not supported on DB Databricks", AdapterQualifier.unsupportedFeature),
+
+            // flatten
+            pack("meta::pure::functions::relation::variant::tests::flatten", "Datatype to SQL text not supported for Database Type: Databricks", AdapterQualifier.unsupportedFeature)
     );
 
     public static Test suite()

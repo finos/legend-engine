@@ -99,8 +99,8 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_", "\"\nexpected: 3.8\nactual:   5.0\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_", "\"\nexpected: 3.8\nactual:   5.0\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Function_1__Boolean_1_", "\"\nexpected: 3.8\nactual:   5.0\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Aggregate_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   grp,newCol\n   0,101.0\n   1,41.0\n   2,16.0\n   3,81.0\n   4,31.0\n   5,51.0\n#'\nactual:   '#TDS\n   grp,newCol\n   0,101\n   1,41\n   2,16\n   3,81\n   4,31\n   5,51\n#'\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   grp,newCol\n   0,101.0\n   1,41.0\n   2,16.0\n   3,81.0\n   4,31.0\n   5,51.0\n#'\nactual:   '#TDS\n   grp,newCol\n   0,101\n   1,41\n   2,16\n   3,81\n   4,31\n   5,51\n#'\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Aggregate_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
 
             // Percentile
             one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'range_Integer_1__Integer_1__Integer_1__Integer_MANY_'", AdapterQualifier.unsupportedFeature),

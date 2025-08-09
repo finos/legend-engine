@@ -443,15 +443,6 @@ function meta::relational::functions::sqlQueryToString::default::processJoinType
     )
 }    
 
-function meta::relational::functions::sqlQueryToString::default::processJoinTreeNodeWithLateralJoinDefault(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
-{
-   $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('') + 'lateral '
-   + $j.alias
-       ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
-       ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
-   + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')';
-}
-
 function meta::relational::functions::sqlQueryToString::default::processJoin(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
 {
     assert(!$j.join->instanceOf(AsOfJoin), |'AsOfJoins are not supported in the generic generator!');
@@ -625,13 +616,16 @@ function meta::relational::functions::sqlQueryToString::default::translateCreate
 
 function meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
 {
-
-    $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+   if ($loadTableSQL.parsedData.values->isEmpty(),
+    | [], 
+    | 
+      let sql = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
             + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
             +') '
-            + 'values ('
-            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
-            + ');';
+            + 'values';
+
+      $loadTableSQL.parsedData.values->map(row |  '(' + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type) + ')')
+        ->joinStrings($sql, ', ', ';');
    );
 }
 
