@@ -535,7 +535,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredArrayFlattenRelationForSnowflake(s:SemiStructuredArrayFlattenRelation[1], sgc:SqlGenerationContext[1]): String[1]
 {
-   let processedNavigation = $s.param;
+   let processedNavigation = $s.navigation->processOperation($sgc);
    'Table(Flatten(input => ' + $processedNavigation + '))';
 }
 
@@ -610,10 +610,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processJoinTreeNodeWithLateralJoinForSnowflake(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
 {
    // https://docs.snowflake.com/release-notes/bcr-bundles/2023_04/bcr-1057
-   assert(processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) == '1 = 1', | 'Filter in column projections is not supported. Use a Post Filter if filtering is necessary');
-
-   assert($j.alias.relationalElement->instanceOf(SemiStructuredArrayFlatten), | 'Lateral join in Snowflake should be followed by flatten operation');
-
    // https://docs.snowflake.com/en/sql-reference/constructs/join-lateral#usage-notes
    ' ' + $format.separator() + 'inner join lateral '
    + $j.alias
