@@ -347,7 +347,7 @@ function <<access.private>> meta::json::buildLambdas(extraSerializers:Function<{
          {t:TaggedValue[1], state:JSONState[1]  | $t->taggedValueToJSON()},
          {t:Tag[1], state:JSONState[1]  | $t->tagToJSON()},
          {m:Multiplicity[1], state:JSONState[1]  | $m->multiplicityToJSON()},
-         {f:FunctionDefinition<Any>[1], state:JSONState[1]  | ^JSONString(value=if($f.name->isEmpty(),|'unknown',|$f.name->toOne()))}, // TODO consider giving it structure
+         {f:FunctionDefinition<Any>[1], state:JSONState[1]  | ^JSONString(value=$f.name->toOne())}, // TODO consider giving it structure
          {p:PackageableElement[1], state:JSONState[1]  | ^JSONString(value=$p->elementToPath())}, // TODO consider giving it structure
          
          {t:TabularDataSet[1], state:JSONState[1]  | let c= $state.config;
