@@ -54,7 +54,7 @@ public class MappingTestableRunnerExtension implements TestableRunnerExtension
         }
 
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping) element;
-        return mapping.testSuites == null && mapping.tests.isEmpty();
+        return (mapping.testSuites == null || mapping.testSuites.isEmpty()) && (mapping.tests == null || mapping.tests.isEmpty());
     }
 
     @Override

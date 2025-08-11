@@ -49,7 +49,7 @@ public class FunctionTestableRunnerExtension implements TestableRunnerExtension
         }
 
         Function function = (Function) element;
-        return function.tests.isEmpty();
+        return function.tests == null || function.tests.isEmpty();
     }
 
     @Override

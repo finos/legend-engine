@@ -56,7 +56,7 @@ public class ServiceTestableRunnerExtension implements TestableRunnerExtension
         }
 
         Service service = (Service) element;
-        return service.test == null && service.testSuites == null;
+        return service.test == null && (service.testSuites == null || service.testSuites.isEmpty());
     }
 
     @Override
