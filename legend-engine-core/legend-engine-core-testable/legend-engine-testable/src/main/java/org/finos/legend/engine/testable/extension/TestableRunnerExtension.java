@@ -36,6 +36,11 @@ public interface TestableRunnerExtension extends LegendExtension
 
     String getSupportedClassifierPath();
 
+    default Boolean isTestable(PackageableElement element)
+    {
+        return false;
+    }
+
     default Boolean isTestableEmpty(PackageableElement element)
     {
         return false;

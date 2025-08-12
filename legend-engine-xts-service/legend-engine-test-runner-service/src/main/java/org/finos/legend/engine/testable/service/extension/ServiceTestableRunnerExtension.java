@@ -48,13 +48,14 @@ public class ServiceTestableRunnerExtension implements TestableRunnerExtension
     }
 
     @Override
+    public Boolean isTestable(PackageableElement element)
+    {
+        return element instanceof Service;
+    }
+
+    @Override
     public Boolean isTestableEmpty(PackageableElement element)
     {
-        if (!(element instanceof Service))
-        {
-            return false;
-        }
-
         Service service = (Service) element;
         return service.test == null && (service.testSuites == null || service.testSuites.isEmpty());
     }

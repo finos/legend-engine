@@ -41,13 +41,14 @@ public class FunctionTestableRunnerExtension implements TestableRunnerExtension
     }
 
     @Override
+    public Boolean isTestable(PackageableElement element)
+    {
+        return element instanceof Function;
+    }
+
+    @Override
     public Boolean isTestableEmpty(PackageableElement element)
     {
-        if (!(element instanceof Function))
-        {
-            return false;
-        }
-
         Function function = (Function) element;
         return function.tests == null || function.tests.isEmpty();
     }

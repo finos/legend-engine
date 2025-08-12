@@ -48,7 +48,7 @@ public class TestableRunnerExtensionLoader
 
     private static Boolean isTestable(PackageableElement element, ClassLoader classLoader)
     {
-        return extensions(classLoader).stream().anyMatch(ext -> ext.group().contains(element.getClass().getSimpleName()));
+        return extensions(classLoader).stream().anyMatch(ext -> ext.isTestable(element));
     }
 
     /**
@@ -57,22 +57,8 @@ public class TestableRunnerExtensionLoader
      */
     public static Boolean isTestableEmpty(PackageableElement element)
     {
-        return isTestableEmpty(element, getCurrentThreadClassLoader());
-    }
-
-    private static Boolean isTestableEmpty(PackageableElement element, ClassLoader classLoader)
-    {
-        TestableRunnerExtension extension = extensions(classLoader).stream()
-                .filter(ext -> ext.group().contains(element.getClass().getSimpleName()))
-                .findFirst()
-                .orElse(null);
-
-        if (extension == null)
-        {
-            return false;
-        }
-
-        return extension.isTestableEmpty(element);
+        TestableRunnerExtension extension = getExtensionsForElement(element, getCurrentThreadClassLoader());
+        return extension != null && extension.isTestableEmpty(element);
     }
 
     public static Map<String, ? extends TestableRunnerExtension> getClassifierPathToTestableRunnerMap()
@@ -83,6 +69,14 @@ public class TestableRunnerExtensionLoader
     public static Map<String, ? extends TestableRunnerExtension> getClassifierPathToTestableRunnerMap(ClassLoader classLoader)
     {
         return extensions(classLoader).stream().collect(Collectors.toMap(TestableRunnerExtension::getSupportedClassifierPath, Function.identity()));
+    }
+
+    private static TestableRunnerExtension getExtensionsForElement(PackageableElement element, ClassLoader classLoader)
+    {
+        return extensions(classLoader).stream()
+                .filter(ext -> ext.isTestable(element))
+                .findFirst()
+                .orElse(null);
     }
 
     private static List<TestableRunnerExtension> extensions(ClassLoader classLoader)
