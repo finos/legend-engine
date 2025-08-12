@@ -290,13 +290,6 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-tds-compiler</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-dataquality-pure-test</artifactId>
             <scope>runtime</scope>
             <version>${project.version}</version>

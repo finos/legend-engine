@@ -17,7 +17,7 @@
     {
       "name": "sql",
       "modules": [
-        "legend-engine-xt-sql-expression-grammar",
+        "legend-engine-xt-sql-grammar-integration",
         "legend-engine-xt-sql-pure",
         "legend-engine-xt-sql-http-api"
       ]

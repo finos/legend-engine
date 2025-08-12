@@ -30,7 +30,8 @@ public class GraphQLEmbeddedPureParser implements EmbeddedPureParser
 
     @Override
     public Object parse(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions)
+
     {
-        return GraphQLGrammarParser.newInstance().parseDocument(code.trim());
+        return GraphQLGrammarParser.newInstance().parseDocument(code);
     }
 }

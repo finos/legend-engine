@@ -91,9 +91,6 @@ Class meta::pure::extension::Extension
   serializerExtension : Function<{String[1]->String[1]}>[0..1];
   serializerExtensionByProtocolVersion : Pair<String, SerializerExtension>[*];
 
-  // Grammar Serializer Extension ---------------------------------------------------------------------------------------------------------
-  grammarSerializerExtensions : meta::pure::metamodel::serialization::grammar::GrammarExtension[*];
-
   serializerExtension(version : String[1])
   {
     let ext = $this;
