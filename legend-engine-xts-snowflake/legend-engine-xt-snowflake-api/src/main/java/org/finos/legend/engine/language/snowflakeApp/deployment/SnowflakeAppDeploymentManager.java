@@ -201,9 +201,8 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
             }
             catch (Exception e)
             {
-                throw new RuntimeException(String.format("Error in processing UDTF generate statement. \n" +
-                                "Check if the Pure function has unexpected ${}. \n" +
-                                "Freemarker template failed with message: %s\n Template snippet: %s",
+                LOGGER.error("Error processing generated create statement: ", e);
+                throw new RuntimeException(String.format("Error processing statement. \nException: %s  \nStatement: %s",
                         e.getMessage(), content.createStatement), e);
             }
 
