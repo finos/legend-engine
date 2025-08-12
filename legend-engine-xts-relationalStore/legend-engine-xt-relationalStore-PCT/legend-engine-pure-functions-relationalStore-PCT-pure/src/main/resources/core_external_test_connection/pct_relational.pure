@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::relational::grammar::serialization::*;
 import meta::pure::functions::variant::convert::*;
 import meta::pure::metamodel::variant::*;
 import meta::relational::extension::*;
@@ -126,8 +125,17 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                   print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString('[',',',']'),|''));
                   $resultFinal;,
                 |
-                    let tdsString = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns
-                                  ->map(c | $c.name + $c.type->map(t | ':' + if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->orElse(''))->joinStrings(',') + '\n' +
+                    let cols = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns;
+                    // sadly pivot does not return proper types (ie  Class<> rather than Relation<>)
+                    let relType = if ($f->functionReturnType().typeArguments->at(0).rawType->toOne()->instanceOf(RelationType),
+                      |
+                        $f->functionReturnType().typeArguments->at(0).rawType->cast(@RelationType<Any>).columns->map(x | pair($x.name->toOne(), $x->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()->elementToPath()))->newMap();
+                      ,
+                      |
+                        $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | pair($c.name, $t)))->newMap();
+                    );
+
+                    let tdsString = $cols->map(c | $c.name + $relType->get($c.name)->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
                                   $res.result.rows->map(x|
                                         range($x.values->size())->map(z |
                                             $x.values->at($z)->match([
@@ -244,13 +252,113 @@ function meta::relational::tests::pct::process::buildDate(dateStr:String[1]):Dat
   meta::pure::functions::string::parseDate($_strict);
 }
 
+function meta::relational::tests::pct::process::printDatabase(d:Database[1]):String[1]
+{
+  'Database ' + $d->elementToPath() + '\n' +
+  '('+
+   $d.schemas->map(
+      s | '\n  Schema '+$s.name + '\n  ('+ $s.tables->map(x|
+              '\n    Table '+$x.name+' ('+
+                  $x.columns->map(z|let c = $z->cast(@meta::relational::metamodel::Column);
+                                    if($c.name->contains(' '),|'"'+$c.name+'"',|$c.name) + ' ' + $c.type->match([
+                                                          x : Varchar[1] | 'VARCHAR(' + $x.size->toString() + ')',
+                                                          d : meta::relational::metamodel::datatype::Decimal[1] | 'DECIMAL(' + $d.precision->toString() + ',' + $d.scale->toString() + ')',
+                                                          z : Any[1] | $z->type().name->toOne()
+                                                        ]
+                                                      ) + if ($x.primaryKey->contains($c),
+                                                                |' PRIMARY KEY',
+                                                                |if ($c.nullable->isNotEmpty() && $c.nullable->toOne(), |'', |' NOT NULL')
+                                                          );
+                                 )->joinStrings(', ')+
+              ')'
+                  )->joinStrings('') + '\n  )'
+          )->joinStrings('')+
+    $d.joins->map(
+      j | 'Join '+$j.name+'('+$j.operation->printRelationalOperationElement(false)+')'
+    )->joinStrings(' ')+
+  '\n)';
+}
+
+function meta::relational::tests::pct::process::printMapping(d:Mapping[1]):String[1]
+{
+  'Mapping '+$d->elementToPath()+
+  '('+
+    $d.classMappings->map(si|
+      $si.class->elementToPath() + '['+$si.id+']:' + $si->match(
+        [
+          rs:RootRelationalInstanceSetImplementation[1] | 'Relational {'+
+              $rs.propertyMappings->cast(@RelationalPropertyMapping)->map(pm|
+                $pm.property.name->toOne() + if($pm.targetSetImplementationId == '',|'',|'['+$pm.targetSetImplementationId+']') + ':'+$pm.relationalOperationElement->printRelationalOperationElement(true))->joinStrings(', ')
+          +'}'
+        ]
+      )
+    )->joinStrings(' ')+
+  ')';
+}
+
+function meta::relational::tests::pct::process::printRelationalOperationElement(d:RelationalOperationElement[1], forMapping:Boolean[1]):String[1]
+{
+  $d->match(
+    [
+      t:TableAliasColumn[1]|if($forMapping,|'['+$t.alias.database->toOne()->elementToPath()+']',|'')+$t.alias.relationalElement->cast(@Table).schema.name->toOne()+'.'+$t.alias.relationalElement->cast(@Table).name+'.'+$t.column.name,
+      x:RelationalOperationElementWithJoin[1]|'['+$x.joinTreeNode.database->toOne()->elementToPath()+']@'+$x.joinTreeNode.joinName->toOne(),
+      v:DynaFunction[1]|$v.name + '('+$v.parameters->map(p|$p->printRelationalOperationElement($forMapping))->joinStrings(',')+')'
+    ]
+  )
+}
+
+function meta::relational::tests::pct::process::reprocess(connection:meta::external::store::relational::runtime::RelationalDatabaseConnection[1]):String[1]
+{
+  '^meta::external::store::relational::runtime::RelationalDatabaseConnection('+
+  'type='+$connection.type->meta::pure::metamodel::serialization::grammar::printValueSpecification([], ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+','+
+  'authenticationStrategy = '+$connection.authenticationStrategy->printNew()+','+ //^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),'+
+  'datasourceSpecification = '+$connection.datasourceSpecification->printNew()+ //^meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification(path = \'\')'+
+  ')'
+}
+
+function meta::relational::tests::pct::process::printNew(a:Any[1]):String[1]
+{
+  $a->match(
+    [
+       i:Integer[1] | $i->toString(),
+       x:String[1] | '\''+$x+'\'',
+       a:Any[1] |
+         let _type = $a->type()->cast(@Class<Any>);
+         let properties = $_type->meta::pure::functions::meta::hierarchicalProperties();
+         '^'+$a->type()->elementToPath()+'('+
+          $properties->map(p| let value = $p->eval($a);
+                              if ($value->isEmpty(),
+                                |'',
+                                |$p.name->toOne() + '=' + $value->map(w|$w->printNew())->joinStrings(',')
+                              );
+                       )->filter(v|$v != '')->joinStrings(',')+
+        ')';
+    ]
+  );
+}
 
 function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], debug: DebugContext[1]):Pair<FunctionDefinition<Any>,ProcessingState>[1]
 { 
   let ext = ^meta::pure::metamodel::serialization::grammar::Configuration
             (
               fullPath = true,
-              extensions = meta::relational::grammar::serialization::relationGrammarExtension()  
+              extensions =   ^meta::pure::metamodel::serialization::grammar::GrammarExtension(
+                                extraConnectionHandlers =
+                                  [
+                                    x:RelationalDatabaseConnection[0..1] |
+                                        $x->toOne()->reprocess();
+                                  ],
+                                extraInstanceValueHandlers =
+                                  [
+                                    x:RelationStoreAccessor<Any>[1]|
+                                      let table = $x.sourceElement->cast(@Table);
+                                      let schema = $table.schema;
+                                      let schemaName = if ($schema.name == 'default', |'', |$schema.name + '.');
+                                      '#>{' + $x.store->elementToPath() + '.' + $schemaName + $table.name->toOne() + '}#';
+                                      ,
+                                    t:meta::pure::metamodel::relation::TDS<Any>[1]|'#TDS\n'+$t.csv->replace(' ','')+'#'
+                                  ]
+                            )
             );
   $f->match(
     [
@@ -290,6 +398,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                         '  '+meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+'\n'+
                         '}'
                         ;
+            //println($code);
 
             let alloyCompiled = meta::legend::compile($code)->filter(x|$x.name == 'lambdaContainer__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@FunctionDefinition<Any>);
 
@@ -525,7 +634,7 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
                           let type = $i.genericType.rawType->toOne();
                           let hasClass = $i.values->find(x|$x->instanceOf(Class))->isNotEmpty();
                           // Nil is for Empty Sets, Any is currently for collection of primitives of different types (may create an issue if we have classes of different types)
-                          if ($type->instanceOf(Class) && !$type->subTypeOf(Function) && !$type->in([Any, Nil, TDS, Enumeration, ColSpec, ColSpecArray, FuncColSpec, FuncColSpecArray, AggColSpec, AggColSpecArray, SortInfo, _Window, Map, List, Pair, Variant, meta::pure::metamodel::relation::Relation]),
+                          if ($type->instanceOf(Class) && !$type->subTypeOf(Function) && !$type->in([Any, Nil, TDS, Enumeration, SortInfo, Map, List, Pair, Variant, meta::pure::metamodel::relation::Relation]),
                               |
                                 // Process class
                                 let values = $i.values->map(

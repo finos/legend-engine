@@ -14,8 +14,6 @@
     "core_service",
     "core_relational",
     "core_external_compiler",
-    "core_external_store_relational_postgres_sql_parser",
-    "core_external_store_relational_postgres_sql_model",
-    "core_external_extensions"
+    "core_external_store_relational_postgres_sql_model"
   ]
 }

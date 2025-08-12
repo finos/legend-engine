@@ -505,6 +505,14 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
+    GeneralizationView gview_5(
+        source=cview_9,
+        target=cview_12,
+        points=[(1860.12119,433.56818),(1858.67002,263.56818)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
 
     GeneralizationView gview_6(
         source=cview_12,
