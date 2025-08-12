@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.common.C
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.ClusteringKeyConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DDLStatement;
+import org.finos.legend.engine.persistence.components.relational.sqldom.tabletypes.TableType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +34,13 @@ public class AlterOptimizationKeyStatement implements DDLStatement
     private final AlterOptimizationKeyAbstract.AlterOperation operation;
     private Table table;
     private final List<ClusteringKeyConstraint> clusterKeys;
+    private final List<TableType> types;
 
     public AlterOptimizationKeyStatement(AlterOptimizationKeyAbstract.AlterOperation operation)
     {
         this.operation = operation;
         this.clusterKeys = new ArrayList<>();
+        this.types = new ArrayList<>();
     }
 
     public Table getTable()
@@ -50,6 +53,7 @@ public class AlterOptimizationKeyStatement implements DDLStatement
     {
         validate();
         builder.append(Clause.ALTER.get());
+        SqlGen.genSqlList(builder, types, WHITE_SPACE, WHITE_SPACE);
 
         builder.append(WHITE_SPACE + Clause.TABLE.get());
 
@@ -86,6 +90,10 @@ public class AlterOptimizationKeyStatement implements DDLStatement
         else if (node instanceof ClusteringKeyConstraint)
         {
             clusterKeys.add((ClusteringKeyConstraint) node);
+        }
+        else if (node instanceof TableType)
+        {
+            types.add((TableType) node);
         }
     }
 

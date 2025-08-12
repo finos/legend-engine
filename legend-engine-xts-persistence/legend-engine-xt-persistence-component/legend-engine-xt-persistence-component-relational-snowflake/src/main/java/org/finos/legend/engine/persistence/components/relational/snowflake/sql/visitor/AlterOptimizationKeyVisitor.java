@@ -37,6 +37,7 @@ public class AlterOptimizationKeyVisitor implements LogicalPlanVisitor<AlterOpti
         List<LogicalPlanNode> nodes = new ArrayList<>();
         nodes.add(current.dataset());
         nodes.addAll(current.newClusterKeys());
+        current.dataset().datasetAdditionalProperties().ifPresent(nodes::add);
         return new VisitorResult(alterOptimizationKeyStatement, nodes);
     }
 }
