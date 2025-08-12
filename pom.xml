@@ -95,7 +95,6 @@
         <!-- Misc -->
         <module>legend-engine-xts-authentication</module>
         <module>legend-engine-xts-protocol-java-generation</module>
-        <module>legend-engine-xts-tds</module>
         <module>legend-engine-config</module>
 
         <!-- Analytics -->
@@ -2745,7 +2744,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-sql-expression-compiler</artifactId>
+                <artifactId>legend-engine-xt-sql-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -2787,7 +2786,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-sql-expression-grammar</artifactId>
+                <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
