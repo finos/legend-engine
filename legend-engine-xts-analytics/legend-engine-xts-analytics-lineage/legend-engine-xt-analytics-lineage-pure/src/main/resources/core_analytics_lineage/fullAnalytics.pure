@@ -480,7 +480,7 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:FunctionDefini
 }
 function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTree[1], m:Mapping[1], sets:SetImplementation[*], disregardClass:Boolean[1], extraChildren:PropertyPathTree[*], extensions:Extension[*]):NamedRelation[*]
 {
-    meta::analytics::lineage::flowDatabase::toFlowStore($p,$m,$sets,$disregardClass,$extraChildren,$extensions)->filter(f|$f->instanceOf(FlowRelationalStore))->cast(@FlowRelationalStore).relation;
+    meta::analytics::lineage::flowDatabase::toFlowStore($p,$m,[],$sets,$disregardClass,$extraChildren,$extensions)->filter(f|$f->instanceOf(FlowRelationalStore))->cast(@FlowRelationalStore).relation;
 
 }
 
@@ -493,8 +493,8 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase2(f:FunctionDefin
                                | $connections->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection),
                                | []);,
                           | []);
-   $mappings->map(m| let flowDB =  $propertyTree->toFlowStore($m, [], false, [],$extensions);
-                        if($flowDB->isEmpty(),|^Flow(  functions = $f ),
+   $mappings->map(m| let flowDB =  $propertyTree->toFlowStore($m, $runtime, [], false, [],$extensions);
+                       if($flowDB->isEmpty(),|^Flow(  functions = $f ),
 
                         |  let ext = $extensions->meta::analytics::lineage::getLineageExtension();
                            $flowDB->map(d| $d->match(
@@ -547,7 +547,7 @@ function meta::analytics::lineage::getLineageExtension(extension:Extension[*]):L
 
 
 
-function meta::analytics::lineage::flowDatabase::toFlowStore(p:PropertyPathTree[1], m:Mapping[1], sets:SetImplementation[*], disregardClass:Boolean[1], extraChildren:PropertyPathTree[*], extensions:Extension[*]):meta::analytics::lineage::flowDatabase::FlowStore[*]
+function meta::analytics::lineage::flowDatabase::toFlowStore(p:PropertyPathTree[1], m:Mapping[1], runtime:Runtime[0..1], sets:SetImplementation[*], disregardClass:Boolean[1], extraChildren:PropertyPathTree[*], extensions:Extension[*]):meta::analytics::lineage::flowDatabase::FlowStore[*]
 {
 
     $p.value->match([
@@ -563,27 +563,79 @@ function meta::analytics::lineage::flowDatabase::toFlowStore(p:PropertyPathTree[
                                                        if ($isDataTypeProperty,
                                                          |  let extension =   $extensions->meta::analytics::lineage::getLineageExtension();
                                                             $propertyMappings->map(pm | let fns = $extension.mappingToStore->map(s|$s->eval($pm,$sets))->concatenate([
-                                                                                        rpm: RelationalPropertyMapping[1] |^FlowRelationalStore(relation=$rpm->meta::analytics::lineage::flowDatabase::getTables()),
+                                                                                        rpm: RelationalPropertyMapping[1] |^FlowRelationalStore(relation=$rpm->meta::analytics::lineage::flowDatabase::getTables()->runMappersOnTables($runtime )),
                                                                                         ppm: PurePropertyMapping[1] | [],
                                                                                         agr: meta::pure::mapping::aggregationAware::AggregationAwarePropertyMapping[1] | ^FlowRelationalStore(relation=meta::pure::router::routing::reprocessAggregationAwarePropertyMapping($agr)->cast(@RelationalPropertyMapping)->meta::analytics::lineage::flowDatabase::getTables());
                                                                                          ])->toOneMany();
                                                                                             $pm->match( $fns);
                                                                                );
                                                             ,
-                                                         | $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren,$extensions)));
+                                                         | $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $runtime, $extraChildren,$extensions)));
 ,
                              q:QualifiedProperty<Any>[1]|if($q->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
                                                             | let propertyMappings = $wsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.functionName->toOne()+'AllVersions'));
-                                                              $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren,$extensions));,
-                                                            | $p.qualifierSubTree->toOne()->toFlowStore($m, $sets, true, $p.children,$extensions));
+                                                              $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $runtime, $extraChildren,$extensions));,
+                                                            | $p.qualifierSubTree->toOne()->toFlowStore($m, $runtime, $sets, true, $p.children,$extensions));
                           ]);
                           ,
                      cl: Class<Any>[1]|if($disregardClass,
-                                             |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowStore($m, $sets, false, $extraChildren,$extensions)),
-                                             |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowStore($m, $m->meta::pure::mapping::rootClassMappingByClass($cl)->last()->meta::pure::router::routing::resolveOperation($m), false, $extraChildren,$extensions));
+                                             |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowStore($m, $runtime, $sets, false, $extraChildren,$extensions)),
+                                             |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowStore($m, $runtime, $m->meta::pure::mapping::rootClassMappingByClass($cl)->last()->meta::pure::router::routing::resolveOperation($m), false, $extraChildren,$extensions));
                                        );,
-                     a :Any[1]|meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowStore($m, $sets, $disregardClass, $extraChildren,$extensions))
+                     a :Any[1]|meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowStore($m, $runtime, $sets, $disregardClass, $extraChildren,$extensions))
                    ]);
+}
+
+
+
+
+function meta::analytics::lineage::runMappersOnTables(rel:NamedRelation[*], runtime: Runtime[0..1]):NamedRelation[*]
+{
+   if($runtime->isEmpty(),|$rel,|
+   let connection = $runtime.connectionStores.connection->filter(c|$c->instanceOf(meta::external::store::relational::runtime::DatabaseConnection))->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+   let queryPostProcesor =  $connection->map(dc|$dc.queryPostProcessorsWithParameter).parameters;
+   let mappers = $connection->filter(f|$f->instanceOf(RelationalDatabaseConnection))->cast(@RelationalDatabaseConnection).postProcessors->filter(f|$f->instanceOf(meta::pure::alloy::connections::MapperPostProcessor))->cast(@meta::pure::alloy::connections::MapperPostProcessor).mappers->concatenate($queryPostProcesor);
+   let tableMappers = $mappers->filter(p | $p->instanceOf(meta::relational::postProcessor::TableNameMapper))->cast(@meta::relational::postProcessor::TableNameMapper);
+   let schemaMappers = $mappers->filter(p | $p->instanceOf(meta::relational::postProcessor::SchemaNameMapper))->cast(@meta::relational::postProcessor::SchemaNameMapper);
+   let pureAlloyTableMappers = $mappers->filter(p | $p->instanceOf(meta::pure::alloy::connections::TableNameMapper))->cast(@meta::pure::alloy::connections::TableNameMapper);
+   let pureAlloySchemaMappers = $mappers->filter(p | $p->instanceOf(meta::pure::alloy::connections::SchemaNameMapper))->cast(@meta::pure::alloy::connections::SchemaNameMapper);
+
+   
+    $rel->map(rel|if($rel->instanceOf(Table),
+                  | let t = $rel->cast(@Table); 
+                  if(!$t->isTemporaryTable(),
+                     | let nt = meta::analytics::lineage::processTableMappers($t, $tableMappers, $pureAlloyTableMappers);
+                       if(!$nt->isEmpty(),
+                        | $nt->toOne();,
+                        | let ns = meta::analytics::lineage::processSchemaMappers($t.schema, $schemaMappers, $pureAlloySchemaMappers);
+                        if(!$ns->isEmpty(),|^$t(schema=$ns->toOne());,|$t);
+                       );,
+                     |$t
+                    );,
+                   |$rel); 
+               );
+         
+               
+               );
+
+}
+
+function <<access.private>> meta::analytics::lineage::processTableMappers(t:meta::relational::metamodel::relation::Table[1], tableNameMappers:meta::relational::postProcessor::TableNameMapper[*], pureAlloyTableMappers: meta::pure::alloy::connections::TableNameMapper[*]):meta::relational::metamodel::relation::Table[0..1]
+{
+     $pureAlloyTableMappers->map(m|  
+     
+                                        if($t.name==$m.from && ($m.schema.from->toLower() == $t.schema.name->toLower()),
+                                          | let processedSchema = meta::analytics::lineage::processSchemaMappers($t.schema,[],$m.schema);
+                                            if(!$processedSchema->isEmpty(),|^$t(name=$m.to, schema=$processedSchema->toOne()),|^$t(name=$m.to));
+                                          ,|[]);)->concatenate(
+     $tableNameMappers->map(m| if($t.name==$m.in && ($m.schemaNameMapper.in->toLower() == $t.schema.name->toLower()),| let processedSchema = meta::analytics::lineage::processSchemaMappers($t.schema, $m.schemaNameMapper, []);
+                                                                              if(!$processedSchema->isEmpty(),|^$t(name=$m.out, schema=$processedSchema->toOne()),|^$t(name=$m.out));
+                                                                              ,|[])))->last();
+}
+
+function <<access.private>> meta::analytics::lineage::processSchemaMappers(schema:Schema[1], schemaNameMappers : meta::relational::postProcessor::SchemaNameMapper[*], pureAlloySchemaMappers: meta::pure::alloy::connections::SchemaNameMapper[*]):Schema[0..1]
+{
+    $schemaNameMappers->map(m|if($schema.name == $m.in,| ^$schema(name=$m.out),|[]))->concatenate($pureAlloySchemaMappers->map(m|if($schema.name == $m.from,| ^$schema(name=$m.to),|[])))->last();
 }
 
 function <<access.private>> meta::analytics::lineage::flowDatabase::manageQualifiers(children:PropertyPathTree[*], extraChildren:PropertyPathTree[*]):PropertyPathTree[*]
@@ -608,7 +660,7 @@ Class meta::analytics::lineage::flowDatabase::FlowRelationalStore extends meta::
 
 
 
-function <<access.private>> meta::analytics::lineage::flowDatabase::processNonDataTypeProperty(p:PropertyPathTree[1], pm: PropertyMapping[1], possiblePropertyTargetClasses: Class<Any>[*], m:Mapping[1], extraChildren:PropertyPathTree[*], extension:Extension[*]): FlowStore[*]
+function <<access.private>> meta::analytics::lineage::flowDatabase::processNonDataTypeProperty(p:PropertyPathTree[1], pm: PropertyMapping[1], possiblePropertyTargetClasses: Class<Any>[*], m:Mapping[1], runtime: Runtime[0..1] ,extraChildren:PropertyPathTree[*], extension:Extension[*]): FlowStore[*]
 {
    let targetSetImplementationId = $pm->match([
       i: InlineEmbeddedRelationalInstanceSetImplementation[1]|
@@ -630,7 +682,7 @@ function <<access.private>> meta::analytics::lineage::flowDatabase::processNonDa
    ]);
 
    let tablesFromChildren = meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)
-   ->map(c|$c->toFlowStore($m, $targetSetImplementationId->map(id|$m->classMappingById($id)), false, $extraChildren,$extension));
+   ->map(c|$c->toFlowStore($m,$runtime, $targetSetImplementationId->map(id|$m->classMappingById($id)), false, $extraChildren,$extension));
 
    $potentialTablesFromJoin->concatenate($tablesFromChildren);
 }
@@ -761,3 +813,4 @@ function meta::analytics::lineage::assertLineage(databaseLineage:String[*], clas
 {
   assertSameElements($databaseLineage, $functionAnalytics.databaseLineage.nodes.data.id) && assertSameElements($classLineage, $functionAnalytics.classLineage.nodes.data.id) && assertEquals($reportLineage, ReportLineageToString($functionAnalytics.reportLineage));
 }
+
