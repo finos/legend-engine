@@ -30,6 +30,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilder
 {
@@ -50,6 +51,18 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
     public List<FunctionExpressionBuilder> getBuilders()
     {
         return this.builders;
+    }
+
+    public void addBuilder(FunctionExpressionBuilder newBuilder)
+    {
+        addBuilders(Lists.mutable.of(newBuilder));
+    }
+
+    public void addBuilders(List<FunctionExpressionBuilder> newBuilders)
+    {
+        List<String> names = Stream.concat(this.builders.stream(), newBuilders.stream()).map(FunctionExpressionBuilder::getFunctionName).distinct().collect(Collectors.toList());
+        Assert.assertTrue(names.size() == 1, () -> "Composite builders should have the same simple name. Found " + names);
+        this.builders.addAll(newBuilders);
     }
 
     @Override

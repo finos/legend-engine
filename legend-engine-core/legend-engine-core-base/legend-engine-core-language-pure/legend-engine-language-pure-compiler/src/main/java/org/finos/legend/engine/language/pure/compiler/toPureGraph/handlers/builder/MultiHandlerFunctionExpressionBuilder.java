@@ -41,7 +41,7 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
         this.handlers = FastList.newListWith(handlers);
         MutableList<String> names = this.handlers.collect(FunctionHandler::getFunctionName).distinct();
         Assert.assertTrue(names.size() == 1, () -> "Multi handlers should have the same simple name. Found " + names.size() + " -> " + names);
-        MutableList<String> signatures = this.handlers.collect(c -> c.buildCode(pureModel)).distinct();
+        MutableList<Integer> signatures = this.handlers.collect(FunctionHandler::getParametersSize).distinct();
         Assert.assertTrue(signatures.size() == 1, () -> "Multi handlers should have the same kind of function signatures. Found " + signatures.size() + " -> " + signatures);
     }
 
@@ -71,7 +71,7 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     @Override
     public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
-        if (test(handlers.get(0).getFunc(), parameters, valueSpecificationBuilder.getContext().pureModel, valueSpecificationBuilder.getProcessingContext()))
+        if (this.getParametersSize().get() == parameters.size() && handlers.stream().anyMatch(h -> test(h.getFunc(), parameters, valueSpecificationBuilder.getContext().pureModel, valueSpecificationBuilder.getProcessingContext())))
         {
             List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processed = parameters.stream().map(p -> p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
             return Tuples.pair(buildFunctionExpressionGraph(processed, sourceInformation), processed);
