@@ -99,7 +99,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
         |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(','),
         |'');
    let orderByTranslation = if($w.window.sortBy->isNotEmpty(),
-        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name, | ''))->joinStrings(', '),
+        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name + if($s.sortDirection == meta::relational::metamodel::SortDirection.ASC, | ' NULLS LAST', | ' NULLS FIRST'), | ''))->joinStrings(', '),
         |'');
    let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
         |$w.window.frame->toOne()->processWindowFrameForSnowflake($sgc),
