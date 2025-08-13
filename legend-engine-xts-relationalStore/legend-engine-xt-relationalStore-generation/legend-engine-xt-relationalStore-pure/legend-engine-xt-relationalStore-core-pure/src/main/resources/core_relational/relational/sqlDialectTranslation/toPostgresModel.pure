@@ -749,11 +749,6 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.UNBOUNDED_PRECEDING,
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.UNBOUNDED_FOLLOWING)),
                       c: meta::relational::metamodel::FrameCurrentRowValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = meta::external::query::sql::metamodel::FrameBoundType.CURRENT_ROW),
-                      i: meta::relational::metamodel::FrameIntervalValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = if($i.direction == meta::relational::metamodel::FrameValueDirection.PRECEDING,
-                                                                                                                                            | meta::external::query::sql::metamodel::FrameBoundType.PRECEDING,
-                                                                                                                                            | meta::external::query::sql::metamodel::FrameBoundType.FOLLOWING),
-                                                                                                                                value = $i.value->convertElementToExpression($state),
-                                                                                                                                durationUnit = ^meta::external::query::sql::metamodel::StringLiteral(value = $i.durationUnit->toString())->convertDurationUnit()),
                       l: meta::relational::metamodel::FrameLiteralValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = if($l.direction == meta::relational::metamodel::FrameValueDirection.PRECEDING,
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.PRECEDING,
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.FOLLOWING),
@@ -775,7 +770,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   let partitions = $w.window.partition->map(p|$p->convertElementToExpression($state));
   let orderBy = $w.window.sortBy->map(s|^SortItem(sortKey = $s.sortByElement->convertElementToExpression($state),
                                                   ordering = $s.sortDirection->convertSortDirection(),
-                                                  nullOrdering = if($s.sortDirection == meta::relational::metamodel::SortDirection.ASC, | SortItemNullOrdering.LAST, | SortItemNullOrdering.FIRST)
+                                                  nullOrdering = SortItemNullOrdering.UNDEFINED
                                                 ));
   let windowFrame = if($w.window.frame->isNotEmpty(),
                        | $w.window.frame->toOne()->convertWindowFrame($state),

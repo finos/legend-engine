@@ -39,11 +39,9 @@ import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
-import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Range;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.RangeInterval;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
@@ -51,7 +49,6 @@ import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationContext;
-import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.date.operation.AdjustDate;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
 
@@ -137,7 +134,7 @@ public abstract class AggregationShared extends Shared
             int partitionSize = partitionEndIndex - partitionStartIndex;
             TestTDS sourceTDS = orderedSource.getOne().slice(partitionStartIndex, partitionEndIndex);
             TDSCoreInstance sourceTDSCoreInstance = new TDSCoreInstance(sourceTDS, sourceTDSType, repository, processorSupport);
-            if (window != null && (window.getFrame() instanceof Range || window.getFrame() instanceof RangeInterval))
+            if (window != null && window.getFrame().getFrameType() == FrameType.range)
             {
                 if (sortInfos.size() != 1)
                 {
@@ -149,14 +146,6 @@ public abstract class AggregationShared extends Shared
                 Frame frame = window.getFrame();
                 Number offsetFrom = frame.getOffsetFrom();
                 Number offsetTo = frame.getOffsetTo(0);
-                String offsetFromDurationUnit = null;
-                String offsetToDurationUnit = null;
-                if (frame instanceof RangeInterval)
-                {
-                    RangeInterval rangeInterval = (RangeInterval) frame;
-                    offsetFromDurationUnit = rangeInterval.getOffsetFromDurationUnit() != null ? rangeInterval.getOffsetFromDurationUnit().getName() : null;
-                    offsetToDurationUnit = rangeInterval.getOffsetToDurationUnit() != null ? rangeInterval.getOffsetToDurationUnit().getName() : null;
-                }
                 MutableList<Object> orderByValues = Lists.mutable.empty();
                 for (int i = 0; i < partitionSize; i++)
                 {
@@ -188,7 +177,7 @@ public abstract class AggregationShared extends Shared
                                 aggregationValues.add(aggregateValue);
                             }
                         }
-                        else if (frame instanceof Range && orderByCurrentRowValue instanceof Number)
+                        else if (orderByCurrentRowValue instanceof Number)
                         {
                             Number currentRowValue = (Number) orderByCurrentRowValue;
                             if (offsetFrom == null && offsetTo == null) // RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
@@ -271,94 +260,9 @@ public abstract class AggregationShared extends Shared
                                 }
                             }
                         }
-                        else if (frame instanceof RangeInterval && orderByCurrentRowValue instanceof PureDate)
-                        {
-                            PureDate currentRowValue = (PureDate) orderByCurrentRowValue;
-                            if (offsetFrom == null && offsetTo == null) // RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
-                            {
-                                aggregationValues.add(aggregateValue);
-                            }
-                            else if (offsetFrom == null) // RANGE BETWEEN UNBOUNDED PRECEDING AND INTERVAL N PRECEDING/FOLLOWING
-                            {
-                                if (sortDirection == SortDirection.ASC)
-                                {
-                                    PureDate upperBound = AdjustDate.adjustDate(currentRowValue, offsetTo, offsetToDurationUnit, functionExpressionCallStack);
-                                    if (currentPartitionValueAsObject != null)
-                                    {
-                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
-                                        if (currentPartitionValue.compareTo(upperBound) <= 0)
-                                        {
-                                            aggregationValues.add(aggregateValue);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    PureDate lowerBound = AdjustDate.adjustDate(currentRowValue, repoPrimitiveHandler.minus(0, offsetTo), offsetToDurationUnit, functionExpressionCallStack);
-                                    if (currentPartitionValueAsObject == null) // When the ORDER BY clause specifies NULLS FIRST, which is default when sort order is DESC, rows with NULL in the ORDER BY column are included in UNBOUNDED PRECEDING frames.
-                                    {
-                                        aggregationValues.add(aggregateValue);
-                                    }
-                                    else
-                                    {
-                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
-                                        if (lowerBound.compareTo(currentPartitionValue) <= 0)
-                                        {
-                                            aggregationValues.add(aggregateValue);
-                                        }
-                                    }
-                                }
-                            }
-                            else if (offsetTo == null) // RANGE BETWEEN INTERVAL N PRECEDING/FOLLOWING AND UNBOUNDED FOLLOWING
-                            {
-                                if (sortDirection == SortDirection.ASC)
-                                {
-                                    PureDate lowerBound = AdjustDate.adjustDate(currentRowValue, offsetFrom, offsetFromDurationUnit, functionExpressionCallStack);
-                                    if (currentPartitionValueAsObject == null) // When the ORDER BY clause specifies NULLS LAST, which is default when sort order is ASC, rows with NULL in the ORDER BY column are included in UNBOUNDED FOLLOWING frames.
-                                    {
-                                        aggregationValues.add(aggregateValue);
-                                    }
-                                    else
-                                    {
-                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
-                                        if (lowerBound.compareTo(currentPartitionValue) <= 0)
-                                        {
-                                            aggregationValues.add(aggregateValue);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    PureDate upperBound = AdjustDate.adjustDate(currentRowValue, repoPrimitiveHandler.minus(0, offsetFrom), offsetFromDurationUnit, functionExpressionCallStack);
-                                    if (currentPartitionValueAsObject != null)
-                                    {
-                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
-                                        if (currentPartitionValue.compareTo(upperBound) <= 0)
-                                        {
-                                            aggregationValues.add(aggregateValue);
-                                        }
-                                    }
-                                }
-                            }
-                            else // RANGE BETWEEN INTERVAL N PRECEDING/FOLLOWING AND INTERVAL N PRECEDING/FOLLOWING
-                            {
-                                PureDate lowerBound = sortDirection == SortDirection.ASC ? AdjustDate.adjustDate(currentRowValue, offsetFrom, offsetFromDurationUnit, functionExpressionCallStack)
-                                                                                         : AdjustDate.adjustDate(currentRowValue, repoPrimitiveHandler.minus(0, offsetTo), offsetToDurationUnit, functionExpressionCallStack);
-                                PureDate upperBound = sortDirection == SortDirection.ASC ? AdjustDate.adjustDate(currentRowValue, offsetTo, offsetToDurationUnit, functionExpressionCallStack)
-                                                                                         : AdjustDate.adjustDate(currentRowValue, repoPrimitiveHandler.minus(0, offsetFrom), offsetFromDurationUnit, functionExpressionCallStack);
-                                if (currentPartitionValueAsObject != null)
-                                {
-                                    PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
-                                    if (lowerBound.compareTo(currentPartitionValue) <= 0 && currentPartitionValue.compareTo(upperBound) <= 0)
-                                    {
-                                        aggregationValues.add(aggregateValue);
-                                    }
-                                }
-                            }
-                        }
                         else
                         {
-                            throw new RuntimeException("For range frame, only numeric values, DateTime and StrictDate are supported, but found: " + orderByCurrentRowValue.getClass());
+                            throw new RuntimeException("Non-numeric values for order by column are not currently supported for range frame, but found: " + orderByCurrentRowValue.getClass());
                         }
                     }
 
@@ -399,14 +303,13 @@ public abstract class AggregationShared extends Shared
                 {
                     for (int i = 0; i < partitionSize; i++)
                     {
-                        Frame frame = window.getFrame();
-                        if (i + (Integer) frame.getOffsetTo(subList.size()) < 0 || i + (Integer) frame.getOffsetFrom() >= subList.size())
+                        if (i + (Integer) window.getFrame().getOffsetTo(subList.size()) < 0 || i + (Integer) window.getFrame().getOffsetFrom() >= subList.size())
                         {
                             setter.value(partitionStartIndex + i, null);
                         }
                         else
                         {
-                            MutableList<CoreInstance> l = framedList(subList, frame, i);
+                            MutableList<CoreInstance> l = framedList(subList, window.getFrame(), i);
                             l.removeIf(Objects::isNull);
                             reduceParameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(l, true, processorSupport));
                             CoreInstance re = this.functionExecution.executeFunction(false, reduceF, reduceParameters, resolvedTypeParameters, resolvedMultiplicityParameters, reduceFVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);

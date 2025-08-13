@@ -37,17 +37,17 @@ public class Window
     {
         this.partition = colSpec;
         this.sorts = sorts;
-        this.frame = frame == null ? (this.sorts.isEmpty() ? new Rows(true, true) : new Rows(true, 0)) : frame;
+        this.frame = frame == null ? (this.sorts.isEmpty() ? new Frame(FrameType.rows, true, true) : new Frame(FrameType.rows, true, 0)) : frame;
     }
 
     public Window()
     {
-        this.frame = new Rows(true, true);
+        this.frame = new Frame(FrameType.rows, true, true);
     }
 
     public Window(Frame frame)
     {
-        this.frame = frame == null ? (this.sorts.isEmpty() ? new Rows(true, true) : new Rows(true, 0)) : frame;
+        this.frame = frame == null ? (this.sorts.isEmpty() ? new Frame(FrameType.rows, true, true) : new Frame(FrameType.rows, true, 0)) : frame;
     }
 
     public MutableList<? extends String> getPartition()
