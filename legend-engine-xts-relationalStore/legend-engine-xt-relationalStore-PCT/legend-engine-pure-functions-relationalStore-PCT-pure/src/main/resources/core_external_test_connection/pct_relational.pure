@@ -767,12 +767,11 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
             $relAccessor.sourceElement->cast(@Table).name + '\n' +
             $cols->map(x|$x.name)->joinStrings(',' ) + '\n' +
             $tds->map(
-              x | $cols->map(c|$c->eval($x)->match(
+              x | $cols->map(c|$c->eval($x)->toOne()->match(
                                 [
                                   x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS}', $x),
                                   s : Variant[1] | '"' + $s->toString() + '"',
-                                  z : Any[1] | $z->toString(),
-                                  n : Any[0] | ''
+                                  z : Any[1] | $z->toString()
                                 ]
                 ))->joinStrings(',')
             )

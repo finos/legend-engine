@@ -292,7 +292,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
   ];
 }
 
-function meta::relational::functions::sqlQueryToString::default::processFrameValueDirection(frameValueDirection:meta::relational::metamodel::FrameValueDirection[1]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::processFrameValueDirection(frameValueDirection:meta::relational::metamodel::FrameValueDirection[1]):String[1]
 {
    if($frameValueDirection == meta::relational::metamodel::FrameValueDirection.PRECEDING, | 'PRECEDING', | 'FOLLOWING');
 }
@@ -302,7 +302,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::defau
    $frameValue->match([
                         u: meta::relational::metamodel::UnboundedFrameValue[1] | 'UNBOUNDED ' + $u.direction->processFrameValueDirection(),
                         c: meta::relational::metamodel::FrameCurrentRowValue[1] | 'CURRENT ROW',
-                        i: meta::relational::metamodel::FrameIntervalValue[1] | fail('Window function with range frame using interval is not supported for this database type: ' + $sgc.dbConfig.dbType->toString());'';,
                         l: meta::relational::metamodel::FrameLiteralValue[1] | $l.value->processOperation($sgc) + ' ' + $l.direction->processFrameValueDirection()
                       ]);
 }
@@ -321,7 +320,7 @@ function meta::relational::functions::sqlQueryToString::default::processWindowCo
         |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(','),
         |'');
    let orderByTranslation = if($w.window.sortBy->isNotEmpty(),
-        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name + if($s.sortDirection == meta::relational::metamodel::SortDirection.ASC, | ' NULLS LAST', | ' NULLS FIRST') , | ''))->joinStrings(', '),
+        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name, | ''))->joinStrings(', '),
         |'');
    let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
         |$w.window.frame->toOne()->processWindowFrame($sgc),

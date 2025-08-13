@@ -66,8 +66,7 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.n
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Range;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.RangeInterval;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
@@ -743,7 +742,7 @@ public class RelationNativeImplementation
             TDSContainer winTDS = new TDSContainer(sourceTDS, ((CompiledExecutionSupport) es).getProcessorSupport());
             Object convertedFrame = window == null ? null : window.convert(((CompiledExecutionSupport) es).getProcessorSupport(), compiledPrimitiveHandler);
             Frame frame = window == null ? null : window.getFrame();
-            if (window != null && (frame instanceof Range || frame instanceof RangeInterval))
+            if (window != null && frame.getFrameType() == FrameType.range)
             {
                 if (sortInfos.size() != 1)
                 {
@@ -754,14 +753,6 @@ public class RelationNativeImplementation
                 SortDirection sortDirection = sortInfo.getDirection();
                 Number offsetFrom = frame.getOffsetFrom();
                 Number offsetTo = frame.getOffsetTo(0);
-                Enum offsetFromDurationUnit = null;
-                Enum offsetToDurationUnit = null;
-                if (frame instanceof RangeInterval)
-                {
-                    RangeInterval rangeInterval = (RangeInterval) frame;
-                    offsetFromDurationUnit = rangeInterval.getOffsetFromDurationUnit();
-                    offsetToDurationUnit = rangeInterval.getOffsetToDurationUnit();
-                }
                 MutableList<Object> orderByValues = Lists.mutable.empty();
                 for (int i = 0; i < partitionSize; i++)
                 {
@@ -863,91 +854,6 @@ public class RelationNativeImplementation
                                 {
                                     Number currentPartitionValue = (Number) currentPartitionValueAsObject;
                                     if (compiledPrimitiveHandler.lessThanEqual(lowerBound, currentPartitionValue) && compiledPrimitiveHandler.lessThanEqual(currentPartitionValue, upperBound))
-                                    {
-                                        aggregationValues.add(aggregateValue);
-                                    }
-                                }
-                            }
-                        }
-                        else if (frame instanceof RangeInterval && orderByCurrentRowValue instanceof PureDate)
-                        {
-                            PureDate currentRowValue = (PureDate) orderByCurrentRowValue;
-                            if (offsetFrom == null && offsetTo == null) // RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
-                            {
-                                aggregationValues.add(aggregateValue);
-                            }
-                            else if (offsetFrom == null) // RANGE BETWEEN UNBOUNDED PRECEDING AND INTERVAL N PRECEDING/FOLLOWING
-                            {
-                                if (sortDirection == SortDirection.ASC)
-                                {
-                                    PureDate upperBound = CoreGen.adjustDate(currentRowValue, offsetTo.longValue(), offsetToDurationUnit);
-                                    if (currentPartitionValueAsObject != null)
-                                    {
-                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
-                                        if (currentPartitionValue.compareTo(upperBound) <= 0)
-                                        {
-                                            aggregationValues.add(aggregateValue);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    PureDate lowerBound = CoreGen.adjustDate(currentRowValue, compiledPrimitiveHandler.minus(0, offsetTo).longValue(), offsetToDurationUnit);
-                                    if (currentPartitionValueAsObject == null) // When the ORDER BY clause specifies NULLS FIRST, which is default when sort order is DESC, rows with NULL in the ORDER BY column are included in UNBOUNDED PRECEDING frames.
-                                    {
-                                        aggregationValues.add(aggregateValue);
-                                    }
-                                    else
-                                    {
-                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
-                                        if (lowerBound.compareTo(currentPartitionValue) <= 0)
-                                        {
-                                            aggregationValues.add(aggregateValue);
-                                        }
-                                    }
-                                }
-                            }
-                            else if (offsetTo == null) // RANGE BETWEEN INTERVAL N PRECEDING/FOLLOWING AND UNBOUNDED FOLLOWING
-                            {
-                                if (sortDirection == SortDirection.ASC)
-                                {
-                                    PureDate lowerBound = CoreGen.adjustDate(currentRowValue, offsetFrom.longValue(), offsetFromDurationUnit);
-                                    if (currentPartitionValueAsObject == null) // When the ORDER BY clause specifies NULLS LAST, which is default when sort order is ASC, rows with NULL in the ORDER BY column are included in UNBOUNDED FOLLOWING frames.
-                                    {
-                                        aggregationValues.add(aggregateValue);
-                                    }
-                                    else
-                                    {
-                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
-                                        if (lowerBound.compareTo(currentPartitionValue) <= 0)
-                                        {
-                                            aggregationValues.add(aggregateValue);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    PureDate upperBound = CoreGen.adjustDate(currentRowValue, compiledPrimitiveHandler.minus(0, offsetFrom).longValue(), offsetFromDurationUnit);
-                                    if (currentPartitionValueAsObject != null)
-                                    {
-                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
-                                        if (currentPartitionValue.compareTo(upperBound) <= 0)
-                                        {
-                                            aggregationValues.add(aggregateValue);
-                                        }
-                                    }
-                                }
-                            }
-                            else // RANGE BETWEEN INTERVAL N PRECEDING/FOLLOWING AND INTERVAL N PRECEDING/FOLLOWING
-                            {
-                                PureDate lowerBound = sortDirection == SortDirection.ASC ? CoreGen.adjustDate(currentRowValue, offsetFrom.longValue(), offsetFromDurationUnit)
-                                        : CoreGen.adjustDate(currentRowValue, compiledPrimitiveHandler.minus(0, offsetTo).longValue(), offsetToDurationUnit);
-                                PureDate upperBound = sortDirection == SortDirection.ASC ? CoreGen.adjustDate(currentRowValue, offsetTo.longValue(), offsetToDurationUnit)
-                                        : CoreGen.adjustDate(currentRowValue, compiledPrimitiveHandler.minus(0, offsetFrom).longValue(), offsetFromDurationUnit);
-                                if (currentPartitionValueAsObject != null)
-                                {
-                                    PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
-                                    if (lowerBound.compareTo(currentPartitionValue) <= 0 && currentPartitionValue.compareTo(upperBound) <= 0)
                                     {
                                         aggregationValues.add(aggregateValue);
                                     }
