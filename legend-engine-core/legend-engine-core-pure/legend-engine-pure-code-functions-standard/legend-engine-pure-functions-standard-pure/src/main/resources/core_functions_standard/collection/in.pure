@@ -65,3 +65,53 @@ function <<PCT.test>> meta::pure::functions::collection::tests::in::testInIsEmpt
 {
    assertFalse($f->eval(|[]->in(['a', 'b'])));
 }
+
+function <<PCT.test, meta::pure::functions::relation::PCTRelationQualifier.relation>> meta::pure::functions::collection::tests::in::testIn_relation_extend<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  4, qw
+                  5, wwe
+                  6, weq
+                #->extend(~[
+                  isValid:c|$c.str->in(['a', 'ewe', 'wwe'])
+                ])
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+                  
+                  '   val,str,isValid\n'+
+                  '   1,a,true\n'+
+                  '   3,ewe,true\n'+
+                  '   4,qw,false\n'+
+                  '   5,wwe,true\n'+
+                  '   6,weq,false\n'+
+                  '#', $res->sort([~val->ascending()])->toString());
+}
+
+function <<PCT.test, meta::pure::functions::relation::PCTRelationQualifier.relation>> meta::pure::functions::collection::tests::in::testIn_relation_filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  4, qw
+                  5, wwe
+                  6, weq
+                #->filter(c|$c.str->in(['a', 'ewe', 'wwe']))
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+                  
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   3,ewe\n'+
+                  '   5,wwe\n'+
+                  '#', $res->sort([~val->ascending()])->toString());
+}

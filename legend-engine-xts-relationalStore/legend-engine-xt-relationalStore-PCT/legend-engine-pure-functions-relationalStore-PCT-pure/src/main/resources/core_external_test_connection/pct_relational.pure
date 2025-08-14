@@ -747,7 +747,8 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
     columns = $tds->columns()->map(c|
                     ^meta::relational::metamodel::Column(
                         name=$c.name->toOne(),
-                        type=$map->meta::pure::functions::collection::get($c->genericType().typeArguments->at(1).rawType->toOne())->toOne()
+                        type=$map->meta::pure::functions::collection::get($c->genericType().typeArguments->at(1).rawType->toOne())->toOne(),
+                        nullable=$c->functionReturnMultiplicity()->getLowerBound() == 0
                     )
                   ),
     schema = $state.schema

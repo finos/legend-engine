@@ -40,7 +40,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::asOfJoin::testSimp
                    5, 2000-10-25T06:34:50Z, 3200
                #;
 
-    let expr = {|$tds1->asOfJoin($tds2, {x,y|$x.time > $y.time2});};
+    let expr = {|$tds1->asOfJoin($tds2, {x,y|$x.time->toOne() > $y.time2->toOne()});};
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
@@ -53,7 +53,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::asOfJoin::testSimp
                   '   6,2000-10-25T06:35:00.000+0000,4300,5,2000-10-25T06:34:50.000+0000,3200\n'+
                   '#', $res->sort([~key->ascending(), ~time->ascending()])->toString());
 
-    let expr2 = {|$tds1->asOfJoin($tds2, {x,y|$x.time < $y.time2});};
+    let expr2 = {|$tds1->asOfJoin($tds2, {x,y|$x.time->toOne() < $y.time2->toOne()});};
     let res2 =  $f->eval($expr2);
 
     assertEquals( '#TDS\n'+
@@ -89,7 +89,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::asOfJoin::testSimp
                    6, 2000-10-25T06:35:10Z, 2900
                    5, 2000-10-25T06:34:50Z, 3200
                #;
-        $tds1->asOfJoin($tds2, {x,y|$x.time > $y.time2});
+        $tds1->asOfJoin($tds2, {x,y|$x.time->toOne() > $y.time2->toOne()});
       };
     let res =  $f->eval($expr);
 
@@ -122,7 +122,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::asOfJoin::testSimp
                       6, 2000-10-25T06:35:10Z, 2900
                       5, 2000-10-25T06:34:50Z, 3200
                   #;
-        $tds1->asOfJoin($tds2, {x,y|$x.time < $y.time2});
+        $tds1->asOfJoin($tds2, {x,y|$x.time->toOne() < $y.time2->toOne()});
       };
     let res2 =  $f->eval($expr2);
 
@@ -162,7 +162,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::asOfJoin::testAsOf
                    5, 2000-10-25T06:34:50Z, 3200
                #;
 
-    let expr = {|$tds1->asOfJoin($tds2, {x,y|$x.time > $y.time2}, {x,y|$x.key == $y.key2});};
+    let expr = {|$tds1->asOfJoin($tds2, {x,y|$x.time->toOne() > $y.time2->toOne()}, {x,y|$x.key->toOne() == $y.key2->toOne()});};
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
@@ -175,7 +175,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::asOfJoin::testAsOf
                   '   6,2000-10-25T06:35:00.000+0000,4300,null,null,null\n'+
                   '#', $res->sort([~key->ascending(), ~time->ascending()])->toString());
 
-    let expr2 = {|$tds1->asOfJoin($tds2, {x,y|$x.time < $y.time2}, {x,y|$x.key == $y.key2});};
+    let expr2 = {|$tds1->asOfJoin($tds2, {x,y|$x.time->toOne() < $y.time2->toOne()}, {x,y|$x.key->toOne() == $y.key2->toOne()});};
     let res2 =  $f->eval($expr2);
 
     assertEquals( '#TDS\n'+
@@ -213,7 +213,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::asOfJoin::testAsOf
                    6, 2000-10-25T06:35:50Z, 2900
                    5, 2000-10-25T06:34:50Z, 3200
                #;
-          $tds1->asOfJoin($tds2, {x,y|$x.time > $y.time2}, {x,y|$x.key == $y.key2});
+          $tds1->asOfJoin($tds2, {x,y|$x.time->toOne() > $y.time2->toOne()}, {x,y|$x.key->toOne() == $y.key2->toOne()});
     };
     let res =  $f->eval($expr);
 
@@ -249,7 +249,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::asOfJoin::testAsOf
                    6, 2000-10-25T06:35:50Z, 2900
                    5, 2000-10-25T06:34:50Z, 3200
                #;
-          $tds1->asOfJoin($tds2, {x,y|$x.time < $y.time2}, {x,y|$x.key == $y.key2});
+          $tds1->asOfJoin($tds2, {x,y|$x.time->toOne() < $y.time2->toOne()}, {x,y|$x.key->toOne() == $y.key2->toOne()});
     };
     let res2 =  $f->eval($expr2);
 

@@ -422,6 +422,10 @@ public class RelationNativeImplementation
                 MutableList<Variant> variantRes = Lists.mutable.empty();
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> variantRes.add((Variant) val));
                 return new ColumnValue(colFuncSpecTrans.newColName, DataType.CUSTOM, variantRes.toArray(new Variant[0]));
+            case M3Paths.Boolean:
+                boolean[] resultBoolean = new boolean[(int) size];
+                extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultBoolean[i] = (boolean) val));
+                return new ColumnValue(colFuncSpecTrans.newColName, DataType.BOOLEAN_AS_BYTE, resultBoolean, nulls);
             default:
                 throw new RuntimeException(colFuncSpecTrans.columnType + " not supported yet");
         }

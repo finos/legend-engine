@@ -1603,6 +1603,15 @@ public abstract class TestTDS
                     SimpleFunctionExpression leftF = (SimpleFunctionExpression) left;
                     SimpleFunctionExpression rightF = (SimpleFunctionExpression) right;
                     MutableList<String> signatureParameters = fType._parameters().collect(VariableExpressionAccessor::_name).toList();
+                    while (leftF._parametersValues().getFirst() instanceof SimpleFunctionExpression)
+                    {
+                        leftF = (SimpleFunctionExpression) leftF._parametersValues().getFirst();
+                    }
+                    while (rightF._parametersValues().getFirst() instanceof SimpleFunctionExpression)
+                    {
+                        rightF = (SimpleFunctionExpression) rightF._parametersValues().getFirst();
+                    }
+
                     String leftName = (((VariableExpression) leftF._parametersValues().getFirst())._name());
                     if (leftName.equals(signatureParameters.get(0)))
                     {
