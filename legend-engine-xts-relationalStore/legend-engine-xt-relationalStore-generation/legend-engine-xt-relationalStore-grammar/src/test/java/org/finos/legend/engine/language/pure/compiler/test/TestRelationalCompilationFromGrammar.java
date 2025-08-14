@@ -3329,4 +3329,129 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "\n" +
                 ")");
     }
+
+    @Test
+    public void testDuplicateColumnMappingInView()
+    {
+        test("###Relational\n" +
+                "Database com::trade::TradeDatabase\n" +
+                "(\n" +
+                "  Schema Trade\n" +
+                "  (\n" +
+                "    Table Trade\n" +
+                "    (\n" +
+                "      id VARCHAR(32) PRIMARY KEY,\n" +
+                "      value INTEGER NOT NULL,\n" +
+                "      ENTITY_ID_FK VARCHAR(32) NOT NULL\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "Database com::entity::EntityDatabase\n" +
+                "(\n" +
+                "  Schema Entity\n" +
+                "  (\n" +
+                "    Table LegalEntity\n" +
+                "    (\n" +
+                "      ENTITY_ID VARCHAR(32) PRIMARY KEY,\n" +
+                "      name VARCHAR(32) NOT NULL\n" +
+                "    )\n" +
+                "\n" +
+                "    View LegalEntity_View\n" +
+                "    (\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,\n" +
+                "      name: Entity.LegalEntity.name PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                ")", null, Arrays.asList("COMPILATION error at [25:5-30:5]: Duplicate column mapping definitions [ENTITY_ID] in view: LegalEntity_View"));
+    }
+
+    @Test
+    public void testViewWithNoDuplicateColumnMapping()
+    {
+        test("###Relational\n" +
+                "Database com::entity::EntityDatabase\n" +
+                "(\n" +
+                "  Schema Entity\n" +
+                "  (\n" +
+                "    Table LegalEntity\n" +
+                "    (\n" +
+                "      ENTITY_ID VARCHAR(32) PRIMARY KEY,\n" +
+                "      name VARCHAR(32) NOT NULL\n" +
+                "    )\n" +
+                "\n" +
+                "    View LegalEntity_View\n" +
+                "    (\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,\n" +
+                "      name: Entity.LegalEntity.name\n" +
+                "    )\n" +
+                "  )\n" +
+                ")");
+    }
+
+    @Test
+    public void testViewWithMultipleDuplicateColumnMappings()
+    {
+        test("###Relational\n" +
+                "Database com::entity::EntityDatabase\n" +
+                "(\n" +
+                "  Schema Entity\n" +
+                "  (\n" +
+                "    Table LegalEntity\n" +
+                "    (\n" +
+                "      ENTITY_ID VARCHAR(32) PRIMARY KEY,\n" +
+                "      name VARCHAR(32) NOT NULL,\n" +
+                "      description VARCHAR(100)\n" +
+                "    )\n" +
+                "\n" +
+                "    View LegalEntity_View\n" +
+                "    (\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID,\n" +
+                "      name: Entity.LegalEntity.name,\n" +
+                "      name: Entity.LegalEntity.name,\n" +
+                "      description: Entity.LegalEntity.description\n" +
+                "    )\n" +
+                "  )\n" +
+                ")", null, Arrays.asList("COMPILATION error at [13:5-20:5]: Duplicate column mapping definitions [ENTITY_ID, name] in view: LegalEntity_View"));
+    }
+
+    @Test
+    public void testTwoViewsWithDuplicateColumnMappings()
+    {
+        test("###Relational\n" +
+                "Database com::entity::EntityDatabase\n" +
+                "(\n" +
+                "  Schema Entity\n" +
+                "  (\n" +
+                "    Table LegalEntity\n" +
+                "    (\n" +
+                "      ENTITY_ID VARCHAR(32) PRIMARY KEY,\n" +
+                "      name VARCHAR(32) NOT NULL,\n" +
+                "      description VARCHAR(100),\n" +
+                "      status VARCHAR(20)\n" +
+                "    )\n" +
+                "\n" +
+                "    View LegalEntity_View1\n" +
+                "    (\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID,\n" +
+                "      name: Entity.LegalEntity.name,\n" +
+                "      name: Entity.LegalEntity.name\n" +
+                "    )\n" +
+                "\n" +
+                "    View LegalEntity_View2\n" +
+                "    (\n" +
+                "      description: Entity.LegalEntity.description,\n" +
+                "      description: Entity.LegalEntity.description,\n" +
+                "      status: Entity.LegalEntity.status,\n" +
+                "      status: Entity.LegalEntity.status\n" +
+                "    )\n" +
+                "  )\n" +
+                ")", null, Arrays.asList(
+                "COMPILATION error at [14:5-20:5]: Duplicate column mapping definitions [ENTITY_ID, name] in view: LegalEntity_View1",
+                "COMPILATION error at [22:5-28:5]: Duplicate column mapping definitions [description, status] in view: LegalEntity_View2"
+        ));
+    }
 }
