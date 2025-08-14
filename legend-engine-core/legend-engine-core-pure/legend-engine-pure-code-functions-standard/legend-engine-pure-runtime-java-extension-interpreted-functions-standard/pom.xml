@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-functions-standard</artifactId>
-        <version>4.96.2-SNAPSHOT</version>
+        <version>release-4.96.3</version>
     </parent>
 
     <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-standard</artifactId>
