@@ -84,8 +84,10 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(
-                                        handlers.m(handlers.h("meta::external::format::shared::functions::internalize_Class_1__Binding_1__String_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && "String".equals(ps.get(2)._genericType()._rawType()._name()))),
-                                        handlers.m(handlers.h("meta::external::format::shared::functions::internalize_Class_1__Binding_1__Byte_MANY__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && "Byte".equals(ps.get(2)._genericType()._rawType()._name())))
+                                        handlers.m(
+                                                handlers.h("meta::external::format::shared::functions::internalize_Class_1__Binding_1__String_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && "String".equals(ps.get(2)._genericType()._rawType()._name())),
+                                                handlers.h("meta::external::format::shared::functions::internalize_Class_1__Binding_1__Byte_MANY__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && "Byte".equals(ps.get(2)._genericType()._rawType()._name()))
+                                        )
                                 )
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
@@ -94,10 +96,11 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(
                                         handlers.m(handlers.h("meta::pure::dataQuality::checked_T_MANY__Checked_MANY_", false, ps -> handlers.res(handlers.res("meta::pure::dataQuality::Checked", "one").genericType._typeArgumentsAdd(ps.get(0)._genericType()), "zeroMany"), ps -> ps.size() == 1)),
-                                        handlers.m(handlers.h("meta::pure::dataQuality::checked_RootGraphFetchTree_1__RootGraphFetchTree_1__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 2 && "RootGraphFetchTree".equals(ps.get(1)._genericType()._rawType()._name()))),
-                                        handlers.m(handlers.h("meta::pure::dataQuality::checked_RootGraphFetchTree_1__RootGraphFetchTree_1__RootGraphFetchTree_$0_1$__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 3)),
-                                        handlers.m(handlers.h("meta::external::format::shared::functions::checked_RootGraphFetchTree_1__Binding_1__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 2 && "Binding".equals(ps.get(1)._genericType()._rawType()._name()))),
-                                        handlers.m(handlers.h("meta::external::format::shared::functions::checked_RootGraphFetchTree_1__String_1__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 2 && "String".equals(ps.get(1)._genericType()._rawType()._name()))))
+                                        handlers.m(handlers.h("meta::pure::dataQuality::checked_RootGraphFetchTree_1__RootGraphFetchTree_1__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 2 && "RootGraphFetchTree".equals(ps.get(1)._genericType()._rawType()._name())),
+                                                handlers.h("meta::external::format::shared::functions::checked_RootGraphFetchTree_1__Binding_1__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 2 && "Binding".equals(ps.get(1)._genericType()._rawType()._name())),
+                                                handlers.h("meta::external::format::shared::functions::checked_RootGraphFetchTree_1__String_1__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 2 && "String".equals(ps.get(1)._genericType()._rawType()._name()))),
+                                        handlers.m(handlers.h("meta::pure::dataQuality::checked_RootGraphFetchTree_1__RootGraphFetchTree_1__RootGraphFetchTree_$0_1$__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 3))
+                                )
                         )
                 ));
     }
