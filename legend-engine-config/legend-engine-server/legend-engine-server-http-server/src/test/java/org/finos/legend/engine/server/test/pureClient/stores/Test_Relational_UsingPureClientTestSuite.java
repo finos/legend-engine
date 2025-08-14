@@ -34,7 +34,7 @@ public class Test_Relational_UsingPureClientTestSuite extends TestSuite
                     CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
                     TestSuite suite = new TestSuite();
                     //        suite.addTest(buildSuite(TestCollection.collectTests("meta::relational::tests::constraints", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    //        suite.addTest(buildSuite(TestCollection.collectTests("meta::relational::testDataGeneration::tests::alloy", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(buildSuite(TestCollection.collectTests("meta::relational::testDataGeneration::tests::alloy", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(buildSuite(TestCollection.collectTests("meta::relational::tests::advanced", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(buildSuite(TestCollection.collectTests("meta::relational::tests::groupBy", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(buildSuite(TestCollection.collectTests("meta::relational::tests::injection", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
