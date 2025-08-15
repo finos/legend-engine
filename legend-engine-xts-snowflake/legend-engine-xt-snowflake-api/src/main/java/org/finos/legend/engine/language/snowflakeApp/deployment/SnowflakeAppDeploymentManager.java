@@ -162,7 +162,14 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         for (String s: statements)
         {
             Statement statement = jdbcConnection.createStatement();
-            statement.execute(s);
+            try
+            {
+                statement.execute(s);
+            }
+            catch (SQLException e)
+            {
+                throw new RuntimeException(String.format("Query execution failed with error: %s \n" + "Generated query: %s", e.getMessage(), s), e);
+            }
         }
     }
 
@@ -200,7 +207,9 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
             }
             catch (Exception e)
             {
-                throw new RuntimeException(e);
+                LOGGER.error("Error processing generated create statement: ", e);
+                throw new RuntimeException(String.format("Error processing statement. \nException: %s  \nStatement: %s",
+                        e.getMessage(), content.createStatement), e);
             }
 
             if (content.grantStatement != null)
