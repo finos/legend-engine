@@ -16,6 +16,8 @@ package org.finos.legend.engine.testable.mapping.extension;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
@@ -42,6 +44,19 @@ public class MappingTestableRunnerExtension implements TestableRunnerExtension
     public String getSupportedClassifierPath()
     {
         return CorePureProtocolExtension.MAPPING_CLASSIFIER_PATH;
+    }
+
+    @Override
+    public Boolean isTestable(PackageableElement element)
+    {
+        return element instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
+    }
+
+    @Override
+    public Boolean isTestableEmpty(PackageableElement element)
+    {
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping) element;
+        return (mapping.testSuites == null || mapping.testSuites.isEmpty()) && (mapping.tests == null || mapping.tests.isEmpty());
     }
 
     @Override

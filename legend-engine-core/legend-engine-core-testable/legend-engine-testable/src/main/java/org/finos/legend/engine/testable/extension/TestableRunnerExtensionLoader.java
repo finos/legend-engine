@@ -15,6 +15,7 @@
 package org.finos.legend.engine.testable.extension;
 
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Testable;
 
 import java.util.List;
@@ -40,6 +41,26 @@ public class TestableRunnerExtensionLoader
                 .orElseThrow(() -> new IllegalStateException("No testable runner for " + testable.getClass().getSimpleName()));
     }
 
+    public static Boolean isTestable(PackageableElement element)
+    {
+        return isTestable(element, getCurrentThreadClassLoader());
+    }
+
+    private static Boolean isTestable(PackageableElement element, ClassLoader classLoader)
+    {
+        return extensions(classLoader).stream().anyMatch(ext -> ext.isTestable(element));
+    }
+
+    /**
+     * Checks if the given testable element is empty, meaning it has no tests or test suites defined.
+     * If the element is not testable and thus does not have a corresponding extension, it returns false.
+     */
+    public static Boolean isTestableEmpty(PackageableElement element)
+    {
+        TestableRunnerExtension extension = getExtensionsForElement(element, getCurrentThreadClassLoader());
+        return extension != null && extension.isTestableEmpty(element);
+    }
+
     public static Map<String, ? extends TestableRunnerExtension> getClassifierPathToTestableRunnerMap()
     {
         return getClassifierPathToTestableRunnerMap(getCurrentThreadClassLoader());
@@ -48,6 +69,14 @@ public class TestableRunnerExtensionLoader
     public static Map<String, ? extends TestableRunnerExtension> getClassifierPathToTestableRunnerMap(ClassLoader classLoader)
     {
         return extensions(classLoader).stream().collect(Collectors.toMap(TestableRunnerExtension::getSupportedClassifierPath, Function.identity()));
+    }
+
+    private static TestableRunnerExtension getExtensionsForElement(PackageableElement element, ClassLoader classLoader)
+    {
+        return extensions(classLoader).stream()
+                .filter(ext -> ext.isTestable(element))
+                .findFirst()
+                .orElse(null);
     }
 
     private static List<TestableRunnerExtension> extensions(ClassLoader classLoader)
