@@ -170,7 +170,7 @@ public abstract class RelationalGeneratorAbstract
     public abstract RelationalSink relationalSink();
 
     @Derived
-    protected PlannerOptions plannerOptions()
+    public PlannerOptions plannerOptions()
     {
         return PlannerOptions.builder()
             .cleanupStagingData(cleanupStagingData())
@@ -398,7 +398,7 @@ public abstract class RelationalGeneratorAbstract
             .build();
     }
 
-    GeneratorResult generateOperationsForCreate(Planner planner)
+    public GeneratorResult generateOperationsForCreate(Planner planner)
     {
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
@@ -423,7 +423,7 @@ public abstract class RelationalGeneratorAbstract
             .build();
     }
 
-    GeneratorResult generateOperationsForPostCleanup(Resources resources, Planner planner)
+    public GeneratorResult generateOperationsForPostCleanup(Resources resources, Planner planner)
     {
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
@@ -443,7 +443,7 @@ public abstract class RelationalGeneratorAbstract
             .build();
     }
 
-    GeneratorResult generateOperationsForIngest(Resources resources, Planner planner)
+    public GeneratorResult generateOperationsForIngest(Resources resources, Planner planner)
     {
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
