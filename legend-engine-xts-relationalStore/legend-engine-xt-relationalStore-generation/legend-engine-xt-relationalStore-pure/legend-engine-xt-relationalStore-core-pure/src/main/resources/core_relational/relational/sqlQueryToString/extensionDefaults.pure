@@ -554,7 +554,7 @@ function meta::relational::functions::sqlQueryToString::default::processIdentifi
 
 function meta::relational::functions::sqlQueryToString::default::processIdentifierWithQuoteChar(identifier:String[1], quoteChar: String[1], dbConfig : DbConfig[1]):String[1]
 {
-  if($dbConfig.quoteIdentifiers || $identifier->startsWith('"') || $dbConfig.isDbReservedIdentifier($identifier),
+  if($dbConfig.quoteIdentifiers || $identifier->startsWith('"') || $dbConfig.isDbReservedIdentifier($identifier) || $identifier->contains(' '),
     | '%s%s%s'->format([$quoteChar, $identifier->replace('"', ''), $quoteChar]),
     | $identifier
   );
