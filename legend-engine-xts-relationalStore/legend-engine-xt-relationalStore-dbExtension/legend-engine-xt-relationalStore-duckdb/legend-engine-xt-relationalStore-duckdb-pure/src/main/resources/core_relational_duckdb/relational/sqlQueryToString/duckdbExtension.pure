@@ -1,3 +1,4 @@
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::functions::sqlQueryToString::duckDB::*;
 import meta::relational::functions::sqlQueryToString::default::*;
@@ -27,12 +28,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
    ^DbExtension(
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords); },                                          // check case insensitive
-      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      windowColumnProcessor = processWindowColumnForDuckDB_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForDuckDB_JoinStrings_1__SqlGenerationContext_1__String_1_,
       literalProcessor = $literalProcessor,
       joinProcessor = meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForDuckDB_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierForDuckDB_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
@@ -124,12 +126,27 @@ function meta::relational::functions::sqlQueryToString::duckDB::translateCreateT
       +');';
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDynaFunctionVariantTransformer(vars: String[*]): String[1]
+{
+  $vars->match([
+    zero:String[0] | 'null',
+    one:String[1]  | $one,
+    many:String[*] | $many->joinStrings('array_value(', ',', ')')
+  ]);
+}
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDynaFunctionToSqlForDuckDB(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
 
   [
+    dynaFnToSql('array_max',              $allStates,            ^ToSql(format='array_aggregate(%s, \'max\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_min',              $allStates,            ^ToSql(format='array_aggregate(%s, \'min\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='array_aggregate(%s, \'sum\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='array_sort(%s)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='array_reverse(%s)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(len(%s), 0)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
+    dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)', transform= {vals:String[*] | $vals->init()->getDynaFunctionVariantTransformer()->concatenate($vals->last())})),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(cast(%s as BIGINT) & cast(%s as BIGINT))')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ cast(%s as BIGINT))')),
@@ -169,6 +186,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)', transform={p:String[1] | $p->repeat(1)})),
     dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='CAST(uuid() AS VARCHAR)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('hashCode',               $allStates,            ^ToSql(format='hash(%s)::BITSTRING::BIGINT', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='instr(%s, %s)', transform={p:String[2] | [$p->at(0), $p->at(1)]})),  // TODO - pure uses 0-based indexing,  duck db returns location with 1-based index , keeping this as H2 also returns 1-based currently, many user tests need to be fixed
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='regexp_matches(%s,\'^[a-zA-Z0-9]*$\')', transform={p:String[1]|$p})),
@@ -309,6 +327,41 @@ function meta::relational::functions::sqlQueryToString::duckDB::constructTimeBuc
    ]->filter(p | $p.first == $unitWithoutQuotes).second->toOne('Unit not found: ' + $unitWithoutQuotes);
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processFrameValueForDuckDB(frameValue:meta::relational::metamodel::FrameValue[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   $frameValue->match([
+                        u: meta::relational::metamodel::UnboundedFrameValue[1] | 'UNBOUNDED ' + $u.direction->processFrameValueDirection(),
+                        c: meta::relational::metamodel::FrameCurrentRowValue[1] | 'CURRENT ROW',
+                        i: meta::relational::metamodel::FrameIntervalValue[1] | 'INTERVAL ' + $i.value->processOperation($sgc) + ' ' + $i.durationUnit->toString() + ' ' + $i.direction->processFrameValueDirection(),
+                        l: meta::relational::metamodel::FrameLiteralValue[1] | $l.value->processOperation($sgc) + ' ' + $l.direction->processFrameValueDirection()
+                      ]);
+}
+
+function meta::relational::functions::sqlQueryToString::duckDB::processWindowFrameForDuckDB(frame:meta::relational::metamodel::Frame[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let frameType = if($frame.frameType == meta::relational::metamodel::FrameType.ROWS, | 'ROWS BETWEEN', | 'RANGE BETWEEN');
+   let offsetFrom = $frame.offsetFrom->processFrameValueForDuckDB($sgc);
+   let offsetTo = $frame.offsetTo->processFrameValueForDuckDB($sgc);
+   $frameType + ' ' + $offsetFrom + ' AND ' + $offsetTo;
+}
+
+function meta::relational::functions::sqlQueryToString::duckDB::processWindowColumnForDuckDB(w:WindowColumn[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let partitionTranslation = if($w.window.partition->isNotEmpty(),
+        |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(','),
+        |'');
+   let orderByTranslation = if($w.window.sortBy->isNotEmpty(),
+        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name + if($s.sortDirection == meta::relational::metamodel::SortDirection.ASC, | ' NULLS LAST', | ' NULLS FIRST') , | ''))->joinStrings(', '),
+        |'');
+   let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
+        |$w.window.frame->toOne()->processWindowFrameForDuckDB($sgc),
+        |'');
+   $w.func->processOperation($sgc) +
+   ' OVER (' +
+   [$partitionTranslation, $orderByTranslation, $windowFrameTranslation]->filter(s | $s != '')->joinStrings(' ') +
+   + ')';
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSelectSQLQueryForDuckDB(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
    $s->processSelectSQLQueryForDuckDB($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
@@ -318,6 +371,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 {
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let qualifyStr = if($s.qualifyOperation->isEmpty(), |'', |$s.qualifyOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
@@ -331,6 +385,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(',')) +
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if (eq($qualifyStr, ''), |'', | ' ' + $format.separator + 'qualify ' + $qualifyStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(',')) +
   processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForDuckDB_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
 }
@@ -390,8 +445,17 @@ function meta::relational::functions::sqlQueryToString::duckDB::processJoinStrin
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredElementForDuckDB(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
 {
    $s->match([
-      o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForDuckDB($sgc)
+      o:SemiStructuredObjectNavigation[1]     | $o->processSemiStructuredObjectNavigationForDuckDB($sgc),
+      f:SemiStructuredArrayFlatten[1]         | $f->processSemiStructuredArrayFlattenForDuckDB($sgc),
+      f:SemiStructuredArrayFlattenRelation[1] | ^SemiStructuredArrayFlatten(navigation = $f.navigation)->processSemiStructuredArrayFlattenForDuckDB($sgc)
    ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredArrayFlattenForDuckDB(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // https://duckdb.org/docs/stable/sql/query_syntax/unnest.html
+   let processedNavigation = $s.navigation->processOperation($sgc);
+   '(select unnest(' + $processedNavigation + ', recursive := false) as VALUE)';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredObjectNavigationForDuckDB(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
@@ -451,4 +515,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       $lambda.parameters->at(0).name,
       $lambda.body->processOperation($sgc)
    ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processJoinTreeNodeWithLateralJoinForDuckDB(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+   ', lateral '
+   + $j.alias
+         ->map(a|^$a(name = '"' + $a.name + '"'))
+         ->toOne()->processOperation($dbConfig, ^$format(newLine = '')->indent(), $extensions) + $format.separator();
 }

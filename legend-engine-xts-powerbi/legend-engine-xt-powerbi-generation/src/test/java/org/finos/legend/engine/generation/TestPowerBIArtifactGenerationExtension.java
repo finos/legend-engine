@@ -193,7 +193,7 @@ public class TestPowerBIArtifactGenerationExtension
 
         //Semantic model files
         expectedArtifacts.put(dataSpaceName + ".SemanticModel/definition.pbism", getResourceAsString("powerbi_expected_artifacts/definition.pbism"));
-        expectedArtifacts.put(dataSpaceName + ".SemanticModel/definition/cultures/en_US.tmdl", getResourceAsString("powerbi_expected_artifacts/en_US.tmdl"));
+        expectedArtifacts.put(dataSpaceName + ".SemanticModel/definition/cultures/en-US.tmdl", getResourceAsString("powerbi_expected_artifacts/en-US.tmdl"));
         expectedArtifacts.put(dataSpaceName + ".SemanticModel/definition/database.tmdl", getResourceAsString("powerbi_expected_artifacts/database.tmdl"));
         expectedArtifacts.put(dataSpaceName + ".SemanticModel/definition/model.tmdl", String.format(Objects.requireNonNull(getResourceAsString("powerbi_expected_artifacts/model.tmdl")), functionPointerExecutableTitle, serviceExecutableTitle, inlineExecutableTitle));
         expectedArtifacts.put(dataSpaceName + ".SemanticModel/definition/tables/" + serviceExecutableTitle + ".tmdl", String.format(Objects.requireNonNull(getResourceAsString("powerbi_expected_artifacts/serviceTable.tmdl")), queryMode).replace(dataspaceNamePlaceholder, dataSpaceName));

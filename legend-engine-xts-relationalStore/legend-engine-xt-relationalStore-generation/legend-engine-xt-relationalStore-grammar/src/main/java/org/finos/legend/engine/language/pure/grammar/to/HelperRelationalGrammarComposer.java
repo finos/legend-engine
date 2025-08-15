@@ -34,6 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingSnapshotMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.*;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
@@ -474,6 +475,11 @@ public class HelperRelationalGrammarComposer
                     (processingMilestoning.infinityDate != null ? (", INFINITY_DATE = " + processingMilestoning.infinityDate.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context.toPureGrammarComposerContext()).build())) : "") +
                     ")";
         }
+        else if (milestoning instanceof ProcessingSnapshotMilestoning)
+        {
+            ProcessingSnapshotMilestoning processingSnapshotMilestoning = (ProcessingSnapshotMilestoning) milestoning;
+            return getTabString(baseIndentation) + "processing(PROCESSING_SNAPSHOT_DATE = " + processingSnapshotMilestoning.snapshotDate + ")";
+        }
         return null;
     }
 
@@ -744,6 +750,16 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "serviceAccountEmail: " + convertString(auth.serviceAccountEmail, true) + ";\n" +
                     (auth.additionalGcpScopes != null && !auth.additionalGcpScopes.isEmpty() ? context.getIndentationString() + getTabString(baseIndentation + 1) + "additionalGcpScopes: [\n" + ListIterate.collect(auth.additionalGcpScopes, s -> context.getIndentationString() + getTabString(baseIndentation + 2) + convertString(s, true)).makeString(",\n") + "\n" + context.getIndentationString() + getTabString(baseIndentation + 2) + "];\n" : "") +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+        }
+        else if (_auth instanceof OAuthAuthenticationStrategy)
+        {
+            OAuthAuthenticationStrategy auth = (OAuthAuthenticationStrategy) _auth;
+            int baseIndentation = 1;
+            return "OAuth" + "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "oauthKey: " + convertString(auth.oauthKey, true) + ";\n" +
+                    context.getIndentationString() + getTabString(baseIndentation + 1) + "scopeName: " + convertString(auth.scopeName, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         return null;

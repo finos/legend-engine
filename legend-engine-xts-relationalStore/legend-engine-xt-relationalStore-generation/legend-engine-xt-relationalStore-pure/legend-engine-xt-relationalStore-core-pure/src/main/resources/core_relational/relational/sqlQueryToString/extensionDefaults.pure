@@ -292,7 +292,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
   ];
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::default::processFrameValueDirection(frameValueDirection:meta::relational::metamodel::FrameValueDirection[1]):String[1]
+function meta::relational::functions::sqlQueryToString::default::processFrameValueDirection(frameValueDirection:meta::relational::metamodel::FrameValueDirection[1]):String[1]
 {
    if($frameValueDirection == meta::relational::metamodel::FrameValueDirection.PRECEDING, | 'PRECEDING', | 'FOLLOWING');
 }
@@ -302,6 +302,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::defau
    $frameValue->match([
                         u: meta::relational::metamodel::UnboundedFrameValue[1] | 'UNBOUNDED ' + $u.direction->processFrameValueDirection(),
                         c: meta::relational::metamodel::FrameCurrentRowValue[1] | 'CURRENT ROW',
+                        i: meta::relational::metamodel::FrameIntervalValue[1] | fail('Window function with range frame using interval is not supported for this database type: ' + $sgc.dbConfig.dbType->toString());'';,
                         l: meta::relational::metamodel::FrameLiteralValue[1] | $l.value->processOperation($sgc) + ' ' + $l.direction->processFrameValueDirection()
                       ]);
 }
@@ -348,6 +349,7 @@ function meta::relational::functions::sqlQueryToString::default::processCommonTa
 function <<access.private>> meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
   assertEmpty($s.pivot, 'pivot is not supported');
+  assertEmpty($s.qualifyOperation, 'QUALIFY is not supported');
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
@@ -440,15 +442,6 @@ function meta::relational::functions::sqlQueryToString::default::processJoinType
         )
     )
 }    
-
-function meta::relational::functions::sqlQueryToString::default::processJoinTreeNodeWithLateralJoinDefault(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
-{
-   $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('') + 'lateral '
-   + $j.alias
-       ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
-       ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
-   + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')';
-}
 
 function meta::relational::functions::sqlQueryToString::default::processJoin(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
 {
@@ -623,13 +616,16 @@ function meta::relational::functions::sqlQueryToString::default::translateCreate
 
 function meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
 {
-
-    $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+   if ($loadTableSQL.parsedData.values->isEmpty(),
+    | [], 
+    | 
+      let sql = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
             + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
             +') '
-            + 'values ('
-            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
-            + ');';
+            + 'values';
+
+      $loadTableSQL.parsedData.values->map(row |  '(' + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type) + ')')
+        ->joinStrings($sql, ', ', ';');
    );
 }
 

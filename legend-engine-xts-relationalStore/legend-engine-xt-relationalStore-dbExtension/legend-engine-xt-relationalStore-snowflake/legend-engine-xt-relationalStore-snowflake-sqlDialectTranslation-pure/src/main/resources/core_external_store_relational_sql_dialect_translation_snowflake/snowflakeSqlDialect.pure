@@ -129,6 +129,18 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       'FuncTests - mode(0/1)',
       'Expected - {"columnNames":["result"],"rows":[{"values":[88]}]}\n' +
       'Actual - {"columnNames":["result"],"rows":[{"values":[80]}]}'
+    ),
+    pair(
+      // Snowflake returns integer when scale is 0 (which is not standard)
+      'CastOperation - Numeric',
+      'Expected - {"columnNames":["result"],"rows":[{"values":[123.0]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":[123]}]}'
+    ),
+    pair(
+      // Snowflake returns integer when scale is 0 (which is not standard)
+      'CastOperation - Decimal',
+      'Expected - {"columnNames":["result"],"rows":[{"values":[123.0]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":[123]}]}'
     )
   ]->newMap()->cast(@Map<String, String>)
 }
@@ -194,8 +206,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     aliasedRelationProcessor_default(),
     joinProcessor_default(),
     querySpecificationProcessor_default(),
+    asOfJoinProcessorForSnowflake(),
     unionProcessor_default(),
-    tableSubqueryProcessor_default()
+    tableSubqueryProcessor_default(),
+    extendedQuerySpecificationProcessor_default()
   ]
 }
 
@@ -214,17 +228,19 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     whenClauseNodeProcessor_default(),
     searchedCaseExpressionNodeProcessor_default(),
     columnTypeProcessor_default(),
-    castProcessor_default(),
+    castProcessorForSnowflake(),
     inListExpressionProcessor_default(),
     inPredicateProcessor_default(),
     extractProcessor_default(),
     betweenPredicateProcessor_default(),
     functionCallProcessor_default(),
     subQueryExpressionProcessor_default(),
-    trimProcessor_default(),
+    trimProcessorForSnowflake(),
     bitwiseBinaryExpressionNodeProcessorForSnowflake(),
     bitwiseNotExpressionNodeProcessorForSnowflake(),
-    bitwiseShiftExpressionNodeProcessorForSnowflake()
+    bitwiseShiftExpressionNodeProcessorForSnowflake(),
+    likePredicateProcessor_default(),
+    existsPredicateProcessor_default()    
   ]
 }
 
@@ -404,6 +420,30 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       );
     }
   )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::castProcessorForSnowflake(): NodeProcessor<Cast>[1]
+{
+  let castTypes = newMap([
+    pair('int2', 'bigint'),
+    pair('int4', 'bigint'),
+    pair('int8', 'bigint'),
+    pair('bool', 'boolean')    
+  ]);  
+
+  nodeProcessor(
+    Cast,
+    {sqlDialect, c, state, config | 
+      generateCast(
+        $sqlDialect,
+        $sqlDialect->executeNodeProcessor($c.expression, [], $state, $config),
+        $sqlDialect->executeNodeProcessor(^ColumnType(name = $castTypes->get($c.type.name->toLower())->orElse($c.type.name), parameters = $c.type.parameters), [], $state, $config),  
+        $state,
+        $config
+      )
+    },
+    {n | true}
+  );
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::snowflakeFunctionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
@@ -655,6 +695,23 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   $sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'time_slice', $params, $f, $state, $config), 'timestamp', $state, $config);
 }
 
+function meta::external::store::relational::sqlDialectTranslation::snowflake::trimProcessorForSnowflake(): NodeProcessor<Trim>[1]
+{
+  nodeProcessor(
+    Trim,
+    {sqlDialect, t, state, config |
+      if($t.mode == TrimMode.BOTH,
+        | generateFunctionCallWithArgs($sqlDialect, 'trim', [$sqlDialect->executeNodeProcessor($t.value, $state, $config), $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)], $state, $config),
+        | if($t.mode == TrimMode.LEADING,
+          | generateFunctionCallWithArgs($sqlDialect, 'ltrim', [$sqlDialect->executeNodeProcessor($t.value, $state, $config), $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)], $state, $config),
+          | generateFunctionCallWithArgs($sqlDialect, 'rtrim', [$sqlDialect->executeNodeProcessor($t.value, $state, $config), $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)], $state, $config)
+        )
+      );
+    },
+    {n | true}
+  )
+}
+
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::bitwiseBinaryExpressionNodeProcessorForSnowflake(): NodeProcessor<BitwiseBinaryExpression>[1]
 {
   nodeProcessor(
@@ -703,6 +760,38 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       generateFunctionCallWithArgs($sqlDialect, $func, [$value, $shiftUnits], $state, $config);
     }
   )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::asOfJoinProcessorForSnowflake(): NodeProcessor<AsOfJoin>[1]
+{
+  nodeProcessor(
+    AsOfJoin,
+    {sqlDialect, j, state, config |
+      let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+      let left = $sqlDialect->executeNodeProcessor($j.left, $state, $config);
+      let right = $sqlDialect->executeNodeProcessor($j.right, $state->increaseLevel(), $config);
+
+      $left + $sep0 + 'asof join' + $sep1 + $right + $j.criteria->asOfJoinCriteriaProcessorForSnowFlake($sqlDialect, $state, $config);
+    },
+    {n: AsOfJoin[1] | true}
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::asOfJoinCriteriaProcessorForSnowFlake(jc:JoinCriteria[0..1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let sep0 = $state.separator(0, $config);
+  let sep1 = $state.separator(1, $config);
+
+  let isNaturalJoin = $jc->isNotEmpty() && $jc->toOne()->instanceOf(NaturalJoin);
+  if($jc->isNotEmpty() && (!$isNaturalJoin),
+    | $sep1 + $sqlDialect->keyword('MATCH_CONDITION', $state, $config) + ' ' +
+      $jc->toOne()->match([
+        o: JoinOn[1] | '(' + $sqlDialect->executeNodeProcessor($o.expression, $state, $config)  + ')';,
+        a: Any[*] | failWithMessage('Unhandled join criteria: ' + $a->class()->elementToPath())
+      ]),
+    | ''
+  );
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::dateFormatSpecifierForSnowflake(f:String[1]): String[1]

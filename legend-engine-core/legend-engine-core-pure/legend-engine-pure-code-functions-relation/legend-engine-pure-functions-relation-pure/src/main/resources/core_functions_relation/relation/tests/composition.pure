@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::variant::navigation::*;
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
@@ -411,43 +412,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_roundTrip<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let tds = #TDS
-      id, payload:meta::pure::metamodel::variant::Variant
-      1, "[1,2,3]"
-      2, "[4,5,6]"
-      3, "[7,8,9]"
-      4, "[10,11,12]"
-      5, "[13,14,15]"
-    #;
-
-    let expr = {|$tds};
-
-    let res =  $f->eval($expr);
-
-    assertEquals( $expr->eval()->toString(), $res->sort(~id->ascending())->toString());
-}
-
-// TODO interpreted does not like the sort on ~id in the assert
-//function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_indexExtraction<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-//{
-//    let tds = #TDS
-//      id, payload:meta::pure::metamodel::variant::Variant
-//      1, "[1,2,3]"
-//      2, "[4,5,6]"
-//      3, "[7,8,9]"
-//      4, "[10,11,12]"
-//      5, "[13,14,15]"
-//    #;
-//
-//    let expr = {|$tds->extend(~atCol:x | $x.payload->get(0))};
-//
-//    let res =  $f->eval($expr);
-//
-//    assertEquals( $expr->eval()->toString(), $res->sort(~id->ascending())->toString());
-//}
-
 function
   <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>>
   {
@@ -680,4 +644,243 @@ meta::pure::functions::relation::tests::composition::testOLAPCastExtractCastAggW
                   '   4,4,D,4\n'+
                   '   9,5,I,9\n'+
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testProjectDistinct<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+                id, name
+                1, george
+                1, George
+                1, Sachin
+                2, David
+              #;
+
+  let expr = {|$tds->project(~[
+                    id: x | $x.id,
+                    name: x | $x.name->toOne()->toLower()
+                ])
+                ->distinct();
+    };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,name\n'+
+                  '   1,george\n'+
+                  '   1,sachin\n'+
+                  '   2,david\n'+
+                  '#', $res->sort([~id->ascending(), ~name->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testProjectJoinWithProjectProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, name
+              1, George
+              2, Pierre
+              3, Sachin
+              4, David
+            #;
+
+  let tds2 = #TDS
+              id, col, other
+              1, More George 1, 1
+              1, More George 2, 2
+              4, More David, 1
+            #;
+
+  let expr = {|$tds->project(~[id1 : x | $x.id, name1 : x | $x.name])->join($tds2->project(~[id2 : x | $x.id, col : x | $x.col, other : x | $x.other]), JoinKind.INNER, {x,y| $x.id1 == $y.id2})->project(~[id : x | $x.id1, name : x | $x.col])};
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   id,name\n'+
+                '   1,More George 1\n'+
+                '   1,More George 2\n'+
+                '   4,More David\n'+
+                '#', $res->sort([~id->ascending(),~name->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[2,1,3]"
+     2, "[5,6,4]"
+     3, "[9,8,7]"
+     4, "[10,11,12]"
+     5, "[15,13,14]"
+   #;
+
+   let expr = {|
+                  $tds->extend(~sorted:x | $x.payload->toMany(@Integer)->sort()->toVariant())
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,sorted\n'+
+                '   1,[2,1,3],[1,2,3]\n'+
+                '   2,[5,6,4],[4,5,6]\n'+
+                '   3,[9,8,7],[7,8,9]\n'+
+                '   4,[10,11,12],[10,11,12]\n'+
+                '   5,[15,13,14],[13,14,15]\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "[10,11,12]"
+     5, "[13,14,15]"
+   #;
+
+   let expr = {|
+                  $tds->extend(~reversed:x | $x.payload->toMany(@Integer)->reverse()->toVariant())
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,reversed\n'+
+                '   1,[1,2,3],[3,2,1]\n'+
+                '   2,[4,5,6],[6,5,4]\n'+
+                '   3,[7,8,9],[9,8,7]\n'+
+                '   4,[10,11,12],[12,11,10]\n'+
+                '   5,[13,14,15],[15,14,13]\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
+{
+  doc.doc='Extends a given TDS where the new column value is extracted from a variant array using the value\'s index number and then reference the new column in a filter expression.'
+}
+meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "[10,11,12]"
+     5, "[13,14,15]"
+   #;
+
+   let expr = {|
+                  $tds->extend(~atCol0:x | $x.payload->get(0)->to(@Integer))
+                      ->filter(x | $x.atCol0 < 7)
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,atCol0\n'+
+                '   1,[1,2,3],1\n'+
+                '   2,[4,5,6],4\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
+{
+  doc.doc='Filter the given TDS by inspecting the values of a variant array.  The values are inspected calling another function, demonstrating function composition when operating on variants.'
+}
+meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "[10,11,12]"
+     5, "[13,14,15]"
+   #;
+
+   let expr = {|
+                  $tds->filter(x | $x.payload->toMany(@Integer)->meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_filterValues())
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload\n'+
+                '   2,[4,5,6]\n'+
+                '   4,[10,11,12]\n'+
+                '#', $res->toString());
+}
+
+function meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_filterValues(val: Integer[*]):Boolean[1]
+{
+  $val->filter(y | $y->mod(2) == 0)->size() == 2;
+}
+
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
+  {
+    doc.doc='Qualify grammar should be produced instead of subselect.'
+  }
+meta::pure::functions::relation::tests::composition::testExtendWindowFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->plus())->filter(x|$x.newCol > 9 && $x.grp == 1)
+               };
+
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   2,1,B,16\n'+
+                  '   6,1,F,16\n'+
+                  '   8,1,H,16\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
+}
+
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation, PCTRelationQualifier.olap>>
+  {
+    doc.doc='Produces qualify and having grammar together.'
+  }
+meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, rank
+                  1, A, 1
+                  2, A, 1
+                  3, B, 2
+                  4, D, 3
+                  5, B, 2
+                  6, A, 1
+                  7, C, 4
+                  8, A, 2
+                  9, C, 3
+                  10, D, 1
+                #->groupBy(~[grp, rank], ~sumId:x|$x.id:x|$x->plus())
+                 ->filter(x|$x.rank <= 2)
+                 ->extend(over(~grp), ~sumRank:{p,w,r|$r.rank}:y|$y->plus())
+                 ->filter(x|$x.sumRank == 3)
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,rank,sumId,sumRank\n'+
+                  '   A,1,9,3\n'+
+                  '   A,2,8,3\n'+
+                  '#', $res->sort(~rank->ascending())->toString());
 }

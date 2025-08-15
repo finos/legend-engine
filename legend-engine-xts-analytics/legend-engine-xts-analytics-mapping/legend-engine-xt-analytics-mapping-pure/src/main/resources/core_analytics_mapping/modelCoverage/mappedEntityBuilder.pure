@@ -281,7 +281,8 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
          && !$p->meta::pure::milestoning::isRangeMilestoningProperty()
          && ($rootClassMappings.class->contains($returnType)
             || $returnType == $class
-            || $returnType->instanceOf(PrimitiveType))
+            || $returnType->instanceOf(PrimitiveType)
+            || $returnType->instanceOf(Enumeration))
          && $propertyFilter->eval($p);
       )
       ->map(qp |

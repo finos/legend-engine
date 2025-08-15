@@ -76,8 +76,7 @@ public class Test_Relational_Databricks_VariantFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithMultipleKeys_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithPrimitiveValues_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
 
-            pack("meta::pure::functions::variant::navigation::tests::get", "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::navigation::tests::get::testGetFromArray_Function_1__Boolean_1_", "Assert failed", AdapterQualifier.needsImplementation)
+            pack("meta::pure::functions::variant::navigation::tests::get", "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks", AdapterQualifier.needsImplementation)
     );
 
     public static Test suite()

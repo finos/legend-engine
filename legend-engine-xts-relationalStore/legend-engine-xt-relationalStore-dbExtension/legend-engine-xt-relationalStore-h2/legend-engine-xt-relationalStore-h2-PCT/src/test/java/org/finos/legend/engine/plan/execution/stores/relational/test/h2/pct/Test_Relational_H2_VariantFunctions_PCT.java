@@ -99,10 +99,10 @@ public class Test_Relational_H2_VariantFunctions_PCT extends PCTReportConfigurat
             one("meta::pure::functions::variant::convert::tests::toVariant::testString_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariant().\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::variant::convert::tests::toVariant::testStrings_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariant().\"", AdapterQualifier.needsImplementation),
 
-            one("meta::pure::functions::variant::navigation::tests::get::testGetFromArray_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyDoesNotExists_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyExists_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsInvestigation)
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromArray_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyDoesNotExists_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyExists_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation)
     );
 
     public static Test suite()

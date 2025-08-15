@@ -74,6 +74,13 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
    executeInDb('insert into ProductTableWithBusinessSnapshotMilestoning values(2, \'ProductName2\', \'STOCK\', \'2015-10-16\');', $connection);
    executeInDb('insert into ProductTableWithBusinessSnapshotMilestoning values(3, \'ProductName3\', \'OPTION\', \'2015-8-26\');', $connection);
 
+   executeInDb('drop table if exists ProductTableWithProcessingSnapshotMilestoning;', $connection);
+   executeInDb('create table ProductTableWithProcessingSnapshotMilestoning (id Integer, name VARCHAR(200), type VARCHAR(200), snapshotDate DATE);', $connection);
+   executeInDb('insert into ProductTableWithProcessingSnapshotMilestoning values(1, \'ProductName\', \'STOCK\', \'2015-8-15\');', $connection);
+   executeInDb('insert into ProductTableWithProcessingSnapshotMilestoning values(2, \'ProductName1\', \'STOCK\', \'2015-8-26\');', $connection);
+   executeInDb('insert into ProductTableWithProcessingSnapshotMilestoning values(2, \'ProductName2\', \'STOCK\', \'2015-10-16\');', $connection);
+   executeInDb('insert into ProductTableWithProcessingSnapshotMilestoning values(3, \'ProductName3\', \'OPTION\', \'2015-8-26\');', $connection);
+
    executeInDb('drop table if exists BiTemporalProductTable;',$connection);
    executeInDb('create table BiTemporalProductTable (id Integer, type VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
    executeInDb('insert into BiTemporalProductTable values(1, \'STOCK\', \'2017-6-9 00:00:00\', \'9999-12-31 00:00:00\', \'2017-6-9 00:00:00\', \'2017-6-26 00:00:00\');',$connection);
@@ -96,11 +103,23 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
    executeInDb('insert into BiTemporalProductTableWithProcessingMilestoning values(1, \'ProductName2\', \'STOCK\', \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
    executeInDb('insert into BiTemporalProductTableWithProcessingMilestoning values(2, \'ProductName3\', \'OPTION\', \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
 
+   executeInDb('drop table if exists BiTemporalProductTableWithProcessingSnapshotMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductTableWithProcessingSnapshotMilestoning (id Integer, name VARCHAR(200), type VARCHAR(200), snapshotDate DATE);', $connection);
+   executeInDb('insert into BiTemporalProductTableWithProcessingSnapshotMilestoning values(1 ,\'ProductName1\', \'STOCK\', \'2015-8-26\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithProcessingSnapshotMilestoning values(1 ,\'ProductName2\', \'STOCK\', \'2015-10-16\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithProcessingSnapshotMilestoning values(2 ,\'ProductName3\', \'OPTION\', \'2015-10-16\');', $connection);
+
    executeInDb('drop table if exists BiTemporalProductTableWithNoMilestoning;', $connection);
    executeInDb('create table BiTemporalProductTableWithNoMilestoning (id Integer, name VARCHAR(200), type VARCHAR(200));', $connection);
    executeInDb('insert into BiTemporalProductTableWithNoMilestoning values(1, \'ProductName1\', \'STOCK\');', $connection);
    executeInDb('insert into BiTemporalProductTableWithNoMilestoning values(1, \'ProductName2\', \'STOCK\');', $connection);
    executeInDb('insert into BiTemporalProductTableWithNoMilestoning values(2, \'ProductName3\', \'OPTION\');', $connection);
+
+   executeInDb('drop table if exists BiTemporalProductTableWithBiTemporalMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductTableWithBiTemporalMilestoning (id Integer, name VARCHAR(200), type VARCHAR(200), snapshotDate DATE, from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
+   executeInDb('insert into BiTemporalProductTableWithBiTemporalMilestoning values(1 ,\'ProductName1\', \'STOCK\', \'2015-8-26\', \'2015-7-26 00:00:00\', \'2015-10-16 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithBiTemporalMilestoning values(1 ,\'ProductName2\', \'STOCK\', \'2015-10-16\', \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
+   executeInDb('insert into BiTemporalProductTableWithBiTemporalMilestoning values(2 ,\'ProductName3\', \'OPTION\', \'2015-10-16\', \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
 
    executeInDb('drop table if exists BiTemporalProductTableWithLatest;',$connection);
    executeInDb('create table BiTemporalProductTableWithLatest (id Integer, type VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
@@ -152,6 +171,14 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
    executeInDb('insert into ProductClassificationTableWithBusinessSnapshotMilestoning values(\'STOCK\', \'STOCK DESC-V4\', \'2015-10-17\');', $connection);
    executeInDb('insert into ProductClassificationTableWithBusinessSnapshotMilestoning values(\'OPTION\', \'OPTION DESC-V1\', \'2015-1-15\');', $connection);
 
+   executeInDb('drop table if exists ProductClassificationTableWithProcessingSnapshotMilestoning;', $connection);
+   executeInDb('create table ProductClassificationTableWithProcessingSnapshotMilestoning (type VARCHAR(200), type_description VARCHAR(400), snapshotDate DATE);', $connection);
+   executeInDb('insert into ProductClassificationTableWithProcessingSnapshotMilestoning values(\'STOCK\', \ \'STOCK DESC-V1\', \'2015-8-15\');', $connection);
+   executeInDb('insert into ProductClassificationTableWithProcessingSnapshotMilestoning values(\'STOCK\', \'STOCK DESC-V2\', \'2015-8-26\');', $connection);
+   executeInDb('insert into ProductClassificationTableWithProcessingSnapshotMilestoning values(\'STOCK\', \'STOCK DESC-V3\', \'2015-9-15\');', $connection);
+   executeInDb('insert into ProductClassificationTableWithProcessingSnapshotMilestoning values(\'STOCK\', \'STOCK DESC-V4\', \'2015-10-17\');', $connection);
+   executeInDb('insert into ProductClassificationTableWithProcessingSnapshotMilestoning values(\'OPTION\', \'OPTION DESC-V1\', \'2015-1-15\');', $connection);
+
    executeInDb('drop table if exists ProductClassificationTableNoMilestoning;',$connection);
    executeInDb('create table ProductClassificationTableNoMilestoning (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200));',$connection);
    executeInDb('insert into ProductClassificationTableNoMilestoning values(\'STOCK\',\'STOCK DESC-V1\',\'SYS1\', \'LNSE\');',$connection);
@@ -182,11 +209,23 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
    executeInDb('insert into BiTemporalProductClassificationTableWithProcessingMilestoning values(\'STOCK\', \'STOCK DESC-V3\', \'2015-10-16\', \'9999-12-31\');', $connection);
    executeInDb('insert into BiTemporalProductClassificationTableWithProcessingMilestoning values(\'OPTION\', \'OPTION DESC-V1\', \'2015-10-16\', \'9999-12-31\');', $connection);
 
+   executeInDb('drop table if exists BiTemporalProductClassificationTableWithProcessingSnapshotMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductClassificationTableWithProcessingSnapshotMilestoning (type VARCHAR(200), type_description VARCHAR(400), snapshotDate DATE);', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithProcessingSnapshotMilestoning values(\'STOCK\', \'STOCK DESC-V2\', \'2015-8-26\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithProcessingSnapshotMilestoning values(\'STOCK\', \'STOCK DESC-V3\', \'2015-10-16\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithProcessingSnapshotMilestoning values(\'OPTION\', \'OPTION DESC-V1\', \'2015-10-16\');', $connection);
+
    executeInDb('drop table if exists BiTemporalProductClassificationTableWithNoMilestoning;', $connection);
    executeInDb('create table BiTemporalProductClassificationTableWithNoMilestoning (type VARCHAR(200), type_description VARCHAR(400));', $connection);
    executeInDb('insert into BiTemporalProductClassificationTableWithNoMilestoning values(\'STOCK\', \'STOCK DESC-V2\');', $connection);
    executeInDb('insert into BiTemporalProductClassificationTableWithNoMilestoning values(\'STOCK\', \'STOCK DESC-V3\');', $connection);
    executeInDb('insert into BiTemporalProductClassificationTableWithNoMilestoning values(\'OPTION\', \'OPTION DESC-V1\');', $connection);
+
+    executeInDb('drop table if exists BiTemporalProductClassificationTableWithBiTemporalMilestoning;', $connection);
+   executeInDb('create table BiTemporalProductClassificationTableWithBiTemporalMilestoning (type VARCHAR(200), type_description VARCHAR(400), snapshotDate DATE, from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithBiTemporalMilestoning values(\'STOCK\', \'STOCK DESC-V2\', \'2015-8-26\', \'2015-7-26\', \'2015-10-16\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithBiTemporalMilestoning values(\'STOCK\', \'STOCK DESC-V3\', \'2015-10-16\', \'2015-10-16\', \'9999-12-31\');', $connection);
+   executeInDb('insert into BiTemporalProductClassificationTableWithBiTemporalMilestoning values(\'OPTION\', \'OPTION DESC-V1\', \'2015-10-16\', \'2015-10-16\', \'9999-12-31\');', $connection);
 
    executeInDb('drop table if exists BiTemporalProductClassificationTableWithLatest;',$connection);
    executeInDb('create table BiTemporalProductClassificationTableWithLatest (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
@@ -323,7 +362,6 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
    executeInDb('Create Table intermediateTwo(joinId INT NOT NULL,linkToProduct INT NULL,type VARCHAR(200) NULL, PRIMARY KEY(joinId));', $connection);
 
    ^Runtime(connectionStores=$connectionStore);
-
 }
 
 
@@ -760,6 +798,19 @@ Mapping meta::relational::tests::milestoning::milestoningMapWithEmbeddedDuplicat
    }
 )
 
+Mapping meta::relational::tests::milestoning::milestoningMapWithEmbeddedDuplicateProperty_ExtendedPrimitives
+(
+   meta::relational::tests::milestoning::Product_ExtendedPrimitives : Relational{
+
+        id : [db]ProductTable.id,
+        name : [db]ProductTable.name,
+
+        classification(
+           type : [db]@StockProduct_ClassificationSystem  | ProductClassificationSystemTable.name
+        ),
+      classification : [db]@StockProduct_ClassificationSystem
+   }
+)
 
 Mapping meta::relational::tests::milestoning::isolationFocusedMapping
 (
@@ -1039,6 +1090,80 @@ Mapping meta::relational::tests::milestoning::businessSnapshotMilestoningUnionMa
    }
 )
 
+Mapping meta::relational::tests::milestoning::processingSnapshotMilestoningMap
+(
+   meta::relational::tests::milestoning::Order[o] : Relational{
+      id : [db]OrderTable.id,
+      processingTemporalProduct[p] : [db]@Order_ProductWithProcessingSnapshotMilestoning
+   }
+
+   meta::relational::tests::milestoning::ProcessingTemporalProduct[p] : Relational{
+      id : [db]ProductTableWithProcessingSnapshotMilestoning.id,
+      name : [db]ProductTableWithProcessingSnapshotMilestoning.name,
+      classification[c] : [db]@ProductWithProcessingSnapshotMilestoning_ClassificationWithProcessingSnapshotMilestoning
+   }
+
+   meta::relational::tests::milestoning::ProcessingTemporalProductClassification[c] : Relational{
+      type : [db]ProductClassificationTableWithProcessingSnapshotMilestoning.type,
+      description : [db]ProductClassificationTableWithProcessingSnapshotMilestoning.type_description
+   }
+)
+
+Mapping meta::relational::tests::milestoning::processingSnapshotMilestoningMapWithDynaFunction
+(
+   meta::relational::tests::milestoning::Order[o] : Relational{
+      id : [db]OrderTable.id,
+      processingTemporalProduct[p] : [db]@Order_ProductWithProcessingSnapshotMilestoning
+   }
+
+   meta::relational::tests::milestoning::ProcessingTemporalProduct[p] : Relational{
+      id : plus([db]ProductTableWithProcessingSnapshotMilestoning.id, [db]ProductTableWithProcessingSnapshotMilestoning.id),
+      name : [db]ProductTableWithProcessingSnapshotMilestoning.name,
+      classification[c] : [db]@ProductWithProcessingSnapshotMilestoning_ClassificationWithProcessingSnapshotMilestoning
+   }
+
+   meta::relational::tests::milestoning::ProcessingTemporalProductClassification[c] : Relational{
+      type : [db]ProductClassificationTableWithProcessingSnapshotMilestoning.type,
+      description : [db]ProductClassificationTableWithProcessingSnapshotMilestoning.type_description
+   }
+)
+
+Mapping meta::relational::tests::milestoning::processingSnapshotMilestoningUnionMap
+(
+   include meta::relational::tests::milestoning::processingSnapshotMilestoningMap
+
+   *Order : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(o, o2)
+   }
+
+   *ProcessingTemporalProduct : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p, p2)
+   }
+
+   *ProcessingTemporalProductClassification : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c, c2)
+   }
+
+   meta::relational::tests::milestoning::Order[o2] : Relational{
+      id : [db]OrderTable.id,
+      processingTemporalProduct[p2] : [db]@Order_ProductWithProcessingSnapshotMilestoning
+   }
+
+   meta::relational::tests::milestoning::ProcessingTemporalProduct[p2] : Relational{
+      id : [db]ProductTableWithProcessingSnapshotMilestoning.id,
+      name : [db]ProductTableWithProcessingSnapshotMilestoning.name,
+      classification[c2] : [db]@ProductWithProcessingSnapshotMilestoning_ClassificationWithProcessingSnapshotMilestoning
+   }
+
+   meta::relational::tests::milestoning::ProcessingTemporalProductClassification[c2] : Relational{
+      type : [db]ProductClassificationTableWithProcessingSnapshotMilestoning.type,
+      description : [db]ProductClassificationTableWithProcessingSnapshotMilestoning.type_description
+   }
+)
+
 Mapping meta::relational::tests::milestoning::partiallyMilestoningUnionMap
 (
    *Order : Operation
@@ -1093,17 +1218,17 @@ Mapping meta::relational::tests::milestoning::hybridMilestoningUnionMap
 (
    *Order : Operation
    {
-      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(o1, o2, o3, o4)
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(o1, o2, o3, o4, o5, o6)
    }
 
    *BiTemporalProduct : Operation
    {
-      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2, p3, p4)
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2, p3, p4, p5, p6)
    }
 
    *BiTemporalProductClassification : Operation
    {
-      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1, c2, c3, c4)
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1, c2, c3, c4, c5, c6)
    }
 
    meta::relational::tests::milestoning::Order[o1] : Relational{
@@ -1123,7 +1248,17 @@ Mapping meta::relational::tests::milestoning::hybridMilestoningUnionMap
 
    meta::relational::tests::milestoning::Order[o4] : Relational{
       id : [db]OrderTable.id,
-      biTemporalProduct[p4] : [db]@Order_BiTemporalProductWithNoMilestoning
+      biTemporalProduct[p4] : [db]@Order_BiTemporalProductWithProcessingSnapshotMilestoning
+   }
+
+   meta::relational::tests::milestoning::Order[o5] : Relational{
+      id : [db]OrderTable.id,
+      biTemporalProduct[p5] : [db]@Order_BiTemporalProductWithNoMilestoning
+   }
+
+   meta::relational::tests::milestoning::Order[o6] : Relational{
+      id : [db]OrderTable.id,
+      biTemporalProduct[p6] : [db]@Order_BiTemporalProductWithBiTemporalMilestoning
    }
 
    meta::relational::tests::milestoning::BiTemporalProduct[p1] : Relational{
@@ -1145,9 +1280,21 @@ Mapping meta::relational::tests::milestoning::hybridMilestoningUnionMap
    }
 
    meta::relational::tests::milestoning::BiTemporalProduct[p4] : Relational{
+      id : [db]BiTemporalProductTableWithProcessingSnapshotMilestoning.id,
+      name : [db]BiTemporalProductTableWithProcessingSnapshotMilestoning.name,
+      biTemporalClassification[c4] : [db]@BiTemporalProductWithProcessingSnapshotMilestoning_BiTemporalClassificationWithProcessingSnapshotMilestoning
+   }
+
+   meta::relational::tests::milestoning::BiTemporalProduct[p5] : Relational{
       id : [db]BiTemporalProductTableWithNoMilestoning.id,
       name : [db]BiTemporalProductTableWithNoMilestoning.name,
-      biTemporalClassification[c4] : [db]@BiTemporalProductWithNoMilestoning_BiTemporalClassificationWithNoMilestoning
+      biTemporalClassification[c5] : [db]@BiTemporalProductWithNoMilestoning_BiTemporalClassificationWithNoMilestoning
+   }
+
+   meta::relational::tests::milestoning::BiTemporalProduct[p6] : Relational{
+      id : [db]BiTemporalProductTableWithBiTemporalMilestoning.id,
+      name : [db]BiTemporalProductTableWithBiTemporalMilestoning.name,
+      biTemporalClassification[c6] : [db]@BiTemporalProductWithBiTemporalMilestoning_BiTemporalClassificationWithBiTemporalMilestoning
    }
 
    meta::relational::tests::milestoning::BiTemporalProductClassification[c1] : Relational{
@@ -1166,8 +1313,18 @@ Mapping meta::relational::tests::milestoning::hybridMilestoningUnionMap
    }
 
    meta::relational::tests::milestoning::BiTemporalProductClassification[c4] : Relational{
+      type : [db]BiTemporalProductClassificationTableWithProcessingSnapshotMilestoning.type,
+      description : [db]BiTemporalProductClassificationTableWithProcessingSnapshotMilestoning.type_description
+   }
+
+   meta::relational::tests::milestoning::BiTemporalProductClassification[c5] : Relational{
       type : [db]BiTemporalProductClassificationTableWithNoMilestoning.type,
       description : [db]BiTemporalProductClassificationTableWithNoMilestoning.type_description
+   }
+
+   meta::relational::tests::milestoning::BiTemporalProductClassification[c6] : Relational{
+      type : [db]BiTemporalProductClassificationTableWithBiTemporalMilestoning.type,
+      description : [db]BiTemporalProductClassificationTableWithBiTemporalMilestoning.type_description
    }
 )
 ###Mapping
@@ -1479,6 +1636,15 @@ Database meta::relational::tests::milestoning::db(
             type VARCHAR(200),
             snapshotDate DATE)
 
+    Table ProductTableWithProcessingSnapshotMilestoning(
+            milestoning(
+               processing(PROCESSING_SNAPSHOT_DATE=snapshotDate)
+            )
+            id Integer PRIMARY KEY,
+            name VARCHAR(200),
+            type VARCHAR(200),
+            snapshotDate DATE)
+
    Table BiTemporalProductTable_In_From_Inclusive(
             milestoning(
                processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z, OUT_IS_INCLUSIVE=false, INFINITY_DATE=%9999-12-31T00:00:00.0000),
@@ -1570,10 +1736,31 @@ Database meta::relational::tests::milestoning::db(
             in_z DATE,
             out_z DATE)
 
+    Table BiTemporalProductTableWithProcessingSnapshotMilestoning(
+            milestoning(
+               processing(PROCESSING_SNAPSHOT_DATE=snapshotDate)
+            )
+            id Integer PRIMARY KEY,
+            name VARCHAR(200),
+            type VARCHAR(200),
+            snapshotDate DATE)
+
    Table BiTemporalProductTableWithNoMilestoning(
             id Integer PRIMARY KEY,
             name VARCHAR(200),
             type VARCHAR(200))
+
+   Table BiTemporalProductTableWithBiTemporalMilestoning(
+            milestoning(
+               processing(PROCESSING_SNAPSHOT_DATE=snapshotDate),
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            id Integer PRIMARY KEY,
+            name VARCHAR(200),
+            type VARCHAR(200),
+            snapshotDate DATE,
+            from_z DATE,
+            thru_z DATE)
 
    Table BiTemporalProductTableWithLatest(
          milestoning(
@@ -1653,6 +1840,14 @@ Database meta::relational::tests::milestoning::db(
             type_description VARCHAR(400),
             snapshotDate DATE)
 
+    Table ProductClassificationTableWithProcessingSnapshotMilestoning(
+            milestoning(
+               processing(PROCESSING_SNAPSHOT_DATE=snapshotDate)
+            )
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400),
+            snapshotDate DATE)
+
     Table BiTemporalProductClassificationTable(
             milestoning(
                processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z),
@@ -1694,9 +1889,30 @@ Database meta::relational::tests::milestoning::db(
             in_z DATE,
             out_z DATE)
 
+    Table BiTemporalProductClassificationTableWithProcessingSnapshotMilestoning(
+            milestoning(
+               processing(PROCESSING_SNAPSHOT_DATE=snapshotDate)
+            )
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400),
+            system VARCHAR(200),
+            snapshotDate DATE)
+
     Table BiTemporalProductClassificationTableWithNoMilestoning(
             type VARCHAR(200) PRIMARY KEY,
             type_description VARCHAR(400))
+
+    Table BiTemporalProductClassificationTableWithBiTemporalMilestoning(
+            milestoning(
+               processing(PROCESSING_SNAPSHOT_DATE=snapshotDate),
+               business(BUS_FROM=from_z, BUS_THRU=thru_z)
+            )
+            type VARCHAR(200) PRIMARY KEY,
+            type_description VARCHAR(400),
+            system VARCHAR(200),
+            snapshotDate DATE,
+            from_z DATE,
+            thru_z DATE)
 
     Table BiTemporalProductClassificationTableWithLatest(
             milestoning(
@@ -1888,11 +2104,14 @@ Database meta::relational::tests::milestoning::db(
    Join Order2_MilestonedProductTable2(OrderTable2.prodFk=MilestonedProductTable2.id)
    Join Order_ProductWithBusinessSnapshotMilestoning(OrderTable.prodFk=ProductTableWithBusinessSnapshotMilestoning.id)
    Join Order2_ProductWithBusinessSnapshotMilestoning(OrderTable2.prodFk=ProductTableWithBusinessSnapshotMilestoning.id)
+   Join Order_ProductWithProcessingSnapshotMilestoning(OrderTable.prodFk=ProductTableWithProcessingSnapshotMilestoning.id)
    Join Order_BiTemporalProduct(OrderTable.prodFk=BiTemporalProductTable.id)
    Join Order_BiTemporalProductWithBusinessMilestoning(OrderTable.prodFk=BiTemporalProductTableWithBusinessMilestoning.id)
    Join Order_BiTemporalProductWithBusinessSnapshotMilestoning(OrderTable.prodFk=BiTemporalProductTableWithBusinessSnapshotMilestoning.id)
    Join Order_BiTemporalProductWithProcessingMilestoning(OrderTable.prodFk=BiTemporalProductTableWithProcessingMilestoning.id)
+   Join Order_BiTemporalProductWithProcessingSnapshotMilestoning(OrderTable.prodFk=BiTemporalProductTableWithProcessingSnapshotMilestoning.id)
    Join Order_BiTemporalProductWithNoMilestoning(OrderTable.prodFk=BiTemporalProductTableWithNoMilestoning.id)
+   Join Order_BiTemporalProductWithBiTemporalMilestoning(OrderTable.prodFk=BiTemporalProductTableWithBiTemporalMilestoning.id)
    Join Order_ProductNoMilestoning(OrderTable.prodFk=ProductTableNoMilestoning.id)
    Join Order_StockProduct(OrderTable.prodFk=StockProductTable.id)
    Join Order_OrderDescription(OrderTable.id=OrderDescriptionTable.id)
@@ -1908,13 +2127,17 @@ Database meta::relational::tests::milestoning::db(
    Join MilestonedProductTable2_ClassificationWithBusinessSnapshotMilestoning(MilestonedProductTable2.type=ProductClassificationTableWithBusinessSnapshotMilestoning.type)
    Join ProductWithBusinessSnapshotMilestoning_ClassificationWithBusinessSnapshotMilestoning(ProductTableWithBusinessSnapshotMilestoning.type=ProductClassificationTableWithBusinessSnapshotMilestoning.type)
    Join ProductWithBusinessSnapshotMilestoning_Classification(ProductTableWithBusinessSnapshotMilestoning.type=ProductClassificationTable.type)
+   Join ProductWithProcessingSnapshotMilestoning_ClassificationWithProcessingSnapshotMilestoning(ProductTableWithProcessingSnapshotMilestoning.type=ProductClassificationTableWithProcessingSnapshotMilestoning.type)
+   Join ProductWithProcessingSnapshotMilestoning_Classification(ProductTableWithProcessingSnapshotMilestoning.type=ProductClassificationTable.type)
    Join Product_BiTemporalClassification(ProductTable.type=BiTemporalProductClassificationTable.type)
    Join BiTemporalProduct_Classification(BiTemporalProductTable.type=ProductClassificationTable.type)
    Join BiTemporalProduct_BiTemporalClassification(BiTemporalProductTable.type=BiTemporalProductClassificationTable.type)
    Join BiTemporalProductWithBusinessMilestoning_BiTemporalClassificationWithBusinessMilestoning(BiTemporalProductTableWithBusinessMilestoning.type=BiTemporalProductClassificationTableWithBusinessMilestoning.type)
    Join BiTemporalProductWithBusinessSnapshotMilestoning_BiTemporalClassificationWithBusinessSnapshotMilestoning(BiTemporalProductTableWithBusinessSnapshotMilestoning.type=BiTemporalProductClassificationTableWithBusinessSnapshotMilestoning.type)
    Join BiTemporalProductWithProcessingMilestoning_BiTemporalClassificationWithProcessingMilestoning(BiTemporalProductTableWithProcessingMilestoning.type=BiTemporalProductClassificationTableWithProcessingMilestoning.type)
+   Join BiTemporalProductWithProcessingSnapshotMilestoning_BiTemporalClassificationWithProcessingSnapshotMilestoning(BiTemporalProductTableWithProcessingSnapshotMilestoning.type=BiTemporalProductClassificationTableWithProcessingSnapshotMilestoning.type)
    Join BiTemporalProductWithNoMilestoning_BiTemporalClassificationWithNoMilestoning(BiTemporalProductTableWithNoMilestoning.type=BiTemporalProductClassificationTableWithNoMilestoning.type)
+   Join BiTemporalProductWithBiTemporalMilestoning_BiTemporalClassificationWithBiTemporalMilestoning(BiTemporalProductTableWithBiTemporalMilestoning.type=BiTemporalProductClassificationTableWithBiTemporalMilestoning.type)
    Join Product_Exchange(ProductTable.exchange=ProductExchangeTable.name)
    Join Product_ExchangeNoMilestoning(ProductTable.exchange=ProductExchangeTableNoMilestoning.name)
    Join MilestonedProductTable2_Exchange(MilestonedProductTable2.exchange=ProductExchangeTable.name)

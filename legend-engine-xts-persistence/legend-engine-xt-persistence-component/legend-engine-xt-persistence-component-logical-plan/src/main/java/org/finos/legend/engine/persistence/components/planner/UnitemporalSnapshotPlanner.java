@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.exception.EmptyBatchException;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteAllStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetDataAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandlingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatchAbstract;
@@ -48,6 +49,7 @@ import java.util.stream.Collectors;
 class UnitemporalSnapshotPlanner extends UnitemporalPlanner
 {
     private Optional<Partitioning> partitioning = Optional.empty();
+    private DeleteStrategy deleteStrategy;
     private final Optional<Dataset> deletePartitionDataset;
 
     UnitemporalSnapshotPlanner(Datasets datasets, UnitemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
@@ -60,6 +62,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         {
             partitioning = Optional.of((Partitioning) ingestMode().partitioningStrategy());
         }
+        deleteStrategy = ingestMode().deleteStrategy();
 
         // validate all partitionFields must be present in staging dataset
         ingestMode.partitioningStrategy().accept(new PartitioningStrategyVisitor<Void>()
@@ -160,7 +163,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         List<Value> fieldsToInsert = new ArrayList<>(dataFields);
         fieldsToInsert.addAll(transactionMilestoningFields());
 
-        if (partitioning.isPresent() && partitioning.get().deleteStrategy() instanceof DeleteAllStrategy)
+        if (deleteStrategy instanceof DeleteAllStrategy)
         {
             Dataset selectStage = Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
             return Insert.of(mainDataset(), selectStage, fieldsToInsert);
@@ -245,7 +248,14 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
     {
         List<Condition> whereClause = new ArrayList<>(Arrays.asList(openRecordCondition));
 
-        if (!(partitioning.isPresent() && partitioning.get().deleteStrategy() instanceof DeleteAllStrategy))
+        if (!partitioning.isPresent() &&
+                deleteStrategy instanceof DeleteAllStrategy)
+        {
+            return UpdateAbstract.of(mainDataset(), values, And.of(whereClause));
+        }
+
+
+        if (!(deleteStrategy instanceof DeleteAllStrategy))
         {
             Condition notExistsWhereClause = Not.of(Exists.of(
                     Selection.builder()

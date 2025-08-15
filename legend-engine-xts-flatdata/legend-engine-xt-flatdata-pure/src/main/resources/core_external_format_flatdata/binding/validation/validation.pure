@@ -311,7 +311,7 @@ function <<access.private>> meta::external::format::flatdata::binding::validatio
 
 function <<access.private>> meta::external::format::flatdata::binding::validation::dataTypeMatches(field:FlatDataRecordField[1], property:Property<Nil,Any|*>[1]): Boolean[1]
 {
-   let pureType = $property->functionReturnType().rawType->toOne();
+   let pureType = $property->functionReturnType().rawType->toOne()->bypassExtendedPrimitives();
    $field.type->match([
       s:FlatDataString[1]   | $pureType == String || $pureType->instanceOf(Enumeration),
       b:FlatDataBoolean[1]  | $pureType == Boolean,

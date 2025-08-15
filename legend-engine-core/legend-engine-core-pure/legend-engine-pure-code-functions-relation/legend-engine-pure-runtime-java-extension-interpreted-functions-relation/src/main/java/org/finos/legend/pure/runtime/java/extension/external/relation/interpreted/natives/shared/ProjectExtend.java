@@ -51,7 +51,7 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.interprete
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Rows;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
@@ -77,42 +77,40 @@ public class ProjectExtend extends AggregationShared
     @Override
     public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
-        try
-        {
-            CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, processorSupport);
+        CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, processorSupport);
 
-            TestTDS tds = getTDS(params, 0, processorSupport);
+        TestTDS tds = getTDS(params, 0, processorSupport);
 
-            TestTDS targetTds = this.includeExistingColumns ? tds :  tds.removeColumns(tds.getColumnNames().toSet());
+        TestTDS targetTds = this.includeExistingColumns ? tds : tds.removeColumns(tds.getColumnNames().toSet());
 
-            RelationType<?> relationType = getRelationType(params, 0);
-            GenericType sourceRelationType = (GenericType) params.get(0).getValueForMetaPropertyToOne("genericType");
+        RelationType<?> relationType = getRelationType(params, 0);
+        GenericType sourceRelationType = (GenericType) params.get(0).getValueForMetaPropertyToOne("genericType");
 
-            CoreInstance secondParameter = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
+        CoreInstance secondParameter = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
 
             TestTDS result;
             if (secondParameter instanceof FuncColSpec)
             {
-                result = targetTds.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Frame(FrameType.rows, true, true)), (FuncColSpec<?, ?>) secondParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, (GenericType) params.get(0).getValueForMetaPropertyToOne("genericType"), false));
+                result = targetTds.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Rows(true, true)), (FuncColSpec<?, ?>) secondParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, (GenericType) params.get(0).getValueForMetaPropertyToOne("genericType"), false));
             }
             else if (secondParameter instanceof FuncColSpecArray)
             {
                 result = ((FuncColSpecArray<?, ?>) secondParameter)._funcSpecs().injectInto(
                         targetTds,
-                        (a, funcColSpec) -> a.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Frame(FrameType.rows, true, true)), funcColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, false))
+                        (a, funcColSpec) -> a.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Rows(true, true)), funcColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, false))
                 );
             }
             else if (secondParameter instanceof AggColSpec)
             {
                 Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = tds.wrapFullTDS();
-                result = targetTds.addColumn(processOneAggColSpec(source, Lists.fixedSize.empty(), new Window(new Frame(FrameType.rows, true, true)), (AggColSpec<?, ?, ?>) secondParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null));
+                result = targetTds.addColumn(processOneAggColSpec(source, Lists.fixedSize.empty(), new Window(new Rows(true, true)), (AggColSpec<?, ?, ?>) secondParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null));
             }
             else if (secondParameter instanceof AggColSpecArray)
             {
                 Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = tds.wrapFullTDS();
                 result = ((AggColSpecArray<?, ?, ?>) secondParameter)._aggSpecs().injectInto(
                         targetTds,
-                        (a, aggColSpec) -> a.addColumn(processOneAggColSpec(source, Lists.fixedSize.empty(), new Window(new Frame(FrameType.rows, true, true)), aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null))
+                        (a, aggColSpec) -> a.addColumn(processOneAggColSpec(source, Lists.fixedSize.empty(), new Window(new Rows(true, true)), aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null))
                 );
             }
             else if (Instance.instanceOf(secondParameter, "meta::pure::functions::relation::_Window", processorSupport))
@@ -120,51 +118,46 @@ public class ProjectExtend extends AggregationShared
                 MutableList<String> partitionIds = secondParameter.getValueForMetaPropertyToMany("partition").collect(PrimitiveUtilities::getStringValue).toList();
                 Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = partitionIds.isEmpty() ? tds.wrapFullTDS() : tds.sort(partitionIds.collect(c -> new SortInfo(c, SortDirection.ASC)));
 
-                ListIterable<? extends CoreInstance> sortInfos = secondParameter.getValueForMetaPropertyToMany("sortInfo");
-                MutableList<SortInfo> newSortInfos = Sort.getSortInfos(sortInfos, processorSupport).toList();
-                final Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortedPartitions = TestTDS.sortPartitions(newSortInfos, source);
+            ListIterable<? extends CoreInstance> sortInfos = secondParameter.getValueForMetaPropertyToMany("sortInfo");
+            MutableList<SortInfo> newSortInfos = Sort.getSortInfos(sortInfos, processorSupport).toList();
+            final Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortedPartitions = TestTDS.sortPartitions(newSortInfos, source);
 
-                Window window = Window.build(secondParameter, processorSupport, new RepoPrimitiveHandler(repository));
+            Window window = Window.build(secondParameter, processorSupport, new RepoPrimitiveHandler(repository));
 
-                CoreInstance thirdParameter = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport);
-                if (thirdParameter instanceof AggColSpec)
-                {
-                    result = sortedPartitions.getOne().addColumn(processOneAggColSpec(sortedPartitions, newSortInfos, window, (AggColSpec<?, ?, ?>) thirdParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, true, sourceRelationType));
-                }
-                else if (thirdParameter instanceof AggColSpecArray)
-                {
-                    result = ((AggColSpecArray<?, ?, ?>) thirdParameter)._aggSpecs().injectInto(
-                            sortedPartitions.getOne(),
-                            (a, aggColSpec) -> a.addColumn(processOneAggColSpec(sortedPartitions, newSortInfos, window, aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, true, sourceRelationType))
-                    );
-                }
-                else if (thirdParameter instanceof FuncColSpec)
-                {
-                    result = sortedPartitions.getOne().addColumn(processFuncColSpec(sortedPartitions, window, (FuncColSpec<?, ?>) thirdParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, true));
-                }
-                else if (thirdParameter instanceof FuncColSpecArray)
-                {
-                    result = ((FuncColSpecArray<?, ?>) thirdParameter)._funcSpecs().injectInto(
-                            sortedPartitions.getOne(),
-                            (a, funcColSpec) -> a.addColumn(processFuncColSpec(sortedPartitions, window, funcColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, true))
-                    );
-                }
-                else
-                {
-                    throw new RuntimeException("Not possible");
-                }
+            CoreInstance thirdParameter = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport);
+            if (thirdParameter instanceof AggColSpec)
+            {
+                result = sortedPartitions.getOne().addColumn(processOneAggColSpec(sortedPartitions, newSortInfos, window, (AggColSpec<?, ?, ?>) thirdParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, true, sourceRelationType));
+            }
+            else if (thirdParameter instanceof AggColSpecArray)
+            {
+                result = ((AggColSpecArray<?, ?, ?>) thirdParameter)._aggSpecs().injectInto(
+                        sortedPartitions.getOne(),
+                        (a, aggColSpec) -> a.addColumn(processOneAggColSpec(sortedPartitions, newSortInfos, window, aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, true, sourceRelationType))
+                );
+            }
+            else if (thirdParameter instanceof FuncColSpec)
+            {
+                result = sortedPartitions.getOne().addColumn(processFuncColSpec(sortedPartitions, window, (FuncColSpec<?, ?>) thirdParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, true));
+            }
+            else if (thirdParameter instanceof FuncColSpecArray)
+            {
+                result = ((FuncColSpecArray<?, ?>) thirdParameter)._funcSpecs().injectInto(
+                        sortedPartitions.getOne(),
+                        (a, funcColSpec) -> a.addColumn(processFuncColSpec(sortedPartitions, window, funcColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, true))
+                );
             }
             else
             {
                 throw new RuntimeException("Not possible");
             }
-            return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(result, returnGenericType, repository, processorSupport), false, processorSupport);
         }
-        catch (Exception e)
+        else
         {
-            e.printStackTrace();
-            throw e;
+            throw new RuntimeException("Not possible");
         }
+        return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(result, returnGenericType, repository, processorSupport), false, processorSupport);
+
     }
 
     private ColumnValue processFuncColSpec(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source, Window window, FuncColSpec<?, ?> funcColSpec, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, GenericType relationType, boolean twoParamsFunc)
@@ -189,6 +182,14 @@ public class ProjectExtend extends AggregationShared
             Arrays.fill(nulls, Boolean.FALSE);
             processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
             return new ColumnValue(name, DataType.LONG, finalRes, nulls);
+        }
+        else if (type == _Package.getByUserPath(M3Paths.Boolean, processorSupport))
+        {
+            boolean[] finalRes = new boolean[(int) source.getOne().getRowCount()];
+            boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
+            Arrays.fill(nulls, Boolean.FALSE);
+            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getBooleanValue(val)), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, DataType.BOOLEAN_AS_BYTE, finalRes, nulls);
         }
         else if (type == _Package.getByUserPath(M3Paths.Float, processorSupport))
         {

@@ -423,7 +423,8 @@ public class HelperRelationalBuilder
 
         if (!duplicateColumns.isEmpty())
         {
-            context.pureModel.addWarnings(org.eclipse.collections.impl.factory.Lists.mutable.with(new Warning(databaseTable.sourceInformation, "Duplicate column definitions " + duplicateColumns + " in table: " + table._name())));
+            MutableList<String> duplicateList = duplicateColumns.toSortedList();
+            context.pureModel.addWarnings(org.eclipse.collections.impl.factory.Lists.mutable.with(new Warning(databaseTable.sourceInformation, "Duplicate column definitions " + duplicateList + " in table: " + table._name())));
         }
         RichIterable<Column> pk = ListIterate.collect(databaseTable.primaryKey, s -> columns.select(column -> s.equals(column._name())).getFirst());
         RichIterable<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Milestoning> milestoning = ListIterate.collect(databaseTable.milestoning, m -> processMilestoning(m, context, columns.groupBy(ColumnAccessor::_name)));
@@ -442,7 +443,34 @@ public class HelperRelationalBuilder
         View view = new Root_meta_relational_metamodel_relation_View_Impl(srcView.name, SourceInformationHelper.toM3SourceInformation(srcView.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::relation::View"))._name(srcView.name);
         view._stereotypes(srcView.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(srcView.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)));
         view._taggedValues(srcView.taggedValues == null ? Lists.fixedSize.empty() : ListIterate.collect(srcView.taggedValues, taggedValue -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(taggedValue.tag.profile, taggedValue.tag.value, taggedValue.tag.profileSourceInformation, taggedValue.tag.sourceInformation))._value(taggedValue.value)));
-        MutableList<Column> columns = ListIterate.collect(srcView.columnMappings, columnMapping -> new Root_meta_relational_metamodel_Column_Impl(columnMapping.name, SourceInformationHelper.toM3SourceInformation(columnMapping.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Column"))._name(columnMapping.name)._type(new Root_meta_relational_metamodel_datatype_Varchar_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Varchar")))._owner(view));
+        MutableList<Column> columns = Lists.mutable.empty();
+        MutableSet<String> validColumnNames = Sets.mutable.empty();
+        MutableSet<String> duplicateColumns = Sets.mutable.empty();
+
+        for (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.ColumnMapping columnMapping : srcView.columnMappings)
+        {
+            if (validColumnNames.contains(columnMapping.name))
+            {
+                duplicateColumns.add(columnMapping.name);
+            }
+            else
+            {
+                validColumnNames.add(columnMapping.name);
+                Column col = new Root_meta_relational_metamodel_Column_Impl(columnMapping.name, SourceInformationHelper.toM3SourceInformation(columnMapping.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Column"))
+                        ._name(columnMapping.name)
+                        ._type(new Root_meta_relational_metamodel_datatype_Varchar_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Varchar")))
+                        ._owner(view);
+                columns.add(col);
+            }
+        }
+        if (!duplicateColumns.isEmpty())
+        {
+            MutableList<String> duplicateList = duplicateColumns.toList().sortThis();
+            context.pureModel.addWarnings(Lists.mutable.with(new Warning(
+                    srcView.sourceInformation,
+                    "Duplicate column mapping definitions " + duplicateList + " in view: " + view._name()
+            )));
+        }
         RichIterable<Column> pk = ListIterate.collect(srcView.primaryKey, s -> columns.select(column -> s.equals(column._name())).getFirst());
         return view._columns(columns)._primaryKey(pk)._schema(schema);
     }
@@ -950,6 +978,13 @@ public class HelperRelationalBuilder
             }
             purePm._outIsInclusive(processingMilestoning.outIsInclusive);
             return purePm;
+        }
+        else if (milestoning instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingSnapshotMilestoning)
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingSnapshotMilestoning processingSnapshotMilestoning = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingSnapshotMilestoning) milestoning;
+            Root_meta_relational_metamodel_relation_ProcessingSnapshotMilestoning_Impl purePsm = new Root_meta_relational_metamodel_relation_ProcessingSnapshotMilestoning_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::relation::ProcessingSnapshotMilestoning"));
+            purePsm._snapshotDate(getMilestoneColumn(processingSnapshotMilestoning.snapshotDate, columns, milestoning.sourceInformation));
+            return purePsm;
         }
         return null;
     }

@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning;
 
-package org.finos.legend.pure.runtime.java.extension.external.relation.shared.window;
-
-public enum FrameType
+public class ProcessingSnapshotMilestoning extends Milestoning
 {
-    rows, range
+    public String snapshotDate;
 }

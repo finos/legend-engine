@@ -14,7 +14,9 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled;
 
+import static org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS.readCsv;
 import io.deephaven.csv.parsers.DataType;
+import java.util.Objects;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
@@ -26,33 +28,49 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
+import org.finos.legend.pure.generated.PureCompiledLambda;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
+import org.finos.legend.pure.generated.CoreGen;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.*;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpec;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpecArray;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationElementAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.TDSRelationAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
+import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity;
+import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.CompiledSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.SharedPureFunction;
-import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.*;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.CompiledPrimitiveHandler;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.NullRowContainer;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.RowContainer;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.TDSContainer;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.TestTDSCompiled;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.FrameType;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Range;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.RangeInterval;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
-
-import java.util.Objects;
-
-import static org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS.readCsv;
 
 public class RelationNativeImplementation
 {
@@ -64,7 +82,7 @@ public class RelationNativeImplementation
         }
         return value instanceof TDSContainer ?
                 ((TDSContainer) value).tds :
-                new TestTDSCompiled(readCsv((((CoreInstance) value).getValueForMetaPropertyToOne("csv")).getName()), ((CoreInstance) value).getValueForMetaPropertyToOne(M3Properties.classifierGenericType), ((CoreInstance) value).getRepository(), ((CompiledExecutionSupport) es).getProcessorSupport());
+                new TestTDSCompiled(readCsv((((CoreInstance) value).getValueForMetaPropertyToOne("csv")).getName()), ((CoreInstance) value).getValueForMetaPropertyToOne(M3Properties.classifierGenericType), ((CompiledExecutionSupport) es).getProcessorSupport());
     }
 
 
@@ -173,6 +191,78 @@ public class RelationNativeImplementation
             return (T) new NullRowContainer();
         }
         return (T) new RowContainer(RelationNativeImplementation.getTDS(w, es), actualOffset);
+    }
+
+    public static Relation<? extends Object> lateralJoin(Relation<?> source, Function function, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+
+        TestTDSCompiled sourceTds = RelationNativeImplementation.getTDS(source, es);
+
+        RelationType<?> lateralResult = (RelationType<?>) ((FunctionType) function._classifierGenericType()._typeArguments().getOnly()._rawType())._returnType()._typeArguments().getOnly()._rawType();
+
+        TestTDS agg = lateralResult._columns().injectInto(sourceTds.newEmptyTDS(), (t, x) ->
+                t.addColumn(x._name(), x._classifierGenericType()._typeArguments().getLast()._rawType()));
+
+        for (int i = 0; i < sourceTds.getRowCount(); i++)
+        {
+            TestTDSCompiled row = (TestTDSCompiled) sourceTds.slice(i, i + 1);
+            RowContainer rowInput = new RowContainer(row, 0);
+            SharedPureFunction pureFunction = PureCompiledLambda.getPureFunction(function, es);
+            TestTDSCompiled resultTds = RelationNativeImplementation.getTDS(pureFunction.execute(Lists.fixedSize.of(rowInput), es), es);
+            TestTDS lateralJoined = row.join(resultTds);
+            agg = agg.concatenate(lateralJoined);
+        }
+
+        return new TDSContainer((TestTDSCompiled) agg, ps);
+    }
+
+    public static <T> Relation<? extends Object> flatten(RichIterable<T> toFlatten, String colName, String colType, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+
+        Column<?, ?> columnInstance = _Column.getColumnInstance(
+                colName,
+                false,
+                colType,
+                (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity) Multiplicity.newMultiplicity(0, 1, ps),
+                null,
+                ps
+        );
+
+        DataType colResType;
+        Object colRes;
+
+        switch (colType)
+        {
+            case M3Paths.String:
+                colResType = DataType.STRING;
+                colRes = toFlatten.toArray(new String[0]);
+                break;
+            case M3Paths.Integer:
+                colResType = DataType.LONG;
+                colRes = toFlatten.collectLong(Long.class::cast).toArray();
+                break;
+            case M3Paths.Float:
+                colResType = DataType.DOUBLE;
+                colRes = toFlatten.collectDouble(Double.class::cast).toArray();
+                break;
+            case M3Paths.Boolean:
+                colResType = DataType.BOOLEAN_AS_BYTE;
+                colRes = toFlatten.collectByte(x -> ((boolean) x) ? (byte) 1 : (byte) 0).toArray();
+                break;
+            case M3Paths.Variant:
+                colResType = DataType.CUSTOM;
+                colRes = toFlatten.toArray(new Variant[0]);
+                break;
+            default:
+                throw new PureExecutionException("Flatten does not support type: " + colType + ". Supported types are String, Integer, Float, Boolean, and Variant.");
+        }
+
+        TestTDSCompiled tds = new TestTDSCompiled();
+        tds.addColumn(columnInstance._name(), colResType, colRes);
+
+        return new TDSContainer(tds, ps);
     }
 
     public static <T, V> Relation<? extends Object> asOfJoin(Relation<? extends T> rel1, Relation<? extends V> rel2, Function3 pureFunction, LambdaFunction<?> _func, ExecutionSupport es)
@@ -332,6 +422,10 @@ public class RelationNativeImplementation
                 MutableList<Variant> variantRes = Lists.mutable.empty();
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> variantRes.add((Variant) val));
                 return new ColumnValue(colFuncSpecTrans.newColName, DataType.CUSTOM, variantRes.toArray(new Variant[0]));
+            case M3Paths.Boolean:
+                boolean[] resultBoolean = new boolean[(int) size];
+                extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultBoolean[i] = (boolean) val));
+                return new ColumnValue(colFuncSpecTrans.newColName, DataType.BOOLEAN_AS_BYTE, resultBoolean, nulls);
             default:
                 throw new RuntimeException(colFuncSpecTrans.columnType + " not supported yet");
         }
@@ -463,6 +557,11 @@ public class RelationNativeImplementation
         }
     }
 
+    public static <T> Relation<? extends Object> groupBy(Relation<? extends T> rel, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
+    {
+        return groupBy(rel, Lists.mutable.empty(), aggColSpecTrans, es);
+    }
+
     public static <T> Relation<? extends Object> groupBy(Relation<? extends T> rel, ColSpec<?> cols, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
     {
         return groupBy(rel, Lists.mutable.with(cols._name()), aggColSpecTrans, es);
@@ -478,7 +577,7 @@ public class RelationNativeImplementation
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
         TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
 
-        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = tds.sort(cols.collect(name -> new SortInfo(name, SortDirection.ASC)).toList());
+        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = cols.isEmpty() ? tds.wrapFullTDS() : tds.sort(cols.collect(name -> new SortInfo(name, SortDirection.ASC)).toList());
 
         MutableSet<String> columnsToRemove = tds.getColumnNames().clone().toSet();
         columnsToRemove.removeAll(cols.toSet());
@@ -636,6 +735,7 @@ public class RelationNativeImplementation
     {
         int cursor = 0;
         int size = sortRes.getTwo().size();
+        CompiledPrimitiveHandler compiledPrimitiveHandler = new CompiledPrimitiveHandler();
         for (int j = 0; j < size; j++)
         {
             Pair<Integer, Integer> r = sortRes.getTwo().get(j);
@@ -645,10 +745,9 @@ public class RelationNativeImplementation
             int partitionSize = partitionEndIndex - partitionStartIndex;
             TestTDSCompiled sourceTDS = (TestTDSCompiled) sortRes.getOne().slice(partitionStartIndex, partitionEndIndex);
             TDSContainer winTDS = new TDSContainer(sourceTDS, ((CompiledExecutionSupport) es).getProcessorSupport());
-            CompiledPrimitiveHandler compiledPrimitiveHandler = new CompiledPrimitiveHandler();
             Object convertedFrame = window == null ? null : window.convert(((CompiledExecutionSupport) es).getProcessorSupport(), compiledPrimitiveHandler);
             Frame frame = window == null ? null : window.getFrame();
-            if (window != null && frame.getFrameType() == FrameType.range)
+            if (window != null && (frame instanceof Range || frame instanceof RangeInterval))
             {
                 if (sortInfos.size() != 1)
                 {
@@ -659,6 +758,14 @@ public class RelationNativeImplementation
                 SortDirection sortDirection = sortInfo.getDirection();
                 Number offsetFrom = frame.getOffsetFrom();
                 Number offsetTo = frame.getOffsetTo(0);
+                Enum offsetFromDurationUnit = null;
+                Enum offsetToDurationUnit = null;
+                if (frame instanceof RangeInterval)
+                {
+                    RangeInterval rangeInterval = (RangeInterval) frame;
+                    offsetFromDurationUnit = rangeInterval.getOffsetFromDurationUnit();
+                    offsetToDurationUnit = rangeInterval.getOffsetToDurationUnit();
+                }
                 MutableList<Object> orderByValues = Lists.mutable.empty();
                 for (int i = 0; i < partitionSize; i++)
                 {
@@ -678,7 +785,7 @@ public class RelationNativeImplementation
                         Object aggregateValue = subList.get(k);
                         if (orderByCurrentRowValue == null)
                         {
-                            if (offsetFrom != null && offsetTo != null && currentPartitionValueAsObject == null) // Rows with NULL in the ORDER BY column are included in an explicit-offset frame boundary only when the ORDER BY value of the current row is NULL.
+                            if (currentPartitionValueAsObject == null) // Rows with NULL in the ORDER BY column are included in frame boundary only when the ORDER BY value of the current row is NULL.
                             {
                                 aggregationValues.add(aggregateValue);
                             }
@@ -754,12 +861,97 @@ public class RelationNativeImplementation
                             }
                             else // RANGE BETWEEN N PRECEDING/FOLLOWING AND N PRECEDING/FOLLOWING
                             {
-                                Number lowerBound = sortDirection == SortDirection.ASC ? compiledPrimitiveHandler.plus(currentRowValue, offsetFrom) : compiledPrimitiveHandler.minus(currentRowValue, offsetFrom);
-                                Number upperBound = sortDirection == SortDirection.ASC ? compiledPrimitiveHandler.plus(currentRowValue, offsetTo) : compiledPrimitiveHandler.minus(currentRowValue, offsetTo);
+                                Number lowerBound = sortDirection == SortDirection.ASC ? compiledPrimitiveHandler.plus(currentRowValue, offsetFrom) : compiledPrimitiveHandler.minus(currentRowValue, offsetTo);
+                                Number upperBound = sortDirection == SortDirection.ASC ? compiledPrimitiveHandler.plus(currentRowValue, offsetTo) : compiledPrimitiveHandler.minus(currentRowValue, offsetFrom);
                                 if (currentPartitionValueAsObject != null)
                                 {
                                     Number currentPartitionValue = (Number) currentPartitionValueAsObject;
                                     if (compiledPrimitiveHandler.lessThanEqual(lowerBound, currentPartitionValue) && compiledPrimitiveHandler.lessThanEqual(currentPartitionValue, upperBound))
+                                    {
+                                        aggregationValues.add(aggregateValue);
+                                    }
+                                }
+                            }
+                        }
+                        else if (frame instanceof RangeInterval && orderByCurrentRowValue instanceof PureDate)
+                        {
+                            PureDate currentRowValue = (PureDate) orderByCurrentRowValue;
+                            if (offsetFrom == null && offsetTo == null) // RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+                            {
+                                aggregationValues.add(aggregateValue);
+                            }
+                            else if (offsetFrom == null) // RANGE BETWEEN UNBOUNDED PRECEDING AND INTERVAL N PRECEDING/FOLLOWING
+                            {
+                                if (sortDirection == SortDirection.ASC)
+                                {
+                                    PureDate upperBound = CoreGen.adjustDate(currentRowValue, offsetTo.longValue(), offsetToDurationUnit);
+                                    if (currentPartitionValueAsObject != null)
+                                    {
+                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
+                                        if (currentPartitionValue.compareTo(upperBound) <= 0)
+                                        {
+                                            aggregationValues.add(aggregateValue);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    PureDate lowerBound = CoreGen.adjustDate(currentRowValue, compiledPrimitiveHandler.minus(0, offsetTo).longValue(), offsetToDurationUnit);
+                                    if (currentPartitionValueAsObject == null) // When the ORDER BY clause specifies NULLS FIRST, which is default when sort order is DESC, rows with NULL in the ORDER BY column are included in UNBOUNDED PRECEDING frames.
+                                    {
+                                        aggregationValues.add(aggregateValue);
+                                    }
+                                    else
+                                    {
+                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
+                                        if (lowerBound.compareTo(currentPartitionValue) <= 0)
+                                        {
+                                            aggregationValues.add(aggregateValue);
+                                        }
+                                    }
+                                }
+                            }
+                            else if (offsetTo == null) // RANGE BETWEEN INTERVAL N PRECEDING/FOLLOWING AND UNBOUNDED FOLLOWING
+                            {
+                                if (sortDirection == SortDirection.ASC)
+                                {
+                                    PureDate lowerBound = CoreGen.adjustDate(currentRowValue, offsetFrom.longValue(), offsetFromDurationUnit);
+                                    if (currentPartitionValueAsObject == null) // When the ORDER BY clause specifies NULLS LAST, which is default when sort order is ASC, rows with NULL in the ORDER BY column are included in UNBOUNDED FOLLOWING frames.
+                                    {
+                                        aggregationValues.add(aggregateValue);
+                                    }
+                                    else
+                                    {
+                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
+                                        if (lowerBound.compareTo(currentPartitionValue) <= 0)
+                                        {
+                                            aggregationValues.add(aggregateValue);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    PureDate upperBound = CoreGen.adjustDate(currentRowValue, compiledPrimitiveHandler.minus(0, offsetFrom).longValue(), offsetFromDurationUnit);
+                                    if (currentPartitionValueAsObject != null)
+                                    {
+                                        PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
+                                        if (currentPartitionValue.compareTo(upperBound) <= 0)
+                                        {
+                                            aggregationValues.add(aggregateValue);
+                                        }
+                                    }
+                                }
+                            }
+                            else // RANGE BETWEEN INTERVAL N PRECEDING/FOLLOWING AND INTERVAL N PRECEDING/FOLLOWING
+                            {
+                                PureDate lowerBound = sortDirection == SortDirection.ASC ? CoreGen.adjustDate(currentRowValue, offsetFrom.longValue(), offsetFromDurationUnit)
+                                        : CoreGen.adjustDate(currentRowValue, compiledPrimitiveHandler.minus(0, offsetTo).longValue(), offsetToDurationUnit);
+                                PureDate upperBound = sortDirection == SortDirection.ASC ? CoreGen.adjustDate(currentRowValue, offsetTo.longValue(), offsetToDurationUnit)
+                                        : CoreGen.adjustDate(currentRowValue, compiledPrimitiveHandler.minus(0, offsetFrom).longValue(), offsetFromDurationUnit);
+                                if (currentPartitionValueAsObject != null)
+                                {
+                                    PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;
+                                    if (lowerBound.compareTo(currentPartitionValue) <= 0 && currentPartitionValue.compareTo(upperBound) <= 0)
                                     {
                                         aggregationValues.add(aggregateValue);
                                     }

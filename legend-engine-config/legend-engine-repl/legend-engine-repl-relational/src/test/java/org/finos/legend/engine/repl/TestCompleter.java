@@ -65,7 +65,8 @@ public class TestCompleter
     @Test
     public void testArrowDeep()
     {
-        Assert.assertEquals("[contains , contains(], [startsWith , startsWith(], [endsWith , endsWith(], [toLower , toLower(], [toUpper , toUpper(], [lpad , lpad(], [rpad , rpad(], [parseInteger , parseInteger(], [parseFloat , parseFloat(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(f|$f.col->")));
+        Assert.assertEquals("[contains , contains(], [startsWith , startsWith(], [endsWith , endsWith(], [toLower , toLower(], [toUpper , toUpper(], [lpad , lpad(], [rpad , rpad(], [parseInteger , parseInteger(], [parseFloat , parseFloat(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200) NOT NULL))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(f|$f.col->")));
+        Assert.assertEquals("[count , count(], [joinStrings , joinStrings(], [uniqueValueOnly , uniqueValueOnly(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(f|$f.col->")));
     }
 
     @Test
@@ -79,7 +80,13 @@ public class TestCompleter
     @Test
     public void testDeepWithCompilationError()
     {
-        Assert.assertEquals("COMPILATION error at [5:26-49]: Can't find a match for function 'plus(Any[2])'", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|'p'+$x.col->startsWith('x'))->fr").getEngineException().toPretty());
+        Assert.assertEquals("COMPILATION error at [5:26-49]: Can't find a match for function 'plus(Any[2])'.\n" +
+                "Functions that can match if parameter types or multiplicities are changed:\n" +
+                "\t\tplus(String[*]):String[1]\n" +
+                "\t\tplus(Integer[*]):Integer[1]\n" +
+                "\t\tplus(Float[*]):Float[1]\n" +
+                "\t\tplus(Decimal[*]):Decimal[1]\n" +
+                "\t\tplus(Number[*]):Number[1]\n", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|'p'+$x.col->startsWith('x'))->fr").getEngineException().toPretty());
         Assert.assertEquals("COMPILATION error at [5:24]: Can't find type 'x'", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->extend(~x:x.").getEngineException().toPretty());
     }
 

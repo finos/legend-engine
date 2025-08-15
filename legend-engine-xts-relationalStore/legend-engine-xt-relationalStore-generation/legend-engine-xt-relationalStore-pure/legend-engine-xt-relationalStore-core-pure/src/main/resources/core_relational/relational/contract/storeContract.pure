@@ -197,6 +197,7 @@ function meta::relational::contract::supports(f:FunctionExpression[1]):Boolean[1
     |
       !meta::relational::functions::pureToSqlQuery::findSupportedFunction(
                         $f,
+                        newMap([]->cast(@Pair<VariableExpression, ValueSpecification>)),
                         meta::relational::functions::pureToSqlQuery::getSupportedFunctions(),
                         meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFunctions()
                     )->isEmpty()

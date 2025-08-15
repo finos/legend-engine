@@ -110,10 +110,10 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
   let methodNameVar        = j_variable(javaString(), 'methodName');
 
   let boundClassProps      = $bindingDetail.mappedPropertiesForClass($class);
-  let boundProperties      = $context.typeInfos->allProperties($class)->filter(p | $p->in($boundClassProps));
+  let boundProperties      = $context.typeInfos->allPropertiesWithoutGeneratedMilestoning($class)->filter(p | $p->in($boundClassProps));
 
   let specializationByName = $specializations->groupBy(x| $x.name->toOne());
-  let specializationsCode  = if($specializations->isEmpty(), 
+  let specializationsCode  = if($specializations->isEmpty(),
                                 | [],
                                 | $specializationByName->keys()
                                                       ->map(className| pair($className->j_string()->j_invoke('equals', $nodeValueVariable, javaBoolean()),
@@ -187,7 +187,7 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
 {
   let conventions                  = $context.conventions;
   let jThis                        = j_this($proto);
-  let checked                      = $conventions->className(Checked); 
+  let checked                      = $conventions->className(Checked);
   let defectsVariable              = j_variable(javaList($conventions->defectClass()), 'defects');
   let nodeParam                    = j_parameter(jsonNode(), 'node');
 
@@ -198,14 +198,14 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
               let variable       = j_variable($listType, '_' + $conventions->fieldName($p));
               let fieldName      = $bindingDetail.fieldNameForProperty($p);
 
-              let propertyType   = $p.genericType.rawType->toOne();
+              let propertyType   = $p.genericType.rawType->toOne()->bypassExtendedPrimitives();
               let lParam         = j_parameter(javaString(), 'm');
-              let defectRecorder = j_lambda($lParam, $defectsVariable->j_invoke('add', $conventions->className(DataQualityBasicDefectClass)->j_invoke('newInvalidInputErrorDefect', [j_string($fieldName)->j_plus(j_string(': '))->j_plus($lParam), j_string($class->elementToPath())], $conventions->defectClass()), javaVoid()));     
+              let defectRecorder = j_lambda($lParam, $defectsVariable->j_invoke('add', $conventions->className(DataQualityBasicDefectClass)->j_invoke('newInvalidInputErrorDefect', [j_string($fieldName)->j_plus(j_string(': '))->j_plus($lParam), j_string($class->elementToPath())], $conventions->defectClass()), javaVoid()));
 
               j_if($nodeParam->j_invoke('path', j_string($fieldName), jsonNode())->j_invoke('getNodeType', [], jsonNodeType())->j_ne(jsonNodeType()->j_field('MISSING', jsonNodeType())),
                     $propertyType->match([
                         {c: meta::pure::metamodel::type::Class<Any>[1] |
-                          
+
                           let checkedListVar  = j_variable(javaList(javaParameterizedType($checked, $elementType)), 'checked');
                           let pathNodeVar     = j_variable($conventions->relativePathNodeClass(), 'pathNode');
                           let propertyDefects = j_variable(javaList($conventions->defectClass()), 'propertyDefects');
@@ -279,7 +279,7 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
   let javaClass       = $conventions->className($class);
 
   let jThis           = j_this($proto);
-  let checked         = $conventions->className(Checked); 
+  let checked         = $conventions->className(Checked);
   let defectsVariable = j_variable(javaList($conventions->defectClass()), 'defects');
   let valueVariable   = j_variable($dataClass, 'value');
   let d               = j_parameter($conventions->defectClass(), 'd');
@@ -289,7 +289,7 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
       let listType    = if(isJavaList($javaType), |$javaType, |javaList($javaType));
       let elementType = if(isJavaList($javaType), |elementTypeOfJavaList($javaType), |$javaType);
       let variable    = j_variable($listType, '_' + $conventions->fieldName($p));
-      
+
       let value       = if($p.multiplicity->isToOne(),
                             | $variable->j_invoke('get', j_int(0), $elementType),
                             |
@@ -347,20 +347,20 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
   javaMethod('private', $javaType, 'accept' + $simpleJavaName, $nodeParameter,
             j_try(
               [
-                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('OBJECT', jsonNodeType()), 
-                                            $nodeTypeInvoke->eval($nodeParameter), 
+                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('OBJECT', jsonNodeType()),
+                                            $nodeTypeInvoke->eval($nodeParameter),
                                             j_string('Unexpected ')->j_plus($nodeTypeInvoke->eval($nodeParameter))->j_plus(j_string(' for PURE '))->j_plus($typeName)]),
-                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('ARRAY', jsonNodeType()), 
-                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())), 
+                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('ARRAY', jsonNodeType()),
+                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())),
                                             j_string('Unexpected unit ')->j_plus($nodeParameter->j_invoke('path', j_string('unit'), jsonNode()))->j_plus(j_string(' for PURE '))->j_plus($typeName)]),
-                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('STRING', jsonNodeType()), 
-                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())->j_invoke('path', j_int(0), jsonNode())->j_invoke('path', j_string('unitId'), jsonNode())), 
+                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('STRING', jsonNodeType()),
+                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())->j_invoke('path', j_int(0), jsonNode())->j_invoke('path', j_string('unitId'), jsonNode())),
                                             j_string('Unexpected unitId ')->j_plus($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())->j_invoke('path', j_int(0), jsonNode())->j_invoke('path', j_string('unitId'), jsonNode()))->j_plus(j_string(' for PURE '))->j_plus($typeName)]),
-                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('NUMBER', jsonNodeType()), 
-                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())->j_invoke('path', j_int(0), jsonNode())->j_invoke('path', j_string('exponentValue'), jsonNode())), 
+                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('NUMBER', jsonNodeType()),
+                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())->j_invoke('path', j_int(0), jsonNode())->j_invoke('path', j_string('exponentValue'), jsonNode())),
                                             j_string('Unexpected exponentValue ')->j_plus($nodeParameter->j_invoke('path', j_string('unit'), jsonNode())->j_invoke('path', j_int(0), jsonNode())->j_invoke('path', j_string('exponentValue'), jsonNode()))->j_plus(j_string(' for PURE '))->j_plus($typeName)]),
-                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('NUMBER', jsonNodeType()), 
-                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('value'), jsonNode())), 
+                $checkMethodInvokeGen->eval([jsonNodeType()->j_field('NUMBER', jsonNodeType()),
+                                            $nodeTypeInvoke->eval($nodeParameter->j_invoke('path', j_string('value'), jsonNode())),
                                             j_string('Unexpected value ')->j_plus($nodeParameter->j_invoke('path', j_string('value'), jsonNode()))->j_plus(j_string(' for PURE '))->j_plus($typeName)]),
                 $unitValueVar->j_declare($nodeParameter->j_invoke('path', j_string('value'), jsonNode())->j_invoke('doubleValue', [], javaDouble())),
                 $valueVar->j_declare(j_new($conventions->implClassName($type), $unitValueVar)),
@@ -376,7 +376,7 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
   let conventions     = $context.conventions;
   let checkedClass    = $context.baseProject->toOne()->resolve($conventions->className(Checked));
   let checkedSource   = javaParameterizedType($checkedClass, $javaInterface);
-  
+
   let node            = j_parameter(jsonNode(), 'node');
 
   let checked         = j_variable($checkedSource, 'object');

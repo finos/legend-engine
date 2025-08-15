@@ -91,13 +91,16 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    tableFunctionParamProcessor(r:RelationalOperationElement[1], sgc:SqlGenerationContext[1])
    {
-    assert($this.dbExtension.tableFunctionParamProcessor->isNotEmpty(), '[unsupported-api] table function param processeing not supported for Database Type: ' + $this.dbType->toString());
+    assert($this.dbExtension.tableFunctionParamProcessor->isNotEmpty(), '[unsupported-api] table function param processing not supported for Database Type: ' + $this.dbType->toString());
     $this.dbExtension.tableFunctionParamProcessor->toOne()->eval($r, $sgc);
    }: String[1];
 
    lateralJoinProcessor(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*])
    {
-     if($this.dbExtension.lateralJoinProcessor->isEmpty(), |meta::relational::functions::sqlQueryToString::default::processJoinTreeNodeWithLateralJoinDefault($j, $dbConfig, $format, $extensions), |$this.dbExtension.lateralJoinProcessor->toOne()->eval($j, $dbConfig, $format, $extensions));
+     assert($this.dbExtension.lateralJoinProcessor->isNotEmpty(), '[unsupported-api] Lateral operation not supported for Database Type: ' + $this.dbType->toString());
+     assert(processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) == '1 = 1', | 'Internal error! Lateral join clause should be 1 = 1');
+
+     $this.dbExtension.lateralJoinProcessor->toOne()->eval($j, $dbConfig, ^$format(newLine='\n')->indent(), $extensions);
    }: String[1];
 
    joinProcessor(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*])
@@ -221,13 +224,13 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    lambdaParameterProcessor(r:RelationalLambdaParameter[1], sgc:SqlGenerationContext[1])
    {
-    assert($this.dbExtension.lambdaParameterProcessor->isNotEmpty(), '[unsupported-api] relational lambda parameter processeing not supported for Database Type: ' + $this.dbType->toString());
+    assert($this.dbExtension.lambdaParameterProcessor->isNotEmpty(), '[unsupported-api] relational lambda parameter processing not supported for Database Type: ' + $this.dbType->toString());
     $this.dbExtension.lambdaParameterProcessor->toOne()->eval($r, $sgc);
    }: String[1];
 
    lambdaProcessor(r:RelationalLambda[1], sgc:SqlGenerationContext[1])
    {
-    assert($this.dbExtension.lambdaProcessor->isNotEmpty(), '[unsupported-api] relational lambda processeing not supported for Database Type: ' + $this.dbType->toString());
+    assert($this.dbExtension.lambdaProcessor->isNotEmpty(), '[unsupported-api] relational lambda processing not supported for Database Type: ' + $this.dbType->toString());
     $this.dbExtension.lambdaProcessor->toOne()->eval($r, $sgc);
    }: String[1];
 }
@@ -470,6 +473,8 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           s:ViewSelectSQLQuery[1]|'('+$s.selectSQLQuery->processOperation($dbConfig, $format, $generationState, $config, $extensions)+')',
                                           t:Table[1]|$t->tableToString($dbConfig),
                                           tf:TabularFunction[1]|$tf->tabularFunctionToString($dbConfig),
+                                          cte: CommonTableExpressionReference[1] | $cte.name,
+                                          c: Column[1] | $c.name,
                                           js:JoinStrings[1] | $dbConfig.joinStringsProcessor($js, ^$sgc(config=^Config())),
                                           alias:Alias[1]|
                                                 let innerTerm = $alias.relationalElement->match([
@@ -513,6 +518,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           c:ColumnName[1]|$dbConfig.identifierProcessor($c.name->toOne()),
                                           s:SemiStructuredObjectNavigation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           s:SemiStructuredArrayFlatten[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
+                                          s:SemiStructuredArrayFlattenRelation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           s:SemiStructuredArrayFlattenOutput[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           t:TableFunctionParamPlaceHolder[1] | $dbConfig.tableFunctionParamProcessor($t, $sgc),
                                           d:DataTypeInfo[1] | $dbConfig.dataTypeToSqlText($d.dataType),
@@ -1067,6 +1073,13 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   add,
   adjust,
   and,
+  array_max,
+  array_min,
+  array_sum,
+  array_sort,
+  array_reverse,
+  array_size,
+  array_append,
   ascii,
   asin,
   atan,
@@ -1142,6 +1155,8 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   greatest,
   group,
   hour,
+  hashAgg,
+  hashCode,
   if,
   in,
   indexOf,

@@ -38,9 +38,7 @@ function <<access.private>> meta::relational::mutation::executionPlan::validateM
 {
   let classMapping = $mapping.classMappings->filter(m | $m.root && $m.class.name == $mutatedType.name);
   assert($classMapping->size() == 1 && $classMapping->toOne()->instanceOf(RootRelationalInstanceSetImplementation), 'One root relational mapping required for mutated type!');
-  let rootMapping = $classMapping->toOne()->cast(@RootRelationalInstanceSetImplementation);
-  assert($rootMapping.propertyMappings->filter(pm | !$pm->validatePropertyMappingForMutation())->isEmpty(), 'Only relational property mappings against table columns allowed for mutation!');
-  $rootMapping;
+  $classMapping->toOne()->cast(@RootRelationalInstanceSetImplementation);
 }
 
 function <<access.private>> meta::relational::mutation::executionPlan::validatePropertyMappingForMutation(propertyMapping: PropertyMapping[1]): Boolean[1]
@@ -69,19 +67,47 @@ function <<access.private>> meta::relational::mutation::executionPlan::validateG
   $propertyNamesInTree;
 }
 
+function  meta::relational::mutation::executionPlan::containsTemporalMilestoning(rootMapping: RootRelationalInstanceSetImplementation[1]): Boolean[1]
+{
+  !$rootMapping.class.stereotypes->filter(s | $s.profile == meta::pure::profiles::temporal && $s.value == 'processingtemporal')->isEmpty();
+}
+
+function  meta::relational::mutation::executionPlan::processDateColumnToDynaFunc(store: Store[1], rootMapping: RootRelationalInstanceSetImplementation[1]): Map<String, RelationalOperationElement>[1]
+{
+  if(containsTemporalMilestoning($rootMapping),
+      | let processMilestone = if($rootMapping.mainTableAlias.relationalElement->cast(@Table)->meta::relational::milestoning::hasMilestoning(ProcessingMilestoning) ,
+                                  | $rootMapping.mainTableAlias.relationalElement->cast(@Table).milestoning->filter(m | $m->instanceOf(ProcessingMilestoning)); ,
+                                  | let store = $rootMapping.mainTableAlias.relationalElement->cast(@Table).schema.database.name;
+                                    let schema = $rootMapping.mainTableAlias.relationalElement->cast(@Table).schema;
+                                    let table =  $rootMapping.mainTableAlias.relationalElement->cast(@Table).name;
+                                    fail('Processing Milestoning could not be found in Store [' + if($store->isNotEmpty(),| $store->toOne() ,| '') + ']' + if($schema->isNotEmpty() || $schema != 'default',| $rootMapping.mainTableAlias.relationalElement->cast(@Table).schema.name + '.' ,| '') + $table);
+                                )->first()->cast(@ProcessingMilestoning);
+
+        if($processMilestone.in.type->toOne()->instanceOf(meta::relational::metamodel::datatype::Timestamp) && $processMilestone.out.type->toOne()->instanceOf(meta::relational::metamodel::datatype::Timestamp),
+            | [pair($processMilestone.in.name->toOne(), ^DynaFunction(name = 'now')), pair($processMilestone.out.name->toOne(), ^Literal(value ='9999-12-31T23:59:59.9999')) ]->newMap(),
+            | if($processMilestone.in.type->toOne()->instanceOf(meta::relational::metamodel::datatype::Date) && $processMilestone.out.type->toOne()->instanceOf(meta::relational::metamodel::datatype::Date),
+                  | [pair($processMilestone.in.name->toOne(), ^DynaFunction(name = 'today')), pair($processMilestone.out.name->toOne(), ^Literal(value ='9999-12-31')) ]->newMap();,
+                  | []->newMap()
+                );
+        );,
+      |[]->newMap()
+    );
+}
+
 function meta::relational::mutation::executionPlan::planMutationExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
   let fe = $sq.vs->cast(@FunctionExpression);
-
   let rootType = $fe.genericType.rawType->toOne();
 
   // validate mapping is allowed -- currently only simple relational mappings against table columns are supported
   let rootMapping = validateMappingIsSupportedForMutation($mapping, $rootType);
+  let relationalPropertyMappings = $rootMapping.propertyMappings->filter(pm | $pm->validatePropertyMappingForMutation());
+  let rootMappingWithRelationalMappings = ^$rootMapping(propertyMappings = $relationalPropertyMappings);
   // validate graph fetch tree -- cannot specify properties deeper than the mapping supports, must include primary key properties
   let rootGraphFetchTree = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@RootGraphFetchTree<Any>)->toOne();
-  let propertyNamesInTree = validateGraphFetchTreeForMapping($rootMapping, $rootGraphFetchTree);
+  let propertyNamesInTree = validateGraphFetchTreeForMapping($rootMappingWithRelationalMappings, $rootGraphFetchTree);
 
-  let inScopePropertyMappings = $rootMapping.propertyMappings->cast(@RelationalPropertyMapping)->filter(pm | $pm.property.name->in($propertyNamesInTree));
+  let inScopePropertyMappings = $rootMappingWithRelationalMappings.propertyMappings->cast(@RelationalPropertyMapping)->filter(pm | $pm.property.name->in($propertyNamesInTree));
   let propertyMappingHasBindingFunction = {pm: RelationalPropertyMapping[1] | $pm.transformer->isNotEmpty() && $pm.transformer->toOne()->instanceOf(BindingTransformer)};
 
   // Variable name for each record processed from stream
@@ -153,13 +179,14 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
       )
     )->newMap();
 
-  let mainTable = $rootMapping.mainTableAlias.relationalElement->cast(@Table);
+  let processDateColumnToDynaFunc = processDateColumnToDynaFunc($sq.store, $rootMapping);
+  let mainTable = $rootMappingWithRelationalMappings.mainTableAlias.relationalElement->cast(@Table);
   let dbConnection = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
 
   let upsertQuery =
     ^UpsertSQLQuery(
       data = $mainTable,
-      equalityStatements = $databaseColumnToFreeMarkerVariable
+      equalityStatements = $databaseColumnToFreeMarkerVariable->putAll($processDateColumnToDynaFunc)
     )->processOperation($dbConnection.type, $extensions);
 
   let funcParams = $fe->findVariableExpressionsInValueSpecification()->removeDuplicatesBy(v | $v.name);

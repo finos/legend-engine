@@ -61,11 +61,8 @@ public class Test_Relational_Snowflake_RelationFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_", "Window frame requires an ORDER BY clause", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_", "Window frame requires an ORDER BY clause", AdapterQualifier.unsupportedFeature),
 
-            // Pure to SQL translation for window function using range frame needs to be implemented
-            one("meta::pure::functions::relation::tests::over::testRange_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_CurrentRow_WithMultiplePartitions_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_", "\"Range window frame is not supported yet!\"", AdapterQualifier.needsImplementation)
-
+            one("meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nInvalid RANGE BETWEEN frame 'RANGE BETWEEN CURRENT ROW AND CURRENT ROW': timestamp ORDER BY clause only allows interval window frame boundaries.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nInvalid RANGE BETWEEN frame 'RANGE BETWEEN CURRENT ROW AND CURRENT ROW': timestamp ORDER BY clause only allows interval window frame boundaries.", AdapterQualifier.unsupportedFeature)
     );
 
     public static Test suite()

@@ -62,7 +62,7 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::g
   );
 }
 
-function <<access.private>> meta::external::powerbi::transformation::fromPure::getModelPlatformMetadata(name: String[1]):PlatformMetadata[1]
+function meta::external::powerbi::transformation::fromPure::getModelPlatformMetadata(name: String[1]):PlatformMetadata[1]
 {
   let defaultPlatformMetadata=getDefaultPlatformMetadata();
   ^$defaultPlatformMetadata(
@@ -73,7 +73,7 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::g
   );
 }
 
-function <<access.private>> meta::external::powerbi::transformation::fromPure::getModelDefinitionMetadata():ModelDefinitionMetadata[1]
+function meta::external::powerbi::transformation::fromPure::getModelDefinitionMetadata():ModelDefinitionMetadata[1]
 {
   ^ModelDefinitionMetadata(
     version='4.0',
@@ -82,7 +82,7 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::g
 }
 
 
-function <<access.private>> meta::external::powerbi::transformation::fromPure::getReport(name: String[1]):Report[1]
+function meta::external::powerbi::transformation::fromPure::getReport(name: String[1]):Report[1]
 {
   ^Report(
     name=$name,
@@ -91,7 +91,7 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::g
   );
 }
 
-function <<access.private>> meta::external::powerbi::transformation::fromPure::getProjectMetadata(name: String[1]):ProjectMetadata[1]
+function meta::external::powerbi::transformation::fromPure::getProjectMetadata(name: String[1]):ProjectMetadata[1]
 {
   ^ProjectMetadata(
     version='1.0',
@@ -189,7 +189,7 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::g
     name=$tableName->replace(' ', '_'),
     lineageTag=$lineageTag,
     columns=$plan.rootExecutionNode.resultType->cast(@TDSResultType).tdsColumns->map(c | $c->toTableColumn($lineageTag)),
-    partition=^Partition(mode=$queryMode, source=$plan.rootExecutionNode->getPartitionSource()));
+    partition=^Partition(mode=$queryMode, type=PartitionSourceType.m, source=$plan.rootExecutionNode->getPartitionSource()));
 }
 
 function <<access.private>> meta::external::powerbi::transformation::fromPure::validateExecutionPlan(plan: ExecutionPlan[1], executableTitle: String[1]): Boolean[*]
@@ -220,7 +220,9 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::g
 function <<access.private>> meta::external::powerbi::transformation::fromPure::getPartitionSource(rootExecutionNode: ExecutionNode[1]):PartitionSource[1]
 {
   let sqlNode=$rootExecutionNode->getLastSqlExecutionNodeWithSelect();
-  ^PartitionSource(sqlQuery=$sqlNode.sqlQuery, datasourceSpecification=$sqlNode.connection->cast(@RelationalDatabaseConnection).datasourceSpecification);
+  ^MPartitionSource(
+    expression=generateExpression($sqlNode.sqlQuery, $sqlNode.connection->cast(@RelationalDatabaseConnection).datasourceSpecification)
+  );
 }
 
 function <<access.private>> meta::external::powerbi::transformation::fromPure::getLastSqlExecutionNodeWithSelect(rootExecutionNode: ExecutionNode[1]):SQLExecutionNode[1]

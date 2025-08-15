@@ -25,6 +25,7 @@ import org.finos.legend.pure.runtime.java.extension.functions.standard.interpret
 import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.tbd.BitXor;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.tbd.BitShiftLeft;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.tbd.BitShiftRight;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.tbd.HashCode;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.string.generation.Guid;
 import org.finos.legend.pure.runtime.java.interpreted.extension.BaseInterpretedExtension;
 
@@ -50,7 +51,10 @@ public class StandardFunctionExtensionInterpreted extends BaseInterpretedExtensi
                 Tuples.pair("bitShiftRight_Integer_1__Integer_1__Integer_1_", BitShiftRight::new),
 
                 // String
-                Tuples.pair("generateGuid__String_1_", Guid::new)
+                Tuples.pair("generateGuid__String_1_", Guid::new),
+
+                // Hash
+                Tuples.pair("hashCode_Any_MANY__Integer_1_", HashCode::new)
         );
     }
 

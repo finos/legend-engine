@@ -14,10 +14,14 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opentracing.Span;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
@@ -92,6 +96,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(RelationalResult.class);
     private static final ImmutableList<String> TEMPORAL_DATE_ALIASES = Lists.immutable.of("k_businessDate", "k_processingDate");
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public final List<String> sqlColumns;
     private final List<String> temporaryTables;
@@ -470,9 +475,43 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         {
             result = resultSet.getDate(columnIndex);
         }
+        else if (resultDBColumnsMetaData.isArrayColumn(columnIndex))
+        {
+            Array array = resultSet.getArray(columnIndex);
+            if (array == null)
+            {
+                result =  null;
+            }
+            else
+            {
+                try
+                {
+                    result = OBJECT_MAPPER.writeValueAsString(array.getArray());
+                }
+                catch (IOException e)
+                {
+                    throw new UncheckedIOException(String.format("Unable to process variant result as JSON from column '%s' with value: %s", this.resultSetMetaData.getColumnLabel(columnIndex), array), e);
+                }
+            }
+        }
         else if (resultDBColumnsMetaData.isVariantColumn(columnIndex))
         {
-            result = resultSet.getString(columnIndex);
+            Object object = resultSet.getObject(columnIndex);
+            if (object == null)
+            {
+                result =  null;
+            }
+            else
+            {
+                try
+                {
+                    result = OBJECT_MAPPER.readTree(object.toString()).toString();
+                }
+                catch (JsonProcessingException e)
+                {
+                    throw new UncheckedIOException(String.format("Unable to process variant result as JSON from column '%s' with value: %s", this.resultSetMetaData.getColumnLabel(columnIndex), object), e);
+                }
+            }
         }
         else
         {

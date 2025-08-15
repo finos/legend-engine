@@ -39,6 +39,14 @@ function <<test.Test>> meta::relational::tests::tds::tdsContains::testTDSContain
    assertSameElements(['Fabrice','Oliver','David'], $result.values.firstName);
 }
 
+function <<test.Test>> meta::relational::tests::tds::tdsContains::testTDSContainsType1NegationWithExtendedPrimitives():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p | !$p->tdsContains([p|$p.firm.legalName], Firm.all()->project(f|$f.legalName, 'Name')->limit(1))), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where not exists (select 1 from (select top 1 "root".LEGALNAME as "Name" from firmTable as "root") as "firmtable_1" where "firmtable_0".LEGALNAME = "firmtable_1"."Name" or ("firmtable_0".LEGALNAME is null and "firmtable_1"."Name" is null))', $result->sqlRemoveFormatting());
+   assertSize($result.values, 3);
+   assertSameElements(['Fabrice','Oliver','David'], $result.values.firstName);
+}
+
 function <<test.Test>> meta::relational::tests::tds::tdsContains::testTDSContainsType1NegationFurtherOps():Boolean[1]
 {
    let result = execute(|Person.all()->filter(p | $p->tdsContains([p|$p.firm.legalName], Firm.all()->project(f|$f.legalName, 'Name')->limit(1)))->filter(s|$s.address.name == 'New York')->groupBy([a|$a.firm.legalName], [agg(a|$a.firstName, y|$y->count())], ['FN', 'Count']), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());

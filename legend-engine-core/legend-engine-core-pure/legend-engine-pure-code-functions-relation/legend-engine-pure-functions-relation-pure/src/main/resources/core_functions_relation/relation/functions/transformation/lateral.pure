@@ -1,0 +1,159 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+
+native function <<PCT.function>>
+{
+    doc.doc='Perform a lateral join, where the given function is applied to each row of the first relation, and the result is a relation that is joined with the second relation based on the function\'s output.'
+}
+meta::pure::functions::relation::lateral<T,V>(rel:Relation<T>[1], f:Function<{T[1]->Relation<V>[1]}>[1]):Relation<T+V>[1];
+
+function <<PCT.test>> meta::pure::functions::relation::tests::lateral::testLateralJoin<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {|
+    let t1 = #TDS
+              departmentId, departmentName
+              1, Engineering
+              2, Support
+              3, Sales
+            #;
+    let t2 = #TDS
+              employeeId, employeeName, department
+              101, Rafael, 1
+              102, Pierre, 1
+              103, Jake, 1
+              104, John, 2
+              105, Jane, 2
+              106, Alice, 3
+              107, Bob, 3
+              108, Charlie, 3
+              109, David, 3
+              999, NonExistent, 4
+            #;
+    $t1->lateral(x | $t2->filter(y| $y.department == $x.departmentId));
+  };
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   departmentId,departmentName,employeeId,employeeName,department\n'+
+                '   1,Engineering,101,Rafael,1\n'+
+                '   1,Engineering,102,Pierre,1\n'+
+                '   1,Engineering,103,Jake,1\n'+
+                '   2,Support,104,John,2\n'+
+                '   2,Support,105,Jane,2\n'+
+                '   3,Sales,106,Alice,3\n'+
+                '   3,Sales,107,Bob,3\n'+
+                '   3,Sales,108,Charlie,3\n'+
+                '   3,Sales,109,David,3\n'+
+                '#', $res->sort([~departmentId->ascending(),~employeeId->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {|
+    let t1 = #TDS
+              departmentId, departmentName
+              1, Engineering
+              2, Support
+              3, Sales
+            #;
+    let t2 = #TDS
+              did, Budget, Program
+              1, 0.5, 1
+              1, 1.0, 2
+              2, 0.5, 3 
+              3, 3.0, 4
+              3, 5.0, 5
+            #;            
+    let t3 = #TDS
+              employeeId, employeeName, department
+              101, Rafael, 1
+              102, Pierre, 1
+              103, Jake, 1
+              104, John, 2
+              105, Jane, 2
+              106, Alice, 3
+              107, Bob, 3
+              108, Charlie, 3
+              109, David, 3
+              999, NonExistent, 4
+            #;
+    $t1->lateral(x | $t2->filter(y| $y.did == $x.departmentId))
+       ->lateral(x | $t3->filter(y| $y.department == $x.departmentId));
+  };
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   departmentId,departmentName,did,Budget,Program,employeeId,employeeName,department\n'+
+                '   1,Engineering,1,0.5,1,101,Rafael,1\n'+
+                '   1,Engineering,1,1.0,2,101,Rafael,1\n'+
+                '   1,Engineering,1,0.5,1,102,Pierre,1\n'+
+                '   1,Engineering,1,1.0,2,102,Pierre,1\n'+
+                '   1,Engineering,1,0.5,1,103,Jake,1\n'+
+                '   1,Engineering,1,1.0,2,103,Jake,1\n'+
+                '   2,Support,2,0.5,3,104,John,2\n'+
+                '   2,Support,2,0.5,3,105,Jane,2\n'+
+                '   3,Sales,3,3.0,4,106,Alice,3\n'+
+                '   3,Sales,3,5.0,5,106,Alice,3\n'+
+                '   3,Sales,3,3.0,4,107,Bob,3\n'+
+                '   3,Sales,3,5.0,5,107,Bob,3\n'+
+                '   3,Sales,3,3.0,4,108,Charlie,3\n'+
+                '   3,Sales,3,5.0,5,108,Charlie,3\n'+
+                '   3,Sales,3,3.0,4,109,David,3\n'+
+                '   3,Sales,3,5.0,5,109,David,3\n'+
+                '#', $res->sort([~departmentId->ascending(),~employeeId->ascending(), ~Program->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {|
+    let t1 = #TDS
+              departmentId, departmentName
+              1, Engineering
+              2, Support
+              3, Sales
+            #;
+    let t2 = #TDS
+              employeeId, employeeName, department
+              101, Rafael, 1
+              102, Pierre, 1
+              103, Jake, 1
+              104, John, 2
+              105, Jane, 2
+              106, Alice, 3
+              107, Bob, 3
+              108, Charlie, 3
+              109, David, 3
+              999, NonExistent, 4
+            #;
+    $t2->lateral(x | $t1->filter(y| $x.department == $y.departmentId));
+  };
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   employeeId,employeeName,department,departmentId,departmentName\n'+
+                '   101,Rafael,1,1,Engineering\n'+
+                '   102,Pierre,1,1,Engineering\n'+
+                '   103,Jake,1,1,Engineering\n'+
+                '   104,John,2,2,Support\n'+
+                '   105,Jane,2,2,Support\n'+
+                '   106,Alice,3,3,Sales\n'+
+                '   107,Bob,3,3,Sales\n'+
+                '   108,Charlie,3,3,Sales\n'+
+                '   109,David,3,3,Sales\n'+
+                '#', $res->sort([~departmentId->ascending(),~employeeId->ascending()])->toString());
+}

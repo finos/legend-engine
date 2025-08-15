@@ -30,6 +30,16 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithExtendedPrimitives(): Boolean[1]
+{
+  let binding = getTestBinding_ExtendedPrimitives();
+  let query   = {data:String[1]| Person_ExtendedPrimitives->internalize($binding, $data)->externalize($binding, #{Person_ExtendedPrimitives{firstName, lastName}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithOptionalInput(): Boolean[1]
 {
   let binding = getTestBinding();
@@ -297,6 +307,8 @@ import meta::legend::*;
 import meta::external::format::shared::binding::*;
 import meta::external::format::json::executionPlan::test::simple::*;
 
+Primitive meta::external::format::json::executionPlan::test::simple::ExtendedString extends String
+
 Class meta::external::format::json::executionPlan::test::simple::RefinedPerson
 {
   fullName  : String[1];
@@ -304,9 +316,23 @@ Class meta::external::format::json::executionPlan::test::simple::RefinedPerson
   addresses : Address[*];
 }
 
+Class meta::external::format::json::executionPlan::test::simple::RefinedPerson_ExtendedPrimitives
+{
+  fullName  : meta::external::format::json::executionPlan::test::simple::ExtendedString[1];
+  firm      : Firm[1];
+  addresses : Address[*];
+}
+
 Class meta::external::format::json::executionPlan::test::simple::TargetPerson
 {
   fullName  : String[1];
+  firm      : Firm[1];
+  addresses : Address[*];
+}
+
+Class meta::external::format::json::executionPlan::test::simple::TargetPerson_ExtendedPrimitives
+{
+  fullName  : meta::external::format::json::executionPlan::test::simple::ExtendedString[1];
   firm      : Firm[1];
   addresses : Address[*];
 }
@@ -319,9 +345,22 @@ Class meta::external::format::json::executionPlan::test::simple::Person
   addresses : Address[*];
 }
 
+Class meta::external::format::json::executionPlan::test::simple::Person_ExtendedPrimitives
+{
+  firstName : meta::external::format::json::executionPlan::test::simple::ExtendedString[1];
+  lastName  : meta::external::format::json::executionPlan::test::simple::ExtendedString[1];
+  firm      : Firm[1];
+  addresses : Address[*];
+}
+
 Class meta::external::format::json::executionPlan::test::simple::Firm
 {
   legalName : String[1];
+}
+
+Class meta::external::format::json::executionPlan::test::simple::Firm_ExtendedPrimitives
+{
+  legalName : meta::external::format::json::executionPlan::test::simple::ExtendedString[1];
 }
 
 Class meta::external::format::json::executionPlan::test::simple::Address
@@ -332,6 +371,16 @@ Class meta::external::format::json::executionPlan::test::simple::Address
   {
     'Street:' + $this.street
   }:String[1];
+}
+
+Class meta::external::format::json::executionPlan::test::simple::Address_ExtendedPrimitives
+{
+  street : meta::external::format::json::executionPlan::test::simple::ExtendedString[1];
+
+  decoratedStreet()
+  {
+    ('Street:' + $this.street)->cast(@meta::external::format::json::executionPlan::test::simple::ExtendedString)
+  }:meta::external::format::json::executionPlan::test::simple::ExtendedString[1];
 }
 
 function meta::external::format::json::executionPlan::test::simple::getTestBinding():Binding[1]
@@ -347,6 +396,25 @@ function meta::external::format::json::executionPlan::test::simple::getTestBindi
     '    meta::external::format::json::executionPlan::test::simple::Person,\n' +
     '    meta::external::format::json::executionPlan::test::simple::Firm,\n' +
     '    meta::external::format::json::executionPlan::test::simple::Address\n' +
+    '  ];\n' +
+    '}\n';
+
+  compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
+}
+
+function meta::external::format::json::executionPlan::test::simple::getTestBinding_ExtendedPrimitives():Binding[1]
+{
+  let schema =
+    '###ExternalFormat\n' +
+    'Binding meta::external::format::json::executionPlan::test::simple::TestBinding_ExtendedPrimitives\n' +
+    '{\n' +
+    '  contentType: \'application/json\';\n' +
+    '  modelIncludes: [\n' +
+    '    meta::external::format::json::executionPlan::test::simple::RefinedPerson_ExtendedPrimitives,\n' +
+    '    meta::external::format::json::executionPlan::test::simple::TargetPerson_ExtendedPrimitives,\n' +
+    '    meta::external::format::json::executionPlan::test::simple::Person_ExtendedPrimitives,\n' +
+    '    meta::external::format::json::executionPlan::test::simple::Firm_ExtendedPrimitives,\n' +
+    '    meta::external::format::json::executionPlan::test::simple::Address_ExtendedPrimitives\n' +
     '  ];\n' +
     '}\n';
 

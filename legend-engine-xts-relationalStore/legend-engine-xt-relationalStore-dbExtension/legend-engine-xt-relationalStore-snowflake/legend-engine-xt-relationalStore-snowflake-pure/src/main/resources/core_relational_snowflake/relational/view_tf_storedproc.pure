@@ -57,9 +57,11 @@ function meta::relational::functions::sqlQueryToString::snowflake::createProcedu
     +'('+ $createProc.parameters+ ')'+ 
     +'\nRETURNS TABLE('+ $createProc.return+ ')\nLANGUAGE SQL'+
     if($createProc.copyGrants, |' COPY GRANTS',|'') +
+    '\nEXECUTE AS CALLER'+
     '\nAS $$\n' +
     ' DECLARE\n    ' +
-    $createProc.declarations->map(v| $v.name+ ' '+ $v.type->toOne())->joinStrings('',';\n   ', ';') +
+    $createProc.declarations->map(v| $v.name+ ' '+ $v.type->toOne())->joinStrings('',';\n    ', ';') +
+    '\n    finalResult RESULTSET;'+
     '\n BEGIN\n'+
     '   '+$createProc.declarations->map(v| $v->meta::relational::functions::sqlQueryToString::processOperation($dbConfig.dbType, $extensions))->joinStrings('',';\n   ',';') +
     '\n   finalResult := ('+ $createProc.generatedSQL+ ');'+
@@ -75,9 +77,10 @@ function meta::relational::functions::sqlQueryToString::snowflake::createFunctio
     'Function ' +
     if($createFunc.schemaName->isEmpty(),|'',|$createFunc.schemaName->toOne() + '.') +
     $createFunc.name +
-    +'('+ $createFunc.parameters+ ')'+ 
-    +'\nRETURNS TABLE('+ $createFunc.return+ ')\nLANGUAGE SQL'+
-    if($createFunc.copyGrants, |' COPY GRANTS',|'') +
+    +'('+ $createFunc.parameters+ ')\n'+ 
+    if($createFunc.copyGrants, |'COPY GRANTS',|'') +
+    +'\nRETURNS TABLE('+ $createFunc.return+ ')\n'+
+    'LANGUAGE SQL'+
     '\nAS $$\n' +
      $createFunc.generatedSQL+
     ' $$;'

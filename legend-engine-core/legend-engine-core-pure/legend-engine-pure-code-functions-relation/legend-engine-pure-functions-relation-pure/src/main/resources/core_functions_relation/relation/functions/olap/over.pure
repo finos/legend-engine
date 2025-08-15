@@ -93,6 +93,14 @@ function
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
+    meta::pure::functions::relation::over<T>(sortInfo:SortInfo<(?:?)⊆T>[1], rangeInterval:_RangeInterval[1]):_Window<T>[1]
+{
+  over([],$sortInfo,$rangeInterval)
+}
+
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
     meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[*]):_Window<T>[1]
 {
   over($cols.name,$sortInfo,[])
@@ -117,6 +125,14 @@ function
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
+    meta::pure::functions::relation::over<T>(cols:ColSpec<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[1], rangeInterval:_RangeInterval[1]):_Window<T>[1]
+{
+  over($cols.name,$sortInfo,$rangeInterval)
+}
+
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
     meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[*]):_Window<T>[1]
 {
   over($cols.names,$sortInfo,[])
@@ -136,6 +152,14 @@ function
     meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[1], range:_Range[1]):_Window<T>[1]
 {
   over($cols.names,$sortInfo,$range)
+}
+
+function
+    <<functionType.NormalizeRequiredFunction,
+    PCT.function>>
+    meta::pure::functions::relation::over<T>(cols:ColSpecArray<(?:?)⊆T>[1], sortInfo:SortInfo<(?:?)⊆T>[1], rangeInterval:_RangeInterval[1]):_Window<T>[1]
+{
+  over($cols.names,$sortInfo,$rangeInterval)
 }
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_CurrentRow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -933,55 +957,1090 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
     assertError(|$f->eval($expr), 'Invalid window frame boundary - lower bound of window frame cannot be greater than the upper bound!');
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_CurrentRow_WithMultiplePartitions_WithSingleOrderBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_InvalidWindowFrameBoundary<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
                   p, o, i
-                  0, 1, a
-                  0, 1, a
-                  0, 3, c
-                  100, 1, a
-                  100, 2, b
-                  100, 2, b
-                  100, 3, c
-                  100, 3, c
-                  200, 1, a
-                  200, 1, a
-                  200, 1, a
-                  200, 2, b
-                  200, 3, c
-                  200, 3, c
-                  300, 1, a
-                  300, 2, b
-                #->extend(over(~p, ~o->ascending(), _range(meta::pure::functions::relation::unbounded(), 0)), ~sum_i_Rows:{p,w,r|$r.i}:y|$y->plus())
+                  0, 1, 10
+                  0, 2, 20
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 30
+                  100, 2, 5
+                  100, 3, 11
+                  100, 3, 120
+                  200, 1, 10000
+                  200, 1, 200
+                  200, 1, 808080
+                  200, 2, 33333
+                  200, 3, 0
+                  200, 3, 4
+                  300, 1, 0
+                  300, 2, 0
+                #->extend(over(~[p, o], ~i->ascending(), _range(4, 2)), ~sum_i_Rows:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+    assertError(|$f->eval($expr), 'Invalid window frame boundary - lower bound of window frame cannot be greater than the upper bound!');
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->ascending(), _range(meta::pure::functions::relation::unbounded(), 0)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
                };
 
 
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   p,o,i,sum_i_Rows\n'+
-                  '   0,1,a,aa\n'+
-                  '   0,1,a,aa\n'+
-                  '   0,3,c,aac\n'+
-                  '   100,1,a,a\n'+
-                  '   100,2,b,abb\n'+
-                  '   100,2,b,abb\n'+
-                  '   100,3,c,abbcc\n'+
-                  '   100,3,c,abbcc\n'+
-                  '   200,1,a,aaa\n'+
-                  '   200,1,a,aaa\n'+
-                  '   200,1,a,aaa\n'+
-                  '   200,2,b,aaab\n'+
-                  '   200,3,c,aaabcc\n'+
-                  '   200,3,c,aaabcc\n'+
-                  '   300,1,a,a\n'+
-                  '   300,2,b,ab\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,1,10,20\n'+
+                  '   0,1,10,20\n'+
+                  '   0,3,30,50\n'+
+                  '   100,1,10,10\n'+
+                  '   100,2,20,50\n'+
+                  '   100,2,20,50\n'+
+                  '   100,3,30,110\n'+
+                  '   100,3,30,110\n'+
+                  '   200,1,10,30\n'+
+                  '   200,1,10,30\n'+
+                  '   200,1,10,30\n'+
+                  '   200,2,20,50\n'+
+                  '   200,3,30,110\n'+
+                  '   200,3,30,110\n'+
+                  '   300,1,10,10\n'+
+                  '   300,2,20,30\n'+
                   '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->descending(), _range(meta::pure::functions::relation::unbounded(), 0)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2,20,20\n'+
+                  '   300,1,10,30\n'+
+                  '   200,3,30,60\n'+
+                  '   200,3,30,60\n'+
+                  '   200,2,20,80\n'+
+                  '   200,1,10,110\n'+
+                  '   200,1,10,110\n'+
+                  '   200,1,10,110\n'+
+                  '   100,3,30,60\n'+
+                  '   100,3,30,60\n'+
+                  '   100,2,20,100\n'+
+                  '   100,2,20,100\n'+
+                  '   100,1,10,110\n'+
+                  '   0,3,30,30\n'+
+                  '   0,1,10,50\n'+
+                  '   0,1,10,50\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->ascending(), _range(meta::pure::functions::relation::unbounded(), -1)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,1,10,null\n'+
+                  '   0,1,10,null\n'+
+                  '   0,3,30,20\n'+
+                  '   100,1,10,null\n'+
+                  '   100,2,20,10\n'+
+                  '   100,2,20,10\n'+
+                  '   100,3,30,50\n'+
+                  '   100,3,30,50\n'+
+                  '   200,1,10,null\n'+
+                  '   200,1,10,null\n'+
+                  '   200,1,10,null\n'+
+                  '   200,2,20,30\n'+
+                  '   200,3,30,50\n'+
+                  '   200,3,30,50\n'+
+                  '   300,1,10,null\n'+
+                  '   300,2,20,10\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->descending(), _range(meta::pure::functions::relation::unbounded(), -1)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2,20,null\n'+
+                  '   300,1,10,20\n'+
+                  '   200,3,30,null\n'+
+                  '   200,3,30,null\n'+
+                  '   200,2,20,60\n'+
+                  '   200,1,10,80\n'+
+                  '   200,1,10,80\n'+
+                  '   200,1,10,80\n'+
+                  '   100,3,30,null\n'+
+                  '   100,3,30,null\n'+
+                  '   100,2,20,60\n'+
+                  '   100,2,20,60\n'+
+                  '   100,1,10,100\n'+
+                  '   0,3,30,null\n'+
+                  '   0,1,10,30\n'+
+                  '   0,1,10,30\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->ascending(), _range(meta::pure::functions::relation::unbounded(), 1)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,1,10,20\n'+
+                  '   0,1,10,20\n'+
+                  '   0,3,30,50\n'+
+                  '   100,1,10,50\n'+
+                  '   100,2,20,110\n'+
+                  '   100,2,20,110\n'+
+                  '   100,3,30,110\n'+
+                  '   100,3,30,110\n'+
+                  '   200,1,10,50\n'+
+                  '   200,1,10,50\n'+
+                  '   200,1,10,50\n'+
+                  '   200,2,20,110\n'+
+                  '   200,3,30,110\n'+
+                  '   200,3,30,110\n'+
+                  '   300,1,10,30\n'+
+                  '   300,2,20,30\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->descending(), _range(meta::pure::functions::relation::unbounded(), 1)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2,20,30\n'+
+                  '   300,1,10,30\n'+
+                  '   200,3,30,80\n'+
+                  '   200,3,30,80\n'+
+                  '   200,2,20,110\n'+
+                  '   200,1,10,110\n'+
+                  '   200,1,10,110\n'+
+                  '   200,1,10,110\n'+
+                  '   100,3,30,100\n'+
+                  '   100,3,30,100\n'+
+                  '   100,2,20,110\n'+
+                  '   100,2,20,110\n'+
+                  '   100,1,10,110\n'+
+                  '   0,3,30,30\n'+
+                  '   0,1,10,50\n'+
+                  '   0,1,10,50\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->ascending(), _range(0, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,1,10,50\n'+
+                  '   0,1,10,50\n'+
+                  '   0,3,30,30\n'+
+                  '   100,1,10,110\n'+
+                  '   100,2,20,100\n'+
+                  '   100,2,20,100\n'+
+                  '   100,3,30,60\n'+
+                  '   100,3,30,60\n'+
+                  '   200,1,10,110\n'+
+                  '   200,1,10,110\n'+
+                  '   200,1,10,110\n'+
+                  '   200,2,20,80\n'+
+                  '   200,3,30,60\n'+
+                  '   200,3,30,60\n'+
+                  '   300,1,10,30\n'+
+                  '   300,2,20,20\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->descending(), _range(0, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2,20,30\n'+
+                  '   300,1,10,10\n'+
+                  '   200,3,30,110\n'+
+                  '   200,3,30,110\n'+
+                  '   200,2,20,50\n'+
+                  '   200,1,10,30\n'+
+                  '   200,1,10,30\n'+
+                  '   200,1,10,30\n'+
+                  '   100,3,30,110\n'+
+                  '   100,3,30,110\n'+
+                  '   100,2,20,50\n'+
+                  '   100,2,20,50\n'+
+                  '   100,1,10,10\n'+
+                  '   0,3,30,50\n'+
+                  '   0,1,10,20\n'+
+                  '   0,1,10,20\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->ascending(), _range(-1, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,1,10,50\n'+
+                  '   0,1,10,50\n'+
+                  '   0,3,30,30\n'+
+                  '   100,1,10,110\n'+
+                  '   100,2,20,110\n'+
+                  '   100,2,20,110\n'+
+                  '   100,3,30,100\n'+
+                  '   100,3,30,100\n'+
+                  '   200,1,10,110\n'+
+                  '   200,1,10,110\n'+
+                  '   200,1,10,110\n'+
+                  '   200,2,20,110\n'+
+                  '   200,3,30,80\n'+
+                  '   200,3,30,80\n'+
+                  '   300,1,10,30\n'+
+                  '   300,2,20,30\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->descending(), _range(-1, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2,20,30\n'+
+                  '   300,1,10,30\n'+
+                  '   200,3,30,110\n'+
+                  '   200,3,30,110\n'+
+                  '   200,2,20,110\n'+
+                  '   200,1,10,50\n'+
+                  '   200,1,10,50\n'+
+                  '   200,1,10,50\n'+
+                  '   100,3,30,110\n'+
+                  '   100,3,30,110\n'+
+                  '   100,2,20,110\n'+
+                  '   100,2,20,110\n'+
+                  '   100,1,10,50\n'+
+                  '   0,3,30,50\n'+
+                  '   0,1,10,20\n'+
+                  '   0,1,10,20\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->ascending(), _range(1, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,1,10,30\n'+
+                  '   0,1,10,30\n'+
+                  '   0,3,30,null\n'+
+                  '   100,1,10,100\n'+
+                  '   100,2,20,60\n'+
+                  '   100,2,20,60\n'+
+                  '   100,3,30,null\n'+
+                  '   100,3,30,null\n'+
+                  '   200,1,10,80\n'+
+                  '   200,1,10,80\n'+
+                  '   200,1,10,80\n'+
+                  '   200,2,20,60\n'+
+                  '   200,3,30,null\n'+
+                  '   200,3,30,null\n'+
+                  '   300,1,10,20\n'+
+                  '   300,2,20,null\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->descending(), _range(1, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2,20,10\n'+
+                  '   300,1,10,null\n'+
+                  '   200,3,30,50\n'+
+                  '   200,3,30,50\n'+
+                  '   200,2,20,30\n'+
+                  '   200,1,10,null\n'+
+                  '   200,1,10,null\n'+
+                  '   200,1,10,null\n'+
+                  '   100,3,30,50\n'+
+                  '   100,3,30,50\n'+
+                  '   100,2,20,10\n'+
+                  '   100,2,20,10\n'+
+                  '   100,1,10,null\n'+
+                  '   0,3,30,20\n'+
+                  '   0,1,10,null\n'+
+                  '   0,1,10,null\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->ascending(), _range(-2, -1)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,1,10,null\n'+
+                  '   0,1,10,null\n'+
+                  '   0,3,30,20\n'+
+                  '   100,1,10,null\n'+
+                  '   100,2,20,10\n'+
+                  '   100,2,20,10\n'+
+                  '   100,3,30,50\n'+
+                  '   100,3,30,50\n'+
+                  '   200,1,10,null\n'+
+                  '   200,1,10,null\n'+
+                  '   200,1,10,null\n'+
+                  '   200,2,20,30\n'+
+                  '   200,3,30,50\n'+
+                  '   200,3,30,50\n'+
+                  '   300,1,10,null\n'+
+                  '   300,2,20,10\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->descending(), _range(-2, -1)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2,20,null\n'+
+                  '   300,1,10,20\n'+
+                  '   200,3,30,null\n'+
+                  '   200,3,30,null\n'+
+                  '   200,2,20,60\n'+
+                  '   200,1,10,80\n'+
+                  '   200,1,10,80\n'+
+                  '   200,1,10,80\n'+
+                  '   100,3,30,null\n'+
+                  '   100,3,30,null\n'+
+                  '   100,2,20,60\n'+
+                  '   100,2,20,60\n'+
+                  '   100,1,10,100\n'+
+                  '   0,3,30,null\n'+
+                  '   0,1,10,30\n'+
+                  '   0,1,10,30\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->ascending(), _range(-1, 1)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,1,10,20\n'+
+                  '   0,1,10,20\n'+
+                  '   0,3,30,30\n'+
+                  '   100,1,10,50\n'+
+                  '   100,2,20,110\n'+
+                  '   100,2,20,110\n'+
+                  '   100,3,30,100\n'+
+                  '   100,3,30,100\n'+
+                  '   200,1,10,50\n'+
+                  '   200,1,10,50\n'+
+                  '   200,1,10,50\n'+
+                  '   200,2,20,110\n'+
+                  '   200,3,30,80\n'+
+                  '   200,3,30,80\n'+
+                  '   300,1,10,30\n'+
+                  '   300,2,20,30\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->descending(), _range(-1, 1)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2,20,30\n'+
+                  '   300,1,10,30\n'+
+                  '   200,3,30,80\n'+
+                  '   200,3,30,80\n'+
+                  '   200,2,20,110\n'+
+                  '   200,1,10,50\n'+
+                  '   200,1,10,50\n'+
+                  '   200,1,10,50\n'+
+                  '   100,3,30,100\n'+
+                  '   100,3,30,100\n'+
+                  '   100,2,20,110\n'+
+                  '   100,2,20,110\n'+
+                  '   100,1,10,50\n'+
+                  '   0,3,30,30\n'+
+                  '   0,1,10,20\n'+
+                  '   0,1,10,20\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->ascending(), _range(1, 2)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,1,10,30\n'+
+                  '   0,1,10,30\n'+
+                  '   0,3,30,null\n'+
+                  '   100,1,10,100\n'+
+                  '   100,2,20,60\n'+
+                  '   100,2,20,60\n'+
+                  '   100,3,30,null\n'+
+                  '   100,3,30,null\n'+
+                  '   200,1,10,80\n'+
+                  '   200,1,10,80\n'+
+                  '   200,1,10,80\n'+
+                  '   200,2,20,60\n'+
+                  '   200,3,30,null\n'+
+                  '   200,3,30,null\n'+
+                  '   300,1,10,20\n'+
+                  '   300,2,20,null\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, 3, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, 2, 20
+                  100, 3, 30
+                  100, 3, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, 1, 10
+                  200, 2, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->descending(), _range(1, 2)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2,20,10\n'+
+                  '   300,1,10,null\n'+
+                  '   200,3,30,50\n'+
+                  '   200,3,30,50\n'+
+                  '   200,2,20,30\n'+
+                  '   200,1,10,null\n'+
+                  '   200,1,10,null\n'+
+                  '   200,1,10,null\n'+
+                  '   100,3,30,50\n'+
+                  '   100,3,30,50\n'+
+                  '   100,2,20,10\n'+
+                  '   100,2,20,10\n'+
+                  '   100,1,10,null\n'+
+                  '   0,3,30,20\n'+
+                  '   0,1,10,null\n'+
+                  '   0,1,10,null\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, null, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, null, 20
+                  100, 3, 30
+                  100, null, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, null, 10
+                  200, null, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->ascending(), _range(-1, 1)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,1,10,20\n'+
+                  '   0,1,10,20\n'+
+                  '   0,null,30,30\n'+
+                  '   100,1,10,30\n'+
+                  '   100,2,20,60\n'+
+                  '   100,3,30,50\n'+
+                  '   100,null,20,50\n'+
+                  '   100,null,30,50\n'+
+                  '   200,1,10,20\n'+
+                  '   200,1,10,20\n'+
+                  '   200,3,30,60\n'+
+                  '   200,3,30,60\n'+
+                  '   200,null,10,30\n'+
+                  '   200,null,20,30\n'+
+                  '   300,1,10,30\n'+
+                  '   300,2,20,30\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, null, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, null, 20
+                  100, 3, 30
+                  100, null, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, null, 10
+                  200, null, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->descending(), _range(-1, 1)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2,20,30\n'+
+                  '   300,1,10,30\n'+
+                  '   200,null,20,30\n'+
+                  '   200,null,10,30\n'+
+                  '   200,3,30,60\n'+
+                  '   200,3,30,60\n'+
+                  '   200,1,10,20\n'+
+                  '   200,1,10,20\n'+
+                  '   100,null,30,50\n'+
+                  '   100,null,20,50\n'+
+                  '   100,3,30,50\n'+
+                  '   100,2,20,60\n'+
+                  '   100,1,10,30\n'+
+                  '   0,null,30,30\n'+
+                  '   0,1,10,20\n'+
+                  '   0,1,10,20\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, null, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, null, 20
+                  100, 3, 30
+                  100, null, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, null, 10
+                  200, null, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->descending(), _range(meta::pure::functions::relation::unbounded(), 1)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2,20,30\n'+
+                  '   300,1,10,30\n'+
+                  '   200,null,20,30\n'+
+                  '   200,null,10,30\n'+
+                  '   200,3,30,90\n'+
+                  '   200,3,30,90\n'+
+                  '   200,1,10,110\n'+
+                  '   200,1,10,110\n'+
+                  '   100,null,30,50\n'+
+                  '   100,null,20,50\n'+
+                  '   100,3,30,100\n'+
+                  '   100,2,20,110\n'+
+                  '   100,1,10,110\n'+
+                  '   0,null,30,30\n'+
+                  '   0,1,10,50\n'+
+                  '   0,1,10,50\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_NPreceding_UnboundedFollowing_WithNullValues_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 1, 10
+                  0, 1, 10
+                  0, null, 30
+                  100, 1, 10
+                  100, 2, 20
+                  100, null, 20
+                  100, 3, 30
+                  100, null, 30
+                  200, 1, 10
+                  200, 1, 10
+                  200, null, 10
+                  200, null, 20
+                  200, 3, 30
+                  200, 3, 30
+                  300, 1, 10
+                  300, 2, 20
+                #->extend(over(~p, ~o->ascending(), _range(-1, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,1,10,50\n'+
+                  '   0,1,10,50\n'+
+                  '   0,null,30,30\n'+
+                  '   100,1,10,110\n'+
+                  '   100,2,20,110\n'+
+                  '   100,3,30,100\n'+
+                  '   100,null,20,50\n'+
+                  '   100,null,30,50\n'+
+                  '   200,1,10,110\n'+
+                  '   200,1,10,110\n'+
+                  '   200,3,30,90\n'+
+                  '   200,3,30,90\n'+
+                  '   200,null,10,30\n'+
+                  '   200,null,20,30\n'+
+                  '   300,1,10,30\n'+
+                  '   300,2,20,30\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_WithNumbers_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -997,7 +2056,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   Snack, 1.25
                   Snack, 2.25
                   Snack, 4.00
-                #->extend(over(~menu_cogs_usd->ascending(), meta::pure::functions::relation::_range(0, 2)), ~sum_cogs:{p,w,r|$r.menu_cogs_usd}:y|$y->plus())
+                #->extend(over(~menu_cogs_usd->ascending(), meta::pure::functions::relation::_range(0, 2.1)), ~sum_cogs:{p,w,r|$r.menu_cogs_usd}:y|$y->plus())
                };
 
 
@@ -1035,7 +2094,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   Snack, 1.25
                   Snack, 2.25
                   Snack, 4.00
-                #->extend(over(~menu_cogs_usd->ascending(), meta::pure::functions::relation::_range(0.5d, 2.5d)), ~sum_cogs:{p,w,r|$r.menu_cogs_usd}:y|$y->plus())
+                #->extend(over(~menu_cogs_usd->ascending(), meta::pure::functions::relation::_range(0.5d, 2.5)), ~sum_cogs:{p,w,r|$r.menu_cogs_usd}:y|$y->plus())
                };
 
 
@@ -1055,4 +2114,1252 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   '   Snack,2.25,7.0\n'+
                   '   Snack,4.0,null\n'+
                   '#', $res->sort([~menu_category->ascending(), ~menu_cogs_usd->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(meta::pure::functions::relation::unbounded(), 0, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(meta::pure::functions::relation::unbounded(), 0, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,20\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,80\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,100\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,100\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(meta::pure::functions::relation::unbounded(), -1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,20\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(meta::pure::functions::relation::unbounded(), -1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,null\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,100\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(meta::pure::functions::relation::unbounded(), 1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(meta::pure::functions::relation::unbounded(), 1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(0, DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,100\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,100\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,80\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,20\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(0, DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(-1, DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,110\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(-1, DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,110\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(1, DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,100\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,null\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(1, DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(-1, DurationUnit.DAYS, 0, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(-1, DurationUnit.DAYS, 0, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,20\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,80\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,100\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,100\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(0, DurationUnit.DAYS, 0, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,40\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,40\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,20\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,20\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(0, DurationUnit.DAYS, 0, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,20\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,20\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,40\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,40\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(0, DurationUnit.DAYS, 1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,100\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,100\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,80\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,60\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,20\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(0, DurationUnit.DAYS, 1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,50\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,10\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(-2, DurationUnit.DAYS, -1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,20\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(-2, DurationUnit.DAYS, -1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,null\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,100\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(-1, DurationUnit.DAYS, 1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(-1, DurationUnit.DAYS, 1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,80\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,100\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,110\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,50\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,30\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(1, DurationUnit.DAYS, 2, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,30\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,100\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,80\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,null\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(1, DurationUnit.DAYS, 2, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,50\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,20\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->ascending(), _range(1, DurationUnit.SECONDS, 1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,40\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,60\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,20\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,null\n'+
+                  '#', $res->sort([~p->ascending(), ~o->ascending(), ~i->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  p, o, i
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-29T00:32:34.000000000+0000, 10
+                  0, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-29T00:32:34.000000000+0000, 10
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-30T00:32:34.000000000+0000, 20
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  100, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-29T00:32:34.000000000+0000, 10
+                  200, 2024-01-30T00:32:34.000000000+0000, 20
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  200, 2024-01-31T00:32:34.000000000+0000, 30
+                  300, 2024-01-29T00:32:34.000000000+0000, 10
+                  300, 2024-01-30T00:32:34.000000000+0000, 20
+                #->extend(over(~p, ~o->descending(), _range(1, DurationUnit.SECONDS, 1, DurationUnit.DAYS)), ~newCol:{p,w,r|$r.i}:y|$y->plus())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   p,o,i,newCol\n'+
+                  '   300,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   300,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,20\n'+
+                  '   200,2024-01-31T00:32:34.000+0000,30,20\n'+
+                  '   200,2024-01-30T00:32:34.000+0000,20,30\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   200,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,40\n'+
+                  '   100,2024-01-31T00:32:34.000+0000,30,40\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   100,2024-01-30T00:32:34.000+0000,20,10\n'+
+                  '   100,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-31T00:32:34.000+0000,30,null\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '   0,2024-01-29T00:32:34.000+0000,10,null\n'+
+                  '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
 }

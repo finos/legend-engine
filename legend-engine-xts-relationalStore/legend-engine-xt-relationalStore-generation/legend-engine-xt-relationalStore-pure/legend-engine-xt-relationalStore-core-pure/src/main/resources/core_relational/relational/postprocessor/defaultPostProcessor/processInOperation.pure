@@ -45,7 +45,7 @@ function meta::relational::postProcessor::getDbSpecificTempTableCreationLogicSup
       | $dbType->createDbConfig([]).dbExtension.extraTempTableCreationLogicSupplierForIn);
 }
 
-function <<access.private>> meta::relational::postProcessor::prefixForWrapperAllocationNodeName():String[1]
+function meta::relational::postProcessor::prefixForWrapperAllocationNodeName():String[1]
 {
    'inFilterClause_';
 }

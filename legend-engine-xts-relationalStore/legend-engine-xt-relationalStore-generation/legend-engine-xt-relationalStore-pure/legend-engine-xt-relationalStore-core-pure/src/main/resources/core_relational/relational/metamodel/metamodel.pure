@@ -18,7 +18,7 @@ import meta::relational::metamodel::*;
 Class meta::relational::metamodel::UpsertSQLQuery extends SQLQuery
 {
   data               : Table[1];
-  equalityStatements : Map<String, Literal>[1];
+  equalityStatements : Map<String, RelationalOperationElement>[1];
 }
 
 Class meta::relational::metamodel::RelationDataSelectSqlQuery extends SelectSQLQuery
@@ -60,24 +60,24 @@ Class meta::relational::metamodel::ParameterizedQuery extends ObjectQuery
 {
   parameters: String[1];
   return : String[1];
-  
+
 }
 
 Class meta::relational::metamodel::CreateViewSQL extends ObjectQuery
 {
-  
+
 }
 
 Class meta::relational::metamodel::CreateProcedureSQL extends ParameterizedQuery
-{  
-    declarations : VariableDeclaration[*]; 
+{
+    declarations : VariableDeclaration[*];
 }
 
 Class meta::relational::metamodel::VariableDeclaration extends RelationalOperationElement
-{  
+{
     name : String[1];
     type: String[0..1];
-    value : RelationalOperationElement[1]; 
+    value : RelationalOperationElement[1];
 }
 
 Class meta::relational::metamodel::CreateFunctionSQL extends ParameterizedQuery
@@ -127,7 +127,7 @@ Class meta::relational::metamodel::InsertIntoTableSQL extends SQLQuery
 
 Class meta::relational::metamodel::CommitQuery extends SQLQuery
 {
-  
+
 }
 
 function meta::relational::metamodel::loadWith(c:CreateTableSQL[1], absolutePathToFile:meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder[1]):SQLQuery[2]
@@ -147,7 +147,7 @@ Class meta::relational::metamodel::AlterSQL extends SQLQuery
 {
   object: Alterable[1];
   operation: AlterOperation[*];
-} 
+}
 
 Class meta::relational::metamodel::AlterOperation
 {

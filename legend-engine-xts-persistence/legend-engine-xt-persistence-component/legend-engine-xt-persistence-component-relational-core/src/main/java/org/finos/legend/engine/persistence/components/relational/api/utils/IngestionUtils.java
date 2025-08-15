@@ -199,7 +199,7 @@ public class IngestionUtils
         return statisticsResultMap;
     }
 
-    private static Map<StatisticName, Object> executeStatisticsPhysicalPlan(Executor<SqlGen, TabularData, SqlPlan> executor,
+    public static Map<StatisticName, Object> executeStatisticsPhysicalPlan(Executor<SqlGen, TabularData, SqlPlan> executor,
                                                                      Map<StatisticName, SqlPlan> statisticsSqlPlan,
                                                                      Map<String, PlaceholderValue> placeHolderKeyValues)
     {
@@ -242,7 +242,7 @@ public class IngestionUtils
         return results;
     }
 
-    private static Map<String, PlaceholderValue> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
+    public static Map<String, PlaceholderValue> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
                                                                       Planner planner, Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
                                                                       Optional<DataSplitRange> dataSplitRange, Map<String, Object> additionalMetadata,
                                                                       Clock executionTimestampClock, Optional<Long> nextBatchId)

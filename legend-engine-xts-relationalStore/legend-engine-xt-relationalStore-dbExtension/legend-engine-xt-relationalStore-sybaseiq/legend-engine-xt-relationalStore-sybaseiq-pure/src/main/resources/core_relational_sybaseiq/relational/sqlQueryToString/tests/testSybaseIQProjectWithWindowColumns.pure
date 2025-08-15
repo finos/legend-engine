@@ -192,7 +192,7 @@ function <<test.Test>>meta::relational::tests::projection::sybaseIQ::testProject
                   ])
                ->filter( x| $x.getString('first_name' ) == 'David' )};
    let res = toSQLString($func, simpleRelationalMapping,DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals ('select "root".FIRSTNAME as "first_name", "root".AGE as "age", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverage" from personTable as "root" where "root".FIRSTNAME = \'David\'' , $res);
+   assertEquals('select "root".FIRSTNAME as "first_name", "root".AGE as "age", avg(1.0 * "root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "ageAverage" from personTable as "root" where "root".FIRSTNAME = \'David\'', $res);
 
 }
 

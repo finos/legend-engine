@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.RuntimeCompilerHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -131,9 +132,12 @@ public class CompilerExtensions
     private final ImmutableList<BiConsumer<PureModel, MappingValidatorContext>> extraMappingPostValidators;
     private final ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> extraValueSpecificationBuilderForFuncExpr;
     private final ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> extraRelationStoreAccessorProcessors;
-    private final ImmutableList<Procedure3<EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> extraPackageableRuntimeProcessors;
+    private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> extraRuntimeValueProcessors;
+    private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, Root_meta_core_runtime_EngineRuntime, CompileContext>> extraRuntimeSecondPassProcessors;
 
     private final Map<String, IncludedMappingHandler> extraIncludedMappingHandlers;
+
+    private final Map<String, RuntimeCompilerHandler> extraRuntimeCompilerHandlers;
     private final MutableMap<String, MutableSet<String>> extraSubTypesForFunctionMatching;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
@@ -177,8 +181,11 @@ public class CompilerExtensions
         this.extraValueSpecificationBuilderForFuncExpr = this.extensions.flatCollect(CompilerExtension::getExtraValueSpecificationBuilderForFuncExpr);
         this.extraIncludedMappingHandlers = Maps.mutable.empty();
         this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
+        this.extraRuntimeCompilerHandlers = Maps.mutable.empty();
+        this.extensions.forEach(e -> extraRuntimeCompilerHandlers.putAll(e.getExtraRuntimeCompilerHandlers()));
         this.extraRelationStoreAccessorProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRelationStoreAccessorProcessors);
-        this.extraPackageableRuntimeProcessors = this.extensions.flatCollect(CompilerExtension::getExtraPackageableRuntimeProcessors);
+        this.extraRuntimeValueProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRuntimeValueProcessors);
+        this.extraRuntimeSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRuntimeThirdPassProcessors);
         this.extraSubTypesForFunctionMatching = Maps.mutable.empty();
         this.extensions.forEach(
                 e -> e.getExtraSubtypesForFunctionMatching().keysView().forEach(
@@ -393,9 +400,14 @@ public class CompilerExtensions
         return this.extraMappingPostValidators.castToList();
     }
 
-    public List<Procedure3<EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> getExtraPackageableRuntimeProcessors()
+    public List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> getExtraRuntimeValueProcessors()
     {
-        return this.extraPackageableRuntimeProcessors.castToList();
+        return this.extraRuntimeValueProcessors.castToList();
+    }
+
+    public List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, Root_meta_core_runtime_EngineRuntime, CompileContext>> getExtraRuntimeThirdPassProcessors()
+    {
+        return this.extraRuntimeSecondPassProcessors.castToList();
     }
 
     public ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> getExtraValueSpecificationBuilderForFuncExpr()
@@ -560,6 +572,12 @@ public class CompilerExtensions
     public IncludedMappingHandler getExtraIncludedMappingHandlers(String classType)
     {
         return this.extraIncludedMappingHandlers.get(classType);
+    }
+
+
+    public Map<String, RuntimeCompilerHandler> getExtraRuntimeCompilerHandler()
+    {
+        return this.extraRuntimeCompilerHandlers;
     }
 
     public ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, ValueSpecification>> getExtraRelationStoreAccessorProcessors()

@@ -181,6 +181,12 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         {
             try
             {
+                if (!content.utilDDL.isEmpty())
+                {
+                    Map<String, Object> model = new HashMap<>();
+                    model.put("catalogSchemaName", catalogName);
+                    statements.addAll(content.utilDDL.collect(s -> FreeMarkerExecutor.process(s, model, "")));
+                }
                 if (content.createStatement.matches("^CREATE OR REPLACE SECURE FUNCTION %S[\\s\\S]*"))
                 {
                     statements.add(String.format(content.createStatement, catalogName));

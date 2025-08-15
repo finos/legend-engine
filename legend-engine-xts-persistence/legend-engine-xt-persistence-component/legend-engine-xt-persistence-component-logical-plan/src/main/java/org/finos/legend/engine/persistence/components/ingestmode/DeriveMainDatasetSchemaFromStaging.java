@@ -58,9 +58,10 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
                 .datasetAdditionalProperties(mainDataset.datasetAdditionalProperties());
 
         this.mainSchemaDefinitionBuilder = SchemaDefinition.builder()
-                .addAllIndexes(mainDataset.schema().indexes())
-                .shardSpecification(mainDataset.schema().shardSpecification())
-                .columnStoreSpecification(mainDataset.schema().columnStoreSpecification());
+                .addAllClusterKeys(stagingDataset.schema().clusterKeys())
+                .addAllIndexes(stagingDataset.schema().indexes())
+                .shardSpecification(stagingDataset.schema().shardSpecification())
+                .columnStoreSpecification(stagingDataset.schema().columnStoreSpecification());
 
         this.mainSchemaFields = new ArrayList<>();
         this.mainSchemaFields.addAll(stagingDataset.schema().fields());

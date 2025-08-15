@@ -70,10 +70,19 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::Milestoning
    infinityDate : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate[0..1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::SnapshotMilestoning extends meta::protocols::pure::vX_X_X::metamodel::store::relational::Milestoning
+{
+   snapshotDate:String[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::Table extends meta::protocols::pure::vX_X_X::metamodel::store::relational::Relation
 {
    name : String[1];
    milestoning : meta::protocols::pure::vX_X_X::metamodel::store::relational::Milestoning[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::ProcessingSnapshotMilestoning extends meta::protocols::pure::vX_X_X::metamodel::store::relational::SnapshotMilestoning
+{
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::ProcessingMilestoning extends meta::protocols::pure::vX_X_X::metamodel::store::relational::Milestoning
@@ -81,12 +90,10 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::ProcessingMil
    in : String[1];
    out : String[1];
    outIsInclusive : Boolean[1];
-
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::store::relational::BusinessSnapshotMilestoning extends meta::protocols::pure::vX_X_X::metamodel::store::relational::Milestoning
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::BusinessSnapshotMilestoning extends meta::protocols::pure::vX_X_X::metamodel::store::relational::SnapshotMilestoning
 {
-   snapshotDate:String[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::BusinessMilestoning extends meta::protocols::pure::vX_X_X::metamodel::store::relational::Milestoning

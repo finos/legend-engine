@@ -64,6 +64,12 @@ Class meta::protocols::pure::v1_32_0::metamodel::store::relational::connection::
     additionalGcpScopes: String[*];
 }
 
+Class meta::protocols::pure::v1_32_0::metamodel::store::relational::connection::alloy::authentication::OAuthAuthenticationStrategy extends meta::protocols::pure::v1_32_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+   oauthKey:String[1];
+   scopeName:String[1];
+}
+
 Class meta::protocols::pure::v1_32_0::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification extends meta::protocols::pure::v1_32_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
 {
     testDataSetupCsv:String[0..1];

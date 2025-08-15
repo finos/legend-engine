@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,23 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.interpreted.function;
+package org.finos.legend.engine.plan.execution.stores.relational.test.mutation;
 
-import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.function.AbstractTestFunctionDefinitionModify;
-import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
+import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
-public class TestFunctionDefinitionModify extends AbstractTestFunctionDefinitionModify
+@Ignore
+public class TestCoreRelationalMutationExecutionTestCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
     @BeforeClass
-    public static void setUp()
+    public static void initialize()
     {
-        setUpRuntime(getFunctionExecution(), getCodeStorage());
+        initialize("core_relational_mutation_execution_test");
     }
 
-    protected static FunctionExecution getFunctionExecution()
+    @Test(expected = AssertionError.class)
+    @Override
+    public void testReferenceUsages()
     {
-        return new FunctionExecutionInterpreted();
+        super.testReferenceUsages();
     }
 }

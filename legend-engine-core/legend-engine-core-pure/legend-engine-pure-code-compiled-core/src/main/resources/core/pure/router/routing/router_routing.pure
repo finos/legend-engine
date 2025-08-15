@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::relation::variant::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::*;
@@ -153,7 +154,7 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
                                                                       | $i.genericType.rawType->toOne()->cast(@Class<Any>),
                                                                       | $i.values->at(0)->cast(@Class<Any>)
                                                                   );
-                                                           $state.routingStrategy.processClass($c, $i, $state, $executionContext, $debug);
+                                                           $state.routingStrategy.processClass($c, $i, $state, $executionContext, $extensions, $debug);
                                                           )
                                                       ],
                                                       | if($i.values->isEmpty(),
@@ -170,7 +171,7 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
          cs:ClassSetImplementationHolder[1]     | let param = $cs.value->cast(@InstanceValue).values->at(0)->cast(@Class<Any>);                                   // TODO: cleanup needed
                                                   let currentStrategy = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy);
                                                   let updatedStrategy = ^$currentStrategy(toChooseSet = $cs.set);
-                                                  let resolvedState   = $updatedStrategy.processClass($param, $cs.value->cast(@InstanceValue), ^$state(routingStrategy = $updatedStrategy), $executionContext, $debug);
+                                                  let resolvedState   = $updatedStrategy.processClass($param, $cs.value->cast(@InstanceValue), ^$state(routingStrategy = $updatedStrategy), $executionContext, $extensions, $debug);
                                                   let resStrategy     = $resolvedState.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy);
                                                   ^$resolvedState(routingStrategy = ^$resStrategy(toChooseSet = []));,
          va:VariableExpression[1]               | print(if($debug.debug,|$debug.space+'Variable:'+$va->asString()+'\n',|''));
@@ -788,6 +789,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     sum_Float_MANY__Float_1_,
     sum_Integer_MANY__Integer_1_,
     sum_Number_MANY__Number_1_,
+    sort_T_m__T_m_,
     averageRank_Any_MANY__Map_1_,
     denseRank_Any_MANY__Map_1_,
     rank_Any_MANY__Map_1_,
@@ -954,7 +956,9 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_,
     meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_,
     meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_,
-    meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_
+    meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_,
+    flatten_T_MANY__ColSpec_1__Relation_1_,
+    lateral_Relation_1__Function_1__Relation_1_
   ]->concatenate($extensions.routerExtensions().shouldStopRouting)
 }
 

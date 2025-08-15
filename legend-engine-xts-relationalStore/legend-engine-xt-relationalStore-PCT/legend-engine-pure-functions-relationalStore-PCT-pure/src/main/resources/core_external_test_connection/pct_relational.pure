@@ -60,10 +60,11 @@ function <<PCT.adapter>> {PCT.adapterName='MemSQL'} meta::relational::tests::pct
 function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
 {
   $f->match([
-    z:FunctionDefinition<Any>[1]|$z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions()),
+    z:FunctionDefinition<Any>[1] |if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z,|[])->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions()));,
     x:SimpleFunctionExpression[1]|let res = $x.parametersValues->map(p|$p->extractDependentFunctions());
-                                  $res->concatenate(if(!$x.func->hasStereotype('function', PCT),|$x.func,|[]));,
-    a:Any[1]|[]
+                                  $res->concatenate($x.func->extractDependentFunctions());,
+    i: InstanceValue[1] | $i.values->map(p|$p->extractDependentFunctions()),                                  
+    a:Any[1] | []
   ]);  
 }
 
@@ -123,8 +124,18 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
                   print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString('[',',',']'),|''));
                   $resultFinal;,
-                | 
-                    let tdsString = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->map(c | $c.name + $c.type->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
+                |
+                    let cols = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns;
+                    // sadly pivot does not return proper types (ie  Class<> rather than Relation<>)
+                    let relType = if ($f->functionReturnType().typeArguments->at(0).rawType->toOne()->instanceOf(RelationType),
+                      |
+                        $f->functionReturnType().typeArguments->at(0).rawType->cast(@RelationType<Any>).columns->map(x | pair($x.name->toOne(), $x->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()->elementToPath()))->newMap();
+                      ,
+                      |
+                        $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | pair($c.name, $t)))->newMap();
+                    );
+
+                    let tdsString = $cols->map(c | $c.name + $relType->get($c.name)->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
                                   $res.result.rows->map(x|
                                         range($x.values->size())->map(z |
                                             $x.values->at($z)->match([
@@ -146,6 +157,7 @@ function meta::relational::tests::pct::process::resultToType(preResultFinal: Any
 
   if ([
         pair(|$preResultFinal->isEmpty() || $preResultFinal == TDSNull, |[]),
+        pair(|$preResultFinal->toOne()->instanceOf(String) && $mult->isToMany() && $preResultFinal->toOne()->cast(@String)->startsWith('[') && $preResultFinal->toOne()->cast(@String)->endsWith(']'), |$preResultFinal->toOne()->cast(@String)->fromJson()->toMany($type)),
         pair(|$resultType->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toOne()->toString())),
         pair(|$resultType->subTypeOf(Date), |buildDate($preResultFinal->toOne()->toString())),
         pair(|$resultType->subTypeOf(Decimal), |$preResultFinal->toOne()->cast(@Number)->toDecimal()),
@@ -153,9 +165,56 @@ function meta::relational::tests::pct::process::resultToType(preResultFinal: Any
         pair(|$resultType->subTypeOf(Float), |$preResultFinal->toOne()->cast(@Number)->toFloat()),
         pair(|$resultType->subTypeOf(Number), |$preResultFinal->toOne()->cast(@Number)),
         pair(|$resultType == Variant, |$preResultFinal->toOne()->cast(@String)->fromJson()),
-        pair(|$resultType->in([List, Map]), |$preResultFinal->toOne()->cast(@String)->fromJson()->to(^InstanceValue(genericType = $type, multiplicity = PureZero)->reactivate()->head()))
+        pair(|$resultType->in([List, Map]), |$preResultFinal->toOne()->cast(@String)->fromJson()->to($type))
       ],
     | $preResultFinal->toOne()
+  );
+}
+
+function meta::relational::tests::pct::process::toMany(var: Variant[1], type: GenericType[1]):Any[*]
+{
+  // compile time has hard time doing dynamic toMany so this is to compensate
+  if([
+      pair(|$type.rawType == Integer, |$var->toMany(@Integer)),
+      pair(|$type.rawType == Float, |$var->toMany(@Float)),
+      pair(|$type.rawType == String, |$var->toMany(@String)),
+      pair(|$type.rawType == StrictDate, |$var->toMany(@StrictDate)),
+      pair(|$type.rawType == DateTime, |$var->toMany(@DateTime)),
+      pair(|$type.rawType == Boolean, |$var->toMany(@Boolean)),
+      pair(|$type.rawType == Variant, |$var->toMany(@Variant))
+    ],
+    | fail('Not supported: ' + $type->meta::pure::metamodel::serialization::grammar::printGenericType()); [];
+  );
+}
+
+function meta::relational::tests::pct::process::to(var: Variant[1], type: GenericType[1]):Any[0..1]
+{
+  // compile time has hard time doing dynamic to so this is to compensate
+  if([
+      pair(|$type.rawType == Integer, |$var->to(@Integer)),
+      pair(|$type.rawType == Float, |$var->to(@Float)),
+      pair(|$type.rawType == String, |$var->to(@String)),
+      pair(|$type.rawType == StrictDate, |$var->to(@StrictDate)),
+      pair(|$type.rawType == DateTime, |$var->to(@DateTime)),
+      pair(|$type.rawType == Boolean, |$var->to(@Boolean)),
+
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == Integer, |$var->to(@List<Integer>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == Float, |$var->to(@List<Float>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == String, |$var->to(@List<String>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == StrictDate, |$var->to(@List<StrictDate>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == DateTime, |$var->to(@List<DateTime>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == Boolean, |$var->to(@List<Boolean>)),
+      pair(|$type.rawType == List && $type.typeArguments->at(0).rawType == Variant, |$var->to(@List<Variant>)),
+
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == Integer, |$var->to(@Map<String,Integer>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == Float, |$var->to(@Map<String,Float>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == String, |$var->to(@Map<String,String>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == StrictDate, |$var->to(@Map<String,StrictDate>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == DateTime, |$var->to(@Map<String,DateTime>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == Boolean, |$var->to(@Map<String,Boolean>)),
+      pair(|$type.rawType == Map && $type.typeArguments->at(1).rawType == Variant, |$var->to(@Map<String,Variant>))
+    ],
+    | fail('Not supported: ' + $type->meta::pure::metamodel::serialization::grammar::printGenericType()); [];
   );
 }
 
@@ -258,7 +317,7 @@ function meta::relational::tests::pct::process::reprocess(connection:meta::exter
 }
 
 function meta::relational::tests::pct::process::printNew(a:Any[1]):String[1]
-{  
+{
   $a->match(
     [
        i:Integer[1] | $i->toString(),
@@ -287,12 +346,12 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                                 extraConnectionHandlers =
                                   [
                                     x:RelationalDatabaseConnection[0..1] |
-                                        $x->toOne()->reprocess(); 
+                                        $x->toOne()->reprocess();
                                   ],
-                                extraInstanceValueHandlers = 
+                                extraInstanceValueHandlers =
                                   [
                                     x:RelationStoreAccessor<Any>[1]|
-                                      let table = $x.sourceElement->cast(@Table);  
+                                      let table = $x.sourceElement->cast(@Table);
                                       let schema = $table.schema;
                                       let schemaName = if ($schema.name == 'default', |'', |$schema.name + '.');
                                       '#>{' + $x.store->elementToPath() + '.' + $schemaName + $table.name->toOne() + '}#';
@@ -688,7 +747,8 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
     columns = $tds->columns()->map(c|
                     ^meta::relational::metamodel::Column(
                         name=$c.name->toOne(),
-                        type=$map->meta::pure::functions::collection::get($c->genericType().typeArguments->at(1).rawType->toOne())->toOne()
+                        type=$map->meta::pure::functions::collection::get($c->genericType().typeArguments->at(1).rawType->toOne())->toOne(),
+                        nullable=$c->functionReturnMultiplicity()->getLowerBound() == 0
                     )
                   ),
     schema = $state.schema
@@ -708,11 +768,12 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
             $relAccessor.sourceElement->cast(@Table).name + '\n' +
             $cols->map(x|$x.name)->joinStrings(',' ) + '\n' +
             $tds->map(
-              x | $cols->map(c|$c->eval($x)->toOne()->match(
+              x | $cols->map(c|$c->eval($x)->match(
                                 [
                                   x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS}', $x),
                                   s : Variant[1] | '"' + $s->toString() + '"',
-                                  z : Any[1] | $z->toString()
+                                  z : Any[1] | $z->toString(),
+                                  n : Any[0] | ''
                                 ]
                 ))->joinStrings(',')
             )

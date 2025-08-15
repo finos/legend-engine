@@ -245,6 +245,95 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "    age: Integer[1];\n" +
             "}\n\n";
 
+
+    public static final String BINDING_PURE_SOURCE = "###ExternalFormat\n" +
+            "Binding my::FirmBinding\n" +
+            "{\n" +
+            "  contentType: 'application/json';\n" +
+            "  modelIncludes: [\n" +
+            "    my::Firm\n" +
+            "  ];\n" +
+            "}\n";
+
+    public static final String RELATION_MAPPING_PURE_SOURCE = "###Pure\n" +
+            "Class my::Person\n" +
+            "{\n" +
+            "  firstName: String[1];\n" +
+            "  age: Integer[1];\n" +
+            "  firmId: Integer[1];\n" +
+            "  address: my::Address[1];\n" +
+            "}\n" +
+            "\n" +
+            "Class my::Firm\n" +
+            "{\n" +
+            "  id: Integer[1];\n" +
+            "  legalName: String[1];\n" +
+            "  clientNames: String[*];\n" +
+            "}\n" +
+            "\n" +
+            "Class my::Address\n" +
+            "{\n" +
+            "  city: String[1];\n" +
+            "}\n" +
+            "\n" +
+            "Association my::Person_Firm\n" +
+            "{\n" +
+            "  employees: my::Person[*];\n" +
+            "  firm: my::Firm[1];\n" +
+            "}\n" +
+            "function my::personFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+            "{\n" +
+            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, FIRM_DETAILS:Variant)>);\n" +
+            "}\n";
+
+    @Test
+    public void testValidRelationFunctionMappingWithBinding()
+    {
+        test(RELATION_MAPPING_PURE_SOURCE + BINDING_PURE_SOURCE + "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n," +
+                "    firm: Binding my::FirmBinding : FIRM_DETAILS\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithInvalidBinding()
+    {
+        test(RELATION_MAPPING_PURE_SOURCE + BINDING_PURE_SOURCE + "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n," +
+                "    firm: Binding my::FooBinding : FIRM_DETAILS\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [47:6-48]: Can't find the packageable element 'my::FooBinding'");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithInvalidBindingColumn()
+    {
+        test(RELATION_MAPPING_PURE_SOURCE + BINDING_PURE_SOURCE + "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n," +
+                "    firm: Binding my::FirmBinding : FOO_DETAILS\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [47:6-48]: The system can't find the column FOO_DETAILS in the Relation (FIRSTNAME:String, AGE:Integer, FIRM_DETAILS:Variant)");
+    }
+
     @Override
     public String getDuplicatedElementTestCode()
     {
@@ -969,6 +1058,19 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    )\n" +
                         ")",
                 "COMPILATION error at [4:56-80]: Milestone column 'dummy' not found on table definition"
+        );
+
+        // PROCESSING_SNAPSHOT_DATE missing
+        test("###Relational\n" +
+                        "Database app::db\n" +
+                        "(\n" +
+                        "    Table personTable" +
+                        "    (" +
+                        "       milestoning(processing(PROCESSING_SNAPSHOT_DATE = dummy))" +
+                        "       ID INT PRIMARY KEY, MANAGERID INT\n" +
+                        "    )\n" +
+                        ")",
+                "COMPILATION error at [4:58-89]: Milestone column 'dummy' not found on table definition"
         );
     }
 
@@ -3226,5 +3328,130 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   )" +
                 "\n" +
                 ")");
+    }
+
+    @Test
+    public void testDuplicateColumnMappingInView()
+    {
+        test("###Relational\n" +
+                "Database com::trade::TradeDatabase\n" +
+                "(\n" +
+                "  Schema Trade\n" +
+                "  (\n" +
+                "    Table Trade\n" +
+                "    (\n" +
+                "      id VARCHAR(32) PRIMARY KEY,\n" +
+                "      value INTEGER NOT NULL,\n" +
+                "      ENTITY_ID_FK VARCHAR(32) NOT NULL\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "Database com::entity::EntityDatabase\n" +
+                "(\n" +
+                "  Schema Entity\n" +
+                "  (\n" +
+                "    Table LegalEntity\n" +
+                "    (\n" +
+                "      ENTITY_ID VARCHAR(32) PRIMARY KEY,\n" +
+                "      name VARCHAR(32) NOT NULL\n" +
+                "    )\n" +
+                "\n" +
+                "    View LegalEntity_View\n" +
+                "    (\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,\n" +
+                "      name: Entity.LegalEntity.name PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                ")", null, Arrays.asList("COMPILATION error at [25:5-30:5]: Duplicate column mapping definitions [ENTITY_ID] in view: LegalEntity_View"));
+    }
+
+    @Test
+    public void testViewWithNoDuplicateColumnMapping()
+    {
+        test("###Relational\n" +
+                "Database com::entity::EntityDatabase\n" +
+                "(\n" +
+                "  Schema Entity\n" +
+                "  (\n" +
+                "    Table LegalEntity\n" +
+                "    (\n" +
+                "      ENTITY_ID VARCHAR(32) PRIMARY KEY,\n" +
+                "      name VARCHAR(32) NOT NULL\n" +
+                "    )\n" +
+                "\n" +
+                "    View LegalEntity_View\n" +
+                "    (\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,\n" +
+                "      name: Entity.LegalEntity.name\n" +
+                "    )\n" +
+                "  )\n" +
+                ")");
+    }
+
+    @Test
+    public void testViewWithMultipleDuplicateColumnMappings()
+    {
+        test("###Relational\n" +
+                "Database com::entity::EntityDatabase\n" +
+                "(\n" +
+                "  Schema Entity\n" +
+                "  (\n" +
+                "    Table LegalEntity\n" +
+                "    (\n" +
+                "      ENTITY_ID VARCHAR(32) PRIMARY KEY,\n" +
+                "      name VARCHAR(32) NOT NULL,\n" +
+                "      description VARCHAR(100)\n" +
+                "    )\n" +
+                "\n" +
+                "    View LegalEntity_View\n" +
+                "    (\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID,\n" +
+                "      name: Entity.LegalEntity.name,\n" +
+                "      name: Entity.LegalEntity.name,\n" +
+                "      description: Entity.LegalEntity.description\n" +
+                "    )\n" +
+                "  )\n" +
+                ")", null, Arrays.asList("COMPILATION error at [13:5-20:5]: Duplicate column mapping definitions [ENTITY_ID, name] in view: LegalEntity_View"));
+    }
+
+    @Test
+    public void testTwoViewsWithDuplicateColumnMappings()
+    {
+        test("###Relational\n" +
+                "Database com::entity::EntityDatabase\n" +
+                "(\n" +
+                "  Schema Entity\n" +
+                "  (\n" +
+                "    Table LegalEntity\n" +
+                "    (\n" +
+                "      ENTITY_ID VARCHAR(32) PRIMARY KEY,\n" +
+                "      name VARCHAR(32) NOT NULL,\n" +
+                "      description VARCHAR(100),\n" +
+                "      status VARCHAR(20)\n" +
+                "    )\n" +
+                "\n" +
+                "    View LegalEntity_View1\n" +
+                "    (\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID PRIMARY KEY,\n" +
+                "      ENTITY_ID: Entity.LegalEntity.ENTITY_ID,\n" +
+                "      name: Entity.LegalEntity.name,\n" +
+                "      name: Entity.LegalEntity.name\n" +
+                "    )\n" +
+                "\n" +
+                "    View LegalEntity_View2\n" +
+                "    (\n" +
+                "      description: Entity.LegalEntity.description,\n" +
+                "      description: Entity.LegalEntity.description,\n" +
+                "      status: Entity.LegalEntity.status,\n" +
+                "      status: Entity.LegalEntity.status\n" +
+                "    )\n" +
+                "  )\n" +
+                ")", null, Arrays.asList(
+                "COMPILATION error at [14:5-20:5]: Duplicate column mapping definitions [ENTITY_ID, name] in view: LegalEntity_View1",
+                "COMPILATION error at [22:5-28:5]: Duplicate column mapping definitions [description, status] in view: LegalEntity_View2"
+        ));
     }
 }

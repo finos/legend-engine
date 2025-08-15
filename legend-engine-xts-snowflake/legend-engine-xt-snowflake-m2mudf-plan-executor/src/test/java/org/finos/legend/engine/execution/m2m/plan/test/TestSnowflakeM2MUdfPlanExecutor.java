@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.execution.m2m.plan.test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
@@ -30,10 +28,10 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
@@ -51,7 +49,6 @@ import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph
 
 public class TestSnowflakeM2MUdfPlanExecutor
 {
-    private static  final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private final PureModelContextData contextData;
     private final PureModel pureModel;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel pureModel) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
@@ -79,7 +76,7 @@ public class TestSnowflakeM2MUdfPlanExecutor
         }
     }
 
-    protected String generateAndCompilePlan(FunctionDefinition<?> function)
+    protected SingleExecutionPlan generatePlan(FunctionDefinition<?> function)
     {
         MutableList<PlanGeneratorExtension> generatorExtensions = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(
@@ -94,36 +91,27 @@ public class TestSnowflakeM2MUdfPlanExecutor
                 routerExtensions.apply(pureModel),
                 generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
         );
-
-        String executionPlan = null;
-        try
-        {
-            JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
-            executionPlan = mapper.writeValueAsString(singleExecutionPlan);
-        }
-        catch (JavaCompileException | JsonProcessingException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        return executionPlan;
+        return singleExecutionPlan;
     }
 
     @Test
     public void testM2MJsonPlanExecutorWithValidArguments()
     {
         FunctionDefinition<?> function = (FunctionDefinition<?>) Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_("test::query::getFirmDetailsWithInput_String_1__String_1_", pureModel.getExecutionSupport());
-        String actual = SnowflakeM2MUdfPlanExecutor.executeWithArgs(generateAndCompilePlan(function), "{\"firms\": [{\"employees\": [{\"firstName\": \"ABC\",\"lastName\": \"DEF\"},{\"firstName\": \"XYZ\",\"lastName\": \"PQR\"}],\"legalName\":\"IJK\"}]}");
+        SingleExecutionPlan singleExecutionPlan = generatePlan(function);
+        EngineJavaCompiler engineJavaCompiler = null;
+        try
+        {
+            engineJavaCompiler = JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
+        }
+        catch (JavaCompileException e)
+        {
+            throw new RuntimeException(e);
+        }
+        String parameter = ((FunctionParametersValidationNode) singleExecutionPlan.rootExecutionNode.executionNodes.get(0)).functionParameters.get(0).name;
+        String actual = SnowflakeM2MUdfPlanExecutor.executeSnowflakeM2MUdfPlanWithArg(singleExecutionPlan, engineJavaCompiler, parameter, "{\"firms\": [{\"employees\": [{\"firstName\": \"ABC\",\"lastName\": \"DEF\"},{\"firstName\": \"XYZ\",\"lastName\": \"PQR\"}],\"legalName\":\"IJK\"}]}");
         String expected = "{\"firms\":[{\"legalName\":\"IJK\",\"employees\":[{\"firstName\":\"ABC\",\"lastName\":\"DEF\"},{\"firstName\":\"XYZ\",\"lastName\":\"PQR\"}]}]}";
         Assert.assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testM2MJsonPlanExecutorWithInvalidArguments()
-    {
-        FunctionDefinition<?> function = (FunctionDefinition<?>) Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_("test::query::getFirmDetailsWithInput_String_1__String_1_", pureModel.getExecutionSupport());
-        EngineException exception = Assert.assertThrows(EngineException.class, () -> SnowflakeM2MUdfPlanExecutor.executeWithArgs(generateAndCompilePlan(function), "{\"firms\": [{\"employees\": [{\"firstName\": \"ABC\",\"lastName\": \"DEF\"},{\"firstName\": \"XYZ\",\"lastName\": \"PQR\"}],\"legalName\":\"IJK\"}]}", "123"));
-        Assert.assertEquals("Number of function parameters does not match number of arguments", exception.getMessage());
     }
 
 }

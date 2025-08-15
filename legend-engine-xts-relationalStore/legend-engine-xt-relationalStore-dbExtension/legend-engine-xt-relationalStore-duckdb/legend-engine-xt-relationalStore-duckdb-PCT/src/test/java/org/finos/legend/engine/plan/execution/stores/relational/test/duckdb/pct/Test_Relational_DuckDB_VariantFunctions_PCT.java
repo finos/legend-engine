@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct
 
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.wrapSuite;
 import junit.framework.Test;
-import org.checkerframework.checker.units.qual.A;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
@@ -47,25 +46,20 @@ public class Test_Relational_DuckDB_VariantFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"StrictDate must be a calendar day, got: 2020\"\"", AdapterQualifier.assertErrorMismatch),
             one("meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Variant of type 'STRING' cannot be converted to List<Variant>\"\"", AdapterQualifier.assertErrorMismatch),
             one("meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Variant of type 'STRING' cannot be converted to Map<String, Variant>\"\"", AdapterQualifier.assertErrorMismatch),
-            one("meta::pure::functions::variant::convert::tests::to::testToListOfIntegers_Function_1__Boolean_1_", "\"Any is not managed yet!\"", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::convert::tests::to::testToListOfVariants_Function_1__Boolean_1_", "\"Any is not managed yet!\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::to::testToListOfVariants_Function_1__Boolean_1_", "\"Variant of type 'OBJECT' cannot be converted to Integer\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::variant::convert::tests::to::testToDateTime_Function_1__Boolean_1_", "\"\nexpected: %2020-01-01T01:01:00.000+0000\nactual:   %2020-01-01T01:01:00.000000000+0000\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_", "\"\nexpected: 'Hello'\nactual:   '\"Hello\"'\"", AdapterQualifier.needsInvestigation),
 
             // toMany
             one("meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Expect variant that contains an 'ARRAY', but got 'STRING'\"\"", AdapterQualifier.assertErrorMismatch),
-            one("meta::pure::functions::variant::convert::tests::toMany::testToManyInteger_Function_1__Boolean_1_", "\"Cast exception: String cannot be cast to Number\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::variant::convert::tests::toMany::testToManyVariant_Function_1__Boolean_1_", "\"Variant of type 'ARRAY' cannot be converted to Integer\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToManyVariant_Function_1__Boolean_1_", "\"Variant of type 'OBJECT' cannot be converted to Integer\"", AdapterQualifier.needsInvestigation),
 
             // toVariant
             one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfMap_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfVariantValues_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithMultipleKeys_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithPrimitiveValues_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
-
-            // get
-            one("meta::pure::functions::variant::navigation::tests::get::testGetFromArray_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation)
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithPrimitiveValues_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation)
     );
 
     public static Test suite()

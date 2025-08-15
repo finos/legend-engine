@@ -174,7 +174,7 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
       orderBy = ^SortItem(
         sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ADDRESSID'])),
         ordering = SortItemOrdering.ASCENDING,
-        nullOrdering = SortItemNullOrdering.UNDEFINED
+        nullOrdering = SortItemNullOrdering.LAST
       ),
       partitions = [
         ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID']))
@@ -415,7 +415,7 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
     toRow = ^meta::relational::metamodel::Literal(value = 5)
   );
 
-  let expected = ^QuerySpecification(
+  let expected = ^ExtendedQuerySpecification(
     select = ^Select(distinct = true, selectItems = ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'NAME'])))),
     from = ^meta::external::query::sql::metamodel::Join(
       left = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'personTable'))),
@@ -423,7 +423,7 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
         alias = '"nested"', 
         relation = ^TableSubquery(
           query = ^Query(
-            queryBody = ^QuerySpecification(
+            queryBody = ^ExtendedQuerySpecification(
               select = ^Select(
                 distinct = false,
                 selectItems = ^SingleColumn(alias = 'nameConcat', expression = ^FunctionCall(distinct = false, name = ^QualifiedName(parts = 'string_agg'), arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'LEGALNAME'])), ^StringLiteral(value = ', ')]))
@@ -466,14 +466,14 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
       withQueries = ^meta::external::query::sql::metamodel::WithQuery(
         name = 'cte',
         query = ^Query(
-          queryBody = ^QuerySpecification(
+          queryBody = ^ExtendedQuerySpecification(
             select = ^Select(selectItems = ^SingleColumn(alias = 'ID', expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
             from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'firmTable')))
           )   
         )
       )
     ),
-    queryBody = ^QuerySpecification(
+    queryBody = ^ExtendedQuerySpecification(
       select = ^Select(selectItems = ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
       from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'cte')))
     )
@@ -503,11 +503,11 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
   let expected = ^TableSubquery(
     query = ^Query(
       queryBody = ^meta::external::query::sql::metamodel::Union(
-        left = ^QuerySpecification(
+        left = ^ExtendedQuerySpecification(
           select = ^Select(selectItems = ^SingleColumn(alias = 'ID', expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
           from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'personTable')))
         ),
-        right = ^QuerySpecification(
+        right = ^ExtendedQuerySpecification(
           select = ^Select(selectItems = ^SingleColumn(alias = 'ID', expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
           from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = ['testSchema', 'personTable1'])))
         ),

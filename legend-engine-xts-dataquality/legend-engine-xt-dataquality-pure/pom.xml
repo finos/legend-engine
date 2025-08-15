@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xts-dataquality</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.89.6-SNAPSHOT</version>
+        <version>4.96.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -270,6 +270,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
             <version>${project.version}</version>
         </dependency>
 

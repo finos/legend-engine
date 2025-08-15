@@ -22,6 +22,11 @@ Class meta::relational::functions::pureToSqlQuery::metamodel::VarCrossSetPlaceHo
    crossSetImplementation: CrossSetImplementation[1];
 }
 
+Class meta::relational::functions::pureToSqlQuery::metamodel::SemiStructuredArrayFlattenRelation extends Relation
+{
+   navigation: RelationalOperationElement[1];
+}
+
 Class meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder extends RelationalOperationElement
 [
    parameterType : $this.parameters->forAll(param| $param->instanceOf(Literal) || $param->instanceOf(meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder) || $param->instanceOf(DynaFunction))

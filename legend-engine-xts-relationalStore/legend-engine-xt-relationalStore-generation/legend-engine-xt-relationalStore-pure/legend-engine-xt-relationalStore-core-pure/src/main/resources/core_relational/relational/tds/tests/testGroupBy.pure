@@ -87,6 +87,18 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupDistinc
    assertEquals('select concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "sourceName", count(distinct("root".ID)) as "count" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) group by "sourceName" order by "count" desc, "sourceName" asc', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupDistinctCountWithExtendedPrimitives():Boolean[1]
+{
+   let result = execute(|Interaction.all()->project([#/Interaction_ExtendedPrimitives/source/name!sourceName#, #/Interaction_ExtendedPrimitives/id!myId#])->groupBy(['sourceName'], agg('count', a|$a.getInteger('myId'), b|$b->distinct()->count()))->sort([desc('count'), asc('sourceName')]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let tds = $result.values->at(0);
+   assertSize($tds.rows, 4);
+   assertEquals(['Anthony Allen', 3], $tds.rows->at(0).values);
+   assertEquals(['John Hill', 2], $tds.rows->at(1).values);
+   assertEquals(['Peter Smith', 2], $tds.rows->at(2).values);
+   assertEquals(['Fabrice Roberts', 1], $tds.rows->at(3).values);
+   assertEquals('select concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "sourceName", count(distinct("root".ID)) as "count" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) group by "sourceName" order by "count" desc, "sourceName" asc', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleFilterWithGroupByWithDistinct():Boolean[1]
 {
   let result = execute(|Trade.all()

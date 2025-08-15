@@ -479,8 +479,6 @@ function <<test.Test>> meta::analytics::lineage::tests::testLineageForComplexAgg
   assertEquals($relationTree, meta::pure::lineage::scanRelations::relationTreeAsString($lineage.relationTree));
 }
 
-
-
 function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testEmbeddedWithMilestonedDuplicateProperties():Boolean[1]
 {
    let fn= {|meta::relational::tests::milestoning::Product.all(%2020-02-02)->project([p|$p.classification(%2020-02-02).type], ['type']) };
@@ -490,6 +488,19 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
   let lineage = computeLineage($fn, $mapping, $runtime, relationalExtensions());
   meta::analytics::lineage::assertLineage(['Lambda', 'db_db', 'tb_dbdefaultProductClassificationSystemTable', 'tb_dbdefaultProductTable'],
                                         ['Lambda', 'meta::relational::tests::milestoning::Product', 'meta::relational::tests::milestoning::ProductClassification', 'pack_meta::relational::tests::milestoning'],
+                                        '[type: [ProductClassificationSystemTable.id <JoinTreeNode>, ProductClassificationSystemTable.name <RelationalOperationElementWithJoin>, ProductTable.classificationSystemId <JoinTreeNode>]]',
+                                          $lineage);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testLineageWithExtendedPrimitives():Boolean[1]
+{
+  let fn= {|meta::relational::tests::milestoning::Product_ExtendedPrimitives.all(%2020-02-02)->project([p|$p.classification(%2020-02-02).type], ['type']) };
+   
+  let mapping = meta::relational::tests::milestoning::milestoningMapWithEmbeddedDuplicateProperty_ExtendedPrimitives;
+  let runtime = runtime();
+  let lineage = computeLineage($fn, $mapping, $runtime, relationalExtensions());
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_db', 'tb_dbdefaultProductClassificationSystemTable', 'tb_dbdefaultProductTable'],
+                                        ['Lambda', 'meta::relational::tests::milestoning::Product_ExtendedPrimitives', 'meta::relational::tests::milestoning::ProductClassification_ExtendedPrimitives', 'pack_meta::relational::tests::milestoning'],
                                         '[type: [ProductClassificationSystemTable.id <JoinTreeNode>, ProductClassificationSystemTable.name <RelationalOperationElementWithJoin>, ProductTable.classificationSystemId <JoinTreeNode>]]',
                                           $lineage);
 }
@@ -691,3 +702,60 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
                                           '[type: [addressTable.TYPE <TableAliasColumn>]]',
                                            $lineage);
 }
+
+
+
+###Pure
+import meta::pure::alloy::connections::*;
+import meta::analytics::lineage::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testWithPostProcessor():Boolean[1]
+{
+
+   let m = meta::relational::tests::simpleRelationalMapping;
+
+     let runtime = ^meta::core::runtime::Runtime
+                 (
+                    connectionStores =
+                    ^meta::core::runtime::ConnectionStore(
+                      element=meta::relational::tests::db,
+                      connection=
+                    ^meta::external::store::relational::runtime::RelationalDatabaseConnection
+                    (
+                       type = meta::relational::runtime::DatabaseType.H2,
+                       datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(),
+                       authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),
+                       postProcessors = ^MapperPostProcessor(mappers = [^meta::pure::alloy::connections::TableNameMapper(schema = ^meta::pure::alloy::connections::SchemaNameMapper(from='default', to='defaultNew'), from='personTable' , to='differentPersonTable')])
+                    ))
+                 );
+     let runtime2 = ^meta::core::runtime::Runtime
+                 (
+                    connectionStores =
+                    ^meta::core::runtime::ConnectionStore(
+                      element=meta::relational::tests::db,
+                      connection=
+                    ^meta::external::store::relational::runtime::RelationalDatabaseConnection
+                    (
+                       type = meta::relational::runtime::DatabaseType.H2,
+                       datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(),
+                       authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),
+                       queryPostProcessorsWithParameter = meta::pure::alloy::connections::tableMapperPostProcessor( ^MapperPostProcessor(mappers = [^meta::pure::alloy::connections::TableNameMapper(schema = ^meta::pure::alloy::connections::SchemaNameMapper(from='default', to='defaultNew'), from='personTable' , to='differentPersonTable')]))
+                    ))
+                 );
+   let lineage = computeLineage(|meta::relational::tests::model::simple::Person.all()->project(col(p|$p.firstName, 'firstName')), $m, $runtime,  meta::relational::extension::relationalExtensions());
+   let lineage2 = computeLineage(|meta::relational::tests::model::simple::Person.all()->project(col(p|$p.firstName, 'firstName')), $m, $runtime2,  meta::relational::extension::relationalExtensions());
+
+  
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultNewdifferentPersonTable'],
+                                          ['Lambda', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
+                                          '[firstName: [personTable.FIRSTNAME <TableAliasColumn>]]',
+                                           $lineage);
+
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultNewdifferentPersonTable'],
+                                          ['Lambda', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
+                                          '[firstName: [personTable.FIRSTNAME <TableAliasColumn>]]',
+                                           $lineage2);
+
+}
+

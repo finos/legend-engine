@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.RuntimeCompilerHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -42,7 +43,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
@@ -271,12 +271,22 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
-    default List<Procedure3<EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> getExtraPackageableRuntimeProcessors()
+    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> getExtraRuntimeValueProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, Root_meta_core_runtime_EngineRuntime, CompileContext>> getExtraRuntimeThirdPassProcessors()
     {
         return Collections.emptyList();
     }
 
     default Map<String, IncludedMappingHandler> getExtraIncludedMappingHandlers()
+    {
+        return Maps.mutable.empty();
+    }
+
+    default Map<String, RuntimeCompilerHandler> getExtraRuntimeCompilerHandlers()
     {
         return Maps.mutable.empty();
     }

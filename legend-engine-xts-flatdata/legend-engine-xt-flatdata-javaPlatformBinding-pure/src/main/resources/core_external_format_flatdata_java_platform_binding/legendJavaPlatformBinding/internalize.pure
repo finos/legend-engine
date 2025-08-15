@@ -154,26 +154,27 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
                                                        ->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference($pairType.rawType, 'getOne', javaFunctionType($pairType, javaString())), j_methodReference($pairType.rawType, 'getTwo', javaFunctionType($pairType, $conventions->className(_FlatDataRecordField)))], javaObject())], javaMap(javaString(), $conventions->className(_FlatDataRecordField)));
             let fieldsMapVar         = j_variable(javaMap(javaString(), $conventions->className(_FlatDataRecordField)), 'fieldsIndexedByLabel');
             
-            let adderExprSupplier    = {property:AbstractProperty<Any>[1], propType:meta::pure::metamodel::type::Type[1] | 
-                                          let adderType = if($propType->instanceOf(meta::pure::metamodel::type::Enumeration),
+            let adderExprSupplier    = {property:AbstractProperty<Any>[1], propType:meta::pure::metamodel::type::Type[1] |
+                                          let nonExtendedType = $propType->bypassExtendedPrimitives();
+                                          let adderType = if($nonExtendedType->instanceOf(meta::pure::metamodel::type::Enumeration),
                                                                 | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, $conventions->className($propType)]),
                                                                 |
-                                                            if($propType == String,
+                                                            if($nonExtendedType == String,
                                                                 | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, javaString()]),
                                                                 |
-                                                            if($propType == Boolean,
+                                                            if($nonExtendedType == Boolean,
                                                                 | javaParameterizedType($conventions->className(_ExternalDataBooleanAdder), $dataClass),
                                                                 |
-                                                            if($propType == Integer,
+                                                            if($nonExtendedType == Integer,
                                                                 | javaParameterizedType($conventions->className(_ExternalDataLongAdder), $dataClass),
                                                                 | 
-                                                            if($propType == Float,
+                                                            if($nonExtendedType == Float,
                                                                 | javaParameterizedType($conventions->className(_ExternalDataDoubleAdder), $dataClass),
                                                                 | 
-                                                            if($propType == Decimal,
+                                                            if($nonExtendedType == Decimal,
                                                                 | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, javaBigDecimal()]),
                                                                 | 
-                                                            if($propType == StrictDate || $propType == DateTime,
+                                                            if($nonExtendedType == StrictDate || $nonExtendedType == DateTime,
                                                                 | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, javaTemporal()]),
                                                                 | fail('Unknown type'); javaVoid();
                                                             )))))));
@@ -188,7 +189,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
             let addClauses     = $fields->toIndexed()->map({indexedField|
                let fieldVar  = $fieldsMapVar->j_invoke('get', j_string($indexedField.second.label), $conventions->className(_FlatDataRecordField));
                let property  = $fieldToPropMap->get($indexedField.second)->toOne();
-               let propType  = $property->functionReturnType().rawType->toOne();
+               let propType  = $property->functionReturnType().rawType->toOne()->bypassExtendedPrimitives();
                let adderVar  = $adderExprSupplier->eval($property, $propType);               
 
                let ex        = j_parameter(javaException(),'e');

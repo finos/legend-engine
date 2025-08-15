@@ -570,6 +570,24 @@ Mapping meta::relational::tests::simpleRelationalMappingInc
                 locations : [dbInc]@Person_Location,
                 manager : [dbInc]@Person_Manager
             }
+      
+      Person_ExtendedPrimitives : Relational
+            {
+                //~primaryKey([dbInc]default.personTable.ID, [dbInc]default.personTable.FIRSTNAME)
+                scope([dbInc])
+                (
+                    firstName : personTable.FIRSTNAME,
+                    age : personTable.AGE
+                ),
+                scope([dbInc]default.personTable)
+                (
+                    lastName : LASTNAME
+                ),
+                firm : [dbInc]@Firm_Person,
+                address : [dbInc]@Address_Person,
+                locations : [dbInc]@Person_Location,
+                manager : [dbInc]@Person_Manager
+            }
 
        PersonWithConstraints : Relational
             {
@@ -601,6 +619,13 @@ Mapping meta::relational::tests::simpleRelationalMappingInc
               }
 
    Firm : Relational
+          {
+             legalName : [dbInc]firmTable.LEGALNAME,
+             employees : [dbInc]@Firm_Person,
+             address : [dbInc]@Address_Firm
+          }
+
+  Firm_ExtendedPrimitives : Relational
           {
              legalName : [dbInc]firmTable.LEGALNAME,
              employees : [dbInc]@Firm_Person,
@@ -702,8 +727,7 @@ Mapping meta::relational::tests::simpleRelationalMapping
                 latestEventDate : [db]@Trade_TradeEventViewMaxTradeEventDate | tradeEventViewMaxTradeEventDate.maxTradeEventDate,
                 events : [db]@Trade_TradeEvent
              }
-
-  
+    
     WeightedTrade : Relational
              {
                 id : [db]weightedTradeTable.ID,
@@ -756,6 +780,16 @@ Mapping meta::relational::tests::simpleRelationalMapping
              }
 
    Interaction : Relational
+                 {
+                    id : [db]interactionTable.ID,
+                    time : [db]interactionTable.time,
+                    source : [db]@Interaction_Source,
+                    target : [db]@Interaction_Target,
+                    active : case(equal([db]interactionTable.active,'Y'), 'true', 'false'),
+                    longestInteractionBetweenSourceAndTarget : [db]@InteractionTable_InteractionViewMaxTime | interactionViewMaxTime.maxTime
+                 }
+
+   Interaction_ExtendedPrimitives : Relational
                  {
                     id : [db]interactionTable.ID,
                     time : [db]interactionTable.time,

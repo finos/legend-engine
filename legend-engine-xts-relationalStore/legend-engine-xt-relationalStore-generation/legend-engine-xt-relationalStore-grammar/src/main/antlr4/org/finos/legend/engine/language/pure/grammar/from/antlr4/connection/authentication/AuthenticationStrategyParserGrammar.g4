@@ -84,3 +84,15 @@ additionalGcpScopesRef:                            ADDITIONAL_GCP_SCOPES COLON g
 
 gcpScopesArray:                                  BRACKET_OPEN ( STRING (COMMA STRING)* )? BRACKET_CLOSE
 ;
+
+oAuth:                            O_AUTH
+                                  BRACE_OPEN
+                                      (
+                                          oAuthKey | oAuthScopeName
+                                      )*
+                                  BRACE_CLOSE
+;
+oAuthKey:                         O_AUTH_KEY COLON STRING SEMI_COLON
+;
+oAuthScopeName:                   O_AUTH_SCOPE_NAME COLON STRING SEMI_COLON
+;

@@ -596,7 +596,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(RelationFunctionPropertyMapping propertyMapping)
     {
-        return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(propertyMapping) +
+        return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(propertyMapping) 
+                + (propertyMapping.bindingTransformer != null ? ": Binding " + propertyMapping.bindingTransformer.binding + " " : "") +
                 ": " + PureGrammarComposerUtility.convertIdentifier(propertyMapping.column, false);
     }
 
@@ -819,7 +820,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             return "let " + PureGrammarComposerUtility.convertIdentifier(((CString) parameters.get(0)).value) + " = " + parameters.get(1).accept(this);
         }
-        else if ("cast".equals(function))
+        else if (Sets.immutable.of("cast", "to", "toMany").contains(function))
         {
             String castType = parameters.get(1).accept(this);
             if (parameters.get(1) instanceof GenericTypeInstance)

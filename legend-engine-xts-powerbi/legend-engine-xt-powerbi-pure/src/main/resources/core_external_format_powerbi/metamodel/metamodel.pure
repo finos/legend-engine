@@ -95,6 +95,7 @@ Class meta::external::powerbi::metamodel::Definition
   tables: Table[*];
   database: Database[1];
   defaultDataSourceVersion: DataSourceVersion[1];
+  expressions: NamedExpression[*];
 }
 
 Class meta::external::powerbi::metamodel::Table
@@ -125,12 +126,17 @@ Class meta::external::powerbi::metamodel::Partition
 {
   mode: String[1];
   source: PartitionSource[1];
+  type: PartitionSourceType[1];
 }
 
 Class meta::external::powerbi::metamodel::PartitionSource
 {
-  sqlQuery: String[1];
-  datasourceSpecification: DatasourceSpecification[1];
+
+}
+
+Class meta::external::powerbi::metamodel::MPartitionSource extends PartitionSource
+{
+  expression: String[1];
 }
 
 Class meta::external::powerbi::metamodel::ArtifactMetadata
@@ -141,6 +147,14 @@ Class meta::external::powerbi::metamodel::ArtifactMetadata
 Class meta::external::powerbi::metamodel::ArtifactSource
 {
   path: String[1];
+}
+
+Class meta::external::powerbi::metamodel::NamedExpression
+{
+  name: String[1];
+  expression: String[1];
+  kind: ExpressionKind[1];
+  mAttributes: String[1];
 }
 
 Enum meta::external::powerbi::metamodel::DataSourceVersion
@@ -162,7 +176,30 @@ Enum meta::external::powerbi::metamodel::DataType
   Variant
 }
 
+Enum meta::external::powerbi::metamodel::PartitionSourceType
+{
+  query,
+  calculated,
+  none,
+  m,
+  policyRange
+}
+
 Enum meta::external::powerbi::metamodel::Culture
 {
   en_US
+}
+
+Enum meta::external::powerbi::metamodel::ExpressionKind
+{
+  M
+}
+
+Enum meta::external::powerbi::metamodel::ExpressionType
+{
+  Text,
+  Number,
+  Logical,
+  Date,
+  DateTime
 }

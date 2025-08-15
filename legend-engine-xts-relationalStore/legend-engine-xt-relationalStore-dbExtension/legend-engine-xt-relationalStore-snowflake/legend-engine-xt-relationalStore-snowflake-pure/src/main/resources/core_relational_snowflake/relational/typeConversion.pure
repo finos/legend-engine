@@ -22,11 +22,11 @@ function meta::relational::functions::typeConversion::snowflake::convert(generic
     let variables = $genericType.typeVariableValues;
     if (
         [
-            pair(|$path == 'Boolean', |fail('not supported yet!')),
+            pair(|$path == 'Boolean', |^meta::relational::metamodel::datatype::Boolean()),
             pair(|$path == 'Integer', |^meta::relational::metamodel::datatype::Decimal(precision=19, scale=0)),
             pair(|$path == 'Float', |^meta::relational::metamodel::datatype::Double()),
             pair(|$path == 'Byte', |^meta::relational::metamodel::datatype::Binary(size=10000)),
-            pair(|$path == 'StrictTime', |fail('not supported yet!')),
+            // pair(|$path == 'StrictTime', |fail('not supported yet!')),
             pair(|$path == 'Decimal', |^meta::relational::metamodel::datatype::Decimal(precision=10, scale=10)),
             pair(|$path == 'String', |^meta::relational::metamodel::datatype::Varchar(size=1024)),
             pair(|$path == 'DateTime', |^meta::relational::metamodel::datatype::Timestamp()),
@@ -40,7 +40,7 @@ function meta::relational::functions::typeConversion::snowflake::convert(generic
             pair(|$path == 'Float4', |^meta::relational::metamodel::datatype::Float()),
             pair(|$path == 'Int', |^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),
             pair(|$path == 'SmallInt', |^meta::relational::metamodel::datatype::Decimal(precision=5, scale=0)),
-            pair(|$path == 'Time', |fail('not supported yet!')),
+            // pair(|$path == 'Time', |fail('not supported yet!')),
             pair(|$path == 'Timestamp', |^meta::relational::metamodel::datatype::Timestamp()),
             pair(|$path == 'TinyInt', |^meta::relational::metamodel::datatype::Decimal(precision=3, scale=0)),
             pair(|$path == 'UBigInt', |^meta::relational::metamodel::datatype::Decimal(precision=20, scale=0)),
@@ -71,7 +71,7 @@ function {doc.doc='Given the platform (ie DB agnostic) data types, convert to DB
         d : meta::relational::metamodel::datatype::Double[1] | 'DOUBLE',
         n : meta::relational::metamodel::datatype::Numeric[1] | format('NUMERIC(%d, %d)', [$n.precision, $n.scale]),
         b : meta::relational::metamodel::datatype::Bit[1] | 'BIT',
-        a : meta::relational::metamodel::datatype::Array[1] | if($a.type->isEmpty(), |'ARRAY', |'ARRAY(' + $a.type->toOne()->dataTypeToSqlTextSnowflake() + ')'),
+        a : meta::relational::metamodel::datatype::Array[1] | 'ARRAY', // todo SF does not like arrya type on some expressions... if($a.type->isEmpty(), |'ARRAY', |'ARRAY(' + $a.type->toOne()->dataTypeToSqlTextSnowflake() + ')'),
         o : meta::relational::metamodel::datatype::Object[1] | 'MAP(%s, %s)'->format([$o.keyType->dataTypeToSqlTextSnowflake(), $o.valueType->dataTypeToSqlTextSnowflake()]),
         s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARIANT'
     ]);

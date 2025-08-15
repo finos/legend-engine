@@ -192,7 +192,7 @@ public class HelperValueSpecificationBuilder
                     throw new EngineException("The column '" + property + "' can't be found in the relation " + _RelationType.print(inferredType, context.pureModel.getExecutionSupport().getProcessorSupport()), sourceInformation, EngineErrorType.COMPILATION);
                 }
                 genericType = (foundFunction._classifierGenericType()._typeArguments()).getLast();
-                multiplicity = context.pureModel.getMultiplicity("one");
+                multiplicity = foundFunction._classifierGenericType()._multiplicityArguments().getOnly();
             }
             else
             {

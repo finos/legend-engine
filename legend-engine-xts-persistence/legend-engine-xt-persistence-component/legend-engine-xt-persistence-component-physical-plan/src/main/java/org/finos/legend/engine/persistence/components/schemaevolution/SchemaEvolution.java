@@ -47,8 +47,11 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.AlterAbstract;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.AlterOptimizationKeyAbstract;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.AlterOptimizationKey;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.sink.Sink;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -157,6 +160,11 @@ public class SchemaEvolution
             {
                 evolveColumn(mainDataset, modifiedFields, operations, matchedMainField, stagingField);
             }
+        }
+
+        if (!areEqual(stagingDataset.clusterKeys().toString(), mainDataset.schema().clusterKeys().toString()))
+        {
+            operations.add(AlterOptimizationKey.of(mainDataset, AlterOptimizationKeyAbstract.AlterOperation.ALTER_CLUSTER_KEY, stagingDataset.clusterKeys()));
         }
         return operations;
     }
@@ -327,19 +335,19 @@ public class SchemaEvolution
             String mainFieldName = mainField.name();
             if (!collectionContainsElement(stagingFieldNames, mainFieldName))
             {
-                //Modify the column to nullable in main table
-                if (!mainField.nullable())
+                if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.ALLOW_MISSING_COLUMNS))
                 {
-                    if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.MARK_MISSING_COLUMN_AS_NULLABLE))
+                    //Modify the column to nullable in main table
+                    if (!mainField.nullable())
                     {
                         mainField = mainField.withNullable(true);
                         operations.add(Alter.of(mainDataset, AlterAbstract.AlterOperation.NULLABLE_COLUMN, mainField, Optional.empty()));
                         modifiedFields.add(mainField);
                     }
-                    else
-                    {
-                        throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" is missing from incoming schema, but user capability does not allow marking it to nullable", mainField.name()));
-                    }
+                }
+                else
+                {
+                    throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" is missing from incoming schema, but user capability does not allow missing columns", mainField.name()));
                 }
             }
         }

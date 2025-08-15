@@ -62,7 +62,7 @@ function <<access.private>> meta::external::query::graphQL::transformation::quer
     'Incorrect type of value provided for "' + $left->cast(@SimpleFunctionExpression).func->cast(@AbstractProperty<Any>).name->toOne() + '".' + 
     'Expected: ' + $left.genericType.rawType->toOne()->toString() + ', Actual: ' + $right.genericType.rawType->toOne()->toString()
   );
-  assert($left.genericType.rawType->toOne()->bypassExtendedPrimitives ()->simpleType() == Number || ($left.genericType.rawType == Date || $left.genericType.rawType->toOne()->subTypeOf(Date)), 'Field type for _lte operator should be Int or Float or Date');
+  assert($left.genericType.rawType->bypassExtendedPrimitives ()->simpleType() == Number || ($left.genericType.rawType == Date || $left.genericType.rawType->toOne()->subTypeOf(Date)), 'Field type for _lte operator should be Int or Float or Date');
   let leftOne = $left->isZeroOne();
   let fn = newMap([
                   pair($leftOne, lessThanEqual_Number_1__Number_1__Boolean_1_),

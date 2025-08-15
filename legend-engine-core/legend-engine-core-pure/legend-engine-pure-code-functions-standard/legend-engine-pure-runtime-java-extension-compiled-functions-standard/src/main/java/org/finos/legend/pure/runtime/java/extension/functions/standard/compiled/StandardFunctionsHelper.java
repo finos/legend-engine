@@ -19,8 +19,10 @@ import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.CompiledSupport;
 import org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives.date.operation.TimeBucketShared;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class StandardFunctionsHelper
@@ -79,6 +81,13 @@ public class StandardFunctionsHelper
     public static double tanh(double input)
     {
         return Math.tanh(input);
+    }
+
+    // HASH------ ---------------------------------------------------------------
+    public static Long hashCode(Object vals)
+    {
+        Object[] array = CompiledSupport.toPureCollection(vals).toArray();
+        return (long) Objects.hash(array);
     }
 
     // BITWISE ---------------------------------------------------------------------

@@ -53,6 +53,9 @@ function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(
 function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1], wrapInInstantiationNode: Boolean[1], extensions:Extension[*]):ExecutionNode[1]
 {
    let sqlNode = generateSQLExecutionNode($postProcessorResult.query, $runtime->toOne()->connectionByElement($store)->cast(@meta::external::store::relational::runtime::DatabaseConnection), addEnumMapSupportFunctions($sq, $m), $extensions);
+   
+   print(if($debug.debug, |'Generated SQL Node with query: ' + $sqlNode.sqlQuery + '\n', |''));
+   
    let relationalNode =  if($wrapInInstantiationNode, | generateInstantiationExecutionNode($sq, $ext, $postProcessorResult.query, $sqlNode, $m,$exeCtx), | $sqlNode);
    let nodes = $postProcessorResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessorResult.postExecutionNodes);
    if($nodes->size()>1,
@@ -127,7 +130,7 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                                                   name = $p.name->toOne(),
                                                                   type = $cType,
                                                                   sourceDataType = $cType->match([
-                                                                                              p : PrimitiveType[1] | $pureToDbMap->get($cType)->toOne(),
+                                                                                              p : PrimitiveType[1] | $pureToDbMap->get($cType->toOne()->bypassExtendedPrimitives()),
                                                                                               e : Enumeration<Any>[1] | $query->cast(@TdsSelectSqlQuery).columns->cast(@Alias)->filter(c | $c.name == '\"' + $p.name->toOne() + '\"').relationalElement->cast(@TableAliasColumn).column->cast(@Column).type->toOne(),
                                                                                               a : Any[*] | []
                                                                                            ])
@@ -185,7 +188,7 @@ function <<access.private>> meta::relational::mapping::getRelationalTypeFromRela
   $r->toOne().relationalOperationElement->inferRelationalType(false)->cast(@meta::relational::metamodel::datatype::DataType)
 }
 
-function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], enumMapSupportFunctions:String[*], extensions:Extension[*]):ExecutionNode[1]
+function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], enumMapSupportFunctions:String[*], extensions:Extension[*]):SQLExecutionNode[1]
 {
    let sql = sqlQueryToString($query, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
 

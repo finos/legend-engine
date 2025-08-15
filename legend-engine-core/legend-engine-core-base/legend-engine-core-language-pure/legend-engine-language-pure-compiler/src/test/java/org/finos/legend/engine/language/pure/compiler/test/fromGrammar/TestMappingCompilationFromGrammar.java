@@ -14,11 +14,15 @@
 
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_PureInstanceSetImplementation_Impl;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class TestMappingCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -1519,8 +1523,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "Association test::Firm_Person\n" +
                 "{\n" +
-                "   employer: test::Firm[1];\n" +
                 "   employees: test::Person[*];\n" +
+                "   employer: test::Firm[1];\n" +
                 "}\n\n\n" +
                 "###Mapping\n" +
                 "Mapping test::crossPropertyMappingWithLocalProperties\n" +
@@ -1582,27 +1586,35 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "      employer[p, f]: $this.firmId == $that.id\n" +
                                 "   }")
         );
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer: $this.firmId == $that.id\n" +
+                                "   }")
+        );
     }
 
     @Test
     public void testCrossStoreMappingWithMilestoning()
     {
-        test("###Pure\n" +
-                "Class <<temporal.businesstemporal>> test::Firm_Milestoned\n" +
+        String mapping = "###Pure\n" +
+                "Class %s test::Firm_Milestoned\n" +
                 "{\n" +
                 "  id: Integer[1];\n" +
                 "  legalName: String[1];\n" +
                 "}\n" +
                 "\n" +
-                "Class <<temporal.businesstemporal>> test::Person_Milestoned\n" +
+                "Class %s test::Person_Milestoned\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "}\n" +
                 "\n" +
                 "Association test::Firm_Person_Milestoned\n" +
                 "{\n" +
-                "  employer: test::Firm_Milestoned[1];\n" +
                 "  employees: test::Person_Milestoned[*];\n" +
+                "  employer: test::Firm_Milestoned[1];\n" +
                 "}\n" +
                 "\n" +
                 "\n" +
@@ -1622,11 +1634,438 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    legalName: $src.legalName\n" +
                 "  }\n" +
                 "\n" +
-                "  test::Firm_Person_Milestoned: XStore\n" +
-                "  {\n" +
-                "    employer[p, f]: $this.firmId == $that.id\n" +
-                "  }\n" +
-                ")");
+                "%s\n" +
+                ")";
+        test(
+                String.format(
+                        mapping,
+                        "<<temporal.businesstemporal>>",
+                        "<<temporal.businesstemporal>>",
+                        "  test::Firm_Person_Milestoned: XStore\n" +
+                                "  {\n" +
+                                "    employer[p, f]: $this.firmId == $that.id\n" +
+                                "  }")
+        );
+        test(
+                String.format(
+                        mapping,
+                        "<<temporal.businesstemporal>>",
+                        "<<temporal.businesstemporal>>",
+                        "  test::Firm_Person_Milestoned: XStore\n" +
+                                "  {\n" +
+                                "    employer: $this.firmId == $that.id\n" +
+                                "  }")
+        );
+        test(
+                String.format(
+                        mapping,
+                        "<<temporal.processingtemporal>>",
+                        "<<temporal.processingtemporal>>",
+                        "  test::Firm_Person_Milestoned: XStore\n" +
+                                "  {\n" +
+                                "    employer[p, f]: $this.firmId == $that.id\n" +
+                                "  }")
+        );
+        test(
+                String.format(
+                        mapping,
+                        "<<temporal.processingtemporal>>",
+                        "<<temporal.processingtemporal>>",
+                        "  test::Firm_Person_Milestoned: XStore\n" +
+                                "  {\n" +
+                                "    employer: $this.firmId == $that.id\n" +
+                                "  }")
+        );
+        test(
+                String.format(
+                        mapping,
+                        "<<temporal.bitemporal>>",
+                        "<<temporal.bitemporal>>",
+                        "  test::Firm_Person_Milestoned: XStore\n" +
+                                "  {\n" +
+                                "    employer[p, f]: $this.firmId == $that.id\n" +
+                                "  }")
+        );
+        test(
+                String.format(
+                        mapping,
+                        "<<temporal.bitemporal>>",
+                        "<<temporal.bitemporal>>",
+                        "  test::Firm_Person_Milestoned: XStore\n" +
+                                "  {\n" +
+                                "    employer: $this.firmId == $that.id\n" +
+                                "  }")
+        );
+    }
+
+    @Test
+    public void testCrossStoreMultiMappingWithLocalProperties() throws IOException
+    {
+        String grammar = org.apache.commons.io.IOUtils.resourceToString("/localCrossStoreJoins.pure", StandardCharsets.UTF_8);
+        String mapping =
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      name: $src.name,\n" +
+                "      addressName: $src.addressName\n" +
+                "   }\n" +
+                "\n" +
+                "   *test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmName: String[0..1] : '',\n" +
+                "      fullName: $src.fullName,\n" +
+                "      addressName: $src.addressName\n" +
+                "   }\n" +
+                "\n" +
+                "   test::Person[p2]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      fullName: $src.fullName,\n" +
+                "      addressName: $src.addressName\n" +
+                "   }\n" +
+                "\n" +
+                "   test::Person[p3]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      fullName: $src.fullName->substring(\n" +
+                "        0,\n" +
+                "        $src.fullName->indexOf(' ')\n" +
+                "      ),\n" +
+                "      addressName: $src.addressName\n" +
+                "   }" +
+                "\n%s\n";
+        grammar = String.format(grammar, mapping);
+        test(
+                String.format(
+                        grammar,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer[p, f]: $this.firmName == $that.name\n" +
+                                "   }")
+        );
+
+        test(
+                String.format(
+                        grammar,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer: $this.firmName == $that.name\n" +
+                                "   }")
+        );
+    }
+
+    @Test
+    public void testCrossStoreMultiMappingWithDiffMilestoningTypes() throws IOException
+    {
+        String grammar = org.apache.commons.io.IOUtils.resourceToString("/localCrossStoreJoinsWMilestoning.pure", StandardCharsets.UTF_8);
+        String mapping =
+                "\n###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties\n" +
+                "(\n" +
+                    "test::Firm[f]: Pure {\n" +
+                    "      ~src test::Firm\n" +
+                    "      name: $src.name,\n" +
+                    "      addressName: $src.addressName\n" +
+                    "   }\n" +
+                    "\n" +
+                    "*test::Person[p]: Pure {\n" +
+                    "      ~src test::Person\n" +
+                    "      +firmName: String[0..1] : '',\n" +
+                    "      fullName: $src.fullName,\n" +
+                    "      addressName: $src.addressName\n" +
+                    "   }\n" +
+                    "\n" +
+                    "test::Person[p2]: Pure {\n" +
+                    "      ~src test::Person\n" +
+                    "      fullName: $src.fullName,\n" +
+                    "      addressName: $src.addressName\n" +
+                    "   }\n" +
+                    "\n" +
+                    "test::Person[p3]: Pure {\n" +
+                    "      ~src test::Person\n" +
+                    "      fullName: $src.fullName->substring(\n" +
+                    "        0,\n" +
+                    "        $src.fullName->indexOf(' ')\n" +
+                    "      ),\n" +
+                    "      addressName: $src.addressName\n" +
+                    "   }\n\n%s\n";
+        for (String milestoneType : Lists.immutable.of("<<temporal.bitemporal>>", "<<temporal.processingtemporal>>", "<<temporal.businesstemporal>>"))
+        {
+            String grammar_milestoned = String.format(grammar,
+                    milestoneType,
+                    milestoneType,
+                    milestoneType,
+                    milestoneType
+            );
+            grammar_milestoned = grammar_milestoned + mapping;
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Firm_Person: XStore {\n" +
+                                    "      employer[p, f]: $this.firmName == $that.name\n" +
+                                    "   }\n)")
+            );
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Firm_Person: XStore {\n" +
+                                    "      employer: $this.firmName == $that.name\n" +
+                                    "   }\n)")
+            );
+        }
+    }
+
+    @Test
+    public void testCrossStoreMultiAssociationWithLocalProperties() throws IOException
+    {
+        String grammar = org.apache.commons.io.IOUtils.resourceToString("/localCrossStoreJoins.pure", StandardCharsets.UTF_8);
+        String mapping =
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmName: String[0..1] : '',\n" +
+                "      fullName: $src.fullName,\n" +
+                "      addressName: $src.addressName\n" +
+                "   }\n" +
+                "\n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      name: $src.name,\n" +
+                "      addressName: $src.addressName\n" +
+                "   }\n" +
+                "\n" +
+                "\n" +
+                "   test::Street[s]: Pure {\n" +
+                "       ~src test::Street\n" +
+                "       streetId: $src.streetId,\n" +
+                "       +address: String[*] : ''\n" +
+                "   }\n" +
+                "\n" +
+                "   test::Address[a]: Pure {\n" +
+                "      ~src test::Address\n" +
+                "      name: $src.name,\n" +
+                "      streetName: $src.streetName,\n" +
+                "      +streetId: String[1] : 'id'\n" +
+                "   }" +
+                "\n%s\n";
+        grammar = String.format(grammar, mapping);
+        test(
+                String.format(
+                        grammar,
+                        "   test::Person_Address: XStore {\n" +
+                                "      address[p, a]: $this.addressName == $that.name\n" +
+                                "   }")
+        );
+        test(
+                String.format(
+                        grammar,
+                        "   test::Person_Address: XStore {\n" +
+                                "      address: $this.addressName == $that.name\n" +
+                                "   }")
+        );
+        test(
+                String.format(
+                        grammar,
+                        "   test::Address_Street: XStore {\n" +
+                                "      street[a, s]: $this.streetName == $that.streetId\n" +
+                                "   }")
+        );
+        test(
+                String.format(
+                        grammar,
+                        "   test::Address_Street: XStore {\n" +
+                                "      street: $this.streetName == $that.streetId\n" +
+                                "   }")
+        );
+    }
+
+    @Test
+    public void testCrossStoreMultiAssociationWithDiffMilestoningTypes() throws IOException
+    {
+        String grammar = org.apache.commons.io.IOUtils.resourceToString("/localCrossStoreJoinsWMilestoning.pure", StandardCharsets.UTF_8);
+        String mapping =
+                "\n###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties\n" +
+                "(\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmName: String[0..1] : '',\n" +
+                "      fullName: $src.fullName,\n" +
+                "      addressName: $src.addressName\n" +
+                "   }\n" +
+                "\n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      name: $src.name,\n" +
+                "      addressName: $src.addressName\n" +
+                "   }\n" +
+                "\n" +
+                "\n" +
+                "   test::Street[s]: Pure {\n" +
+                "       ~src test::Street\n" +
+                "       streetId: $src.streetId,\n" +
+                "       +address: String[*] : ''\n" +
+                "   }\n" +
+                "\n" +
+                "   test::Address[a]: Pure {\n" +
+                "      ~src test::Address\n" +
+                "      name: $src.name,\n" +
+                "      streetName: $src.streetName,\n" +
+                "      +streetId: String[1] : 'id'\n" +
+                "   }" +
+                "\n%s\n)\n";
+
+        for (String milestoneType : Lists.immutable.of("<<temporal.bitemporal>>", "<<temporal.processingtemporal>>", "<<temporal.businesstemporal>>"))
+        {
+            String grammar_milestoned = String.format(grammar,
+                    milestoneType,
+                    milestoneType,
+                    milestoneType,
+                    milestoneType
+            );
+            grammar_milestoned = grammar_milestoned + mapping;
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Person_Address: XStore {\n" +
+                                    "      address[p, a]: $this.addressName == $that.name\n" +
+                                    "   }")
+            );
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Person_Address: XStore {\n" +
+                                    "      address: $this.addressName == $that.name\n" +
+                                    "   }")
+            );
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Address_Street: XStore {\n" +
+                                    "      street: $this.streetName == $that.streetId\n" +
+                                    "   }")
+            );
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Address_Street: XStore {\n" +
+                                    "      street: $this.streetName == $that.streetId\n" +
+                                    "   }")
+            );
+        }
+    }
+
+    @Test
+    public void testCrossStoreMultiMappingWithIncludedMapping()
+    {
+        String grammar = "###Pure\n" +
+                "Class %s test::Person\n" +
+                "{\n" +
+                "  fullName: String[1];\n" +
+                "  firmName : String[0..1];\n" +
+                "  addressName : String[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "Class %s test::Firm\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  addressName : String[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "Class %s test::Address\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  streetName: String[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "Class %s test::Street\n" +
+                "{\n" +
+                "  streetId: String[1];\n" +
+                "}\n" +
+                "Association test::Person_Address\n" +
+                "{\n" +
+                "  persons: test::Person[*];\n" +
+                "  address: test::Address[0..1];\n" +
+                "}\n" +
+                "Association test::Address_Street\n" +
+                "{\n" +
+                "  addresses: test::Address[*];\n" +
+                "  street: test::Street[0..1];\n" +
+                "}\n";
+        String base_mapping =
+                "\n###Mapping\n" +
+                "Mapping test::crossPropertyMappingWithLocalProperties\n" +
+                "(\n" +
+                "   test::Address[a]: Pure {\n" +
+                "      ~src test::Address\n" +
+                "      name: $src.name,\n" +
+                "      streetName: $src.streetName,\n" +
+                "      +streetId: String[1] : 'id'\n" +
+                "   }" +
+                "\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      fullName: $src.fullName\n" +
+                "   }\n" +
+                ")\n";
+        String second_mapping =
+                "\n###Mapping\n" +
+                "Mapping test::crossPropertyMappingIncludes\n" +
+                "(\n" +
+                "   include test::crossPropertyMappingWithLocalProperties\n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      name: $src.name,\n" +
+                "      addressName: $src.addressName\n" +
+                "   }\n" +
+                "\n" +
+                "   *test::Person[p2]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmName: String[0..1] : '',\n" +
+                "      fullName: $src.fullName,\n" +
+                "      addressName: $src.addressName\n" +
+                "   }\n" +
+                "\n" +
+                "   test::Person[p3]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      fullName: $src.fullName->substring(\n" +
+                "        0,\n" +
+                "        $src.fullName->indexOf(' ')\n" +
+                "      ),\n" +
+                "      addressName: $src.addressName\n" +
+                "   }" +
+                "\n" +
+                "   test::Street[s]: Pure {\n" +
+                "       ~src test::Street\n" +
+                "       streetId: $src.streetId,\n" +
+                "       +address: String[*] : ''\n" +
+                "   }\n";
+
+        for (String milestoneType : Lists.immutable.of("", "<<temporal.bitemporal>>", "<<temporal.processingtemporal>>", "<<temporal.businesstemporal>>"))
+        {
+            String grammar_milestoned = String.format(grammar,
+                    milestoneType,
+                    milestoneType,
+                    milestoneType,
+                    milestoneType
+            );
+            grammar_milestoned = grammar_milestoned + base_mapping + second_mapping;
+
+            test(grammar_milestoned +
+                            "   test::Person_Address: XStore {\n" +
+                                    "      address[p, a]: $this.addressName == $that.name\n" +
+                                    "   }\n)\n"
+            );
+            test(grammar_milestoned +
+                            "   test::Person_Address: XStore {\n" +
+                                    "      address: $this.addressName == $that.name\n" +
+                                    "   }\n)\n"
+            );
+            test(grammar_milestoned +
+                            "   test::Address_Street: XStore {\n" +
+                                    "      street[a, s]: $this.streetName == $that.streetId\n" +
+                                    "   }\n)\n"
+            );
+            test(grammar_milestoned +
+                            "   test::Address_Street: XStore {\n" +
+                                    "      street: $this.streetName == $that.streetId\n" +
+                                    "   }\n)\n"
+            );
+        }
     }
 
     @Test

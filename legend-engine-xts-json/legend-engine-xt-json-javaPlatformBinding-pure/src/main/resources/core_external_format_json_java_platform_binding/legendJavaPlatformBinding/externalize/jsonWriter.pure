@@ -305,7 +305,7 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
                   );
       $fWriter->j_invoke('writeUnitProperty', [j_string($spgft.fieldName), j_string($type->elementToPath()), $values]);
   },
-  | $fWriter->j_invoke('write'+$type->toString()+'Property', [j_string($spgft.fieldName), $getterCall])
+  | $fWriter->j_invoke('write'+$type->bypassExtendedPrimitives()->toString()+'Property', [j_string($spgft.fieldName), $getterCall])
   ))));
 
 }

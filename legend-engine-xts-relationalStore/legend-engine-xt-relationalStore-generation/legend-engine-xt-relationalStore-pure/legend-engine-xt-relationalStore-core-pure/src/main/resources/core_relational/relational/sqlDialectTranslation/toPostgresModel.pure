@@ -112,8 +112,8 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
       );,
     | []
   );
-  
-  let query = ^QuerySpecification(
+
+  let query = ^ExtendedQuerySpecification(
     select  = ^Select(
                 distinct = if($s.distinct->isNotEmpty(), |$s.distinct->toOne(), |false), 
                 selectItems = if($s.columns->isEmpty(), | ^AllColumns(), | $s.columns->map(c|$c->convertElement(^$newState(processingSelect = true))->match([s:SelectItem[1] | $s, e: meta::external::query::sql::metamodel::Expression[1] | ^SingleColumn(expression = $e)])))
@@ -124,7 +124,8 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
     orderBy = convertOrderBy($s.orderBy, $newState),
     having  = $s.havingOperation->convertOptionalElementToExpression($newState),
     limit   = convertLimit($s, $newState),
-    offset  = $s.fromRow->convertOptionalElementToExpression($newState)
+    offset  = $s.fromRow->convertOptionalElementToExpression($newState),
+    qualify = $s.qualifyOperation->convertOptionalElementToExpression($newState)
   );
 
   if($state.isRootSelect,
@@ -748,6 +749,11 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.UNBOUNDED_PRECEDING,
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.UNBOUNDED_FOLLOWING)),
                       c: meta::relational::metamodel::FrameCurrentRowValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = meta::external::query::sql::metamodel::FrameBoundType.CURRENT_ROW),
+                      i: meta::relational::metamodel::FrameIntervalValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = if($i.direction == meta::relational::metamodel::FrameValueDirection.PRECEDING,
+                                                                                                                                            | meta::external::query::sql::metamodel::FrameBoundType.PRECEDING,
+                                                                                                                                            | meta::external::query::sql::metamodel::FrameBoundType.FOLLOWING),
+                                                                                                                                value = $i.value->convertElementToExpression($state),
+                                                                                                                                durationUnit = ^meta::external::query::sql::metamodel::StringLiteral(value = $i.durationUnit->toString())->convertDurationUnit()),
                       l: meta::relational::metamodel::FrameLiteralValue[1] | ^meta::external::query::sql::metamodel::FrameBound(type = if($l.direction == meta::relational::metamodel::FrameValueDirection.PRECEDING,
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.PRECEDING,
                                                                                                                                             | meta::external::query::sql::metamodel::FrameBoundType.FOLLOWING),
@@ -769,7 +775,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   let partitions = $w.window.partition->map(p|$p->convertElementToExpression($state));
   let orderBy = $w.window.sortBy->map(s|^SortItem(sortKey = $s.sortByElement->convertElementToExpression($state),
                                                   ordering = $s.sortDirection->convertSortDirection(),
-                                                  nullOrdering = SortItemNullOrdering.UNDEFINED
+                                                  nullOrdering = if($s.sortDirection == meta::relational::metamodel::SortDirection.ASC, | SortItemNullOrdering.LAST, | SortItemNullOrdering.FIRST)
                                                 ));
   let windowFrame = if($w.window.frame->isNotEmpty(),
                        | $w.window.frame->toOne()->convertWindowFrame($state),

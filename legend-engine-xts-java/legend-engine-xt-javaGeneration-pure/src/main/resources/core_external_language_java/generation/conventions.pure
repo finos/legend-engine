@@ -170,7 +170,7 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
       },
   |if($g.rawType == Function,
       {|
-         let fType = $g.typeArguments->at(0).rawType->toOne()->cast(@meta::pure::metamodel::type::FunctionType);
+         let fType = $g.typeArguments->at(0).rawType->toOne()->bypassExtendedPrimitives()->cast(@meta::pure::metamodel::type::FunctionType);
          let rtn   = $conventions->pureTypeToJavaType($fType.returnType, $fType.returnMultiplicity);
          assert($fType.parameters->isEmpty(), | 'Function with parameters not yet handled');
          javaSupplier($rtn)->listIfMulti($mult);
@@ -239,7 +239,7 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
               },
               {|
                 if( $type->isExtendedPrimitiveType(),
-                    | pureTypeToJavaType($conventions, $type->bypassExtendedPrimitives (), $typeArgs, $mult),
+                    | pureTypeToJavaType($conventions, $type->bypassExtendedPrimitives(), $typeArgs, $mult),
                     | fail('Unsupported type: ' + $type->printType());
                       ^meta::external::language::java::metamodel::Type();
                 );    

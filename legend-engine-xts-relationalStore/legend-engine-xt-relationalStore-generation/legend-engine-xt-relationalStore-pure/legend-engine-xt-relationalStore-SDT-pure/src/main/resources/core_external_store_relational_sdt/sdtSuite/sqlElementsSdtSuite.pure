@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::query::sql::metamodel::extension::*;
 import meta::external::store::relational::sqlDialectTranslation::tests::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
 import meta::relational::metamodel::*;
@@ -20,7 +21,11 @@ import meta::external::store::relational::sqlDialectTranslation::tests::utils::*
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sdt::framework::*;
 import meta::external::query::sql::metamodel::extension::tests::*;
+import meta::external::query::sql::metamodel::extension::*;
 
+// Tests on Select
+
+// SELECT name AS result FROM testTable ORDER BY id ASC NULLS LAST
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::selectSingleColumn(): SqlDialectTest[1]
 {
   testConfigForSQLElements(
@@ -39,20 +44,18 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       )
     ),
     ^TestResult(columnNames = ['result'], rows = [^TestResultRow(values = 'John'), ^TestResultRow(values = 'Jenny'), ^TestResultRow(values = 'Jessie')]),
-    'SQLStructureTests - Select_Single_Column'
+    'SQLStructureTests - SelectSingleColumn'
   );
 }
 
-function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::selectMultiColumns(): SqlDialectTest[1]
+// SELECT name AS "Employee Name" FROM testTable ORDER BY id ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::selectColumnWithAlias(): SqlDialectTest[1]
 {
   testConfigForSQLElements(
     ^QuerySpecification(
       select = ^Select(
         distinct = false,
         selectItems = [
-          ^SingleColumn(
-            expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id'))
-          ),
           ^SingleColumn(
             expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name')),
             alias = '"Employee Name"'
@@ -66,11 +69,40 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
         nullOrdering = SortItemNullOrdering.LAST
       )
     ),
-    ^TestResult(columnNames = ['id', 'Employee Name'], rows = [^TestResultRow(values = [1, 'John']), ^TestResultRow(values = [2, 'Jenny']), ^TestResultRow(values = [3, 'Jessie'])]),
-    'SQLStructureTests - Select_Multi_Column'
+    ^TestResult(columnNames = ['Employee Name'], rows = [^TestResultRow(values = ['John']), ^TestResultRow(values = ['Jenny']), ^TestResultRow(values = ['Jessie'])]),
+    'SQLStructureTests - SelectColumnWithAlias'
   );
 }
 
+// SELECT id, name FROM testTable ORDER BY id ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::selectMultiColumns(): SqlDialectTest[1]
+{
+  testConfigForSQLElements(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = [
+          ^SingleColumn(
+            expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id'))
+          ),
+          ^SingleColumn(
+            expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name'))
+          )
+        ]
+      ),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      orderBy = ^SortItem(
+        sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+        ordering = SortItemOrdering.ASCENDING,
+        nullOrdering = SortItemNullOrdering.LAST
+      )
+    ),
+    ^TestResult(columnNames = ['id', 'name'], rows = [^TestResultRow(values = [1, 'John']), ^TestResultRow(values = [2, 'Jenny']), ^TestResultRow(values = [3, 'Jessie'])]),
+    'SQLStructureTests - SelectMultiColumns'
+  );
+}
+
+// SELECT * FROM testTable ORDER BY id ASC NULLS LAST
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::selectAllColumns(): SqlDialectTest[1]
 {
   testConfigForSQLElements(
@@ -87,10 +119,11 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       )
     ),
     ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [1, 'John', 'Engg']), ^TestResultRow(values = [2, 'Jenny', 'Finance']), ^TestResultRow(values = [3, 'Jessie', 'Engg'])]),
-    'SQLStructureTests - Select_All_Columns'
+    'SQLStructureTests - SelectAllColumns'
   );
 }
 
+// SELECT DISTINCT dept AS unique_depts FROM testTable ORDER BY unique_depts ASC NULLS LAST        
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::selectDistinctValues(): SqlDialectTest[1]
 {
   testConfigForSQLElements(
@@ -110,34 +143,104 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       )
     ),
     ^TestResult(columnNames = ['unique_depts'], rows = [^TestResultRow(values = ['Engg']), ^TestResultRow(values = ['Finance'])]),
-    'SQLStructureTests - Select_Distinct_Values'
+    'SQLStructureTests - SelectDistinctValues'
   );
 }
 
-function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testLimit(): SqlDialectTest[1]
+// SELECT "name" AS result FROM testTable ORDER BY "id" ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testIdentifierQuoteConfig(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - Identifier',
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('"id"', ^ColumnType(name = 'integer')), pair('"name"', ^ColumnType(name = 'varchar'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['"id"', '"name"'], values = [list([literal(1), literal('John')]), list([literal(2), literal('Jenny')]), list([literal(3), literal('Jessie')])])
+    ],
+    teardownStatements = ^DropTestTable(tableName = 'testTable', isTempTable = true),
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^SingleColumn(
+          expression = ^QualifiedNameReference(name = ^QualifiedName(parts = '"name"')),
+          alias = 'result')
+      ),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      orderBy = ^SortItem(
+        sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = '"id"')),
+        ordering = SortItemOrdering.ASCENDING,
+        nullOrdering = SortItemNullOrdering.LAST
+      )
+     )
+    ),
+    expectedResult =  ^TestResult(columnNames = ['result'], rows = [^TestResultRow(values = 'John'), ^TestResultRow(values = 'Jenny'), ^TestResultRow(values = 'Jessie')])
+  );
+}
+
+// SELECT root.* FROM testTable AS root ORDER BY id ASC NULLS LAST        
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::aliasedRelation(): SqlDialectTest[1]
+{
+  testConfigForSQLElements(
+    ^QuerySpecification(
+      select = ^Select(selectItems = [^AllColumns(prefix = 'root')]),
+      from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = 'testTable')), alias = 'root'),
+      orderBy = ^SortItem(
+        sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+        ordering = SortItemOrdering.ASCENDING,
+        nullOrdering = SortItemNullOrdering.LAST
+      )
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [1, 'John', 'Engg']), ^TestResultRow(values = [2, 'Jenny', 'Finance']), ^TestResultRow(values = [3, 'Jessie', 'Engg'])]),
+    'SQLStructureTests - AliasedRelation'
+  );
+}
+
+// Tests on Sorting
+
+// SELECT * FROM testTable ORDER BY id ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testSortBySingleColumnAsc(): SqlDialectTest[1]
 {
   testConfigForSQLElements(
     ^QuerySpecification(
       select = ^Select(
         distinct = false,
-        selectItems = [
-          ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id'))),
-          ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name')))
-        ]
+        selectItems = ^AllColumns()
       ),
       from = ^Table(name = ^QualifiedName(parts = 'testTable')),
       orderBy = ^SortItem(
         sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
         ordering = SortItemOrdering.ASCENDING,
         nullOrdering = SortItemNullOrdering.LAST
-      ),
-      limit = literal(2)
+      )
     ),
-    ^TestResult(columnNames = ['id', 'name'], rows = [^TestResultRow(values = [1, 'John']), ^TestResultRow(values = [2, 'Jenny'])]),
-    'SQLStructureTests - Limit'
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [1, 'John', 'Engg']), ^TestResultRow(values = [2, 'Jenny', 'Finance']), ^TestResultRow(values = [3, 'Jessie', 'Engg'])]),
+    'SQLStructureTests - SortBySingleColumnAsc'
   );
 }
 
+// SELECT * FROM testTable ORDER BY id DESC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testSortBySingleColumnDesc(): SqlDialectTest[1]
+{
+  testConfigForSQLElements(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()
+      ),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      orderBy = ^SortItem(
+        sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+        ordering = SortItemOrdering.DESCENDING,
+        nullOrdering = SortItemNullOrdering.LAST
+      )
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [3, 'Jessie', 'Engg']), ^TestResultRow(values = [2, 'Jenny', 'Finance']), ^TestResultRow(values = [1, 'John', 'Engg'])]),
+    'SQLStructureTests - SortBySingleColumnDesc'
+  );
+}
+
+// SELECT dept, name FROM testTable ORDER BY dept ASC NULLS LAST, name DESC NULLS LAST
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testSortByMultiCols(): SqlDialectTest[1]
 {
   testConfigForSQLElements(
@@ -162,10 +265,92 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       ]
     ),
     ^TestResult(columnNames = ['dept', 'name'], rows = [^TestResultRow(values = ['Engg', 'John']), ^TestResultRow(values = ['Engg', 'Jessie']), ^TestResultRow(values = ['Finance', 'Jenny'])]),
-    'SQLStructureTests - SortBy'
+    'SQLStructureTests - SortByMultiCols'
   );
 }
 
+// SELECT * FROM testTable ORDER BY dept ASC NULLS FIRST, id ASC NULLS FIRST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testSortByWithNullsFirst(): SqlDialectTest[1]
+{
+  testConfigForNulls(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')),
+          ordering = SortItemOrdering.ASCENDING,
+          nullOrdering = SortItemNullOrdering.FIRST
+        ),
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+          ordering = SortItemOrdering.ASCENDING,
+          nullOrdering = SortItemNullOrdering.FIRST
+        )       
+      ]
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [2, 'Jenny', null()]), ^TestResultRow(values = [1, 'John', 'Engg']), ^TestResultRow(values = [3, 'Jessie', 'Engg'])]),
+    'SQLStructureTests - SortByWithNullsFirst'
+  );
+}
+
+// SELECT * FROM testTable ORDER BY dept ASC NULLS LAST, id ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testSortByWithNullsLast(): SqlDialectTest[1]
+{
+  testConfigForNulls(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')),
+          ordering = SortItemOrdering.ASCENDING,
+          nullOrdering = SortItemNullOrdering.LAST
+        ),
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+          ordering = SortItemOrdering.ASCENDING,
+          nullOrdering = SortItemNullOrdering.LAST
+        )       
+      ]
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [1, 'John', 'Engg']), ^TestResultRow(values = [3, 'Jessie', 'Engg']), ^TestResultRow(values = [2, 'Jenny', null()])]),
+    'SQLStructureTests - SortByWithNullsLast'
+  );
+}
+
+// Tests on Limit and Offset
+
+// SELECT id, name FROM testTable ORDER BY id ASC NULLS LAST LIMIT 2
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testLimit(): SqlDialectTest[1]
+{
+  testConfigForSQLElements(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = [
+          ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id'))),
+          ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name')))
+        ]
+      ),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      orderBy = ^SortItem(
+        sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+        ordering = SortItemOrdering.ASCENDING,
+        nullOrdering = SortItemNullOrdering.LAST
+      ),
+      limit = literal(2)
+    ),
+    ^TestResult(columnNames = ['id', 'name'], rows = [^TestResultRow(values = [1, 'John']), ^TestResultRow(values = [2, 'Jenny'])]),
+    'SQLStructureTests - Limit'
+  );
+}
+
+// SELECT * FROM testTable ORDER BY id ASC NULLS LAST LIMIT 1 OFFSET 2
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testOffSet(): SqlDialectTest[1]
 {
   testConfigForSQLElements(
@@ -186,6 +371,9 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
   );
 }
 
+// Tests on Filter
+
+// SELECT * FROM testTable WHERE id = 2
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testFilter(): SqlDialectTest[1]
 {
   testConfigForSQLElements(
@@ -197,10 +385,167 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       where = ^ComparisonExpression(left = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')), right = literal(2), operator = ComparisonOperator.EQUAL)
     ),
     ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [2, 'Jenny', 'Finance'])]),
-    'SQLStructureTests - Where'
+    'SQLStructureTests - Filter'
   );
 }
 
+// SELECT * FROM testTable WHERE dept IS NULL
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testFilterNull(): SqlDialectTest[1]
+{
+  testConfigForNulls(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      where = ^IsNullPredicate(value = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')))
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [2, 'Jenny', null()])]),
+    'SQLStructureTests - FilterNull'
+  );
+}
+
+// SELECT * FROM testTable WHERE dept IS NOT NULL ORDER BY id ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testFilterNotNull(): SqlDialectTest[1]
+{
+  testConfigForNulls(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      where = ^IsNotNullPredicate(value = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))),
+      orderBy = ^SortItem(
+        sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+        ordering = SortItemOrdering.ASCENDING,
+        nullOrdering = SortItemNullOrdering.LAST
+      )
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [1, 'John', 'Engg']), ^TestResultRow(values = [3, 'Jessie', 'Engg'])]),
+    'SQLStructureTests - FilterNotNull'
+  );
+}
+
+// SELECT * FROM testTable WHERE dept IN ('Finance', 'HR')
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testIn(): SqlDialectTest[1]
+{
+  testConfigForSQLElements(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      where = ^InPredicate(value = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')), valueList = ^InListExpression(values = [literal('Finance'), literal('HR')]))
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [2, 'Jenny', 'Finance'])]),
+    'SQLStructureTests - In'
+  );
+}
+
+// SELECT * FROM testTable WHERE NOT dept IN ('Engg', 'HR')
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testNotIn(): SqlDialectTest[1]
+{
+  testConfigForSQLElements(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      where = ^NotExpression(value = ^InPredicate(value = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')), valueList = ^InListExpression(values = [literal('Engg'), literal('HR')])))
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [2, 'Jenny', 'Finance'])]),
+    'SQLStructureTests - NotIn'
+  );
+}
+
+// SELECT * FROM testTable WHERE id BETWEEN 3 AND 5
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testBetween(): SqlDialectTest[1]
+{
+  testConfigForSQLElements(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      where = ^BetweenPredicate(value = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')), min = literal(3), max = literal(5))
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [3, 'Jessie', 'Engg'])]),
+    'SQLStructureTests - Between'
+  );
+}
+
+// SELECT dept, CASE WHEN dept = 'Engg' THEN 'Tech' WHEN dept = 'Finance' THEN 'Non-Tech' ELSE 'Unknown' END AS tag FROM testTable ORDER BY id ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testSearchedCaseExpression(): SqlDialectTest[1]
+{
+  testConfigForSQLElements(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = [
+          ^SingleColumn(
+            expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))
+          ),
+          ^SingleColumn(
+            expression = ^SearchedCaseExpression(
+              whenClauses = [
+                ^WhenClause(
+                  result = literal('Tech'),
+                  operand = ^ComparisonExpression(left = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')), right = literal('Engg'), operator = ComparisonOperator.EQUAL)
+                ),
+                ^WhenClause(
+                  result = literal('Non-Tech'),
+                  operand = ^ComparisonExpression(left = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')), right = literal('Finance'), operator = ComparisonOperator.EQUAL)
+                )                
+              ], 
+              defaultValue = literal('Unknown')),
+            alias = 'tag'  
+          )
+        ]),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      orderBy = ^SortItem(
+        sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+        ordering = SortItemOrdering.ASCENDING,
+        nullOrdering = SortItemNullOrdering.LAST
+      )
+    ),
+    ^TestResult(columnNames = ['dept', 'tag'], rows = [
+      ^TestResultRow(values = ['Engg', 'Tech']),
+      ^TestResultRow(values = ['Finance', 'Non-Tech']),
+      ^TestResultRow(values = ['Engg', 'Tech'])            
+    ]),
+    'SQLStructureTests - SearchedCaseExpression'
+  );
+}
+
+// SELECT * FROM (SELECT * FROM testTable WHERE dept = 'Finance') AS sub_query
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testTableSubquery(): SqlDialectTest[1]
+{
+  testConfigForSQLElements(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()),
+      from = ^AliasedRelation(
+        relation = ^TableSubquery(
+          query = ^Query(
+            queryBody = ^QuerySpecification(
+              select = ^Select(
+                distinct = false,
+                selectItems = ^AllColumns()),
+              from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+              where = ^ComparisonExpression(left = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')), right = literal('Finance'), operator = ComparisonOperator.EQUAL)   
+            )
+          )
+        ),
+        alias = 'sub_query'
+      )
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [2, 'Jenny', 'Finance'])]),
+    'SQLStructureTests - TableSubquery'
+  );
+}
+
+// SELECT * FROM testTable GROUP BY id, name, dept ORDER BY id ASC NULLS LAST
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testGroupBy(): SqlDialectTest[1]
 {
   testConfigForSQLElements(
@@ -224,6 +569,7 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
   );
 }
 
+// SELECT * FROM testTable GROUP BY id, name, dept HAVING dept = 'Engg' ORDER BY id ASC NULLS LAST
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testHaving(): SqlDialectTest[1]
 {
   testConfigForSQLElements(
@@ -248,33 +594,39 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
   );
 }
 
+// Tests on JOIN
+
+// SELECT empTable.id AS emp_id, empTable.name AS emp_name, deptTable.head_count AS dept_head_count FROM empTable INNER JOIN deptTable ON (empTable.dept = deptTable.dept) ORDER BY empTable.id ASC NULLS LAST, deptTable.head_count ASC NULLS LAST
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testInnerJoin(): SqlDialectTest[1]
 {
   testConfigForJoin(
     JoinType.INNER,
     ^TestResult(columnNames = ['emp_id', 'emp_name', 'dept_head_count'], rows = [^TestResultRow(values = [1, 'John', 46]), ^TestResultRow(values = [2, 'Jenny', 32]), ^TestResultRow(values = [3, 'Jessie', 46])]),
-    'SQLStructureTests - Join_Inner'
+    'SQLStructureTests - InnerJoin'
   )
 }
 
+// SELECT empTable.id AS emp_id, empTable.name AS emp_name, deptTable.head_count AS dept_head_count FROM empTable LEFT OUTER JOIN deptTable ON (empTable.dept = deptTable.dept) ORDER BY empTable.id ASC NULLS LAST, deptTable.head_count ASC NULLS LAST
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testLeftJoin(): SqlDialectTest[1]
 {
   testConfigForJoin(
     JoinType.LEFT,
     ^TestResult(columnNames = ['emp_id', 'emp_name', 'dept_head_count'], rows = [^TestResultRow(values = [1, 'John', 46]), ^TestResultRow(values = [2, 'Jenny', 32]), ^TestResultRow(values = [3, 'Jessie', 46]), ^TestResultRow(values = [4, 'James', null()])]),
-    'SQLStructureTests - Join_Left'
+    'SQLStructureTests - LeftJoin'
   )
 }
 
+// SELECT empTable.id AS emp_id, empTable.name AS emp_name, deptTable.head_count AS dept_head_count FROM empTable RIGHT OUTER JOIN deptTable ON (empTable.dept = deptTable.dept) ORDER BY empTable.id ASC NULLS LAST, deptTable.head_count ASC NULLS LAST
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testRightJoin(): SqlDialectTest[1]
 {
   testConfigForJoin(
     JoinType.RIGHT,
     ^TestResult(columnNames = ['emp_id', 'emp_name', 'dept_head_count'], rows = [^TestResultRow(values = [1, 'John', 46]), ^TestResultRow(values = [2, 'Jenny', 32]), ^TestResultRow(values = [3, 'Jessie', 46]), ^TestResultRow(values = [null(), null(), 12]), ^TestResultRow(values = [null(), null(), 27])]),
-    'SQLStructureTests - Join_Right'
+    'SQLStructureTests - RightJoin'
   )
 }
 
+// SELECT empTable.id AS emp_id, empTable.name AS emp_name, deptTable.head_count AS dept_head_count FROM empTable CROSS JOIN deptTable ORDER BY empTable.id ASC NULLS LAST, deptTable.head_count ASC NULLS LAST
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testCrossJoin(): SqlDialectTest[1]
 {
   testConfigForJoin(
@@ -284,19 +636,79 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
       ^TestResultRow(values = [2, 'Jenny', 12]), ^TestResultRow(values = [2, 'Jenny', 27]), ^TestResultRow(values = [2, 'Jenny', 32]), ^TestResultRow(values = [2, 'Jenny', 46]),
       ^TestResultRow(values = [3, 'Jessie', 12]), ^TestResultRow(values = [3, 'Jessie', 27]), ^TestResultRow(values = [3, 'Jessie', 32]), ^TestResultRow(values = [3, 'Jessie', 46]),
       ^TestResultRow(values = [4, 'James', 12]), ^TestResultRow(values = [4, 'James', 27]), ^TestResultRow(values = [4, 'James', 32]), ^TestResultRow(values = [4, 'James', 46])]),
-    'SQLStructureTests - Join_Cross'
+    'SQLStructureTests - CrossJoin'
   )
 }
 
+// SELECT empTable.id AS emp_id, empTable.name AS emp_name, deptTable.head_count AS dept_head_count FROM empTable FULL OUTER JOIN deptTable ON (empTable.dept = deptTable.dept) ORDER BY empTable.id ASC NULLS LAST, deptTable.head_count ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testFullJoin(): SqlDialectTest[1]
+{
+  testConfigForJoin(
+    JoinType.FULL,
+    ^TestResult(columnNames = ['emp_id', 'emp_name', 'dept_head_count'], rows = [
+      ^TestResultRow(values = [1, 'John', 46]),
+      ^TestResultRow(values = [2, 'Jenny', 32]),
+      ^TestResultRow(values = [3, 'Jessie', 46]),
+      ^TestResultRow(values = [4, 'James', null()]),
+      ^TestResultRow(values = [null(), null(), 12]),
+      ^TestResultRow(values = [null(), null(), 27])]),
+    'SQLStructureTests - FullJoin'
+  )
+}
+
+// SELECT * FROM tab1 asof left join tab2 ON (tab1.time1 < tab2.time2) ORDER BY time1 DESC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testAsOfJoin(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - AsOfJoin',
+    setupStatements = [
+      ^DropTestTable(tableName = 'tab1', isTempTable = true),
+      ^CreateTestTable(tableName = 'tab1', columns = [pair('key1', ^ColumnType(name = 'integer')), pair('time1', ^ColumnType(name = 'timestamp'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'tab1', columns = ['key1', 'time1'], values = [list([literal(1), literal(%2020-01-01T12:34:56)]), list([literal(2), literal(%2020-01-01T13:44:56)])]),
+      ^DropTestTable(tableName = 'tab2', isTempTable = true),
+      ^CreateTestTable(tableName = 'tab2', columns = [pair('key2', ^ColumnType(name = 'integer')), pair('time2', ^ColumnType(name = 'timestamp'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'tab2', columns = ['key2', 'time2'], values = [list([literal(1), literal(%2020-01-01T12:35:56)]), list([literal(2), literal(%2020-01-01T13:45:56)])])
+    ],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'tab1', isTempTable = true),
+      ^DropTestTable(tableName = 'tab2', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()
+      ),
+      from = ^meta::external::query::sql::metamodel::extension::AsOfJoin(
+        left = ^Table(name = ^QualifiedName(parts = 'tab1')),
+        right = ^Table(name = ^QualifiedName(parts = 'tab2')),
+        type = JoinType.LEFT,
+        criteria = ^JoinOn(expression= ^ComparisonExpression(left = ^QualifiedNameReference(name = ^QualifiedName(parts = ['tab1', 'time1'])), right = ^QualifiedNameReference(name = ^QualifiedName(parts = ['tab2', 'time2'])), operator = ComparisonOperator.LESS_THAN))
+      ),
+      orderBy = ^SortItem(
+        sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'time1')),
+        ordering = SortItemOrdering.DESCENDING,
+        nullOrdering = SortItemNullOrdering.LAST
+      )
+    )),
+    expectedResult = ^TestResult(columnNames = ['key1', 'time1', 'key2', 'time2'], rows = [^TestResultRow(values = [2, %2020-01-01T13:44:56.000000000+0000, 2,%2020-01-01T13:45:56.000000000+0000]),
+     ^TestResultRow(values = [1, %2020-01-01T12:34:56.000000000+0000, 1, %2020-01-01T12:35:56.000000000+0000])])
+  );
+}
+
+//Tests on Union
+
+// SELECT * FROM testTable AS table_a UNION ALL SELECT * FROM testTable AS table_b
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testUnionAll(): SqlDialectTest[1]
 {
   testConfigForUnion(
     false,
     ^TestResult(columnNames = ['student'], rows = [^TestResultRow(values = ['Alex']), ^TestResultRow(values = ['Alex']), ^TestResultRow(values = ['Alex']), ^TestResultRow(values = ['Alex'])]),
-    'SQLStructureTests - Union_All'
+    'SQLStructureTests - UnionAll'
   )
 }
 
+// SELECT * FROM testTable AS table_a UNION SELECT * FROM testTable AS table_b
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testUnion(): SqlDialectTest[1]
 {
   testConfigForUnion(
@@ -304,6 +716,339 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
     ^TestResult(columnNames = ['student'], rows = [^TestResultRow(values = ['Alex'])]),
     'SQLStructureTests - Union'
   )
+}
+
+// SELECT dateCol AS result FROM testTable WHERE CURRENT_DATE = dateCol
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testCurrentDate(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - CurrentDate',
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('id', ^ColumnType(name = 'integer')), pair('timeCol', ^ColumnType(name = 'timestamp')), pair('dateCol', ^ColumnType(name = 'date'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['id', 'timeCol', 'dateCol'], values = [list([literal(1), literal(%2020-01-01T12:34:56), literal(%2020-01-01)])])
+    ],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = [
+          ^SingleColumn(
+            expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dateCol')),
+            alias = 'result'
+          )         
+        ]
+      ),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      where = ^ComparisonExpression(left = ^CurrentTime(type = CurrentTimeType.DATE), right = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dateCol')), operator = ComparisonOperator.EQUAL)   
+    )),
+    expectedResult = ^TestResult(columnNames = ['result'])    
+  )
+}
+
+// SELECT timeCol AS result FROM testTable WHERE CURRENT_TIMESTAMP = timeCol
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testCurrentTimestamp(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - CurrentTimestamp',
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('id', ^ColumnType(name = 'integer')), pair('timeCol', ^ColumnType(name = 'timestamp')), pair('dateCol', ^ColumnType(name = 'date'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['id', 'timeCol', 'dateCol'], values = [list([literal(1), literal(%2020-01-01T12:34:56), literal(%2020-01-01)])])
+    ],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = [
+          ^SingleColumn(
+            expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'timeCol')),
+            alias = 'result'
+          )         
+        ]
+      ),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      where = ^ComparisonExpression(left = ^CurrentTime(type = CurrentTimeType.TIMESTAMP), right = ^QualifiedNameReference(name = ^QualifiedName(parts = 'timeCol')), operator = ComparisonOperator.EQUAL)   
+    )),
+    expectedResult = ^TestResult(columnNames = ['result'])    
+  )
+}
+
+// SELECT EXTRACT(HOUR FROM timeCol) AS result FROM testTable
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testExtract(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - Extract',
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('id', ^ColumnType(name = 'integer')), pair('timeCol', ^ColumnType(name = 'timestamp')), pair('dateCol', ^ColumnType(name = 'date'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['id', 'timeCol', 'dateCol'], values = [list([literal(1), literal(%2020-01-01T12:34:56), literal(%2020-01-01)])])
+    ],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = [
+          ^SingleColumn(
+            expression = ^Extract(field = ExtractField.HOUR, expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'timeCol'))),
+            alias = 'result'
+          )         
+        ]
+      ),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable'))
+    )),
+    expectedResult = ^TestResult(columnNames = ['result'], rows = [^TestResultRow(values = [12])])    
+  )
+}
+
+// Tests on Trim
+
+// SELECT TRIM(LEADING ' ' FROM ' adefad ') AS result
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testTrimLeading(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - TrimLeading',
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = [
+          ^SingleColumn(
+            expression = ^Trim(
+              value=literal(' adefad '),
+              characters=literal(' '),
+              mode=TrimMode.LEADING
+            ),
+            alias = 'result'
+          )         
+        ]
+      )
+    )),
+    expectedResult = ^TestResult(columnNames = ['result'], rows = [^TestResultRow(values = ['adefad '])])    
+  )
+}
+
+// SELECT TRIM(TRAILING ' ' FROM ' adefad ') AS result
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testTrimTrailing(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - TrimTrailing',
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = [
+          ^SingleColumn(
+            expression = ^Trim(
+              value=literal(' adefad '),
+              characters=literal(' '),
+              mode=TrimMode.TRAILING
+            ),
+            alias = 'result'
+          )         
+        ]
+      )
+    )),
+    expectedResult = ^TestResult(columnNames = ['result'], rows = [^TestResultRow(values = [' adefad'])])    
+  )
+}
+
+// SELECT TRIM(BOTH ' ' FROM ' adefad ') AS result
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testTrimBoth(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - TrimBoth',
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = [
+          ^SingleColumn(
+            expression = ^Trim(
+              value=literal(' adefad '),
+              characters=literal(' '),
+              mode=TrimMode.BOTH
+            ),
+            alias = 'result'
+          )         
+        ]
+      )
+    )),
+    expectedResult = ^TestResult(columnNames = ['result'], rows = [^TestResultRow(values = ['adefad'])])    
+  )
+}
+
+// SELECT * FROM tab1 WHERE EXISTS (SELECT * FROM tab2 WHERE tab1.cust_id = tab2.cust_id)
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testExists(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - Exists',
+    setupStatements = [
+      ^DropTestTable(tableName = 'tab1', isTempTable = true),
+      ^CreateTestTable(tableName = 'tab1', columns = [pair('cust_id', ^ColumnType(name = 'integer'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'tab1', columns = ['cust_id'], values = [list([literal(1)])]),
+      ^DropTestTable(tableName = 'tab2', isTempTable = true),
+      ^CreateTestTable(tableName = 'tab2', columns = [pair('cust_id', ^ColumnType(name = 'integer'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'tab2', columns = ['cust_id'], values = [list([literal(1)])])    
+    ],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'tab1', isTempTable = true),
+      ^DropTestTable(tableName = 'tab2', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()
+      ),
+      from = ^Table(name = ^QualifiedName(parts = 'tab1')),
+      where = ^ExistsPredicate(
+        query = ^TableSubquery(
+          query = ^Query(
+            queryBody = ^QuerySpecification(
+              select = ^Select(
+                distinct = false,
+                selectItems = ^AllColumns()),
+              from = ^Table(name = ^QualifiedName(parts = 'tab2')),
+              where = ^ComparisonExpression(left = ^QualifiedNameReference(name = ^QualifiedName(parts = ['tab1', 'cust_id'])), right = ^QualifiedNameReference(name = ^QualifiedName(parts = ['tab2', 'cust_id'])), operator = ComparisonOperator.EQUAL)   
+            )
+          )
+        )
+      )
+    )),
+    expectedResult = ^TestResult(columnNames = ['cust_id'], rows = [^TestResultRow(values = [1])])
+  );
+}
+
+// Tests on LIKE Predicate
+
+// SELECT * FROM testTable WHERE name LIKE 'A%'
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testLike(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - LikePredicate',
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('name', ^ColumnType(name = 'varchar'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['name'], values = [list([literal('abc65%')])])  
+    ],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()
+      ),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      where = ^LikePredicate(
+        value = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name')),
+        pattern = ^StringLiteral(value = 'A%', quoted = false)
+      )
+    )),
+    expectedResult = ^TestResult(columnNames = ['name'])
+  );
+}
+
+// SELECT * FROM testTable WHERE name ILIKE 'A%'
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testLikeIgnoreCase(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - LikeIgnoreCase',
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('name', ^ColumnType(name = 'varchar'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['name'], values = [list([literal('abc65%')])])  
+    ],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()
+      ),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      where = ^LikePredicate(
+        value = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name')),
+        pattern = ^StringLiteral(value = 'A%', quoted = false),
+        ignoreCase = true
+      )
+    )),
+    expectedResult = ^TestResult(columnNames = ['name'], rows = [^TestResultRow(values = 'abc65%')])
+  );
+}
+
+// SELECT * FROM testTable WHERE name LIKE '%65\%' ESCAPE '\'
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testLikeEscapeChar(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - LikeEscapeChar',
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('name', ^ColumnType(name = 'varchar'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['name'], values = [list([literal('abc65%')])])  
+    ],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()
+      ),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      where = ^LikePredicate(
+        value = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name')),
+        pattern = ^StringLiteral(value = '%65^%%', quoted = false),
+        escape = ^StringLiteral(value = '^', quoted = false)
+      )
+    )),
+    expectedResult = ^TestResult(columnNames = ['name'], rows = [^TestResultRow(values = 'abc65%')])
+  );
+}
+
+// WITH cteTest AS (SELECT 'John' AS name) SELECT name AS emp_name FROM cteTest
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testCTE(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - CTE',
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('id', ^ColumnType(name = 'integer')), pair('name', ^ColumnType(name = 'varchar')), pair('dept', ^ColumnType(name = 'varchar'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['id', 'name', 'dept'], values = [list([literal(1), literal('John'), literal('Engg')]), list([literal(2), literal('Jenny'), literal('Finance')]), list([literal(3), literal('Jessie'), literal('Engg')])])
+    ],
+    teardownStatements = ^DropTestTable(tableName = 'testTable', isTempTable = true),
+    testQuery = ^Query(
+      with = ^With(
+        withQueries = ^meta::external::query::sql::metamodel::WithQuery(
+          name = 'cteTest',
+          query = ^Query(
+            queryBody = ^QuerySpecification(
+              select = ^Select(selectItems = ^SingleColumn(expression = literal('John'), alias = 'name'))
+            )   
+          )
+        )
+      ),
+      queryBody = ^QuerySpecification(
+        select = ^Select(selectItems = ^SingleColumn(alias = 'emp_name', expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['name'])))),
+        from = ^Table(name = ^QualifiedName(parts = 'cteTest'))
+      )   
+    ),
+    expectedResult = ^TestResult(columnNames = ['emp_name'], rows = [^TestResultRow(values = 'John')])
+  );
 }
 
 function meta::external::store::relational::sdt::framework::testConfigForSQLElements(queryBody: QueryBody[1], expected: TestResult[1], identifier: String[1]): SqlDialectTest[1]
@@ -314,6 +1059,23 @@ function meta::external::store::relational::sdt::framework::testConfigForSQLElem
       ^DropTestTable(tableName = 'testTable', isTempTable = true),
       ^CreateTestTable(tableName = 'testTable', columns = [pair('id', ^ColumnType(name = 'integer')), pair('name', ^ColumnType(name = 'varchar')), pair('dept', ^ColumnType(name = 'varchar'))], isTempTable = true),
       ^InsertIntoTestTable(tableName = 'testTable', columns = ['id', 'name', 'dept'], values = [list([literal(1), literal('John'), literal('Engg')]), list([literal(2), literal('Jenny'), literal('Finance')]), list([literal(3), literal('Jessie'), literal('Engg')])])
+    ],
+    teardownStatements = ^DropTestTable(tableName = 'testTable', isTempTable = true),
+    testQuery = ^Query(
+      queryBody = $queryBody
+    ),
+    expectedResult = $expected
+  );
+}
+
+function meta::external::store::relational::sdt::framework::testConfigForNulls(queryBody: QueryBody[1], expected: TestResult[1], identifier: String[1]): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = $identifier,
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('id', ^ColumnType(name = 'integer')), pair('name', ^ColumnType(name = 'varchar')), pair('dept', ^ColumnType(name = 'varchar'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['id', 'name', 'dept'], values = [list([literal(1), literal('John'), literal('Engg')]), list([literal(2), literal('Jenny'), ^NullLiteral()]), list([literal(3), literal('Jessie'), literal('Engg')])])
     ],
     teardownStatements = ^DropTestTable(tableName = 'testTable', isTempTable = true),
     testQuery = ^Query(
@@ -400,5 +1162,50 @@ function meta::external::store::relational::sdt::framework::testConfigForUnion(d
         )
     ),
     expectedResult = $expected
+  );
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testQualify(): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = 'SQLStructureTests - Qualify',
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('id', ^ColumnType(name = 'integer')), pair('name', ^ColumnType(name = 'varchar')), pair('dept', ^ColumnType(name = 'varchar'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['id', 'name', 'dept'], values = [list([literal(1), literal('John'), literal('Engg')]), list([literal(2), literal('Jenny'), literal('Finance')]), list([literal(3), literal('Jessie'), literal('Engg')])])
+    ],
+    teardownStatements = ^DropTestTable(tableName = 'testTable', isTempTable = true),
+    testQuery = ^Query(
+      queryBody = ^ExtendedQuerySpecification(
+        select = ^Select(
+          distinct = false,
+          selectItems = [
+            ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id'))),
+            ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'name'))),
+            ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))),
+            ^SingleColumn(
+              expression = ^FunctionCall(
+                arguments = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+                distinct = false,
+                name = ^QualifiedName(parts = 'sum'),
+                window = ^meta::external::query::sql::metamodel::Window(partitions = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')))
+              ),
+              alias = 'sumCol'
+            )
+        ]),
+        from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+        qualify = ^ComparisonExpression(
+          left = ^FunctionCall(
+            arguments = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+            distinct = false,
+            name = ^QualifiedName(parts = 'sum'),
+            window = ^meta::external::query::sql::metamodel::Window(partitions = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')))
+          ),
+          operator = ComparisonOperator.GREATER_THAN,
+          right = literal(3)
+        )
+      )
+    ),
+    expectedResult = ^TestResult(columnNames = ['id', 'name', 'dept', 'sumCol'], rows = [^TestResultRow(values = [1, 'John', 'Engg', 4]), ^TestResultRow(values = [3, 'Jessie', 'Engg', 4])])
   );
 }

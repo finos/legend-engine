@@ -238,6 +238,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseAuthenticationStrategy(code, p -> walker.visitGCPApplicationDefaultCredentialsAuthenticationStrategy(code, p.gcpApplicationDefaultCredentialsAuth()));
                 case "GCPWorkloadIdentityFederation":
                     return parseAuthenticationStrategy(code, p -> walker.visitGCPWorkloadIdentityFederationAuthenticationStrategy(code, p.gcpWorkloadIdentityFederationAuth()));
+                case "OAuth":
+                    return parseAuthenticationStrategy(code, p -> walker.visitOAuthAuthenticationStrategy(code, p.oAuth()));
                 default:
                     return null;
             }

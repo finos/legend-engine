@@ -14,13 +14,18 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
+
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class DatasetCaseConverter
 {
@@ -180,11 +185,16 @@ public class DatasetCaseConverter
             newShardSpecification = shardSpecification.withShardKeys(newShardKeys);
         }
 
+        List<ClusterKey> clusterKeys = schema.clusterKeys().stream()
+        .map(clusterKey -> ClusterKey.of(FieldValue.builder().fieldName(strategy.apply(((FieldValue)clusterKey.key()).fieldName())).build()))
+        .collect(Collectors.toList());
+
         return SchemaDefinition.builder()
             .addAllFields(newDatasetFields)
             .addAllIndexes(newDatasetIndices)
             .columnStoreSpecification(newColumnStoreSpecification)
             .shardSpecification(newShardSpecification)
+            .addAllClusterKeys(clusterKeys)
             .build();
     }
 }

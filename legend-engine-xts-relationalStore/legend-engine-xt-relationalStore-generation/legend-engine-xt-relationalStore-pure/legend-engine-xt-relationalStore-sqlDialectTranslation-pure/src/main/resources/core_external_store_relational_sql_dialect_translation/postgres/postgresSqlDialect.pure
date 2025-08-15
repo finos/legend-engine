@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::query::sql::metamodel::extension::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::aggregate::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
@@ -154,7 +155,15 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(
       'FuncTests - jarowinkler_similarity(2/2)',
       'Postgres SQL Dialect does not support the function - jarowinkler_similarity'
-    )                            
+    ),
+    pair(
+      'SQLStructureTests - AsOfJoin',
+      'Postgres SQL Dialect does not support AsOfJoin!'
+    ),
+    pair(
+      'SQLStructureTests - Qualify',
+      'Execution error at (resource:/core_external_store_relational_sql_dialect_translation/sqlDialect.pure line:154 column:47), \"Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::ExtendedQuerySpecification\" not implemented in SqlDialect for database type \"Postgres\"\"'
+    )
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -220,6 +229,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     joinProcessor_default(),
     querySpecificationProcessor_default(),
     unionProcessor_default(),
+    asOfJoinProcessorForPostgres(),
     tableSubqueryProcessor_default(),
     tablePlaceholderProcessor_default()
   ]
@@ -243,7 +253,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     castProcessor_default(),
     inListExpressionProcessor_default(),
     inPredicateProcessor_default(),
-    extractProcessor_default(),
+    extractProcessorForPostgres(),
     betweenPredicateProcessor_default(),
     functionCallProcessor_default(),
     subQueryExpressionProcessor_default(),
@@ -315,6 +325,30 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     findOperatorType = findOperatorType_default_Expression_1__String_1_,
     operatorPrecedence = operatorPrecedence_default()
   )
+}
+
+// Custom handling is required as Postgres returns Double for Extract function unlike other databases. 
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::extractProcessorForPostgres(): NodeProcessor<Extract>[1]
+{
+  nodeProcessor(
+    Extract,
+    {sqlDialect, e, state, config |
+      $sqlDialect->generateCast($sqlDialect->keyword('extract', $state, $config) + '(' + $sqlDialect->keyword($e.field.name, $state, $config) + ' ' +
+      $sqlDialect->keyword('from', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($e.expression, [], $state, $config) + ')', 'BIGINT', $state, $config);
+    },
+    {n | true}
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::asOfJoinProcessorForPostgres(): NodeProcessor<AsOfJoin>[1]
+{
+  nodeProcessor(
+    AsOfJoin,
+    {sqlDialect, j, state, config |
+      failWithMessage('Postgres SQL Dialect does not support AsOfJoin!');
+    },
+    {n: AsOfJoin[1] | true}
+  );
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresKeywords(): String[*]

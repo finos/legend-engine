@@ -629,18 +629,22 @@ function meta::pure::functions::meta::simpleToString(obj : Any[1]) : String[1]
 
 function meta::pure::functions::meta::stringToDataType(dt : String[1]) : DataType[1]
 {
-  let element = $dt->pathToElement();
-  if($element->instanceOf(PrimitiveType),
-    {| if ($element->isExtendedPrimitiveType(),
-      |$element->cast(@Type)->bypassExtendedPrimitives()->cast(@DataType),
-      |$element->cast(@DataType))
-    },
-    | $element->cast(@Enumeration<Any>));
+   $dt->pathToElement()->cast(@Type)->bypassExtendedPrimitives()->cast(@DataType);
 }
 
 function meta::pure::functions::meta::isExtendedPrimitiveType(type: Any[1]): Boolean[1]
 {
   $type->instanceOf(meta::pure::metamodel::type::PrimitiveType) && ($type->cast(@meta::pure::metamodel::type::PrimitiveType).extended == true)
+}
+
+function meta::pure::functions::meta::bypassExtendedPrimitives (type: meta::pure::metamodel::type::Type[0..1]): meta::pure::metamodel::type::Type[0..1]
+{
+  if ($type->isNotEmpty(),
+    |
+      $type->toOne()->bypassExtendedPrimitives(),
+    |
+      $type
+  );
 }
 
 function meta::pure::functions::meta::bypassExtendedPrimitives (type: meta::pure::metamodel::type::Type[1]): meta::pure::metamodel::type::Type[1]

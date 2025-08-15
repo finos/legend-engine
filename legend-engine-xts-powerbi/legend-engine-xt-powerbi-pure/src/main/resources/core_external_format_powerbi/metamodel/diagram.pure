@@ -110,18 +110,6 @@ Diagram meta::external::powerbi::metamodel::PowerBIMetamodelDiagram(width=0.0, h
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_16(
-        type=meta::external::powerbi::metamodel::PartitionSource,
-        position=(221.67139, 1075.25000),
-        width=297.52979,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_2(
         type=meta::external::powerbi::metamodel::Column,
         position=(694.00000, 1072.00000),
@@ -193,6 +181,39 @@ Diagram meta::external::powerbi::metamodel::PowerBIMetamodelDiagram(width=0.0, h
         attributeTypesVisible=true,
         color=#FFFFCC,
         lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::external::powerbi::metamodel::PartitionSource,
+        position=(223.67139, 1041.25000),
+        width=297.52979,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_21(
+        type=meta::external::powerbi::metamodel::MPartitionSource,
+        position=(304.17115, 1156.75000),
+        width=131.86377,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_21,
+        target=cview_16,
+        points=[(370.10303,1178.75000),(372.43628,1070.25000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
 
     PropertyView pview_0(
         property=meta::external::powerbi::metamodel::Definition.database,
@@ -338,7 +359,7 @@ Diagram meta::external::powerbi::metamodel::PowerBIMetamodelDiagram(width=0.0, h
         property=meta::external::powerbi::metamodel::Partition.source,
         source=cview_8,
         target=cview_16,
-        points=[(373.17138,954.00000),(370.43628,1104.25000)],
+        points=[(373.17138,954.00000),(372.43628,1070.25000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
