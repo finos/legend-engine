@@ -506,13 +506,13 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
   $dqRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, $defectsLimit, true)
 }
 
-function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[0..1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1]): LambdaFunction<Any>[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationNames: String[*], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1]): LambdaFunction<Any>[1]
 {
   let lambda = $dqRelationValidation.query;
   //if validation name provided only generate query for that validation else generate query for all validations
-  let selectedValidations = if ($validationName->isEmpty(),
+  let selectedValidations = if ($validationNames->isEmpty(),
     | $dqRelationValidation.validations,
-    | $dqRelationValidation.validations->filter(val| $val.name == $validationName)->toOne()
+    | $dqRelationValidation.validations->filter(val| $validationNames->contains($val.name))
   );
   if ($selectedValidations->isEmpty(),
     | fail('Expect at least one validation to exist on data quality validation');
