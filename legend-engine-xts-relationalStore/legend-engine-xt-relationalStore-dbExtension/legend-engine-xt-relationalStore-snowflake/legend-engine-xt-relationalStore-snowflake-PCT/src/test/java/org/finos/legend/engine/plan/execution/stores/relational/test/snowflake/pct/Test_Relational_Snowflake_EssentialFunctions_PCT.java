@@ -85,7 +85,7 @@ public class Test_Relational_Snowflake_EssentialFunctions_PCT extends PCTReportC
 
             // IndexOf
             one("meta::pure::functions::collection::tests::indexof::testIndexOfOneElement_Function_1__Boolean_1_", "\"\nexpected: 0\nactual:   1\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::indexof::testIndexOf_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'indexOf_T_MANY__T_1__Integer_1_'.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::indexof::testIndexOf_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 14\nInvalid argument types for function 'ARRAY_POSITION': (VARCHAR(1), ARRAY)", AdapterQualifier.needsInvestigation),
 
             // Init
             one("meta::pure::functions::collection::tests::init::testInitOnEmptySet_Function_1__Boolean_1_", "Function does not exist 'meta::pure::functions::collection::init(Nil[0])'", AdapterQualifier.unsupportedFeature),
