@@ -47,7 +47,7 @@ public class SpannerCompilerExtension implements IRelationalCompilerExtension
             {
                 SpannerDatasourceSpecification spannerDatasourceSpecification = (SpannerDatasourceSpecification) datasourceSpecification;
                 Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification spannerSpec =
-                        new Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification_Impl("");
+                        new Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification_Impl("", SourceInformationHelper.toM3SourceInformation(datasourceSpecification.sourceInformation), context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::SpannerDatasourceSpecification"));
                 spannerSpec._projectId(spannerDatasourceSpecification.projectId);
                 spannerSpec._instanceId(spannerDatasourceSpecification.instanceId);
                 spannerSpec._proxyHost(spannerDatasourceSpecification.proxyHost);
