@@ -18,6 +18,7 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
 import meta::pure::functions::relation::tests::composition::*;
+import meta::pure::functions::collection::*;
 
 Class meta::pure::functions::relation::tests::composition::FirmTypeForCompositionTests
 {
@@ -1089,4 +1090,67 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testG
                   '   4,9\n'+
                   '   null,12\n'+
                   '#', $res->sort([~grp->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, payload:meta::pure::metamodel::variant::Variant
+                  0, "[]"
+                  1, "[1]"
+                  2, "[2,3,4]"
+                #->extend(~empty : x | $x.payload->toMany(@Integer)->isEmpty()->toString());
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,empty\n'+
+                '   0,[],true\n'+
+                '   1,[1],false\n'+
+                '   2,[2,3,4],false\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, payload:meta::pure::metamodel::variant::Variant
+                  0, "[]"
+                  1, "[1]"
+                  2, "[2,3,4]"
+                #->extend(~notEmpty : x | $x.payload->toMany(@Integer)->isNotEmpty()->toString());
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,notEmpty\n'+
+                '   0,[],false\n'+
+                '   1,[1],true\n'+
+                '   2,[2,3,4],true\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  val, payload:meta::pure::metamodel::variant::Variant
+                  1, "[1,2,3]"
+                  3, "[1,2,3]"
+                  4, "[1,2,3]"
+                #->extend(~index : x | $x.payload->toMany(@Integer)->indexOf($x.val->toOne()));
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   val,payload,index\n'+
+                '   1,[1,2,3],0\n'+
+                '   3,[1,2,3],2\n'+
+                '   4,[1,2,3],-1\n'+
+                '#', $res->toString());
 }
