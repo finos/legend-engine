@@ -1127,7 +1127,8 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                   0, "[]"
                   1, "[1]"
                   2, "[2,3,4]"
-                #->extend(~empty : x | $x.payload->toMany(@Integer)->isEmpty()->toString());
+                  3, "null"
+                #->extend(~empty : x | $x.payload->toMany(@Integer)->isEmpty());
               };
 
    let res =  $f->eval($expr);
@@ -1137,6 +1138,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   0,[],true\n'+
                 '   1,[1],false\n'+
                 '   2,[2,3,4],false\n'+
+                '   3,null,true\n'+
                 '#', $res->toString());
 }
 
@@ -1148,7 +1150,8 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                   0, "[]"
                   1, "[1]"
                   2, "[2,3,4]"
-                #->extend(~notEmpty : x | $x.payload->toMany(@Integer)->isNotEmpty()->toString());
+                  3, "null"
+                #->extend(~notEmpty : x | $x.payload->toMany(@Integer)->isNotEmpty());
               };
 
    let res =  $f->eval($expr);
@@ -1158,6 +1161,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   0,[],false\n'+
                 '   1,[1],true\n'+
                 '   2,[2,3,4],true\n'+
+                '   3,null,false\n'+
                 '#', $res->toString());
 }
 
