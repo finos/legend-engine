@@ -669,10 +669,6 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         new FunctionHandlerRegistrationInfo(null,
                                 handlers.h("meta::pure::tds::viewToTDS_View_1__TableTDS_1_", false, ps -> handlers.res("meta::relational::mapping::TableTDS", "one"))
                         ),
-                        new FunctionHandlerRegistrationInfo(Lists.mutable.with(2, 0),
-                                // meta::pure::tds::project(tds:meta::relational::mapping::TableTDS[1], columnFunctions:ColumnSpecification<TDSRow>[*]):TabularDataSet[1]
-                                handlers.h("meta::pure::tds::project_TableTDS_1__ColumnSpecification_MANY__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> handlers.typeOne(ps.get(0), "TableTDS"))
-                        ),
                         new FunctionHandlerRegistrationInfo(null,
                                 handlers.h("meta::pure::functions::asserts::assertJsonStringsEqual_String_1__String_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> true)
                         ),

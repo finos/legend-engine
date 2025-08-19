@@ -67,7 +67,6 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
      supports = meta::relational::contract::supports_FunctionExpression_1__Boolean_1_,
      supportsStreamFunction = meta::relational::contract::supportsStream_FunctionExpression_1__Boolean_1_,
      shouldStopRouting = [
-                            meta::pure::tds::project_TableTDS_1__ColumnSpecification_MANY__TabularDataSet_1_,
                             meta::pure::tds::tableToTDS_Table_1__TableTDS_1_,
                             meta::pure::tds::viewToTDS_View_1__TableTDS_1_,
                             meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_,

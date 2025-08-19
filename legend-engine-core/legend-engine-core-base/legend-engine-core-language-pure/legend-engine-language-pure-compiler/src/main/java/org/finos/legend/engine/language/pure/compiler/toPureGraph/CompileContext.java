@@ -537,10 +537,6 @@ public class CompileContext
                     // TODO: check if we call function by its name or full path here
                     : "Pure graph function: '" + functionName + "' doesn't match the found function: '" + handler._func()._name() + "' - stack:" + processingContext.getStack();
             LOGGER.warn(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAPH_WRONG_FUNCTION_MATCHING_WARN, message).toString());
-            if (DeploymentMode.TEST == this.pureModel.getDeploymentMode())
-            {
-                throw new EngineException(message);
-            }
         }
     }
 
