@@ -1146,6 +1146,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                   1, "[1,2,3]"
                   3, "[1,2,3]"
                   4, "[1,2,3]"
+                  5, "null"
                 #->extend(~index : x | $x.payload->toMany(@Integer)->indexOf($x.val->toOne()));
               };
 
@@ -1156,5 +1157,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   1,[1,2,3],0\n'+
                 '   3,[1,2,3],2\n'+
                 '   4,[1,2,3],-1\n'+
+                '   5,null,-1\n'+
                 '#', $res->toString());
 }
