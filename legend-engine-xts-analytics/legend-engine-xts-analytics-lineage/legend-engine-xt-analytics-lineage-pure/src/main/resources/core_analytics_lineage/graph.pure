@@ -13,6 +13,7 @@
 // limitations under the License.
 
 
+import meta::pure::metamodel::relation::*;
 import meta::pure::lineage::graph::*;
 import meta::analytics::lineage::flow::*;
 import meta::analytics::lineage::graph::*;
@@ -90,7 +91,11 @@ function <<access.private>> meta::analytics::lineage::graph::toNode(a:Any[1], pa
 function <<access.private>> meta::analytics::lineage::graph::toNode(a:Any[1], parents:Map<String,Node>[0..1],baseFlow:Flow[0..1],extension:LineageExtension[*]):Node[1]
 {
    let parent = if ($parents->isEmpty(),|[],|$parents->toOne()->get($a->toId($extension)));
-   ^Node(data=^NodeData(id=$a->toId($extension), text=$a->toName(), parent=$parent, type=$a->toType(), displayType=if($baseFlow->isEmpty(),|[],|$a->toDisplayType($baseFlow->toOne(),$extension))));
+   ^Node(data=^NodeData(id=$a->toId($extension), 
+                        text=$a->toName(), 
+                        parent=$parent, 
+                        type=$a->toType(), 
+                        displayType=if($baseFlow->isEmpty(),|[],|$a->toDisplayType($baseFlow->toOne(),$extension))));
 }
 
 function <<access.private>> meta::analytics::lineage::graph::toId(a:Any[1], extension:LineageExtension[*]):String[1]
