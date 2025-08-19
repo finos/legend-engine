@@ -2782,7 +2782,7 @@ public class Handlers
 
     private <T> boolean check(T val, Function<T, Boolean> func)
     {
-        return func.apply(val);
+        return val != null && func.apply(val);
     }
 
     private static FunctionType funcType(GenericType gt, PureModel pm)
@@ -2793,7 +2793,12 @@ public class Handlers
             Multiplicity m = gt._multiplicityArguments().getFirst();
             return (FunctionType) PureModel.buildFunctionType(FastList.newListWith(new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, pm.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._genericType(g.getFirst())._multiplicity(pm.getMultiplicity("one"))), g.getLast(), m, pm)._rawType();
         }
-        return (FunctionType) gt._typeArguments().getFirst()._rawType();
+        GenericType genericType = gt._typeArguments().getFirst();
+        if (genericType == null || !(genericType._rawType() instanceof FunctionType))
+        {
+            return null;
+        }
+        return (FunctionType) genericType._rawType();
     }
 
     private FunctionType funcType(GenericType gt)

@@ -157,6 +157,18 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testUserDefinedFunctionWithAsserts()
+    {
+        String code =
+                "function example::testMaxInteger(input: Integer[1]):Integer[1]\n" +
+                        "{\n" +
+                        "   assert($input > 0, {|'Input must be greater than 0'}) && assert($input > 0, 'Input must be greater than 0');\n" +
+                        "   [1,$input]->max();\n" +
+                        "}\n";
+        test(code);
+    }
+
+    @Test
     public void testUserDefinedFunctionWithTheSameNameButDifferentSignatureExecutionWithImports()
     {
         String code =

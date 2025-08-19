@@ -28,7 +28,6 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -81,8 +80,7 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
 
     public SimpleFunctionExpression buildFunctionExpressionGraph(List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation)
     {
-        RichIterable<SimpleFunctionExpression> res = handlers.collect(h -> h.getDispatch().shouldSelect(parameters) ? h.process(parameters, sourceInformation) : null);
-        return res.select(Objects::nonNull).getFirst();
+        return handlers.stream().filter(h -> h.getDispatch().shouldSelect(parameters)).findFirst().map(h -> h.process(parameters, sourceInformation)).orElse(null);
     }
 
     @Override
