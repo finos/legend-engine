@@ -132,8 +132,7 @@ public class Test_Relational_H2_GrammarFunctions_PCT extends PCTReportConfigurat
 
             // isEmpty / isNotEmpty / variant
             one("meta::pure::functions::collection::tests::isEmpty::testIsEmptyFalseMultiple_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for array_size().\""),
-            one("meta::pure::functions::collection::tests::isEmpty::testIsNotEmptyMultiple_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for array_size().\""),
-            one("meta::pure::functions::collection::tests::isEmpty::testIsNotEmptySingle_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for array_size().\"")
+            one("meta::pure::functions::collection::tests::isEmpty::testIsNotEmptyMultiple_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for array_size().\"")
     );
 
     public static Test suite()
