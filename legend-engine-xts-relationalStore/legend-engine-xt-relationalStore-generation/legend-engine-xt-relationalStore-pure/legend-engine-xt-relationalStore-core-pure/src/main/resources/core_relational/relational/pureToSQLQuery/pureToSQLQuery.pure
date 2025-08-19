@@ -3025,7 +3025,6 @@ function meta::relational::functions::pureToSqlQuery::processTake(f:FunctionExpr
 function meta::relational::functions::pureToSqlQuery::processIf(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   let returnType = $f.genericType.rawType->toOne();
-  assert($returnType->instanceOf(DataType) || $returnType->instanceOf(Enumeration), | 'If only supported with a return type that is a DataType or Enumeration, return type:' + $returnType->toString());
   processDynaFunction($f, $currentPropertyMapping, $operation, $vars, ^$state(inIf=true), $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
