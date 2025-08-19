@@ -1090,3 +1090,30 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testG
                   '   null,12\n'+
                   '#', $res->sort([~grp->ascending()])->toString());
 }
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariant_if<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, array1:meta::pure::metamodel::variant::Variant, array2:meta::pure::metamodel::variant::Variant
+     1, "[2,1,3]", "[-1,-2,-3]"
+     2, "[5,6,4]", "[-5,-6,-4]"
+     3, "[9,8,7]", "[-9,-8,-7]"
+     4, "[10,11,12]", "[-10,-11,-12]"
+     5, "[15,13,14]", "[-15,-13,-14]"
+   #;
+
+   let expr = {|
+                  $tds->extend(~ifOutput:x | if($x.id->toOne()->meta::pure::functions::math::mod(2) == 0, |$x.array1, |$x.array2))
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,array1,array2,ifOutput\n'+
+                '   1,[2,1,3],[-1,-2,-3],[-1,-2,-3]\n'+
+                '   2,[5,6,4],[-5,-6,-4],[5,6,4]\n'+
+                '   3,[9,8,7],[-9,-8,-7],[-9,-8,-7]\n'+
+                '   4,[10,11,12],[-10,-11,-12],[10,11,12]\n'+
+                '   5,[15,13,14],[-15,-13,-14],[-15,-13,-14]\n'+
+                '#', $res->toString());
+}
