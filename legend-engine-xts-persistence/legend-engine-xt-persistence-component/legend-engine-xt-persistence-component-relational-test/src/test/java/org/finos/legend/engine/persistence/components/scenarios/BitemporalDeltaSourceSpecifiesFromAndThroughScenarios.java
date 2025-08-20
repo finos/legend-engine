@@ -200,6 +200,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughScenarios extends BaseT
                         .validityDerivation(SourceSpecifiesFromAndThruDateTime.builder()
                                 .sourceDateTimeFromField(validityFromReferenceField)
                                 .sourceDateTimeThruField(validityThroughReferenceField)
+                                .preserveSpecifiedField(true)
                                 .build())
                         .build())
                 .build();

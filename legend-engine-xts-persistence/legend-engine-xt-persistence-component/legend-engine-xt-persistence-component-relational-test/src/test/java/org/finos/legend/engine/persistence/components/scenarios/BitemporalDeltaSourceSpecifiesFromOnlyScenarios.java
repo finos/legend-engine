@@ -416,11 +416,11 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                         .batchIdOutName(batchIdOutField)
                         .build())
                 .validityMilestoning(ValidDateTime.builder()
-                        .dateTimeFromName(validityFromReferenceField)
-                        .dateTimeThruName(validityThroughReferenceField)
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
                         .validityDerivation(SourceSpecifiesFromDateTime.builder()
                                 .sourceDateTimeFromField(validityFromReferenceField)
-                                .preserveValidityFields(true)
+                                .preserveSpecifiedField(true)
                                 .build())
                         .build())
                 .build();
@@ -446,7 +446,7 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                 .database(tempDbName).name(tempTableName).alias(tempTableAlias)
                 .schema(bitempSchema)
                 .build();
-                
+
         TestScenario testScenario = new TestScenario(ingestMode);
         testScenario.setDatasets(Datasets.builder()
                 .mainDataset(mainTableWithBitemporalSchema)
