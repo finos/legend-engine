@@ -19,7 +19,7 @@ import meta::relational::metamodel::*;
 import meta::core::runtime::*;
 import meta::pure::mapping::*;
 
-function meta::relational::tests::semistructured::match::semiStructuredExecute(conn: Connection[1], func: String[1], mapping:String[1], expected: String[1]):Boolean[1]
+function meta::relational::tests::semistructured::match::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
 {
   let csv =
         'ORDER_SCHEMA\n' +
@@ -39,16 +39,17 @@ function meta::relational::tests::semistructured::match::semiStructuredExecute(c
 
 
   let model = '/core_relational/relational/tests/semistructured/model/semiStructuredMatching.legend';
-  let store = 'match::store::H2DB';
 
-  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $mapping, $store, $expected);
+  let m = 'match::mapping::H2Mapping';
+  let s = 'match::store::H2DB';
+
+   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
 }
 
-function meta::relational::tests::semistructured::match::testSemiStructuredMatchComplexPropertyHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchComplexProperty(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'match::semiStructuredMatchComplexProperty__TabularDataSet_1_',
-    $mapping,
     'Customer Address\n' +
     'B1\n' +
     'B2\n' +
@@ -63,21 +64,10 @@ function meta::relational::tests::semistructured::match::testSemiStructuredMatch
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchComplexProperty(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchComplexPropertyHelper($conn, 'match::mapping::H2Mapping')
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::relationFunctionMapping::testSemiStructuredMatchComplexProperty(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchComplexPropertyHelper($conn, 'match::relationFunctionMapping::H2Mapping')
-}
-
-function meta::relational::tests::semistructured::match::testSemiStructuredMatchWithDifferentMultiplicitiesHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithDifferentMultiplicities(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'match::semiStructuredMatchWithDifferentMultiplicities__TabularDataSet_1_',
-    $mapping,
     'Customer Address\n' +
     'B1\n' +
     'B2\n' +
@@ -92,21 +82,10 @@ function meta::relational::tests::semistructured::match::testSemiStructuredMatch
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithDifferentMultiplicities(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchWithDifferentMultiplicitiesHelper($conn, 'match::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::relationFunctionMapping::testSemiStructuredMatchWithDifferentMultiplicities(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchWithDifferentMultiplicitiesHelper($conn, 'match::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::match::testSemiStructuredMatchWithMultipleProjectHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithMultipleProject(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'match::semiStructuredMatchWithMultipleProject__TabularDataSet_1_',
-    $mapping,
     'Customer Address,Order Price\n' +
     'B1,200\n' +
     'B2,180\n' +
@@ -121,21 +100,10 @@ function meta::relational::tests::semistructured::match::testSemiStructuredMatch
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithMultipleProject(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchWithMultipleProjectHelper($conn, 'match::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::relationFunctionMapping::testSemiStructuredMatchWithMultipleProject(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchWithMultipleProjectHelper($conn, 'match::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::match::testSemiStructuredMatchWithComplexFilterHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithComplexFilter(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'match::semiStructuredMatchWithComplexFilter__TabularDataSet_1_',
-    $mapping,
     'Customer Address\n' +
     'B2\n' +
     '\n' +
@@ -148,21 +116,10 @@ function meta::relational::tests::semistructured::match::testSemiStructuredMatch
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithComplexFilter(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchWithComplexFilterHelper($conn, 'match::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::relationFunctionMapping::testSemiStructuredMatchWithComplexFilter(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchWithComplexFilterHelper($conn, 'match::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::match::testSemiStructuredMatchWithVariableAccessHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithVariableAccess(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'match::semiStructuredMatchWithVariableAccess__TabularDataSet_1_',
-    $mapping,
     'Max Amount Flag\n' +
     'false\n' +
     'true\n' +
@@ -177,21 +134,10 @@ function meta::relational::tests::semistructured::match::testSemiStructuredMatch
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithVariableAccess(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchWithVariableAccessHelper($conn, 'match::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::relationFunctionMapping::testSemiStructuredMatchWithVariableAccess(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchWithVariableAccessHelper($conn, 'match::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::match::testSemiStructuredMatchMultilevelHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchMultilevel(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'match::semiStructuredMatchMultilevel__TabularDataSet_1_',
-    $mapping,
     'Amount\n' +
     '200\n' +
     '180\n' +
@@ -206,21 +152,10 @@ function meta::relational::tests::semistructured::match::testSemiStructuredMatch
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchMultilevel(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchMultilevelHelper($conn, 'match::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::relationFunctionMapping::testSemiStructuredMatchMultilevel(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchMultilevelHelper($conn, 'match::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::match::testSemiStructuredMatchWithMultipleProjectUsingColHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithMultipleProjectUsingCol(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'match::semiStructuredMatchWithMultipleProjectUsingCol__TabularDataSet_1_',
-    $mapping,
     'Customer Address,Order Price\n' +
     'B1,200\n' +
     'B2,180\n' +
@@ -233,14 +168,4 @@ function meta::relational::tests::semistructured::match::testSemiStructuredMatch
     ',150\n' +
     ',150\n'
   );
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::testSemiStructuredMatchWithMultipleProjectUsingCol(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchWithMultipleProjectUsingColHelper($conn, 'match::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::match::relationFunctionMapping::testSemiStructuredMatchWithMultipleProjectUsingCol(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredMatchWithMultipleProjectUsingColHelper($conn, 'match::relationFunctionMapping::H2Mapping');
 }

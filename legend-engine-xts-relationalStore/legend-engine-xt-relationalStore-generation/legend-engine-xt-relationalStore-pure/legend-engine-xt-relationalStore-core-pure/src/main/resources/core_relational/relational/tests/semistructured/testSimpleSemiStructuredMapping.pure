@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::metamodel::testable::*;
 import meta::relational::tests::semistructured::simple::*;
 import meta::pure::test::*;
 import meta::pure::executionPlan::*;
@@ -20,7 +19,7 @@ import meta::relational::metamodel::*;
 import meta::core::runtime::*;
 import meta::pure::mapping::*;
 
-function meta::relational::tests::semistructured::simple::semiStructuredExecute(conn: Connection[1], func: String[1], mapping:String[1], expected: String[1]):Boolean[1]
+function meta::relational::tests::semistructured::simple::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
 {
   let csv = 
       'PERSON_SCHEMA\n' +
@@ -35,16 +34,17 @@ function meta::relational::tests::semistructured::simple::semiStructuredExecute(
       '7,David,Harris,"{\\"legalName\\": \\"Firm B\\", \\"employeeCount\\": 2, \\"revenue\\": 55.5, \\"mnc\\": true, \\"estDate\\": \\"2017-7-7\\", \\"lastUpdate\\": \\"2022-9-01T06:00:00\\", \\"entityType\\":\\"Company\\", \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"address\\": {\\"name\\": \\"A3\\", \\"lines\\": [{\\"details\\": \\"D5\\"},{\\"details\\": \\"D6\\"}]}}",null\n';
 
   let model = '/core_relational/relational/tests/semistructured/model/simpleSemiStructuredMapping.legend';
-  let store = 'simple::store::H2DB';
+  
+  let m = 'simple::mapping::H2Mapping';
+  let s = 'simple::store::H2DB';
 
-   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $mapping, $store, $expected);
+   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
 }
 
-function meta::relational::tests::semistructured::simple::testSingleSemiStructuredPropertyAccessHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSingleSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::singleSemiStructuredPropertyAccess__TabularDataSet_1_',
-    $mapping,
     'Firm Legal Name\n' +
     'Firm X\n' +
     'Firm X\n' +
@@ -56,21 +56,10 @@ function meta::relational::tests::semistructured::simple::testSingleSemiStructur
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSingleSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testSingleSemiStructuredPropertyAccessHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSingleSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testSingleSemiStructuredPropertyAccessHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testCombinedPrimitiveAndSemiStructuredPropertyAccessParallelHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testCombinedPrimitiveAndSemiStructuredPropertyAccessParallel(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::combinedPrimitiveAndSemiStructuredPropertyAccessParallel__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Legal Name\n' +
     'Peter,Firm X\n' +
     'John,Firm X\n' +
@@ -82,21 +71,10 @@ function meta::relational::tests::semistructured::simple::testCombinedPrimitiveA
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testCombinedPrimitiveAndSemiStructuredPropertyAccessParallel(conn: Connection[1]):Boolean[1]
-{
-  testCombinedPrimitiveAndSemiStructuredPropertyAccessParallelHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testCombinedPrimitiveAndSemiStructuredPropertyAccessParallel(conn: Connection[1]):Boolean[1]
-{
-  testCombinedPrimitiveAndSemiStructuredPropertyAccessParallelHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testCombinedPrimitiveAndSemiStructuredPropertyAccessHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testCombinedPrimitiveAndSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::combinedPrimitiveAndSemiStructuredPropertyAccess__TabularDataSet_1_',
-    $mapping,
     'Out Col\n' +
     'Peter : Firm X\n' +
     'John : Firm X\n' +
@@ -108,21 +86,10 @@ function meta::relational::tests::semistructured::simple::testCombinedPrimitiveA
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testCombinedPrimitiveAndSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testCombinedPrimitiveAndSemiStructuredPropertyAccessHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testCombinedPrimitiveAndSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testCombinedPrimitiveAndSemiStructuredPropertyAccessHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testCombinedComplexAndSemiStructuredPropertyAccessParallelHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testCombinedComplexAndSemiStructuredPropertyAccessParallel(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::combinedComplexAndSemiStructuredPropertyAccessParallel__TabularDataSet_1_',
-    $mapping,
     'Manager First Name,Firm Legal Name\n' +
     'John,Firm X\n' +
     'Anthony,Firm X\n' +
@@ -134,22 +101,10 @@ function meta::relational::tests::semistructured::simple::testCombinedComplexAnd
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testCombinedComplexAndSemiStructuredPropertyAccessParallel(conn: Connection[1]):Boolean[1]
-{
-  testCombinedComplexAndSemiStructuredPropertyAccessParallelHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-// Ignored as self joins not supported on Relation function mappings yet
-function <<paramTest.Ignore>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testCombinedComplexAndSemiStructuredPropertyAccessParallel(conn: Connection[1]):Boolean[1]
-{
-  testCombinedComplexAndSemiStructuredPropertyAccessParallelHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
 function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testCombinedComplexAndSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::combinedComplexAndSemiStructuredPropertyAccess__TabularDataSet_1_',
-    'simple::mapping::H2Mapping',
     'Out Col\n' +
     'John : Firm X\n' +
     'Anthony : Firm X\n' +
@@ -161,11 +116,10 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::simple::tes
   );
 }
 
-function meta::relational::tests::semistructured::simple::testNestedSemiStructuredPropertyAccessHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testNestedSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::nestedSemiStructuredPropertyAccess__TabularDataSet_1_',
-    $mapping,
     'Firm Address Name\n' +
     'A1\n' +
     'A1\n' +
@@ -177,21 +131,10 @@ function meta::relational::tests::semistructured::simple::testNestedSemiStructur
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testNestedSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testNestedSemiStructuredPropertyAccessHelper($conn, 'simple::mapping::H2Mapping')
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testNestedSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testNestedSemiStructuredPropertyAccessHelper($conn, 'simple::relationFunctionMapping::H2Mapping')
-}
-
-function meta::relational::tests::semistructured::simple::testMultipleSemiStructuredPropertyAccessHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testMultipleSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::multipleSemiStructuredPropertyAccess__TabularDataSet_1_',
-    $mapping,
     'Firm Legal Name,Firm Address Name\n' +
     'Firm X,A1\n' +
     'Firm X,A1\n' +
@@ -203,21 +146,10 @@ function meta::relational::tests::semistructured::simple::testMultipleSemiStruct
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testMultipleSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testMultipleSemiStructuredPropertyAccessHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testMultipleSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testMultipleSemiStructuredPropertyAccessHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testMultipleSemiStructuredPropertyAccessCombinedHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testMultipleSemiStructuredPropertyAccessCombined(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::multipleSemiStructuredPropertyAccessCombined__TabularDataSet_1_',
-    $mapping,
     'Firm Legal Name And Address Name\n' +
     'Firm XA1\n' +
     'Firm XA1\n' +
@@ -229,21 +161,10 @@ function meta::relational::tests::semistructured::simple::testMultipleSemiStruct
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testMultipleSemiStructuredPropertyAccessCombined(conn: Connection[1]):Boolean[1]
-{
-  testMultipleSemiStructuredPropertyAccessCombinedHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testMultipleSemiStructuredPropertyAccessCombined(conn: Connection[1]):Boolean[1]
-{
-  testMultipleSemiStructuredPropertyAccessCombinedHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testFilterWithSemiStructuredPropertyHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testFilterWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::filterWithSemiStructuredProperty__TabularDataSet_1_',
-    $mapping,
     'First Name\n' +
     'Peter\n' +
     'John\n' +
@@ -252,21 +173,10 @@ function meta::relational::tests::semistructured::simple::testFilterWithSemiStru
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testFilterWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
-{
-  testFilterWithSemiStructuredPropertyHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testFilterWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
-{
-  testFilterWithSemiStructuredPropertyHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testGroupByWithSemiStructuredPropertyHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testGroupByWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::groupByWithSemiStructuredProperty__TabularDataSet_1_',
-    $mapping,
     'Address,Names\n' +
     'A1,Peter;John;John;Anthony\n' +
     'A2,Fabrice\n' +
@@ -274,21 +184,10 @@ function meta::relational::tests::semistructured::simple::testGroupByWithSemiStr
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testGroupByWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
-{
-  testGroupByWithSemiStructuredPropertyHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testGroupByWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
-{
-  testGroupByWithSemiStructuredPropertyHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testSortByWithSemiStructuredPropertyHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSortByWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::sortByWithSemiStructuredProperty__TabularDataSet_1_',
-    $mapping,
     'First Name\n' +
     'Fabrice\n' +
     'Oliver\n' +
@@ -300,22 +199,10 @@ function meta::relational::tests::semistructured::simple::testSortByWithSemiStru
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSortByWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
-{
-  testSortByWithSemiStructuredPropertyHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-// TODO: fix currentTreeNode handling in Pure2Sql
-function <<paramTest.Ignore>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSortByWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
-{
-  testSortByWithSemiStructuredPropertyHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testIsEmptyCheckOnSemiStructuredPrimitivePropertyAccessHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testIsEmptyCheckOnSemiStructuredPrimitivePropertyAccess(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::isEmptyCheckOnSemiStructuredPrimitivePropertyAccess__TabularDataSet_1_',
-    $mapping,
     'First Name,First Address Street\n' +
     'Peter,S1\n' +
     'John,S1\n' +
@@ -327,21 +214,10 @@ function meta::relational::tests::semistructured::simple::testIsEmptyCheckOnSemi
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testIsEmptyCheckOnSemiStructuredPrimitivePropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testIsEmptyCheckOnSemiStructuredPrimitivePropertyAccessHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testIsEmptyCheckOnSemiStructuredPrimitivePropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testIsEmptyCheckOnSemiStructuredPrimitivePropertyAccessHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testIsEmptyCheckOnSemiStructuredPropertyAccessAfterAtAccessHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testIsEmptyCheckOnSemiStructuredPropertyAccessAfterAt(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::isEmptyCheckOnSemiStructuredPropertyAccessAfterAt__TabularDataSet_1_',
-    $mapping,
     'First Name,First Address Line\n' +
     'Peter,D3\n' +
     'John,D3\n' +
@@ -353,21 +229,10 @@ function meta::relational::tests::semistructured::simple::testIsEmptyCheckOnSemi
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testIsEmptyCheckOnSemiStructuredPropertyAccessAfterAt(conn: Connection[1]):Boolean[1]
-{
-  testIsEmptyCheckOnSemiStructuredPropertyAccessAfterAtAccessHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testIsEmptyCheckOnSemiStructuredPropertyAccessAfterAt(conn: Connection[1]):Boolean[1]
-{
-  testIsEmptyCheckOnSemiStructuredPropertyAccessAfterAtAccessHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testSemiStructuredDifferentDataTypePropertyAccessHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSemiStructuredDifferentDataTypePropertyAccess(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::semiStructuredDifferentDataTypePropertyAccess__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Legal Name,Firm Employee Count,Firm Revenue,Firm MNC,Firm Est Date,Firm Last Update,Firm Address Street,Firm Entity Type\n' +
     'Peter,Firm X,4,0.5,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n' +
     'John,Firm X,4,5.5,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n' +
@@ -379,21 +244,10 @@ function meta::relational::tests::semistructured::simple::testSemiStructuredDiff
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSemiStructuredDifferentDataTypePropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredDifferentDataTypePropertyAccessHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSemiStructuredDifferentDataTypePropertyAccess(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredDifferentDataTypePropertyAccessHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testSemiStructuredArrayElementAccessPrimitiveHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSemiStructuredArrayElementAccessPrimitive(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::semiStructuredArrayElementAccessPrimitive__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Other Name 0,Firm Other Name 1\n' +
     'Peter,O1,O2\n' +
     'John,O1,O2\n' +
@@ -405,21 +259,10 @@ function meta::relational::tests::semistructured::simple::testSemiStructuredArra
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSemiStructuredArrayElementAccessPrimitive(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredArrayElementAccessPrimitiveHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSemiStructuredArrayElementAccessPrimitive(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredArrayElementAccessPrimitiveHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testSemiStructuredArrayElementAccessComplexHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSemiStructuredArrayElementAccessComplex(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::semiStructuredArrayElementAccessComplex__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Address Line 0,Firm Address Line 1,Firm Address Line 2,Firm Address Line 3\n' +
     'Peter,D1,D2,D3,\n' +
     'John,D1,D2,D3,\n' +
@@ -431,48 +274,10 @@ function meta::relational::tests::semistructured::simple::testSemiStructuredArra
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSemiStructuredArrayElementAccessComplex(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredArrayElementAccessComplexHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSemiStructuredArrayElementAccessComplex(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredArrayElementAccessComplexHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testSemiStructuredPropertyAccessAtNestedPropertyHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSemiStructuredPropertyAccessAtNestedProperty(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::semiStructuredPropertyAccessAtNestedProperty__TabularDataSet_1_',
-    $mapping,
-    'First Name,Firm Name,Manager Firm Name,Manager Manager Firm Name,Manager Manager Manager Firm Name\n' +
-    'Peter,Firm X,Firm X,Firm X,\n' +
-    'John,Firm X,Firm X,,\n' +
-    'John,Firm X,Firm X,Firm X,\n' +
-    'Anthony,Firm X,,,\n' +
-    'Fabrice,Firm A,,,\n' +
-    'Oliver,Firm B,Firm B,,\n' +
-    'David,Firm B,,,\n'
-  );
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSemiStructuredPropertyAccessAtNestedProperty(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPropertyAccessAtNestedPropertyHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-// Ignored as self joins not supported on Relation function mappings yet
-function <<paramTest.Ignore>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSemiStructuredPropertyAccessAtNestedProperty(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPropertyAccessAtNestedPropertyHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testSemiStructuredPropertyAccessAtNestedPropertyWithProjectFunctionsHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
-{
-  semiStructuredExecute($conn,
-    'simple::semiStructuredPropertyAccessAtNestedPropertyWithProjectFunctions__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Name,Manager Firm Name,Manager Manager Firm Name,Manager Manager Manager Firm Name\n' +
     'Peter,Firm X,Firm X,Firm X,\n' +
     'John,Firm X,Firm X,,\n' +
@@ -486,42 +291,33 @@ function meta::relational::tests::semistructured::simple::testSemiStructuredProp
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSemiStructuredPropertyAccessAtNestedPropertyWithProjectFunctions(conn: Connection[1]):Boolean[1]
 {
-  testSemiStructuredPropertyAccessAtNestedPropertyWithProjectFunctionsHelper($conn, 'simple::mapping::H2Mapping');
+  semiStructuredExecute($conn,
+    'simple::semiStructuredPropertyAccessAtNestedPropertyWithProjectFunctions__TabularDataSet_1_',
+    'First Name,Firm Name,Manager Firm Name,Manager Manager Firm Name,Manager Manager Manager Firm Name\n' +
+    'Peter,Firm X,Firm X,Firm X,\n' +
+    'John,Firm X,Firm X,,\n' +
+    'John,Firm X,Firm X,Firm X,\n' +
+    'Anthony,Firm X,,,\n' +
+    'Fabrice,Firm A,,,\n' +
+    'Oliver,Firm B,Firm B,,\n' +
+    'David,Firm B,,,\n'
+  );
 }
 
-// Ignored as self joins not supported on Relation function mappings yet
-function <<paramTest.Ignore>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSemiStructuredPropertyAccessAtNestedPropertyWithProjectFunctions(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPropertyAccessAtNestedPropertyWithProjectFunctionsHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testFilterWithSemiStructuredPropertyAccessAtNestedPropertyHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testFilterWithSemiStructuredPropertyAccessAtNestedProperty(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::filterWithSemiStructuredPropertyAccessAtNestedProperty__TabularDataSet_1_',
-    $mapping,
     'First Name\n' +
     'Peter\n' +
     'John\n'
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testFilterWithSemiStructuredPropertyAccessAtNestedProperty(conn: Connection[1]):Boolean[1]
-{
-  testFilterWithSemiStructuredPropertyAccessAtNestedPropertyHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-// Ignored as self joins not supported on Relation function mappings yet
-function <<paramTest.Ignore>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testFilterWithSemiStructuredPropertyAccessAtNestedProperty(conn: Connection[1]):Boolean[1]
-{
-  testFilterWithSemiStructuredPropertyAccessAtNestedPropertyHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testIfElseLogicOnEnumPropertiesHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testIfElseLogicOnEnumProperties(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::ifElseLogicOnEnumProperties__TabularDataSet_1_',
-    $mapping,
     'Enum Return\n' +
     'Organization\n' +
     'Organization\n' +
@@ -533,45 +329,10 @@ function meta::relational::tests::semistructured::simple::testIfElseLogicOnEnumP
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testIfElseLogicOnEnumProperties(conn: Connection[1]):Boolean[1]
-{
-  testIfElseLogicOnEnumPropertiesHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testIfElseLogicOnEnumProperties(conn: Connection[1]):Boolean[1]
-{
-  testIfElseLogicOnEnumPropertiesHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testFilterOnEnumPropertyWithEnumConstHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testFilterOnEnumPropertyWithEnumConst(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::filterOnEnumPropertyWithEnumConst__TabularDataSet_1_',
-    $mapping,
-    'First Name\n' +
-    'Peter\n' +
-    'John\n' +
-    'John\n' +
-    'Anthony\n'
-  );
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testFilterOnEnumPropertyWithEnumConst(conn: Connection[1]):Boolean[1]
-{
-  testFilterOnEnumPropertyWithEnumConstHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testFilterOnEnumPropertyWithEnumConst(conn: Connection[1]):Boolean[1]
-{
-  testFilterOnEnumPropertyWithEnumConstHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-
-function meta::relational::tests::semistructured::simple::testFilterOnEnumPropertyWithStringConstHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
-{
-  semiStructuredExecute($conn,
-    'simple::filterOnEnumPropertyWithStringConst__TabularDataSet_1_',
-    $mapping,
     'First Name\n' +
     'Peter\n' +
     'John\n' +
@@ -582,19 +343,8 @@ function meta::relational::tests::semistructured::simple::testFilterOnEnumProper
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testFilterOnEnumPropertyWithStringConst(conn: Connection[1]):Boolean[1]
 {
-  testFilterOnEnumPropertyWithStringConstHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testFilterOnEnumPropertyWithStringConst(conn: Connection[1]):Boolean[1]
-{
-  testFilterOnEnumPropertyWithStringConstHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testFilterOnEnumPropertyWithWithIfElseLogicEnumHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
-{
   semiStructuredExecute($conn,
-    'simple::filterOnEnumPropertyWithIfElseLogicEnum__TabularDataSet_1_',
-    $mapping,
+    'simple::filterOnEnumPropertyWithStringConst__TabularDataSet_1_',
     'First Name\n' +
     'Peter\n' +
     'John\n' +
@@ -605,19 +355,20 @@ function meta::relational::tests::semistructured::simple::testFilterOnEnumProper
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testFilterOnEnumPropertyWithWithIfElseLogicEnum(conn: Connection[1]):Boolean[1]
 {
-  testFilterOnEnumPropertyWithWithIfElseLogicEnumHelper($conn, 'simple::mapping::H2Mapping');
+  semiStructuredExecute($conn,
+    'simple::filterOnEnumPropertyWithIfElseLogicEnum__TabularDataSet_1_',
+    'First Name\n' +
+    'Peter\n' +
+    'John\n' +
+    'John\n' +
+    'Anthony\n'
+  );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testFilterOnEnumPropertyWithWithIfElseLogicEnum(conn: Connection[1]):Boolean[1]
-{
-  testFilterOnEnumPropertyWithWithIfElseLogicEnumHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testGroupByOnEnumPropertyHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testGroupByOnEnumProperty(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::groupByOnEnumProperty__TabularDataSet_1_',
-    $mapping,
     'Address,Names\n' +
     ',Fabrice\n' +
     'Company,Oliver;David\n' +
@@ -625,21 +376,10 @@ function meta::relational::tests::semistructured::simple::testGroupByOnEnumPrope
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testGroupByOnEnumProperty(conn: Connection[1]):Boolean[1]
-{
-  testGroupByOnEnumPropertyHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testGroupByOnEnumProperty(conn: Connection[1]):Boolean[1]
-{
-  testGroupByOnEnumPropertyHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::simple::testSortByOnEnumPropertyHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSortByOnEnumProperty(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'simple::sortByOnEnumProperty__TabularDataSet_1_',
-    $mapping,
     'First Name\n' +
     'Fabrice\n' +
     'Oliver\n' +
@@ -649,15 +389,4 @@ function meta::relational::tests::semistructured::simple::testSortByOnEnumProper
     'John\n' +
     'Anthony\n'
   );
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testSortByOnEnumProperty(conn: Connection[1]):Boolean[1]
-{
-  testSortByOnEnumPropertyHelper($conn, 'simple::mapping::H2Mapping');
-}
-
-// TODO: fix currentTreeNode handling in Pure2Sql
-function <<paramTest.Ignore>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testSortByOnEnumProperty(conn: Connection[1]):Boolean[1]
-{
-  testSortByOnEnumPropertyHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
 }

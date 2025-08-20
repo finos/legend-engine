@@ -19,7 +19,7 @@ import meta::relational::metamodel::*;
 import meta::core::runtime::*;
 import meta::pure::mapping::*;
 
-function meta::relational::tests::semistructured::typeFunctions::semiStructuredExecute(conn: Connection[1], func: String[1], mapping: String[1], expected: String[1]):Boolean[1]
+function meta::relational::tests::semistructured::typeFunctions::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
 {
   let csv =
         'ORDER_SCHEMA\n' +
@@ -36,43 +36,17 @@ function meta::relational::tests::semistructured::typeFunctions::semiStructuredE
         ;
 
   let model = '/core_relational/relational/tests/semistructured/model/semiStructuredTypeFunctions.legend';
-  let store = 'typeFunctions::store::H2DB';
 
-   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $mapping, $store, $expected);
-}
+  let m = 'typeFunctions::mapping::H2Mapping';
+  let s = 'typeFunctions::store::H2DB';
 
-function meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageInProjectWithFunctionsHelper(conn: Connection[1], mapping: String[1]):Boolean[1]
-{
-  semiStructuredExecute($conn,
-    'typeFunctions::semiStructuredTypeNameFunctionUsageInProjectWithFunctions__TabularDataSet_1_',
-    $mapping,
-    'Customer Address Type,Payment Type\n' +
-    'BillingAddress,CashOnDeliveryPayment\n' +
-    'BillingAddress,CashOnDeliveryPayment\n' +
-    'BillingAddress,CashOnDeliveryPayment\n' +
-    'Address,PrepaidPayment\n' +
-    'ShippingAddress,PrepaidPayment\n' +
-    'ShippingAddress,PrepaidPayment\n' +
-    'ShippingAddress,WalletPrepaidPayment\n' +
-    'ShippingAddress,CardPrepaidPayment\n'
-  );
+   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
 }
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageInProjectWithFunctions(conn: Connection[1]):Boolean[1]
 {
-  testSemiStructuredTypeNameFunctionUsageInProjectWithFunctionsHelper($conn, 'typeFunctions::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::relationFunctionMapping::testSemiStructuredTypeNameFunctionUsageInProjectWithFunctions(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredTypeNameFunctionUsageInProjectWithFunctionsHelper($conn, 'typeFunctions::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageInProjectWithColSpecsHelper(conn: Connection[1], mapping: String[1]):Boolean[1]
-{
   semiStructuredExecute($conn,
-    'typeFunctions::semiStructuredTypeNameFunctionUsageInProjectWithColSpecs__TabularDataSet_1_',
-    $mapping,
+    'typeFunctions::semiStructuredTypeNameFunctionUsageInProjectWithFunctions__TabularDataSet_1_',
     'Customer Address Type,Payment Type\n' +
     'BillingAddress,CashOnDeliveryPayment\n' +
     'BillingAddress,CashOnDeliveryPayment\n' +
@@ -87,19 +61,24 @@ function meta::relational::tests::semistructured::typeFunctions::testSemiStructu
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageInProjectWithColSpecs(conn: Connection[1]):Boolean[1]
 {
-  testSemiStructuredTypeNameFunctionUsageInProjectWithColSpecsHelper($conn, 'typeFunctions::mapping::H2Mapping');
+  semiStructuredExecute($conn,
+    'typeFunctions::semiStructuredTypeNameFunctionUsageInProjectWithColSpecs__TabularDataSet_1_',
+    'Customer Address Type,Payment Type\n' +
+    'BillingAddress,CashOnDeliveryPayment\n' +
+    'BillingAddress,CashOnDeliveryPayment\n' +
+    'BillingAddress,CashOnDeliveryPayment\n' +
+    'Address,PrepaidPayment\n' +
+    'ShippingAddress,PrepaidPayment\n' +
+    'ShippingAddress,PrepaidPayment\n' +
+    'ShippingAddress,WalletPrepaidPayment\n' +
+    'ShippingAddress,CardPrepaidPayment\n'
+  );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::relationFunctionMapping::testSemiStructuredTypeNameFunctionUsageInProjectWithColSpecs(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredTypeNameFunctionUsageInProjectWithColSpecsHelper($conn, 'typeFunctions::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageInFilterHelper(conn: Connection[1], mapping: String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageInFilter(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'typeFunctions::semiStructuredTypeNameFunctionUsageInFilter__TabularDataSet_1_',
-    $mapping,
     'Order Id,Customer Address Type\n' +
     '1,BillingAddress\n' +
     '2,BillingAddress\n' +
@@ -107,49 +86,10 @@ function meta::relational::tests::semistructured::typeFunctions::testSemiStructu
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageInFilter(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredTypeNameFunctionUsageInFilterHelper($conn, 'typeFunctions::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::relationFunctionMapping::testSemiStructuredTypeNameFunctionUsageInFilter(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredTypeNameFunctionUsageInFilterHelper($conn, 'typeFunctions::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageAfterFlattenFunctionHelper(conn: Connection[1], mapping: String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageAfterFlattenFunction(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'typeFunctions::semiStructuredTypeNameFunctionUsageAfterFlattenFunction__TabularDataSet_1_',
-    $mapping,
-    'Order Id,Product Type\n' +
-    '1,ElectronicsProduct\n' +
-    '1,SportsProduct\n' +
-    '2,SportsProduct\n' +
-    '3,\n' +
-    '4,\n' +
-    '6,\n' +
-    '5,\n' +
-    '7,\n' +
-    '8,\n'
-  );
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageAfterFlattenFunction(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredTypeNameFunctionUsageAfterFlattenFunctionHelper($conn, 'typeFunctions::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::relationFunctionMapping::testSemiStructuredTypeNameFunctionUsageAfterFlattenFunction(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredTypeNameFunctionUsageAfterFlattenFunctionHelper($conn, 'typeFunctions::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageAfterFlattenColSpecHelper(conn: Connection[1], mapping: String[1]):Boolean[1]
-{
-  semiStructuredExecute($conn,
-    'typeFunctions::semiStructuredTypeNameFunctionUsageAfterFlattenColSpec__TabularDataSet_1_',
-    $mapping,
     'Order Id,Product Type\n' +
     '1,ElectronicsProduct\n' +
     '1,SportsProduct\n' +
@@ -165,19 +105,25 @@ function meta::relational::tests::semistructured::typeFunctions::testSemiStructu
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageAfterFlattenColSpec(conn: Connection[1]):Boolean[1]
 {
-  testSemiStructuredTypeNameFunctionUsageAfterFlattenColSpecHelper($conn, 'typeFunctions::mapping::H2Mapping');
+  semiStructuredExecute($conn,
+    'typeFunctions::semiStructuredTypeNameFunctionUsageAfterFlattenColSpec__TabularDataSet_1_',
+    'Order Id,Product Type\n' +
+    '1,ElectronicsProduct\n' +
+    '1,SportsProduct\n' +
+    '2,SportsProduct\n' +
+    '3,\n' +
+    '4,\n' +
+    '6,\n' +
+    '5,\n' +
+    '7,\n' +
+    '8,\n'
+  );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::relationFunctionMapping::testSemiStructuredTypeNameFunctionUsageAfterFlattenColSpec(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredTypeNameFunctionUsageAfterFlattenColSpecHelper($conn, 'typeFunctions::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageAfterArrayElementAccessHelper(conn: Connection[1], mapping: String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageAfterArrayElementAccess(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'typeFunctions::semiStructuredTypeNameFunctionUsageAfterArrayElementAccess__TabularDataSet_1_',
-    $mapping,
     'Order Id,Product 0 Type,Product 1 Type\n' +
     '1,ElectronicsProduct,SportsProduct\n' +
     '2,SportsProduct,\n' +
@@ -188,14 +134,4 @@ function meta::relational::tests::semistructured::typeFunctions::testSemiStructu
     '7,,\n' +
     '8,,\n'
   );
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageAfterArrayElementAccess(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredTypeNameFunctionUsageAfterArrayElementAccessHelper($conn, 'typeFunctions::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::typeFunctions::relationFunctionMapping::testSemiStructuredTypeNameFunctionUsageAfterArrayElementAccess(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredTypeNameFunctionUsageAfterArrayElementAccessHelper($conn, 'typeFunctions::relationFunctionMapping::H2Mapping');
 }

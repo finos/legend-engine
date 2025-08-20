@@ -522,9 +522,6 @@ public class PureModel implements IPureModel
         registerElementForPathToElement("meta::pure::metamodel::relation", Lists.mutable.with(
                 "Column"
         ));
-        registerElementForPathToElement("meta::pure::metamodel::variant", Lists.mutable.with(
-                "Variant"
-        ));
         this.extensions.getExtraElementForPathToElementRegisters().forEach(register -> register.value(this::registerElementForPathToElement));
     }
 
