@@ -605,7 +605,7 @@ public class SchemaEvolution
                 @Override
                 public Set<String> visitSourceSpecifiesFromDateTime(SourceSpecifiesFromDateTimeAbstract sourceSpecifiesFromDateTime)
                 {
-                    if (sourceSpecifiesFromDateTime.preserveSpecifiedField().orElse(false))
+                    if (sourceSpecifiesFromDateTime.preserveSourceSpecifiedField().orElse(false))
                     {
                         return new HashSet<>();
                     }
@@ -618,7 +618,7 @@ public class SchemaEvolution
                 @Override
                 public Set<String> visitSourceSpecifiesFromAndThruDateTime(SourceSpecifiesFromAndThruDateTimeAbstract sourceSpecifiesFromAndThruDateTime)
                 {
-                    if (sourceSpecifiesFromAndThruDateTime.preserveSpecifiedField().orElse(false))
+                    if (sourceSpecifiesFromAndThruDateTime.preserveSourceSpecifiedField().orElse(false))
                     {
                         return new HashSet<>();
                     }

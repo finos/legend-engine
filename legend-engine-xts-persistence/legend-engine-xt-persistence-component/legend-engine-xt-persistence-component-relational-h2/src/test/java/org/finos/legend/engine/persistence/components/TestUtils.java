@@ -1206,7 +1206,7 @@ public class TestUtils
             .build();
     }
 
-        public static DatasetDefinition getBitemporalFromOnlyMainTableIdBasedWithPreserveSpecifiedField()
+        public static DatasetDefinition getBitemporalFromOnlyMainTableIdBasedWithPreserveSourceSpecifiedField()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -1262,7 +1262,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getBitemporalFromOnlyTempTableIdBasedWithPreserveSpecifiedField()
+    public static DatasetDefinition getBitemporalFromOnlyTempTableIdBasedWithPreserveSourceSpecifiedField()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)

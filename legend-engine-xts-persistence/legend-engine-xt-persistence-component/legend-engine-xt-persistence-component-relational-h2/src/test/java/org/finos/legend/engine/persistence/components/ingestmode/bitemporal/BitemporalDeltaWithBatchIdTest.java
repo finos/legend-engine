@@ -371,11 +371,11 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     }
 
     @Test
-    void testMilestoningSourceSpecifiesFromSet1WithPreserveSpecifiedField() throws Exception
+    void testMilestoningSourceSpecifiesFromSet1WithPreserveSourceSpecifiedField() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBasedWithPreserveSpecifiedField();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBasedWithPreserveSourceSpecifiedField();
         DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableIdBased();
-        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBasedWithPreserveSpecifiedField();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBasedWithPreserveSourceSpecifiedField();
 
         String[] schema = new String[] {indexName, dateTimeName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
@@ -395,7 +395,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
                     .sourceDateTimeFromField(dateTimeName)
-                    .preserveSpecifiedField(true)
+                    .preserveSourceSpecifiedField(true)
                     .build())
                 .build())
             .build();

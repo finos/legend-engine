@@ -68,10 +68,8 @@ abstract class BitemporalPlanner extends UnitemporalPlanner
         String targetValidDateTimeThru = ingestMode().validityMilestoning().accept(EXTRACT_TARGET_VALID_DATE_TIME_THRU);
 
         ValidityDerivation validityDerivation = ingestMode().validityMilestoning().validityDerivation();
-        boolean preserveSpecifiedField = (validityDerivation instanceof SourceSpecifiesFromDateTime && ((SourceSpecifiesFromDateTime) validityDerivation).preserveSpecifiedField().orElse(false))
-        || (validityDerivation instanceof SourceSpecifiesFromAndThruDateTime && ((SourceSpecifiesFromAndThruDateTime) validityDerivation).preserveSpecifiedField().orElse(false));
 
-        if (preserveSpecifiedField)
+        if (validityDerivation.preserveSourceSpecifiedField().orElse(false))
         {
             fieldsToInsert.add(FieldValue.builder().fieldName(targetValidDateTimeFrom).build());
             fieldsToInsert.add(FieldValue.builder().fieldName(targetValidDateTimeThru).build());

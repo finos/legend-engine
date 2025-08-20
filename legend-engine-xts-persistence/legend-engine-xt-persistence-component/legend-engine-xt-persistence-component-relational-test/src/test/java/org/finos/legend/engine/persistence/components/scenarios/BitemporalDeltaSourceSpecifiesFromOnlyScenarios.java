@@ -420,7 +420,7 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                         .dateTimeThruName(validityThroughTargetField)
                         .validityDerivation(SourceSpecifiesFromDateTime.builder()
                                 .sourceDateTimeFromField(validityFromReferenceField)
-                                .preserveSpecifiedField(true)
+                                .preserveSourceSpecifiedField(true)
                                 .build())
                         .build())
                 .build();
