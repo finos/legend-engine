@@ -18,6 +18,8 @@ import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Parameter;
 import org.immutables.value.Value.Style;
 
+import java.util.Optional;
+
 @Immutable
 @Style(
     typeAbstract = "*Abstract",
@@ -33,6 +35,8 @@ public interface SourceSpecifiesFromAndThruDateTimeAbstract extends ValidityDeri
 
     @Parameter(order = 1)
     String sourceDateTimeThruField();
+
+    Optional<Boolean> preserveSpecifiedField();
 
     @Override
     default <T> T accept(ValidityDerivationVisitor<T> visitor)

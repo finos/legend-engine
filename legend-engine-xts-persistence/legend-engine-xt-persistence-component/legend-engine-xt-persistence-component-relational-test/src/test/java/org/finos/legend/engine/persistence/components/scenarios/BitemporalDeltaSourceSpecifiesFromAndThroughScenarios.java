@@ -185,4 +185,43 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughScenarios extends BaseT
 
         return new TestScenario(mainTableWithBitemporalSchema, stagingTableWithBitemporalSchema, ingestMode);
     }
+
+    public TestScenario BATCH_ID_BASED__PRESERVE_VALIDITY_FIELDS()
+    {
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
+                        .validityDerivation(SourceSpecifiesFromAndThruDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .sourceDateTimeThruField(validityThroughReferenceField)
+                                .build())
+                        .build())
+                .build();
+
+        SchemaDefinition bitempSchema = SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(amount)
+                .addFields(validityFromReference)
+                .addFields(validityThroughReference)
+                .addFields(digest)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .addFields(validityFromTarget)
+                .addFields(validityThroughTarget)
+                .build();
+
+        Dataset mainTableWithBitemporalSchema = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(bitempSchema)
+                .build();
+
+        return new TestScenario(mainTableWithBitemporalSchema, stagingTableWithBitemporalSchema, ingestMode);
+    }
 }

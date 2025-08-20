@@ -407,6 +407,55 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
         return testScenario;
     }
 
+    public TestScenario BATCH_ID_BASED__PRESERVE_VALIDITY_FIELDS()
+    {
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromReferenceField)
+                        .dateTimeThruName(validityThroughReferenceField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .preserveValidityFields(true)
+                                .build())
+                        .build())
+                .build();
+
+        SchemaDefinition bitempSchema = SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(amount)
+                .addFields(validityFromReference)
+                .addFields(digest)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .addFields(validityFromTarget)
+                .addFields(validityThroughTarget)
+                .build();
+
+        Dataset mainTableWithBitemporalSchema = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(bitempSchema)
+                .build();
+
+        DatasetDefinition tempTableWithBitemporalFromOnlySchema = DatasetDefinition.builder()
+                .database(tempDbName).name(tempTableName).alias(tempTableAlias)
+                .schema(bitempSchema)
+                .build();
+                
+        TestScenario testScenario = new TestScenario(ingestMode);
+        testScenario.setDatasets(Datasets.builder()
+                .mainDataset(mainTableWithBitemporalSchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchema)
+                .tempDataset(tempTableWithBitemporalFromOnlySchema)
+                .build());
+        return testScenario;
+    }
+
     public TestScenario BATCH_ID_BASED__WITH_TERMINATE_IND__NO_DATA_SPLITS()
     {
         BitemporalDelta ingestMode = BitemporalDelta.builder()

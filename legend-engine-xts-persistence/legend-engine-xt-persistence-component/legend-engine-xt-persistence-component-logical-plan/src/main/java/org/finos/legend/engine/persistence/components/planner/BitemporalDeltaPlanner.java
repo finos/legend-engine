@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletes
 import org.finos.legend.engine.persistence.components.ingestmode.merge.TerminateLatestActiveMergeStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
@@ -120,7 +121,8 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
 
-        if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime && ingestMode().filterExistingRecords())
+        ValidityDerivation validityDerivation = ingestMode.validityMilestoning().validityDerivation();
+        if (validityDerivation instanceof SourceSpecifiesFromDateTime && ingestMode().filterExistingRecords())
         {
             this.stagingDataset = getStagingDatasetWithoutDuplicates(datasets, options().ingestRunId());
             this.stagingDatasetWithoutDuplicates = Optional.of(this.stagingDataset);
@@ -139,7 +141,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset, field));
 
         // To be moved to a separate class for SourceSpecifiesFromOnly
-        this.sourceValidDatetimeFrom = FieldValue.builder().fieldName(ingestMode.validityMilestoning().validityDerivation().accept(BitemporalPlanner.EXTRACT_SOURCE_VALID_DATE_TIME_FROM)).alias(VALID_DATE_TIME_FROM_NAME).build();
+        this.sourceValidDatetimeFrom = FieldValue.builder().fieldName(validityDerivation.accept(BitemporalPlanner.EXTRACT_SOURCE_VALID_DATE_TIME_FROM)).alias(VALID_DATE_TIME_FROM_NAME).build();
         this.targetValidDatetimeFrom = FieldValue.builder().fieldName(ingestMode.validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_FROM)).alias(VALID_DATE_TIME_FROM_NAME).build();
         this.targetValidDatetimeThru = FieldValue.builder().fieldName(ingestMode.validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_THRU)).alias(VALID_DATE_TIME_THRU_NAME).build();
 
@@ -150,7 +152,13 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.digestField().orElseThrow(IllegalStateException::new)));
         this.dataFields.removeIf(field -> field.fieldName().equals(sourceValidDatetimeFrom.fieldName()));
 
-        this.primaryKeys.removeIf(fieldName -> fieldName.equals(sourceValidDatetimeFrom.fieldName()));
+        boolean preserveSpecifiedField = (validityDerivation instanceof SourceSpecifiesFromDateTime && ((SourceSpecifiesFromDateTime) validityDerivation).preserveSpecifiedField().orElse(false))
+            || (validityDerivation instanceof SourceSpecifiesFromAndThruDateTime && ((SourceSpecifiesFromAndThruDateTime) validityDerivation).preserveSpecifiedField().orElse(false));
+
+        if (!preserveSpecifiedField)
+        {
+            this.primaryKeys.removeIf(fieldName -> fieldName.equals(sourceValidDatetimeFrom.fieldName()));
+        }
         this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset, primaryKeys.toArray(new String[0]));
 
         this.primaryKeyFields = new ArrayList<>();
@@ -184,7 +192,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.dataSplitField().get()));
         }
 
-        if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime)
+        if (validityDerivation instanceof SourceSpecifiesFromDateTime)
         {
             this.tempDataset = LogicalPlanUtils.getTempDataset(datasets, options().ingestRunId());
             if (deleteIndicatorField.isPresent())
