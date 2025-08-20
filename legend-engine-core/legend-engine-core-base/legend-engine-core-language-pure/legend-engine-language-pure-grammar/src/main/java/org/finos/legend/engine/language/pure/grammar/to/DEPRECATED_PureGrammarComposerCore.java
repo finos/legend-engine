@@ -596,8 +596,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(RelationFunctionPropertyMapping propertyMapping)
     {
-        return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(propertyMapping) 
-                + (propertyMapping.bindingTransformer != null ? ": Binding " + propertyMapping.bindingTransformer.binding + " " : "") +
+        return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(propertyMapping) +
                 ": " + PureGrammarComposerUtility.convertIdentifier(propertyMapping.column, false);
     }
 
