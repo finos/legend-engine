@@ -967,17 +967,5 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    +localProp: String[0..1]: localProp\n" +
                 "  }\n" +
                 ")\n");
-
-        test("###Mapping\n" +
-                "Mapping mappingPackage::myMapping\n" +
-                "(\n" +
-                "  *my::Person[person]: Relation\n" +
-                "  {\n" +
-                "    ~func my::testFunc():Any[1]\n" +
-                "    firstName: firstName,\n" +
-                "    firm: Binding my::FirmBinding : firmDetails,\n" +
-                "    +localProp: String[1]: localProp\n" +
-                "  }\n" +
-                ")\n");
     }
 }

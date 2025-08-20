@@ -19,7 +19,7 @@ import meta::relational::metamodel::*;
 import meta::core::runtime::*;
 import meta::pure::mapping::*;
 
-function meta::relational::tests::semistructured::flattening::semiStructuredExecute(conn: Connection[1], func: String[1], mapping: String[1], expected: String[1]):Boolean[1]
+function meta::relational::tests::semistructured::flattening::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
 {
   let csv =
         'PERSON_SCHEMA\n' +
@@ -35,16 +35,17 @@ function meta::relational::tests::semistructured::flattening::semiStructuredExec
         ;
 
   let model = '/core_relational/relational/tests/semistructured/model/semiStructuredFlattening.legend';
-  let store = 'flatten::store::H2DB';
 
-  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $mapping, $store, $expected);
+  let m = 'flatten::mapping::H2Mapping';
+  let s = 'flatten::store::H2DB';
+
+   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
 }
 
-function meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFlatteningHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFlattening(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredPrimitivePropertyFlattening__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Name,Firm Other Name\n' +
     'Peter,Firm X,O1\n' +
     'Peter,Firm X,O2\n' +
@@ -63,21 +64,10 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFlattening(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPrimitivePropertyFlatteningHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredPrimitivePropertyFlattening(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPrimitivePropertyFlatteningHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyFlatteningHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyFlattening(conn: Connection[1]): Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredComplexPropertyFlattening__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Name,Firm Address Name\n' +
     'Peter,Firm X,A1\n' +
     'Peter,Firm X,A11\n' +
@@ -93,21 +83,10 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyFlattening(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredComplexPropertyFlatteningHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredComplexPropertyFlattening(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredComplexPropertyFlatteningHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyArrayIndexingHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyArrayIndexing(conn: Connection[1]): Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredPrimitivePropertyArrayIndexing__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Name,Firm Other Name 0,Firm Other Name 2\n' +
     'Peter,Firm X,O1,\n' +
     'John,Firm X,O1,\n' +
@@ -119,21 +98,10 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyArrayIndexing(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredPrimitivePropertyArrayIndexingHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredPrimitivePropertyArrayIndexing(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredPrimitivePropertyArrayIndexingHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyArrayIndexingHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyArrayIndexing(conn: Connection[1]): Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredComplexPropertyArrayIndexing__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Name,Firm Address 0 Name,Firm Address 2 Name\n' +
     'Peter,Firm X,A1,\n' +
     'John,Firm X,A2,\n' +
@@ -145,21 +113,10 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyArrayIndexing(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredComplexPropertyArrayIndexingHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredComplexPropertyArrayIndexing(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredComplexPropertyArrayIndexingHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyFlatteningFollowedBySubTypeHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyFlatteningFollowedBySubType(conn: Connection[1]): Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredComplexPropertyFlatteningFollowedBySubType__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Name,Firm Address Line 0 Line No\n' +
     'Peter,Firm X,1\n' +
     'Peter,Firm X,1\n' +
@@ -175,21 +132,10 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyFlatteningFollowedBySubType(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredComplexPropertyFlatteningFollowedBySubTypeHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredComplexPropertyFlatteningFollowedBySubType(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredComplexPropertyFlatteningFollowedBySubTypeHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyArrayIndexingFollowedBySubTypeHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyArrayIndexingFollowedBySubType(conn: Connection[1]): Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredComplexPropertyArrayIndexingFollowedBySubType__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Name,Firm Address 0 Line 0 Line No\n' +
     'Peter,Firm X,1\n' +
     'John,Firm X,1\n' +
@@ -201,73 +147,26 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyArrayIndexingFollowedBySubType(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredComplexPropertyArrayIndexingFollowedBySubTypeHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredComplexPropertyArrayIndexingFollowedBySubType(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredComplexPropertyArrayIndexingFollowedBySubTypeHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFilteringHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFiltering(conn: Connection[1]): Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredPrimitivePropertyFiltering__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Name\n'
-  );
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFiltering(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredPrimitivePropertyFilteringHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredPrimitivePropertyFiltering(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredPrimitivePropertyFilteringHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFilteringInProjectHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
-{
-  semiStructuredExecute($conn,
-    'flatten::semiStructuredPrimitivePropertyFilteringInProject__TabularDataSet_1_',
-    $mapping,
-    'First Name,Firm Name,Firm Other Name\n' +
-    'Anthony,Firm X,O1\n' +
-    'Anthony,Firm X,O2\n' +
-    'David,Firm B,O5\n' +
-    'David,Firm B,O6\n' +
-    'Fabrice,Firm A,O3\n' +
-    'Fabrice,Firm A,O4\n' +
-    'John,Firm X,O1\n' +
-    'John,Firm X,O1\n' +
-    'John,Firm X,O2\n' +
-    'John,Firm X,O2\n' +
-    'Oliver,Firm B,O5\n' +
-    'Oliver,Firm B,O6\n' +
-    'Peter,Firm X,O1\n' +
-    'Peter,Firm X,O2\n'
   );
 }
 
 function <<paramTest.Ignore>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFilteringInProject(conn: Connection[1]): Boolean[1]
 {
-  testSemiStructuredPrimitivePropertyFilteringInProjectHelper($conn, 'flatten::mapping::H2Mapping');
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredPrimitivePropertyFilteringInProject__TabularDataSet_1_',
+    'col\n'
+  );
 }
 
-function <<paramTest.Ignore>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredPrimitivePropertyFilteringInProject(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredPrimitivePropertyFilteringInProjectHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredSubAggregationHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredSubAggregation(conn: Connection[1]): Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredSubAggregation__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Name,Firm Address Names\n' +
     'Peter,Firm X,A1;A11\n' +
     'John,Firm X,A2;A22\n' +
@@ -279,22 +178,10 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredSubAggregation(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredSubAggregationHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-// Ignored because sub-aggregation queries aren't support yet on Relation Function Class Mappings yet.
-function <<paramTest.Ignore>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredSubAggregation(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredSubAggregationHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredSubAggregationDeepHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredSubAggregationDeep(conn: Connection[1]): Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredSubAggregationDeep__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Name,Firm Address Line No Sum\n' +
     'Peter,Firm X,6\n' +
     'John,Firm X,6\n' +
@@ -306,22 +193,10 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredSubAggregationDeep(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredSubAggregationDeepHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-// Ignored because sub-aggregation queries aren't support yet on Relation Function Class Mappings yet.
-function <<paramTest.Ignore>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredSubAggregationDeep(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredSubAggregationDeepHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredMultiLevelFlattenHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredMultiLevelFlatten(conn: Connection[1]): Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredMultiLevelFlattening__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Name,Firm Address Name Line No\n' +
     'Peter,Firm X,1\n' +
     'Peter,Firm X,2\n' +
@@ -348,21 +223,10 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredMultiLevelFlatten(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredMultiLevelFlattenHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredMultiLevelFlatten(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredMultiLevelFlattenHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredMultiFlattenHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredMultiFlatten(conn: Connection[1]): Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredMultiFlatten__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Address Name,Firm Address Line 0 No,Firm Other Name\n' +
     'Peter,A1,1,O1\n' +
     'Peter,A1,1,O2\n' +
@@ -389,21 +253,10 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredMultiFlatten(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredMultiFlattenHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredMultiFlatten(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredMultiFlattenHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::flattening::testSemiStructuredMultiLevelFlattenMergingHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredMultiLevelFlattenMerging(conn: Connection[1]): Boolean[1]
 {
   semiStructuredExecute($conn,
     'flatten::semiStructuredMultiLevelFlattenMerging__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Address Name,Firm Address Line No,Firm Address Street,Firm Address City\n' +
     'Peter,A1,1,S1,\n' +
     'Peter,A1,2,,C1\n' +
@@ -428,14 +281,4 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
     'David,A7,1,S1,\n' +
     'David,A7,2,,C1\n'
   );
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredMultiLevelFlattenMerging(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredMultiLevelFlattenMergingHelper($conn, 'flatten::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredMultiLevelFlattenMerging(conn: Connection[1]): Boolean[1]
-{
-  testSemiStructuredMultiLevelFlattenMergingHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
 }

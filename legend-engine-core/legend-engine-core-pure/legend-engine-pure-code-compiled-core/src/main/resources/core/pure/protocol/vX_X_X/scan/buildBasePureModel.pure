@@ -256,7 +256,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::extractSt
    $si->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).scan_buildBasePureModel_extractStores->map(e|$e->eval($m, $extensions))->concatenate([
                ins: OperationSetImplementation[1] | [],
                p: PureInstanceSetImplementation[1] | [],
-               r: RelationFunctionInstanceSetImplementation[1] | $si->potentiallyRouteRelationFunctionSet($m, $extensions)->meta::pure::router::routing::getStoreFromSet($m, $extensions)
+               r: RelationFunctionInstanceSetImplementation[1] | $si->routeRelationFunctionSetImplementation($m, $extensions)->meta::pure::router::routing::getStoreFromSet($m, $extensions)
             ])->toOneMany()
       );
 }
