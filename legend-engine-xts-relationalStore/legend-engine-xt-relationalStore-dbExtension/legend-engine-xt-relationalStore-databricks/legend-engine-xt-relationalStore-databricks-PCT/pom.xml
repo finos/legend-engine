@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-databricks</artifactId>
-        <version>4.96.2-SNAPSHOT</version>
+        <version>4.97.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-relationalStore-databricks-PCT</artifactId>

@@ -14,7 +14,11 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation;
 
+import java.util.Optional;
+
 public interface ValidityDerivation
 {
+    Optional<Boolean> preserveSourceSpecifiedField();
+
     <T> T accept(ValidityDerivationVisitor<T> visitor);
 }

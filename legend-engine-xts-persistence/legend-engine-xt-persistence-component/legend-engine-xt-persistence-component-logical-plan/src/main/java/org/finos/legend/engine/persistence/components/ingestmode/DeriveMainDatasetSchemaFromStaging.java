@@ -319,15 +319,21 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
         @Override
         public Void visitSourceSpecifiesFromDateTime(SourceSpecifiesFromDateTimeAbstract sourceSpecifiesFromDateTime)
         {
-            mainSchemaFields.removeIf(field -> field.name().equals(sourceSpecifiesFromDateTime.sourceDateTimeFromField()));
+            if (!sourceSpecifiesFromDateTime.preserveSourceSpecifiedField().orElse(false))
+            {
+                mainSchemaFields.removeIf(field -> field.name().equals(sourceSpecifiesFromDateTime.sourceDateTimeFromField()));
+            }
             return null;
         }
 
         @Override
         public Void visitSourceSpecifiesFromAndThruDateTime(SourceSpecifiesFromAndThruDateTimeAbstract sourceSpecifiesFromAndThruDateTime)
         {
-            mainSchemaFields.removeIf(field -> field.name().equals(sourceSpecifiesFromAndThruDateTime.sourceDateTimeFromField()));
-            mainSchemaFields.removeIf(field -> field.name().equals(sourceSpecifiesFromAndThruDateTime.sourceDateTimeThruField()));
+            if (!sourceSpecifiesFromAndThruDateTime.preserveSourceSpecifiedField().orElse(false))
+            {
+                mainSchemaFields.removeIf(field -> field.name().equals(sourceSpecifiesFromAndThruDateTime.sourceDateTimeFromField()));
+                mainSchemaFields.removeIf(field -> field.name().equals(sourceSpecifiesFromAndThruDateTime.sourceDateTimeThruField()));
+            }
             return null;
         }
     }

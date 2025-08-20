@@ -1,0 +1,38 @@
+###Relational
+Database meta::analytics::lineage::tests::db
+(
+  Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+    Table firmTable (FIRM_ID INT PRIMARY KEY, NAME VARCHAR(200))
+
+)
+
+
+###Pure
+function  meta::analytics::lineage::tests::relation::extendOlapRelation():Relation<Any>[1]
+{
+   #>{meta::analytics::lineage::tests::db.personTable}#->select(~[LASTNAME,AGE])->extend(~newCol:c|$c.AGE:y|$y->plus())
+               
+}
+
+###Pure
+function  meta::analytics::lineage::tests::relation::pivot():Relation<Any>[1]
+{
+  #>{meta::analytics::lineage::tests::db.personTable}#->select(~[FIRSTNAME,LASTNAME,AGE,ADDRESSID])->pivot(~[LASTNAME], ~[newCol : x | $x.AGE->toOne() * $x.ADDRESSID->toOne() : y | $y->plus()]);
+
+                
+}
+###Pure
+function  meta::analytics::lineage::tests::relation::olapWindow():Relation<Any>[1]
+{
+#>{meta::analytics::lineage::tests::db.personTable}#->select(~[LASTNAME,AGE])->extend(over(~LASTNAME), ~newCol:{p,w,r|$r.AGE}:y|$y->plus())->distinct();
+
+                
+}
+
+###Pure
+function  meta::analytics::lineage::tests::relation::selectExtend():Relation<Any>[1]
+{
+#>{meta::analytics::lineage::tests::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~['firstNameExtend': x| $x.FIRSTNAME   ] ) ;
+
+                
+}

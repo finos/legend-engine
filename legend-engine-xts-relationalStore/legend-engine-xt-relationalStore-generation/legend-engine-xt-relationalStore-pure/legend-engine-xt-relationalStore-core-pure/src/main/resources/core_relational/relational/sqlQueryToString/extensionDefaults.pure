@@ -554,7 +554,7 @@ function meta::relational::functions::sqlQueryToString::default::processIdentifi
 
 function meta::relational::functions::sqlQueryToString::default::processIdentifierWithQuoteChar(identifier:String[1], quoteChar: String[1], dbConfig : DbConfig[1]):String[1]
 {
-  if($dbConfig.quoteIdentifiers || $identifier->startsWith('"') || $dbConfig.isDbReservedIdentifier($identifier),
+  if($dbConfig.quoteIdentifiers || $identifier->startsWith('"') || $dbConfig.isDbReservedIdentifier($identifier) || $identifier->contains(' '),
     | '%s%s%s'->format([$quoteChar, $identifier->replace('"', ''), $quoteChar]),
     | $identifier
   );
@@ -609,7 +609,7 @@ function meta::relational::functions::sqlQueryToString::default::translateCreate
     function meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
 {
    $columnType->match([
-      s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARCHAR(4000)',
+      s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARCHAR(4000)', // todo this is wrong and mislead user of variant support!
       a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
    ])
 }

@@ -58,4 +58,11 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughDerivationTest
         TestScenario scenario = scenarios.BATCH_ID_BASED__VALIDITY_FIELDS_SAME_NAME();
         assertDerivedMainDataset(scenario);
     }
+
+    @Test
+    void testBitemporalDeltaWithPreserveValidityFields()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__PRESERVE_VALIDITY_FIELDS();
+        assertDerivedMainDataset(scenario);
+    }
 }

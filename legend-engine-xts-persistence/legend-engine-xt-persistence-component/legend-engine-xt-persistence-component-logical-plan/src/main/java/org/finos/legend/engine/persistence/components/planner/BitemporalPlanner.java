@@ -19,9 +19,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.BitemporalMiles
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidityMilestoned;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidityMilestoningVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTimeAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTimeAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivationVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.*;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
@@ -69,8 +67,18 @@ abstract class BitemporalPlanner extends UnitemporalPlanner
         String targetValidDateTimeFrom = ingestMode().validityMilestoning().accept(EXTRACT_TARGET_VALID_DATE_TIME_FROM);
         String targetValidDateTimeThru = ingestMode().validityMilestoning().accept(EXTRACT_TARGET_VALID_DATE_TIME_THRU);
 
-        LogicalPlanUtils.replaceField(fieldsToInsert, sourceValidDateTimeFrom, targetValidDateTimeFrom);
-        LogicalPlanUtils.replaceField(fieldsToInsert, sourceValidDateTimeThru, targetValidDateTimeThru);
+        ValidityDerivation validityDerivation = ingestMode().validityMilestoning().validityDerivation();
+
+        if (validityDerivation.preserveSourceSpecifiedField().orElse(false))
+        {
+            fieldsToInsert.add(FieldValue.builder().fieldName(targetValidDateTimeFrom).build());
+            fieldsToInsert.add(FieldValue.builder().fieldName(targetValidDateTimeThru).build());
+        }
+        else
+        {
+            LogicalPlanUtils.replaceField(fieldsToInsert, sourceValidDateTimeFrom, targetValidDateTimeFrom);
+            LogicalPlanUtils.replaceField(fieldsToInsert, sourceValidDateTimeThru, targetValidDateTimeThru);
+        }
 
         return fieldsToInsert;
     }

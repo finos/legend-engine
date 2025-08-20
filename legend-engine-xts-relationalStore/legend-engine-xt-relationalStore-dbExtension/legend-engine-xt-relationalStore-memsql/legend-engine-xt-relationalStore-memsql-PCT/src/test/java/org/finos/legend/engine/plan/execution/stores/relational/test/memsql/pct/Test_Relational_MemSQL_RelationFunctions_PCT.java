@@ -128,7 +128,6 @@ public class Test_Relational_MemSQL_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::select::testMultiColsSelect_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\"",  AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::select::testSelectAll_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\"",  AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::select::testSingleColSelect_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\"",  AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\"",  AdapterQualifier.unsupportedFeature),
 
             //size
@@ -189,6 +188,8 @@ public class Test_Relational_MemSQL_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_", "Feature 'GROUP_CONCAT in window function' is not supported by SingleStore.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::composition::testVariant_if_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE leSchema.tb", AdapterQualifier.unsupportedFeature),            
 
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
