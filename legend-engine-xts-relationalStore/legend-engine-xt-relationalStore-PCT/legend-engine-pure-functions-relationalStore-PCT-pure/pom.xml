@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-PCT</artifactId>
-        <version>4.97.0</version>
+        <version>4.97.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
