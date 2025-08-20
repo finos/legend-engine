@@ -1080,6 +1080,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   array_reverse,
   array_size,
   array_append,
+  array_position,
   ascii,
   asin,
   atan,
