@@ -150,15 +150,17 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
 
         this.dataFields = stagingDataset.schemaReference().fieldValues().stream().map(field -> FieldValue.builder().fieldName(field.fieldName()).build()).collect(Collectors.toList());
         this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.digestField().orElseThrow(IllegalStateException::new)));
-        this.dataFields.removeIf(field -> field.fieldName().equals(sourceValidDatetimeFrom.fieldName()));
 
         boolean preserveSpecifiedField = (validityDerivation instanceof SourceSpecifiesFromDateTime && ((SourceSpecifiesFromDateTime) validityDerivation).preserveSpecifiedField().orElse(false))
             || (validityDerivation instanceof SourceSpecifiesFromAndThruDateTime && ((SourceSpecifiesFromAndThruDateTime) validityDerivation).preserveSpecifiedField().orElse(false));
 
         if (!preserveSpecifiedField)
         {
-            this.primaryKeys.removeIf(fieldName -> fieldName.equals(sourceValidDatetimeFrom.fieldName()));
+            this.dataFields.removeIf(field -> field.fieldName().equals(sourceValidDatetimeFrom.fieldName()));
         }
+        
+        this.primaryKeys.removeIf(fieldName -> fieldName.equals(sourceValidDatetimeFrom.fieldName()));
+
         this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset, primaryKeys.toArray(new String[0]));
 
         this.primaryKeyFields = new ArrayList<>();
