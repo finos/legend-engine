@@ -39,28 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdInName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
-import static org.finos.legend.engine.persistence.components.TestUtils.dateInName;
-import static org.finos.legend.engine.persistence.components.TestUtils.dateOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.deleteIndicatorName;
-import static org.finos.legend.engine.persistence.components.TestUtils.deleteIndicatorValues;
-import static org.finos.legend.engine.persistence.components.TestUtils.deleteIndicatorValuesEdgeCase;
-import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
-import static org.finos.legend.engine.persistence.components.TestUtils.key1Name;
-import static org.finos.legend.engine.persistence.components.TestUtils.key2Name;
-import static org.finos.legend.engine.persistence.components.TestUtils.fromName;
-import static org.finos.legend.engine.persistence.components.TestUtils.terminateIndicatorName;
-import static org.finos.legend.engine.persistence.components.TestUtils.terminateIndicatorValues;
-import static org.finos.legend.engine.persistence.components.TestUtils.throughName;
-import static org.finos.legend.engine.persistence.components.TestUtils.balanceName;
-import static org.finos.legend.engine.persistence.components.TestUtils.dateTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.endDateTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.indexName;
-import static org.finos.legend.engine.persistence.components.TestUtils.startDateTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.valueName;
-import static org.finos.legend.engine.persistence.components.TestUtils.versionName;
+import static org.finos.legend.engine.persistence.components.TestUtils.*;
 
 class BitemporalDeltaWithBatchIdTest extends BaseTest
 {
@@ -384,6 +363,94 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // ------------ Perform Pass6 (identical records) -------------------------
         String dataPass6 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass6.csv";
         String expectedDataPass6 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1/expected_pass6.csv";
+        // 1. Load staging table
+        loadStagingDataForBitemporalFromOnly(dataPass6);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(1, 0, 0, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
+    }
+
+    @Test
+    void testMilestoningSourceSpecifiesFromSet1WithPreserveSpecifiedField() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBasedWithPreserveSpecifiedField();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableIdBased();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBasedWithPreserveSpecifiedField();
+
+        String[] schema = new String[] {indexName, dateTimeName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
+
+        // Create staging table
+        createStagingTable(stagingTable);
+        // Create temp table
+        createTempTable(tempTable);
+
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .build())
+            .validityMilestoning(ValidDateTime.builder()
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
+                .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                    .sourceDateTimeFromField(dateTimeName)
+                    .preserveSpecifiedField(true)
+                    .build())
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).build();
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1_with_preserve_specified_field/expected_pass1.csv";
+        // 1. Load Staging table
+        loadStagingDataForBitemporalFromOnly(dataPass1);
+        // 2. Execute Plan and Verify Results
+        Map<String, Object> expectedStats = createExpectedStatsMap(1, 0, 1, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1_with_preserve_specified_field/expected_pass2.csv";
+        // 1. Load Staging table
+        loadStagingDataForBitemporalFromOnly(dataPass2);
+        // 2. Execute Plan and Verify Results
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+
+        // ------------ Perform Pass3 -------------------------
+        String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass3.csv";
+        String expectedDataPass3 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1_with_preserve_specified_field/expected_pass3.csv";
+        // 1. Load staging table
+        loadStagingDataForBitemporalFromOnly(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+
+        // ------------ Perform Pass4 -------------------------
+        String dataPass4 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass4.csv";
+        String expectedDataPass4 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1_with_preserve_specified_field/expected_pass4.csv";
+        // 1. Load staging table
+        loadStagingDataForBitemporalFromOnly(dataPass4);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats);
+
+        // ------------ Perform Pass5 -------------------------
+        String dataPass5 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass5.csv";
+        String expectedDataPass5 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1_with_preserve_specified_field/expected_pass5.csv";
+        // 1. Load staging table
+        loadStagingDataForBitemporalFromOnly(dataPass5);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(1, 0, 0, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
+
+        // ------------ Perform Pass6 (identical records) -------------------------
+        String dataPass6 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass6.csv";
+        String expectedDataPass6 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1_with_preserve_specified_field/expected_pass6.csv";
         // 1. Load staging table
         loadStagingDataForBitemporalFromOnly(dataPass6);
         // 2. Execute plans and verify results
