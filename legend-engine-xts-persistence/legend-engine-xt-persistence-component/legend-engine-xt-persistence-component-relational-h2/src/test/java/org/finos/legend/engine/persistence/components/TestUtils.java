@@ -1206,6 +1206,25 @@ public class TestUtils
             .build();
     }
 
+        public static DatasetDefinition getBitemporalFromOnlyMainTableIdBasedWithPreserveSourceSpecifiedField()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(index)
+                .addFields(dateTime)
+                .addFields(balance)
+                .addFields(digest)
+                .addFields(startDateTime)
+                .addFields(endDateTime)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .build()
+            )
+            .build();
+    }
+
     public static DatasetDefinition getBitemporalFromOnlyMainTableWithVersionIdBased()
     {
         return DatasetDefinition.builder()
@@ -1232,6 +1251,25 @@ public class TestUtils
             .name(tempTableName)
             .schema(SchemaDefinition.builder()
                 .addFields(index)
+                .addFields(balance)
+                .addFields(digest)
+                .addFields(startDateTime)
+                .addFields(endDateTime)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .build()
+            )
+            .build();
+    }
+
+    public static DatasetDefinition getBitemporalFromOnlyTempTableIdBasedWithPreserveSourceSpecifiedField()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(tempTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(index)
+                .addFields(dateTime)
                 .addFields(balance)
                 .addFields(digest)
                 .addFields(startDateTime)

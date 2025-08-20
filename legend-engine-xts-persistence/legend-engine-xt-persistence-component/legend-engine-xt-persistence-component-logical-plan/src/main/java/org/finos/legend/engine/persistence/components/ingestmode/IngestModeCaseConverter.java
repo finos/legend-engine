@@ -367,7 +367,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         @Override
         public ValidityDerivation visitSourceSpecifiesFromDateTime(SourceSpecifiesFromDateTimeAbstract sourceSpecifiesFromDateTime)
         {
-            return SourceSpecifiesFromDateTime.of(applyCase(sourceSpecifiesFromDateTime.sourceDateTimeFromField()));
+            return SourceSpecifiesFromDateTime.of(applyCase(sourceSpecifiesFromDateTime.sourceDateTimeFromField())).withPreserveSourceSpecifiedField(sourceSpecifiesFromDateTime.preserveSourceSpecifiedField());
         }
 
         @Override
@@ -377,6 +377,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                     .builder()
                     .sourceDateTimeFromField(applyCase(sourceSpecifiesFromAndThruDateTime.sourceDateTimeFromField()))
                     .sourceDateTimeThruField(applyCase(sourceSpecifiesFromAndThruDateTime.sourceDateTimeThruField()))
+                    .preserveSourceSpecifiedField(sourceSpecifiesFromAndThruDateTime.preserveSourceSpecifiedField())
                     .build();
         }
     }

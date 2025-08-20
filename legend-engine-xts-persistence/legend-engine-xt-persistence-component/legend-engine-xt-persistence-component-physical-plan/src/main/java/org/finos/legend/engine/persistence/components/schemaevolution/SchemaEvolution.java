@@ -605,13 +605,27 @@ public class SchemaEvolution
                 @Override
                 public Set<String> visitSourceSpecifiesFromDateTime(SourceSpecifiesFromDateTimeAbstract sourceSpecifiesFromDateTime)
                 {
-                    return new HashSet<>(Arrays.asList(sourceSpecifiesFromDateTime.sourceDateTimeFromField()));
+                    if (sourceSpecifiesFromDateTime.preserveSourceSpecifiedField().orElse(false))
+                    {
+                        return new HashSet<>();
+                    }
+                    else
+                    {
+                        return new HashSet<>(Arrays.asList(sourceSpecifiesFromDateTime.sourceDateTimeFromField()));
+                    }
                 }
 
                 @Override
                 public Set<String> visitSourceSpecifiesFromAndThruDateTime(SourceSpecifiesFromAndThruDateTimeAbstract sourceSpecifiesFromAndThruDateTime)
                 {
-                    return new HashSet<>(Arrays.asList(sourceSpecifiesFromAndThruDateTime.sourceDateTimeFromField(), sourceSpecifiesFromAndThruDateTime.sourceDateTimeThruField()));
+                    if (sourceSpecifiesFromAndThruDateTime.preserveSourceSpecifiedField().orElse(false))
+                    {
+                        return new HashSet<>();
+                    }
+                    else
+                    {
+                        return new HashSet<>(Arrays.asList(sourceSpecifiesFromAndThruDateTime.sourceDateTimeFromField(), sourceSpecifiesFromAndThruDateTime.sourceDateTimeThruField()));
+                    }
                 }
             });
             return fieldsToIgnore;
