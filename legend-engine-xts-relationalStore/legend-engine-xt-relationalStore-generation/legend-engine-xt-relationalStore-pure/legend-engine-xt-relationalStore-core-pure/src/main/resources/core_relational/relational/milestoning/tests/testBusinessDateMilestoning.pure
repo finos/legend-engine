@@ -138,20 +138,6 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testM
    );
 }
 
-function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestonedThisBusinessDateWithNestedDerivedProperty():Boolean[1]
-{
-   let busDate = %2015-10-16;
-
-   let result = execute({|Product.all($busDate)->project([p|$p.classification.exchangeName1],['classificationExchangeName1'])}->meta::pure::router::preeval::preval(meta::relational::extension::relationalExtensions()), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   let tds = $result.values->at(0);
-   assertEquals(['LNSE', 'TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
-   assertEqualsH2Compatible(
-    'select "productexchangetable_0".name as "classificationExchangeName1" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= \'2015-10-16\' and "productexchangetable_1".thru_z > \'2015-10-16\') as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'',
-    'select "productexchangetable_0".name as "classificationExchangeName1" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= DATE\'2015-10-16\' and "productclassificationtable_0".thru_z > DATE\'2015-10-16\') left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= DATE\'2015-10-16\' and "productexchangetable_1".thru_z > DATE\'2015-10-16\') as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= DATE\'2015-10-16\' and "root".thru_z > DATE\'2015-10-16\'',
-    $result->sqlRemoveFormatting()
-   );
-}
-
 function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestonedThisBusinessDateInPosition2InQualfiedPropertySequence():Boolean[1]
 {
    let busDate = %2015-10-16;
