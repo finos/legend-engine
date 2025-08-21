@@ -282,6 +282,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(array_size(%s), 0)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
     dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)', transform= {vals:String[*] | $vals->init()->getDynaFunctionVariantTransformer()->concatenate($vals->last())})),
     dynaFnToSql('array_position',         $allStates,            ^ToSql(format='ifnull(array_position(%s, %s), -1)', transform= {vals:String[*] | $vals->last()->concatenate($vals->init()->getDynaFunctionVariantTransformer())})),
+    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='array_slice(%s, %s, %s)', transform= {vals:String[*] | $vals->init()->init()->getDynaFunctionVariantTransformer()->concatenate($vals->at($vals->size() - 2))->concatenate($vals->last())})),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='BITAND(%s, %s)')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='BITNOT(%s)')),

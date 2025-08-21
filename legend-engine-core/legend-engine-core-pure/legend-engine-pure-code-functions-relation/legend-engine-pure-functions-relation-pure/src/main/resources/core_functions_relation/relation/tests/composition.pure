@@ -1187,3 +1187,26 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   5,null,-1\n'+
                 '#', $res->toString());
 }
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_slice<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, payload:meta::pure::metamodel::variant::Variant, fromRow, toRow
+                  0, "null", 1, 2
+                  1, "[1,2,3,4,5,6]", 2, 3
+                  2, "[1,2,3,4,5,6]", 0, 4
+                  3, "[1,2,3,4,5,6]", -3, -1
+                #->extend(~sliced : x | $x.payload->toMany(@Integer)->slice($x.fromRow->toOne(), $x.toRow->toOne())->toVariant());
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,fromRow,toRow,sliced\n'+
+                '   0,null,1,2,null\n'+
+                '   1,[1,2,3,4,5,6],2,3,[3]\n'+
+                '   2,[1,2,3,4,5,6],0,4,[1,2,3,4]\n'+
+                '   3,[1,2,3,4,5,6],-3,-1,[4,5]\n'+
+                '#', $res->toString());
+}

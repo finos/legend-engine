@@ -148,6 +148,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(len(%s), 0)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
     dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)', transform= {vals:String[*] | $vals->init()->getDynaFunctionVariantTransformer()->concatenate($vals->last())})),
     dynaFnToSql('array_position',         $allStates,            ^ToSql(format='(ifnull(array_position(%s, %s), 0)-1)', transform= {vals:String[*] | $vals->init()->getDynaFunctionVariantTransformer()->concatenate($vals->last())})),
+    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='%s', transform=variantSliceForDuckDb_String_MANY__String_1_)),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(cast(%s as BIGINT) & cast(%s as BIGINT))')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ cast(%s as BIGINT))')),
@@ -243,6 +244,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_pop('+$p->toOne()+')',|'list_var_pop('+$p->joinStrings('[',',',']')+')'); })),
     dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::variantSliceForDuckDb(params: String[*]):String[1]
+{
+  let array = $params->init()->init()->getDynaFunctionVariantTransformer();
+  let from = $params->at($params->size() - 2);
+  let fromClause = '(case when ' + $from + ' < 0 then ' + $from + ' else (' + $from + ' + 1) end)';
+  let to = $params->at($params->size() - 1);
+  let toClause = '(case when ' + $to + ' < 0 then (' + $to + ' - 1) else ' + $to + ' end)';
+  'array_slice(' + $array + ', ' +  $fromClause + ', ' + $toClause + ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::toVariantForDuckDb(params: String[*]):String[1]
