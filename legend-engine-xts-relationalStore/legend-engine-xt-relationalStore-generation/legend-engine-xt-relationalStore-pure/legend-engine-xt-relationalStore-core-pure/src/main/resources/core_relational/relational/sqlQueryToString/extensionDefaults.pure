@@ -9,6 +9,7 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
+import meta::pure::metamodel::test::*;
 
 function meta::relational::functions::sqlQueryToString::default::defaultReservedWords():String[*]
 {
@@ -554,10 +555,24 @@ function meta::relational::functions::sqlQueryToString::default::processIdentifi
 
 function meta::relational::functions::sqlQueryToString::default::processIdentifierWithQuoteChar(identifier:String[1], quoteChar: String[1], dbConfig : DbConfig[1]):String[1]
 {
-  if($dbConfig.quoteIdentifiers || $identifier->startsWith('"') || $dbConfig.isDbReservedIdentifier($identifier) || $identifier->contains(' '),
+  if($dbConfig.quoteIdentifiers || $identifier->startsWith('"') || $dbConfig.isDbReservedIdentifier($identifier) || ($identifier->contains(' ') && !isFreeMarkerIdentifier($identifier)),
     | '%s%s%s'->format([$quoteChar, $identifier->replace('"', ''), $quoteChar]),
     | $identifier
   );
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::default::testProcessIdentifierWithQuoteChar():Boolean[1]
+{
+  let dbConfig = ^DbConfig(dbType=DatabaseType.H2, dbTimeZone=[], quoteIdentifiers=false, dbExtension=meta::relational::functions::sqlQueryToString::h2::v2_1_214::createDbExtensionForH2());
+
+  assertEquals('${table(id, "table.val")}', '${table(id, "table.val")}'->processIdentifierWithBackTicks($dbConfig));
+  assertEquals('${table(id, "table.val")}', '${table(id, "table.val")}'->processIdentifierWithDoubleQuotes($dbConfig));
+
+  assertEquals('`table with space`', 'table with space'->processIdentifierWithBackTicks($dbConfig));
+  assertEquals('"table with space"', 'table with space'->processIdentifierWithDoubleQuotes($dbConfig));
+
+  assertEquals('tableNoSpace', 'tableNoSpace'->processIdentifierWithBackTicks($dbConfig));
+  assertEquals('tableNoSpace', 'tableNoSpace'->processIdentifierWithDoubleQuotes($dbConfig));
 }
 
 function meta::relational::functions::sqlQueryToString::default::getDDLCommandsTranslatorDefault(): RelationalDDLCommandsTranslator[1]
