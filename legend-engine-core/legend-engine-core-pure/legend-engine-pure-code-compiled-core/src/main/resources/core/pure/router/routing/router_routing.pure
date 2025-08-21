@@ -154,7 +154,7 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
                                                                       | $i.genericType.rawType->toOne()->cast(@Class<Any>),
                                                                       | $i.values->at(0)->cast(@Class<Any>)
                                                                   );
-                                                           $state.routingStrategy.processClass($c, $i, $state, $executionContext, $extensions, $debug);
+                                                           $state.routingStrategy.processClass($c, $i, $state, $executionContext, $debug);
                                                           )
                                                       ],
                                                       | if($i.values->isEmpty(),
@@ -171,7 +171,7 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
          cs:ClassSetImplementationHolder[1]     | let param = $cs.value->cast(@InstanceValue).values->at(0)->cast(@Class<Any>);                                   // TODO: cleanup needed
                                                   let currentStrategy = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy);
                                                   let updatedStrategy = ^$currentStrategy(toChooseSet = $cs.set);
-                                                  let resolvedState   = $updatedStrategy.processClass($param, $cs.value->cast(@InstanceValue), ^$state(routingStrategy = $updatedStrategy), $executionContext, $extensions, $debug);
+                                                  let resolvedState   = $updatedStrategy.processClass($param, $cs.value->cast(@InstanceValue), ^$state(routingStrategy = $updatedStrategy), $executionContext, $debug);
                                                   let resStrategy     = $resolvedState.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy);
                                                   ^$resolvedState(routingStrategy = ^$resStrategy(toChooseSet = []));,
          va:VariableExpression[1]               | print(if($debug.debug,|$debug.space+'Variable:'+$va->asString()+'\n',|''));

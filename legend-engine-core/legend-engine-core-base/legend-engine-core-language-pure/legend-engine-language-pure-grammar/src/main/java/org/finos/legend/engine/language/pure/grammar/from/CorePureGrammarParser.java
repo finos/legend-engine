@@ -110,7 +110,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
                 MappingElementParser.newParser(XSTORE_ASSOCIATION_MAPPING_TYPE, CorePureGrammarParser::parseXStoreAssociationMapping),
                 MappingElementParser.newParser(AGGREGATION_AWARE_MAPPING_TYPE, CorePureGrammarParser::parseAggregationAwareMapping),
                 MappingElementParser.newParser(AGGREGATE_SPECIFICATION, CorePureGrammarParser::parseAggregateSpecification),
-                MappingElementParser.newParser(RELATION_EXPRESSION, CorePureGrammarParser::parseRelationFunctionClassMapping)
+                MappingElementParser.newParser(RELATION_EXPRESSION, CorePureGrammarParser::parseRelationFunctionMapping)
         );
     }
 
@@ -291,7 +291,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         return aggregateSpecification;
     }
 
-    private static ClassMapping parseRelationFunctionClassMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    private static ClassMapping parseRelationFunctionMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
     {
         MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
         SourceCodeParserInfo parserInfo = getRelationFunctionMappingParserInfo(mappingElementSourceCode);
@@ -303,7 +303,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         relationFunctionClassMapping.root = ctx.STAR() != null;
         relationFunctionClassMapping.extendsClassMappingId = ctx.superClassMappingId() != null ? ctx.superClassMappingId().getText() : null;
         relationFunctionClassMapping.sourceInformation = parserInfo.sourceInformation;
-        walker.visitRelationFunctionClassMapping((RelationFunctionMappingParserGrammar.RelationFunctionMappingContext) parserInfo.rootContext, relationFunctionClassMapping);
+        walker.visitRelationFunctionMapping((RelationFunctionMappingParserGrammar.RelationMappingContext) parserInfo.rootContext, relationFunctionClassMapping);
         return relationFunctionClassMapping;
     }
     
@@ -433,7 +433,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         SourceInformation source = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext);
-        return new SourceCodeParserInfo(mappingElementSourceCode.code, input, source, mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.relationFunctionMapping());
+        return new SourceCodeParserInfo(mappingElementSourceCode.code, input, source, mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.relationMapping());
     }
 
     private static Section parseDataSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext pureGrammarParserContext)

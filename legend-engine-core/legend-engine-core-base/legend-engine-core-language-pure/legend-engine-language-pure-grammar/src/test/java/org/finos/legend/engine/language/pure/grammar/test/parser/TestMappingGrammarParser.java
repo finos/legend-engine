@@ -952,6 +952,17 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "(\n" +
                 "    *my::Person: Relation\n" +
                 "    {\n" +
+                "        ~func my::testFunc():Any[1]\n" +
+                "        firstName : firstName,\n" +
+                "        firm : jsonColumn\n" +
+                "    }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person: Relation\n" +
+                "    {\n" +
                 "        ~func my::testFunc():Relation<Any>[1]\n" +
                 "        firstName : firstName,\n" +
                 "        firm : jsonColumn\n" +
@@ -980,18 +991,6 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "        firm : 'firm \"name\"'\n" +
                 "    }\n" +
                 ")\n");
-
-        test("###Mapping\n" +
-                "Mapping mappingPackage::myMapping\n" +
-                "(\n" +
-                "  *my::Person[person]: Relation\n" +
-                "  {\n" +
-                "    ~func my::testFunc():Any[1]\n" +
-                "    firstName: firstName,\n" +
-                "    firm: Binding my::FirmBinding : firmDetails,\n" +
-                "    +localProp : String[1] : localProp\n" +
-                "  }\n" +
-                ")\n");
     }
 
     @Test
@@ -1005,7 +1004,6 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "        ~func my::testFunc():Relation<Any>[1]\n" +
                 "        firstName : 'FIRST NAME',\n" +
                 "        age : AGE,\n" +
-                "        firm: Binding my::FirmBinding : firmDetails,\n" +
                 "        +firmId : String[0..1] : FIRMID\n" +
                 "    }\n" +
                 ")\n");
@@ -1026,10 +1024,10 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
         org.junit.Assert.assertEquals(45, classMapping.relationFunction.sourceInformation.endColumn);
         org.junit.Assert.assertEquals(4, classMapping.sourceInformation.startLine);
         org.junit.Assert.assertEquals(5, classMapping.sourceInformation.startColumn);
-        org.junit.Assert.assertEquals(11, classMapping.sourceInformation.endLine);
+        org.junit.Assert.assertEquals(10, classMapping.sourceInformation.endLine);
         org.junit.Assert.assertEquals(5, classMapping.sourceInformation.endColumn);
 
-        org.junit.Assert.assertEquals(4, classMapping.propertyMappings.size());
+        org.junit.Assert.assertEquals(3, classMapping.propertyMappings.size());
         
         RelationFunctionPropertyMapping propertyMapping1 = (RelationFunctionPropertyMapping) classMapping.propertyMappings.get(0);
         org.junit.Assert.assertEquals("my::Person", propertyMapping1.property._class);
@@ -1051,23 +1049,13 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
 
         RelationFunctionPropertyMapping propertyMapping3 = (RelationFunctionPropertyMapping) classMapping.propertyMappings.get(2);
         org.junit.Assert.assertEquals("my::Person", propertyMapping3.property._class);
-        org.junit.Assert.assertEquals("firm", propertyMapping3.property.property);
-        org.junit.Assert.assertEquals("firmDetails", propertyMapping3.column);
-        org.junit.Assert.assertEquals("my::FirmBinding", propertyMapping3.bindingTransformer.binding);
+        org.junit.Assert.assertEquals("firmId", propertyMapping3.property.property);
+        org.junit.Assert.assertEquals("FIRMID", propertyMapping3.column);
+        org.junit.Assert.assertEquals("String", propertyMapping3.localMappingProperty.type);
+        org.junit.Assert.assertEquals(0, propertyMapping3.localMappingProperty.multiplicity.lowerBound);
         org.junit.Assert.assertEquals(9, propertyMapping3.sourceInformation.startLine);
         org.junit.Assert.assertEquals(9, propertyMapping3.sourceInformation.startColumn);
         org.junit.Assert.assertEquals(9, propertyMapping3.sourceInformation.endLine);
-        org.junit.Assert.assertEquals(51, propertyMapping3.sourceInformation.endColumn);
-
-        RelationFunctionPropertyMapping propertyMapping4 = (RelationFunctionPropertyMapping) classMapping.propertyMappings.get(3);
-        org.junit.Assert.assertEquals("my::Person", propertyMapping4.property._class);
-        org.junit.Assert.assertEquals("firmId", propertyMapping4.property.property);
-        org.junit.Assert.assertEquals("FIRMID", propertyMapping4.column);
-        org.junit.Assert.assertEquals("String", propertyMapping4.localMappingProperty.type);
-        org.junit.Assert.assertEquals(0, propertyMapping4.localMappingProperty.multiplicity.lowerBound);
-        org.junit.Assert.assertEquals(10, propertyMapping4.sourceInformation.startLine);
-        org.junit.Assert.assertEquals(9, propertyMapping4.sourceInformation.startColumn);
-        org.junit.Assert.assertEquals(10, propertyMapping4.sourceInformation.endLine);
-        org.junit.Assert.assertEquals(39, propertyMapping4.sourceInformation.endColumn);
+        org.junit.Assert.assertEquals(39, propertyMapping3.sourceInformation.endColumn);
     }
 }

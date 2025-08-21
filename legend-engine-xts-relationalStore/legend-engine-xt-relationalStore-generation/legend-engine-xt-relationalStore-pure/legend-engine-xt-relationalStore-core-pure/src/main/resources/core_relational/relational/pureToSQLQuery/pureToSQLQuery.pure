@@ -569,31 +569,23 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                      );,
                                   v:ValueSpecification[1] | processValueSpecification($v, $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_i'+$vals->indexOf($v)->toString()), $aggFromMap, $context, $extensions),
                                   l:LambdaFunction<Any>[1] | $l.expressionSequence->at(0)->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_i'+$vals->indexOf($v)->toString()), $aggFromMap, $context, $extensions),
-                                  r:meta::pure::store::RelationStoreAccessor<Any>[1] | processRelationStoreAccessor($r, $vals->indexOf($v)->toString(), $operation, $state, $nodeId, $context, $extensions),
+                                  x:meta::pure::store::RelationStoreAccessor<Any>[1] |
+                                      let relation = $x.sourceElement->cast(@NamedRelation);
+                                      let tableAlias = ^TableAlias(name='dbAccessor' + buildNodeId($nodeId,'_i'+$vals->indexOf($v)->toString()), relationalElement=$relation);
+                                      let res = ^$operation
+                                                (
+                                                  select = ^TdsSelectSqlQuery
+                                                           (
+                                                              columns = $relation.columns->map(c|^Alias(name=$c->cast(@Column).name->toOne()->addQuotesIfNecessary(), relationalElement=^TableAliasColumn(alias=$tableAlias, column=$c->cast(@Column)))),
+                                                              data = ^RootJoinTreeNode(alias = $tableAlias)
+                                                           )
+                                                );
+                                      print(if(!$context.debug, |'', | $context.space+'>Processing Relation Database Accessor: '+$res.select->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.DebugPrint, $extensions) + '\n'));
+                                      $res;,
                                   a:Any[1] | ^ClassInstanceHolder(value=$a);
                              ])) );
 }
 
-function meta::relational::functions::pureToSqlQuery::processRelationStoreAccessor(r:meta::pure::store::RelationStoreAccessor<Any>[1], index:String[1], operation:SelectWithCursor[1], state:State[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
-{
-  let relation = $r.sourceElement->cast(@NamedRelation);
-  let tableAlias = ^TableAlias(name = 'dbAccessor' + buildNodeId($nodeId, '_i' + $index), relationalElement = $relation);
-  let node = ^RootJoinTreeNode(alias = $tableAlias);
-  let res = ^$operation
-            (
-              select = ^TdsSelectSqlQuery
-              (
-                columns = $relation.columns->map(c | ^Alias(name = $c->cast(@Column).name->toOne()->addQuotesIfNecessary(), relationalElement=^TableAliasColumn(alias = $tableAlias, column = $c->cast(@Column)))),
-                data = $node
-              )
-            );
-
-  let milestonedRes = if($operation.milestoningContext->isNotEmpty(), | applyMilestoningTypeFilters($res, $operation.milestoningContext->toOne(), $state, false, $extensions), | $res);
-  
-  print(if(!$context.debug, |'', | $context.space+'>Processing Relation Database Accessor: ' + $milestonedRes.select->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.DebugPrint, $extensions) + '\n'));
-
-  $milestonedRes;
-}
 function meta::relational::functions::pureToSqlQuery::processFunctionExpression(functionExpression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[*]
 {
   print(if(!$context.debug, |'', | $context.space+'>Process Function Expression: '+ $functionExpression.func.name->orElse('LambdaFunction') + '\n'));
@@ -1765,7 +1757,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationFunctionPro
 {
   let propertyMapping = $propertyMappings->toOne('Unions not supported with Relation Expression mappings yet!');
   let transformedRelationalPropertyMapping = $propertyMapping->transformRelationPropertyMappingsToRelational($state->getClassMappingById($propertyMapping.sourceSetImplementationId)->toOne()->cast(@RelationFunctionInstanceSetImplementation));
-  processPropertyMapping($transformedRelationalPropertyMapping, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+  processRelationalPropertyMapping($transformedRelationalPropertyMapping, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
 function meta::relational::functions::pureToSqlQuery::processRelationalPropertyMapping(OrigrelationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -2027,6 +2019,7 @@ function meta::relational::functions::pureToSqlQuery::processCrossPropertyMappin
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processSemiStructuredRelationalPropertyMapping(origPropertyMappings:SemiStructuredRelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]): RelationalOperationElement[1]
 {
    assert($origPropertyMappings->size() >= 1, | 'Expected non-empty semi structured property mappings');
+
    let result = if($origPropertyMappings->forAll(p | $p.owner->toOne()->instanceOf(meta::relational::mapping::SemiStructuredEmbeddedRelationalInstanceSetImplementation)),
                     | pair($oldSrcOperation, $origPropertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $oldSrcOperation, $nodeId, $aggFromMap, true, $context, $extensions)),
                     | let propertyMappings = $origPropertyMappings->map(p|$p->buildPossibleEnumMappingPushDown($state));
@@ -4333,8 +4326,7 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression: 
                                                                            processGetAll($r, $r.class, $joinType, $nodeId, true, -1, !$state.inProject, $milestoningContext, $state, $context, $extensions);};
 
    $setImplementation->match([r:RootRelationalInstanceSetImplementation[1]| $processRootSetImpl->eval($r),
-                              r:RelationFunctionInstanceSetImplementation[1]| let milestoningContext = getMilestoningContextForAll($expression,$r, $parameters, $state, $vars, $context, $extensions);
-                                                                              processRelationFunctionClassMapping($r, $vars, $state, $milestoningContext, $joinType, $nodeId, $context, $extensions);,
+                              r:RelationFunctionInstanceSetImplementation[1]| processRelationFunctionClassMapping($r, $vars, $state, $joinType, $nodeId, $context, $extensions);,
                               r:meta::pure::router::clustering::CrossSetImplementation[1]| let newTable = ^VarCrossSetPlaceHolder(varName=$r.varName, name=$r.varName, schema=^Schema(name='default', database=^Database()), crossSetImplementation = $r);
                                                                                            let treeNode = ^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable));
                                                                                            ^SelectWithCursor(select = ^SelectSQLQuery(data = $treeNode), currentTreeNode = $treeNode);,
@@ -4355,15 +4347,14 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression: 
                            ]);
 }
 
-function meta::relational::functions::pureToSqlQuery::processRelationFunctionClassMapping(r:RelationFunctionInstanceSetImplementation[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], milestoningContext:TemporalMilestoningContext[0..1], joinType:JoinType[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+function meta::relational::functions::pureToSqlQuery::processRelationFunctionClassMapping(r:RelationFunctionInstanceSetImplementation[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-  let routedRelationFunction = $r->potentiallyRouteRelationFunctionSet($state.mapping->toOne(), $extensions)->cast(@RelationFunctionInstanceSetImplementation).relationFunction;
+  let routedRelationFunction = $r->routeRelationFunctionSetImplementation($state.mapping->toOne(), $extensions)->cast(@RelationFunctionInstanceSetImplementation).relationFunction;
   let relationExpression = $routedRelationFunction.expressionSequence->evaluateAndDeactivate()->at(0)->cast(@ClusteredValueSpecification).val;
-  let newCursor = ^SelectWithCursor(select=^SelectSQLQuery(), milestoningContext=$milestoningContext);
+  let newCursor = ^SelectWithCursor(select=^SelectSQLQuery());
   let newState = defaultState($state.mapping, $state.inScopeVars);
   let cursor = $relationExpression->processValueSpecification([], $newCursor, $vars, $newState, $joinType, $nodeId, ^List<ColumnGroup>(), $context, $extensions)->toOne()->cast(@SelectWithCursor);
-  let newSelect = $cursor.select->moveSelectQueryToSubSelect($cursor.currentTreeNode, [], $nodeId, $context, $extensions);
-  ^$cursor(select = $newSelect, currentTreeNode = []);
+  ^$cursor(select=$cursor.select->moveSelectQueryToSubSelect($cursor.currentTreeNode, [], $nodeId, $context, $extensions));
 }
 
 function meta::relational::functions::pureToSqlQuery::getAllExpressionSetImplementations(expression:FunctionExpression[1]):RootRelationalInstanceSetImplementation[*]
@@ -4517,7 +4508,7 @@ function meta::relational::functions::pureToSqlQuery::processRelation(r: Relatio
                             let selectWithFiltersProcessed = $select->pushExtraFilteringOperation($extensions)->pushSavedFilteringOperation($extensions);
                             ^ViewSelectSQLQuery(view=$v, name=$v.name, columns = $selectWithFiltersProcessed.columns, selectSQLQuery = $selectWithFiltersProcessed, schema=$v->mainTable().schema);,
                s:SemiStructuredArrayFlatten[1] | $s,
-               t:RelationFunction[1] | $t.owner->processRelationFunctionClassMapping(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>)), $state, $milestoningContext, $joinType, $nodeId, $context, $extensions).select
+               t:RelationFunction[1] | $t.owner->processRelationFunctionClassMapping(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>)), $state, $joinType, $nodeId, $context, $extensions).select
              ]);
 }
 
@@ -4525,9 +4516,8 @@ function meta::relational::functions::pureToSqlQuery::applyMilestoningTypeFilter
 {
    let query = $select.select;
    let milestoningStrategy = $milestoningContext.currentMilestoningStrategy->toOne();
-   let nestedRoot = if($select.currentTreeNode->isNotEmpty(), | $select.alias.relationalElement, | $query.data.alias.relationalElement)->toOne()->instanceOf(SelectSQLQuery);
-   if(!$milestoningContext.isAllVersions() && !$milestoningContext.isAllForEachDate() && if($nestedRoot && $innerJoinFilterExists ,| $select.alias.relationalElement->toOne()->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->relationalElementIsMilestoned(),|$query.data.alias.relationalElement->toOne()->relationalElementIsMilestoned())
-
+   let nestedRoot = $select.alias.relationalElement->toOne()->instanceOf(SelectSQLQuery);
+   if(!$milestoningContext.isAllVersions() && !$milestoningContext.isAllForEachDate() && if($nestedRoot && $innerJoinFilterExists ,| $select.alias.relationalElement->toOne()->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->relationalElementIsMilestoned(),|$select.alias.relationalElement->toOne()->relationalElementIsMilestoned())
       ,|
          let tableFilter = $milestoningStrategy->getAllMilestonedTableFilter($query, $milestoningContext, $state.inScopeVars, $extensions);
          let queryWithMilestoningFilters = $query->applyMilestoningFilters($tableFilter, getTableToTableIdentifyFunction(), true, $extensions)->cast(@SelectSQLQuery);
@@ -7659,7 +7649,7 @@ function meta::relational::functions::pureToSqlQuery::moveSelectQueryToSubSelect
                                                  filteringOperation = $reprocessedFilteringOperation,
                                                  columns = $reprocessedColumns.second->cast(@Alias)->removeDuplicatesBy(a|$a.name),
                                                  preIsolationCurrentTreeNode = $currentTreeNode,
-                                                 groupBy = $reprocessedGroupBys,
+                                                 groupBy = $reprocessedGroupBys->filter(c|$c->instanceOf(TableAliasColumn)),
                                                  leftSideOfFilter = $newLeftSideOfFilter
                                               )
                    );

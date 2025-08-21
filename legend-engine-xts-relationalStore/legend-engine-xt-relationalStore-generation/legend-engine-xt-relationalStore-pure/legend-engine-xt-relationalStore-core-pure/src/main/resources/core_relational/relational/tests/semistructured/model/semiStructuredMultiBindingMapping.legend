@@ -148,24 +148,6 @@ Mapping multiBinding::mapping::H2Mapping
   }
 )
 
-Mapping multiBinding::relationFunctionMapping::H2Mapping
-(
-  *multiBinding::model::Employee: Relation 
-  {
-    ~func multiBinding::personFunction():Relation<Any>[1]
-    firstName: FIRSTNAME,
-    lastName: LASTNAME,
-    firm: Binding multiBinding::store::FirmBinding : FIRM_DETAILS,
-    address: Binding multiBinding::store::AddressBinding : ADDRESS_DETAILS
-  }
-)
-
-###Pure
-function multiBinding::personFunction():meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{multiBinding::store::H2DB.PERSON_SCHEMA.PERSON_TABLE}#->select(~[FIRSTNAME, LASTNAME, FIRM_DETAILS, ADDRESS_DETAILS]);
-}
-
 ###Pure
 function multiBinding::semiStructuredPropertyAccessFromSingleBindingMapping(): TabularDataSet[1]
 {

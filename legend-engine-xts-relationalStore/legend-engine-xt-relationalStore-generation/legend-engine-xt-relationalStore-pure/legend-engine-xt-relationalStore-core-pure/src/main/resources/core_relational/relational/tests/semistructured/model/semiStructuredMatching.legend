@@ -122,24 +122,6 @@ Mapping match::mapping::H2Mapping
   }
 )
 
-
-Mapping match::relationFunctionMapping::H2Mapping
-(
-  *match::model::Order: Relation 
-  {
-    ~func match::personFunction():Relation<Any>[1]
-    orderId: ORDERID,
-    orderName: ORDERNAME,
-    customer: Binding match::store::OrderBinding : CUSTOMER
-  }
-)
-
-###Pure
-function match::personFunction():meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{match::store::H2DB.ORDER_SCHEMA.ORDER_TABLE}#->select(~[ORDERID, ORDERNAME, CUSTOMER]);
-}
-
 ###Pure
 function match::semiStructuredMatchComplexProperty(): TabularDataSet[1]
 {

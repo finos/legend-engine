@@ -19,7 +19,7 @@ import meta::relational::metamodel::*;
 import meta::core::runtime::*;
 import meta::pure::mapping::*;
 
-function meta::relational::tests::semistructured::inheritance::semiStructuredExecute(conn: Connection[1], func: String[1], mapping:String[1], expected: String[1]):Boolean[1]
+function meta::relational::tests::semistructured::inheritance::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
 {
   let csv =
         'PERSON_SCHEMA\n' +
@@ -35,16 +35,17 @@ function meta::relational::tests::semistructured::inheritance::semiStructuredExe
         ;
 
   let model = '/core_relational/relational/tests/semistructured/model/semiStructuredInheritanceMapping.legend';
-  let store = 'inheritance::store::H2DB';
 
-  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $mapping, $store, $expected);
+  let m = 'inheritance::mapping::H2Mapping';
+  let s = 'inheritance::store::H2DB';
+
+   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
 }
 
-function meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtBaseClassHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtBaseClass(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'inheritance::semiStructuredPropertyAccessAtBaseClass__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Address Name\n' +
     'Peter,A1\n' +
     'John,A1\n' +
@@ -56,21 +57,10 @@ function meta::relational::tests::semistructured::inheritance::testSemiStructure
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtBaseClass(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPropertyAccessAtBaseClassHelper($conn, 'inheritance::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredPropertyAccessAtBaseClass(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPropertyAccessAtBaseClassHelper($conn, 'inheritance::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtSubClassHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtSubClass(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'inheritance::semiStructuredPropertyAccessAtSubClass__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Address 0 Line No\n' +
     'Peter,1\n' +
     'John,1\n' +
@@ -82,47 +72,10 @@ function meta::relational::tests::semistructured::inheritance::testSemiStructure
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtSubClass(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPropertyAccessAtSubClassHelper($conn, 'inheritance::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredPropertyAccessAtSubClass(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPropertyAccessAtSubClassHelper($conn, 'inheritance::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtSubClassNestedHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtSubClassNested(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'inheritance::semiStructuredPropertyAccessAtSubClassNested__TabularDataSet_1_',
-    $mapping,
-    'First Name,Firm Address 0 Line No,Firm Address Street,Firm Address City,Firm Address State\n' +
-    'Peter,1,s1,c1,s1\n' +
-    'John,1,s1,c1,s1\n' +
-    'John,1,s1,c1,s1\n' +
-    'Anthony,1,s1,c1,s1\n' +
-    'Fabrice,1,s2,c2,\n' +
-    'Oliver,1,s3,,\n' +
-    'David,1,s3,,\n'
-  );
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtSubClassNested(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPropertyAccessAtSubClassNestedHelper($conn, 'inheritance::mapping::H2Mapping');
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredPropertyAccessAtSubClassNested(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPropertyAccessAtSubClassNestedHelper($conn, 'inheritance::relationFunctionMapping::H2Mapping');
-}
-
-function meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctionsHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
-{
-  semiStructuredExecute($conn,
-    'inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_',
-    $mapping,
     'First Name,Firm Address 0 Line No,Firm Address Street,Firm Address City,Firm Address State\n' +
     'Peter,1,s1,c1,s1\n' +
     'John,1,s1,c1,s1\n' +
@@ -136,10 +89,15 @@ function meta::relational::tests::semistructured::inheritance::testSemiStructure
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions(conn: Connection[1]):Boolean[1]
 {
-  testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctionsHelper($conn, 'inheritance::mapping::H2Mapping')
-}
-
-function <<paramTest.Test>> meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions(conn: Connection[1]):Boolean[1]
-{
-  testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctionsHelper($conn, 'inheritance::relationFunctionMapping::H2Mapping')
+  semiStructuredExecute($conn,
+    'inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_',
+    'First Name,Firm Address 0 Line No,Firm Address Street,Firm Address City,Firm Address State\n' +
+    'Peter,1,s1,c1,s1\n' +
+    'John,1,s1,c1,s1\n' +
+    'John,1,s1,c1,s1\n' +
+    'Anthony,1,s1,c1,s1\n' +
+    'Fabrice,1,s2,c2,\n' +
+    'Oliver,1,s3,,\n' +
+    'David,1,s3,,\n'
+  );
 }
