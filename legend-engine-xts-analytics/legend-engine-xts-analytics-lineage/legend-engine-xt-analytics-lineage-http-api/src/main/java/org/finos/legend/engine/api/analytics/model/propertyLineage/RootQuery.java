@@ -1,5 +1,5 @@
 /*
- *  Copyright 2022 Goldman Sachs
+ *  Copyright 2025 Goldman Sachs
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +14,10 @@
  *  limitations under the License.
  */
 
-package org.finos.legend.engine.api.analytics.model.report;
 
-import org.finos.legend.engine.api.analytics.model.tree.PropertyPathTreeNode;
-import org.finos.legend.engine.api.analytics.model.propertyLineage.LineageProperty;
+package org.finos.legend.engine.api.analytics.model.propertyLineage;
 
-import java.util.List;
-
-public class ColumnLineage
+public class RootQuery extends PropertyOwnerNode
 {
-    public String name;
-    public PropertyPathTreeNode propertyTree;
-    public List<Column> columns;
-    public List<LineageProperty> lineageProperty;
-    public List<LineageProperty> leafProperty;
+    // No additional fields
 }

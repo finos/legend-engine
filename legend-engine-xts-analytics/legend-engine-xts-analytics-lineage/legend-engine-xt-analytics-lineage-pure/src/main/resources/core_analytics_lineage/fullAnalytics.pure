@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
- 
+
 import meta::analytics::lineage::property::relation::scanRelations::*;
 import meta::analytics::lineage::property::*;
 import meta::pure::lineage::relation::scanRelations::scanRelationAccessor::*;
@@ -367,7 +367,7 @@ function meta::analytics::lineage::buildReportLineage(p:PropertyLineageReport[1]
     //find the up stream ingestion specs on the prop lineage
     let root = $p.propertyOwner->filter(p|$p->instanceOf(RootQuery));
 
-     let result =  $root->last()->cast(@PropertyOwnerNode).properties->map( col   |   ^ReportColumn(name = $col.name->toOne(), propertyTree = $col->buildRelationAccessorPropertyTreeLineageColumn(), lineageProperty = $col , leafProperty= $col->getLeafSourceProperties())); 
+     let result =  $root->last()->cast(@PropertyOwnerNode).properties->map( col   |   ^ReportColumn(name = $col.name->toOne(), propertyTree = $col->buildRelationAccessorPropertyTreeLineageColumn(), lineageProperty = $col , leafProperty= $col->getLeafSourceProperties()));
      ^ReportLineage
   (
       columns = $result
@@ -455,7 +455,7 @@ function meta::analytics::lineage::flowDatabase::toFlowStore(f:FunctionDefinitio
                             ];
                     )
   );
-}
+} 
 
 
  function  meta::analytics::lineage::relationAccessorToFlow(r:RelationElementAccessor<Any>[1],function:FunctionDefinition<Any>[1], extension:LineageExtension[*]):meta::analytics::lineage::flow::Flow[1]
@@ -468,7 +468,7 @@ function meta::analytics::lineage::flowDatabase::toFlowStore(f:FunctionDefinitio
 
  function  meta::analytics::lineage::relationAccessorToFlowFromPropertyLineage(r:PropertyLineageReport[1] , function:FunctionDefinition<Any>[1], extension:LineageExtension[*]):meta::analytics::lineage::flow::Flow[1]
 {
- let result =  $r.propertyOwner->map(o|$o->match( [r:RelationalPropertyOwner[1]| toFlowStore( $function, $r.namedRelation),
+ let result =  $r.propertyOwner->map(o|$o->match(  [//r:RelationalPropertyOwner[1]| toFlowStore( $function, $r.namedRelation),
                                                     r:RootQuery[1] | ^Flow(),
                                                     q:meta::analytics::lineage::property::Query[1] |^Flow(),
                                                     m:MappedSetOwner[1] | ^Flow(),

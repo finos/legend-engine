@@ -62,7 +62,7 @@ function meta::analytics::lineage::property::relation::scanRelations::extractRel
                 a: Any[*]                                | print(if($debug.debug,|$debug.space+' Unknown type' + ' \n',|'')); [];
             ]));
   $res;
-}
+} 
 
 function meta::pure::lineage::scanRelationAccessor::propertyTree::buildRelationAccessorPropertyTreeLineageColumn(columns:meta::analytics::lineage::property::LineageProperty[*]):PropertyPathTree[1]
 {
@@ -188,7 +188,8 @@ function meta::analytics::lineage::property::relation::scanRelations::namedRelat
                            schemaName = $schema.name,
                            relationOwnerPath=$schema.database->elementToPath(), 
                            id =  'RelationalPropertyOwner_'+$schema.database->elementToPath()+'.'+$schema.name+'.'+$n.name,
-                           namedRelation= $n);
+                           relationOwnerName=$schema.database.name->toOne()
+                           );
 }
 
 
