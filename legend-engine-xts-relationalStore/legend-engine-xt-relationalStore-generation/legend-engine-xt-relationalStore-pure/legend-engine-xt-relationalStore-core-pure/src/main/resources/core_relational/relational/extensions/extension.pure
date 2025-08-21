@@ -177,11 +177,6 @@ function meta::relational::extension::relationalExtension() : meta::pure::extens
                                                 )
                                              )
                                              ->concatenate(
-                                                pair(
-                                                project_TableTDS_1__ColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>),
-                                                {| $fe.parametersValues->at(1)->reactivate($openVars)->cast(@ColumnSpecification<Any>)->meta::pure::tds::schema::resolveProject($openVars);}
-                                                )
-                                             )->concatenate(
                                                 [
                                                    meta::pure::tds::extensions::columnValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_
                                                 ]->map(f|

@@ -2945,7 +2945,6 @@ public class Handlers
         map.put("cov_tds_SortInformation", Sets.mutable.with("SortInformation", "Nil"));
         map.put("cov_tds_ColumnSpecification", Sets.mutable.with("ColumnSpecification", "BasicColumnSpecification", "WindowColumnSpecification", "Nil"));
         map.put("cov_path_Path", Sets.mutable.with("Path", "Nil"));
-        map.put("cov_mapping_TableTDS", Sets.mutable.with("TableTDS", "Nil"));
         map.put("cov_tds_SortDirection", Sets.mutable.with("SortDirection", "Nil"));
         map.put("cov_relation_Table", Sets.mutable.with("Table", "ViewSelectSQLQuery", "VarCrossSetPlaceHolder", "Nil"));
         return map;
@@ -3624,7 +3623,6 @@ public class Handlers
         map.put("meta::pure::tds::project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || check(funcType(ps.get(1)._genericType()), (FunctionType ft) -> check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1 && isOne(nps.get(0)._multiplicity())))) && taxoMap.get("cov_String").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_tds_ColumnSpecification").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::project_T_MANY__Path_MANY__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_path_Path").contains(ps.get(1)._genericType()._rawType()._name()));
-        map.put("meta::pure::tds::project_TableTDS_1__ColumnSpecification_MANY__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_mapping_TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_tds_ColumnSpecification").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_tds_TabularDataSet").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_tds_ColumnSpecification").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_tds_TabularDataSet").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_collection_Pair").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::restrictDistinct_TabularDataSet_1__String_MANY__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_tds_TabularDataSet").contains(ps.get(0)._genericType()._rawType()._name()) && taxoMap.get("cov_String").contains(ps.get(1)._genericType()._rawType()._name()));
