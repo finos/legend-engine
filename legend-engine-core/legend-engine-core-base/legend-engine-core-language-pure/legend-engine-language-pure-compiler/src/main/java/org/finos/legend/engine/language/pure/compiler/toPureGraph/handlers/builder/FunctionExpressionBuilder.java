@@ -63,7 +63,12 @@ public abstract class FunctionExpressionBuilder
 
     private boolean comp(VariableExpression vv, org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification vs, PureModel pureModel, ProcessingContext processingContext)
     {
-        boolean isSignatureFunction = vv._genericType()._rawType() != null && Type.subTypeOf(vv._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport());
+        if (vv._genericType()._rawType() == null)
+        {
+            return true;
+        }
+
+        boolean isSignatureFunction = Type.subTypeOf(vv._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport());
         boolean isParamFunction = vs instanceof LambdaFunction ||
                                   (vs instanceof ClassInstance && ((ClassInstance) vs).type.equals("path")) ||
                                   isPackageableElementSubtypeOfFunction(vs, processingContext, pureModel) ||

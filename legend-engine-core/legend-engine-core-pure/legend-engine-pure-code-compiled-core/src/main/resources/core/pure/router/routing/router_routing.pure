@@ -774,6 +774,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     firstMinuteOfHour_Date_1__DateTime_1_,
     firstSecondOfMinute_Date_1__DateTime_1_,
     firstMillisecondOfSecond_Date_1__DateTime_1_,
+    if_Pair_MANY__Function_1__T_m_,
     sort_TabularDataSet_1__String_MANY__TabularDataSet_1_,
     sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_,
     sort_TabularDataSet_1__String_1__SortDirection_1__TabularDataSet_1_,
