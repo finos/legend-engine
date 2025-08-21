@@ -31,6 +31,7 @@
         <module>legend-engine-xt-relationalStore-postgresSqlModel-extensions-pure</module>
         <module>legend-engine-xt-relationalStore-postgresSql-protocol</module>
         <module>legend-engine-xt-relationalStore-postgresSql-grammar</module>
+        <module>legend-engine-xt-relationalStore-postgresSql-compiler</module>
         <module>legend-engine-xt-relationalStore-postgresSqlParser-pure</module>
         <module>legend-engine-xt-relationalStore-postgresSqlParser-functions-compiled</module>
         <module>legend-engine-xt-relationalStore-postgresSqlParser-functions-interpreted</module>

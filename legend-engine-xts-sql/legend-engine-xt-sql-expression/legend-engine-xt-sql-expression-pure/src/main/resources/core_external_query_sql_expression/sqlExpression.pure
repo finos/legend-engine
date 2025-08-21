@@ -1,0 +1,7 @@
+import meta::external::query::sql::metamodel::*;
+
+Class meta::external::query::sql::expression::SQLExpression<T> extends meta::pure::metamodel::relation::Relation<T>
+{
+    sqlString: String[1];
+    pureFunction: Function<Any>[1];
+}

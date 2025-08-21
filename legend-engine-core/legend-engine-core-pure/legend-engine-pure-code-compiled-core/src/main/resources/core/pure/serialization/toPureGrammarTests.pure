@@ -1,0 +1,26 @@
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::metamodel::serialization::grammar::tests::testNew::*;
+
+Enum meta::pure::metamodel::serialization::grammar::tests::testNew::MyEnum
+{
+  Val,
+  Other
+}
+
+Class meta::pure::metamodel::serialization::grammar::tests::testNew::TestClass
+{
+  a : String[1];
+  b : Boolean[1];
+  c : Integer[1];
+  d : Float[1];
+  e : Date[1];
+  f : MyEnum[1];
+  g : Decimal[1];
+}
+
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testNew::simple():Boolean[1]
+{
+  let val = ^TestClass(a = 'ok', b = true, c = 1, d = 1.0, e=%2015-04-15T17:09:21.398, f = MyEnum.Other, g = 10D);
+  assertEquals('^meta::pure::metamodel::serialization::grammar::tests::testNew::TestClass(a=\'ok\',b=true,c=1,d=1.0,e=%2015-04-15T17:09:21.398+0000,f=meta::pure::metamodel::serialization::grammar::tests::testNew::MyEnum.Other,g=10D)', $val->printNew());
+  true;
+}
