@@ -5877,17 +5877,6 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
           cols : meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1] |  $cols.funcSpecs->map(col|processColSpec($col.function, $col.name, $currentPropertyMapping, $mainQuery, $vars, $updatedState, $joinType, $nodeId, $aggFromMap, $context, $extensions))
         ])
    );
-   
-   println('heres includeOriginalColumns: ');
-   $includeOriginalColumns->println();
-  //  println('heres main query: ');
-  //  $mainQuery->println();
-  //  println('heres select: ');
-  //  $select->println();
-  println('heres paths');
-   $select.paths->println();
-   println('heres paths size');
-   $select.paths->size()->println();
 
    ^$mainQuery(
       select = ^$select(
