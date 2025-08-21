@@ -70,23 +70,6 @@ Class meta::analytics::lineage::property::RelationalPropertyOwner  extends Prope
 }
 
 
-Class meta::analytics::lineage::property::DataProductAccessPointOwner  extends PropertyOwnerNode 
-{
-    dataProductPath : String[1];
-    accessPointName: String[1];
-    dataSensitivity : String[1];
-}
-
-
-
-Class meta::analytics::lineage::property::IngestionSpecificationOwner  extends PropertyOwnerNode 
-{
-    ingestDefinitionPath : String[1];
-    datasetGroup: String[1];
-    datasetName : String[1];
-    dataSensitivity : String[1];
-
-}
 
 Class meta::analytics::lineage::property::MappedSetOwner extends PropertyOwnerNode
 {

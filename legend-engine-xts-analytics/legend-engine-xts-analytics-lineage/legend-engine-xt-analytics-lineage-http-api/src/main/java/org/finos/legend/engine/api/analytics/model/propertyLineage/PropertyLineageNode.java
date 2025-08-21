@@ -22,9 +22,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = RootQuery.class, name = "RootQuery"),
         @JsonSubTypes.Type(value = Query.class, name = "Query"),
         @JsonSubTypes.Type(value = PropertyOwnerNode.class, name = "PropertyOwnerNode"),
-        @JsonSubTypes.Type(value = StorePropertyLineageNode.class, name = "StorePropertyLineageNode"),
-        @JsonSubTypes.Type(value = DataProductAccessPointOwner.class, name = "DataProductAccessPointOwner"),
-        @JsonSubTypes.Type(value = IngestionSpecificationOwner.class, name = "IngestionSpecificationOwner")
+        @JsonSubTypes.Type(value = StorePropertyLineageNode.class, name = "StorePropertyLineageNode")
 })
 public class PropertyLineageNode
 {
