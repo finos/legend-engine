@@ -25,7 +25,7 @@ import meta::pure::extension::*;
 import meta::pure::metamodel::relation::*;
 import meta::analytics::lineage::property::*;
 import meta::analytics::lineage::property::scanner::*;
- 
+  
 Class meta::analytics::lineage::property::PropertyLineageReport
 {
  propertyOwner:meta::analytics::lineage::property::PropertyLineageNode[*];
@@ -34,7 +34,7 @@ Class meta::analytics::lineage::property::PropertyLineageReport
 
 Class meta::analytics::lineage::property::PropertyLineageNode //nodes in the graph that dont have direct properies (E.g. a store)
 {
-  <<equality.Key>> id:String[1]; 
+   <<equality.Key>> id:String[1];
   name:String[1];
 
 }
@@ -61,19 +61,36 @@ Class meta::analytics::lineage::property::Query  extends PropertyOwnerNode
 
 Class meta::analytics::lineage::property::RelationalPropertyOwner  extends PropertyOwnerNode 
 {
-   namedRelation:NamedRelation[1];
-   <<equality.Key>> relationType:String[1]; 
-   <<equality.Key>> relationName:String[1];
-   <<equality.Key>> schemaName:String[1];
-   <<equality.Key>> relationOwnerPath:String[1]; 
+    relationType:String[1]; 
+    relationName:String[1];
+    schemaName:String[1];
+    relationOwnerPath:String[1]; 
+    relationOwnerName:String[1]; 
+
+}
+
+
+Class meta::analytics::lineage::property::DataProductAccessPointOwner  extends PropertyOwnerNode 
+{
+    dataProductPath : String[1];
+    accessPointName: String[1];
+    dataSensitivity : String[1];
 }
 
 
 
+Class meta::analytics::lineage::property::IngestionSpecificationOwner  extends PropertyOwnerNode 
+{
+    ingestDefinitionPath : String[1];
+    datasetGroup: String[1];
+    datasetName : String[1];
+    dataSensitivity : String[1];
+
+}
+
 Class meta::analytics::lineage::property::MappedSetOwner extends PropertyOwnerNode
 {
   setImplementationID:String[1];
-
 }
 
 
@@ -468,8 +485,8 @@ function  meta::analytics::lineage::property::calculateMappingSourceNode(m:Mappe
 
 
                                                                                    let relationalOwners = $props.owners->distinct();
-                                                                                   let storenodes = $relationalOwners->filter(o|$o->instanceOf(RelationalPropertyOwner))->cast(@RelationalPropertyOwner)->groupBy(n|$n.namedRelation->schema().database);
-                                                                                   let newNodeLink = $storenodes->keyValues()->map(s|let storeNode =   ^StorePropertyLineageNode(name=$s.first.name->toOne(), id= $s.first->elementToPath());
+                                                                                   let storenodes = $relationalOwners->filter(o|$o->instanceOf(RelationalPropertyOwner))->cast(@RelationalPropertyOwner)->groupBy(n|pair($n.relationOwnerPath,$n.relationOwnerName));
+                                                                                   let newNodeLink = $storenodes->keyValues()->map(s|let storeNode =   ^StorePropertyLineageNode(name=$s.first.second, id= $s.first.first);
                                                                                                                                     let links =  $s.second.values->map(v|  ^OwnerLink(source=$storeNode.id,target=$v.id));
                                                                                                                                     pair($storeNode,list($links));
                                                                                    
@@ -550,7 +567,6 @@ function meta::analytics::lineage::property::toGraphFromPropertyLineage(state:Sc
 
   let removeIds = $nodesToRemove.id;
   let filteredLinksInit = $state.ownerLink->filter(l| $removeIds->contains($l.source) || $removeIds->contains($l.target));
- $filteredLinksInit->println();
   let bypassLinks = $filteredLinksInit->map(link |
     let sources = $link->findUltimateSource($removeIds, $state.ownerLink);
     let targets = $link->findUltimateTargets($removeIds, $state.ownerLink);
@@ -593,8 +609,8 @@ function meta::analytics::lineage::property::toGraphFromPropertyLineage(state:Sc
 function <<access.private>> meta::analytics::lineage::property::toGraphID(p:PropertyLineageNode[1]):String[1]
 {
   $p->match([  s:StorePropertyLineageNode[1] | 'db_'+$s.name->toOne(),
-                r:RelationalPropertyOwner[1]| let schema = $r.namedRelation->schema(); 
-                                              'tb_'+$schema.database.name->toOne()+$schema.name+$r.namedRelation.name;,
+                r:RelationalPropertyOwner[1]| 
+                                              'tb_'+$r.relationOwnerName->toOne()+$r.schemaName+$r.relationName;,
                r:RootQuery[1] |'Lambda',
               p:PropertyLineageNode[1] |$p.name
             

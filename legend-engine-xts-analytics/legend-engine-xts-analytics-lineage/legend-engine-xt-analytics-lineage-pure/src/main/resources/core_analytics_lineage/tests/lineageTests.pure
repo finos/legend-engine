@@ -631,7 +631,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relation::testRelationOn
 
 function <<test.Test>> meta::analytics::lineage::tests::relation::testProject():Boolean[1]
 {
-  let query = {|#>{meta::analytics::lineage::tests::db.personTable}#->project(~['firstName': x| $x.AGE->toOne() + $x.ADDRESSID->toOne() ])};
+  let query = {|#>{meta::analytics::lineage::tests::db.personTable}#->project(~['firstName': x| $x.AGE->toOne() + $x.ADDRESSID->toOne() ])->meta::pure::mapping::from(meta::external::store::relational::tests::testRuntime())};
 
   let lineage = meta::analytics::lineage::computeLineage($query, [], [], [],buildDefaultAnalyticsConfig());
 
