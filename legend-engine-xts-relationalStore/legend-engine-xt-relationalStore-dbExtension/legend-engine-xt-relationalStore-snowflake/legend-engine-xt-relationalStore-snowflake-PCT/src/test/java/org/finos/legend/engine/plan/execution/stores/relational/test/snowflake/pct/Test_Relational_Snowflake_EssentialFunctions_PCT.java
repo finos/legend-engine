@@ -117,7 +117,6 @@ public class Test_Relational_Snowflake_EssentialFunctions_PCT extends PCTReportC
 
             // Slice
             one("meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'new_Class_1__String_1__KeyExpression_MANY__T_1_'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::slice::testSliceOutOfBounds_Function_1__Boolean_1_", "\"\nexpected: [2, 3, 4, 5]\nactual:   [5]\"", AdapterQualifier.needsInvestigation),
 
             // Take
             one("meta::pure::functions::collection::tests::take::testTakeExceedsSizeOnNonEmptyList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 3 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),

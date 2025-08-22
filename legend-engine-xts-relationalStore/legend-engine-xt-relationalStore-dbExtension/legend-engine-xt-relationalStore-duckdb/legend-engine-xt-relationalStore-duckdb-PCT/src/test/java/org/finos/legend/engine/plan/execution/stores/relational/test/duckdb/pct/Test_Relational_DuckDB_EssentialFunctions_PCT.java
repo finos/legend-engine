@@ -114,7 +114,6 @@ public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConf
 
             // Slice
             one("meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'new_Class_1__String_1__KeyExpression_MANY__T_1_'.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::slice::testSliceOutOfBounds_Function_1__Boolean_1_", "\"\nexpected: [2, 3, 4, 5]\nactual:   [5]\"", AdapterQualifier.needsInvestigation),
 
             // Sort
             one("meta::pure::functions::collection::tests::sort::testMixedSortNoComparator_Function_1__Boolean_1_", "Not supported: Number", AdapterQualifier.needsImplementation),

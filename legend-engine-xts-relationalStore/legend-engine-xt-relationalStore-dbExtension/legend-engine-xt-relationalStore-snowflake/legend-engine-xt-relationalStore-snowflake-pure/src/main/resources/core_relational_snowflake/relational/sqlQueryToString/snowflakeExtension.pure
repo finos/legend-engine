@@ -282,7 +282,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(array_size(%s), 0)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
     dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)', transform= {vals:String[*] | $vals->init()->getDynaFunctionVariantTransformer()->concatenate($vals->last())})),
     dynaFnToSql('array_position',         $allStates,            ^ToSql(format='ifnull(array_position(%s, %s), -1)', transform= {vals:String[*] | $vals->last()->concatenate($vals->init()->getDynaFunctionVariantTransformer())})),
-    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='array_slice(%s, %s, %s)', transform= {vals:String[*] | $vals->init()->init()->getDynaFunctionVariantTransformer()->concatenate($vals->at($vals->size() - 2))->concatenate($vals->last())})),
+    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='array_slice(%s, array_max([%s, 0]), array_max([%s, 0]))', transform= {vals:String[*] | $vals->dropAt($vals->size() - 2, 2)->getDynaFunctionVariantTransformer()->concatenate($vals->at($vals->size() - 2))->concatenate($vals->last())})),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='BITAND(%s, %s)')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='BITNOT(%s)')),
@@ -578,7 +578,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let qualifyStr = if($s.qualifyOperation->isEmpty(), |'', |$s.qualifyOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
-
+let sql =
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
   if ($s.data == [],
@@ -598,6 +598,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   if (eq($qualifyStr, ''), |'', | ' ' + $format.separator + 'qualify ' + $qualifyStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(',')) +
   processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForSnowflake_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+  println($sql);
+  $sql;
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processPivotForSnowflake(p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]

@@ -1205,8 +1205,8 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
    assertEquals('#TDS\n'+
                 '   id,payload,fromRow,toRow,sliced\n'+
                 '   0,null,1,2,null\n'+
-                '   1,[1,2,3,4,5,6],2,3,[3]\n'+
+                '   1,[1,2,3,4,5,6],2,3,3\n'+
                 '   2,[1,2,3,4,5,6],0,4,[1,2,3,4]\n'+
-                '   3,[1,2,3,4,5,6],-3,-1,[4,5]\n'+
+                '   3,[1,2,3,4,5,6],-3,-1,null\n'+
                 '#', $res->toString());
 }
