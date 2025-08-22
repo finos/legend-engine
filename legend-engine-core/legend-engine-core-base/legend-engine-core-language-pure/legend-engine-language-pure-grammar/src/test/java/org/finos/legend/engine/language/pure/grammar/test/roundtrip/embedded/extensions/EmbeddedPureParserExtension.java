@@ -30,6 +30,6 @@ public class EmbeddedPureParserExtension implements EmbeddedPureParser
     @Override
     public Object parse(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions)
     {
-        return new NewValueSpecificationForTest(code);
+        return new NewValueSpecificationForTest(code.trim());
     }
 }

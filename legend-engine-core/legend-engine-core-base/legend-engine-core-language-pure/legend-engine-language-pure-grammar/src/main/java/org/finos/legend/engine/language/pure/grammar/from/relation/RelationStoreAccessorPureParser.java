@@ -34,7 +34,7 @@ public class RelationStoreAccessorPureParser implements EmbeddedPureParser
     public Object parse(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions)
     {
         RelationStoreAccessor relationStoreAccessor = new RelationStoreAccessor();
-        relationStoreAccessor.path = Lists.mutable.with(code.split("\\."));
+        relationStoreAccessor.path = Lists.mutable.with(code.trim().split("\\."));
         relationStoreAccessor.sourceInformation = sourceInformation;
         return relationStoreAccessor;
     }

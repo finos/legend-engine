@@ -584,6 +584,30 @@ function meta::pure::metamodel::serialization::grammar::printAllElementsFromPack
    $_package->pathToElement()->cast(@Package)->getAllPackageElements(true)->sortBy(x|$x->elementToPath())->meta::pure::metamodel::serialization::grammar::printPackageableElements()+'\n';
 }
 
-
+function meta::pure::metamodel::serialization::grammar::printNew(a:Any[1]):String[1]
+{  
+  $a->match(
+    [
+       i:Integer[1] | $i->toRepresentation(),
+       x:String[1] | $x->toRepresentation(),
+       b:Boolean[1] | $b->toRepresentation(),
+       f:Float[1] | $f->toRepresentation(),
+       d:Date[1] | $d->toRepresentation(),
+       e:Enum[1] | $e->type()->elementToPath()+'.'+$e.name,
+       d:Decimal[1] | $d->toRepresentation(),
+       a:Any[1] |
+         let _type = $a->type()->cast(@Class<Any>);
+         let properties = $_type->meta::pure::functions::meta::hierarchicalProperties();
+         '^'+$a->type()->elementToPath()+'('+
+          $properties->map(p| let value = $p->eval($a);
+                              if ($value->isEmpty(),
+                                |'',
+                                |$p.name->toOne() + '=' + $value->map(w|$w->printNew())->joinStrings(',')
+                              );
+                       )->filter(v|$v != '')->joinStrings(',')+
+        ')';
+    ]
+  );
+}
 
 

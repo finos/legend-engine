@@ -125,7 +125,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::relatio
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
 {
-  let query = meta::legend::compileVS('#SQL{' + $sql + '}#')->cast(@Query);
+  let query = meta::external::store::relational::postgresSql::parser::parseSqlStatement($sql)->cast(@Query);
 
   let extensions = relationalExtensions();
   let context = rootContext($sources, $extensions);

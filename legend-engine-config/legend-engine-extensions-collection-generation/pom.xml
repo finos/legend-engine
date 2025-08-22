@@ -155,6 +155,16 @@
             <artifactId>legend-engine-external-format-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-tds-compiler</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-tds-grammar</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- ENGINE -->
 
 
@@ -660,7 +670,11 @@
         <!-- SQL -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
+            <artifactId>legend-engine-xt-sql-expression-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-expression-compiler</artifactId>
         </dependency>
         <!-- SQL -->
 
