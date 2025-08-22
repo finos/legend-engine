@@ -1,0 +1,12 @@
+{
+  "name": "core_external_query_sql_expression_tests",
+  "pattern": "(meta::external::query::sql::expression)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core_functions_unclassified",
+    "core",
+    "core_external_extensions",
+    "core_external_compiler",
+    "core_relational"
+  ]
+}

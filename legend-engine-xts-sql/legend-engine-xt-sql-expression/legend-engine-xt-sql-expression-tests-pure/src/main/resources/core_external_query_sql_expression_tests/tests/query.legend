@@ -1,0 +1,37 @@
+###Relational
+Database pack::DB
+(
+  Table myTab(name VARCHAR(200))
+)
+
+###Pure
+function pack::f():Any[*]
+{
+  #SQL{select name from tb('pack::DB.myTab') as t where t.name = 'www'}#->from(test::test);
+}
+
+function pack::f2():Any[*]
+{
+  #SQL{select name from tb('pack::DB.myTab')}#->filter(x|$x.name == 'www2')->from(test::test);
+}
+
+
+###Runtime
+Runtime test::test
+{
+    mappings : [];
+    connections:
+    [
+        pack::DB : [connection: test::testConnection]
+    ];
+}
+
+
+###Connection
+RelationalDatabaseConnection test::testConnection
+{
+   store: pack::DB;
+   specification: LocalH2{};
+   type: H2;
+   auth: DefaultH2;
+}

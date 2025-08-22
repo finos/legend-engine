@@ -1,0 +1,24 @@
+import meta::pure::runtime::*;
+import meta::external::query::sql::metamodel::*;
+import meta::pure::store::*;
+import meta::pure::router::routing::*;
+import meta::pure::extension::*;
+
+function meta::external::query::sql::expression::sqlExpressionFeatureExtension() : Extension[1]
+{
+   let shared = ^Extension(
+      type = 'sqlExpressionExtension',
+      availableFeatures  = ^FeatureExtension
+                           (
+                              id = 'sqlReprocessToFunction',
+                              instanceProcessors = {i:InstanceValue[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+                                                      pair(
+                                                          | $i.values->size() == 1 && $i.values->at(0)->instanceOf(meta::external::query::sql::expression::SQLExpression),
+                                                          | let func = $i.values->at(0)->cast(@meta::external::query::sql::expression::SQLExpression<Any>).pureFunction;
+                                                            let expr = $func->cast(@FunctionDefinition<Any>).expressionSequence->toOne()->evaluateAndDeactivate();
+                                                            processCollection($state, $expr, $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug);
+                                                        )
+                                                   }
+                          )      
+   )
+}

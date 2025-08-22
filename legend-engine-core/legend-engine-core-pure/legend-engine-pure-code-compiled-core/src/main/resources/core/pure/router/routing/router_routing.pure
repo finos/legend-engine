@@ -156,7 +156,8 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
                                                                   );
                                                            $state.routingStrategy.processClass($c, $i, $state, $executionContext, $debug);
                                                           )
-                                                      ],
+                                                      ]
+                                                      ->concatenate($extensions.routerExtensions().instanceProcessors->map(x|$x->eval($i, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug))),
                                                       | if($i.values->isEmpty(),
                                                             |$state,
                                                             |let processedValues = processCollection($state, $i.values->evaluateAndDeactivate(), $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug);
