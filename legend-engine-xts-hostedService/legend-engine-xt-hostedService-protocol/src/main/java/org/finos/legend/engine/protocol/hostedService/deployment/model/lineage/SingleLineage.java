@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.hostedService.deployment.model.lineage;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.api.analytics.model.graph.Graph;
+import org.finos.legend.engine.api.analytics.model.propertyLineage.PropertyLineageReport;
 import org.finos.legend.engine.api.analytics.model.report.ColumnLineage;
 import org.finos.legend.engine.api.analytics.model.tree.PropertyPathTreeNode;
 import org.finos.legend.engine.api.analytics.model.tree.RelationalTreeNode;
@@ -30,6 +31,7 @@ public class SingleLineage extends Lineage
     public Protocol serializer;
     public Graph databaseLineage;
     public Graph classLineage;
+    public PropertyLineageReport propertyLineageReport;
 
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     public List<PropertyPathTreeNode> functionTree;
@@ -63,6 +65,7 @@ public class SingleLineage extends Lineage
         result.functionTree = Lists.mutable.with(functionTree);
         result.reportLineage = Lists.mutable.empty();
         result.relationTree = treenode;
+        result.propertyLineageReport = new PropertyLineageReport();
         return result;
     }
 
@@ -84,6 +87,6 @@ public class SingleLineage extends Lineage
     @Override
     public int hashCode()
     {
-        return Objects.hash(serializer, databaseLineage, classLineage, functionTree, relationTree, reportLineage);
+        return Objects.hash(serializer, databaseLineage, classLineage, functionTree, relationTree, reportLineage, propertyLineageReport);
     }
 }
