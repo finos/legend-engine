@@ -64,6 +64,7 @@ Class meta::analytics::lineage::FunctionAnalyticsConfig
   classLineage: Boolean[1];
   relationTree: Boolean[1];
   reportLineage: Boolean[1];
+  propertyLineage:Boolean[0..1]; 
 }
 
 Class meta::analytics::lineage::ReportLineage
@@ -130,7 +131,8 @@ function meta::analytics::lineage::buildDefaultAnalyticsConfig(): FunctionAnalyt
     databaseLineage = true,
     classLineage = true,
     relationTree = true,
-    reportLineage = true
+    reportLineage = true,
+    propertyLineage = false
   )
 }
 Class meta::analytics::lineage::LineageInputFromFunctionDefinition
@@ -205,7 +207,7 @@ function meta::analytics::lineage::computeLineageLegacy(f:FunctionDefinition<Any
                                                     | scanRelations(^LambdaFunction<{->Any[*]}>(expressionSequence = $funcBody), $sourceMapping, $r->toOne(), $vars, noDebug(), $extensions),
                                                     | scanRelations($combinedTrees->last()->toOne(), $sourceMapping)), |^RelationTree()),
       reportLineage = if($config.reportLineage, |buildReportLineage($reprocessedFuncBody->last()->toOne(), $sourceMapping,$vars), |^ReportLineage()),
-                  propertyLineage=^PropertyLineageReport()
+      propertyLineage=^PropertyLineageReport()
 
    );
 }
@@ -240,10 +242,12 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
 
   if( $updatedFuncBody->last()->toOne().genericType.rawType->isNotEmpty() &&  ($updatedFuncBody->last()->toOne().genericType.rawType->toOne() == meta::pure::metamodel::relation::Relation || $updatedFuncBody->last()->toOne().genericType.rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::RelationElementAccessor) ) ,
       |
-         let propLineage =  meta::analytics::lineage::property::buildPropertyLineageReport($reprocessedFuncBody->last()->toOne(), 'Root', ^meta::analytics::lineage::property::scanner::ScannerState(vars=$f->openVariableValues(), mapping=$sourceMapping), $lineageExtensions);
-          let propReport = $propLineage->scannerToPropertyReport();
-          let relationElementAccessor = $updatedFuncBody->map(v | $v->cast(@ValueSpecification)->extractRelationElementAccessor(noDebug()));
+                 let relationElementAccessor = $updatedFuncBody->map(v | $v->cast(@ValueSpecification)->extractRelationElementAccessor(noDebug()));
 
+      if ($config.propertyLineage->isNotEmpty() && $config.propertyLineage->toOne(),
+           | let propLineage =  meta::analytics::lineage::property::buildPropertyLineageReport($reprocessedFuncBody->last()->toOne(), 'Root', ^meta::analytics::lineage::property::scanner::ScannerState(vars=$f->openVariableValues(), mapping=$sourceMapping), $lineageExtensions);
+             let propReport = $propLineage->scannerToPropertyReport();
+             let relationElementAccessor = $updatedFuncBody->map(v | $v->cast(@ValueSpecification)->extractRelationElementAccessor(noDebug()));
           ^FunctionAnalytics
           (
               databaseLineage = if($config.databaseLineage,| $propLineage->meta::analytics::lineage::property::toGraphFromPropertyLineage($f, $lineageExtensions),|^Graph()),
@@ -254,6 +258,16 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
               propertyLineage = $propReport
 
           );,
+    
+         | ^FunctionAnalytics
+          (
+              databaseLineage = if($config.databaseLineage,| $relationElementAccessor->map(r |$r-> meta::analytics::lineage::relationAccessorToFlow($f, $lineageExtensions))->merge()->toGraph($lineageExtensions),|^Graph()),
+              classLineage = ^Graph(),
+              functionTrees = ^PropertyPathTree(display='root', value='root'),  // Assuming that in the simple case, there are no model joins and hence no property trees
+              relationTree = ^RelationTree(),
+              reportLineage =^ReportLineage(),
+              propertyLineage = ^PropertyLineageReport()
+          ));,
 
       |
           let propertyTrees = $updatedFuncBody->map(e|$e->buildMultiLevelPropertyTrees($modelToModelMappings, $extensions));
