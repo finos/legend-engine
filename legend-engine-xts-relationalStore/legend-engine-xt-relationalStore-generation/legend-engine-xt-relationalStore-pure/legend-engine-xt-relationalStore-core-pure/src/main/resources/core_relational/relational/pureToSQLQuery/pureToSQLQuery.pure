@@ -3024,6 +3024,7 @@ function meta::relational::functions::pureToSqlQuery::processIf(f:FunctionExpres
 function meta::relational::functions::pureToSqlQuery::processMultiIf(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
  let pairs = if($f.parametersValues->at(0)->instanceOf(InstanceValue), | $f.parametersValues->at(0)->cast(@InstanceValue).values, | $f.parametersValues->at(0));
+ assert($pairs->size() > 0, 'Multi-If pair cannot be empty');
  let else = $f.parametersValues->at(1);
 
  let res = $pairs->reverse()->fold(
