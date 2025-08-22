@@ -3030,7 +3030,7 @@ function meta::relational::functions::pureToSqlQuery::processMultiIf(f:FunctionE
  let res = $pairs->reverse()->fold(
    {pair, acc |
      let condSimpleExpression = $pair->cast(@SimpleFunctionExpression).parametersValues->cast(@InstanceValue).values->at(1)->cast(@KeyExpression).expression->byPassRouterInfo()
-     ->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence; // bypassrouterInfo
+     ->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence;
      let pairElse = $pair->cast(@SimpleFunctionExpression).parametersValues->cast(@InstanceValue).values->at(2)->cast(@KeyExpression).expression->byPassRouterInfo();
 
      let ifElse = ^$f(
