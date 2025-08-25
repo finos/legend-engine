@@ -32,9 +32,17 @@ import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processMany;
@@ -84,13 +92,67 @@ public class Function extends PackageableElement
                 String fullPath = node.get("returnType").asText();
                 result.returnGenericType = new GenericType(new PackageableType(fullPath));
             }
+
+            JsonNode testsNode = node.get("tests");
+            if (testsNode != null)
+            {
+                MutableList<FunctionTestSuite> testSuites = Lists.mutable.empty();
+                Iterator<JsonNode> testSuiteIterator = testsNode.elements();
+
+                while (testSuiteIterator.hasNext())
+                {
+                    JsonNode testSuiteNode = testSuiteIterator.next();
+                    FunctionTestSuite testSuite = new FunctionTestSuite();
+
+                    testSuite.id = processOne(testSuiteNode, "id", String.class, codec);
+                    testSuite.doc = processOne(testSuiteNode, "doc", String.class, codec);
+                    testSuite.tests = processMany(testSuiteNode, "tests", AtomicTest.class, codec);
+                    testSuite.sourceInformation = processOne(testSuiteNode, "sourceInformation", SourceInformation.class, codec);
+
+                    JsonNode testDataArray = testSuiteNode.get("testData");
+                    if (testDataArray != null)
+                    {
+                        MutableList<FunctionTestData> testDataList = Lists.mutable.empty();
+                        Iterator<JsonNode> testDataIterator = testDataArray.elements();
+
+                        while (testDataIterator.hasNext())
+                        {
+                            JsonNode testDataNode = testDataIterator.next();
+                            FunctionTestData testData = new FunctionTestData();
+
+                            testData.doc = processOne(testDataNode, "doc", String.class, codec);
+                            testData.data = processOne(testDataNode, "data", EmbeddedData.class, codec);
+                            testData.sourceInformation = processOne(testDataNode, "sourceInformation", SourceInformation.class, codec);
+
+                            // Handle backward compatibility: storeProviderPointer -> packageableElementPointer
+                            if (testDataNode.has("packageableElementPointer"))
+                            {
+                                testData.packageableElementPointer = processOne(testDataNode, "packageableElementPointer", PackageableElementPointer.class, codec);
+                            }
+                            else if (testDataNode.has("store"))
+                            {
+                                testData.packageableElementPointer = processOne(testDataNode, "store", StoreProviderPointer.class, codec);
+                            }
+
+                            testDataList.add(testData);
+                        }
+                        testSuite.testData = testDataList;
+                    }
+
+                    testSuites.add(testSuite);
+                }
+                result.tests = testSuites;
+            }
+            else
+            {
+                result.tests = Lists.mutable.empty();
+            }
             // Backward compatibility --------------
 
             result.returnMultiplicity = processOne(node, "returnMultiplicity", Multiplicity.class, codec);
             result.stereotypes = processMany(node, "stereotypes", StereotypePtr.class, codec);
             result.taggedValues = processMany(node, "taggedValues", TaggedValue.class, codec);
             result.body = processMany(node, "body", ValueSpecification.class, codec);
-            result.tests = processMany(node, "tests", FunctionTestSuite.class, codec);
 
             return result;
         }

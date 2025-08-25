@@ -760,15 +760,15 @@
         } ]
       } ],
       "testData" : [ {
-        "store" : {
+        "packageableElementPointer" : {
           "type" : "STORE",
           "path" : "store::TestDB"
         },
         "data" : {
           "_type" : "reference",
           "dataElement" : {
-            "path" : "test::other",
-            "type":"DATA"
+            "type" : "DATA",
+            "path" : "test::other"
           }
         }
       } ]

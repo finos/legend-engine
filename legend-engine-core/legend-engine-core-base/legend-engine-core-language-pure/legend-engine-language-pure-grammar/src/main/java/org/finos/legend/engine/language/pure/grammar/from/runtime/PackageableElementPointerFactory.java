@@ -20,36 +20,36 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public interface StoreProviderPointerFactory
+public interface PackageableElementPointerFactory
 {
-    static StoreProviderPointer parseStoreProviderType(TerminalNode type)
+    static PackageableElementPointer parseStoreProviderType(TerminalNode type)
     {
-        StoreProviderPointer storeProviderPointer = new StoreProviderPointer();
+        PackageableElementPointer packageableElementPointer = new PackageableElementPointer();
         if (Objects.isNull(type))
         {
-            storeProviderPointer.type = PackageableElementType.STORE;
+            packageableElementPointer.type = null;
         }
         else
         {
-            storeProviderPointer.type = PackageableElementType.valueOf(type.getText().toUpperCase());
+            packageableElementPointer.type = PackageableElementType.valueOf(type.getText().toUpperCase());
         }
-        return storeProviderPointer;
+        return packageableElementPointer;
     }
 
-    static StoreProviderPointer create(ParserRuleContext storeProviderPointerContext, SourceInformation sourceInformation)
+    static PackageableElementPointer create(ParserRuleContext elementPointerContext, SourceInformation sourceInformation)
     {
-        List<ParseTree> children = storeProviderPointerContext.children;
+        List<ParseTree> children = elementPointerContext.children;
         TerminalNode typeContext;
         ParserRuleContext qualifiedNameContext;
 
-        if (children.size() == 2 && children.get(0).getClass().getSimpleName().equals("StoreProviderPointerTypeContext") && children.get(1).getClass().getSimpleName().equals("PackageableElementPointerContext"))
+        if (children.size() == 2 && children.get(0).getClass().getSimpleName().equals("PackageableElementPointerTypeContext") && children.get(1).getClass().getSimpleName().equals("PackageableElementPointerContext"))
         {
             typeContext = (TerminalNode) ((ParserRuleContext) children.get(0)).children.get(1);
             qualifiedNameContext = (ParserRuleContext) ((ParserRuleContext) children.get(1)).children.get(0);
@@ -61,7 +61,7 @@ public interface StoreProviderPointerFactory
         }
         else
         {
-            throw new IllegalStateException("Unrecognized store provider pointer");
+            throw new IllegalStateException("Unrecognized packageableElement pointer");
         }
         if (!qualifiedNameContext.getClass().getSimpleName().equals("QualifiedNameContext"))
         {
@@ -95,9 +95,9 @@ public interface StoreProviderPointerFactory
                                                 ctx -> ctx.getClass().getSimpleName().equals("IdentifierContext"))
                                         .collect(ctx -> (ParserRuleContext) ctx)
                         ), identifierContext);
-        StoreProviderPointer storeProviderPointer = StoreProviderPointerFactory.parseStoreProviderType(typeContext);
-        storeProviderPointer.path = path;
-        storeProviderPointer.sourceInformation = sourceInformation;
-        return storeProviderPointer;
+        PackageableElementPointer packageableElementPointer = PackageableElementPointerFactory.parseStoreProviderType(typeContext);
+        packageableElementPointer.path = path;
+        packageableElementPointer.sourceInformation = sourceInformation;
+        return packageableElementPointer;
     }
 }

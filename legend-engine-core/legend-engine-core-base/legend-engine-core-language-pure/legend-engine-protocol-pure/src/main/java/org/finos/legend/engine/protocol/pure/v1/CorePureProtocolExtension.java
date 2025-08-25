@@ -34,6 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.ModelEmbeddedTestData
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelInstanceTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.DataQualityExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
@@ -131,6 +132,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(ExternalFormatData.class, "externalFormat")
                         .withSubtype(ModelStoreData.class, "modelStore")
                         .withSubtype(DataElementReference.class, "reference")
+                        .withSubtype(RelationElementsData.class, "relationAccessor")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(ModelTestData.class)
                         .withSubtype(ModelEmbeddedTestData.class, "modelEmbeddedData")

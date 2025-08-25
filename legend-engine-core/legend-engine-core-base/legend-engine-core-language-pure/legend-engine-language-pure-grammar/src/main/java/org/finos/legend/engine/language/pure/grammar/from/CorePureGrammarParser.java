@@ -44,6 +44,7 @@ import org.finos.legend.engine.language.pure.grammar.from.data.DataParseTreeWalk
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ExternalFormatEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ModelStoreEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ReferenceEmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.RelationElementsEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.*;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
@@ -140,6 +141,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     {
         return Lists.immutable.with(
                 new ExternalFormatEmbeddedDataParser(),
+                new RelationElementsEmbeddedDataParser(),
                 new ModelStoreEmbeddedDataParser(),
                 new ReferenceEmbeddedDataParser());
     }

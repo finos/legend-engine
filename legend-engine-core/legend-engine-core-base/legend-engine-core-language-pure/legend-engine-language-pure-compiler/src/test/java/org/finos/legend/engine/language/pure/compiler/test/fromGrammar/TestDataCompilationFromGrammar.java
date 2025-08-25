@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -101,6 +102,61 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
 
         Assert.assertEquals("application/json", externalFormatData._contentType());
         Assert.assertEquals("{\"some\":\"data\"}", externalFormatData._data());
+    }
+
+    @Test
+    public void testRelationElementsData()
+    {
+        Pair<PureModelContextData, PureModel> result = test("###Data\n" +
+                "Data data::RelationalData\n" +
+                "{\n" +
+                "  Relation\n" +
+                "  #{\n" +
+                "    default.PersonTable:\n" +
+                "       id,firstName,lastName\n" +
+                "       1,I\\'m John,\"Doe, Jr\"\n" +
+                "       2,Nicole,Smith\n" +
+                "       3,Time,Smith;\n" +
+                "  }#\n" +
+                "}"
+        );
+
+        PackageableElement element = result.getTwo().getPackageableElement("data::RelationalData");
+        Assert.assertTrue(element instanceof Root_meta_pure_data_DataElement);
+        Root_meta_pure_data_DataElement dataElement = (Root_meta_pure_data_DataElement) element;
+
+        Assert.assertTrue(dataElement._data() instanceof Root_meta_pure_data_RelationElementsData);
+        Root_meta_pure_data_RelationElementsData relationElementsData = (Root_meta_pure_data_RelationElementsData) dataElement._data();
+
+        Assert.assertEquals(1, relationElementsData._relationElements().size());
+        Root_meta_pure_data_RelationElement relationElement = relationElementsData._relationElements().getOnly();
+
+        Assert.assertEquals("default.PersonTable", String.join(".", relationElement._paths()));
+        Assert.assertEquals("id,firstName,lastName", String.join(",", relationElement._columns()));
+        RichIterable<String> allRowValues = relationElement._rows().collect(r -> String.join(",", r._values()));
+        Assert.assertTrue(allRowValues.contains("1,I'm John,\"Doe, Jr\""));
+        Assert.assertTrue(allRowValues.contains("2,Nicole,Smith"));
+        Assert.assertTrue(allRowValues.contains("3,Time,Smith"));
+    }
+
+    @Test
+    public void testRelationElementsDataDuplicateAccessors()
+    {
+        test("###Data\n" +
+                "Data data::RelationalData\n" +
+                "{\n" +
+                "  Relation\n" +
+                "  #{\n" +
+                "    default.PersonTable:\n" +
+                "      id,firstName,lastName\n" +
+                "      1,I\\'m John,\"Doe, Jr\"\n" +
+                "      2,Nicole,Smith\n" +
+                "      3,Time,Smith;\n" +
+                "    default.PersonTable:\n" +
+                "      id,firstName,lastName;\n" +
+                "  }#\n" +
+                "}", "COMPILATION error at [11:5-12:28]: Duplicated relation element path: 'default.PersonTable'"
+        );
     }
 
     @Test

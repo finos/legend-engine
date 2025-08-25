@@ -182,11 +182,11 @@ simpleFunctionSuite:                            identifier
                                                     simpleFunctionTest (simpleFunctionTest)*
                                                 PAREN_CLOSE
 ;
-functionData:                                   storeProviderPointer COLON functionDataValue SEMI_COLON
+functionData:                                   elementPointer COLON functionDataValue SEMI_COLON
 ;
-storeProviderPointer:                           (storeProviderPointerType)? packageableElementPointer
+elementPointer:                                 (packageableElementPointerType)? packageableElementPointer
 ;
-storeProviderPointerType:                       PAREN_OPEN VALID_STRING PAREN_CLOSE
+packageableElementPointerType:                  PAREN_OPEN VALID_STRING PAREN_CLOSE
 ;
 packageableElementPointer:                      qualifiedName
 ;
