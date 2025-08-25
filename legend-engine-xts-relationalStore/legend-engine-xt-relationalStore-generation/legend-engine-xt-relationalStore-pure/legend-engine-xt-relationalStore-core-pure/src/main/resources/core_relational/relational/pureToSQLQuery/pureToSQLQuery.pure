@@ -3951,6 +3951,11 @@ function meta::relational::functions::pureToSqlQuery::processVariantIndexOf(f:Fu
   processDynaFunction('array_position', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
+function meta::relational::functions::pureToSqlQuery::processVariantSlice(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  processDynaFunction('array_slice', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
 function meta::relational::functions::pureToSqlQuery::processTo(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   let valueParam = $f.parametersValues->at(0);
@@ -9399,6 +9404,13 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
          second = pair(
             meta::relational::functions::pureToSqlQuery::isVariantInputWithInstanceValue_ValueSpecification_1__Map_1__Boolean_1_,
             meta::relational::functions::pureToSqlQuery::processVariantIndexOf_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
+         )->list()
+      ),
+      ^Pair<meta::pure::metamodel::function::Function<Any>, List<Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1],Map<VariableExpression, ValueSpecification>[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>>(
+         first = meta::pure::functions::collection::slice_T_MANY__Integer_1__Integer_1__T_MANY_,
+         second = pair(
+            meta::relational::functions::pureToSqlQuery::isVariantInputWithInstanceValue_ValueSpecification_1__Map_1__Boolean_1_,
+            meta::relational::functions::pureToSqlQuery::processVariantSlice_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
          )->list()
       )
    ])
