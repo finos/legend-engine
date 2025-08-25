@@ -25,9 +25,10 @@ package org.finos.legend.engine.postgres.types;
 import io.crate.types.DataTypes;*/
 
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Locale;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatter;
 
 final class TimestampZType extends BaseTimestampType
 {
@@ -39,13 +40,11 @@ final class TimestampZType extends BaseTimestampType
 
     // For Golang if date is AD (after Christ), era abbreviation is not parsed.
     private static final DateTimeFormatter ISO_FORMATTER =
-            DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS+00").withZoneUTC()
-                    .withLocale(Locale.ENGLISH);
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS+00", Locale.ENGLISH).withZone(ZoneId.of("UTC"));
+
     // For Golang if date is BC (before Christ), era abbreviation needs to be appended.
     private static final DateTimeFormatter ISO_FORMATTER_WITH_ERA =
-            DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss.SSS+00 G").withZoneUTC()
-                    .withLocale(Locale.ENGLISH);
-
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS+00 G", Locale.ENGLISH).withZone(ZoneId.of("UTC"));
 
     private static final DateTimeFormatter[] PARSERS_WITHOUT_ERA = generateParseFormatters(false);
     private static final DateTimeFormatter[] PARSERS_WITH_ERA = generateParseFormatters(true);
@@ -53,14 +52,15 @@ final class TimestampZType extends BaseTimestampType
     private static DateTimeFormatter[] generateParseFormatters(boolean withEra)
     {
         DateTimeFormatter[] formatters = new DateTimeFormatter[10];
-        String prefix = "YYYY-MM-dd HH:mm:ss";
-        String suffix = "ZZ";
+        String prefix = "yyyy-MM-dd HH:mm:ss";
+
+        String suffix = "[XXX][XX][X]";
         if (withEra)
         {
-            suffix = "ZZ G";
+            suffix += " G";
         }
 
-        formatters[0] = DateTimeFormat.forPattern(prefix + suffix).withLocale(Locale.ENGLISH);
+        formatters[0] = DateTimeFormatter.ofPattern(prefix + suffix).withLocale(Locale.ENGLISH);
         for (int i = 1; i < 10; i++)
         { // 1-9 digits for fraction of second
             StringBuilder pattern = new StringBuilder(prefix);
@@ -70,7 +70,7 @@ final class TimestampZType extends BaseTimestampType
                 pattern.append('S');
             }
             pattern.append(suffix);
-            formatters[i] = DateTimeFormat.forPattern(pattern.toString()).withLocale(Locale.ENGLISH);
+            formatters[i] = DateTimeFormatter.ofPattern(pattern.toString()).withLocale(Locale.ENGLISH);
         }
         return formatters;
     }
@@ -92,11 +92,11 @@ final class TimestampZType extends BaseTimestampType
         long msecs = (long) value;
         if (msecs >= FIRST_MSEC_AFTER_CHRIST)
         {
-            return ISO_FORMATTER.print(msecs).getBytes(StandardCharsets.UTF_8);
+            return ISO_FORMATTER.format(Instant.ofEpochMilli(msecs)).getBytes(StandardCharsets.UTF_8);
         }
         else
         {
-            return ISO_FORMATTER_WITH_ERA.print(msecs).getBytes(StandardCharsets.UTF_8);
+            return ISO_FORMATTER_WITH_ERA.format(Instant.ofEpochMilli(msecs)).getBytes(StandardCharsets.UTF_8);
         }
     }
 
@@ -131,9 +131,8 @@ final class TimestampZType extends BaseTimestampType
         boolean withEra = s.endsWith("BC") || s.endsWith("AD");
         if (withEra)
         {
-            return PARSERS_WITH_ERA[fractionDigits].parseMillis(s);
+            return Instant.from(PARSERS_WITH_ERA[fractionDigits].parse(s)).toEpochMilli();
         }
-        return PARSERS_WITHOUT_ERA[fractionDigits].parseMillis(s);
+        return Instant.from(PARSERS_WITHOUT_ERA[fractionDigits].parse(s)).toEpochMilli();
     }
-    //}
 }
