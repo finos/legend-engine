@@ -301,7 +301,6 @@ public class Test_Relational_MemSQL_EssentialFunctions_PCT extends PCTReportConf
 
 
             // MultiIf
-            one("meta::pure::functions::lang::tests::if::testMultiIf_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::collection::pair(LambdaFunction<{->Boolean[1]}>[1],LambdaFunction<{->Integer[1]}>[1])'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::lang::tests::if::testSimpleIf_Function_1__Boolean_1_", "\"\nexpected: 'truesentence'\nactual:   'falsesentence'\"", AdapterQualifier.needsInvestigation),
 
             // Match

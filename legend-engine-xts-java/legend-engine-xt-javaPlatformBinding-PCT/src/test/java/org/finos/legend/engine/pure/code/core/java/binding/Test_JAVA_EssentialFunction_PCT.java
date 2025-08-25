@@ -169,7 +169,7 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::date::tests::testYeaReflect_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // If
-            one("meta::pure::functions::lang::tests::if::testMultiIf_Function_1__Boolean_1_", "Can't find a match for function", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::lang::tests::if::testMultiIf_Function_1__Boolean_1_", "\"Generics not supported (function: meta::pure::functions::lang::if_Pair_MANY__Function_1__T_m_)\""),
 
             // Match
             one("meta::pure::functions::lang::tests::match::testMatchWithExtraParam_Function_1__Boolean_1_", "meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ is not supported yet!", AdapterQualifier.unsupportedFeature),

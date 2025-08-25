@@ -204,7 +204,6 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic.", AdapterQualifier.unsupportedFeature),
 
             //if
-            one("meta::pure::functions::lang::tests::if::testMultiIf_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::collection::pair(LambdaFunction<{->Boolean[1]}>[1],LambdaFunction<{->Integer[1]}>[1])'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::lang::tests::if::testSimpleIf_Function_1__Boolean_1_", "java.sql.SQLException: [Databricks][DatabricksJDBCDriver](500051) ERROR processing query/statement. Error Code: 0, SQL state: org.apache.hive.service.cli.HiveSQLException: Error running query: [DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] org.apache.spark.sql.catalyst.ExtendedAnalysisException: [DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve \"CASE WHEN true THEN truesentence ELSE falsesentence END\" due to data type mismatch: The first parameter requires the \"BOOLEAN\" type, however \"true\" has the type \"STRING\". SQLSTATE: 42K09; line 1 pos 7", AdapterQualifier.needsInvestigation),
 
             //match
