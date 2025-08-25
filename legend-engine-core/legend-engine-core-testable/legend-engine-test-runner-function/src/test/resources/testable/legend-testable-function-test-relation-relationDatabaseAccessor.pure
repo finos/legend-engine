@@ -1,0 +1,92 @@
+###Data
+Data data::RelationalData
+{
+  Relation
+  #{
+    default.PersonTable:
+      id,firstName,lastName
+      1,I'm John,"Doe\, Jr"
+      2,Nicole,Smith
+      3,Time,Smith;
+  }#
+}
+
+
+###Relational
+Database store::TestDB
+(
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+)
+
+
+###Pure
+import meta::pure::precisePrimitives::*;
+
+function model::RelationQuery(): meta::pure::metamodel::relation::Relation<(firstName:Varchar(200), lastName:Varchar(200))>[1]
+{
+  #>{store::TestDB.PersonTable}#->select(
+    ~[
+       firstName,
+       lastName
+     ]
+  )->from(
+    execution::Runtime
+  )
+}
+{
+  testSuite_1
+  (
+    store::TestDB:
+      Relation
+      #{
+        default.PersonTable:
+          id,firstName,lastName
+          1,I'm John,"Doe\, Jr"
+          2,Nicole,Smith
+          3,Time,Smith;
+      }#;
+
+
+    test_1 | RelationQuery() => (JSON) '[ {\n  "firstName" : "I\'m John",\n  "lastName" : "Doe, Jr"\n}, {\n  "firstName" : "Nicole",\n  "lastName" : "Smith"\n}, {\n  "firstName" : "Time",\n  "lastName" : "Smith"\n} ]';
+  )
+
+  testSuite_2
+  (
+    store::TestDB: data::RelationalData;
+    test_2 | RelationQuery() => (JSON) '[ {\n  "firstName" : "I\'m John",\n  "lastName" : "Doe, Jr"\n}, {\n  "firstName" : "Nicole",\n  "lastName" : "Smith"\n}, {\n  "firstName" : "Time",\n  "lastName" : "Smith"\n} ]';
+  )
+}
+
+
+###Connection
+RelationalDatabaseConnection model::MyConnection
+{
+  store: store::TestDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'Drop table if exists PersonTable;\nCreate Table PersonTable(id INT, lastName VARCHAR(200), firstName VARCHAR(200));\nInsert into PersonTable (id, lastName, firstName) values (1, \'John\', \'Doe\');\nInsert into PersonTable (id, lastName, firstName) values (2, \'Tim\', \'Smith\');\nInsert into PersonTable (id, lastName, firstName) values (3, \'Nicole\', \'Doe\');\n\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime execution::Runtime
+{
+  mappings: [];
+  connections:
+  [
+    store::TestDB:
+    [
+      connection_1: model::MyConnection
+    ]
+  ];
+}

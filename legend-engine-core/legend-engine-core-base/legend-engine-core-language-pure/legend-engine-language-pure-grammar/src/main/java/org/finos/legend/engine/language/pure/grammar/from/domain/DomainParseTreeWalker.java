@@ -37,7 +37,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.Navi
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
-import org.finos.legend.engine.language.pure.grammar.from.runtime.StoreProviderPointerFactory;
+import org.finos.legend.engine.language.pure.grammar.from.runtime.PackageableElementPointerFactory;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDecimal;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
@@ -68,8 +68,8 @@ import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.m3.type.Unit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
@@ -630,10 +630,11 @@ public class DomainParseTreeWalker
         return externalFormatData;
     }
 
-    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData processStoreTestData(DomainParserGrammar.FunctionDataContext functionDataContext)
+    private FunctionTestData processStoreTestData(DomainParserGrammar.FunctionDataContext functionDataContext)
     {
-        StoreTestData storeTestData = new StoreTestData();
-        storeTestData.store = StoreProviderPointerFactory.create(functionDataContext.storeProviderPointer(), walkerSourceInformation.getSourceInformation(functionDataContext.storeProviderPointer()));
+        FunctionTestData functionTestData = new FunctionTestData();
+        functionTestData.packageableElementPointer = PackageableElementPointerFactory.create(functionDataContext.elementPointer(), walkerSourceInformation.getSourceInformation(functionDataContext.elementPointer()));
+        functionTestData.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionDataContext);
         if (functionDataContext.functionDataValue() != null)
         {
             DomainParserGrammar.FunctionDataValueContext dataValueContext = functionDataContext.functionDataValue();
@@ -645,7 +646,7 @@ public class DomainParseTreeWalker
                         PureGrammarParserUtility.fromQualifiedName(dataValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : dataValueContext.qualifiedName().packagePath().identifier(), dataValueContext.qualifiedName().identifier()),
                         this.walkerSourceInformation.getSourceInformation(dataValueContext.qualifiedName())
                 );
-                storeTestData.data = dataElementReference;
+                functionTestData.data = dataElementReference;
                 dataElementReference.sourceInformation = this.walkerSourceInformation.getSourceInformation(dataValueContext.qualifiedName());
             }
             else if (dataValueContext.externalFormatValue() != null)
@@ -653,14 +654,14 @@ public class DomainParseTreeWalker
                 String contentType = PureGrammarParserUtility.fromIdentifier(dataValueContext.externalFormatValue().contentType().identifier());
                 SourceInformation sourceInformation = this.walkerSourceInformation.getSourceInformation(dataValueContext.externalFormatValue());
                 String value = PureGrammarParserUtility.fromGrammarString(dataValueContext.externalFormatValue().STRING().getText(), true);
-                storeTestData.data = this.visitExternalFormat(contentType, value, sourceInformation);
+                functionTestData.data = this.visitExternalFormat(contentType, value, sourceInformation);
             }
             else if (dataValueContext.embeddedData() != null)
             {
-                storeTestData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(dataValueContext.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+                functionTestData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(dataValueContext.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
             }
         }
-        return storeTestData;
+        return functionTestData;
     }
 
     // ----------------------------------------------- MEASURE -----------------------------------------------

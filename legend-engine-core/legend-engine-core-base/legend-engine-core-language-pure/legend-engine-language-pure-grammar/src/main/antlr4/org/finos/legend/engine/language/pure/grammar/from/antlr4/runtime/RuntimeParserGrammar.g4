@@ -61,12 +61,12 @@ storeConnections:                       qualifiedName COLON
 ;
 connectionStores:                       connection COLON
                                             BRACKET_OPEN
-                                                (storeProviderPointer (COMMA storeProviderPointer)*)?
+                                                (elementPointer (COMMA elementPointer)*)?
                                             BRACKET_CLOSE
 ;
-storeProviderPointer:                   (storeProviderPointerType)? packageableElementPointer
+elementPointer:                         (packageableElementPointerType)? packageableElementPointer
 ;
-storeProviderPointerType:               PAREN_OPEN VALID_STRING PAREN_CLOSE
+packageableElementPointerType:          PAREN_OPEN VALID_STRING PAREN_CLOSE
 ;
 identifiedConnection:                   identifier COLON (packageableElementPointer | embeddedConnection)
 ;

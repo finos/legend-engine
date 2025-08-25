@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
@@ -30,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.data.RelationalCSVData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.data.RelationalCSVTable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
@@ -40,6 +42,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class RelationalConnectionFactory implements ConnectionFactoryExtension
 {
@@ -117,13 +120,22 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
         {
             Store store = storeTestData.keySet().stream().findFirst().get();
             EmbeddedData embeddedData = storeTestData.values().stream().findFirst().get();
+            if (embeddedData instanceof RelationElementsData)
+            {
+                embeddedData = buildRelationCSVDataFromRelationElementData(Collections.singletonList((RelationElementsData) embeddedData));
+            }
             return tryBuildTestConnectionsForStore(dataElements, store, embeddedData);
         }
         List<EmbeddedData> embeddedData = new ArrayList<>(storeTestData.values());
-        boolean isRelational = storeTestData.keySet().stream().allMatch(db -> db instanceof Database) && embeddedData.stream().allMatch(rD -> rD instanceof RelationalCSVData);
+        boolean isRelational = storeTestData.keySet().stream().allMatch(db -> db instanceof Database) && embeddedData.stream().allMatch(rD -> rD instanceof RelationalCSVData || rD instanceof RelationElementsData);
         if (isRelational)
         {
             List<RelationalCSVData> relationalCSVDataList = ListIterate.selectInstancesOf(embeddedData, RelationalCSVData.class);
+            List<RelationElementsData> relationElementsDataList = ListIterate.selectInstancesOf(embeddedData, RelationElementsData.class);
+            if (!relationElementsDataList.isEmpty())
+            {
+                relationalCSVDataList.add(buildRelationCSVDataFromRelationElementData(relationElementsDataList));
+            }
             RelationalCSVData relationalData = new RelationalCSVData();
             relationalData.tables = ListIterate.flatCollect(relationalCSVDataList, a -> a.tables);
             return this.buildRelationalTestConnection(null, relationalData);
@@ -131,7 +143,22 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
         return Optional.empty();
     }
 
-    private Optional<Pair<Connection, List<Closeable>>> buildRelationalTestConnection(String element, RelationalCSVData data)
+    private RelationalCSVData buildRelationCSVDataFromRelationElementData(List<RelationElementsData> relationElementsData)
+    {
+        RelationalCSVData relationalCSVData = new RelationalCSVData();
+        relationalCSVData.tables = ListIterate.flatCollect(relationElementsData, data ->
+                data.relationElements.stream().map(relationElement ->
+                {
+                    RelationalCSVTable table = new RelationalCSVTable();
+                    table.schema = relationElement.paths.get(0);
+                    table.table = relationElement.paths.get(1);
+                    table.values = String.join(",", relationElement.columns) + "\n" + relationElement.rows.stream().map(row -> String.join(",", row.values)).collect(Collectors.joining("\n"));
+                    return table;
+                }).collect(Collectors.toList()));
+        return relationalCSVData;
+    }
+
+    protected Optional<Pair<Connection, List<Closeable>>> buildRelationalTestConnection(String element, RelationalCSVData data)
     {
 
         RelationalDatabaseConnection connection = new RelationalDatabaseConnection();

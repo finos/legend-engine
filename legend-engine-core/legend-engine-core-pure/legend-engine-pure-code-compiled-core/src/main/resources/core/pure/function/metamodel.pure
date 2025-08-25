@@ -18,13 +18,13 @@ import meta::pure::data::*;
 Class meta::legend::function::metamodel::FunctionTestSuite extends meta::pure::test::TestSuite
 {
   connectionsTestData : ConnectionTestData[*];
-  testData: meta::legend::function::metamodel::StoreTestData[*];
+  testData: meta::legend::function::metamodel::FunctionTestData[*];
 }
 
-Class meta::legend::function::metamodel::StoreTestData
+Class meta::legend::function::metamodel::FunctionTestData
 {
   doc: String[0..1];
-  store: meta::pure::store::Store[1];
+  element: PackageableElement[1];
   data: EmbeddedData[1];
 }
 
@@ -86,7 +86,7 @@ Diagram meta::legend::function::metamodel::FunctionTestDiagram(width=0.0, height
         lineWidth=1.0)
 
     TypeView cview_6(
-        type=meta::legend::function::metamodel::StoreTestData,
+        type=meta::legend::function::metamodel::FunctionTestData,
         position=(792.01758, 174.00000),
         width=168.42969,
         height=86.00000,

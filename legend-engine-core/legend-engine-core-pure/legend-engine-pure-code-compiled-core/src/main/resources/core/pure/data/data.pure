@@ -35,6 +35,23 @@ Class meta::pure::data::DataElementReference extends EmbeddedData
   dataElement : DataElement[1];
 }
 
+Class meta::pure::data::RelationRow
+{
+  values: String[*];
+}
+
+Class meta::pure::data::RelationElement
+{
+  paths: String[*];
+  columns: String[*];
+  rows: meta::pure::data::RelationRow[*];
+}
+
+Class meta::pure::data::RelationElementsData extends meta::pure::data::EmbeddedData
+{
+  relationElements: meta::pure::data::RelationElement[*];
+}
+
 Class meta::pure::data::ModelStoreData extends EmbeddedData
 {
   modelTestData: meta::pure::data::ModelData[*];

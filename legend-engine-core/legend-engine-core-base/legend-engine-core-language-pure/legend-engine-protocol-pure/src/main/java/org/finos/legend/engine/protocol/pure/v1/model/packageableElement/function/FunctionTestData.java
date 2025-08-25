@@ -15,8 +15,8 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function;
 
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 
 /** Use to mock data in function using a runtime for execution
  * store represents the store you want to mock data for
@@ -26,10 +26,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.S
  * and/or one connection but for now the expectation is one store can be mocked
  */
 
-public class StoreTestData
+public class FunctionTestData
 {
     public String doc;
-    public StoreProviderPointer store;
+    public PackageableElementPointer packageableElementPointer;
     public EmbeddedData data;
     public SourceInformation sourceInformation;
 

@@ -645,7 +645,7 @@ public class HelperMappingBuilder
 
     static Root_meta_pure_data_StoreTestData processMappingElementTestData(StoreTestData testData, CompileContext context, ProcessingContext processingContext)
     {
-        Root_meta_pure_data_StoreTestData mappingStoreTestData = new Root_meta_pure_data_StoreTestData_Impl("", SourceInformationHelper.toM3SourceInformation(testData.sourceInformation), context.pureModel.getClass("meta::pure::data::StoreTestData"));
+        Root_meta_pure_data_StoreTestData mappingStoreTestData = new Root_meta_pure_data_StoreTestData_Impl("", SourceInformationHelper.toM3SourceInformation(testData.sourceInformation), context.pureModel.getClass("meta::pure::data::FunctionTestData"));
         mappingStoreTestData._data(context.getCompilerExtensions().getExtraEmbeddedDataProcessors().stream().map(processor -> processor.value(testData.data, context, processingContext))
                 .filter(Objects::nonNull)
                 .findFirst()

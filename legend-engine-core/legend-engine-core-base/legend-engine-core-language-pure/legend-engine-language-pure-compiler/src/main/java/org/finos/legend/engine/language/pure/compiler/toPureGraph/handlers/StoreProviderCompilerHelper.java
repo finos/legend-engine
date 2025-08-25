@@ -19,6 +19,7 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore_Impl;
@@ -33,8 +34,9 @@ public interface StoreProviderCompilerHelper
         return Maps.mutable.empty();
     }
 
-    static Store getStoreFromStoreProviderPointers(StoreProviderPointer storeProviderPointer, CompileContext context)
+    static Store getStoreFromPackageableElementPointer(PackageableElementPointer packageableElementPointer, CompileContext context)
     {
+        StoreProviderPointer storeProviderPointer = new StoreProviderPointer(packageableElementPointer.type, packageableElementPointer.path, packageableElementPointer.sourceInformation);
         if (storeProviderPointer.path.equals("ModelStore"))
         {
             return new Root_meta_external_store_model_ModelStore_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelStore"));
@@ -43,6 +45,6 @@ public interface StoreProviderCompilerHelper
         ListIterate
                 .selectInstancesOf(CompilerExtensions.fromAvailableExtensions().getExtensions(), StoreProviderCompilerHelper.class)
                 .forEach(e -> extraStoreProviderPointerHandlers.putAll(e.getExtraStoreProviderHandlers()));
-        return extraStoreProviderPointerHandlers.get(storeProviderPointer.type).apply(storeProviderPointer, context);
+        return extraStoreProviderPointerHandlers.get(storeProviderPointer.type != null ? storeProviderPointer.type : PackageableElementType.STORE).apply(storeProviderPointer, context);
     }
 }

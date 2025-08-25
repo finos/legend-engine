@@ -33,6 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
@@ -136,11 +137,16 @@ public class RuntimeParseTreeWalker
 
             connectionStores.sourceInformation = walkerSourceInformation.getSourceInformation(connectionStoresContext);
             connectionStores.storePointers =
-                    connectionStoresContext.storeProviderPointer() == null
+                    connectionStoresContext.elementPointer() == null
                             ? Collections.emptyList()
-                            : ListIterate.collect(connectionStoresContext.storeProviderPointer(), ctx -> StoreProviderPointerFactory.create(ctx, walkerSourceInformation.getSourceInformation(ctx)));
+                            : ListIterate.collect(connectionStoresContext.elementPointer(), ctx -> convertToStoreProviderPointer(PackageableElementPointerFactory.create(ctx, walkerSourceInformation.getSourceInformation(ctx))));
             runtimeValue.connectionStores.add(connectionStores);
         });
+    }
+
+    private StoreProviderPointer convertToStoreProviderPointer(PackageableElementPointer pointer)
+    {
+        return new StoreProviderPointer(pointer.type, pointer.path, pointer.sourceInformation);
     }
 
     private void addConnectionsByStore(RuntimeParserGrammar.ConnectionsContext connectionsContext, EngineRuntime engineRuntime)
