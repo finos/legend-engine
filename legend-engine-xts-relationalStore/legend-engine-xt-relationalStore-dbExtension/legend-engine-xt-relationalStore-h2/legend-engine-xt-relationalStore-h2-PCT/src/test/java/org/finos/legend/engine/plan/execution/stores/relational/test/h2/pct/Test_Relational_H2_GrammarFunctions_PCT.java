@@ -89,7 +89,7 @@ public class Test_Relational_H2_GrammarFunctions_PCT extends PCTReportConfigurat
             one("meta::pure::functions::collection::tests::range::testReverseRange_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'range_Integer_1__Integer_1__Integer_1__Integer_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
 
             // Size
-            one("meta::pure::functions::collection::tests::size::testSize_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for array_size().", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::size::testSize_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList().", AdapterQualifier.unsupportedFeature),
 
             // Compare
             pack("meta::pure::functions::lang::tests::compare", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),

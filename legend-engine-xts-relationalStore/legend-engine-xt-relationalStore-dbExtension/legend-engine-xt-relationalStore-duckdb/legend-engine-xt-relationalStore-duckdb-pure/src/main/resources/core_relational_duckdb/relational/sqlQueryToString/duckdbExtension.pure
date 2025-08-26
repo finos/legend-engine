@@ -126,29 +126,20 @@ function meta::relational::functions::sqlQueryToString::duckDB::translateCreateT
       +');';
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDynaFunctionVariantTransformer(vars: String[*]): String[1]
-{
-  $vars->match([
-    zero:String[0] | 'null',
-    one:String[1]  | $one,
-    many:String[*] | $many->joinStrings('array_value(', ',', ')')
-  ]);
-}
-
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDynaFunctionToSqlForDuckDB(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
 
   [
-    dynaFnToSql('array_max',              $allStates,            ^ToSql(format='array_aggregate(%s, \'max\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
-    dynaFnToSql('array_min',              $allStates,            ^ToSql(format='array_aggregate(%s, \'min\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
-    dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='array_aggregate(%s, \'sum\')', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
-    dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='array_sort(%s)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
-    dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='array_reverse(%s)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
-    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(len(%s), 0)', transform=getDynaFunctionVariantTransformer_String_MANY__String_1_)),
-    dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)', transform= {vals:String[*] | $vals->init()->getDynaFunctionVariantTransformer()->concatenate($vals->last())})),
-    dynaFnToSql('array_position',         $allStates,            ^ToSql(format='(ifnull(array_position(%s, %s), 0)-1)', transform= {vals:String[*] | $vals->init()->getDynaFunctionVariantTransformer()->concatenate($vals->last())})),
-    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='array_slice(%s, array_aggregate([%s+1, 1], \'max\'), array_aggregate([%s, 0], \'max\'))', transform= {vals:String[*] | $vals->dropAt($vals->size() - 2, 2)->getDynaFunctionVariantTransformer()->concatenate($vals->at($vals->size() - 2))->concatenate($vals->last())})),
+    dynaFnToSql('array_max',              $allStates,            ^ToSql(format='array_aggregate(%s, \'max\')')),
+    dynaFnToSql('array_min',              $allStates,            ^ToSql(format='array_aggregate(%s, \'min\')')),
+    dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='array_aggregate(%s, \'sum\')')),
+    dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='array_sort(%s)')),
+    dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='array_reverse(%s)')),
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(len(%s), 0)')),
+    dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)')),
+    dynaFnToSql('array_position',         $allStates,            ^ToSql(format='(ifnull(array_position(%s, %s), 0)-1)')),
+    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='array_slice(%s, greatest(%s + 1, 1), greatest(%s, 0))')),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(cast(%s as BIGINT) & cast(%s as BIGINT))')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ cast(%s as BIGINT))')),
@@ -232,9 +223,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toJson',                 $allStates,            ^ToSql(format='(json(%s)::STRING)')),
-    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='%s', transform=toVariantForDuckDb_String_MANY__String_1_)),
-    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='json_array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
-    dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='json_object(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='ifnull(to_json(%s), \'null\'::json)')),
+    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='[%s]', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='MAP {%s}', transform={p:String[*] | range(0, $p->size(), 2)->map(i | $p->at($i) + ': ' + $p->at($i + 1))->joinStrings(', ')})),
+    dynaFnToSql('keys',                   $allStates,            ^ToSql(format='map_keys(%s)')),
+    dynaFnToSql('values',                 $allStates,            ^ToSql(format='map_values(%s)')),    
+    dynaFnToSql('mapConcatenate',          $allStates,           ^ToSql(format='map_concat(%s, %s)')),    
     // dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
@@ -244,17 +238,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_pop('+$p->toOne()+')',|'list_var_pop('+$p->joinStrings('[',',',']')+')'); })),
     dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'}))
   ];
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::toVariantForDuckDb(params: String[*]):String[1]
-{
-  if($params->size() == 1,
-    |
-      'ifnull(to_json(%s), \'null\'::json)'->format($params->toOne()); // when single parameter, and is sql null, we need json null
-    ,
-    |
-      'to_json(%s)'->format($params->joinStrings('[', ',', ']'));
-  );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::dayOfWeekNumberForDuckDB(dayOfWeek: String[1..2]):String[1]
@@ -491,7 +474,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::buildFoldLambda(lambda: FoldRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
 {
-  'reduce(%s, lambda "%s", "%s" : %s, %s)::%s'->format([
+  'cast(reduce(%s, lambda "%s", "%s" : %s, %s) as %s)'->format([
     $lambda.parameters->at(0).value->processOperation($sgc),
     $lambda.parameters->at(1).name,
     $lambda.parameters->at(0).name,
