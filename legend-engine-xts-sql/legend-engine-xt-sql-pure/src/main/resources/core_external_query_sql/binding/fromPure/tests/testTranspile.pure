@@ -3077,6 +3077,47 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRelationWindowFunctions():Boolean[1]
+{
+  test(
+    'SELECT String AS "string", Integer, ' +
+    'last_value(String) OVER (PARTITION BY String ORDER BY Integer ASC) AS "LAST", ' +
+    'first_value(String) OVER (PARTITION BY String ORDER BY Integer ASC) AS "FIRST", ' +
+    'lag(String) OVER (PARTITION BY String ORDER BY Integer ASC) AS "LAG", ' +
+    'lag(String, 2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "LAG2", ' +
+    'lead(String) OVER (PARTITION BY String ORDER BY Integer ASC) AS "LEAD", ' +
+    'lead(String, 2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "LEAD2", ' +
+    'nth(String, 2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "NTH", ' +
+    'ntile(2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "NTILE", ' +
+    'percent_rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "PERCENT_RANK", ' +
+    'cume_dist() OVER (PARTITION BY String ORDER BY Integer ASC) AS "CUME_DIST" ' +
+    'FROM service."/service/service1"',
+
+    [
+      c({|
+          FlatInput.all()
+              ->project(
+                ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+              )
+              ->extend(~[
+                string:x|$x.String
+              ])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[LAST:{p,w,r| $p->last($w, $r).String}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[FIRST:{p,w,r| $p->first($w, $r).String}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[LAG:{p,w,r| $p->lag($r).String}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[LAG2:{p,w,r| $p->lag($r, 2).String}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[LEAD:{p,w,r| $p->lead($r).String}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[LEAD2:{p,w,r| $p->lead($r, 2).String}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[NTH:{p,w,r| $p->nth($w, $r, 2).String}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[NTILE:{p,w,r| $p->ntile($r, 2)}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[PERCENT_RANK:{p,w,r| $p->percentRank($w, $r)}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[CUME_DIST:{p,w,r| $p->cumulativeDistribution($w, $r)}])
+              ->select(~[string, Integer, LAST, FIRST, LAG, LAG2, LEAD, LEAD2, NTH, NTILE, PERCENT_RANK, CUME_DIST])
+      }, true, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testProjectWithWindowFunctions():Boolean[1]
 {
   test(
