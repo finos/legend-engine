@@ -1412,10 +1412,10 @@ public class Handlers
                 m(
                         m(
                                 h("meta::pure::functions::date::add_StrictDate_1__Duration_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(1), "Duration") && typeOne(ps.get(0), "StrictDate")),
-                                h("meta::pure::functions::collection::add_T_MANY__T_1__T_$1_MANY$_", true, ps -> res(ps.get(0)._genericType(), "oneMany"), ps -> ps.size() == 2)
+                                h("meta::pure::functions::collection::add_T_MANY__T_1__T_$1_MANY$_", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "oneMany"), ps -> ps.size() == 2)
                         ),
                         m(
-                                h("meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_", true, ps -> res(ps.get(0)._genericType(), "oneMany"), ps -> ps.size() == 3)
+                                h("meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "oneMany"), ps -> ps.size() == 3)
                         )
                 )
         );
@@ -1434,7 +1434,7 @@ public class Handlers
         register("meta::pure::functions::meta::type_Any_MANY__Type_1_", false, ps -> res("meta::pure::metamodel::type::Type", "one"));
         register("meta::pure::functions::lang::compare_T_1__T_1__Integer_1_", true, ps -> res("Integer", "one"));
         // meta::pure::functions::collection::fold<T,V|m>(value:T[*], func:Function<{T[1],V[m]->V[m]}>[1], accumulator:V[m]):V[m], note return type is V and not T
-        register(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_", true, ps -> res(ps.get(2)._genericType(), ps.get(2)._multiplicity()), p -> true))));
+        register(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), p -> true))));
 
         register(m(m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_", true, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 3)),
                 m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 2)),
@@ -1467,7 +1467,27 @@ public class Handlers
             )
         );
 
-        register("meta::pure::functions::collection::newMap_Pair_MANY__Map_1_", true, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.Map), ListIterate.collect(ps, ValueSpecificationAccessor::_genericType), pureModel), "one"));
+        register("meta::pure::functions::collection::newMap_Pair_MANY__Map_1_", true, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.Map), ps.get(0)._genericType()._typeArguments(), pureModel), "one"));
+        register(h("meta::pure::functions::collection::keys_Map_1__U_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> typeOne(ps.get(0), "Map")));
+        register(h("meta::pure::functions::collection::values_Map_1__V_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getLast(), "zeroMany"), ps -> typeOne(ps.get(0), "Map")));
+        register(h("meta::pure::functions::collection::put_Map_1__U_1__V_1__Map_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), "Map")
+                                                                                                                                                                                                                    && typeOne(ps.get(1), ps.get(0)._genericType()._typeArguments().getFirst()._rawType()._name())
+                                                                                                                                                                                                                    && typeOne(ps.get(2), ps.get(0)._genericType()._typeArguments().getLast()._rawType()._name()))
+        );
+        register(m(
+                    h("meta::pure::functions::collection::putAll_Map_1__Pair_MANY__Map_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), "Map")
+                                                                                                                                                                                                                    && typeMany(ps.get(1), "Pair")
+                                                                                                                                                                                                                    && ps.get(0)._genericType()._typeArguments().getFirst()._rawType()._name().equals(ps.get(1)._genericType()._typeArguments().getFirst()._rawType()._name())
+                                                                                                                                                                                                                    && ps.get(0)._genericType()._typeArguments().getLast()._rawType()._name().equals(ps.get(1)._genericType()._typeArguments().getLast()._rawType()._name())
+                    ),
+                    h("meta::pure::functions::collection::putAll_Map_1__Map_1__Map_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), "Map")
+                                                                                                                                                                                                                && typeOne(ps.get(1), "Map")
+                                                                                                                                                                                                                && ps.get(0)._genericType()._typeArguments().getFirst()._rawType()._name().equals(ps.get(1)._genericType()._typeArguments().getFirst()._rawType()._name())
+                                                                                                                                                                                                                && ps.get(0)._genericType()._typeArguments().getLast()._rawType()._name().equals(ps.get(1)._genericType()._typeArguments().getLast()._rawType()._name())
+                    )
+                )
+        );
+
         register("meta::pure::functions::collection::list_U_MANY__List_1_", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.List), ps.get(0)._genericType(), pureModel), "one"));
 
         // Extensions
