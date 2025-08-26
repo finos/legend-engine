@@ -65,6 +65,11 @@ public class AthenaGrammarParserExtension implements IRelationalGrammarParserExt
         dsSpec.s3OutputLocation = PureGrammarParserUtility.fromGrammarString(s3OutputLocationContext.STRING().getText(), true);
         AthenaParserGrammar.DbNameContext nameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbName(), "name", dsSpec.sourceInformation);
         dsSpec.databaseName = PureGrammarParserUtility.fromGrammarString(nameCtx.STRING().getText(), true);
+        AthenaParserGrammar.WorkgroupContext workgroupCtx = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.workgroup(), "role", dsSpec.sourceInformation);
+        if (workgroupCtx != null)
+        {
+            dsSpec.workgroup = PureGrammarParserUtility.fromGrammarString(workgroupCtx.STRING().getText(), true);
+        }
         return dsSpec;
     }
 }
