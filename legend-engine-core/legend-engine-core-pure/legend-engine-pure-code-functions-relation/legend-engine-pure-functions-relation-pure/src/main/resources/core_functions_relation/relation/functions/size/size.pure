@@ -123,6 +123,60 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
     assertEquals(10, $res);
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Distinct_Size<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {
+              | #TDS
+                val, str, str2
+                2, a, b
+                3, a, b
+                4, qw, b
+                5, qw, c
+                2, weq, c
+              #->distinct(~[str, str2])->size()
+            };
+
+  let res = $f->eval($expr);
+
+  assertEquals(4, $res);
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Limit_Size<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {
+              | #TDS
+                val, str, str2
+                2, a, b
+                3, a, b
+                4, qw, b
+                5, qw, c
+                2, weq, c
+              #->limit(2)->size()
+            };
+
+  let res = $f->eval($expr);
+
+  assertEquals(2, $res);
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Slice_Size<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {
+              | #TDS
+                val, str, str2
+                2, a, b
+                3, a, b
+                4, qw, b
+                5, qw, c
+                2, weq, c
+              #->slice(2, 4)->size()
+            };
+
+  let res = $f->eval($expr);
+
+  assertEquals(2, $res);
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {

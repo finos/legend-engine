@@ -55,6 +55,13 @@ function <<test.Test>> meta::relational::tests::query::simple::testSize():Boolea
    assertEquals('select count(*) from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::query::simple::testDistinctSize():Boolean[1]
+{
+   let result = execute(|Person.all()->distinct()->size(), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals(12, $result.values);
+   assertEquals('select count(*) from (select distinct "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root") as "subselect"', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_32_0'} meta::relational::tests::query::simple::testSQLComments():Boolean[1]
 {
    let result = execute(|Person.all(), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());

@@ -164,7 +164,6 @@ function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctM
    assertEquals('select "root".id as "pk_0", "root".ACC_NUM as "number", "root".ACCT_NAME as "name" from ACCOUNT_INFO as "root" left outer join (select distinct "root".IF_CODE, "root".IF_NAME, "root".DESKHEAD_ID from ACCOUNT_INFO as "root" where "root".IF_TYPE = \'Type 1\') as "account_info_1" on ("root".IF_CODE = "account_info_1".IF_CODE) where "account_info_1".IF_NAME = \'IF 2\' and "account_info_1".IF_CODE = 1002', $result->sqlRemoveFormatting());
 }
 
-
 function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithCaseStatement():Boolean[1]
 {
    let result = execute(|IncomeFunction.all()->project([#/IncomeFunction/name#,#/IncomeFunction/Classification/name!IfName#])->sort(['name', 'IfName']), testMappingWithCase, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
@@ -173,19 +172,23 @@ function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctM
    assertEquals('select "root"."name" as "name", case when "if_other_info_0".IF_OTHER_NAME is null then \'Unknown\' else "if_other_info_0".IF_OTHER_NAME end as "IfName" from (select distinct "account_info_1".IF_CODE as IF_CODE, case when "account_info_1".IF_NAME is null then \'C\' else "account_info_1".IF_NAME end as "name" from ACCOUNT_INFO as "account_info_1") as "root" left outer join IF_OTHER_INFO as "if_other_info_0" on ("root".IF_CODE = "if_other_info_0".IF_CODE) order by "name" asc, "IfName" asc', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::mapping::distinct::testDistinctMappingWithSize():Boolean[1]
+{
+  let result = execute(|IncomeFunction.all()->size(), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+  assertEquals(3, $result.values->toOne());
+
+  assertEquals('select count(*) from (select distinct "root".IF_CODE as "code", "root".IF_NAME as "name" from ACCOUNT_INFO as "root") as "subselect"', $result->sqlRemoveFormatting());
+}
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::distinct::setUp():Boolean[1]
 {
-    createTablesAndFillDb();
+  createTablesAndFillDb();
 }
-
-
 
 function meta::relational::tests::mapping::distinct::model::store::testDataTypeMappingRuntime():Runtime[1]
 {
-   meta::external::store::relational::tests::testRuntime(myDB);
+  meta::external::store::relational::tests::testRuntime(myDB);
 }
-
 
 function meta::relational::tests::mapping::distinct::model::store::createTablesAndFillDb():Boolean[1]
 {

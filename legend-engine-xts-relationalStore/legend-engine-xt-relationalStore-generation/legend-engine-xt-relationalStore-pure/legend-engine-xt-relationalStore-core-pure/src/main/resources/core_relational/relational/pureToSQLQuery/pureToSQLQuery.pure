@@ -8026,7 +8026,7 @@ function meta::relational::functions::pureToSqlQuery::processRowCount(expression
 {
    let nested = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
    let query = $nested->extractSelectWithCursor($operation);
-   let mergedQuery = if($query.select.groupBy->isNotEmpty(), |$query->isolateTdsSelect($extensions), |$query);
+   let mergedQuery = if($query.select.groupBy->isNotEmpty() || $query.select.distinct->isTrue() || $query.select.fromRow->isNotEmpty() || $query.select.toRow->isNotEmpty(), |$query->isolateTdsSelect($extensions), |$query);
    let mergedSelect = $mergedQuery.select;
    ^$mergedQuery(select=^$mergedSelect(columns = newDynaFunction('count', if ($mergedSelect.columns->size() == 1, | $mergedSelect.columns->at(0), | []))));
 }
