@@ -63,6 +63,7 @@ public class SQLResultDBColumnsMetaData
             }
             // Variant types are not standardized across databases, so we check for common types
             else if (columnIsOfType(i, "JSON", "SEMISTRUCTURED") // duckdb
+                   || columnIsOfType(i, "MAP", "SEMISTRUCTURED") // duckdb
                    || columnIsOfType(i, "VARIANT", "SEMISTRUCTURED") // snowflake
             )
             {
@@ -96,7 +97,8 @@ public class SQLResultDBColumnsMetaData
     {
         int zeroBasedIndex = index - 1;
         SQLResultColumn sqlResultColumn = this.sqlResultColumns.get(zeroBasedIndex);
-        return dbColumnTypeName.equals(this.dbMetaDataType.get(zeroBasedIndex).getTwo()) || alloyColumnType.equals(sqlResultColumn.dataType);
+        String colTypeName = this.dbMetaDataType.get(zeroBasedIndex).getTwo();
+        return (colTypeName != null && colTypeName.startsWith(dbColumnTypeName)) || alloyColumnType.equals(sqlResultColumn.dataType);
     }
 
     private boolean columnIsOfType(int index, int dbColumnType, String alloyColumnType)
