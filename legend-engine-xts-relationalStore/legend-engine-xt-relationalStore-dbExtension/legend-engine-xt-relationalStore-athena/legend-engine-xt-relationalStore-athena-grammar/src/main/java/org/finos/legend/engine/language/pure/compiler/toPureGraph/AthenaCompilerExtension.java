@@ -52,7 +52,8 @@ public class AthenaCompilerExtension implements IRelationalCompilerExtension
                 return new Root_meta_pure_alloy_connections_alloy_specification_AthenaDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpecification"))
                         ._awsRegion(athenaDatasourceSpecification.awsRegion)
                         ._s3OutputLocation(athenaDatasourceSpecification.s3OutputLocation)
-                        ._databaseName(athenaDatasourceSpecification.databaseName);
+                        ._databaseName(athenaDatasourceSpecification.databaseName)
+                        ._workgroup(athenaDatasourceSpecification.workgroup);
             }
             return null;
         });

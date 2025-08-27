@@ -17,4 +17,5 @@ Class meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpec
    <<equality.Key>> awsRegion: String[1];
    <<equality.Key>> s3OutputLocation: String[1];
    <<equality.Key>> databaseName: String[1];
+   <<equality.Key>> workgroup: String[0..1];
 }

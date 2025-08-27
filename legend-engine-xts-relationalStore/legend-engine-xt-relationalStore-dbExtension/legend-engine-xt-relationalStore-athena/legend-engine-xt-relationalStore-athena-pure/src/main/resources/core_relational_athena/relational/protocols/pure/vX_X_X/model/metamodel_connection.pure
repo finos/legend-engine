@@ -17,4 +17,5 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
    awsRegion: String[1];
    s3OutputLocation: String[1];
    databaseName: String[1];
+   workgroup: String[0..1];
 }

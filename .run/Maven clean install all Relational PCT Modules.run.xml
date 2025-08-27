@@ -14,7 +14,7 @@
               <option value="clean" />
               <option value="install" />
               <option value="-pl" />
-              <option value=":legend-engine-xt-relationalStore-h2-PCT,:legend-engine-xt-relationalStore-duckdb-PCT,:legend-engine-xt-relationalStore-memsql-PCT,:legend-engine-xt-relationalStore-spanner-PCT,:legend-engine-xt-relationalStore-postgres-PCT,:legend-engine-xt-relationalStore-snowflake-PCT,:legend-engine-xt-relationalStore-databricks-PCT" />
+              <option value=":legend-engine-xt-relationalStore-athena-PCT,:legend-engine-xt-relationalStore-h2-PCT,:legend-engine-xt-relationalStore-duckdb-PCT,:legend-engine-xt-relationalStore-memsql-PCT,:legend-engine-xt-relationalStore-spanner-PCT,:legend-engine-xt-relationalStore-postgres-PCT,:legend-engine-xt-relationalStore-snowflake-PCT,:legend-engine-xt-relationalStore-databricks-PCT" />
             </list>
           </option>
           <option name="multimoduleDir" />

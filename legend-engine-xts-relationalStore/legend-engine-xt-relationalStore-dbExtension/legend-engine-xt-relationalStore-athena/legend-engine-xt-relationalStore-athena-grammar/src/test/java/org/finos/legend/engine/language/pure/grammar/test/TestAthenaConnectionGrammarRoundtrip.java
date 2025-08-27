@@ -31,6 +31,7 @@ public class TestAthenaConnectionGrammarRoundtrip extends TestGrammarRoundtrip.T
                 "    name: 'name';\n" +
                 "    awsRegion: 'region';\n" +
                 "    s3OutputLocation: '1234';\n" +
+                "    workgroup: 'ParthWorkgroup';\n" +
                 "  };\n" +
                 "  auth: UserNamePassword\n" +
                 "  {\n" +
