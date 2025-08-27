@@ -860,14 +860,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createFrameBoundValue(f:FrameBound[1]):ValueSpecification[0..1]
 {
-  assert($f.durationUnit->isEmpty(), 'interval range queries not yet supported');
-
   $f.value->match([
     i:IntegerLiteral[1] | createNumericFrameBoundValue($f.type, $i.value),
     i:LongLiteral[1] | createNumericFrameBoundValue($f.type, $i.value),
     i:DoubleLiteral[1] | createNumericFrameBoundValue($f.type, $i.value),
-    i:meta::external::query::sql::metamodel::Expression[0..1] |
-      if ($f.type == FrameBoundType.CURRENT_ROW, | iv(0), | [])
+    i:IntervalLiteral[1] | fail('interval range not currently supported'); [];,
+    i:meta::external::query::sql::metamodel::Expression[0] | if ($f.type == FrameBoundType.CURRENT_ROW, | iv(0), | []),
+    i:meta::external::query::sql::metamodel::Expression[*] | fail('unsupported frame bound value'); [];
   ]);
 }
 
