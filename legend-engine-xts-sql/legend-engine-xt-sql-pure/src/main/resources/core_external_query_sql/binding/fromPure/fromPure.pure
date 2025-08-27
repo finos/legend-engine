@@ -24,6 +24,7 @@ import meta::legend::service::metamodel::*;
 import meta::pure::executionPlan::*;
 import meta::external::query::sql::transformation::utils::*;
 import meta::external::query::sql::transformation::compile::utils::*;
+import meta::pure::functions::relation::*;
 
 
 Class meta::external::query::sql::transformation::queryToPure::SQLSourceArgument
@@ -725,10 +726,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let relation = $context.relation->isTrue();
 
   assert($relation || ($window.orderBy->size() <= 1), | 'multiple window sort items not yet supported');
-  assert($window.windowFrame->isEmpty(), | 'window frame not yet supported');
+  assert($window.windowFrame->isEmpty() || $context.relation->isTrue(), | 'window frame not yet supported');
 
   let partitions = $window.partitions->map(partition | $partition->extractNameFromExpression($context));
   let sorts = $window.orderBy->map(si | $si->createSortItemFunction($context));
+  let frame = createFrame($window.windowFrame);
 
   let processor = functionProcessor($functionCall.name);
 
@@ -746,8 +748,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
       if($relation,
         |
-            let columns = iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $partitions));
-            let over = sfe(over_ColSpecArray_1__SortInfo_MANY___Window_1_, [$columns, $sorts->iv()]);
+            let over = createOver($partitions, $sorts, $frame, $window);
             let expContext = expressionContext([], ^Map<String, VariableExpression>(), true);
 
             let mapExpression = createTdsColumn($map, var('r'), $expContext, $context)->evaluateAndDeactivate();
@@ -775,8 +776,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
       if ($relation,
         |
-          let columns = iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $partitions));
-          let over = sfe(over_ColSpecArray_1__SortInfo_MANY___Window_1_, [$columns, $sorts->iv()]);
+          let over = createOver($partitions, $sorts, $frame, $window);
 
           let expContext = expressionContext(
             var('x', PureOne, []), //TODO this should be removed and createTDSColumn made smarter to handle
@@ -806,6 +806,74 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
           ]);
       );
     );
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createOver(partitions:String[*], sorts:ValueSpecification[*], frame:ValueSpecification[0..1], window:meta::external::query::sql::metamodel::Window[0..1]):ValueSpecification[1]
+{
+  let columns = iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $partitions));
+
+  if ($window.windowFrame.mode == WindowFrameMode.ROWS,
+    | if ($frame->isNotEmpty(),
+      | sfe(over_ColSpecArray_1__SortInfo_MANY__Rows_1___Window_1_, [$columns, $sorts->iv(), $frame->toOne()]),
+      | sfe(over_ColSpecArray_1__SortInfo_MANY___Window_1_, [$columns, $sorts->iv()])),
+    | if ($frame->isNotEmpty(),
+      | sfe(over_ColSpecArray_1__SortInfo_1___Range_1___Window_1_, [$columns, $sorts->iv(), $frame->toOne()]),
+      | sfe(over_ColSpecArray_1__SortInfo_MANY___Window_1_, [$columns, $sorts->iv()])));
+}
+
+
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createFrame(frame:meta::external::query::sql::metamodel::WindowFrame[0..1]):SimpleFunctionExpression[0..1]
+{
+  if ($frame->isEmpty(),
+    | [],
+    | buildFrame($frame->toOne()))
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::buildFrame(frame:WindowFrame[1]):SimpleFunctionExpression[1]
+{
+    assert($frame.end->isNotEmpty(), 'end frame must currently be specified');
+
+    let start = createFrameBoundValue($frame.start);
+    let end = createFrameBoundValue($frame.end->toOne());
+
+    let unbounded = sfe(unbounded__UnboundedFrameValue_1_);
+
+    let startUnbounded = $frame.start.type->in([FrameBoundType.UNBOUNDED_PRECEDING, FrameBoundType.UNBOUNDED_FOLLOWING]);
+    let endUnbounded = $frame.end.type->in([FrameBoundType.UNBOUNDED_PRECEDING, FrameBoundType.UNBOUNDED_FOLLOWING]);
+
+    [
+      pair(WindowFrameMode.ROWS, | [
+            pair($startUnbounded && $endUnbounded, |sfe(rows_UnboundedFrameValue_1__UnboundedFrameValue_1__Rows_1_, [$unbounded, $unbounded])),
+            pair($startUnbounded && !$endUnbounded, |sfe(rows_UnboundedFrameValue_1__Integer_1__Rows_1_, [$unbounded, $end->toOne()])),
+            pair(!$startUnbounded && !$endUnbounded, |sfe(rows_Integer_1__Integer_1__Rows_1_, [$start->toOne(), $end->toOne()])),
+            pair(!$startUnbounded && $endUnbounded,| sfe(rows_Integer_1__UnboundedFrameValue_1__Rows_1_, [$start->toOne(), $unbounded]))
+          ]->getValue(true)->eval()),
+      pair(WindowFrameMode.RANGE, | [
+            pair($startUnbounded && $endUnbounded, |sfe(_range_UnboundedFrameValue_1__UnboundedFrameValue_1___Range_1_, [$unbounded, $unbounded])),
+            pair($startUnbounded && !$endUnbounded, |sfe(_range_UnboundedFrameValue_1__Number_1___Range_1_, [$unbounded, $end->toOne()])),
+            pair(!$startUnbounded && !$endUnbounded, |sfe(_range_Number_1__Number_1___Range_1_, [$start->toOne(), $end->toOne()])),
+            pair(!$startUnbounded && $endUnbounded,| sfe(_range_Number_1__UnboundedFrameValue_1___Range_1_, [$start->toOne(), $unbounded]))
+      ]->getValue(true)->eval())
+    ]->getValue($frame.mode)->eval();
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createFrameBoundValue(f:FrameBound[1]):ValueSpecification[0..1]
+{
+  assert($f.durationUnit->isEmpty(), 'interval range queries not yet supported');
+
+  $f.value->match([
+    i:IntegerLiteral[1] | createNumericFrameBoundValue($f.type, $i.value),
+    i:LongLiteral[1] | createNumericFrameBoundValue($f.type, $i.value),
+    i:DoubleLiteral[1] | createNumericFrameBoundValue($f.type, $i.value),
+    i:meta::external::query::sql::metamodel::Expression[0..1] |
+      if ($f.type == FrameBoundType.CURRENT_ROW, | iv(0), | [])
+  ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createNumericFrameBoundValue(type:FrameBoundType[1], n:Number[1]):ValueSpecification[1]
+{
+  if ($type == FrameBoundType.PRECEDING, | createMinus($n->type(), false, iv($n)), | iv($n));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processMapFunctionArgument(e:meta::external::query::sql::metamodel::Expression[0..1], context: SqlTransformContext[1]):ValueSpecification[1]
