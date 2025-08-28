@@ -314,8 +314,12 @@ function meta::relational::functions::sqlQueryToString::debugPrint::getDynaFunct
     dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='cast(%s as JSON)', transform={p:String[*]|$p->joinStrings('[', ',', ']')})),
     dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='JSON_ARRAY(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='JSON_OBJECT(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('keys',                   $allStates,            ^ToSql(format='keys(%s)')),
+    dynaFnToSql('values',                 $allStates,            ^ToSql(format='values(%s)')),
+    dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='mapConcatenate(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('toJson',                 $allStates,            ^ToSql(format='cast(%s as VARCHAR)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
+    dynaFnToSql('pair',                   $allStates,            ^ToSql(format='pair(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('convertTimeZone',        $allStates,         ^ToSql(format='%s', transform={p:String[3] | $p->transformConvertTimeZone()}))

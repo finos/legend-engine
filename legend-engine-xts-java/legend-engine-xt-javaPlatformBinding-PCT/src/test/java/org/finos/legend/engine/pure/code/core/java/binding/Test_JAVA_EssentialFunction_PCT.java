@@ -33,7 +33,7 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // Add
-            one("meta::pure::functions::collection::tests::add::testAddWithOffset_Function_1__Boolean_1_", "\"meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::add::testAddWithOffset_Function_1__Boolean_1_", "Type error: 'meta::pure::metamodel::type::Any' is not a subtype of 'String'", AdapterQualifier.unsupportedFeature),
 
             // Concatenate
             one("meta::pure::functions::collection::tests::concatenate::testConcatenateMixedType_Function_1__Boolean_1_", "\"The system is trying to get an element at offset 0 where the collection is of size 0\"", AdapterQualifier.needsInvestigation),
@@ -58,10 +58,18 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             // Init (Not Supported Yet)
             pack("meta::pure::functions::collection::tests::init", "Function does not exist 'init(", AdapterQualifier.unsupportedFeature),
 
+            one("meta::pure::functions::collection::tests::get::testGet_Function_1__Boolean_1_", "\"get_Map_1__U_1__V_$0_1$_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::keys::testKeys_Function_1__Boolean_1_", "\"keys_Map_1__U_MANY_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::put::testPut_addsEntry_Function_1__Boolean_1_", "\"put_Map_1__U_1__V_1__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::put::testPut_emptyMap_Function_1__Boolean_1_", "\"put_Map_1__U_1__V_1__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::put::testPut_overridesEntry_Function_1__Boolean_1_", "\"put_Map_1__U_1__V_1__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::putAll::testPutAll_emptyInputMap_Function_1__Boolean_1_", "\"putAll_Map_1__Pair_MANY__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::putAll::testPutAll_emptyPutEntries_Function_1__Boolean_1_", "\"putAll_Map_1__Pair_MANY__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::putAll::testPutAll_overridesExistingAndAddNew_Function_1__Boolean_1_", "\"putAll_Map_1__Pair_MANY__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::values::testValues_Function_1__Boolean_1_", "\"values_Map_1__V_MANY_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // Fold
             one("meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_", "Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 4 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_", "Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_", "Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'", AdapterQualifier.unsupportedFeature),
 

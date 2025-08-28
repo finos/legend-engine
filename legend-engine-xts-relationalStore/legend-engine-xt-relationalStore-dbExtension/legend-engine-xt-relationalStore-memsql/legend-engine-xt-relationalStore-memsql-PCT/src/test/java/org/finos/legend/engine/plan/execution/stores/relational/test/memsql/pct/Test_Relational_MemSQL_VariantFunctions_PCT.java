@@ -70,11 +70,11 @@ public class Test_Relational_MemSQL_VariantFunctions_PCT extends PCTReportConfig
             pack("meta::pure::functions::variant::convert::tests::toMany", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
 
             pack("meta::pure::functions::variant::convert::tests::toVariant", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfMap_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfVariantValues_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithMultipleKeys_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithPrimitiveValues_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfMap_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfVariantValues_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithMultipleKeys_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithPrimitiveValues_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
 
             pack("meta::pure::functions::variant::navigation::tests::get", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL",  AdapterQualifier.needsImplementation)
