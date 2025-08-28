@@ -116,7 +116,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
       pair('Decimal',^__Type(kind = __TypeKind.SCALAR,name = 'BigDecimal')),
       pair('StrictDate',^__Type(kind = __TypeKind.SCALAR,name = 'StrictDate')),
       pair('Number',^__Type(kind = __TypeKind.SCALAR,name = 'Number')),
-      pair('Byte',^__Type(kind = __TypeKind.SCALAR,name = 'String'))
+      pair('Byte',^__Type(kind = __TypeKind.SCALAR,name = 'Byte'))
     ]
   )->newMap();
 
