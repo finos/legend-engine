@@ -22,7 +22,6 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
 
 import static org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.Extend.buildCollectFuncSpec;
-import static org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.GroupBy.processAggColSpec;
 
 public class ExtendWindowFunc extends AbstractNative implements Native
 {
@@ -44,8 +43,7 @@ public class ExtendWindowFunc extends AbstractNative implements Native
         result.append(transformedParams.get(0) + ", ");
         processWindow(result, transformedParams.get(1));
         result.append(",");
-        result.append(collection.valueOf(transformedParams.get(2)));
-        buildCollectFuncSpec(result, true);
+        buildCollectFuncSpec(result, collection.valueOf(transformedParams.get(2)), true);
         result.append(", es)");
         return result;
     }
