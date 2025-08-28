@@ -3118,6 +3118,53 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRelationWindowFrameFunctions():Boolean[1]
+{
+  test(
+    'SELECT ' +
+    'sum(Integer) OVER (Partition By String ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) as "ROWS_CURRENT_UNBOUNDED_FOLLOWING", ' +
+    'sum(Integer) OVER (Partition By String ROWS BETWEEN 1 FOLLOWING AND UNBOUNDED FOLLOWING) as "ROWS_1_FOLLOWING_UNBOUNDED_FOLLOWING", ' +
+    'sum(Integer) OVER (Partition By String ROWS BETWEEN 1 PRECEDING AND UNBOUNDED FOLLOWING) as "ROWS_1_PRECEDING_UNBOUNDED_FOLLOWING", ' +
+    'sum(Integer) OVER (Partition By String ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "ROWS_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING", ' +
+    'sum(Integer) OVER (Partition By String ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) as "ROWS_1_FOLLOWING_1_FOLLOWING", ' +
+    'sum(Integer) OVER (Partition By String ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "ROWS_UNBOUNDED_PRECEDING_CURRENT", ' +
+
+    'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) as "RANGE_CURRENT_UNBOUNDED_FOLLOWING", ' +
+    'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN 1 FOLLOWING AND UNBOUNDED FOLLOWING) as "RANGE_1_FOLLOWING_UNBOUNDED_FOLLOWING", ' +
+    'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN 1 PRECEDING AND UNBOUNDED FOLLOWING) as "RANGE_1_PRECEDING_UNBOUNDED_FOLLOWING", ' +
+    'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "RANGE_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING", ' +
+    'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN 1 FOLLOWING AND 1 FOLLOWING) as "RANGE_1_FOLLOWING_1_FOLLOWING", ' +
+    'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "RANGE_UNBOUNDED_PRECEDING_CURRENT" ' +
+    'FROM service."/service/service1"',
+
+    [
+      c({|
+          FlatInput.all()
+              ->project(
+                ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+              )
+              ->extend(over(~[String], [], rows(0, meta::pure::functions::relation::unbounded())), ~[ROWS_CURRENT_UNBOUNDED_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over(~[String], [], rows(1, meta::pure::functions::relation::unbounded())), ~[ROWS_1_FOLLOWING_UNBOUNDED_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over(~[String], [], rows(-1, meta::pure::functions::relation::unbounded())), ~[ROWS_1_PRECEDING_UNBOUNDED_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over(~[String], [], rows(meta::pure::functions::relation::unbounded(), meta::pure::functions::relation::unbounded())), ~[ROWS_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over(~[String], [], rows(1, 1)), ~[ROWS_1_FOLLOWING_1_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over(~[String], [], rows(meta::pure::functions::relation::unbounded(), 0)), ~[ROWS_UNBOUNDED_PRECEDING_CURRENT:{p,w,r|$r.Integer}:y|$y->sum()])
+
+              ->extend(over(~[String], [~Integer->ascending()], _range(0, meta::pure::functions::relation::unbounded())), ~[RANGE_CURRENT_UNBOUNDED_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over(~[String], [~Integer->ascending()], _range(1, meta::pure::functions::relation::unbounded())), ~[RANGE_1_FOLLOWING_UNBOUNDED_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over(~[String], [~Integer->ascending()], _range(-1, meta::pure::functions::relation::unbounded())), ~[RANGE_1_PRECEDING_UNBOUNDED_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over(~[String], [~Integer->ascending()], _range(meta::pure::functions::relation::unbounded(), meta::pure::functions::relation::unbounded())), ~[RANGE_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over(~[String], [~Integer->ascending()], _range(1, 1)), ~[RANGE_1_FOLLOWING_1_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over(~[String], [~Integer->ascending()], _range(meta::pure::functions::relation::unbounded(), 0)), ~[RANGE_UNBOUNDED_PRECEDING_CURRENT:{p,w,r|$r.Integer}:y|$y->sum()])
+
+              ->select(~[ROWS_CURRENT_UNBOUNDED_FOLLOWING, ROWS_1_FOLLOWING_UNBOUNDED_FOLLOWING, ROWS_1_PRECEDING_UNBOUNDED_FOLLOWING, ROWS_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING, ROWS_1_FOLLOWING_1_FOLLOWING, ROWS_UNBOUNDED_PRECEDING_CURRENT,
+                        RANGE_CURRENT_UNBOUNDED_FOLLOWING, RANGE_1_FOLLOWING_UNBOUNDED_FOLLOWING, RANGE_1_PRECEDING_UNBOUNDED_FOLLOWING, RANGE_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING, RANGE_1_FOLLOWING_1_FOLLOWING, RANGE_UNBOUNDED_PRECEDING_CURRENT
+                      ])
+      }, true, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testProjectWithWindowFunctions():Boolean[1]
 {
   test(
