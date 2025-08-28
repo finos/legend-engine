@@ -57,6 +57,10 @@ function meta::external::query::sql::transformation::compile::utils::isZeroMany(
   $v->evaluateAndDeactivate().multiplicity == ZeroMany;
 }
 
+function meta::external::query::sql::transformation::compile::utils::sfe(func: meta::pure::metamodel::function::Function<Any>[1]):SimpleFunctionExpression[1]
+{
+  sfe($func, [], []);
+}
 
 function meta::external::query::sql::transformation::compile::utils::sfe(func: meta::pure::metamodel::function::Function<Any>[1], pvs:ValueSpecification[*]):SimpleFunctionExpression[1]
 {
