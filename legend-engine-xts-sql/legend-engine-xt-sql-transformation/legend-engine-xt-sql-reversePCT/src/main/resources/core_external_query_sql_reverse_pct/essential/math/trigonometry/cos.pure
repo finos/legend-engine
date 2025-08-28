@@ -1,0 +1,38 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::cos::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/math/trigonometry/cos.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::testCosine_Function_1__Boolean_1_',
+                      [
+                        rev('|0->meta::pure::functions::math::cos()', 'select cos(0)'),
+                        rev('|meta::pure::functions::math::cos(-1)', 'select cos(-1)'),
+                        rev('|meta::pure::functions::math::cos(-1.5)', 'select cos(-1.5)')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::testCosEval_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::math::cos_Number_1__Float_1_->meta::pure::functions::lang::eval(1)')
+                      ]
+                 )
+                ]
+  )
+}

@@ -44,6 +44,8 @@ public class RelationExtensionCompiled implements CompiledExtension
     public List<Native> getExtraNatives()
     {
         return Lists.fixedSize.with(
+                new Aggregate(),
+                new AggregateArray(),
                 new Map(),
                 new Limit(),
                 new Size(),
@@ -69,8 +71,10 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new Rename(),
                 new Project(),
                 new ProjectRelation(),
-                new GroupBy(),
-                new GroupByArray(),
+                new GroupByColSpecAgg(),
+                new GroupByColSpecAggArray(),
+                new GroupByColSpecArrayAgg(),
+                new GroupByColSpecArrayAggArray(),
                 new Pivot(),
                 new PivotArray(),
                 new Slice(),

@@ -108,7 +108,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.57.0</legend.pure.version>
+        <legend.pure.version>5.58.0</legend.pure.version>
         <legend.shared.version>0.28.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
