@@ -67,7 +67,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::athena::translateCreateSchemaStatementForAthena(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
-   if($createSchemaSQL.schema.name == 'default', |[], |'[Create Schema ' + $createSchemaSQL.schema.name + ';]');
+   if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema if not exists ' + $createSchemaSQL.schema.name);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::athena::translateDropSchemaStatementForAthena(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
@@ -88,12 +88,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
   let currentTimeKey = now()->toString()->chunk(1)->filter(x | $x->matches('[0-9]'))->makeString();
   let tableKey = $tableName->chunk(1)->filter(x | $x->matches('[a-zA-Z0-9]'))->makeString();
   let tableLocationKey = $tableKey + $currentTimeKey;
-  'Create External Table '+ $tableName +
+
+  let ddl = 'Create External Table '+ $tableName +
       + '('
       + $t.columns->cast(@meta::relational::metamodel::Column)
          ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextForAthena($c.type))
         ->joinStrings(',')
-      +') Location \'s3://aws-athena-query-results-finos/' + $tableLocationKey + '/\';';
+      +') Location \'s3://parth-aws-bucket-1/pure_tables/' + $tableLocationKey + '/\';';
+
+  println($ddl);
+
+  $ddl;
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::athena::getColumnTypeSqlTextForAthena(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]

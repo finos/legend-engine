@@ -29,6 +29,13 @@
     <version>4.97.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <repositories>
+        <repository>
+            <id>in-project-lib</id>
+            <url>file:///data/legend-engine/lib</url>
+        </repository>
+    </repositories>
+
     <modules>
         <!--
             With our current CI, we must make sure test-report module do not run last,
@@ -125,6 +132,7 @@
         <timestamp>${maven.build.timestamp}</timestamp>
 
         <!-- Build Variables -->
+        <project.root.dir>${project.basedir}</project.root.dir>
         <dependencies.failOnWarning>true</dependencies.failOnWarning>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

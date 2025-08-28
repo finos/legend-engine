@@ -19,3 +19,10 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
    databaseName: String[1];
    workgroup: String[0..1];
 }
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AthenaUserNamePasswordAuthenticationStrategy extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+   userNameVaultReference: String[1];
+   passwordVaultReference: String[1];
+}
+

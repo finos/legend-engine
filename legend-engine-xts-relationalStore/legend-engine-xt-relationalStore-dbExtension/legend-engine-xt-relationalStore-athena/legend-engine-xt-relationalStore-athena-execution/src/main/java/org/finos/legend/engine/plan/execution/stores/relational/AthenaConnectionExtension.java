@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AthenaUserNamePasswordAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.athena.AthenaManager;
@@ -28,6 +29,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.AthenaDatasourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.StrategicConnectionExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AthenaUserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.AthenaDatasourceSpecification;
@@ -58,13 +60,36 @@ public class AthenaConnectionExtension implements ConnectionExtension, Strategic
     @Override
     public AuthenticationStrategyVisitor<AuthenticationStrategyKey> getExtraAuthenticationKeyGenerators()
     {
-        return authenticationStrategy -> null;
+        return authenticationStrategy ->
+        {
+            if (authenticationStrategy instanceof AthenaUserNamePasswordAuthenticationStrategy)
+            {
+                AthenaUserNamePasswordAuthenticationStrategy athenaUserNamePasswordAuthenticationStrategy = (AthenaUserNamePasswordAuthenticationStrategy) authenticationStrategy;
+
+                return new AthenaUserNamePasswordAuthenticationStrategyKey(
+                        athenaUserNamePasswordAuthenticationStrategy.userNameVaultReference,
+                        athenaUserNamePasswordAuthenticationStrategy.passwordVaultReference
+                );
+            }
+            return null;
+        };
     }
 
     @Override
     public AuthenticationStrategyVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy> getExtraAuthenticationStrategyTransformGenerators(List<OAuthProfile> oauthProfiles)
     {
-        return authenticationStrategy -> null;
+        return authenticationStrategy ->
+        {
+            if (authenticationStrategy instanceof AthenaUserNamePasswordAuthenticationStrategy)
+            {
+                AthenaUserNamePasswordAuthenticationStrategy athenaUserNamePasswordAuthenticationStrategy = (AthenaUserNamePasswordAuthenticationStrategy) authenticationStrategy;
+                return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.AthenaUserNamePasswordAuthenticationStrategy(
+                        athenaUserNamePasswordAuthenticationStrategy.userNameVaultReference,
+                        athenaUserNamePasswordAuthenticationStrategy.passwordVaultReference
+                );
+            }
+            return null;
+        };
     }
 
     @Override
@@ -78,7 +103,8 @@ public class AthenaConnectionExtension implements ConnectionExtension, Strategic
                 return new AthenaDatasourceSpecificationKey(
                         athenaDatasourceSpecification.awsRegion,
                         athenaDatasourceSpecification.s3OutputLocation,
-                        athenaDatasourceSpecification.databaseName);
+                        athenaDatasourceSpecification.databaseName,
+                        athenaDatasourceSpecification.workgroup);
             }
             return null;
         };

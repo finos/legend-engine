@@ -26,8 +26,8 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.AthenaDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AthenaUserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.aws.AWSVaultImplementation;
@@ -55,7 +55,7 @@ public class AthenaTestConnectionIntegration implements TestConnectionIntegratio
     public void setup()
     {
         AthenaDatasourceSpecification athenaDatasourceSpecification = new AthenaDatasourceSpecification();
-        UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
+        AthenaUserNamePasswordAuthenticationStrategy authSpec = new AthenaUserNamePasswordAuthenticationStrategy();
 
         String pctProperties = System.getProperty("pct.external.resources.properties", System.getenv("PCT_EXTERNAL_RESOURCES_PROPERTIES"));
         Path localPctProperties = Paths.get(pctProperties != null ? pctProperties : "");
@@ -77,8 +77,8 @@ public class AthenaTestConnectionIntegration implements TestConnectionIntegratio
                 athenaDatasourceSpecification.workgroup = properties.getProperty("athena.spec.workgroup");
                 athenaDatasourceSpecification.s3OutputLocation = properties.getProperty("athena.spec.s3OutputLocation");
 
-                authSpec.userNameVaultReference = "athena.auth.privateKey";
-                authSpec.passwordVaultReference = "athena.auth.passPhrase";
+                authSpec.userNameVaultReference = System.getProperty("PARTH_AWS_ACCESS_KEY_ID", System.getenv("PARTH_AWS_ACCESS_KEY_ID"));
+                authSpec.passwordVaultReference = System.getProperty("PARTH_AWS_SECRET_ACCESS_KEY", System.getenv("PARTH_AWS_SECRET_ACCESS_KEY"));
             }
             catch (IOException e)
             {

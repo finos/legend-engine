@@ -73,12 +73,11 @@
         <!-- ECLIPSE COLLECTIONS -->
 
         <!-- athena driver is not available on maven, it needs to be manually downloaded from https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html -->
-<!--        <dependency>-->
-<!--            <groupId>com.syncron.amazonaws</groupId>-->
-<!--            <artifactId>simba-athena-jdbc-driver</artifactId>-->
-<!--            <version>2.0.34.1000</version>-->
-<!--            <scope>system</scope>-->
-<!--            <systemPath>${basedir}/AthenaJDBC42-2.0.34.1000.jar</systemPath>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.amazon.athena</groupId>
+            <artifactId>AthenaJDBC42</artifactId>
+            <version>2.1.5.1000</version>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 </project>
