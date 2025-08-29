@@ -28,12 +28,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_BindingTransformer_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_PurePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_relation_RelationFunctionPropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_xStore_XStorePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.pure.generated.core_pure_model_modelUnit;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
@@ -59,8 +63,11 @@ import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
+import java.util.List;
 import java.util.Iterator;
 import java.util.function.Function;
+
+import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping>
 {
@@ -266,15 +273,15 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         }
 
         Type propertyType = property._genericType()._rawType();
-        if (!processorSupport.type_isPrimitiveType(propertyType))
+        if (!processorSupport.type_isPrimitiveType(propertyType) && propertyMapping.bindingTransformer == null)
         {
-            throw new EngineException("Relation mapping is only supported for primitive properties, but the property '" + org.finos.legend.pure.m3.navigation.property.Property.getPropertyName(property) + "' has type " + propertyType._name() + ".", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Relation mapping is only supported for primitive properties or mapping to semi-structured data (which requires a binding), but the property '" + org.finos.legend.pure.m3.navigation.property.Property.getPropertyName(property) + "' has type " + propertyType._name() + " and no binding was specified.", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
         }
-        RelationType<?> newRelationType = _RelationType.build(Lists.mutable.with(_Column.getColumnInstance(propertyMapping.column, false, propertyType._name(), property._multiplicity(), sourceInfo, processorSupport)), sourceInfo, processorSupport);
+        String propertyTypeName = processorSupport.type_isPrimitiveType(propertyType) ? propertyType._name() : M3Paths.Variant;
+        RelationType<?> newRelationType = _RelationType.build(Lists.mutable.with(_Column.getColumnInstance(propertyMapping.column, false, propertyTypeName, property._multiplicity(), sourceInfo, processorSupport)), sourceInfo, processorSupport);
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionPropertyMapping relationFunctionPropertyMapping = new Root_meta_pure_mapping_relation_RelationFunctionPropertyMapping_Impl("", sourceInfo, context.pureModel.getClass("meta::pure::mapping::relation::RelationFunctionPropertyMapping"))
             ._property(property)
             ._sourceSetImplementationId(propertyMapping.source == null || propertyMapping.source.isEmpty() ? immediateParent._id() : propertyMapping.source)
-            ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping, property, context))
             ._column(newRelationType._columns().toList().get(0))
             ._owner(immediateParent);
 
@@ -284,6 +291,40 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
             relationFunctionPropertyMapping._localMappingPropertyType(this.context.resolveType(propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation));
             relationFunctionPropertyMapping._localMappingPropertyMultiplicity(this.context.pureModel.getMultiplicity(propertyMapping.localMappingProperty.multiplicity));
         }
+        
+        if (propertyMapping.bindingTransformer != null)
+        {
+            Root_meta_external_format_shared_binding_Binding binding = (Root_meta_external_format_shared_binding_Binding) context.resolvePackageableElement(propertyMapping.bindingTransformer.binding, propertyMapping.sourceInformation);
+            List<? extends Class<?>> bindingClasses = org.eclipse.collections.api.factory.Lists.mutable.withAll(core_pure_model_modelUnit.Root_meta_pure_model_unit_resolve_ModelUnit_1__ResolvedModelUnit_1_(binding._modelUnit(), context.getExecutionSupport()).classes(context.getExecutionSupport()));
+
+            if (!"Class".equals(propertyType._classifierGenericType()._rawType()._name()))
+            {
+                throw new EngineException("Binding transformer can be used with complex properties only. Property '" + property._name() + "' return type is '" + propertyType._name() + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+            }
+
+            Class<?> propertyReturnType = (Class<?>) propertyType;
+            if (!bindingClasses.contains(propertyReturnType))
+            {
+                throw new EngineException("Class: " + Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) propertyType, context.getExecutionSupport()) + " should be included in modelUnit for binding: " + propertyMapping.bindingTransformer.binding, propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+            }
+
+            Class<?> classifier = context.pureModel.getClass("meta::external::format::shared::binding::BindingTransformer");
+            GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                    ._rawType(classifier)
+                    ._typeArguments(org.eclipse.collections.api.factory.Lists.fixedSize.of(context.pureModel.getGenericType(propertyReturnType)));
+            relationFunctionPropertyMapping._transformer(
+                    new Root_meta_external_format_shared_binding_BindingTransformer_Impl<>("", SourceInformationHelper.toM3SourceInformation(propertyMapping.bindingTransformer.sourceInformation), classifier)
+                            ._binding(binding)
+                            ._classifierGenericType(genericType)
+                            ._class(propertyReturnType)
+            );
+            relationFunctionPropertyMapping._targetSetImplementationId("");
+        }
+        else
+        {
+            relationFunctionPropertyMapping._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping, property, context));
+        }
+        
         return relationFunctionPropertyMapping;
     }
 }
