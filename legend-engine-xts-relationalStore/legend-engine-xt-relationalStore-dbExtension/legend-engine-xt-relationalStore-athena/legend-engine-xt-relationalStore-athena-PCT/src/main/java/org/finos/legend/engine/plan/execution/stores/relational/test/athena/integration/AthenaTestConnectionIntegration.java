@@ -27,7 +27,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.tests
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.AthenaDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AthenaUserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.aws.AWSVaultImplementation;
@@ -55,7 +55,7 @@ public class AthenaTestConnectionIntegration implements TestConnectionIntegratio
     public void setup()
     {
         AthenaDatasourceSpecification athenaDatasourceSpecification = new AthenaDatasourceSpecification();
-        AthenaUserNamePasswordAuthenticationStrategy authSpec = new AthenaUserNamePasswordAuthenticationStrategy();
+        UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
 
         String pctProperties = System.getProperty("pct.external.resources.properties", System.getenv("PCT_EXTERNAL_RESOURCES_PROPERTIES"));
         Path localPctProperties = Paths.get(pctProperties != null ? pctProperties : "");

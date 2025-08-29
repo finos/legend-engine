@@ -20,9 +20,4 @@ Class meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::
    workgroup: String[0..1];
 }
 
-Class meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::authentication::AthenaUserNamePasswordAuthenticationStrategy extends meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
-{
-   userNameVaultReference: String[1];
-   passwordVaultReference: String[1];
-}
 

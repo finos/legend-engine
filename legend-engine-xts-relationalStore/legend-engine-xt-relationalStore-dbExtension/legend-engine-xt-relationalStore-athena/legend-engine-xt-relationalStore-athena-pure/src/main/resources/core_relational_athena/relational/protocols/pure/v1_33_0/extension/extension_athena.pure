@@ -18,12 +18,6 @@ meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connection::athen
   ^meta::protocols::pure::v1_33_0::extension::RelationalModuleSerializerExtension(
     module = 'athena',
     transfers_connection_transformAuthenticationStrategy = [
-      s:meta::pure::alloy::connections::alloy::authentication::AthenaUserNamePasswordAuthenticationStrategy[1] |
-                  ^meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::authentication::AthenaUserNamePasswordAuthenticationStrategy(
-                      _type = 'athenaUserNamePassword',
-                      userNameVaultReference = $s.userNameVaultReference,
-                      passwordVaultReference = $s.passwordVaultReference
-                  )
     ],
     transfers_connection_transformDatasourceSpecification = [
         s:meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpecification[1] |
@@ -36,15 +30,9 @@ meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connection::athen
                  )
     ],
     reverse_transfers_typeLookups = [
-        pair('athena', 'AthenaDatasourceSpecification'),
-        pair('athenaUserNamePassword', 'AthenaUserNamePasswordAuthenticationStrategy')
+        pair('athena', 'AthenaDatasourceSpecification')
     ],
     reverse_transfers_connection_transformAuthenticationStrategy = [
-      s:meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::authentication::AthenaUserNamePasswordAuthenticationStrategy[1] |
-        ^meta::pure::alloy::connections::alloy::authentication::AthenaUserNamePasswordAuthenticationStrategy(
-            userNameVaultReference = $s.userNameVaultReference,
-            passwordVaultReference = $s.passwordVaultReference
-        )
     ],
     reverse_transfers_connection_transformDatasourceSpecification = [
         s:meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::specification::AthenaDatasourceSpecification[1] |
