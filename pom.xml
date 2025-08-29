@@ -31,8 +31,8 @@
 
     <repositories>
         <repository>
-            <id>in-project-lib</id>
-            <url>file:///data/legend-engine/lib</url>
+            <id>athena-jdbc-driver</id>
+            <url>https://github.com/Paarth002/AthenaJDBC/tree/main</url>
         </repository>
     </repositories>
 
