@@ -27,6 +27,28 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Relational Store - Athena - Execution</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                <execution>
+                    <id>dependency-analyze</id>
+                    <goals>
+                        <goal>analyze-only</goal>
+                    </goals>
+                    <configuration>
+                        <ignoredUnusedDeclaredDependencies>
+                            <ignoredUnusedDeclaredDependency>com.amazon.athena:AthenaJDBC42:jar:2.1.5.1000</ignoredUnusedDeclaredDependency>
+                        </ignoredUnusedDeclaredDependencies>
+                    </configuration>
+                </execution>
+            </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -77,7 +99,8 @@
             <groupId>com.amazon.athena</groupId>
             <artifactId>AthenaJDBC42</artifactId>
             <version>2.1.5.1000</version>
-            <scope>runtime</scope>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
+
 </project>
