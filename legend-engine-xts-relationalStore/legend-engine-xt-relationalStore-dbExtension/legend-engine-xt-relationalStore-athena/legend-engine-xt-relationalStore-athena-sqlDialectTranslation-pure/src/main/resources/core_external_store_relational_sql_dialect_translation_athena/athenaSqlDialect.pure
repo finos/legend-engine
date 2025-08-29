@@ -1,0 +1,492 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::extension::tests::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::window::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::aggregate::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::conditional::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::athena::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::pure::extension::*;
+import meta::external::query::sql::metamodel::extension::*;
+
+function meta::external::store::relational::sqlDialectTranslation::athena::athenaSqlDialect(): SqlDialect[1]
+{
+  ^SqlDialect
+  (
+    dbType = 'Athena',
+    identifierQuoteConfig = athenaIdentifierQuoteConfiguration(),
+    literalQuoteConfig = athenaLiteralQuoteConfiguration(),
+    nodeProcessors = athenaDialectNodeProcessors(),
+    identifierProcessor = athenaIdentifierProcessor(),
+    expressionPrecedenceComparator = athenaExpressionPrecedenceComparator(),
+    keywords = athenaKeywords(),
+    functionProcessorMap = athenaFunctionProcessorMap(),
+    variablePlaceholderPrefixSuffixMap = athenaVariablePlaceholderPrefixSuffixMap(),
+    expectedSqlDialectTestErrors = athenaFunctionTestsExpectedErrors(),
+    isBooleanAliasForTinyInt = true
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::athena::athenaSqlDialectExtension(): Extension[1]
+{
+  ^Extension
+  (
+    type = 'AthenaSqlDialectExtension',
+    moduleExtensions = [
+      ^SqlDialectTranslationModuleExtension
+      (
+        module = sqlDialectTranslationModuleExtensionName(),
+        extraSqlDialects = athenaSqlDialect()
+      )
+    ]
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::athena::athenaFunctionTestsExpectedErrors(): Map<String, String>[1]
+{
+  [
+  ]->newMap()->cast(@Map<String, String>)
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaIdentifierQuoteConfiguration(): QuoteConfiguration[1]
+{
+  ^QuoteConfiguration
+  (
+    start = '"',
+    end = '"',
+    escape = '""'
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaLiteralQuoteConfiguration(): QuoteConfiguration[1]
+{
+  ^QuoteConfiguration
+  (
+    start = '\'',
+    end = '\'',
+    escape = '\'\''
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaDialectNodeProcessors(): Map<Class<Node>, NodeProcessor<Node>>[1]
+{
+  newMap(
+    athenaDialectStatementProcessors()
+    ->concatenate(
+      athenaDialectRelationProcessors()
+    )
+    ->concatenate(
+      athenaDialectExpressionProcessors()
+    )
+    ->concatenate(
+      athenaDialectLiteralProcessors()
+    )
+    ->concatenate(
+      athenaDialectSelectItemProcessors()
+    )
+    ->concatenate(
+      athenaDialectOtherNodeProcessors()
+    )
+    ->concatenate(
+      athenaDialectDDLProcessors()
+    )
+    ->map(n | pair($n.nodeType, $n))
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaDialectStatementProcessors(): NodeProcessor<Statement>[*]
+{
+  [
+    queryProcessor_default(),
+    windowProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaDialectRelationProcessors(): NodeProcessor<Relation>[*]
+{
+  [
+    tableProcessor_default(),
+    aliasedRelationProcessor_default(),
+    joinProcessor_default(),
+    asOfJoinProcessorForAthena(),
+    querySpecificationProcessor_default(),
+    unionProcessor_default(),
+    tableSubqueryProcessor_default(),
+    tablePlaceholderProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaDialectExpressionProcessors(): NodeProcessor<meta::external::query::sql::metamodel::Expression>[*]
+{
+  [
+    comparisonExpressionNodeProcessor_default(),
+    logicalBinaryExpressionNodeProcessor_default(),
+    notExpressionNodeProcessor_default(),
+    arithmeticExpressionNodeProcessor_default(),
+    qualifiedNameReferenceNodeProcessor_default(),
+    isNullPredicateNodeProcessor_default(),
+    isNotNullPredicateNodeProcessor_default(),
+    negativeNodeProcessor_default(),
+    currentTimeNodeProcessor_default(),
+    whenClauseNodeProcessor_default(),
+    searchedCaseExpressionNodeProcessor_default(),
+    columnTypeProcessor_default(),
+    castProcessor_default(),
+    inListExpressionProcessor_default(),
+    inPredicateProcessor_default(),
+    existsPredicateProcessor_default(),
+    extractProcessor_default(),
+    betweenPredicateProcessor_default(),
+    functionCallProcessor_default(),
+    subQueryExpressionProcessor_default(),
+    trimProcessor_default(),
+    likePredicateProcessor_default(),
+    allColumnsReferenceNodeProcessor_default(),
+    inClauseVariablePlaceholderProcessor_default(),
+    variablePlaceholderProcessor_default(),
+    freeMarkerOperationProcessor_default(),
+    bitwiseBinaryExpressionNodeProcessor_default(),
+    bitwiseNotExpressionNodeProcessor_default(),
+    bitwiseShiftExpressionNodeProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaDialectLiteralProcessors(): NodeProcessor<Literal>[*]
+{
+  [
+    integerLiteralNodeProcessor_default(),
+    stringLiteralNodeProcessor_default(),
+    booleanLiteralNodeProcessor_default(),
+    longLiteralNodeProcessor_default(),
+    doubleLiteralNodeProcessor_default(),
+    dateLiteralNodeProcessor_default(),
+    timestampLiteralNodeProcessor_default(),
+    nullLiteralNodeProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaDialectSelectItemProcessors(): NodeProcessor<SelectItem>[*]
+{
+  [
+    allColumnsNodeProcessor_default(),
+    singleColumnNodeProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaDialectOtherNodeProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    sortItemProcessor_default(),
+    selectProcessor_default(),
+    withQueryProcessor_default(),
+    windowFrameProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaDialectDDLProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    createTestTableProcessor_default(),
+    dropTestTableProcessor_default(),
+    insertIntoTestTableProcessor_default()
+  ]
+}
+
+
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaKeywords(): String[*]
+{
+  // Based on https://trino.io/docs/current/language/reserved.html
+  [ 
+    'alter',
+    'and',
+    'as',
+    'auto',
+    'between',
+    'by',
+    'case',
+    'cast',
+    'constraint',
+    'create',
+    'cross',
+    'cube',
+    'current_catalog',
+    'current_date',
+    'current_path',
+    'current_role',
+    'current_schema',
+    'current_time',
+    'current_timestamp',
+    'current_user',
+    'deallocate',
+    'delete',
+    'describe',
+    'distinct',
+    'drop',
+    'else',
+    'end',
+    'escape',
+    'except',
+    'exists',
+    'extract',
+    'false',
+    'for',
+    'from',
+    'full',
+    'group',
+    'grouping',
+    'having',
+    'in',
+    'inner',
+    'insert',
+    'intersect',
+    'into',
+    'is',
+    'join',
+    'json_array',
+    'json_exists',
+    'json_object',
+    'json_query',
+    'json_table',
+    'json_value',
+    'lateral',
+    'left',
+    'like',
+    'listagg',
+    'localtime',
+    'localtimestamp',
+    'natural',
+    'normalize',
+    'not',
+    'null',
+    'on',
+    'or',
+    'order',
+    'outer',
+    'prepare',
+    'recursive',
+    'right',
+    'rollup',
+    'select',
+    'skip',
+    'table',
+    'then',
+    'trim',
+    'true',
+    'unescape',
+    'union',
+    'unnest',
+    'using',
+    'values',
+    'view',
+    'when',
+    'where',
+    'with'
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaIdentifierProcessor(): IdentifierProcessor[1]
+{
+  identifierProcessor_default()
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaExpressionPrecedenceComparator(): ExpressionPrecedenceComparator[1]
+{
+  ^ExpressionPrecedenceComparator(
+    findOperatorType = findOperatorType_default_Expression_1__String_1_,
+    operatorPrecedence = operatorPrecedence_default()
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::asOfJoinProcessorForAthena(): NodeProcessor<AsOfJoin>[1]
+{
+  nodeProcessor(
+    AsOfJoin,
+    {sqlDialect, j, state, config |
+      failWithMessage('Athena SQL Dialect does not support AsOfJoin!');
+    },
+    {n: AsOfJoin[1] | true}
+  );
+}
+
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaFunctionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
+{
+  newMap([
+    // Postgres Native Functions
+    // Numeric
+    pair(Abs, simpleFunctionProcessor('abs')),
+    pair(Acos, simpleFunctionProcessor('acos')),
+    pair(Asin, simpleFunctionProcessor('asin')),
+    pair(Atan, simpleFunctionProcessor('atan')),
+    pair(Atan2, simpleFunctionProcessor('atan2')),
+    pair(Cbrt, simpleFunctionProcessor('cbrt'))
+    // pair(Ceil, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(Ceiling, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(Cos, simpleFunctionProcessor('cos')),
+    // pair(Cot, simpleFunctionProcessor('cot')),
+    // pair(Degrees, simpleFunctionProcessor('degrees')),
+    // pair(Exp, simpleFunctionProcessor('exp')),
+    // pair(Floor, customFunctionProcessor(processorForFloor_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(Ln, simpleFunctionProcessor('ln')),
+    // pair(Log, argTransformFunctionProcessor('log', {n:Node[*]| if($n->size() == 1, | literal(10)->concatenate($n), | $n)})),
+    // pair(Mod, simpleFunctionProcessor('mod')),
+    // pair(Power, simpleFunctionProcessor('power')),
+    // pair(Round, simpleFunctionProcessor('round')),
+    // pair(Sign, simpleFunctionProcessor('sign')),
+    // pair(Sin, simpleFunctionProcessor('sin')),
+    // pair(Sinh, simpleFunctionProcessor('sinh')),    
+    // pair(Sqrt, simpleFunctionProcessor('sqrt')),
+    // pair(Tan, simpleFunctionProcessor('tan')),
+    // pair(Tanh, simpleFunctionProcessor('tanh')),
+    
+    // // Numeric Aggregate
+    // pair(Average, simpleFunctionProcessor('avg')),
+    // pair(Sum, simpleFunctionProcessor('sum')),
+    // pair(Correlation, simpleFunctionProcessor('corr')),
+    // pair(CovarianceSample, simpleFunctionProcessor('covar_samp')),
+    // pair(CovariancePopulation, simpleFunctionProcessor('covar_pop')),
+    // pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
+    // pair(VarianceSample, simpleFunctionProcessor('var_samp')),
+    // pair(StdDevSample, simpleFunctionProcessor('stddev_samp')),
+    // pair(StdDevPopulation, simpleFunctionProcessor('stddev_pop')),    
+    // pair(PercentileContinuous, simpleFunctionProcessor('percentile_cont')),
+    // pair(PercentileDiscrete, simpleFunctionProcessor('percentile_disc')),    
+
+    // // String
+    // pair(Ascii, simpleFunctionProcessor('ascii')),
+    // pair(CharLength, simpleFunctionProcessor('length')),
+    // pair(Chr, simpleFunctionProcessor('chr')),
+    // pair(Concat, customFunctionProcessor(processorForConcat_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(Left, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]  | processorForDirectionalIndex('left', $f, $sqlDialect, $state, $config)})), // Custom handling to handle negative index
+    // pair(Lower, simpleFunctionProcessor('lower')),
+    // pair(Lpad, simpleFunctionProcessor('lpad')),
+    // pair(Ltrim, simpleFunctionProcessor('ltrim')),
+    // pair(Md5, simpleFunctionProcessor('md5')),
+    // pair(Repeat, simpleFunctionProcessor('repeat')),
+    // pair(Replace, simpleFunctionProcessor('replace')),
+    // pair(Reverse, simpleFunctionProcessor('reverse')),
+    // pair(Right, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1] | processorForDirectionalIndex('right', $f, $sqlDialect, $state, $config)})), // Custom handling to handle negative index
+    // pair(Rpad, simpleFunctionProcessor('rpad')),
+    // pair(Rtrim, simpleFunctionProcessor('rtrim')),
+    // pair(SplitPart, simpleFunctionProcessor('split_part')),
+    // pair(StrPos, argTransformFunctionProcessor('position', {n:Node[*]| $n->reverse()})),
+    // pair(Substring, simpleFunctionProcessor('substring')),
+    // pair(Upper, simpleFunctionProcessor('upper')),
+    // pair(Greatest, simpleFunctionProcessor('greatest')),
+    // pair(Least, simpleFunctionProcessor('least')),   
+
+    // // String Aggregate
+    // pair(StringAgg, simpleFunctionProcessor('listagg')),
+
+    // // Boolean Aggregate
+    // pair(BoolAnd, simpleFunctionProcessor('booland_agg')),
+    // pair(BoolOr, simpleFunctionProcessor('boolor_agg')),
+
+    // // Temporal
+    // pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(Now, simpleFunctionProcessor('current_timestamp')),
+    // pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::Date, simpleFunctionProcessor('date')),
+
+    // // Miscellaneous
+    // pair(Coalesce, simpleFunctionProcessor('coalesce')),
+
+    // // Aggregate
+    // pair(Count, simpleFunctionProcessor('count')),
+    // pair(Max, simpleFunctionProcessor('max')),
+    // pair(Min, simpleFunctionProcessor('min')),
+    // pair(Mode, customFunctionProcessor(processorForMode_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+
+    // // Window
+    // pair(CumulativeDistribution, simpleFunctionProcessor('cume_dist')),
+    // pair(DenseRank, simpleFunctionProcessor('dense_rank')),
+    // pair(FirstValue, simpleFunctionProcessor('first_value')),
+    // pair(PercentRank, simpleFunctionProcessor('percent_rank')),
+    // pair(Lag, simpleFunctionProcessor('lag')),
+    // pair(LastValue, simpleFunctionProcessor('last_value')),
+    // pair(Lead, simpleFunctionProcessor('lead')),
+    // pair(NthValue, simpleFunctionProcessor('nth_value')),
+    // pair(Ntile, simpleFunctionProcessor('ntile')),
+    // pair(Rank, simpleFunctionProcessor('rank')),
+    // pair(RowNumber, simpleFunctionProcessor('row_number')),
+
+    // // Extension functions
+    // // Numeric
+    // pair(Log10, argTransformFunctionProcessor('log', {n:Node[*]| literal(10)->concatenate($n)})),
+    // pair(Cosh, simpleFunctionProcessor('cosh')),
+
+    // // String
+    // pair(RegexpLike, customFunctionProcessor(processorForRegExpLikeSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(Sha1, simpleFunctionProcessor('sha1')),
+    // pair(Sha256, argTransformFunctionProcessor('sha2', {n:Node[*] | $n->concatenate(literal(256))})),
+    // pair(Contains, simpleFunctionProcessor('contains')),
+    // pair(EncodeBase64, simpleFunctionProcessor('base64_encode')),
+    // pair(DecodeBase64, simpleFunctionProcessor('base64_decode_string')),
+    // pair(EditDistance, simpleFunctionProcessor('editdistance')),
+    // pair(JaroWinklerSimilarity, customFunctionProcessor(processorForJaroWinklerSimilarity_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(StartsWith, simpleFunctionProcessor('startswith')),
+    // pair(EndsWith, simpleFunctionProcessor('endswith')),
+    // pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(UuidV4, simpleFunctionProcessor('uuid_string')),
+
+    // // Temporal
+    // pair(MakeDate, simpleFunctionProcessor('date_from_parts')),
+    // pair(MakeTimestamp,customFunctionProcessor(processorForMakeTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(DateAdd, customFunctionProcessor(processorForDateAdd_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(ConvertTimeZone, customFunctionProcessor(processorForConvertTimeZone_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    // pair(TimeBucket, customFunctionProcessor(processorForTimeBucket_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+
+    // // Miscellaneous
+    // pair(ParseJson, simpleFunctionProcessor('parse_json'))
+  ])
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaVariablePlaceholderPrefixSuffixMap(): Map<String, Pair<String, String>>[1]
+{
+  [
+    pair('String',      pair('\'', '\'')),
+    pair('Integer',     pair('', '')),
+    pair('Decimal',     pair('', '')),
+    pair('Number',      pair('', '')),
+    pair('SQLNull',     pair('', '')),
+    pair('Float',       pair('', '')),
+    pair('StrictDate',  pair('DATE \'', '\'')),
+    pair('DateTime',    pair('TIMESTAMP \'', '\'')),
+    pair('Date',        pair('TIMESTAMP \'', '\'')),
+    pair('Boolean',     pair('', '')),
+    pair('Enum',        pair('', ''))
+  ]->newMap();
+}

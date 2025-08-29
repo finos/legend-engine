@@ -32,5 +32,7 @@
         <module>legend-engine-xt-relationalStore-athena-protocol</module>
         <module>legend-engine-xt-relationalStore-athena-pure</module>
         <module>legend-engine-xt-relationalStore-athena-PCT</module>
+        <module>legend-engine-xt-relationalStore-athena-sqlDialectTranslation-pure</module>
+        <module>legend-engine-xt-relationalStore-athena-SDT</module>
     </modules>
 </project>
