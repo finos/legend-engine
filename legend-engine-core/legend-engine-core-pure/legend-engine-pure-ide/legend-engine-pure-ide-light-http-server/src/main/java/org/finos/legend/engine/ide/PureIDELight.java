@@ -161,6 +161,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-h2/legend-engine-xt-relationalStore-h2-PCT", "relational-h2-pct"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-athena/legend-engine-xt-relationalStore-athena-PCT", "relational-athena-pct"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-memsql/legend-engine-xt-relationalStore-memsql-sqlDialectTranslation-pure", "external-store-relational-sql-dialect-translation-memsql"))
+                .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-athena/legend-engine-xt-relationalStore-athena-sqlDialectTranslation-pure", "external-store-relational-sql-dialect-translation-athena"))
                 ;
 
     }
