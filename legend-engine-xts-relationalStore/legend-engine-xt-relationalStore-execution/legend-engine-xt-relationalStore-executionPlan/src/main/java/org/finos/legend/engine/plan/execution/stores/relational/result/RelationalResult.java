@@ -505,7 +505,16 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             {
                 try
                 {
-                    result = OBJECT_MAPPER.readTree(object.toString()).toString();
+                    if (object instanceof Map)
+                    {
+                        result = OBJECT_MAPPER.writeValueAsString(object);
+                    }
+                    else
+                    {
+                        //json object...
+                        result = OBJECT_MAPPER.readTree(object.toString()).toString();
+                    }
+
                 }
                 catch (JsonProcessingException e)
                 {
