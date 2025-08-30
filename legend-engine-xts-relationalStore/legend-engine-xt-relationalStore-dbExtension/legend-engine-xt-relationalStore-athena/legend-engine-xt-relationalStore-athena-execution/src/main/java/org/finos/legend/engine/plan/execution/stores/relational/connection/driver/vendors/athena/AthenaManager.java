@@ -32,10 +32,12 @@ public class AthenaManager extends DatabaseManager
     @Override
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
-        return "jdbc:awsathena://"
+        String url = "jdbc:awsathena://"
                 + "AwsRegion=" + extraUserDataSourceProperties.getProperty("awsRegion") + ";"
                 + "S3OutputLocation=" + extraUserDataSourceProperties.getProperty("s3OutputLocation") + ";"
-                + "databaseName=" + databaseName;
+                + (extraUserDataSourceProperties.getProperty("workgroup") == null ? "" : "Workgroup=" + extraUserDataSourceProperties.getProperty("workgroup") + ";")
+                + "Schema=" + databaseName;
+        return url;
     }
 
     @Override

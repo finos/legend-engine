@@ -25,7 +25,8 @@ meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connection::athen
                     _type = 'athena',
                     awsRegion = $s.awsRegion,
                     s3OutputLocation = $s.s3OutputLocation,
-                    databaseName = $s.databaseName
+                    databaseName = $s.databaseName,
+                    workgroup = $s.workgroup
                  )
     ],
     reverse_transfers_typeLookups = [
@@ -38,7 +39,8 @@ meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connection::athen
                  ^meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpecification(
                     awsRegion = $s.awsRegion,
                     s3OutputLocation = $s.s3OutputLocation,
-                    databaseName = $s.databaseName
+                    databaseName = $s.databaseName,
+                    workgroup = $s.workgroup
                  )
     ]
   )

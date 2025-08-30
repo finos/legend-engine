@@ -54,6 +54,7 @@ public class AthenaGrammarComposerExtension implements IRelationalGrammarCompose
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "name: " + convertString(spec.databaseName, true) + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "awsRegion: " + convertString(spec.awsRegion, true) + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "s3OutputLocation: " + convertString(spec.s3OutputLocation, true) + ";\n" +
+                        (spec.workgroup == null ? "" : context.getIndentationString() + getTabString(baseIndentation + 1) + "workgroup: " + convertString(spec.workgroup, true) + ";\n") +
                         context.getIndentationString() + getTabString(baseIndentation) + "}";
             }
             return null;

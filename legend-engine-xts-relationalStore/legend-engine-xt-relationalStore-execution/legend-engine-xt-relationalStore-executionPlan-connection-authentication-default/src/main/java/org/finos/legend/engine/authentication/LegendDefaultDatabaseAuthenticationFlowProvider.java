@@ -30,6 +30,7 @@ import org.finos.legend.engine.authentication.flows.SpannerWithGCPApplicationDef
 import org.finos.legend.engine.authentication.flows.SqlServerStaticWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.TrinoWithDelegatedKerberosFlow;
 import org.finos.legend.engine.authentication.flows.TrinoWithUserPasswordFlow;
+import org.finos.legend.engine.authentication.flows.AthenaWithUserNamePasswordFlow;
 import org.finos.legend.engine.authentication.flows.middletier.PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow;
 import org.finos.legend.engine.authentication.provider.AbstractDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
@@ -60,7 +61,8 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new RedshiftWithUserPasswordFlow(),
                 new MemSQLStaticWithUserPasswordFlow(),
                 new TrinoWithDelegatedKerberosFlow(),
-                new TrinoWithUserPasswordFlow()
+                new TrinoWithUserPasswordFlow(),
+                new AthenaWithUserNamePasswordFlow()
         ).withAll(
                 databaseAuthenticationFlowProviderConfiguration != null ?
                         Lists.mutable.of(

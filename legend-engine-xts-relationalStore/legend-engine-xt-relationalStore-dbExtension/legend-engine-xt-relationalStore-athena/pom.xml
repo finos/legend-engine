@@ -31,5 +31,6 @@
         <module>legend-engine-xt-relationalStore-athena-grammar</module>
         <module>legend-engine-xt-relationalStore-athena-protocol</module>
         <module>legend-engine-xt-relationalStore-athena-pure</module>
+        <module>legend-engine-xt-relationalStore-athena-PCT</module>
     </modules>
 </project>
