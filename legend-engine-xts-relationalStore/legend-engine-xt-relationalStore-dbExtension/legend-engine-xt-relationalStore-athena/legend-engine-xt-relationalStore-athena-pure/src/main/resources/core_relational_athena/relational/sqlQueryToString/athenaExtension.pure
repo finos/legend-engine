@@ -94,7 +94,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
       + $t.columns->cast(@meta::relational::metamodel::Column)
          ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextForAthena($c.type))
         ->joinStrings(',')
-      +') Location \'s3://parth-aws-bucket-1/pure_tables/' + $tableLocationKey + '/\';';
+      +') Location \'s3://aws-athena-query-results-finos/' + $tableLocationKey + '/\';';
 
   println($ddl);
 

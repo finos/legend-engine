@@ -28,11 +28,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.AthenaDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
-import org.finos.legend.engine.shared.core.vault.aws.AWSVaultImplementation;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
-import software.amazon.awssdk.regions.Region;
 
 
 public class AthenaTestConnectionIntegration implements TestConnectionIntegration, TestServerResource
@@ -60,8 +59,11 @@ public class AthenaTestConnectionIntegration implements TestConnectionIntegratio
         String pctProperties = System.getProperty("pct.external.resources.properties", System.getenv("PCT_EXTERNAL_RESOURCES_PROPERTIES"));
         Path localPctProperties = Paths.get(pctProperties != null ? pctProperties : "");
 
-        String awsAccessKeyId = System.getProperty("AWS_ACCESS_KEY_ID", System.getenv("AWS_ACCESS_KEY_ID"));
-        String awsSecretAccessKey = System.getProperty("AWS_SECRET_ACCESS_KEY", System.getenv("AWS_SECRET_ACCESS_KEY"));
+        String awsAccessKeyIdFromEnv = System.getenv("AWS_ACCESS_KEY_ID");
+        String awsSecretAccessKeyFromEnv = System.getenv("AWS_SECRET_ACCESS_KEY");
+
+        String awsAccessKeyIdFromProps = System.getProperty("AWS_ACCESS_KEY_ID");
+        String awsSecretAccessKeyFromProps = System.getProperty("AWS_SECRET_ACCESS_KEY");
 
         if (!Files.isDirectory(localPctProperties) && Files.isReadable(localPctProperties))
         {
@@ -77,37 +79,44 @@ public class AthenaTestConnectionIntegration implements TestConnectionIntegratio
                 athenaDatasourceSpecification.workgroup = properties.getProperty("athena.spec.workgroup");
                 athenaDatasourceSpecification.s3OutputLocation = properties.getProperty("athena.spec.s3OutputLocation");
 
-                authSpec.userNameVaultReference = System.getProperty("PARTH_AWS_ACCESS_KEY_ID", System.getenv("PARTH_AWS_ACCESS_KEY_ID"));
-                authSpec.passwordVaultReference = System.getProperty("PARTH_AWS_SECRET_ACCESS_KEY", System.getenv("PARTH_AWS_SECRET_ACCESS_KEY"));
+                authSpec.userNameVaultReference = "athena.auth.userName";
+                authSpec.passwordVaultReference = "athena.auth.password";
             }
             catch (IOException e)
             {
                 throw new UncheckedIOException(e);
             }
         }
-        else if (!StringUtils.isEmpty(awsAccessKeyId) && !StringUtils.isEmpty(awsSecretAccessKey))
+        else if (!StringUtils.isEmpty(awsAccessKeyIdFromProps) && !StringUtils.isEmpty(awsSecretAccessKeyFromProps))
         {
-            Vault.INSTANCE.registerImplementation(
-                    new AWSVaultImplementation(
-                            awsAccessKeyId,
-                            awsSecretAccessKey,
-                            Region.US_EAST_1,
-                            "athena.INTEGRATION_USER1"
-                    )
-            );
+            Properties properties = new Properties();
+            properties.put("AWS_ACCESS_KEY_ID", awsAccessKeyIdFromProps);
+            properties.put("AWS_SECRET_ACCESS_KEY", awsSecretAccessKeyFromProps);
+
+            Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
 
             athenaDatasourceSpecification.databaseName = "demo";
             athenaDatasourceSpecification.awsRegion = "ap-northeast-1";
             athenaDatasourceSpecification.s3OutputLocation = "s3://aws-athena-query-results-finos/";
 
-            authSpec.userNameVaultReference = "encrypted_private_key";
-            authSpec.passwordVaultReference = "private_key_encryption_password";
+            authSpec.userNameVaultReference = "AWS_ACCESS_KEY_ID";
+            authSpec.passwordVaultReference = "AWS_SECRET_ACCESS_KEY";
+        }
+        else if (!StringUtils.isEmpty(awsAccessKeyIdFromEnv) && !StringUtils.isEmpty(awsSecretAccessKeyFromEnv))
+        {
+            Vault.INSTANCE.registerImplementation(new EnvironmentVaultImplementation());
+
+            athenaDatasourceSpecification.databaseName = "demo";
+            athenaDatasourceSpecification.awsRegion = "ap-northeast-1";
+            athenaDatasourceSpecification.s3OutputLocation = "s3://aws-athena-query-results-finos/";
+
+            authSpec.userNameVaultReference = "AWS_ACCESS_KEY_ID";
+            authSpec.passwordVaultReference = "AWS_SECRET_ACCESS_KEY";
         }
         else
         {
             throw new IllegalStateException("Cannot initialize Athena integration connection");
         }
-
 
         conn.type = DatabaseType.Athena;
         conn.databaseType = DatabaseType.Athena;
