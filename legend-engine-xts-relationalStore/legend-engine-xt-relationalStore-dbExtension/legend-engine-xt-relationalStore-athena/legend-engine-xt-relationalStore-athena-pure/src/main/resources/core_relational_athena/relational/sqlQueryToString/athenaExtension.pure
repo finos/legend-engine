@@ -88,17 +88,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
   let currentTimeKey = now()->toString()->chunk(1)->filter(x | $x->matches('[0-9]'))->makeString();
   let tableKey = $tableName->chunk(1)->filter(x | $x->matches('[a-zA-Z0-9]'))->makeString();
   let tableLocationKey = $tableKey + $currentTimeKey;
-
-  let ddl = 'Create External Table '+ $tableName +
+  'Create External Table '+ $tableName +
       + '('
       + $t.columns->cast(@meta::relational::metamodel::Column)
          ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextForAthena($c.type))
         ->joinStrings(',')
       +') Location \'s3://aws-athena-query-results-finos/' + $tableLocationKey + '/\';';
-
-  println($ddl);
-
-  $ddl;
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::athena::getColumnTypeSqlTextForAthena(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
