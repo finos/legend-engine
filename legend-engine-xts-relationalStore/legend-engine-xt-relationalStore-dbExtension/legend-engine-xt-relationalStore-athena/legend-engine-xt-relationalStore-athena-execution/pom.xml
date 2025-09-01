@@ -27,24 +27,84 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Relational Store - Athena - Execution</name>
 
+    <repositories>
+        <repository>
+            <id>athena-jdbc-driver</id>
+            <url>file://${project.basedir}/lib</url>
+        </repository>
+    </repositories>
+
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>wagon-maven-plugin</artifactId>
+                <version>2.0.2</version>
+                <executions>
+                    <execution>
+                        <id>download-my-file</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.1.5.1000/AthenaJDBC42-2.1.5.1000.jar</url>
+                            <toFile>${project.basedir}/lib/com/amazon/athena/AthenaJDBC42/2.1.5.1000/AthenaJDBC42-2.1.5.1000.jar</toFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>create-athena-jdbc-pom-file</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo file="${project.basedir}/lib/com/amazon/athena/AthenaJDBC42/2.1.5.1000/AthenaJDBC42-2.1.5.1000.pom">
+                                    <![CDATA[
+                                    <?xml version="1.0" encoding="UTF-8"?>
+                                    <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+                                             xmlns="http://maven.apache.org/POM/4.0.0"
+                                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                                        <modelVersion>4.0.0</modelVersion>
+
+                                        <groupId>com.amazon.athena</groupId>
+                                        <artifactId>AthenaJDBC42</artifactId>
+                                        <version>2.1.5.1000</version>
+
+                                        <description>POM for AthenaJDBC42 jar</description>
+                                    </project>
+                                    ]]>
+                                </echo>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
-                <execution>
-                    <id>dependency-analyze</id>
-                    <goals>
-                        <goal>analyze-only</goal>
-                    </goals>
-                    <configuration>
-                        <ignoredUnusedDeclaredDependencies>
-                            <ignoredUnusedDeclaredDependency>com.amazon.athena:AthenaJDBC42:jar:2.1.5.1000</ignoredUnusedDeclaredDependency>
-                        </ignoredUnusedDeclaredDependencies>
-                    </configuration>
-                </execution>
-            </executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>com.amazon.athena:AthenaJDBC42:jar:2.1.5.1000</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -94,12 +154,11 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- athena driver is not available on maven, it needs to be manually downloaded from https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html -->
+<!-- athena driver is not available on maven, it needs to be manually downloaded from https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html -->
         <dependency>
             <groupId>com.amazon.athena</groupId>
             <artifactId>AthenaJDBC42</artifactId>
             <version>2.1.5.1000</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 
