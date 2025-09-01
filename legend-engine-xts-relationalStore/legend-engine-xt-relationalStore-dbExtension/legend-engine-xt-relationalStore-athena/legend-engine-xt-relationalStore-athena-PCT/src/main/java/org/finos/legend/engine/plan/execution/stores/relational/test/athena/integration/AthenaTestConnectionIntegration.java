@@ -97,7 +97,7 @@ public class AthenaTestConnectionIntegration implements TestConnectionIntegratio
 
             athenaDatasourceSpecification.databaseName = "demo";
             athenaDatasourceSpecification.awsRegion = "ap-northeast-1";
-            athenaDatasourceSpecification.s3OutputLocation = "s3://aws-athena-query-results-finos/";
+            athenaDatasourceSpecification.s3OutputLocation = "s3://legend-athena-query-results/";
 
             authSpec.userNameVaultReference = "AWS_ACCESS_KEY_ID";
             authSpec.passwordVaultReference = "AWS_SECRET_ACCESS_KEY";
@@ -108,7 +108,7 @@ public class AthenaTestConnectionIntegration implements TestConnectionIntegratio
 
             athenaDatasourceSpecification.databaseName = "demo";
             athenaDatasourceSpecification.awsRegion = "ap-northeast-1";
-            athenaDatasourceSpecification.s3OutputLocation = "s3://aws-athena-query-results-finos/";
+            athenaDatasourceSpecification.s3OutputLocation = "s3://legend-athena-query-results/";
 
             authSpec.userNameVaultReference = "AWS_ACCESS_KEY_ID";
             authSpec.passwordVaultReference = "AWS_SECRET_ACCESS_KEY";
