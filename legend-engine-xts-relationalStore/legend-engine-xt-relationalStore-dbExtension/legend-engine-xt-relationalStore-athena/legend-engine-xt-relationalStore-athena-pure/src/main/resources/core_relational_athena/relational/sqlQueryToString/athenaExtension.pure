@@ -93,7 +93,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
       + $t.columns->cast(@meta::relational::metamodel::Column)
          ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextForAthena($c.type))
         ->joinStrings(',')
-      +') Location \'s3://aws-athena-query-results-finos/' + $tableLocationKey + '/\';';
+      +') Location \'s3://legend-athena-query-results/' + $tableLocationKey + '/\';';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::athena::getColumnTypeSqlTextForAthena(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
