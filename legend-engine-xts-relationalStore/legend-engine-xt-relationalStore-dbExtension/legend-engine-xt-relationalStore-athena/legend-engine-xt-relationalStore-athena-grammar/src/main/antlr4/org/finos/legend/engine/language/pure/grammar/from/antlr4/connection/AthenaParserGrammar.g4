@@ -16,6 +16,7 @@ athenaDsp:                                  ATHENA_DSP
                                                         dbName
                                                         | awsRegion
                                                         | s3OutputLocation
+                                                        | workgroup
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -24,4 +25,6 @@ awsRegion:                                  AWS_REGION COLON STRING SEMI_COLON
 s3OutputLocation:                           S3_OUTPUT_LOCATION COLON STRING SEMI_COLON
 ;
 dbName:                                     NAME COLON STRING SEMI_COLON
+;
+workgroup:                                  WORKGROUP COLON STRING SEMI_COLON
 ;
