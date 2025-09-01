@@ -21,10 +21,7 @@ env:
 on:
   push:
     branches:
-      - master
-  pull_request:
-    branches:
-      - master
+      - feature-athena-*
 
 # Cancel running jobs from previous pipelines of the same workflow on PR to save resource when commits are pushed quickly
 # NOTE: we don't want this behavior on default branch
