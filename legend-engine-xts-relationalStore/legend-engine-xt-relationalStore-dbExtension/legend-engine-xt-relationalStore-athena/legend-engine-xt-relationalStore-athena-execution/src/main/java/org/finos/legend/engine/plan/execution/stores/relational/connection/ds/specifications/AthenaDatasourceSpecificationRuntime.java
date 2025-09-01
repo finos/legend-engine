@@ -31,6 +31,7 @@ public class AthenaDatasourceSpecificationRuntime extends org.finos.legend.engin
         Properties props = new Properties();
         props.put("awsRegion", key.getAwsRegion());
         props.put("s3OutputLocation", key.getS3OutputLocation());
+        props.put("workgroup", key.getWorkgroup());
         return props;
     }
 

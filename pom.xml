@@ -125,6 +125,7 @@
         <timestamp>${maven.build.timestamp}</timestamp>
 
         <!-- Build Variables -->
+        <project.root.dir>${project.basedir}</project.root.dir>
         <dependencies.failOnWarning>true</dependencies.failOnWarning>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -1549,6 +1550,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-athena-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
