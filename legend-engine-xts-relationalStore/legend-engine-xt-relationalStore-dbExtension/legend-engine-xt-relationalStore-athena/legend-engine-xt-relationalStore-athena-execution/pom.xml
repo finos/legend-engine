@@ -159,6 +159,7 @@
             <groupId>com.amazon.athena</groupId>
             <artifactId>AthenaJDBC42</artifactId>
             <version>2.1.5.1000</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
