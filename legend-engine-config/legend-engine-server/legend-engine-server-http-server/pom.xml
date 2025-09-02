@@ -91,6 +91,23 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-api</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
+                            <ignoredUsedUndeclaredDependencies>
+                                <ignoredUsedUndeclaredDependency>com.amazon.athena:AthenaJDBC42</ignoredUsedUndeclaredDependency>
+                            </ignoredUsedUndeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

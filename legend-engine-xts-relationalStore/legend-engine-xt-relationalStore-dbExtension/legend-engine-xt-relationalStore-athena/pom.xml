@@ -26,11 +26,70 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XT - Relational Store - DB Extension - Athena</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>create-athena-jdbc-pom-file</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo file="${settings.localRepository}/com/amazon/athena/AthenaJDBC42/2.1.5.1000/AthenaJDBC42-2.1.5.1000.pom">
+                                    <![CDATA[
+                                    <?xml version="1.0" encoding="UTF-8"?>
+                                    <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+                                             xmlns="http://maven.apache.org/POM/4.0.0"
+                                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                                        <modelVersion>4.0.0</modelVersion>
+                                        <groupId>com.amazon.athena</groupId>
+                                        <artifactId>AthenaJDBC42</artifactId>
+                                        <version>2.1.5.1000</version>
+                                        <description>POM for AthenaJDBC42 jar</description>
+                                    </project>
+                                    ]]>
+                                </echo>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>download-athena-jdbc</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>wget -q --show-progress https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.1.5.1000/AthenaJDBC42-2.1.5.1000.jar -O ${settings.localRepository}/com/amazon/athena/AthenaJDBC42/2.1.5.1000/AthenaJDBC42-2.1.5.1000.jar</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <modules>
         <module>legend-engine-xt-relationalStore-athena-execution</module>
         <module>legend-engine-xt-relationalStore-athena-grammar</module>
         <module>legend-engine-xt-relationalStore-athena-protocol</module>
         <module>legend-engine-xt-relationalStore-athena-pure</module>
         <module>legend-engine-xt-relationalStore-athena-PCT</module>
+        <module>legend-engine-xt-relationalStore-athena-sqlDialectTranslation-pure</module>
+        <module>legend-engine-xt-relationalStore-athena-SDT</module>
     </modules>
 </project>
