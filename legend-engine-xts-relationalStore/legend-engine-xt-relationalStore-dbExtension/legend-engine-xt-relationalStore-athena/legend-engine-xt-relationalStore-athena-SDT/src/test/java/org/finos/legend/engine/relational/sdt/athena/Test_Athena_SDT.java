@@ -19,16 +19,15 @@ import junit.framework.TestSuite;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.relational.test.sdt.SdtTestSuiteBuilder;
 
-//import static org.finos.legend.pure.generated.core_external_store_relational_sql_dialect_translation_athena_athenaSqlDialect.Root_meta_external_store_relational_sqlDialectTranslation_athena_athenaSqlDialectExtension__Extension_1_;
+import static org.finos.legend.pure.generated.core_external_store_relational_sql_dialect_translation_athena_athenaSqlDialect.Root_meta_external_store_relational_sqlDialectTranslation_athena_athenaSqlDialectExtension__Extension_1_;
 
 public class Test_Athena_SDT extends TestSuite
 {
     public static Test suite()
     {
-        return null;
-//        return SdtTestSuiteBuilder.buildSdtTestSuite(
-//                "Athena",
-//                es -> Lists.immutable.of(Root_meta_external_store_relational_sqlDialectTranslation_athena_athenaSqlDialectExtension__Extension_1_(es))
-//        );
+        return SdtTestSuiteBuilder.buildSdtTestSuite(
+                "Athena",
+                es -> Lists.immutable.of(Root_meta_external_store_relational_sqlDialectTranslation_athena_athenaSqlDialectExtension__Extension_1_(es))
+        );
     }
 }
