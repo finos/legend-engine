@@ -58,10 +58,10 @@ function meta::external::query::sql::transformation::utils::trace<V|m>(func:Func
   meta::pure::functions::tracing::traceSpan($func, 'Legend SQL: ' + $name);
 }
 
-function meta::external::query::sql::transformation::utils::debug(a:String[1], debug:DebugContext[1]):Any[0]
-{
-  debug({|$a}, $debug)
-}
+// function meta::external::query::sql::transformation::utils::debug(a:String[1], debug:DebugContext[1]):Any[0]
+// {
+//   debug({|$a}, $debug)
+// }
 
 function meta::external::query::sql::transformation::utils::debug(f:FunctionDefinition<{->String[1]}>[1], debug:DebugContext[1]):Any[0]
 {
