@@ -1,0 +1,104 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// println(meta::external::query::sql::reversePCT::generator::generateGeneratorTests('grammar','boolean/inequality/greaterThanEqual.pure'));
+
+// println(meta::external::query::sql::reversePCT::generator::generateTests(
+//            'grammar',
+//            'boolean/inequality/greaterThanEqual.pure',
+//            [
+//              f(meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Date_Function_1__Boolean_1_),
+//              f(meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_String_Function_1__Boolean_1_),
+//              f(meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean_Function_1__Boolean_1_),
+//              f(meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Number_Function_1__Boolean_1_)
+//            ]
+//           )
+// );
+
+import meta::external::query::sql::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::grammar::boolean::inequality::greaterThanEqual::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/grammar/functions/boolean/inequality/greaterThanEqual.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Date_Function_1__Boolean_1_',
+                      [
+                        rev('|%2012-10-02 >= %2012-10-01',
+                            'select Date\'2012-10-02\' >= Date\'2012-10-01\''
+                        ),
+                        rev('|%2012-10-02 >= %2012-10-02',
+                            'select Date\'2012-10-02\' >= Date\'2012-10-02\''
+                        ),
+                        rev('|%2012-10-02 >= %2012-10-03',
+                            'select Date\'2012-10-02\' >= Date\'2012-10-03\''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_String_Function_1__Boolean_1_',
+                      [
+                        rev('|\'b\' >= \'a\'',
+                            'select Text\'b\' >= Text\'a\''
+                        ),
+                        rev('|\'a\' >= \'a\'',
+                            'select Text\'a\' >= Text\'a\''
+                        ),
+                        rev('|\'a\' >= \'b\'',
+                            'select Text\'a\' >= Text\'b\''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean_Function_1__Boolean_1_',
+                      [
+                        rev('|true >= false',
+                            'select (Boolean\'true\' >= Boolean\'false\')'
+                        ),
+                        rev('|true >= true',
+                            'select (Boolean\'true\' >= Boolean\'true\')'
+                        ),
+                        rev('|false >= false',
+                            'select (Boolean\'false\' >= Boolean\'false\')'
+                        ),
+                        rev('|false >= true',
+                            'select (Boolean\'false\' >= Boolean\'true\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Number_Function_1__Boolean_1_',
+                      [
+                        rev('|4 >= 3',
+                            'select 4 >= 3'
+                        ),
+                        rev('|3 >= 3',
+                            'select 3 >= 3'
+                        ),
+                        rev('|3 >= 4',
+                            'select 3 >= 4'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::grammar::boolean::inequality::greaterThanEqual::exec():Boolean[1]
+{
+   meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Date(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_String(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Number(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

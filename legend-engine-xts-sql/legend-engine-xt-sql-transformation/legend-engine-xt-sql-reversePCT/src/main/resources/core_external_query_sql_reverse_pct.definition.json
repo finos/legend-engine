@@ -1,10 +1,17 @@
 {
   "name": "core_external_query_sql_reverse_pct",
-  "pattern": "(meta::external::query::sql::reversePCT)(::.*)?",
+  "pattern": "(meta::external::query::sql::reversePCT|meta::external::query::reversePCT::generator)(::.*)?",
   "dependencies": [
     "platform",
     "core",
+    "core_functions_unclassified",
+    "core_functions_standard",
+    "core_external_query_sql",
+
+    "platform_dsl_store",
+    "platform_dsl_tds",
+    "platform_store_relational",
     "core_relational",
-    "core_external_query_sql"
+    "core_external_test_connection"
   ]
 }
