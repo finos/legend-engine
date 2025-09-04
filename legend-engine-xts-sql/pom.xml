@@ -26,13 +26,10 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XTS - SQL</name>
 
-
-
     <modules>
         <module>legend-engine-xt-sql-expression</module>
         <module>legend-engine-xt-sql-postgres-server</module>
-        <module>legend-engine-xt-sql-providers</module>
-        <module>legend-engine-xt-sql-pure</module>
         <module>legend-engine-xt-sql-http-api</module>
+        <module>legend-engine-xt-sql-transformation</module>
     </modules>
 </project>

@@ -1,4 +1,5 @@
 import meta::relational::metamodel::*;
+import meta::pure::metamodel::relation::*;
 import meta::pure::runtime::*;
 import meta::relational::runtime::*;
 import meta::external::function::activator::snowflakeApp::generation::*;
@@ -36,7 +37,10 @@ function meta::external::function::activator::snowflakeApp::generation::generate
 
   let plan =  meta::pure::executionPlan::executionPlan($s.function->cast(@ConcreteFunctionDefinition<Any>), $contextWithEnumPushDown, $extensions, noDebug());
   let variables = $plan.rootExecutionNode.childNodes->filter(n| $n->instanceOf(ConstantExecutionNode) && $n->cast(@ConstantExecutionNode).values->type()==VariableDeclaration)->cast(@ConstantExecutionNode)->first().values->cast(@VariableDeclaration);
-  let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
+  let resultStub = if($s.function->functionReturnType().rawType==Relation,
+      | let resultStub = relationGenerateResultTypeStub($s.function);,
+      | let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
+    );
   let generatedQueryNode = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(node|$node.sqlQuery->toLower()->startsWith('select'))->last()->toOne('candidate query not found');
   let usedTables =  $generatedQueryNode.metadata->filter(m| $m->instanceOf(TableInfo))->cast(@TableInfo)->toOne('No table info found').info->map(i|$i.schema+'.'+$i.table);
   if($variables->isEmpty(),
@@ -95,6 +99,17 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
 {
   meta::external::function::activator::snowflakeApp::generation::generateFullArtifact($s, $extensions).createQuery;
   
+}
+
+function  meta::external::function::activator::snowflakeApp::generation::relationGenerateResultTypeStub(f:Function<Any>[1]):String[1]
+{
+  let dbExtension = meta::relational::functions::sqlQueryToString::loadDbExtension(DatabaseType.Snowflake);
+  $f->functionReturnType().typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).classifierGenericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->map(c|
+    let colName = $c.name->toOne()->toUpper();
+    let returnArg = $c.classifierGenericType->toOne().typeArguments->at(1);
+    let returnType = $dbExtension.dataTypeToSqlText->toOne()->eval($dbExtension.pureTypeToDatabaseTypeConverter->toOne()->eval($returnArg));
+    '"' + $colName + '" ' + $returnType;
+  )->joinStrings(', ');
 }
 
 function  meta::external::function::activator::snowflakeApp::generation::generateResultTypeStub(r: TDSResultType[1], extensions:meta::pure::extension::Extension[*]):String[1]

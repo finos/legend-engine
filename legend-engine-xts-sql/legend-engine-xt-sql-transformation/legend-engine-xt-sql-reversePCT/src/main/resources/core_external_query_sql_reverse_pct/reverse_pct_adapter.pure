@@ -1,0 +1,108 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::test::pct::*;
+
+Class meta::external::query::sql::reversePCT::framework::ReversesForSource
+{
+  source : String[1];
+  reverses : ReversesForTest[*];
+}
+
+Class meta::external::query::sql::reversePCT::framework::ReversesForTest
+{
+  testFunction : String[1];
+  reverses : Reverse[*];
+}
+
+Class meta::external::query::sql::reversePCT::framework::Reverse
+{
+  function : String[1];
+  reverse : String[0..1];
+  shouldBeSupported : Boolean[1] = true;
+  expectedError : String[0..1];
+  infoMessage : String[0..1];
+}
+
+function <<PCT.adapter>> meta::external::query::sql::reversePCT::framework::sql<X|o>(f:Function<{->X[o]}>[1]):X[o]
+{
+  // Find SQL ---
+  let src = $f->sourceInformation().source;
+
+  let srcReverses = reverses()->filter(r|$r.source == $src);
+  assertSize($srcReverses, 1, |'Can\'t find any reverses for the source \''+$src->toOne()+'\'');
+  
+  let test =  $f->findPackagableElement()->elementToPath();
+  let reversesForTest = $srcReverses.reverses->filter(x|$x.testFunction == $test);
+  assertSize($reversesForTest, 1, |'Can\'t find any reverses for the test \''+$test->toOne()+'\'');
+
+  let funcAsString = $f->cast(@FunctionDefinition<Any>)->printFunctionDefinition(meta::relational::grammar::serialization::relationGrammarConfiguration(), ^GContext(space=''));       
+  let reverse = $reversesForTest->toOne().reverses->filter(p|$p.function == $funcAsString);
+
+  let rev = $reverse->toOne();
+
+  if ($rev.shouldBeSupported,
+    | let sqlString = $rev.reverse->toOne();
+      let func = meta::external::query::sql::transformation::queryToPure::sqlToPure($sqlString->toOne());
+      $func->cast(@Function<{->X[o]}>)->eval();,
+    |fail('Should not be supported');@X->toMultiplicity(@[o]);
+  );
+}
+
+function meta::external::query::sql::reversePCT::framework::printSourceInformation(sourceInfo : SourceInformation[1]):String[1]
+{
+  $sourceInfo.source->toOne()+' line:'+$sourceInfo.startLine->toOne()->toString()+' column:'+$sourceInfo.startColumn->toOne()->toString();
+}
+
+function meta::external::query::sql::reversePCT::framework::revsForTest(testFunction:String[1], reverses:Reverse[*]):ReversesForTest[1]
+{
+  ^ReversesForTest
+  (
+    testFunction = $testFunction,
+    reverses = $reverses
+  )
+}
+
+function meta::external::query::sql::reversePCT::framework::rev(func:String[1], val:String[1]):Reverse[1]
+{
+  ^Reverse(function=$func, reverse=$val);
+}
+
+function meta::external::query::sql::reversePCT::framework::revError(func:String[1], val:String[1], error:String[1], message:String[1]):Reverse[1]
+{
+  ^Reverse(function=$func, reverse=$val, expectedError=$error, infoMessage=$message);
+}
+
+function meta::external::query::sql::reversePCT::framework::noRev(func:String[1]):Reverse[1]
+{
+  ^Reverse(function=$func, shouldBeSupported=false);
+}
+
+
+
+
+
+
+
+
+
+function meta::external::query::sql::reversePCT::framework::reverses():ReversesForSource[*]
+{
+    meta::external::query::sql::reversePCT::framework::grammar::reverses()
+    ->concatenate(meta::external::query::sql::reversePCT::framework::essential::reverses())
+    ->concatenate(meta::external::query::sql::reversePCT::framework::relation::reverses())
+    ->concatenate(meta::external::query::sql::reversePCT::framework::standard::reverses())
+}

@@ -1,0 +1,10 @@
+{
+  "name": "core_external_query_sql_reverse_pct",
+  "pattern": "(meta::external::query::sql::reversePCT)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core",
+    "core_relational",
+    "core_external_query_sql"
+  ]
+}

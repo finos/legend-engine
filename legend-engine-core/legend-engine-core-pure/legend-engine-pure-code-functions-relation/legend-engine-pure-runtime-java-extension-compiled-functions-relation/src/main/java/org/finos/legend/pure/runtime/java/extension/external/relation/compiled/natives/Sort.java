@@ -41,7 +41,7 @@ public class Sort extends AbstractNative implements Native
 
     public static void processSortInfo(StringBuilder result, String param)
     {
-        result.append("CompiledSupport.toPureCollection(" + param + ")");
+        result.append("((RichIterable<? extends  Root_meta_pure_functions_relation_SortInfo<?>>)(Object)CompiledSupport.toPureCollection(" + param + "))");
         result.append(".collect(new DefendedFunction<Root_meta_pure_functions_relation_SortInfo<? extends Object>, org.eclipse.collections.api.tuple.Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum, String>>()\n" +
                 "{\n" +
                 "    @Override\n" +
@@ -51,4 +51,20 @@ public class Sort extends AbstractNative implements Native
                 "    }\n" +
                 "})");
     }
+
+    @Override
+    public String buildBody()
+    {
+        StringBuilder result = new StringBuilder();
+        processSortInfo(result, "vars.get(1)");
+        return "new SharedPureFunction<Object>()\n" +
+                "{\n" +
+                "   @Override\n" +
+                "   public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
+                "   {\n" +
+                "       return org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.sort((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation<?>)vars.get(0), " + result + ", es);\n" +
+                "   }\n" +
+                "\n}";
+    }
+
 }

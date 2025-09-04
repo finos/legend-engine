@@ -1,0 +1,44 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::relation::slice::last::reverses():ReversesForSource[1]
+{
+    ^ReversesForSource(
+      source = '/core_functions_relation/relation/functions/slice/last.pure',
+      reverses = [
+                  revsForTest(
+                    'meta::pure::functions::relation::tests::last::testOLAPWithPartitionAndOrderLastWindow_Function_1__Boolean_1_',
+                    [
+                      rev(
+                        '|#TDS{\n'+
+                        'id,grp,name\n'+
+                        '1,2,A\n'+
+                        '2,1,B\n'+
+                        '3,3,C\n'+
+                        '4,4,D\n'+
+                        '5,2,E\n'+
+                        '6,1,F\n'+
+                        '7,3,G\n'+
+                        '8,1,H\n'+
+                        '9,5,I\n'+
+                        '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$p->meta::pure::functions::relation::last($w, $r).id})',
+                        'select id, grp, name, last_value(id) over (partition by grp order by id desc) as newCol from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\')'
+                      )
+                    ]
+                  )
+                ]
+    )
+}
