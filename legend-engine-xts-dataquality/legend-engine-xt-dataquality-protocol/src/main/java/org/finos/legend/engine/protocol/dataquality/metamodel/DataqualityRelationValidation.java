@@ -15,21 +15,19 @@
 package org.finos.legend.engine.protocol.dataquality.metamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.ModelGenerationSpecification;
 
 import java.util.Collections;
 import java.util.List;
-
 
 //------------------------------------------------------------
 // Should be generated out of the Pure protocol specification
 //------------------------------------------------------------
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DataqualityRelationValidation extends PackageableElement
+public class DataqualityRelationValidation extends ModelGenerationSpecification
 {
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();

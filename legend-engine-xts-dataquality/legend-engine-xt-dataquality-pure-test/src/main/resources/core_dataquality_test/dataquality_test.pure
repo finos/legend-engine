@@ -1,3 +1,4 @@
+import meta::pure::precisePrimitives::*;
 import meta::pure::functions::string::generation::*;
 import meta::pure::graphFetch::execution::*;
 import meta::external::dataquality::tests::*;
@@ -198,6 +199,38 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
                                                     ->extend(~DQ_RULE_NAME: row | 'validFirstName')},
     'meta::external::dataquality::tests::domain::DataQualityRuntime'
     )
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_relationValidation_row_levelWithFromAndCasting():Boolean[1]
+{
+  //we currently have the assertion as string as the pure compiler is not inferring varchar size correctly
+  let expected = '|#>{meta::external::dataquality::tests::domain::db.personTable}#' + 
+                      '->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME])' + 
+                      '->meta::pure::functions::relation::extend(~fullname:x: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200), LASTNAME:meta::pure::precisePrimitives::Varchar(200))[1]|[$x.FIRSTNAME->meta::pure::functions::multiplicity::toOne(), $x.LASTNAME->meta::pure::functions::multiplicity::toOne()]->meta::pure::functions::string::joinStrings())' + 
+                      '->meta::pure::functions::relation::filter(row2: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200), LASTNAME:meta::pure::precisePrimitives::Varchar(200), fullname:String)[1]|$row2.FIRSTNAME->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::boolean::not())' + 
+                      '->meta::pure::functions::relation::extend(~DQ_LOGICAL_DEFECT_ID:row: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200), LASTNAME:meta::pure::precisePrimitives::Varchar(200), fullname:String)[1]|meta::pure::functions::hash::hash($row.FIRSTNAME->meta::pure::functions::collection::isEmpty()->meta::pure::functions::lang::if(|\'\', |$row.FIRSTNAME->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString()) + $row.LASTNAME->meta::pure::functions::collection::isEmpty()->meta::pure::functions::lang::if(|\'\', |$row.LASTNAME->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString()) + $row.fullname->meta::pure::functions::collection::isEmpty()->meta::pure::functions::lang::if(|\'\', |$row.fullname->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString()), meta::pure::functions::hash::HashType.MD5)->meta::pure::functions::lang::cast(@meta::pure::precisePrimitives::Varchar(32)))' + 
+                      '->meta::pure::functions::relation::extend(~DQ_DEFECT_ID:row: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200), LASTNAME:meta::pure::precisePrimitives::Varchar(200), fullname:String, DQ_LOGICAL_DEFECT_ID:meta::pure::precisePrimitives::Varchar(32))[1]|meta::pure::functions::string::generation::generateGuid()->meta::pure::functions::lang::cast(@meta::pure::precisePrimitives::Varchar(36)))' + 
+                      '->meta::pure::functions::relation::extend(~DQ_RULE_NAME:row: (FIRSTNAME:meta::pure::precisePrimitives::Varchar(200), LASTNAME:meta::pure::precisePrimitives::Varchar(200), fullname:String, DQ_LOGICAL_DEFECT_ID:meta::pure::precisePrimitives::Varchar(32), DQ_DEFECT_ID:meta::pure::precisePrimitives::Varchar(36))[1]|\'validFirstName\'->meta::pure::functions::lang::cast(@meta::pure::precisePrimitives::Varchar(255)))';
+
+
+  doRelationTest(
+    '###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->toOne(), $x.LASTNAME->toOne()]->joinStrings())->from(meta::external::dataquality::tests::domain::DataQualityRuntime);' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'validFirstName\';' +
+    '             description: \'first name should not be empty\';' +
+    '             assertion: row2|$row2.FIRSTNAME->isNotEmpty();' +
+    '             type: ROW_LEVEL;' +
+    '          }' +
+    '         ];' +
+    '      }',
+    'validFirstName',
+    $expected,
+    'meta::external::dataquality::tests::domain::DataQualityRuntime', true, true
+    );
 }
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_parameterized_relationValidation_row_level():Boolean[1]

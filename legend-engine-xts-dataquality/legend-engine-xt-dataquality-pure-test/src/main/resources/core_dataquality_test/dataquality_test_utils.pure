@@ -58,11 +58,25 @@ function meta::external::dataquality::tests::doTest(tree:String[1], expected:Fun
 
 function meta::external::dataquality::tests::doRelationTest(dq:String[1], validationNames:String[*], expected:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]):Boolean[1]
 {
+  doRelationTest($dq, $validationNames, $expected, $packageableRuntimeAsString, false, false)
+}
+
+function meta::external::dataquality::tests::doRelationTest(dq:String[1], validationNames:String[*], expected:String[1], packageableRuntimeAsString: String[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]):Boolean[1]
+{
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
-  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationNames, [], true);
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationNames, [], true, $castDQColumnsToPrimitive, $removeFrom);
 
-  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString, !$removeFrom);
+}
+
+function meta::external::dataquality::tests::doRelationTest(dq:String[1], validationNames:String[*], expected:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]):Boolean[1]
+{
+  let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
+
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationNames, [], true, $castDQColumnsToPrimitive, $removeFrom);
+
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString, !$removeFrom);
 }
 
 function meta::external::dataquality::tests::doRelationRowCountTest(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]):Boolean[1]
@@ -116,20 +130,44 @@ function meta::external::dataquality::tests::assertLambdaEquals(expected:Functio
 
 function meta::external::dataquality::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]): Boolean[1]
 {
-  let config = ^meta::pure::metamodel::serialization::grammar::Configuration
+  assertLambdaEquals($expected, $actual, $packageableRuntimeAsString, true)
+}
+
+function meta::external::dataquality::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1], fromExpected: Boolean[1]): Boolean[1]
+{
+  let config = grammarConfig();
+
+  assertLambdaEquals($expected->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')), $actual->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')), $packageableRuntimeAsString, $fromExpected);
+}
+
+function meta::external::dataquality::tests::assertLambdaEquals(expected:String[1], actual:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1], fromExpected: Boolean[1]): Boolean[1]
+{
+  let config = grammarConfig();
+
+  assertLambdaEquals($expected, $actual->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')), $packageableRuntimeAsString, $fromExpected);
+}
+
+function meta::external::dataquality::tests::assertLambdaEquals(expected:String[1], actual:String[1], packageableRuntimeAsString: String[1], fromExpected: Boolean[1]): Boolean[1]
+{
+  assert(($fromExpected && $actual->contains($packageableRuntimeAsString)) || (!$fromExpected && !$actual->contains($packageableRuntimeAsString)));  
+  assertEquals($expected, $actual->replace(['->meta::pure::mapping::from(', $packageableRuntimeAsString, ')']->joinStrings(), ''));
+}
+
+function meta::external::dataquality::tests::grammarConfig():meta::pure::metamodel::serialization::grammar::Configuration[1]
+{
+  ^meta::pure::metamodel::serialization::grammar::Configuration
             (
               fullPath = true,
-              extensions = ^meta::pure::metamodel::serialization::grammar::GrammarExtension(
-                                extraInstanceValueHandlers =
-                                  [
-                                    g:GraphFetchTree[1]| treeToString($g)
-                                  ]
-                            )
+              extensions = [
+                              ^meta::pure::metamodel::serialization::grammar::GrammarExtension(
+                                  extraInstanceValueHandlers =
+                                    [
+                                      g:GraphFetchTree[1]| treeToString($g)
+                                    ]
+                              ),
+                              meta::relational::grammar::serialization::relationGrammarExtension()
+                            ]
             );
-
-  let actualFunctionDefinition = $actual->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space=''));
-  assert($actualFunctionDefinition->contains($packageableRuntimeAsString));
-  assertEquals($expected->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')), $actualFunctionDefinition->replace(['->meta::pure::mapping::from(', $packageableRuntimeAsString, ')']->joinStrings(), ''));
 }
 
 
