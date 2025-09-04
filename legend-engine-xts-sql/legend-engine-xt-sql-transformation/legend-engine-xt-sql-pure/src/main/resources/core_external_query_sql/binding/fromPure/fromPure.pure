@@ -323,8 +323,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let context = ^$_context(debug = $_context.debug->indent());
 
-  // assert($query.with->isEmpty() || $_context.relation->isTrue(), 'WITH clause (common table expressions) are currently only supported for Relation inputs');
-
   let withQueries = $query.with->processWith($_context);
 
   let scopedContext = ^$_context(
