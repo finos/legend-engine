@@ -16,7 +16,9 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -42,13 +44,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PureInstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementationAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStoreAssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -145,33 +147,59 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         String propertyMappingTargetId = HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping);
         if (StringUtils.isEmpty(propertyMapping.source) && StringUtils.isEmpty(propertyMappingTargetId))
         {
-            String source = !this.parent._association()._originalMilestonedProperties().isEmpty() ? this.parent._association()._originalMilestonedProperties().toList().get(0)._name() : this.parent._association()._properties().toList().get(0)._name();
-            String target = !this.parent._association()._originalMilestonedProperties().isEmpty() ? this.parent._association()._originalMilestonedProperties().toList().get(1)._name() : this.parent._association()._properties().toList().get(1)._name();
-            Iterator<SetImplementation> iter = allClassMappings.iterator();
-            while (sourceSet == null || targetSet == null && iter.hasNext())
+            String source;
+            String target;
+            String prop1 = !this.parent._association()._originalMilestonedProperties().isEmpty() ? this.parent._association()._originalMilestonedProperties().toList().get(0)._name() : this.parent._association()._properties().toList().get(0)._name();
+            String prop2 = !this.parent._association()._originalMilestonedProperties().isEmpty() ? this.parent._association()._originalMilestonedProperties().toList().get(1)._name() : this.parent._association()._properties().toList().get(1)._name();
+            if (prop1.equals(propertyMapping.property.property))
             {
-                SetImplementation c = iter.next();
+                target = prop1;
+                source = prop2;
+            }
+            else
+            {
+                target = prop2;
+                source = prop1;
+            }
+            Iterator<SetImplementation> allClzMappings = allClassMappings.iterator();
+            MutableSet<InstanceSetImplementation> sourceSets = Sets.mutable.empty();
+            MutableSet<InstanceSetImplementation> targetSets = Sets.mutable.empty();
+            MutableSet<InstanceSetImplementation> localRoots = this.mapping._classMappings().collect(x -> (InstanceSetImplementation) x).toSet();
+            while (allClzMappings.hasNext())
+            {
+                SetImplementation c = allClzMappings.next();
                 RichIterable<? extends Property<?, ?>> candidateProperties = !c._class()._originalMilestonedProperties().isEmpty() ? c._class()._originalMilestonedProperties() : c._class()._propertiesFromAssociations();
                 for (Property<?, ?> candidateProperty: candidateProperties)
                 {
-                    if (candidateProperty._owner() instanceof Association)
+                    if ((sourceSet == null || targetSet == null) && candidateProperty._owner().equals(this.parent._association()))
                     {
-                        Association association = (Association) candidateProperty._owner();
-                        MutableList<? extends Property<?, ?>> associationProperties = !association._originalMilestonedProperties().isEmpty() ? association._originalMilestonedProperties().toList() : association._properties().toList();
-                        if (associationProperties.get(0)._name().equals(source) && associationProperties.get(1)._name().equals(target))
+                        if (sourceSet == null && candidateProperty._name().equals(target))
                         {
-                            if (sourceSet == null && candidateProperty._name().equals(target))
+                            if (localRoots.contains(c))
                             {
                                 sourceSet = (InstanceSetImplementation) c;
                             }
-                            else if (targetSet == null && candidateProperty._name().equals(source))
+                            else
+                            {
+                                sourceSets.add((InstanceSetImplementation) c);
+                            }
+                        }
+                        else if (candidateProperty._name().equals(source))
+                        {
+                            if (targetSet == null && localRoots.contains(c))
                             {
                                 targetSet = (InstanceSetImplementation) c;
+                            }
+                            else
+                            {
+                                targetSets.add((InstanceSetImplementation) c);
                             }
                         }
                     }
                 }
             }
+            sourceSet = sourceSet == null ? sourceSets.select(SetImplementationAccessor::_root).getOnly() : sourceSet;
+            targetSet = targetSet == null ? targetSets.select(SetImplementationAccessor::_root).getOnly() : targetSet;
         }
         else
         {
@@ -184,6 +212,10 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
             if (targetSet == null)
             {
                 throw new EngineException("Can't find class mapping '" + propertyMapping.target + "' in mapping '" + HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()) + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            if (sourceSet._root() || targetSet._root())
+            {
+                context.pureModel.addWarnings(Lists.mutable.with(new Warning(propertyMapping.sourceInformation, "XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")));
             }
         }
 
@@ -234,8 +266,8 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
 
         return xpm._property(property)
                 ._localMappingProperty(propertyMapping.localMappingProperty != null)
-                ._sourceSetImplementationId(propertyMapping.source == null ? parent._id() : propertyMapping.source)
-                ._targetSetImplementationId(HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping))
+                ._sourceSetImplementationId(sourceSet._id())
+                ._targetSetImplementationId(targetSet._id())
                 ._owner(parent)._crossExpression(lambda);
     }
 
