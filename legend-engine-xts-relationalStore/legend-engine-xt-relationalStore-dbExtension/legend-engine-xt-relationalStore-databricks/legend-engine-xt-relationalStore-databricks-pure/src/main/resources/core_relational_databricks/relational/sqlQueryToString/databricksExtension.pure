@@ -54,7 +54,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       schemaNameToIdentifier = schemaNameToIdentifierForDatabricks_String_1__DbConfig_1__String_1_,
       commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
-      identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_, // for columns with names, its configured to use `
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslatorForDatabricks()
    );
@@ -67,7 +67,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       pair(String,         ^LiteralProcessor(format = '\'%s\'',               transform = {s:String[1], a:String[0..1] | $s->replace('\'','\\\'')})),
       pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform())) // should fix boolean handling
    ]);
 }
 
@@ -120,7 +121,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='to_date(%s,%s)')),
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as double)')),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
-    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as int)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as int)')), // integers in Pure are 64 bits, is int correct type on DB?
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 7 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
@@ -283,6 +284,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
              | 'cast(round(months_between('+ $p->at(1) +', '+ $p->at(0) +')) AS INT)',
              | if ($interval == 'DAY',
                   | 'datediff('+ $p->at(1) +', '+ $p->at(0) +')',
+                  // are these correct?  round could lead to wrong "hour" math
                   | if ($interval == 'HOUR',
                        | 'cast(round((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 3600) AS INT)',
                        | if ($interval == 'MINUTE',
