@@ -68,7 +68,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform())) // should fix boolean handling
+      pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform()))
    ]);
 }
 
@@ -107,7 +107,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='locate(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='%s', transform={p:String[1]|$p->transformAlphaNumericParamsDatabricks()})),
-    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='%s', transform={p:String[1..2] | $p->arrayJoinDatabricks()})),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='%s', transform={p:String[1..2] | $p->arrayJoinDatabricks()})), // seems is not a friendly aggregate impl
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format='%s', transform={p:String[2]|$p->transformRegexpParamsDatabricks()})),
     dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='MAX_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
@@ -305,6 +305,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     [$cmd];
 }
 
+// is this the right aggregation for joining strings?
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::arrayJoinDatabricks(p:String[1..2]):String[1]
 {
     let delimiter = if($p->size() == 1, |',', |$p->at(1));
