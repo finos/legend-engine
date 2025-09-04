@@ -88,7 +88,12 @@ function meta::external::store::relational::sqlDialectTranslation::athena::athen
     pair('FuncTests - percentile_disc(0/0)', 'Athena SQL Dialect does not support the function - percentile_disc'),
     pair('FuncTests - jarowinkler_similarity(0/2)', 'Athena SQL Dialect does not support the function - jarowinkler_similarity'),
     pair('FuncTests - jarowinkler_similarity(1/2)', 'Athena SQL Dialect does not support the function - jarowinkler_similarity'),
-    pair('FuncTests - jarowinkler_similarity(2/2)', 'Athena SQL Dialect does not support the function - jarowinkler_similarity')
+    pair('FuncTests - jarowinkler_similarity(2/2)', 'Athena SQL Dialect does not support the function - jarowinkler_similarity'),
+    pair(
+      'FuncTests - parseJson(0/0)',
+      'Expected - {"columnNames":["result"],"rows":[{"values":["{\n  \"foo\": \"bar\"\n}"]}]}\n' + 
+      'Actual - {"columnNames":["result"],"rows":[{"values":["{\"foo\":\"bar\"}"]}]}"'
+    )
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -156,7 +161,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     querySpecificationProcessor_default(),
     unionProcessor_default(),
     tableSubqueryProcessor_default(),
-    tablePlaceholderProcessor_default()
+    tablePlaceholderProcessor_default(),
+    extendedQuerySpecificationProcessor_default()
   ]
 }
 
@@ -495,8 +501,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(JaroWinklerSimilarity, simpleFunctionProcessor('jarowinkler_similarity')),
     pair(StartsWith, simpleFunctionProcessor('starts_with')),
     pair(EndsWith, customFunctionProcessor(processorForEndsWithAthena_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)), //fail
-    pair(UuidV4, customFunctionProcessor(processorForToUuidV4_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)), //fail 1 vs true
+    // pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)), //fail
+    pair(UuidV4, customFunctionProcessor(processorForToUuidV4_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)), 
 
     // Temporal
     // pair(MakeDate, simpleFunctionProcessor('date_from_parts')),
