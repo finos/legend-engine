@@ -246,6 +246,16 @@ function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Bo
    });
 
    assertSchemaRoundTripEquality({|
+         let tds = Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],
+               [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.quantity, y | $y->sum())],
+               ['tradeDate', 'quantityA', 'quantityB']
+            );
+
+          $tds;
+   });
+
+   assertSchemaRoundTripEquality({|
          Person.all()
             ->project([
                col(p|$p.age->first(), 'age1'),
