@@ -248,8 +248,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       let currentTimeKey = meta::pure::functions::date::now()->toString()->chunk(1)->filter(x | $x->matches('[0-9]'))->makeString();
       let tableKey = $c.tableName->chunk(1)->filter(x | $x->matches('[a-zA-Z0-9]'))->makeString();
       let tableLocationKey = $tableKey + $currentTimeKey;
-      $sqlDialect->keyword('create', $state, $config) + ' ' + 
-      $sqlDialect->keyword('external', $state, $config) + ' ' + 
+      $sqlDialect->keyword('create', $state, $config) + ' ' +
+      $sqlDialect->keyword('external', $state, $config) + ' ' +
       $sqlDialect->keyword('table', $state, $config) + ' ' +
       $sqlDialect->executeIdentifierProcessor($c.tableName, $config.dbConfig.quoteIdentifiers, $state, $config) +
       ' (' + $state.separatorIfPretty(1, $config) +
@@ -387,8 +387,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Atan, simpleFunctionProcessor('atan')),
     pair(Atan2, simpleFunctionProcessor('atan2')),
     pair(Cbrt, simpleFunctionProcessor('cbrt')),
-    pair(Ceil, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),        
-    pair(Ceiling,  customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),  
+    pair(Ceil, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Ceiling,  customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Cos, simpleFunctionProcessor('cos')),
     pair(Cot, customFunctionProcessor(processorForCot_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Degrees, simpleFunctionProcessor('degrees')),
@@ -401,11 +401,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Round, simpleFunctionProcessor('round')),
     pair(Sign, customFunctionProcessor(processorForSign_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Sin, simpleFunctionProcessor('sin')),
-    pair(Sinh, simpleFunctionProcessor('sinh')),    
+    pair(Sinh, simpleFunctionProcessor('sinh')),
     pair(Sqrt, simpleFunctionProcessor('sqrt')),
     pair(Tan, simpleFunctionProcessor('tan')),
     pair(Tanh, simpleFunctionProcessor('tanh')),
-    
+
     // // Numeric Aggregate
     pair(Average, simpleFunctionProcessor('avg')),
     pair(Sum, simpleFunctionProcessor('sum')),
@@ -415,9 +415,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(VariancePopulation, simpleFunctionProcessor('var_pop')),
     pair(VarianceSample, simpleFunctionProcessor('var_samp')),
     pair(StdDevSample, simpleFunctionProcessor('stddev_samp')),
-    pair(StdDevPopulation, simpleFunctionProcessor('stddev_pop')),    
+    pair(StdDevPopulation, simpleFunctionProcessor('stddev_pop')),
     pair(PercentileContinuous, simpleFunctionProcessor('percentile_cont')), //not supported
-    pair(PercentileDiscrete, simpleFunctionProcessor('percentile_disc')),  //not supported  
+    pair(PercentileDiscrete, simpleFunctionProcessor('percentile_disc')),  //not supported
 
     // // String
     pair(Ascii, simpleFunctionProcessor('codepoint')),
@@ -440,7 +440,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Substring, simpleFunctionProcessor('substring')),
     pair(Upper, simpleFunctionProcessor('upper')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
-    pair(Least, simpleFunctionProcessor('least')),   
+    pair(Least, simpleFunctionProcessor('least')),
 
     // // String Aggregate
     pair(StringAgg, customFunctionProcessor(processorForStringAgg_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -547,8 +547,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   let index = $processedArgs->at(1)->parseInteger();
-  if($index<0, 
-  | $sqlDialect->generateFunctionCallWithArgs('substring', [$processedArgs->at(0), '1', ($sqlDialect->generateFunctionCallWithArgs('length', [$processedArgs->at(0)], [], $state, $config) + $index->toString())], [], $state, $config), 
+  if($index<0,
+  | $sqlDialect->generateFunctionCallWithArgs('substring', [$processedArgs->at(0), '1', ($sqlDialect->generateFunctionCallWithArgs('length', [$processedArgs->at(0)], [], $state, $config) + $index->toString())], [], $state, $config),
   | $sqlDialect->generateFunctionCallWithArgs('substring', [$processedArgs->at(0), '1', $index->toString()], [], $state, $config)
   );
 }
@@ -556,8 +556,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForLpad(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  if($processedArgs->size()==2, 
-  | $sqlDialect->generateFunctionCallWithArgs('lpad', [$processedArgs->at(0), $processedArgs->at(1), '\' \''], [], $state, $config), 
+  if($processedArgs->size()==2,
+  | $sqlDialect->generateFunctionCallWithArgs('lpad', [$processedArgs->at(0), $processedArgs->at(1), '\' \''], [], $state, $config),
   | $sqlDialect->generateFunctionCallWithArgs('lpad', [$processedArgs->at(0), $processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)
   );
 }
@@ -578,8 +578,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForRpad(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  if($processedArgs->size()<3, 
-  | $sqlDialect->generateFunctionCallWithArgs('rpad', [$processedArgs->at(0), $processedArgs->at(1), '\' \''], [], $state, $config), 
+  if($processedArgs->size()<3,
+  | $sqlDialect->generateFunctionCallWithArgs('rpad', [$processedArgs->at(0), $processedArgs->at(1), '\' \''], [], $state, $config),
   | $sqlDialect->generateFunctionCallWithArgs('rpad', [$processedArgs->at(0), $processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)
   );
 }
@@ -637,8 +637,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 // {
 //   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
 //   let index = $processedArgs->at(1)->parseInteger();
-//   if($index<0, 
-//   | $sqlDialect->generateFunctionCallWithArgs('substring', [$processedArgs->at(0), '1', ($sqlDialect->generateFunctionCallWithArgs('length', [$processedArgs->at(0)], [], $state, $config) + $index->toString())], [], $state, $config), 
+//   if($index<0,
+//   | $sqlDialect->generateFunctionCallWithArgs('substring', [$processedArgs->at(0), '1', ($sqlDialect->generateFunctionCallWithArgs('length', [$processedArgs->at(0)], [], $state, $config) + $index->toString())], [], $state, $config),
 //   | $sqlDialect->generateFunctionCallWithArgs('substring', [$processedArgs->at(0), '1', $index->toString()], [], $state, $config)
 //   );
 // }
