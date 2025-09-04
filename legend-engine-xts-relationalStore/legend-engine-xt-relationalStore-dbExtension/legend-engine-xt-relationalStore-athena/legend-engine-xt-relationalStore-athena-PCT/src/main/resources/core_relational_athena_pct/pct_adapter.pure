@@ -23,6 +23,6 @@ function <<PCT.adapter>> {PCT.adapterName='Athena'} meta::relational::tests::pct
   meta::relational::tests::pct::testAdapterForRelationalExecution(
     $f,
     meta::pure::testConnection::getTestConnection(DatabaseType.Athena),
-    relationalExtensions()
+    relationalExtensions()->concatenate(meta::external::store::relational::sqlDialectTranslation::athena::athenaSqlDialectExtension())
   )
 }

@@ -10,6 +10,7 @@
     "core_functions_standard",
     "core_external_compiler",
     "core_relational",
-    "core_external_test_connection"
+    "core_external_test_connection",
+    "core_external_store_relational_sql_dialect_translation_athena"
   ]
 }
