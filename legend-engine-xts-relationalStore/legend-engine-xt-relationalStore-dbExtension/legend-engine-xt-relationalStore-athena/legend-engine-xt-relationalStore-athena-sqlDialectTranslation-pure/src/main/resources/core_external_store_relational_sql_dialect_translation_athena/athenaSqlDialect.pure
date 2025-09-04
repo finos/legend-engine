@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::misc::*;
 import meta::external::query::sql::metamodel::extension::tests::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
@@ -51,8 +52,7 @@ function meta::external::store::relational::sqlDialectTranslation::athena::athen
     keywords = athenaKeywords(),
     functionProcessorMap = athenaFunctionProcessorMap(),
     variablePlaceholderPrefixSuffixMap = athenaVariablePlaceholderPrefixSuffixMap(),
-    expectedSqlDialectTestErrors = athenaFunctionTestsExpectedErrors(),
-    isBooleanAliasForTinyInt = true
+    expectedSqlDialectTestErrors = athenaFunctionTestsExpectedErrors()
   )
 }
 
@@ -85,7 +85,10 @@ function meta::external::store::relational::sqlDialectTranslation::athena::athen
       'Actual - {"columnNames":["result"],"rows":[{"values":[66.66666412]}]}'
     ),
     pair('FuncTests - percentile_cont(0/0)', 'Athena SQL Dialect does not support the function - percentile_cont'),
-    pair('FuncTests - percentile_disc(0/0)', 'Athena SQL Dialect does not support the function - percentile_disc')
+    pair('FuncTests - percentile_disc(0/0)', 'Athena SQL Dialect does not support the function - percentile_disc'),
+    pair('FuncTests - jarowinkler_similarity(0/2)', 'Athena SQL Dialect does not support the function - jarowinkler_similarity'),
+    pair('FuncTests - jarowinkler_similarity(1/2)', 'Athena SQL Dialect does not support the function - jarowinkler_similarity'),
+    pair('FuncTests - jarowinkler_similarity(2/2)', 'Athena SQL Dialect does not support the function - jarowinkler_similarity')
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -252,7 +255,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       ' (' + $state.separatorIfPretty(1, $config) +
       $c.columns->map(c|$sqlDialect->executeIdentifierProcessor($c.first, $config.dbConfig.quoteIdentifiers, $state, $config) + ' ' + $supportedTypes->get($c.second.name)->orElse($c.second.name))->joinStrings(',' + $state.separator(1, $config)) + $state.separatorIfPretty(0, $config) +
       ') Location \'s3://parth-aws-bucket-1/' + $tableLocationKey + '/\'';
-      // 'Select 2';
     }
   );
 }
@@ -379,7 +381,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   newMap([
     // Postgres Native Functions
     // Numeric
-    // pair(Abs, simpleFunctionProcessor('abs')),
+    pair(Abs, simpleFunctionProcessor('abs')),
     pair(Acos, simpleFunctionProcessor('acos')),
     pair(Asin, simpleFunctionProcessor('asin')),
     pair(Atan, simpleFunctionProcessor('atan')),
@@ -456,7 +458,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     // pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::Date, simpleFunctionProcessor('date')),
 
     // // Miscellaneous
-    // pair(Coalesce, simpleFunctionProcessor('coalesce')),
+    pair(Coalesce, simpleFunctionProcessor('coalesce')),
 
     // // Aggregate
     // pair(Count, simpleFunctionProcessor('count')),
@@ -479,24 +481,24 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
     // // Extension functions
     // // Numeric
-    // pair(Log10, argTransformFunctionProcessor('log', {n:Node[*]| literal(10)->concatenate($n)})),
-    // pair(Cosh, simpleFunctionProcessor('cosh')),
+    pair(Log10, argTransformFunctionProcessor('log', {n:Node[*]| literal(10)->concatenate($n)})),
+    pair(Cosh, simpleFunctionProcessor('cosh')),
 
-    // // String
-    // pair(RegexpLike, customFunctionProcessor(processorForRegExpLikeSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    // pair(Sha1, simpleFunctionProcessor('sha1')),
-    // pair(Sha256, argTransformFunctionProcessor('sha2', {n:Node[*] | $n->concatenate(literal(256))})),
-    // pair(Contains, simpleFunctionProcessor('contains')),
-    // pair(EncodeBase64, simpleFunctionProcessor('base64_encode')),
-    // pair(DecodeBase64, simpleFunctionProcessor('base64_decode_string')),
-    // pair(EditDistance, simpleFunctionProcessor('editdistance')),
-    // pair(JaroWinklerSimilarity, customFunctionProcessor(processorForJaroWinklerSimilarity_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    // pair(StartsWith, simpleFunctionProcessor('startswith')),
-    // pair(EndsWith, simpleFunctionProcessor('endswith')),
-    // pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    // pair(UuidV4, simpleFunctionProcessor('uuid_string')),
+    // String
+    pair(RegexpLike, simpleFunctionProcessor('regexp_like')),
+    pair(Sha1, customFunctionProcessor(processorForSha1_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Sha256, customFunctionProcessor(processorForSha256_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Contains, customFunctionProcessor(processorForContainsAthena_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(EncodeBase64, customFunctionProcessor(processorForEncodeBase64_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(DecodeBase64, customFunctionProcessor(processorForDecodeBase64_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(EditDistance, simpleFunctionProcessor('levenshtein_distance')),
+    pair(JaroWinklerSimilarity, simpleFunctionProcessor('jarowinkler_similarity')),
+    pair(StartsWith, simpleFunctionProcessor('starts_with')),
+    pair(EndsWith, customFunctionProcessor(processorForEndsWithAthena_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)), //fail
+    pair(UuidV4, customFunctionProcessor(processorForToUuidV4_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)), //fail 1 vs true
 
-    // // Temporal
+    // Temporal
     // pair(MakeDate, simpleFunctionProcessor('date_from_parts')),
     // pair(MakeTimestamp,customFunctionProcessor(processorForMakeTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     // pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -505,9 +507,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     // pair(TimeBucket, customFunctionProcessor(processorForTimeBucket_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
     // // Miscellaneous
-    // pair(ParseJson, simpleFunctionProcessor('parse_json'))
-
-    pair(Abs, simpleFunctionProcessor('abs'))
+    pair(ParseJson, simpleFunctionProcessor('json_parse')) // fail
   ])
 }
 
@@ -583,6 +583,55 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   | $sqlDialect->generateFunctionCallWithArgs('rpad', [$processedArgs->at(0), $processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)
   );
 }
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForSha1(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('sha1', [$sqlDialect->generateFunctionCallWithArgs('to_utf8', $processedArgs, [], $state, $config)], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForSha256(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('sha256', [$sqlDialect->generateFunctionCallWithArgs('to_utf8', $processedArgs, [], $state, $config)], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForContainsAthena(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let strposCall = simpleFunctionProcessor('strpos').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($strposCall, 'BOOLEAN', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForEncodeBase64(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('to_base64', [$sqlDialect->generateFunctionCallWithArgs('to_utf8', $processedArgs, [], $state, $config)], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForDecodeBase64(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('from_utf8', [$sqlDialect->generateFunctionCallWithArgs('from_base64', $processedArgs, [], $state, $config)], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForToChar(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $sqlDialect->generateCast($processedArgs->at(0), 'VARCHAR', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForToUuidV4(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let ceilCall = simpleFunctionProcessor('uuid').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($ceilCall, 'VARCHAR', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForEndsWithAthena(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('starts_with', [$sqlDialect->generateFunctionCallWithArgs('reverse', $processedArgs->at(0), [], $state, $config), $sqlDialect->generateFunctionCallWithArgs('reverse', $processedArgs->at(1), [], $state, $config)], [], $state, $config);
+}
+
 
 // function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForRight(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 // {
