@@ -498,6 +498,22 @@ public class Handlers
         );
     };
 
+    public static final ParametersInference LateralInference = (parameters, valueSpecificationBuilder) ->
+    {
+        ValueSpecification toLateral = parameters.get(0).accept(valueSpecificationBuilder);
+        GenericType genericType = toLateral._genericType();
+        GenericType relationType = genericType._typeArguments().getOnly();
+
+        if (parameters.get(1) instanceof LambdaFunction)
+        {
+            LambdaFunction lambdaFunction = (LambdaFunction) parameters.get(1);
+            lambdaFunction.parameters.get(0).genericType = CompileContext.convertGenericType(relationType);
+            lambdaFunction.parameters.get(0).multiplicity = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
+        }
+
+        return Lists.mutable.with(toLateral, parameters.get(1).accept(valueSpecificationBuilder));
+    };
+
     public static final ParametersInference FlattenColInference = (parameters, valueSpecificationBuilder) ->
     {
         ValueSpecification toFlatten = parameters.get(0).accept(valueSpecificationBuilder);
@@ -1789,9 +1805,9 @@ public class Handlers
                 )
         );
 
-        register(
+        register(grp(LateralInference,
                 h("meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(0)._genericType()._typeArguments().getOnly()._rawType(), (RelationType<?>) funcReturnType(ps.get(1))._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getOnly(), funcReturnType(ps.get(1))._typeArguments().getOnly()), ps -> true)
-        );
+        ));
 
         register(grp(FlattenColInference,
                     h("meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> true)
