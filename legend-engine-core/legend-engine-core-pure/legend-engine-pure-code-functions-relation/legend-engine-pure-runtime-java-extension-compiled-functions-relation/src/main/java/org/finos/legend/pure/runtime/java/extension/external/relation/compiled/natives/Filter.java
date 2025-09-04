@@ -33,10 +33,27 @@ public class Filter extends AbstractNative implements Native
         StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.filter");
         result.append('(');
         result.append(transformedParams.get(0));
-        result.append(", (org.eclipse.collections.api.block.function.Function2)");
-        result.append("(PureCompiledLambda.getPureFunction(");
-        result.append(transformedParams.get(1));
-        result.append(", es)), es)\n");
+        result.append(", ");
+        result.append(extractLambda(transformedParams.get(1)));
+        result.append(", es)\n");
         return result.toString();
+    }
+
+    public String extractLambda(String param)
+    {
+        return "(org.eclipse.collections.api.block.function.Function2)PureCompiledLambda.getPureFunction((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>)" + param + ", es)";
+    }
+
+    @Override
+    public String buildBody()
+    {
+        return "new SharedPureFunction<Object>()\n" +
+                "{\n" +
+                "   @Override\n" +
+                "   public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
+                "   {\n" +
+                "       return org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.filter((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation<?>)vars.get(0), " + extractLambda("vars.get(1)") + ", es);\n" +
+                "   }\n" +
+                "\n}";
     }
 }

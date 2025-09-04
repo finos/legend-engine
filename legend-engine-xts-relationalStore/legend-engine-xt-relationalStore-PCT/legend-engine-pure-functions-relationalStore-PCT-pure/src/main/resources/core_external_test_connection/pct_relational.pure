@@ -157,7 +157,7 @@ function meta::relational::tests::pct::process::resultToType(preResultFinal: Any
   let resultType = $type.rawType->toOne();
 
   if ([
-        pair(|$preResultFinal->isEmpty() || $preResultFinal == TDSNull, |[]),
+        pair(|$preResultFinal->isEmpty() || $preResultFinal == TDSNull || $resultType == Nil, |[]),
         pair(|$preResultFinal->toOne()->instanceOf(String) && $mult->isToMany() && $preResultFinal->toOne()->cast(@String)->startsWith('[') && $preResultFinal->toOne()->cast(@String)->endsWith(']'), |$preResultFinal->toOne()->cast(@String)->fromJson()->toMany($type)),
         pair(|$resultType->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toOne()->toString())),
         pair(|$resultType->subTypeOf(Date), |buildDate($preResultFinal->toOne()->toString())),

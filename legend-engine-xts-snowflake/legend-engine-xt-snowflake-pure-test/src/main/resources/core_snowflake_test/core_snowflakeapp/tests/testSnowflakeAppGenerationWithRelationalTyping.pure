@@ -1,0 +1,62 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+import meta::pure::precisePrimitives::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::mapping::*;
+import meta::external::function::activator::snowflakeApp::tests::model::relationalTypes::*;
+import meta::external::function::activator::snowflakeApp::tests::*;
+import meta::external::function::activator::snowflakeApp::generation::*;
+import meta::external::function::activator::snowflakeApp::*;
+import meta::external::function::activator::*;
+
+function meta::external::function::activator::snowflakeApp::tests::testTyping(function:String[1], expected:String[1]): Boolean[1]
+{
+  let model = readFile('/core_snowflake_test/core_snowflakeapp/showcase/relationalTypingShowcaseModel.legend')->toOne();
+
+  let snowflakeApp = $model + '\n\n###Snowflake\n'+
+                     'SnowflakeApp meta::external::function::activator::snowflakeApp::tests::NewActivator\n'+
+                     '{\n'+
+                     '   applicationName : \'\';\n'+
+                     '   ownership : Deployment { identifier: \'\'};\n'+
+                     '   description : \'\';\n'+
+                     '   activationConfiguration : meta::external::function::activator::snowflakeApp::tests::MyConnection;\n\n'+
+                     $function + '}\n';
+
+  let elements = meta::legend::compileLegendGrammar($snowflakeApp);
+
+  let x = $elements->filter(f | $f->instanceOf(SnowflakeApp))->cast(@SnowflakeApp)->toOne();
+
+  assertEquals($x.function->relationGenerateResultTypeStub(), $expected);
+}
+
+ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalFunctionWithTypes(): Boolean[1]
+ {
+   let expected = '"MYVARCHAR" VARCHAR(32), "MYSTRING" VARCHAR(1024), "MYNUMERIC" DECIMAL(6, 7), "MYDECIMAL" DECIMAL(7, 8), "MYNUMBER" DECIMAL(23, 7), "MYINTEGER" DECIMAL(19, 0), "MYINT" DECIMAL(10, 0), "MYBIGINT" DECIMAL(19, 0), "MYSMALLINT" DECIMAL(5, 0), "MYTINYINT" DECIMAL(3, 0), "MYFLOAT" DOUBLE, "MYFLOAT4" FLOAT, "MYDOUBLE" DOUBLE, "MYDATE" DATE, "MYDATETIME" TIMESTAMP, "MYTIMESTAMP" TIMESTAMP';
+
+   let function = '   function: meta::external::function::activator::snowflakeApp::tests::relationalFunctionWithTypes():Relation<(MyVarchar:Varchar(32), MyString:String, MyNumeric:Numeric(6,7), MyDecimal:Numeric(7,8), MyNumber:Numeric(23,7), MyInteger:Integer, MyInt:Int, MyBigInt:BigInt, MySmallInt:SmallInt, MyTinyInt:TinyInt, MyFloat:Float, MyFloat4:Float4, myDouble:Double, MyDate:Date, MyDateTime:Timestamp, MyTimestamp:Timestamp)>[1];\n';
+
+   testTyping($function, $expected);
+ }
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalFunctionWithTypesAndLogic(): Boolean[1]
+{
+  let expected = '"QUANTITY1" DECIMAL(23, 7), "QUANTITY2" DECIMAL(23, 7)';
+
+  let function = '   function: meta::external::function::activator::snowflakeApp::tests::relationalFunctionWithTypesAndLogic():Relation<(Quantity1:Numeric(23,7), Quantity2:Numeric(23,7))>[1];\n';
+
+  testTyping($function, $expected);
+}
+

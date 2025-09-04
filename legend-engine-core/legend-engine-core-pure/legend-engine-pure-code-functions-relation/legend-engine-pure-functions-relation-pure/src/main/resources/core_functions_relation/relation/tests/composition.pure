@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::variant::navigation::*;
 import meta::pure::test::pct::*;
@@ -1205,8 +1206,8 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
    assertEquals('#TDS\n'+
                 '   id,payload,fromRow,toRow,sliced\n'+
                 '   0,null,1,2,null\n'+
-                '   1,[1,2,3,4,5,6],2,3,3\n'+
+                '   1,[1,2,3,4,5,6],2,3,[3]\n'+
                 '   2,[1,2,3,4,5,6],0,4,[1,2,3,4]\n'+
-                '   3,[1,2,3,4,5,6],-3,-1,null\n'+
+                '   3,[1,2,3,4,5,6],-3,-1,[]\n'+
                 '#', $res->toString());
 }

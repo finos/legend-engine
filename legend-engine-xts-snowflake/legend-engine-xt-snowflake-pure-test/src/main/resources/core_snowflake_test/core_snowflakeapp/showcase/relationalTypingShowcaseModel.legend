@@ -1,0 +1,150 @@
+###Pure
+import meta::pure::precisePrimitives::*;
+Class meta::external::function::activator::snowflakeApp::tests::RelationalTypes
+{
+  myVarchar: String[1];
+  myString: String[1];
+  myNumeric: Decimal[1];
+  myDecimal: Decimal[1];
+  myNumber: Decimal[1];
+  myInteger: Integer[1];
+  myInt: Integer[1];
+  myBigInt: Integer[1];
+  mySmallInt: Integer[1];
+  myTinyInt: Integer[1];
+  myFloat: Float[1];
+  myFloat4: Float[1];
+  myDouble: Float[1];
+  myDate: StrictDate[1];
+  myDateTime: Date[1];
+  myTimestamp: Date[1];
+}
+
+
+function meta::external::function::activator::snowflakeApp::tests::relationalFunctionWithTypes():Relation<(MyVarchar:Varchar(32), MyString:String, MyNumeric:Numeric(6,7), MyDecimal:Numeric(7,8), MyNumber:Numeric(23,7), MyInteger:Integer, MyInt:Int, MyBigInt:BigInt, MySmallInt:SmallInt, MyTinyInt:TinyInt, MyFloat:Float, MyFloat4:Float4, MyDouble:Double, MyDate:StrictDate, MyDateTime:Timestamp, MyTimestamp:Timestamp)>[1]
+{
+  meta::external::function::activator::snowflakeApp::tests::RelationalTypes.all()->project(
+    ~[
+      MyVarchar: x|$x.myVarchar->cast(@meta::pure::precisePrimitives::Varchar(32)),
+      MyString: x|$x.myString,
+      MyNumeric: x|$x.myNumeric->cast(@meta::pure::precisePrimitives::Numeric(6,7)),
+      MyDecimal: x|$x.myDecimal->cast(@meta::pure::precisePrimitives::Numeric(7,8)),
+      MyNumber: x|$x.myNumber->cast(@meta::pure::precisePrimitives::Numeric(23,7)),
+      MyInteger: x|$x.myInteger,
+      MyInt: x|$x.myInt->cast(@meta::pure::precisePrimitives::Int),
+      MyBigInt: x|$x.myBigInt->cast(@meta::pure::precisePrimitives::BigInt),
+      MySmallInt: x|$x.mySmallInt->cast(@meta::pure::precisePrimitives::SmallInt),
+      MyTinyInt: x|$x.myTinyInt->cast(@meta::pure::precisePrimitives::TinyInt),
+      MyFloat: x|$x.myFloat,
+      MyFloat4: x|$x.myFloat4->cast(@meta::pure::precisePrimitives::Float4),
+      MyDouble: x|$x.myDouble->cast(@meta::pure::precisePrimitives::Double),
+      MyDate: x|$x.myDate,
+      MyDateTime: x|$x.myDateTime->cast(@meta::pure::precisePrimitives::Timestamp),
+      MyTimestamp: x|$x.myTimestamp->cast(@meta::pure::precisePrimitives::Timestamp)
+    ])
+  ->from(meta::external::function::activator::snowflakeApp::tests::RelationalTypesMapping, meta::external::function::activator::snowflakeApp::tests::RelationalTypesRuntime)
+}
+
+
+function meta::external::function::activator::snowflakeApp::tests::relationalFunctionWithTypesAndLogic():Relation<(Quantity1:Numeric(23,7), Quantity2:Numeric(23,7))>[1]
+{
+  meta::external::function::activator::snowflakeApp::tests::RelationalTypes.all()->project(
+      ~[
+        Quantity1: x|if($x.myNumber >= 0,
+                      |$x.myNumber,
+                      |0.0D
+                    )->cast(@meta::pure::precisePrimitives::Numeric(23,7)),
+        Quantity2: x|if($x.myNumber < 0.0,
+                      |$x.myNumber->toOne()->abs(),
+                      |0.0D
+                    )->cast(@meta::pure::precisePrimitives::Numeric(23,7))
+     ])
+    ->from(meta::external::function::activator::snowflakeApp::tests::RelationalTypesMapping, meta::external::function::activator::snowflakeApp::tests::RelationalTypesRuntime)
+}
+
+
+###Mapping
+Mapping meta::external::function::activator::snowflakeApp::tests::RelationalTypesMapping
+(
+  *meta::external::function::activator::snowflakeApp::tests::RelationalTypes: Relational
+  {
+    ~primaryKey
+    (
+      [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myVarchar
+    )
+    ~mainTable [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes
+    myVarchar: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myVarchar,
+    myString: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myString,
+    myNumeric: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myNumeric,
+    myNumber: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myNumber,
+    myDecimal: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myDecimal,
+    myInteger: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myInteger,
+    myInt: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myInt,
+    myBigInt: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myBigInt,
+    mySmallInt: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.mySmallInt,
+    myTinyInt: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myTinyInt,
+    myFloat: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myFloat,
+    myFloat4: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myFloat4,
+    myDouble: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myDouble,
+    myDate: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myDate,
+    myDateTime: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myDateTime,
+    myTimestamp: [meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb]RelationalTypes.RelationalTypes.myTimestamp
+  }
+)
+
+
+###Relational
+Database meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb
+(
+  Schema RelationalTypes
+  (
+    Table RelationalTypes
+    (
+      myVarchar VARCHAR(32) PRIMARY KEY,
+      myString VARCHAR(1024),
+      myNumeric DECIMAL(6, 7),
+      myDecimal DECIMAL(7, 8),
+      myNumber DECIMAL(23, 7),
+      myInteger INTEGER,
+      myInt INTEGER,
+      myBigInt BIGINT,
+      mySmallInt SMALLINT,
+      myTinyInt TINYINT,
+      myFloat FLOAT,
+      myFloat4 FLOAT,
+      myDouble DOUBLE,
+      myDate DATE,
+      myDateTime TIMESTAMP,
+      myTimestamp TIMESTAMP
+    )
+  )
+)
+
+###Connection
+RelationalDatabaseConnection meta::external::function::activator::snowflakeApp::tests::MyConnection
+{
+    store: meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb;
+    type: Snowflake;
+    specification: LocalH2
+    {
+      testDataSetupSqls: [];
+    };
+    auth: DefaultH2;
+}
+
+###Runtime
+Runtime meta::external::function::activator::snowflakeApp::tests::RelationalTypesRuntime
+{
+  mappings:
+  [
+    meta::external::function::activator::snowflakeApp::tests::RelationalTypesMapping
+  ];
+  connections:
+  [
+    meta::external::function::activator::snowflakeApp::tests::RelationalTypesDb:
+    [
+      connection_1: meta::external::function::activator::snowflakeApp::tests::MyConnection
+    ]
+  ];
+}
+

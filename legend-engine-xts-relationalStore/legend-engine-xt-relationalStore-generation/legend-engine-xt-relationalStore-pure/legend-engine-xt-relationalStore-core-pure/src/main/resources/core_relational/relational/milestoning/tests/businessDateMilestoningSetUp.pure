@@ -250,6 +250,11 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
    executeInDb('insert into ProductExchangeTable values(\'LNSE\',\'London\',\'2015-8-15 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
    executeInDb('insert into ProductExchangeTable values(\'LNSE\',\'London\',\'2014-1-15 00:00:00\',\'2014-1-16 00:00:00\');',$connection);
 
+   executeInDb('drop table if exists ProcessedMilestonedProductExchangeTable;',$connection);
+   executeInDb('create table ProcessedMilestonedProductExchangeTable (name VARCHAR(200), city VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP);',$connection);
+   executeInDb('insert into ProcessedMilestonedProductExchangeTable values(\'ISE\',\'Dublin\',\'2015-1-15 00:00:00\',\'2015-8-15 00:00:00\');',$connection);
+   executeInDb('insert into ProcessedMilestonedProductExchangeTable values(\'LNSE\',\'London\',\'2015-8-15 00:00:00\',\'9999-12-31 00:00:00\');',$connection);
+
    executeInDb('drop table if exists ProductExchangeTableNoMilestoning;',$connection);
    executeInDb('create table ProductExchangeTableNoMilestoning (name VARCHAR(200));',$connection);
    executeInDb('insert into ProductExchangeTableNoMilestoning values(\'ISE\');',$connection);
@@ -531,6 +536,11 @@ Mapping meta::relational::tests::milestoning::milestoningmap
       product : [db]@Product_Classification
    }
 
+   meta::relational::tests::milestoning::ProductClassificationWithProcessedMilestonedExchangeNameConstraint : Relational{
+    type : [db]ProductClassificationTable.type,
+    processedMilestonedExchange : [db]@Classification_ProcessedMilestonedExchange
+   }
+
    meta::relational::tests::milestoning::BiTemporalProductClassification : Relational{
       type : [db]BiTemporalProductClassificationTable.type
    }
@@ -542,6 +552,10 @@ Mapping meta::relational::tests::milestoning::milestoningmap
 
    meta::relational::tests::milestoning::Exchange : Relational{
       name : [db]ProductExchangeTable.name
+   }
+
+   meta::relational::tests::milestoning::ProcessedMilestonedExchange : Relational{
+      name : [db]ProcessedMilestonedProductExchangeTable.name
    }
 
    meta::relational::tests::milestoning::System : Relational{
@@ -1937,6 +1951,15 @@ Database meta::relational::tests::milestoning::db(
             from_z DATE,
             thru_z DATE)
 
+        Table ProcessedMilestonedProductExchangeTable(
+            milestoning(
+               processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+            )
+            city VARCHAR(200),
+            name VARCHAR(200),
+            in_z DATE,
+            out_z DATE)
+
     Table ProductExchangeTableNoMilestoning(
             name VARCHAR(200),
             from_z DATE,
@@ -2158,6 +2181,7 @@ Database meta::relational::tests::milestoning::db(
    Join ClassificationSystem_System(ProductClassificationSystemTable.name=SystemTable.name)
    Join Classification_System(ProductClassificationTable.system=SystemTable.name)
    Join Classification_Exchange(ProductClassificationTable.exchange=ProductExchangeTable.name)
+   Join Classification_ProcessedMilestonedExchange(ProductClassificationTable.exchange=ProcessedMilestonedProductExchangeTable.name)
    Join Classification_ExchangeNoMilestoning(ProductClassificationTable.exchange=ProductExchangeTableNoMilestoning.name)
    Join Classification2_Exchange(ProductClassificationTable2.exchange=ProductExchangeTable.name)
    Join Classification2_ExchangeNoMilestoning(ProductClassificationTable2.exchange=ProductExchangeTableNoMilestoning.name)

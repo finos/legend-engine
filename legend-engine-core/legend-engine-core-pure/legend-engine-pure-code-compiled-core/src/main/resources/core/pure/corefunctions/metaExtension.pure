@@ -338,11 +338,17 @@ function meta::pure::functions::meta::findPackagableElement(fe : ValueSpecificat
                 ]);
 }
 
+function meta::pure::functions::meta::findPackagableElement(obj : LambdaFunction<Any>[1]) : PackageableElement[1]
+{
+  $obj.referenceUsages.owner->evaluateAndDeactivate()->cast(@InstanceValue)->toOne()->meta::pure::functions::meta::findPackagableElement()
+}
+
 function meta::pure::functions::meta::findPackagableElement(obj : Any[1]) : PackageableElement[1]
 {
      let pe = $obj->match([ vs : ValueSpecification[1] | $vs->meta::pure::functions::meta::findPackagableElement(),
                             pe : PackageableElement[1] | $pe,
                             p  : AbstractProperty<Any>[1] | $p,
+                            l : LambdaFunction<Any>[1] | $l->meta::pure::functions::meta::findPackagableElement(),
                             po : meta::pure::mapping::PropertyOwnerImplementation[1]|$po.parent->meta::pure::functions::meta::findPackagableElement()
                           ])
                   ->match([p:AbstractProperty<Any>[1] | $p.owner,

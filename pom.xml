@@ -108,7 +108,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.57.0</legend.pure.version>
+        <legend.pure.version>5.58.2</legend.pure.version>
         <legend.shared.version>0.28.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -1555,6 +1555,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-athena-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-sqlDialectTranslation-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-SDT</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -31,24 +31,38 @@ public class Extend extends AbstractNative implements Native
     @Override
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
-        StringBuilder result = buildCode(transformedParams, s -> "Lists.mutable.with(" + transformedParams.get(1) + ")", true);
-        return result.toString();
+        return buildCode(transformedParams, s -> "Lists.mutable.with(" + transformedParams.get(1) + ")", true).toString();
+    }
+
+    @Override
+    public String buildBody()
+    {
+        StringBuilder builder = new StringBuilder();
+        buildCollectFuncSpec(builder, "((MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec<? extends Object, ? extends Object>>)(Object)CompiledSupport.toPureCollection(vars.get(1)))", false);
+        return "new SharedPureFunction<Object>()\n" +
+                "{\n" +
+                "   @Override\n" +
+                "   public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
+                "   {\n" +
+                "       return org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.projectExtend((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation<? extends Object>)vars.get(0), " + builder + ", true, es);\n" +
+                "   }\n" +
+                "\n}";
     }
 
     static StringBuilder buildCode(ListIterable<String> transformedParams, Function<String, String> collection, boolean includeExistingColumns)
     {
         StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.projectExtend(");
         result.append(transformedParams.get(0) + ", ");
-        result.append(collection.valueOf(transformedParams.get(1)));
-        buildCollectFuncSpec(result, false);
+        buildCollectFuncSpec(result, collection.valueOf(transformedParams.get(1)), false);
         result.append(", " + includeExistingColumns);
         result.append(", es)");
         return result;
     }
 
-    static void buildCollectFuncSpec(StringBuilder result, boolean twoArgs)
+    static void buildCollectFuncSpec(StringBuilder result, String param, boolean twoArgs)
     {
         String className = "ColFuncSpecTrans" + (twoArgs ? "2" : "1");
+        result.append(param);
         result.append(".collect(");
         result.append("new DefendedFunction<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec<? extends Object, ? extends Object>, org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation." + className + ">()\n" +
                 "{\n" +

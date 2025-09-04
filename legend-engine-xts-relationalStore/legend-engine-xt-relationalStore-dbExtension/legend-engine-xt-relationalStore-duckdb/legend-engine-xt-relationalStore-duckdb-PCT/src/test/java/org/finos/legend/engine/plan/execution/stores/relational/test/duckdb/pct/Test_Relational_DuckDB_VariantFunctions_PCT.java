@@ -50,16 +50,12 @@ public class Test_Relational_DuckDB_VariantFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::variant::convert::tests::to::testToDateTime_Function_1__Boolean_1_", "\"\nexpected: %2020-01-01T01:01:00.000+0000\nactual:   %2020-01-01T01:01:00.000000000+0000\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_", "\"\nexpected: 'Hello'\nactual:   '\"Hello\"'\"", AdapterQualifier.needsInvestigation),
 
+            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfList_Function_1__Boolean_1_", "\"\nexpected: '[[[1]]]'\nactual:   '[1]'\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "Unimplemented type for cast (MAP(VARCHAR, BIGINT) -> MAP(VARCHAR, BIGINT)[])\n\nLINE 1: select ifnull(to_json(cast(MAP {'hello': cast(MAP {'world': 2} as MAP(VARCHAR...", AdapterQualifier.needsInvestigation),
+
             // toMany
             one("meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Expect variant that contains an 'ARRAY', but got 'STRING'\"\"", AdapterQualifier.assertErrorMismatch),
-            one("meta::pure::functions::variant::convert::tests::toMany::testToManyVariant_Function_1__Boolean_1_", "\"Variant of type 'OBJECT' cannot be converted to Integer\"", AdapterQualifier.needsInvestigation),
-
-            // toVariant
-            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfMap_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfVariantValues_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithMultipleKeys_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithPrimitiveValues_Function_1__Boolean_1_", "newMap() for variant can only be created with pair() functions", AdapterQualifier.needsImplementation)
+            one("meta::pure::functions::variant::convert::tests::toMany::testToManyVariant_Function_1__Boolean_1_", "\"Variant of type 'OBJECT' cannot be converted to Integer\"", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()

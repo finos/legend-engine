@@ -23,11 +23,11 @@ Class meta::relational::tests::milestoning::Order{
    orderDate : Date[0..1];
    description : OrderDescription[1];
    orderDetails : OrderDetails[1];
-   systemADescription : SystemAOrderDescription[1];   
+   systemADescription : SystemAOrderDescription[1];
    stockProduct : Product[0..1];
    cusipProduct : Product[0..1];
    createdLocation : Location[0..1];
-   
+
    latestProduct(){
          $this.product(%latest)
    }:Product[*];
@@ -61,7 +61,7 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::OrderP
 [
    CST( ~function:$this.product($this.businessDate->adjust(-1, DurationUnit.DAYS)).id > 0
         ~message: 'Constraint to ensure that $this.businessDate milestoning property is processed correctly when mapped to a View'
-      )   
+      )
 ]
 {
    pnl:Float[1];
@@ -201,18 +201,18 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
 [
    CST
    (
-      ~function: $this.referenceSystems.systemDescription($this.businessDate).description->toOne()->length() < 10 
+      ~function: $this.referenceSystems.systemDescription($this.businessDate).description->toOne()->length() < 10
       ~message: 'Ensure Ensure parent (this) milestoning context propagated through (auto) map'
    )
 ]
 {
 }
 
-Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductWithConstraint1c 
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductWithConstraint1c
 [
    CST
    (
-      ~function: $this.referenceSystem->toOne()->project(r|$r.systemDescription($this.businessDate).description,'system description')->tdsRows()->isNotEmpty() 
+      ~function: $this.referenceSystem->toOne()->project(r|$r.systemDescription($this.businessDate).description,'system description')->tdsRows()->isNotEmpty()
       ~message: 'Ensure parent (this) milestoning context propagated through project'
    )
 ]
@@ -243,7 +243,7 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
 {
 }
 
-Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::OrderWithConstraint 
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::OrderWithConstraint
 [
    CST
    (
@@ -298,6 +298,7 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
    exchangeName : String[1];
    product : Product[1];
    biTemporalProduct : BiTemporalProduct[0..1];
+   exchangeName1(){$this.exchange($this.businessDate).name} : String[1];
 }
 
 Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductClassification_ExtendedPrimitives{
@@ -351,6 +352,24 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
 Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Exchange{
    name : String[1];
    location : Location[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductClassificationWithProcessedMilestonedExchangeNameConstraint
+[
+     processedMilestonedExchangeNameMustBeValid
+   (
+      ~function: $this.processedMilestonedExchange($this.businessDate).name->in(['LNSE', 'ISE'])
+      ~enforcementLevel: Error
+      ~message: 'Name must not be empty'
+   )
+]
+{
+  type : String[1];
+  processedMilestonedExchange : ProcessedMilestonedExchange[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::milestoning::ProcessedMilestonedExchange{
+   name : String[1];
 }
 
 Class meta::relational::tests::milestoning::NewActivityInfo{

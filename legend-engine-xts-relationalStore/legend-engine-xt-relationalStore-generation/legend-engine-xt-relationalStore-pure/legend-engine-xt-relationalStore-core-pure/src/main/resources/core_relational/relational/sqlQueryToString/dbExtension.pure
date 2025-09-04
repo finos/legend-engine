@@ -392,7 +392,7 @@ function meta::relational::functions::sqlQueryToString::ddlSqlQueryToString(ddlS
 
 function meta::relational::functions::sqlQueryToString::useDialectTranslation(r:RelationalOperationElement[1], dbType:DatabaseType[1]):Boolean[1]
 {
-  $dbType->in([DatabaseType.H2]) && (!$r->instanceOf(SQLQuery) || $r->instanceOf(SelectSQLQuery));
+  $dbType->in([DatabaseType.H2, DatabaseType.Athena]) && (!$r->instanceOf(SQLQuery) || $r->instanceOf(SelectSQLQuery));
 }
 
 function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
@@ -1171,6 +1171,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   isNumeric,
   joinStrings,
   jaroWinklerSimilarity,
+  keys,
   lag,
   last,
   levenshteinDistance,
@@ -1184,6 +1185,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   log10,
   lpad,
   ltrim,
+  mapConcatenate,
   matches,
   max,
   maxBy,
@@ -1217,7 +1219,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   percentRank,
   plus,
   position,
-  pow,
+  pow,  
   previousDayOfWeek,
   quarter,
   quarterNumber,
@@ -1249,6 +1251,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   sub,
   substring,
   sum,
+  pair,
   tan,
   tanh,
   timeBucket,
@@ -1266,6 +1269,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   toJson,
   today,
   trim,
+  values,
   variance,
   variancePopulation,
   varianceSample,
