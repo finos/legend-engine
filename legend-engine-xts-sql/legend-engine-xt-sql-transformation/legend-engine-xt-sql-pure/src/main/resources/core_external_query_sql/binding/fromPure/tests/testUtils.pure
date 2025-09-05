@@ -72,7 +72,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::test(sq
   $sqls->forAll(sql |
     $expected->forAll(e |
       let sqlTransformContext = $sql->processQuery($e.resolveSources(), $scopeWithFrom);
-      let actual = $sqlTransformContext.lambda();
+      let actual = $sqlTransformContext.lambda($scopeWithFrom);
 
       if ($e.assertLambda, | assertLambdaEquals($e.expectedLambda, $actual), | true);
       if ($e.assertJSON, | assertLambdaJSONEquals($e.expectedLambda, $actual), | true);
