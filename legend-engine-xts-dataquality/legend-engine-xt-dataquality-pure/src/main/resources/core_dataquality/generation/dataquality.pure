@@ -13,6 +13,7 @@ import meta::pure::mapping::*;
 import meta::pure::functions::boolean::*;
 import meta::pure::metamodel::constraint::*;
 import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::pure::precisePrimitives::*;
 
 
 Class meta::external::dataquality::MilestoningContext
@@ -28,7 +29,7 @@ Class meta::external::dataquality::MilestoningContext
 
   processingTemporal(){
       $this.rootProcessingTemporal || $this.nonRootProcessingTemporal
-  }:Boolean[1];  
+  }:Boolean[1];
 }
 
 function meta::external::dataquality::generateDataQualityQuery(dataquality:meta::external::dataquality::DataQuality<Any>[1], limit: Integer[0..1]): LambdaFunction<Any>[1]
@@ -46,15 +47,15 @@ function meta::external::dataquality::getMilestoningContext(tree:RootGraphFetchT
       rootBusinessTemporal = $tree.class->meta::pure::milestoning::isBusinessTemporal(),
       rootProcessingTemporal = $tree.class->meta::pure::milestoning::isProcessingTemporal(),
       nonRootBusinessTemporal = $propertyTypes->exists(t | $t->meta::pure::milestoning::isBusinessTemporal()),
-      nonRootProcessingTemporal = $propertyTypes->exists(t | $t->meta::pure::milestoning::isProcessingTemporal())  
+      nonRootProcessingTemporal = $propertyTypes->exists(t | $t->meta::pure::milestoning::isProcessingTemporal())
   );
 }
 
 function meta::external::dataquality::addMilestoningParameters(tree:GraphFetchTree[1]):GraphFetchTree[1]
 {
   $tree->match([
-    p:PropertyGraphFetchTree[1] | 
-      let parameters = if ($p.parameters->isEmpty(), 
+    p:PropertyGraphFetchTree[1] |
+      let parameters = if ($p.parameters->isEmpty(),
         | let isBusinessTemporal = $p.property.genericType.rawType->toOne()->meta::pure::milestoning::isBusinessTemporal();
           let isProcessingTemporal = $p.property.genericType.rawType->toOne()->meta::pure::milestoning::isProcessingTemporal();
           getTemporalParameters($isProcessingTemporal, $isBusinessTemporal);,
@@ -65,8 +66,8 @@ function meta::external::dataquality::addMilestoningParameters(tree:GraphFetchTr
           subTrees = $p.subTrees->map(t | addMilestoningParameters($t)),
           parameters = $parameters,
           subTypeTrees = $p.subTypeTrees->map(t | addMilestoningParameters($t))->cast(@SubTypeGraphFetchTree)
-      );,  
-    g:GraphFetchTree[1] | 
+      );,
+    g:GraphFetchTree[1] |
       ^$g(
           subTrees = $g.subTrees->map(t | addMilestoningParameters($t)),
           subTypeTrees = $g.subTypeTrees->map(t | addMilestoningParameters($t))->cast(@SubTypeGraphFetchTree)
@@ -75,7 +76,7 @@ function meta::external::dataquality::addMilestoningParameters(tree:GraphFetchTr
 }
 
 function meta::external::dataquality::generateDataQualityQuery(dataquality:meta::external::dataquality::DataQuality<Any>[1], limit: Integer[0..1], useFrom:Boolean[1]): LambdaFunction<Any>[1]
-{ 
+{
    $dataquality.validationTree->validateTreeForNestedConstraints(true);
 
    let milestonedTree = $dataquality.validationTree->addMilestoningParameters();
@@ -88,12 +89,12 @@ function meta::external::dataquality::generateDataQualityQuery(dataquality:meta:
    // 2. build query
    let getAll = $dataquality.validationTree.class->createGetAll($milestoningContext.rootProcessingTemporal, $milestoningContext.rootBusinessTemporal);
 
-   let getExpr = if ($dataquality.filter->isNotEmpty(), 
+   let getExpr = if ($dataquality.filter->isNotEmpty(),
                             | $dataquality.validationTree.class->generateFilterQuery($getAll, $dataquality.filter->toOne());,
                             | $getAll);
    let dqRootConstraints = $dataquality.validationTree.constraints;
    let constraintQueryExpr = $dataquality.validationTree.class->meta::external::dataquality::generateConstraintsNegatedORQuery($getExpr, ^List<Constraint>(values=$dqRootConstraints));
-   let limitQueryExpr = if ($limit->isNotEmpty(), 
+   let limitQueryExpr = if ($limit->isNotEmpty(),
                              | $constraintQueryExpr->buildLimitFilterExpression($limit->toOne(), ^GenericType(rawType=$dataquality.validationTree.class)),
                              | $constraintQueryExpr);
    let graphFetchChecked = ^SimpleFunctionExpression(func=graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_  ,
@@ -114,7 +115,7 @@ function meta::external::dataquality::generateDataQualityQuery(dataquality:meta:
   let mappingAndRuntime = $dataquality.context->getMappingAndRuntime();
   let deactivatedMapping = ^InstanceValue(values=$mappingAndRuntime.first->evaluateAndDeactivate(), genericType=^GenericType(rawType=Mapping), multiplicity=PureOne) ;
   let deactivatedRuntime = ^InstanceValue(values=$mappingAndRuntime.second->evaluateAndDeactivate(), genericType=^GenericType(rawType=NonExecutableValueSpecification), multiplicity=PureOne);
-                                            
+
   let from = if ($useFrom, | ^SimpleFunctionExpression(func=from_T_m__Mapping_1__Runtime_1__T_m_,
                                        functionName=from_T_m__Mapping_1__Runtime_1__T_m_.name,
                                        importGroup=system::imports::coreImport,
@@ -297,7 +298,7 @@ function meta::external::dataquality::generateORNegatedQuery<T>(c:Class<T>[1], f
    let c1_negatedExprSequence = $c1.functionDefinition.expressionSequence->evaluateAndDeactivate()->toOne()->negatedFunctionExpression();
    let c2_negatedExprSequence = $c2.functionDefinition.expressionSequence->evaluateAndDeactivate()->toOne()->negatedFunctionExpression();
    let c1_c2_or_expr = $c1_negatedExprSequence->orFunctionExpression($c2_negatedExprSequence);
-   
+
    let final_expr = $constraints.values->drop(2)->fold({c3, curr_or_exp |
           let c3_negatedExprSequence = $c3.functionDefinition.expressionSequence->evaluateAndDeactivate()->toOne()->negatedFunctionExpression();
           $c3_negatedExprSequence->orFunctionExpression($curr_or_exp);}, $c1_c2_or_expr);
@@ -317,7 +318,7 @@ function meta::external::dataquality::generateORNegatedQuery<T>(c:Class<T>[1], f
          )
      ]
    )->evaluateAndDeactivate();
- 
+
 }
 
 function meta::external::dataquality::replaceVariableWithVariable(v:ValueSpecification[1..*], from:String[1], to:String[1]):ValueSpecification[1..*]
@@ -480,7 +481,7 @@ function meta::external::dataquality::nodeToDqRule(node:GraphFetchTree[1], proce
 }
 
 function <<access.private>> meta::external::dataquality::rootNodeToDqRule(node:RootGraphFetchTree<Any>[1], processOnlyConstraints: Boolean[1]):DataQualityRule[*]
-{  
+{
   if ( $processOnlyConstraints,
        | $node->cast(@DataQualityRootGraphFetchTree<Any>).constraints->map(c|$c->constraintToDqRule($node.class.name->toOne())),
        | ^DataQualityRule(constraintName=$node.class.name->toOne(), constraintGrammar='Class', constraintType='Alloy_Class_Validation', propertyPath=$node.class.name->toOne())
@@ -508,7 +509,12 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
 
 function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationNames: String[*], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1]): LambdaFunction<Any>[1]
 {
-  let lambda = $dqRelationValidation.query;
+  generateDataqualityRelationValidationLambda($dqRelationValidation, $validationNames, $defectsLimit, $enrichDQColumns, false, false);
+}
+
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationNames: String[*], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]): LambdaFunction<Any>[1]
+{
+  let lambda = if ($removeFrom, | $dqRelationValidation.query->popTerminalFunctionExpression(), | $dqRelationValidation.query);
   //if validation name provided only generate query for that validation else generate query for all validations
   let selectedValidations = if ($validationNames->isEmpty(),
     | $dqRelationValidation.validations,
@@ -517,28 +523,29 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
   if ($selectedValidations->isEmpty(),
     | fail('Expect at least one validation to exist on data quality validation');
       $lambda;,
-    | let validationSubQueries = $selectedValidations->map(val | $dqRelationValidation->generateDataqualityRelationValidationLambda($val, $defectsLimit, $enrichDQColumns));
+    | let validationSubQueries = $selectedValidations->map(val | $dqRelationValidation->generateDataqualityRelationValidationLambda($val, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $removeFrom));
       let validationsUnion = $validationSubQueries->tail()->fold({val1, val2 | buildUnionExpression($val1->evaluateAndDeactivate(), $val2->evaluateAndDeactivate())}, $validationSubQueries->head()->toOne()->evaluateAndDeactivate());
       ^$lambda(expressionSequence=$validationsUnion);
   );
 }
 
-function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1]): FunctionExpression[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]): FunctionExpression[1]
 {
   if($selectedValidation.type->isNotEmpty() && $selectedValidation.type == 'ROW_LEVEL',
-     | $dqRelationValidation->generateDataqualityRelationValidationLambda_RowLevel($selectedValidation, $defectsLimit, $enrichDQColumns), // for backward compatibility
-     | $dqRelationValidation->generateDataqualityRelationValidationLambda_Aggregate($selectedValidation, $defectsLimit, $enrichDQColumns));
+     | $dqRelationValidation->generateDataqualityRelationValidationLambda_RowLevel($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $removeFrom), // for backward compatibility
+     | $dqRelationValidation->generateDataqualityRelationValidationLambda_Aggregate($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $removeFrom));
 }
 
 
 // row level validation for backward compatibility
-function meta::external::dataquality::generateDataqualityRelationValidationLambda_RowLevel(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1]): FunctionExpression[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda_RowLevel(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]): FunctionExpression[1]
 {
-  let inputRelType = $dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType().typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>)->toOne();
-  let withValidationFilterExpression = $dqRelationValidation.query.expressionSequence->toOne()->evaluateAndDeactivate()->buildRelationFilterExpressionForRowLevelVal($selectedValidation, $inputRelType);
+  let lambda = if ($removeFrom, | $dqRelationValidation.query->popTerminalFunctionExpression(), | $dqRelationValidation.query);
+  let inputRelType = $lambda->evaluateAndDeactivate()->functionReturnType().typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>)->toOne();
+  let withValidationFilterExpression = $lambda.expressionSequence->toOne()->evaluateAndDeactivate()->buildRelationFilterExpressionForRowLevelVal($selectedValidation, $inputRelType);
 
   // assertion - enrich DQ columns
-  let withDQColumnsAndNewRelationType = if($enrichDQColumns, | $withValidationFilterExpression->enrichDQColumns($inputRelType, $selectedValidation), | ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withValidationFilterExpression, second=$inputRelType););
+  let withDQColumnsAndNewRelationType = if($enrichDQColumns, | $withValidationFilterExpression->enrichDQColumns($inputRelType, $selectedValidation, $castDQColumnsToPrimitive), | ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withValidationFilterExpression, second=$inputRelType););
 
   if($defectsLimit->isEmpty(),
     | $withDQColumnsAndNewRelationType.first,
@@ -546,7 +553,7 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
   );
 }
 
-function meta::external::dataquality::generateDataqualityRelationValidationLambda_Aggregate(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], resultLimit:Integer[0..1], enrichDQcolumns:Boolean[0..1]): FunctionExpression[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda_Aggregate(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], resultLimit:Integer[0..1], enrichDQcolumns:Boolean[0..1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]): FunctionExpression[1]
 {
   // assertion transformation
   let poppedAssertion = $selectedValidation->popAssertionForProjection()->evaluateAndDeactivate();
@@ -555,12 +562,13 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
   let inputRelType = $poppedAssertion.genericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>);
 
   // assertion - enrich DQ columns by default
-  let withDQColumnsAndNewRelationType = if($enrichDQcolumns->isEmpty() || $enrichDQcolumns->toOne(), | $poppedAssertion->enrichDQColumns($inputRelType, $selectedValidation), | ^Pair<ValueSpecification, meta::pure::metamodel::relation::RelationType<Any>>(first=$poppedAssertion, second=$inputRelType););
+  let withDQColumnsAndNewRelationType = if($enrichDQcolumns->isEmpty() || $enrichDQcolumns->toOne(), | $poppedAssertion->enrichDQColumns($inputRelType, $selectedValidation, $castDQColumnsToPrimitive), | ^Pair<ValueSpecification, meta::pure::metamodel::relation::RelationType<Any>>(first=$poppedAssertion, second=$inputRelType););
 
   // main dataset query transformation
+  let lambda = if ($removeFrom, | $dqRelationValidation.query->popTerminalFunctionExpression(), | $dqRelationValidation.query);
   let queryWithLimitExpression = if($resultLimit->isEmpty(),
-                                     | $dqRelationValidation.query.expressionSequence->toOne()->evaluateAndDeactivate(),
-                                     | $dqRelationValidation.query.expressionSequence->toOne()->evaluateAndDeactivate()->buildRelationLimitFilterExpression($resultLimit->toOne(), $dqRelationValidation.query->genericType())
+                                     | $lambda.expressionSequence->toOne()->evaluateAndDeactivate(),
+                                     | $lambda.expressionSequence->toOne()->evaluateAndDeactivate()->buildRelationLimitFilterExpression($resultLimit->toOne(), $dqRelationValidation.query->genericType())
                                   );
 
   // compose above transformed query and assertion
@@ -588,6 +596,12 @@ function meta::external::dataquality::buildUnionExpression(param1: FunctionExpre
   )->evaluateAndDeactivate();
 }
 
+
+function meta::external::dataquality::enrichDQColumns(f:ValueSpecification[1], inputRelType:meta::pure::metamodel::relation::RelationType<Any>[1], selectedValidation: RelationValidation[1], castDQColumnsToPrimitive:Boolean[1]): Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>[1]
+{
+  if ($castDQColumnsToPrimitive, | enrichDQColumnsPrecise($f, $inputRelType, $selectedValidation), | enrichDQColumns($f, $inputRelType, $selectedValidation));
+}
+
 function meta::external::dataquality::enrichDQColumns(f:ValueSpecification[1], inputRelType:meta::pure::metamodel::relation::RelationType<Any>[1], selectedValidation: RelationValidation[1]): Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>[1]
 {
   let relParamName = 'row';
@@ -600,7 +614,24 @@ function meta::external::dataquality::enrichDQColumns(f:ValueSpecification[1], i
 
   let newRelTypeWithRuleId = $newRelTypeWithDefectId->addColumns(~[DQ_RULE_NAME: String[1]])->evaluateAndDeactivate();
   let withRuleId = $withDefectId->buildExtendExpression('DQ_RULE_NAME', ^InstanceValue(values=$selectedValidation.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), $relParamName, $newRelTypeWithDefectId, $newRelTypeWithRuleId, String);
-  
+
+  ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withRuleId, second=$newRelTypeWithRuleId);
+}
+
+//TODO move this inferrence into correct place,
+function meta::external::dataquality::enrichDQColumnsPrecise(f:ValueSpecification[1], inputRelType:meta::pure::metamodel::relation::RelationType<Any>[1], selectedValidation: RelationValidation[1]): Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>[1]
+{
+  let relParamName = 'row';
+
+  let newRelTypeWithLogicalDefectId = $inputRelType->addColumns(~[DQ_LOGICAL_DEFECT_ID: Varchar(32)[1]])->evaluateAndDeactivate();
+  let withLogicalId = $f->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildVarcharCast(buildHashFunctionExpression($inputRelType, $inputRelType.columns.name, $relParamName), 32), $relParamName, $inputRelType, $newRelTypeWithLogicalDefectId, String);
+
+  let newRelTypeWithDefectId = $newRelTypeWithLogicalDefectId->addColumns(~[DQ_DEFECT_ID: Varchar(36)[1]])->evaluateAndDeactivate();
+  let withDefectId = $withLogicalId->buildExtendExpression('DQ_DEFECT_ID', buildVarcharCast(buildGenerateGuidExpression(), 36), $relParamName, $newRelTypeWithLogicalDefectId, $newRelTypeWithDefectId, String);
+
+  let newRelTypeWithRuleId = $newRelTypeWithDefectId->addColumns(~[DQ_RULE_NAME: Varchar(200)[1]])->evaluateAndDeactivate();
+  let withRuleId = $withDefectId->buildExtendExpression('DQ_RULE_NAME', buildVarcharCast(^InstanceValue(values=$selectedValidation.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), 255), $relParamName, $newRelTypeWithDefectId, $newRelTypeWithRuleId, String);
+
   ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withRuleId, second=$newRelTypeWithRuleId);
 }
 
@@ -620,9 +651,9 @@ function meta::external::dataquality::popAssertionForProjection(selectedValidati
   | buildOneRowIfEmptyExpression($assertionFunction.parametersValues->evaluateAndDeactivate()->at(0)));
 }
 
-function meta::external::dataquality::popTerminalFunctionExpression(query: LambdaFunction<Any>[1]):ValueSpecification[1]
+function meta::external::dataquality::popTerminalFunctionExpression(query: LambdaFunction<Any>[1]):LambdaFunction<Any>[1]
 {
-  $query.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->evaluateAndDeactivate();
+  ^$query(expressionSequence = $query.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->evaluateAndDeactivate())
 }
 
 function meta::external::dataquality::getAssertionFunction(selectedValidation: RelationValidation[1]):SimpleFunctionExpression[1]
@@ -825,9 +856,9 @@ function meta::external::dataquality::buildExtendExpression(rel: ValueSpecificat
 
 function meta::external::dataquality::buildRelationFilterExpressionForRowLevelVal(queryExpression: ValueSpecification[1], selectedValidation: RelationValidation[1], relationType:Type[1]):FunctionExpression[1]
 {
-  
+
   let assertion = $selectedValidation.assertion;
-              
+
    ^SimpleFunctionExpression
    (
       func = filter_Relation_1__Function_1__Relation_1_,
@@ -897,7 +928,7 @@ function <<access.protected>> meta::external::dataquality::fromFunctions():Funct
     meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_,
     meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
     meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_
-    ] 
+    ]
 }
 
 
@@ -945,6 +976,28 @@ function meta::external::dataquality::buildHashFunctionExpression(relType: meta:
         meta::external::dataquality::buildHashTypeFunctionExpression()
      ]
    )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::buildVarcharCast(expression:ValueSpecification[1], size:Integer[1]):ValueSpecification[1]
+{
+  // $expression;
+  buildCast($expression, varcharGenericType($size));
+}
+
+function meta::external::dataquality::buildCast(expression:ValueSpecification[1], genericType:GenericType[1]):FunctionExpression[1]
+{
+  ^SimpleFunctionExpression(
+    func = cast_Any_m__T_1__T_m_,
+    genericType = $genericType,
+    importGroup = system::imports::coreImport,
+    multiplicity = $expression->evaluateAndDeactivate().multiplicity,
+    parametersValues = [$expression, ^InstanceValue(genericType = $genericType, multiplicity = PureOne)]
+  );
+}
+
+function meta::external::dataquality::varcharGenericType(size:Integer[1]):GenericType[1]
+{
+  ^GenericType(rawType = Varchar, typeVariableValues = ^InstanceValue(values = $size, genericType = ^GenericType(rawType = Integer), multiplicity = PureOne));
 }
 
 function meta::external::dataquality::buildGetRowStringFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], columns: String[*], relParamName: String[1]):FunctionExpression[1]
