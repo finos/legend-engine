@@ -2506,10 +2506,15 @@ function meta::relational::functions::pureToSqlQuery::processCast(f:FunctionExpr
     |
       let mainQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
       let mainSelect = $mainQuery.select;
-      ^$mainQuery(
-          select = ^$mainSelect(
-            columns = $f.parametersValues->at(1).genericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>)->relationTypeColumnAliases($mainSelect.data.alias->toOne())
-          )
+      if ($mainSelect.columns->isEmpty(),
+        |
+          ^$mainQuery(
+              select = ^$mainSelect(
+                columns = $f.parametersValues->at(1).genericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>)->relationTypeColumnAliases($mainSelect.data.alias->toOne())
+              )
+          );,
+        |
+            $mainQuery
       );
       ,
     | processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
