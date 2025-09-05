@@ -312,7 +312,7 @@ function meta::external::query::sql::transformation::queryToPure::processRootQue
   trace({|
     let newQuery = $query->cast(@Query)->processQuery($context);
     let processed = wrapWithFrom($newQuery);
-    let variables = $processed.lambda($_context.scopeWithFrom->isTrue())->extractPositionals($positionals.index->map(i | positionalName($i)));
+    let variables = $processed.lambda(false)->extractPositionals($positionals.index->map(i | positionalName($i)));
 
     ^$processed(positionals = $processed.positionals->concatenate($variables)->removeDuplicatesBy(v | $v.name));
   }, 'converting query');
@@ -3976,7 +3976,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
 
     let found = $aliases->filter($filter);
 
-    assert($found->isNotEmpty() || !$failIfNotFound, | 'no alias found with name: ' + $nameParts->joinStrings('.') + ' alias: ' + if ($alias->isEmpty(), | '[]', | $alias->toOne()) + ' known: ' + $aliases->map(a | $a.name + if ($a.alias->isNotEmpty(), | '->' + $a.alias->toOne(), | ''))->joinStrings(','));
+    assert($found->isNotEmpty() || !$failIfNotFound, | 'no alias found with name: ' + $nameParts->joinStrings('.') + ' alias: ' + if ($alias->isEmpty(), | '[]', | $alias->toOne()));
     assert($found->size() == 1 || !$failIfNotFound, | $found->size()->toString() + ' aliases found with name: ' + $nameParts->joinStrings('.') + ' alias: ' + if ($alias->isEmpty(), | '[]', | $alias->toOne()));
 
     $found->first();
