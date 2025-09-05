@@ -1,0 +1,156 @@
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::test::pct::*;
+import meta::external::query::sql::reversePCT::generator::*;
+
+Class meta::external::query::sql::reversePCT::generator::PackInfo
+{
+  name : String[1];
+  module : String[1];
+  path : String[1];
+}
+
+function meta::external::query::sql::reversePCT::generator::p(name:String[1], module:String[1], path:String[1]):PackInfo[1]
+{
+  ^PackInfo(name=$name, module=$module, path=$path)
+}
+
+function meta::external::query::sql::reversePCT::generator::generateGeneratorTests(funcKind:String[1], filePath:String[1]):String[1]
+{
+  generateGeneratorTests(meta::external::query::sql::reversePCT::generator::findTests($funcKind, $filePath), $funcKind, $filePath);
+}
+
+function meta::external::query::sql::reversePCT::generator::generateGeneratorTests(fs:ConcreteFunctionDefinition<Any>[*], funcKind:String[1], filePath:String[1]):String[1]
+{
+  'println(meta::external::query::sql::reversePCT::generator::generateTests(\n'+
+  '           \'' + $funcKind + '\',\n'+
+  '           \'' + $filePath + '\',\n'+
+  '           [\n'+
+  $fs->map(f|'             f('+$f->elementToPath()+')')->joinStrings(',\n') + '\n' +
+  '           ]\n'+
+  '          )\n'+
+  ');';
+}
+
+
+function meta::external::query::sql::reversePCT::generator::findTests(funcKind:String[1], filePath:String[1]):ConcreteFunctionDefinition<Any>[*]
+{
+  let pKind =   [
+                  p('standard', 'core_functions_standard', ''),
+                  p('relation', 'core_functions_relation', ''),
+                  p('unclassified', 'core_functions_unclassified', ''),
+                  p('grammar', 'platform', 'pure/grammar/functions/'),
+                  p('essential', 'platform', 'pure/essential/'),
+                  p('variant', 'platform', 'pure/variant/')
+                ]->filter(x|$x.name == $funcKind)->toOne();
+
+  ConcreteFunctionDefinition.all()->filter(x|$x->sourceInformation().source == '/'+$pKind.module+'/'+$pKind.path+$filePath && $x->hasStereotype('test', PCT));
+}
+
+Class meta::external::query::sql::reversePCT::generator::FuncAndSQL
+{
+  function : String[1];
+  sql : String[0..1];
+  error : String[0..1];
+}
+
+Class meta::external::query::sql::reversePCT::generator::Container
+{
+  vals:meta::external::query::sql::reversePCT::generator::FuncAndSQL[*];
+}
+
+Class meta::external::query::sql::reversePCT::generator::FunctionInput
+{
+  func : ConcreteFunctionDefinition<Any>[1];
+  generateSQL : Boolean[1] = true;
+  error : String[0..1];
+}
+
+function meta::external::query::sql::reversePCT::generator::f(f:ConcreteFunctionDefinition<Any>[1]):meta::external::query::sql::reversePCT::generator::FunctionInput[1]
+{
+  ^meta::external::query::sql::reversePCT::generator::FunctionInput(func = $f);
+}
+
+function meta::external::query::sql::reversePCT::generator::e(f:ConcreteFunctionDefinition<Any>[1], s:String[1]):meta::external::query::sql::reversePCT::generator::FunctionInput[1]
+{
+  ^meta::external::query::sql::reversePCT::generator::FunctionInput(func = $f, generateSQL=false, error = $s);
+}
+
+function meta::external::query::sql::reversePCT::generator::n(f:ConcreteFunctionDefinition<Any>[1]):meta::external::query::sql::reversePCT::generator::FunctionInput[1]
+{
+  ^meta::external::query::sql::reversePCT::generator::FunctionInput(func = $f, generateSQL=false);
+}
+
+function meta::external::query::sql::reversePCT::generator::generateTests(funcKind:String[1], filePath:String[1], tests:meta::external::query::sql::reversePCT::generator::FunctionInput[*]):String[1]
+{  
+  let resTests = $tests->map(test|
+    println($test.func->elementToPath());
+    let c = ^Container();
+    let z = $test.func->evaluate(list(f:Function<{->Any[*]}>[1]|                                                   
+                                                   let sql = if ($test.generateSQL,
+                                                    | let reprocessed = $f->cast(@FunctionDefinition<Any>)->meta::relational::tests::pct::process::reprocess(meta::pure::testConnection::getTestConnection(meta::relational::runtime::DatabaseType.Postgres), noDebug());
+                                                      let rawPlan = meta::pure::executionPlan::executionPlan($reprocessed.first, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
+                                                      let query = $rawPlan.rootExecutionNode.executionNodes->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery->toOne();
+                                                      let schema = $reprocessed.second.schema;
+                                                      let sql = $reprocessed.second.replaced->fold({
+                                                                                                      a,b| let table = $a.second.sourceElement->cast(@meta::relational::metamodel::relation::Table);
+                                                                                                          let index = $reprocessed.second.replaced->indexOf($a);
+                                                                                                          $b->replace($schema.name+'.'+$table.name->toOne(), 'csv(\''+$a.first.csv->replace('\r','')
+                                                                                                            ->replace('\n','\\n')->replace('                  ','')
+                                                                                                            ->replace(', ',',')+'\')')
+                                                                                                            ->replace($table.name->toOne(),'table'+$index->toString());                                                                                                            
+                                                                                                    },
+                                                                                                    $query
+                                                                                              )->replace('\'','\\\'');,
+                                                    | []
+                                                   );
+
+                                                   $c->mutateAdd('vals', ^meta::external::query::sql::reversePCT::generator::FuncAndSQL
+                                                                         (
+                                                                            function=$f->cast(@FunctionDefinition<Any>)->printFunctionDefinition(meta::relational::grammar::serialization::relationGrammarConfiguration(), ^GContext(space='')),
+                                                                            sql=$sql,
+                                                                            error=$test.error
+                                                                         )
+                                                                );
+                                                   $f->eval();
+                        )
+                   );
+    '                 revsForTest(\n'+
+    '                      \''+$test.func->elementToPath()+'\',\n'+
+    '                      [\n'+
+    $c.vals->removeDuplicatesBy(x|$x.function)
+           ->map(x|
+                    let funcStr = $x.function->replace('\'','\\\'')->replace('\r','')->replace('\n','\\n\'+\n                            \'');
+                    if ($x.sql->isEmpty(),
+                      | if ($x.error->isEmpty(),
+                          | '                        noRev(\''+$funcStr+'\')',
+                          | '                        revError(\''+$funcStr+'\',\n'+
+                            '                                 \'\',\n'+
+                            '                                 \'Unexpected token\',\n'+
+                            '                                 \''+$x.error->toOne()+'\'\n'+
+                            '                        )'
+                        ),
+                      | '                        rev(\''+$funcStr+'\',\n'+
+                        '                            \''+if($x.sql->isEmpty(),|'',|$x.sql->toOne())+'\'\n'+
+                        '                        )'
+                    );
+            )->joinStrings(',\n')+ '\n' +
+    '                      ]\n'+
+    '                 )';
+  );
+
+  'import meta::external::query::sql::reversePCT::framework::*;\n'+
+  'function meta::external::query::sql::reversePCT::tests::'+$funcKind+'::'+$filePath->substring(0, $filePath->length()-5)->replace('/','::')+'::reverses():ReversesForSource[1]\n'+
+  '{\n'+
+  '  ^ReversesForSource(\n'+
+  '    source = \''+$tests->at(0).func->sourceInformation().source->toOne()+'\',\n'+
+  '    reverses = [\n'+
+                    $resTests->joinStrings(',\n') + '\n' +
+  '               ]\n'+
+  '  )\n'+
+  '}\n'+
+  '\n'+
+  'function meta::external::query::sql::reversePCT::tests::'+$funcKind+'::'+$filePath->substring(0, $filePath->length()-5)->replace('/','::')+'::exec():Boolean[1]\n'+
+  '{\n'+
+  $tests->map(t|'   ' + if($t.generateSQL,|'',|'//') + $t.func.package->toOne()->elementToPath() + '::' + $t.func.functionName->toOne() + '(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_)')->joinStrings(';\n')+';\n'+
+  '}';
+}

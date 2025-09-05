@@ -49,9 +49,10 @@ function <<PCT.adapter>> meta::external::query::sql::reversePCT::framework::sql<
   let reversesForTest = $srcReverses.reverses->filter(x|$x.testFunction == $test);
   assertSize($reversesForTest, 1, |'Can\'t find any reverses for the test \''+$test->toOne()+'\'');
 
-  let funcAsString = $f->cast(@FunctionDefinition<Any>)->printFunctionDefinition(meta::relational::grammar::serialization::relationGrammarConfiguration(), ^GContext(space=''));       
-  let reverse = $reversesForTest->toOne().reverses->filter(p|$p.function == $funcAsString);
+  let funcAsString = $f->cast(@FunctionDefinition<Any>)->printFunctionDefinition(meta::relational::grammar::serialization::relationGrammarConfiguration(), ^GContext(space=''));
 
+  let reverse = $reversesForTest->toOne().reverses->filter(p|$p.function == $funcAsString->replace('\r',''));
+  assertSize($reverse, 1, |'Can\'t find any (or too many) reverses for the function \''+$funcAsString+'\' for the test '+$test->toOne());
   let rev = $reverse->toOne();
 
   if ($rev.shouldBeSupported,
@@ -101,8 +102,8 @@ function meta::external::query::sql::reversePCT::framework::noRev(func:String[1]
 
 function meta::external::query::sql::reversePCT::framework::reverses():ReversesForSource[*]
 {
-    meta::external::query::sql::reversePCT::framework::grammar::reverses()
-    ->concatenate(meta::external::query::sql::reversePCT::framework::essential::reverses())
-    ->concatenate(meta::external::query::sql::reversePCT::framework::relation::reverses())
-    ->concatenate(meta::external::query::sql::reversePCT::framework::standard::reverses())
+    meta::external::query::sql::reversePCT::tests::grammar::reverses()
+    ->concatenate(meta::external::query::sql::reversePCT::tests::essential::reverses())
+    ->concatenate(meta::external::query::sql::reversePCT::tests::relation::reverses())
+    ->concatenate(meta::external::query::sql::reversePCT::tests::standard::reverses())
 }

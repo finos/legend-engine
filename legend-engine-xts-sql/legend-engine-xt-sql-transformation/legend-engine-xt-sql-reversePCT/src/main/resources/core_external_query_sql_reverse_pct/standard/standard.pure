@@ -14,8 +14,10 @@
 
 import meta::external::query::sql::reversePCT::framework::*;
 
-function meta::external::query::sql::reversePCT::framework::standard::reverses():ReversesForSource[*]
+function meta::external::query::sql::reversePCT::tests::standard::reverses():ReversesForSource[*]
 {
   [
+    meta::external::query::sql::reversePCT::tests::standard::math::aggregator::max::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::math::aggregator::average::reverses()
   ]
 }

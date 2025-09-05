@@ -38,7 +38,7 @@ public class Test_Query_SQL_GrammarFunctions_Reverse_PCT extends PCTReportConfig
     private static final ReportScope reportScope = PlatformCodeRepositoryProvider.grammarFunctions;
     private static final Adapter adapter = CoreExternalSQLReversePCTCodeRepositoryProvider.SQLAdapter;
     private static final String platform = "compiled";
-    private static final RichIterable<? extends Root_meta_external_query_sql_reversePCT_framework_ReversesForSource> reverseInfo = core_external_query_sql_reverse_pct_grammar_grammar.Root_meta_external_query_sql_reversePCT_framework_grammar_reverses__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
+    private static final RichIterable<? extends Root_meta_external_query_sql_reversePCT_framework_ReversesForSource> reverseInfo = core_external_query_sql_reverse_pct_grammar_grammar.Root_meta_external_query_sql_reversePCT_tests_grammar_reverses__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
     private static final MutableList<ExclusionSpecification> expectedFailures = ExpectedFailuresBuilder.build(reverseInfo);
 
     static
