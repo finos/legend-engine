@@ -16,12 +16,8 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.validator;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.multimap.list.MutableListMultimap;
-import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.factory.Multimaps;
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
@@ -68,7 +64,6 @@ public class MappingValidator
         this.validateGeneralization(pureModel, mappings);
         this.validateEnumerationMappings(pureModel, mappings);
         this.validateMappingElementIds(pureModel, mappings, pureMappings, mappingByClassMappingId);
-        this.validateClassMappingRoots(pureModel, mappings, pureMappings);
         this.validateRelationFunctionClassMapping(pureModel, pureMappings);
 
         MappingValidatorContext mappingValidatorContext = new MappingValidatorContext(mappingByClassMappingId, pureMappings, mappings);
@@ -292,38 +287,6 @@ public class MappingValidator
             return Lists.mutable.with(new Warning(SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()), "Error '" + id + "' can't be found in the mapping " + pureModel.buildPackageString(mapping._package()._name(), mapping._name())));
         }
         return Lists.mutable.empty();
-    }
-
-
-    public void validateClassMappingRoots(PureModel pureModel, Map<String, Mapping> mappings, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings)
-    {
-        pureMappings.forEach((mappingPath, mapping) ->
-        {
-            MutableListMultimap<String, SetImplementation> directMappings = Multimaps.mutable.list.empty();
-            for (SetImplementation classMapping : mapping._classMappings())
-            {
-                if (!(classMapping instanceof EmbeddedSetImplementation))
-                {
-                    directMappings.put(HelperModelBuilder.getElementFullPath(classMapping._class(), pureModel.getExecutionSupport()), classMapping);
-                }
-            }
-            for (Pair<String, RichIterable<SetImplementation>> val : directMappings.keyMultiValuePairsView())
-            {
-                RichIterable<SetImplementation> classMappings = val.getTwo();
-                if (classMappings.size() == 1)
-                {
-                    classMappings.toList().get(0)._root(true);
-                }
-                else
-                {
-                    int rootCount = classMappings.count(SetImplementationAccessor::_root);
-                    if (rootCount != 1)
-                    {
-                        throw new EngineException("Class '" + val.getOne() + "' is mapped by " + classMappings.size() + " set implementations and has " + rootCount + " roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'", mappings.get(mappingPath).sourceInformation, EngineErrorType.COMPILATION);
-                    }
-                }
-            }
-        });
     }
 
     public void validateRelationFunctionClassMapping(PureModel pureModel, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings)

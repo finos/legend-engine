@@ -360,7 +360,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [23:1-34:1]: Duplicated class mappings found with ID 'test_A' in mapping 'test::M3'");
+                ")", "COMPILATION error at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
         // duplicated IDs within the included mappings
         test(models +
                 "###Mapping\n" +
@@ -388,7 +388,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [23:1-34:1]: Duplicated class mappings found with ID 'test_A' in mapping 'test::M3'");
+                ")", "COMPILATION error at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
         // duplicated IDs in the included mappings and mapping
         test(models +
                 "###Mapping\n" +
@@ -416,7 +416,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [23:1-34:1]: Duplicated class mappings found with ID '2' in mapping 'test::M3'");
+                ")", "COMPILATION error at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
         // duplicated IDs in nested included mappings
         test(models +
                 "###Mapping\n" +
@@ -444,7 +444,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [24:1-34:1]: Duplicated class mappings found with ID '1' in mapping 'test::M3'");
+                ")", "COMPILATION error at [24:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
         // duplicated IDs with a mapping included multiple times included mapping
         test(models +
                 "###Mapping\n" +
@@ -473,7 +473,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [24:1-35:1]: Duplicated class mappings found with ID '1' in mapping 'test::M3'");
+                ")", "COMPILATION error at [24:1-35:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
     }
 
     @Test
@@ -1483,7 +1483,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n").getTwo();
 
         Root_meta_external_store_model_PureInstanceSetImplementation_Impl classA = (Root_meta_external_store_model_PureInstanceSetImplementation_Impl) model.getMapping("test::M1")._classMappings().getFirst();
-        Assert.assertEquals(classA._propertyMappings().getLast()._targetSetImplementationId(), "test_B");
+        Assert.assertEquals("test_B", classA._propertyMappings().getLast()._targetSetImplementationId());
     }
 
     @Test
@@ -1584,7 +1584,23 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         mapping,
                         "   test::Firm_Person: XStore {\n" +
                                 "      employer[p, f]: $this.firmId == $that.id\n" +
-                                "   }")
+                                "   }"),
+                null,
+                Lists.mutable.with("COMPILATION error at [36:7-46]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+        );
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer[p, f]: $this.firmId == $that.id,\n" +
+                                "      employees[f, p]: $this.id == $that.firmId\n" +
+                                "   }"),
+                null,
+                Lists.mutable.with(
+                        "COMPILATION error at [36:7-46]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION error at [37:7-47]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        )
         );
 
         test(
@@ -1592,6 +1608,15 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         mapping,
                         "   test::Firm_Person: XStore {\n" +
                                 "      employer: $this.firmId == $that.id\n" +
+                                "   }")
+        );
+
+        test(
+                String.format(
+                        mapping,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer: $this.firmId == $that.id,\n" +
+                                "      employees: $this.id == $that.firmId\n" +
                                 "   }")
         );
     }
@@ -1644,7 +1669,25 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "  test::Firm_Person_Milestoned: XStore\n" +
                                 "  {\n" +
                                 "    employer[p, f]: $this.firmId == $that.id\n" +
-                                "  }")
+                                "  }"),
+                null,
+                Lists.mutable.with("COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+        );
+        test(
+                String.format(
+                        mapping,
+                        "<<temporal.businesstemporal>>",
+                        "<<temporal.businesstemporal>>",
+                        "  test::Firm_Person_Milestoned: XStore\n" +
+                                "  {\n" +
+                                "    employer[p, f]: $this.firmId == $that.id,\n" +
+                                "    employees[f, p]: $this.id == $that.firmId\n" +
+                                "  }"),
+                null,
+                Lists.mutable.with(
+                        "COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION error at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        )
         );
         test(
                 String.format(
@@ -1659,31 +1702,39 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
         test(
                 String.format(
                         mapping,
-                        "<<temporal.processingtemporal>>",
-                        "<<temporal.processingtemporal>>",
+                        "<<temporal.businesstemporal>>",
+                        "<<temporal.businesstemporal>>",
                         "  test::Firm_Person_Milestoned: XStore\n" +
                                 "  {\n" +
-                                "    employer[p, f]: $this.firmId == $that.id\n" +
-                                "  }")
-        );
-        test(
-                String.format(
-                        mapping,
-                        "<<temporal.processingtemporal>>",
-                        "<<temporal.processingtemporal>>",
-                        "  test::Firm_Person_Milestoned: XStore\n" +
-                                "  {\n" +
+                                "    employees: $this.id == $that.firmId,\n" +
                                 "    employer: $this.firmId == $that.id\n" +
                                 "  }")
         );
         test(
                 String.format(
                         mapping,
-                        "<<temporal.bitemporal>>",
-                        "<<temporal.bitemporal>>",
+                        "<<temporal.processingtemporal>>",
+                        "<<temporal.processingtemporal>>",
                         "  test::Firm_Person_Milestoned: XStore\n" +
                                 "  {\n" +
-                                "    employer[p, f]: $this.firmId == $that.id\n" +
+                                "    employer[p, f]: $this.firmId == $that.id,\n" +
+                                "    employees[f, p]: $this.id == $that.firmId\n" +
+                                "  }"),
+                null,
+                Lists.mutable.with(
+                        "COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION error at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                )
+        );
+        test(
+                String.format(
+                        mapping,
+                        "<<temporal.processingtemporal>>",
+                        "<<temporal.processingtemporal>>",
+                        "  test::Firm_Person_Milestoned: XStore\n" +
+                                "  {\n" +
+                                "    employer: $this.firmId == $that.id,\n" +
+                                "    employees: $this.id == $that.firmId\n" +
                                 "  }")
         );
         test(
@@ -1693,7 +1744,24 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "<<temporal.bitemporal>>",
                         "  test::Firm_Person_Milestoned: XStore\n" +
                                 "  {\n" +
-                                "    employer: $this.firmId == $that.id\n" +
+                                "    employer[p, f]: $this.firmId == $that.id,\n" +
+                                "    employees[f, p]: $this.id == $that.firmId\n" +
+                                "  }"),
+                null,
+                Lists.mutable.with(
+                        "COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION error at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        )
+        );
+        test(
+                String.format(
+                        mapping,
+                        "<<temporal.bitemporal>>",
+                        "<<temporal.bitemporal>>",
+                        "  test::Firm_Person_Milestoned: XStore\n" +
+                                "  {\n" +
+                                "    employer: $this.firmId == $that.id,\n" +
+                                "    employees: $this.id == $that.firmId\n" +
                                 "  }")
         );
     }
@@ -1737,7 +1805,22 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         grammar,
                         "   test::Firm_Person: XStore {\n" +
                                 "      employer[p, f]: $this.firmName == $that.name\n" +
-                                "   }")
+                                "   }"),
+                null,
+                Lists.mutable.with("COMPILATION error at [95:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+        );
+        test(
+                String.format(
+                        grammar,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer[p, f]: $this.firmName == $that.name,\n" +
+                                "      employees[f, p]: $this.name == $that.firmName\n" +
+                                "   }"),
+                null,
+                Lists.mutable.with(
+                        "COMPILATION error at [95:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION error at [96:7-51]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        )
         );
 
         test(
@@ -1745,6 +1828,15 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         grammar,
                         "   test::Firm_Person: XStore {\n" +
                                 "      employer: $this.firmName == $that.name\n" +
+                                "   }")
+        );
+
+        test(
+                String.format(
+                        grammar,
+                        "   test::Firm_Person: XStore {\n" +
+                                "      employer: $this.firmName == $that.name,\n" +
+                                "      employees: $this.name == $that.firmName\n" +
                                 "   }")
         );
     }
@@ -1798,13 +1890,36 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                             grammar_milestoned,
                             "   test::Firm_Person: XStore {\n" +
                                     "      employer[p, f]: $this.firmName == $that.name\n" +
-                                    "   }\n)")
+                                    "   }\n)"),
+                    null,
+                    Lists.mutable.with("COMPILATION error at [97:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+            );
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Firm_Person: XStore {\n" +
+                                    "      employer[p, f]: $this.firmName == $that.name,\n" +
+                                    "      employees[f, p]: $this.name == $that.firmName\n" +
+                                    "   }\n)"),
+                    null,
+                    Lists.mutable.with(
+                            "COMPILATION error at [97:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION error at [98:7-51]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                    )
             );
             test(
                     String.format(
                             grammar_milestoned,
                             "   test::Firm_Person: XStore {\n" +
                                     "      employer: $this.firmName == $that.name\n" +
+                                    "   }\n)")
+            );
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Firm_Person: XStore {\n" +
+                                    "      employer: $this.firmName == $that.name,\n" +
+                                    "      employees: $this.name == $that.firmName\n" +
                                     "   }\n)")
             );
         }
@@ -1846,9 +1961,24 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
         test(
                 String.format(
                         grammar,
+                        "   test::Address_Street: XStore {\n" +
+                                "      street[a, s]: $this.streetName == $that.streetId\n" +
+                                "   }"),
+                null,
+                Lists.mutable.with("COMPILATION error at [94:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+        );
+        test(
+                String.format(
+                        grammar,
                         "   test::Person_Address: XStore {\n" +
-                                "      address[p, a]: $this.addressName == $that.name\n" +
-                                "   }")
+                                "      address[p, a]: $this.addressName == $that.name,\n" +
+                                "      persons[a, p]: $this.name == $that.addressName\n" +
+                                "   }"),
+                null,
+                Lists.mutable.with(
+                        "COMPILATION error at [94:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION error at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                )
         );
         test(
                 String.format(
@@ -1860,15 +1990,37 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
         test(
                 String.format(
                         grammar,
-                        "   test::Address_Street: XStore {\n" +
-                                "      street[a, s]: $this.streetName == $that.streetId\n" +
+                        "   test::Person_Address: XStore {\n" +
+                                "      address: $this.addressName == $that.name,\n" +
+                                "      persons: $this.name == $that.addressName\n" +
                                 "   }")
         );
         test(
                 String.format(
                         grammar,
                         "   test::Address_Street: XStore {\n" +
+                                "      street[a, s]: $this.streetName == $that.streetId,\n" +
+                                "      addresses[s, a]: $this.streetId == $that.streetName\n" +
+                                "   }"),
+                null,
+                Lists.mutable.with(
+                        "COMPILATION error at [94:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION error at [95:7-57]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        )
+        );
+        test(
+                String.format(
+                        grammar,
+                        "   test::Address_Street: XStore {\n" +
                                 "      street: $this.streetName == $that.streetId\n" +
+                                "   }")
+        );
+        test(
+                String.format(
+                        grammar,
+                        "   test::Address_Street: XStore {\n" +
+                                "      street: $this.streetName == $that.streetId,\n" +
+                                "      addresses: $this.streetId == $that.streetName\n" +
                                 "   }")
         );
     }
@@ -1923,7 +2075,22 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                             grammar_milestoned,
                             "   test::Person_Address: XStore {\n" +
                                     "      address[p, a]: $this.addressName == $that.name\n" +
-                                    "   }")
+                                    "   }"),
+                    null,
+                    Lists.mutable.with("COMPILATION error at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+            );
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Person_Address: XStore {\n" +
+                                    "      address[p, a]: $this.addressName == $that.name,\n" +
+                                    "      persons[a, p]: $this.name == $that.addressName\n" +
+                                    "   }"),
+                    null,
+                    Lists.mutable.with(
+                            "COMPILATION error at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION error at [96:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                            )
             );
             test(
                     String.format(
@@ -1944,6 +2111,30 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                             grammar_milestoned,
                             "   test::Address_Street: XStore {\n" +
                                     "      street: $this.streetName == $that.streetId\n" +
+                                    "   }")
+            );
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Person_Address: XStore {\n" +
+                                    "      address: $this.addressName == $that.name,\n" +
+                                    "      persons: $this.name == $that.addressName\n" +
+                                    "   }")
+            );
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Address_Street: XStore {\n" +
+                                    "      addresses: $this.streetId == $that.streetName,\n" +
+                                    "      street: $this.streetName == $that.streetId\n" +
+                                    "   }")
+            );
+            test(
+                    String.format(
+                            grammar_milestoned,
+                            "   test::Address_Street: XStore {\n" +
+                                    "      street: $this.streetName == $that.streetId,\n" +
+                                    "      addresses: $this.streetId == $that.streetName\n" +
                                     "   }")
             );
         }
@@ -2047,8 +2238,21 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
 
             test(grammar_milestoned +
                             "   test::Person_Address: XStore {\n" +
-                                    "      address[p, a]: $this.addressName == $that.name\n" +
-                                    "   }\n)\n"
+                            "      address[p, a]: $this.addressName == $that.name\n" +
+                            "   }\n)\n",
+                    null,
+                    Lists.mutable.with("COMPILATION error at [82:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+            );
+            test(grammar_milestoned +
+                            "   test::Person_Address: XStore {\n" +
+                                    "      address[p, a]: $this.addressName == $that.name,\n" +
+                                    "      persons[a, p]: $this.name == $that.addressName\n" +
+                                    "   }\n)\n",
+                    null,
+                    Lists.mutable.with(
+                            "COMPILATION error at [82:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION error at [83:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                            )
             );
             test(grammar_milestoned +
                             "   test::Person_Address: XStore {\n" +
@@ -2056,14 +2260,32 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "   }\n)\n"
             );
             test(grammar_milestoned +
+                    "   test::Person_Address: XStore {\n" +
+                    "      address: $this.addressName == $that.name,\n" +
+                    "      persons: $this.name == $that.addressName\n" +
+                    "   }\n)\n"
+            );
+            test(grammar_milestoned +
                             "   test::Address_Street: XStore {\n" +
-                                    "      street[a, s]: $this.streetName == $that.streetId\n" +
-                                    "   }\n)\n"
+                                    "      street[a, s]: $this.streetName == $that.streetId,\n" +
+                                    "      addresses[s, a]: $this.streetId == $that.streetName\n" +
+                                    "   }\n)\n",
+                    null,
+                    Lists.mutable.with(
+                            "COMPILATION error at [82:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION error at [83:7-57]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                            )
             );
             test(grammar_milestoned +
                             "   test::Address_Street: XStore {\n" +
                                     "      street: $this.streetName == $that.streetId\n" +
                                     "   }\n)\n"
+            );
+            test(grammar_milestoned +
+                    "   test::Address_Street: XStore {\n" +
+                    "      street: $this.streetName == $that.streetId,\n" +
+                    "      addresses: $this.streetId == $that.streetName\n" +
+                    "   }\n)\n"
             );
         }
     }

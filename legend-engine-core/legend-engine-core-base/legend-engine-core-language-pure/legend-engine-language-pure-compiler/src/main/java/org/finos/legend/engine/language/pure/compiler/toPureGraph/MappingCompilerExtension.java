@@ -18,7 +18,9 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Multimaps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
@@ -41,6 +43,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingIncludeAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementationAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 
@@ -124,6 +127,9 @@ public class MappingCompilerExtension implements CompilerExtension
             RichIterable<Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>>> setImplementations = ListIterate.collect(mapping.classMappings, cm -> cm.accept(new ClassMappingFirstPassBuilder(context, pureMapping)));
             pureMapping._classMappingsAddAll(setImplementations.flatCollect(p -> org.eclipse.collections.impl.factory.Lists.mutable.with(p.getOne()).withAll(p.getTwo())));
         }
+
+        // check state of mappings...
+
         if (!mapping.tests.isEmpty())
         {
             mapping.tests.forEach(t -> HelperMappingBuilder.processMappingTest(t, context));
@@ -132,6 +138,30 @@ public class MappingCompilerExtension implements CompilerExtension
         {
             TestBuilderHelper.validateTestSuiteIdsList(mapping.testSuites, mapping.sourceInformation);
             pureMapping._tests(ListIterate.collect(mapping.testSuites, suite -> HelperMappingBuilder.processMappingTestAndTestSuite(suite, pureMapping, context)));
+        }
+        MutableListMultimap<String, SetImplementation> directMappings = Multimaps.mutable.list.empty();
+        for (SetImplementation classMapping : pureMapping._classMappings())
+        {
+            if (!(classMapping instanceof EmbeddedSetImplementation))
+            {
+                directMappings.put(HelperModelBuilder.getElementFullPath(classMapping._class(), context.pureModel.getExecutionSupport()), classMapping);
+            }
+        }
+        for (Pair<String, RichIterable<SetImplementation>> val : directMappings.keyMultiValuePairsView())
+        {
+            RichIterable<SetImplementation> classMappings = val.getTwo();
+            if (classMappings.size() == 1)
+            {
+                classMappings.toList().get(0)._root(true);
+            }
+            else
+            {
+                int rootCount = classMappings.count(SetImplementationAccessor::_root);
+                if (rootCount != 1)
+                {
+                    throw new EngineException("Class '" + val.getOne() + "' is mapped by " + classMappings.size() + " set implementations and has " + rootCount + " roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'", mapping.sourceInformation, EngineErrorType.COMPILATION);
+                }
+            }
         }
         if (mapping.associationMappings != null)
         {
