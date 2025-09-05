@@ -207,7 +207,11 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
          sort_TabularDataSet_1__String_1__SortDirection_1__TabularDataSet_1_,
          concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_,
          meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
-         meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_
+         meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
+         meta::pure::mapping::from_FunctionDefinition_1__PackageableRuntime_1__T_m_,
+         meta::pure::mapping::from_FunctionDefinition_1__Runtime_1__T_m_,
+         meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_,
+         meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_
       ]->map(x| pair($x->cast(@Function<Any>), {|
          resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions)
          }))

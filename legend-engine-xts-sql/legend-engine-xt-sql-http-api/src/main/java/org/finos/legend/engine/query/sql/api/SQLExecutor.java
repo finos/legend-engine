@@ -198,7 +198,7 @@ public class SQLExecutor
         return process(query, positionalArguments,
                 (transformedContext, pureModel, sources, positionals, span) ->
                 {
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<? extends Object> lambda = transformedContext.lambda(pureModel.getExecutionSupport());
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<? extends Object> lambda = transformedContext.lambda(true, pureModel.getExecutionSupport());
                     return transformLambda(lambda, pureModel);
                 },
                 (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Extension_MANY__SqlTransformContext_1_(sources, extensions, pureModel.getExecutionSupport())._scopeWithFrom(false),
