@@ -90,6 +90,11 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlS
 
 }
 
+Class meta::external::query::sql::transformation::queryToPure::DynamicSQLSourceModule extends ModuleExtension
+{
+  extraDynamicSQLSources : DynamicSQLSource[*];
+}
+
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1]):Function<Any>[1]
 {
   let sources =  [^DynamicSQLSource(
@@ -127,7 +132,7 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
 
                         meta::legend::compile($code)->filter(x|$x.name == 'container__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne();
                   )
-                 ];
+                 ]->concatenate(meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(DynamicSQLSourceModule))->cast(@DynamicSQLSourceModule).extraDynamicSQLSources);
 
   let extensions = meta::relational::extension::relationalExtensions();
   let context = rootContext($sources, $extensions);
