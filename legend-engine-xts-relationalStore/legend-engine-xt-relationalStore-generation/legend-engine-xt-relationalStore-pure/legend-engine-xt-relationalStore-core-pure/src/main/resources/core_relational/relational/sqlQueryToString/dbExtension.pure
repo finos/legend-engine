@@ -1085,6 +1085,8 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   array_append,
   array_position,
   array_slice,
+  array_contains,
+  array_distinct,
   ascii,
   asin,
   atan,
