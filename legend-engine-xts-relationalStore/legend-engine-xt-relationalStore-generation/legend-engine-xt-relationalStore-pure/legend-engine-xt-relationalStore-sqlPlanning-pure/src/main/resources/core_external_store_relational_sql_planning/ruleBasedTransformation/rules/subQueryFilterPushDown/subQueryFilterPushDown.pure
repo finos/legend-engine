@@ -63,8 +63,9 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
   {node: Node[1] |
     $node->match([
       {qs: QuerySpecification[1] |
-        // Try pushing filters into root subquery
-        if ($qs.where->isNotEmpty() && ($qs.from->size() == 1),
+        let joins = $qs->extractOrderedJoins();
+        let containsOnlySupportedJoins = $joins->forAll(j | $j.type->in([JoinType.INNER, JoinType.LEFT]));
+        if ($qs.where->isNotEmpty() && ($qs.from->size() == 1) && $containsOnlySupportedJoins,
             | let rootRelationWithAlias = $qs.from->toOne()->findRootRelationWithAlias();
               $rootRelationWithAlias.relation->match([
                 {s: TableSubquery[1] |
@@ -77,7 +78,7 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
                 r: Relation[1] | unchanged($qs)
               ]);,
             | unchanged($qs)
-        )
+        );
       },
       {join: Join[1] |
         // Try pushing filters into joined subquery
@@ -118,7 +119,7 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
                   | let subQuery = $t.query;
                     let subQuerySpec = $subQuery.queryBody->cast(@QuerySpecification);
                     let subQuerySpecHasLimitOrOffset = $subQuerySpec.limit->isNotEmpty() || $subQuerySpec.offset->isNotEmpty();
-                    let subQuerySpecHasWindowColumns = $subQuerySpec->fetchAllNodesRecursivelyExcludeSubQueries()->get($subQuerySpec).values->exists(n | $n->instanceOf(meta::external::query::sql::metamodel::Window));
+                    let subQuerySpecHasWindowColumns = $subQuerySpec->fetchAllSubNodesRecursivelyWithFilter({n | $n->instanceOf(TableSubquery)})->exists(n | $n->instanceOf(meta::external::query::sql::metamodel::Window));
                     let cannotPushFiltersIntoSubQuery = $subQuerySpecHasLimitOrOffset || $subQuerySpecHasWindowColumns;
                     if ($cannotPushFiltersIntoSubQuery,
                         | pair(false, $t),

@@ -45,7 +45,7 @@ function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBased
   );
 }
 
-function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testPushDownOfComplexOps(): Boolean[1]
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testPushDownOfComplexOps(): Boolean[1]
 {
   runSqlRuleBasedTransformationTest(
     'SELECT\n' +
@@ -92,7 +92,7 @@ function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBase
   );
 }
 
-function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testNoPushDownWithOrInFilter(): Boolean[1]
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testNoPushDownWithOrInFilter(): Boolean[1]
 {
   runSqlRuleBasedTransformationTest(
     'SELECT\n' +
@@ -139,7 +139,7 @@ function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBase
   );
 }
 
-function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testNoPushDownWithOrInJoin(): Boolean[1]
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testNoPushDownWithOrInJoin(): Boolean[1]
 {
   runSqlRuleBasedTransformationTest(
     'SELECT\n' +
