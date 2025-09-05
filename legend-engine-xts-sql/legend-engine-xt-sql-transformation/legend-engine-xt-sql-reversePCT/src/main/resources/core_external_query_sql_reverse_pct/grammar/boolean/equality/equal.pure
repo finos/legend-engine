@@ -1,0 +1,277 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// println(meta::external::query::sql::reversePCT::generator::generateGeneratorTests('grammar','boolean/equality/equal.pure'));
+
+// println(meta::external::query::sql::reversePCT::generator::generateTests(
+//            'grammar',
+//            'boolean/equality/equal.pure',
+//            [
+//              e(meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_, 'Add support for enum.'),
+//              f(meta::pure::functions::boolean::tests::equality::equal::testEqualDate_Function_1__Boolean_1_),
+//              e(meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension_Function_1__Boolean_1_,'Not supported yet'),
+//              e(meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_, 'Manage year and year-month semantic.'),
+//              n(meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_),
+//              f(meta::pure::functions::boolean::tests::equality::equal::testEqualInteger_Function_1__Boolean_1_),
+//              f(meta::pure::functions::boolean::tests::equality::equal::testEqualString_Function_1__Boolean_1_),
+//              f(meta::pure::functions::boolean::tests::equality::equal::testEqualFloat_Function_1__Boolean_1_),
+//              f(meta::pure::functions::boolean::tests::equality::equal::testEqualBoolean_Function_1__Boolean_1_),
+//              n(meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_)
+//            ]
+//           )
+// );
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::grammar::boolean::equality::equal::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/grammar/functions/boolean/equality/equal.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_',
+                      [
+                        revError('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST',
+                                 '',
+                                 'Unexpected token',
+                                 'Add support for enum.'
+                        ),
+                        revError('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND',
+                                 '',
+                                 'Unexpected token',
+                                 'Add support for enum.'
+                        ),
+                        revError('|meta::pure::functions::boolean::not(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)',
+                                 '',
+                                 'Unexpected token',
+                                 'Add support for enum.'
+                        ),
+                        revError('|meta::pure::functions::boolean::not(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST)',
+                                 '',
+                                 'Unexpected token',
+                                 'Add support for enum.'
+                        ),
+                        revError('|meta::pure::functions::boolean::not(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST == meta::pure::functions::boolean::tests::equalitymodel::TestEnum2.FIRST)',
+                                 '',
+                                 'Unexpected token',
+                                 'Add support for enum.'
+                        ),
+                        revError('|meta::pure::functions::boolean::not(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND == meta::pure::functions::boolean::tests::equalitymodel::TestEnum2.SECOND)',
+                                 '',
+                                 'Unexpected token',
+                                 'Add support for enum.'
+                        ),
+                        revError('|meta::pure::functions::boolean::not(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST == 1)',
+                                 '',
+                                 'Unexpected token',
+                                 'Add support for enum.'
+                        ),
+                        revError('|meta::pure::functions::boolean::not(\'a\' == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)',
+                                 '',
+                                 'Unexpected token',
+                                 'Add support for enum.'
+                        ),
+                        revError('|$x == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST',
+                                 '',
+                                 'Unexpected token',
+                                 'Add support for enum.'
+                        ),
+                        revError('|meta::pure::functions::boolean::not($x == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)',
+                                 '',
+                                 'Unexpected token',
+                                 'Add support for enum.'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::equal::testEqualDate_Function_1__Boolean_1_',
+                      [
+                        rev('|%2014-02-27T05:01:35.231+0000 == %2014-02-27T05:01:35.231+0000',
+                                 'select Timestamp\'2014-02-27 05:01:35.231\' = Timestamp\'2014-02-27 05:01:35.231\''
+                        ),
+                        rev('|meta::pure::functions::boolean::not(%2014-02-27T05:01:35.231+0000 == %2014-02-27T10:01:35.231+0000)',
+                                 'select (Timestamp\'2014-02-27 05:01:35.231\' <> Timestamp\'2014-02-27 10:01:35.231\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension_Function_1__Boolean_1_',
+                      [
+                        revError('|1 == 1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)',
+                                 '',
+                                 'Unexpected token',
+                                 'Not supported yet'
+                        ),
+                        revError('|1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger) == 1',
+                                 '',
+                                 'Unexpected token',
+                                 'Not supported yet'
+                        ),
+                        revError('|1 == 2->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)',
+                                 '',
+                                 'Unexpected token',
+                                 'Not supported yet'
+                        ),
+                        revError('|2->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger) == 1',
+                                 '',
+                                 'Unexpected token',
+                                 'Not supported yet'
+                        ),
+                        revError('|^meta::pure::functions::boolean::tests::equalitymodel::SideClass(stringId=\'firstSide\', intId=1) == 1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)',
+                                 '',
+                                 'Unexpected token',
+                                 'Not supported yet'
+                        ),
+                        revError('|1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger) == ^meta::pure::functions::boolean::tests::equalitymodel::SideClass(stringId=\'firstSide\', intId=1)',
+                                 '',
+                                 'Unexpected token',
+                                 'Not supported yet'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_',
+                      [
+                        revError('|%2014 == %2014',
+                                 '',
+                                 'Unexpected token',
+                                 'Manage year and year-month semantic.'
+                        ),
+                        revError('|meta::pure::functions::boolean::not(%2014 == %2014-01-01)',
+                                 '',
+                                 'Unexpected token',
+                                 'Manage year and year-month semantic.'
+                        ),
+                        revError('|meta::pure::functions::boolean::not(%2014 == %2013)',
+                                 '',
+                                 'Unexpected token',
+                                 'Manage year and year-month semantic.'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_',
+                      [
+                        noRev('|$x == $x'),
+                        noRev('|$y == $y'),
+                        noRev('|$instance == $instance')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::equal::testEqualInteger_Function_1__Boolean_1_',
+                      [
+                        rev('|6 == 6',
+                            'select 6 = 6'
+                        ),
+                        rev('|6 == (3 + 3)',
+                            'select 6 = (3 + 3)'
+                        ),
+                        rev('|meta::pure::functions::boolean::not(6 == 7)',
+                            'select (6 <> 7)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::equal::testEqualString_Function_1__Boolean_1_',
+                      [
+                        rev('|\'ab\' == \'ab\'',
+                            'select Text\'ab\' = Text\'ab\''
+                        ),
+                        rev('|\'ab\' == (\'a\' + \'b\')',
+                            'select Text\'ab\' = concat(Text\'\', Text\'a\', Text\'b\', Text\'\')'
+                        ),
+                        rev('|meta::pure::functions::boolean::not(\'ab\' == \'cd\')',
+                            'select (Text\'ab\' <> Text\'cd\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::equal::testEqualFloat_Function_1__Boolean_1_',
+                      [
+                        rev('|6.3 == 6.3',
+                            'select 6.3 = 6.3'
+                        ),
+                        rev('|6.3 == (6.3 + 0.0)',
+                            'select 6.3 = (6.3 + 0.0)'
+                        ),
+                        rev('|meta::pure::functions::boolean::not(6.3 == 7.8)',
+                            'select (6.3 <> 7.8)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::equal::testEqualBoolean_Function_1__Boolean_1_',
+                      [
+                        rev('|true == true',
+                            'select Boolean\'true\' = Boolean\'true\''
+                        ),
+                        rev('|false == false',
+                            'select Boolean\'false\' = Boolean\'false\''
+                        ),
+                        rev('|meta::pure::functions::boolean::not(true == false)',
+                            'select (Boolean\'true\' <> Boolean\'false\')'
+                        ),
+                        rev('|meta::pure::functions::boolean::not(false == true)',
+                            'select (Boolean\'false\' <> Boolean\'true\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_',
+                      [
+                        noRev('|$side1 == $side1'),
+                        noRev('|$side1 == $side2'),
+                        noRev('|$side2 == $side1'),
+                        noRev('|meta::pure::functions::boolean::not($side1 == $side3)'),
+                        noRev('|meta::pure::functions::boolean::not($side3 == $side1)'),
+                        noRev('|meta::pure::functions::boolean::not($side1 == $side4)'),
+                        noRev('|$left11 == $left11'),
+                        noRev('|$left11 == $left12'),
+                        noRev('|$left12 == $left11'),
+                        noRev('|meta::pure::functions::boolean::not($left11 == $left21)'),
+                        noRev('|meta::pure::functions::boolean::not($left21 == $left11)'),
+                        noRev('|$right11 == $right11'),
+                        noRev('|$right11 == $right12'),
+                        noRev('|$right12 == $right11'),
+                        noRev('|meta::pure::functions::boolean::not($right11 == $right21)'),
+                        noRev('|$right21 == $right22'),
+                        noRev('|meta::pure::functions::boolean::not($right21 == $right23)'),
+                        noRev('|meta::pure::functions::boolean::not($left11 == $right11)'),
+                        noRev('|$bot11 == $bot11'),
+                        noRev('|$bot11 == $bot12'),
+                        noRev('|meta::pure::functions::boolean::not($bot11 == $bot21)'),
+                        noRev('|meta::pure::functions::boolean::not($left11 == $bot11)'),
+                        noRev('|meta::pure::functions::boolean::not($otherBot11 == $otherBot12)'),
+                        noRev('|$otherBot11 == $otherBot21'),
+                        noRev('|meta::pure::functions::boolean::not($otherBot12 == $otherBot21)')
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::grammar::boolean::equality::equal::exec():Boolean[1]
+{
+   //meta::pure::functions::boolean::tests::equality::equal::testEqualEnum(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//   meta::pure::functions::boolean::tests::equality::equal::testEqualDate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::equality::equal::testEqualInteger(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::equality::equal::testEqualString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::equality::equal::testEqualFloat(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::equality::equal::testEqualBoolean(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}
+

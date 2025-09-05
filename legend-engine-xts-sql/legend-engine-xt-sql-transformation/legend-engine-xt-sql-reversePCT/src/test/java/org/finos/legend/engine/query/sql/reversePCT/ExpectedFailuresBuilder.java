@@ -20,6 +20,7 @@ import junit.framework.TestSuite;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_reversePCT_framework_Reverse;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_reversePCT_framework_ReversesForSource;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_reversePCT_framework_ReversesForTest;
 import org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath;
@@ -43,12 +44,13 @@ public class ExpectedFailuresBuilder
         return reverses.toList().flatCollect(x ->
                 x._reverses().collect(z ->
                         {
-                            if (z._reverses().getFirst()._expectedError() != null || !z._reverses().getLast()._shouldBeSupported())
+                            Root_meta_external_query_sql_reversePCT_framework_Reverse rev = z._reverses().select(r -> r._expectedError() != null || !r._shouldBeSupported()).getFirst();
+                            if (rev != null)
                             {
                                 return (ExclusionSpecification) new ExclusionOneTest(
                                         z._testFunction(),
-                                        !z._reverses().getFirst()._shouldBeSupported() ? "\"Should not be supported\"" : z._reverses().getFirst()._expectedError(),
-                                        z._reverses().getFirst()._shouldBeSupported() ? AdapterQualifier.needsInvestigation : AdapterQualifier.unsupportedFeature
+                                        !rev._shouldBeSupported() ? "\"Should not be supported\"" : rev._expectedError(),
+                                        rev._shouldBeSupported() ? AdapterQualifier.needsInvestigation : AdapterQualifier.unsupportedFeature
                                 );
                             }
                             return null;
@@ -60,7 +62,7 @@ public class ExpectedFailuresBuilder
     {
         MutableList<String> allTests = Lists.mutable.empty();
         collectTests(ts.tests(), allTests);
-        RichIterable<String> managedTests =  collectManagedTests(reverseInfo);
+        RichIterable<String> managedTests = collectManagedTests(reverseInfo);
         allTests.removeAll(managedTests.toList());
         return allTests.collect(x -> new ExclusionOneTest(x, "", AdapterQualifier.needsImplementation));
     }

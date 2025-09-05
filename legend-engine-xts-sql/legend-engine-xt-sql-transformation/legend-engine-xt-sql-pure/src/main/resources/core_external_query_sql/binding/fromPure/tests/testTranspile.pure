@@ -2802,10 +2802,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   test(
     'SELECT abs(Integer) AS "ABS", acos(Integer) AS "ACOS", asin(Integer) AS "ASIN", atan(Integer) AS "ATAN", atan2(Integer, 1) AS "ATAN2", ' +
-    'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", cot(Integer) AS "COT", degrees(Integer) AS "DEGREES", div(Integer, 1) AS "DIV", ' +
+    'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", cosh(Integer) AS "COSH", cot(Integer) AS "COT", degrees(Integer) AS "DEGREES", div(Integer, 1) AS "DIV", ' +
     'exp(Integer) AS "EXP", floor(Float) AS "FLOOR", log(Integer) AS "LOG", ln(Integer) AS "LN", mod(Integer, 1) AS "MOD", pi() AS "PI", power(Integer, 2) AS "POWER", ' +
     'radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", sign(Integer) AS "SIGN", ' +
-    'sin(Integer) AS "SIN", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN", trunc(Integer) AS "TRUNC" FROM service."/service/service1"',
+    'sin(Integer) AS "SIN", sinh(Integer) AS "SINH", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN", tanh(Integer) AS "TANH", trunc(Integer) AS "TRUNC" FROM service."/service/service1"',
 
     [
   {|
@@ -2822,6 +2822,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | ceiling($row.getInteger('Integer')), 'CEIL'),
                   col(row:TDSRow[1] | ceiling($row.getInteger('Integer')), 'CEILING'),
                   col(row:TDSRow[1] | cos($row.getInteger('Integer')), 'COS'),
+                  col(row:TDSRow[1] | cosh($row.getInteger('Integer')), 'COSH'),
                   col(row:TDSRow[1] | cot($row.getInteger('Integer')), 'COT'),
                   col(row:TDSRow[1] | toDegrees($row.getInteger('Integer')), 'DEGREES'),
                   col(row:TDSRow[1] | $row.getInteger('Integer') / 1, 'DIV'),
@@ -2837,8 +2838,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | round($row.getDecimal('Decimal'), 1), 'ROUND_DEC'),
                   col(row:TDSRow[1] | sign($row.getInteger('Integer')), 'SIGN'),
                   col(row:TDSRow[1] | sin($row.getInteger('Integer')), 'SIN'),
+                  col(row:TDSRow[1] | sinh($row.getInteger('Integer')), 'SINH'),
                   col(row:TDSRow[1] | sqrt($row.getInteger('Integer')), 'SQRT'),
                   col(row:TDSRow[1] | tan($row.getInteger('Integer')), 'TAN'),
+                  col(row:TDSRow[1] | tanh($row.getInteger('Integer')), 'TANH'),
                   col(row:TDSRow[1] | if ($row.getInteger('Integer') > 0, | floor($row.getInteger('Integer')), | ceiling($row.getInteger('Integer'))), 'TRUNC')
                 ])
         }
@@ -3040,8 +3043,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' +
     'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' +
     'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK", ' +
+    'max("t1".Integer) OVER (PARTITION BY "t1".String ORDER BY "t1".String ASC) AS "MAX_ALIASED", ' +
     'max(Integer) OVER (PARTITION BY String ORDER BY String ASC) AS "MAX" ' +
-    'FROM service."/service/service1"',
+    'FROM service."/service/service1" as "t1"',
 
     [
       c({|
@@ -3055,8 +3059,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rowNumber()), 'ROW')
               ->olapGroupBy(['String'], desc('Integer'), func(y | $y->meta::pure::functions::math::olap::denseRank()), 'DENSE RANK')
               ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK')
+              ->olapGroupBy(['String'], asc('String'), func('Integer', y | $y->max()), 'MAX_ALIASED')
               ->olapGroupBy(['String'], asc('String'), func('Integer', y | $y->max()), 'MAX')
-              ->restrict(['string', 'Integer', 'ROW', 'DENSE RANK', 'RANK', 'MAX'])
+              ->restrict(['string', 'Integer', 'ROW', 'DENSE RANK', 'RANK', 'MAX_ALIASED', 'MAX'])
       }, true, false),
 
       c({|
@@ -3070,8 +3075,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->extend(over(~[String], [~Integer->ascending()]), ~[ROW:{p,w,r| $p->rowNumber($r)}])
               ->extend(over(~[String], [~Integer->descending()]), ~['DENSE RANK':{p,w,r| $p->denseRank($w, $r)}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[RANK:{p,w,r| $p->rank($w, $r)}])
+              ->extend(over(~[String], [~String->ascending()]), ~[MAX_ALIASED:{p,w,r|$r.Integer}:y|$y->max()])
               ->extend(over(~[String], [~String->ascending()]), ~[MAX:{p,w,r|$r.Integer}:y|$y->max()])
-              ->select(~[string, Integer, ROW, 'DENSE RANK', RANK, MAX])
+              ->select(~[string, Integer, ROW, 'DENSE RANK', RANK, MAX_ALIASED, MAX])
       }, true, false)
     ]
   )
@@ -3612,6 +3618,153 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       //       ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
       //     ->filter(x | $x.Integer == $_1 && $x.String == $_2 && $x.StrictDate == $_3)
       // }, true, false)
+    ]
+  )
+}
+
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSimpleWithQuery():Boolean[1]
+{
+  test(
+    'WITH myCTE AS (SELECT * FROM service."/service/service1") select Integer as int from myCTE',
+
+    [
+      c({| 
+            let myCTE = FlatInput.all()->project(
+                          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+                          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]);
+            $myCTE->restrict('Integer')->renameColumns(pair('Integer', 'int'));
+      }),
+      c({| 
+            let myCTE = FlatInput.all()->project(
+              ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+            );
+            $myCTE->select(~[Integer])->rename(~Integer, ~int);
+      })      
+    ]
+  )
+}
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJoinWithQuery():Boolean[1]
+{
+  test(
+    'WITH leftCTE AS (SELECT * FROM service."/service/service1"), rightCTE as (SELECT * FROM service."/service/service2") select leftCTE.Integer as int, rightCTE.ID as ID from leftCTE LEFT OUTER JOIN rightCTE ON leftCTE.String = rightCTE.String',
+    [
+      // c({|
+      //     let leftCTE = FlatInput.all()
+      //       ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]);
+      //     let rightCTE = FlatInput.all()
+      //       ->project(~[ID: x | $x.idIn, Integer: x | $x.integerIn, String:x |$x.stringIn]);
+
+      //     $leftCTE
+      //       ->rename(~Boolean, ~Boolean_leftCTE)
+      //       ->rename(~Integer, ~Integer_leftCTE)
+      //       ->rename(~Float, ~Float_leftCTE)
+      //       ->rename(~Decimal, ~Decimal_leftCTE)
+      //       ->rename(~StrictDate, ~StrictDate_leftCTE)
+      //       ->rename(~DateTime, ~DateTime_leftCTE)
+      //       ->rename(~String, ~String_leftCTE)
+      //       ->join($rightCTE
+      //                     ->rename(~ID, ~ID_rightCTE)
+      //                     ->rename(~Integer, ~Integer_rightCTE)
+      //                     ->rename(~String, ~String_rightCTE), 
+      //               JoinKind.LEFT, 
+      //               {row1, row2 |$row1.String_leftCTE == $row2.String_rightCTE})
+      //       ->select(~[Integer_leftCTE,ID_rightCTE])
+      //       ->rename(~Integer_leftCTE, ~int)
+      //       ->rename(~ID_rightCTE, ~ID);}
+      // ),
+      c({|
+          let leftCTE = FlatInput.all()->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]);
+
+          let rightCTE = FlatInput.all()->project(
+              [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
+              [ 'ID', 'Integer', 'String' ]);
+
+          $leftCTE
+            ->renameColumns([
+                  pair('Boolean', 'Boolean_leftCTE'),
+                  pair('Integer', 'Integer_leftCTE'),
+                  pair('Float', 'Float_leftCTE'),
+                  pair('Decimal', 'Decimal_leftCTE'),
+                  pair('StrictDate', 'StrictDate_leftCTE'),
+                  pair('DateTime', 'DateTime_leftCTE'),
+                  pair('String', 'String_leftCTE')
+            ])
+            ->join($rightCTE
+                    ->renameColumns([
+                          pair('ID', 'ID_rightCTE'),
+                          pair('Integer', 'Integer_rightCTE'),
+                          pair('String', 'String_rightCTE')
+                    ]), 
+                    meta::relational::metamodel::join::JoinType.LEFT_OUTER, 
+                    {row1:TDSRow[1], row2:TDSRow[1] | $row1.getString('String_leftCTE') == $row2.getString('String_rightCTE')}
+            )
+            ->restrict(['Integer_leftCTE', 'ID_rightCTE'])
+            ->renameColumns([
+              pair('Integer_leftCTE', 'int'),
+              pair('ID_rightCTE', 'ID')
+            ]);
+      })      
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJoinWithQueryWithAssignmentsAndRescoping():Boolean[1]
+{
+  test(
+    'WITH leftCTE AS (SELECT ID FROM service."/service/service3"), rightCTE as (SELECT ID FROM service."/service/service3") select leftCTE.ID as id, rightCTE.ID as id2 from leftCTE LEFT OUTER JOIN rightCTE ON leftCTE.ID = rightCTE.ID',
+    [
+      c({|let const_leftCTE = 123;
+          let leftCTE = FlatInput.all()->project(
+              [
+                x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const_leftCTE
+              ],
+              [
+                'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
+              ]
+          )->restrict('ID');
+
+          let const_rightCTE = 123;
+          let rightCTE = FlatInput.all()->project(
+              [
+                x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const_rightCTE
+              ],
+              [
+                'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
+              ]
+          )->restrict('ID');
+
+          $leftCTE
+            ->renameColumns(pair('ID', 'ID_leftCTE'))
+            ->join($rightCTE
+                    ->renameColumns(pair('ID', 'ID_rightCTE')),
+              meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('ID_leftCTE') == $row2.getInteger('ID_rightCTE')})
+            ->project([
+              col(row:TDSRow[1] | $row.getInteger('ID_leftCTE'), 'id'),
+              col(row:TDSRow[1] | $row.getInteger('ID_rightCTE'), 'id2')
+            ]);
+      })
+
+      //TODO const type is not being compiled properly in tht expected
+      // c({|let const_leftCTE = 123;
+      //     let leftCTE = FlatInput.all()
+      //       ->project(~[ID:x|$x.idIn,Integer:x|$x.integerIn,'The Enum Value':x|$x.enumVal,'The Type':x|$x.type,Const:x|$const_leftCTE])
+      //       ->select(~[ID]);
+
+      //     let const_rightCTE = 123;
+      //     let rightCTE = FlatInput.all()
+      //       ->project(~[ID:x|$x.idIn,Integer:x|$x.integerIn,'The Enum Value':x|$x.enumVal,'The Type':x|$x.type,Const:x|$const_rightCTE])
+      //       ->select(~[ID]);
+
+      //     $leftCTE
+      //       ->rename(~ID, ~ID_leftCTE)
+      //       ->join($rightCTE
+      //               ->rename(~ID, ~ID_rightCTE),
+      //         JoinKind.LEFT, {row1, row2|$row1.ID_leftCTE == $row2.ID_rightCTE})
+      //       ->project(~[id:x |$x.ID_leftCTE,id2:x|$x.ID_rightCTE]);
+      // })
     ]
   )
 }

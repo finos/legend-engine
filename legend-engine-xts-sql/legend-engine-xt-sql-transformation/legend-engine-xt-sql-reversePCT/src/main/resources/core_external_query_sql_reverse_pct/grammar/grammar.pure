@@ -14,8 +14,17 @@
 
 import meta::external::query::sql::reversePCT::framework::*;
 
-function meta::external::query::sql::reversePCT::framework::grammar::reverses():ReversesForSource[*]
+function meta::external::query::sql::reversePCT::tests::grammar::reverses():ReversesForSource[*]
 {
   [
+    meta::external::query::sql::reversePCT::tests::grammar::boolean::equality::equal::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::boolean::inequality::greaterThan::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::boolean::inequality::greaterThanEqual::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::boolean::inequality::lessThan::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::boolean::inequality::lessThanEqual::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::boolean::operation::and::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::boolean::operation::or::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::boolean::operation::not::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::math::operation::divide::reverses()
   ]
 }

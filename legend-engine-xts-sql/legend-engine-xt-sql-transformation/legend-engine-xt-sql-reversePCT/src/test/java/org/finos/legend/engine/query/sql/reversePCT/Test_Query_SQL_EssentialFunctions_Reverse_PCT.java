@@ -37,7 +37,7 @@ public class Test_Query_SQL_EssentialFunctions_Reverse_PCT extends PCTReportConf
     private static final ReportScope reportScope = PlatformCodeRepositoryProvider.essentialFunctions;
     private static final Adapter adapter = CoreExternalSQLReversePCTCodeRepositoryProvider.SQLAdapter;
     private static final String platform = "compiled";
-    private static final RichIterable<? extends Root_meta_external_query_sql_reversePCT_framework_ReversesForSource> reverseInfo = core_external_query_sql_reverse_pct_essential_essential.Root_meta_external_query_sql_reversePCT_framework_essential_reverses__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
+    private static final RichIterable<? extends Root_meta_external_query_sql_reversePCT_framework_ReversesForSource> reverseInfo = core_external_query_sql_reverse_pct_essential_essential.Root_meta_external_query_sql_reversePCT_tests_essential_reverses__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
     private static final MutableList<ExclusionSpecification> expectedFailures = ExpectedFailuresBuilder.build(reverseInfo);
 
     static

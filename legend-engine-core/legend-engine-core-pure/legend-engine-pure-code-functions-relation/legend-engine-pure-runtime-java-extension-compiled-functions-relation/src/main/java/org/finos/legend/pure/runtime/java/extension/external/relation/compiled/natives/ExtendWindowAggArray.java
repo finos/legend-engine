@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
@@ -32,6 +33,19 @@ public class ExtendWindowAggArray extends AbstractNative implements Native
     {
         StringBuilder result = ExtendWindowAgg.buildCode(transformedParams, s -> "Lists.mutable.withAll(" + transformedParams.get(2) + "._aggSpecs())");
         return result.toString();
+    }
+
+    @Override
+    public String buildBody()
+    {
+        return "new SharedPureFunction<Object>()\n" +
+                "{\n" +
+                "   @Override\n" +
+                "   public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
+                "   {\n" +
+                "       return " + ExtendWindowAgg.buildCode(Lists.mutable.with("(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation<? extends Object>)vars.get(0)", "(Root_meta_pure_functions_relation__Window<? extends Object>)vars.get(1)", "vars.get(2)"), s -> "((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpecArray)vars.get(2))._aggSpecs().toList()") + ";" +
+                "   }\n" +
+                "\n}";
     }
 }
 

@@ -1,0 +1,124 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// println(meta::external::query::sql::reversePCT::generator::generateGeneratorTests('grammar','boolean/operation/and.pure'));
+
+// println(meta::external::query::sql::reversePCT::generator::generateTests(
+//          'grammar',
+//          'boolean/operation/and.pure',
+//          [
+//            f(meta::pure::functions::boolean::tests::conjunctions::and::testBinaryExpressions_Function_1__Boolean_1_),
+//            f(meta::pure::functions::boolean::tests::conjunctions::and::testBinaryTruthTable_Function_1__Boolean_1_),
+//            f(meta::pure::functions::boolean::tests::conjunctions::and::testTernaryTruthTable_Function_1__Boolean_1_),
+//            f(meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple_Function_1__Boolean_1_),
+//            f(meta::pure::functions::boolean::tests::conjunctions::and::testTernaryExpressions_Function_1__Boolean_1_)
+//          ]
+//         )
+// );
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::grammar::boolean::operation::and::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/grammar/functions/boolean/operation/and.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::conjunctions::and::testBinaryExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|(1 == 1) && meta::pure::functions::boolean::not(2 == 3)',
+                            'select (1 = 1 and (2 <> 3))'
+                        ),
+                        rev('|(1 == 2) && meta::pure::functions::boolean::not(2 == 3)',
+                            'select (1 = 2 and (2 <> 3))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::conjunctions::and::testBinaryTruthTable_Function_1__Boolean_1_',
+                      [
+                        rev('|true && true',
+                            'select (Boolean\'true\' and Boolean\'true\')'
+                        ),
+                        rev('|true && false',
+                            'select (Boolean\'true\' and Boolean\'false\')'
+                        ),
+                        rev('|false && true',
+                            'select (Boolean\'false\' and Boolean\'true\')'
+                        ),
+                        rev('|false && false',
+                            'select (Boolean\'false\' and Boolean\'false\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::conjunctions::and::testTernaryTruthTable_Function_1__Boolean_1_',
+                      [
+                        rev('|(true && true) && true',
+                            'select ((Boolean\'true\' and Boolean\'true\') and Boolean\'true\')'
+                        ),
+                        rev('|(true && true) && false',
+                            'select ((Boolean\'true\' and Boolean\'true\') and Boolean\'false\')'
+                        ),
+                        rev('|(true && false) && true',
+                            'select ((Boolean\'true\' and Boolean\'false\') and Boolean\'true\')'
+                        ),
+                        rev('|(true && false) && false',
+                            'select ((Boolean\'true\' and Boolean\'false\') and Boolean\'false\')'
+                        ),
+                        rev('|(false && true) && true',
+                            'select ((Boolean\'false\' and Boolean\'true\') and Boolean\'true\')'
+                        ),
+                        rev('|(false && true) && false',
+                            'select ((Boolean\'false\' and Boolean\'true\') and Boolean\'false\')'
+                        ),
+                        rev('|(false && false) && true',
+                            'select ((Boolean\'false\' and Boolean\'false\') and Boolean\'true\')'
+                        ),
+                        rev('|(false && false) && false',
+                            'select ((Boolean\'false\' and Boolean\'false\') and Boolean\'false\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple_Function_1__Boolean_1_',
+                      [
+                        rev('|false && ((12 / 0) > 0)',
+                            'select (Boolean\'false\' and ((1.0 * 12) / 0) > 0)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::conjunctions::and::testTernaryExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|((1 == 1) && meta::pure::functions::boolean::not(2 == 3)) && true',
+                            'select ((1 = 1 and (2 <> 3)) and Boolean\'true\')'
+                        ),
+                        rev('|((1 == 2) && meta::pure::functions::boolean::not(2 == 3)) && false',
+                            'select ((1 = 2 and (2 <> 3)) and Boolean\'false\')'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::grammar::boolean::operation::and::exec():Boolean[1]
+{
+   meta::pure::functions::boolean::tests::conjunctions::and::testBinaryExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::conjunctions::and::testBinaryTruthTable(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::conjunctions::and::testTernaryTruthTable(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::conjunctions::and::testTernaryExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}
