@@ -864,6 +864,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     groupByWithWindowSubset_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__String_MANY__String_MANY__TabularDataSet_1_,
     concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_,
     concatenate_TabularDataSet_1__TabularDataSet_MANY__TabularDataSet_1_,
+    union_T_MANY__T_MANY__T_MANY_,
     renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_,
     olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_,
     olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_,

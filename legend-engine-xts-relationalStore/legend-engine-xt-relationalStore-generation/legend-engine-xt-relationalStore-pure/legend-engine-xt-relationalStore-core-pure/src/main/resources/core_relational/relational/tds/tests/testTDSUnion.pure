@@ -1,0 +1,162 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::functions::sqlstring::*;
+import meta::relational::tests::csv::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+
+
+function <<test.Test>> meta::relational::tests::projection::union::testSimpleRelationalUnion():Boolean[1]
+{
+   let result = executionPlan(
+      |Person.all()
+         ->project(~[lastName:p|$p.lastName])
+         ->union(Person.all()->project(~[lastName:p|$p.lastName]))
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+      $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsUnion::testSimpleUnion():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project(p|$p.lastName,'lastName')
+         ->union(Person.all()->project(p|$p.lastName,'lastName'))
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->toOne()->sort(asc('lastName'));
+
+   assertSize($tds.columns, 1);
+
+   assertEquals('Allen,Harris,Hill,Johnson,Roberts,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+      $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsUnion::testUnionWithGroupBy():Boolean[1]
+{
+   let result = executionPlan(
+      |Person.all()
+         ->project(~[lastName:p|$p.lastName,firstName:p|$p.firstName,age:p|$p.age])
+         ->union(Person.all()->project(~[lastName:p|$p.lastName,firstName:p|$p.firstName,age:p|$p.age]))
+         ->toOne()
+         ->groupBy(~[lastName],~[age:x|$x.age: y|$y->sum()])
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName", sum("unionalias_0"."age") as "age" from (select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root" union select "root".LASTNAME as "lastName", "root".FIRSTNAME as "firstName", "root".AGE as "age" from personTable as "root") as "unionalias_0" group by "lastName"',
+      $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsUnion::testMultiUnion():Boolean[1]
+{
+   let result = executionPlan(
+      |Person.all()
+         ->project(~[lastName:p|$p.lastName + '_0'])
+         ->union([
+            Person.all()->project(~[lastName:p|$p.lastName + '_1']),
+            Person.all()->project(~[lastName:p|$p.lastName + '_2']),
+            Person.all()->project(~[lastName:p|$p.lastName + '_3'])
+            ])
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select concat("root".LASTNAME, \'_0\') as "lastName" from personTable as "root" union select concat("root".LASTNAME, \'_1\') as "lastName" from personTable as "root" union select concat("root".LASTNAME, \'_2\') as "lastName" from personTable as "root" union select concat("root".LASTNAME, \'_3\') as "lastName" from personTable as "root") as "unionalias_0"',
+       $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsUnion::testUnionWithPreOperation():Boolean[1]
+{
+   let result = executionPlan(
+      |Person.all()
+         ->project(~[lastName:p|$p.lastName])
+         ->filter(p|$p.lastName != 'hello')
+         ->union(Person.all()->project(~[lastName:p|$p.lastName]))
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME <> \'hello\' or "root".LASTNAME is null union select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+      $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsUnion::testUnionWithPostOperation():Boolean[1]
+{
+   let result = executionPlan(
+      |Person.all()
+         ->project(~[lastName:p|$p.lastName])
+         ->union(Person.all()->project(~[lastName:p|$p.lastName])->filter(p|$p.lastName != 'hello'))
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME <> \'hello\' or "root".LASTNAME is null) as "unionalias_0"',
+     $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsUnion::testUnionWithPrePostOperation():Boolean[1]
+{
+   let result = executionPlan(
+      |Person.all()
+         ->project(~[lastName:p|$p.lastName])
+         ->filter(p|$p.lastName->in(['hello']))
+         ->union(Person.all()->project(~[lastName:p|$p.lastName])->filter(p|$p.lastName->in(['hello'])))
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\' union select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'hello\') as "unionalias_0"',
+      $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsUnion::testUnionWithJoin():Boolean[1]
+{
+   let result = executionPlan(
+      |Person.all()
+         ->project(~[lhs_lastName:p|$p.lastName])
+         ->union(Person.all()->project(~[lhs_lastName:p|$p.lastName]))
+         ->toOne()
+         ->join(Person.all()->project(~[rhs_lastName:p|$p.lastName,rhs_firstName:p|$p.firstName]),  JoinKind.INNER, {x,y| $x.lhs_lastName == $y.rhs_lastName})
+         ->select(~[lhs_lastName,rhs_firstName])
+      ,
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertEquals('select "unionalias_0"."lhs_lastName" as "lhs_lastName", "unionalias_0"."rhs_firstName" as "rhs_firstName" from (select "unionalias_1"."lhs_lastName" as "lhs_lastName", "persontable_1"."rhs_lastName" as "rhs_lastName", "persontable_1"."rhs_firstName" as "rhs_firstName" from (select "unionalias_2"."lhs_lastName" as "lhs_lastName" from (select "root".LASTNAME as "lhs_lastName" from personTable as "root" union select "root".LASTNAME as "lhs_lastName" from personTable as "root") as "unionalias_2") as "unionalias_1" inner join (select "root".LASTNAME as "rhs_lastName", "root".FIRSTNAME as "rhs_firstName" from personTable as "root") as "persontable_1" on ("unionalias_1"."lhs_lastName" = "persontable_1"."rhs_lastName")) as "unionalias_0"',
+     $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+
+}
+

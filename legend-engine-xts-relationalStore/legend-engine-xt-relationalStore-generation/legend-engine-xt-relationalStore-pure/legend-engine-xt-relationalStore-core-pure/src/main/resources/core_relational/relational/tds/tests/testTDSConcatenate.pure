@@ -199,27 +199,26 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
 }
 
 
-function <<test.Test, test.ToFix>> meta::relational::tests::tds::tdsConcatenate::testConcatenateWithJoin():Boolean[1]
+function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcatenateWithJoin():Boolean[1]
 {
    let result = execute(
       |Person.all()
          ->project([col(p|$p.lastName, 'lhs_lastName')])
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lhs_lastName')]))
-         ->join(Person.all()->project([col(p|$p.lastName, 'rhs_lastName'),col(p|$p.lastName, 'rhs_firstName')]), JoinType.INNER, 'lhs_lastName', 'rhs_lastName')
+         ->join(Person.all()->project([col(p|$p.lastName, 'rhs_lastName'),col(p|$p.firstName, 'rhs_firstName')]), JoinType.INNER, 'lhs_lastName', 'rhs_lastName')
          ->restrict(['lhs_lastName', 'rhs_firstName'])
       ,
       simpleRelationalMapping,
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   let tds = $result.values->toOne()->sort([asc('lastName')]);
+   let tds = $result.values->toOne()->sort([asc('lhs_lastName')]);
 
    assertSize($tds.columns, 2);
 
-   //assertEquals('',
-   //   $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   assertEquals('Allen|Anthony,Allen|Anthony,Harris|David,Harris|David,Hill|John,Hill|John,Hill|John,Hill|John,Hill|Oliver,Hill|Oliver,Hill|Oliver,Hill|Oliver,Johnson|John,Johnson|John,Roberts|Fabrice,Roberts|Fabrice,Smith|Peter,Smith|Peter',
+     $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   //assertEquals('select "union"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "union" where "union"."lastName" = \'hello\'',
-   //   $result->sqlRemoveFormatting());
+   assertEquals('select "unionalias_0"."lhs_lastName" as "lhs_lastName", "unionalias_0"."rhs_firstName" as "rhs_firstName" from (select "unionalias_1"."lhs_lastName" as "lhs_lastName", "persontable_1"."rhs_lastName" as "rhs_lastName", "persontable_1"."rhs_firstName" as "rhs_firstName" from (select "unionalias_2"."lhs_lastName" as "lhs_lastName" from (select "root".LASTNAME as "lhs_lastName" from personTable as "root" union all select "root".LASTNAME as "lhs_lastName" from personTable as "root") as "unionalias_2") as "unionalias_1" inner join (select "root".LASTNAME as "rhs_lastName", "root".FIRSTNAME as "rhs_firstName" from personTable as "root") as "persontable_1" on ("unionalias_1"."lhs_lastName" = "persontable_1"."rhs_lastName")) as "unionalias_0"',
+     $result->sqlRemoveFormatting());
 
-   fail('Expectations need updating once it works');
 }
