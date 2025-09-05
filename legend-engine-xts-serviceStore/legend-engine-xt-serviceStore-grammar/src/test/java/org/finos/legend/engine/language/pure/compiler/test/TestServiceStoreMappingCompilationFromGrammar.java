@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.junit.Assert;
@@ -1065,7 +1066,10 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    {\n" +
                 "        employees[firm_set, person_set2] : $this.firmId == $that.firmId\n" +
                 "    }\n" +
-                ")\n\n");
+                ")\n\n",
+                null,
+                Lists.mutable.with("COMPILATION error at [119:9-71]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                );
 
         test(JSON_BINDING +
                 "###Mapping\n" +
