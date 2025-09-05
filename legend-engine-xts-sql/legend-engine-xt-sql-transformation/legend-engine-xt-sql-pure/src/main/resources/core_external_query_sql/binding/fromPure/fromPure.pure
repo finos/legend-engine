@@ -84,57 +84,69 @@ Class meta::external::query::sql::transformation::queryToPure::SQLProcessedResul
   plan: meta::pure::executionPlan::ExecutionPlan[0..1];
 }
 
-
-function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1]):Function<Any>[1]
-{
-  parseSqlStatement($sqlString->toOne())->cast(@Query)->sqlToPure();
-
-}
-
 Class meta::external::query::sql::transformation::queryToPure::DynamicSQLSourceModule extends ModuleExtension
 {
   extraDynamicSQLSources : DynamicSQLSource[*];
 }
 
+function meta::external::query::sql::transformation::queryToPure::getSources():DynamicSQLSource[*]
+{
+   [
+     ^DynamicSQLSource(
+          type = 'csv',
+          func = x:String[1]|1,
+          generationFunction = x:TableFunction[1]|meta::legend::compileVS('#TDS{\n'+$x.functionCall.arguments->cast(@StringLiteral)->toOne().value+'}#')
+     ),
+     ^DynamicSQLSource(
+          type = 'tb',
+          func = x:String[1]|1,
+          generationFunction = x:TableFunction[1]|
+
+          let param = $x.functionCall.arguments->cast(@StringLiteral)->toOne().value;
+
+          // Manage retreiving the store 'compiled' vs in-flow
+          // It helps manage all execution modes:
+          //    - legend compiled within Pure IDE
+          //    - Legend compiled stand-alone
+          //    - Pure
+          let store = $x->match(
+            [
+              a:meta::external::query::sql::expression::AccessorTableFunction[1]|$a.store,
+              a:Any[1]|pathToElement($param->split('.')->at(0))
+            ]
+          )->cast(@meta::relational::metamodel::Database);
+
+          let databaseStr = $store->meta::relational::grammar::serialization::printDatabase();
+
+          let code =  '\n###Relational\n'+
+                      $databaseStr+
+                      '\n###Pure\n'+
+                      'function test::container():Any[*]{\n'+
+                      '  #>{'+$param+'}#\n'+
+                      '}';
+
+          meta::legend::compile($code)->filter(x|$x.name == 'container__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne();
+     )
+    ]->concatenate(meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(DynamicSQLSourceModule))->cast(@DynamicSQLSourceModule).extraDynamicSQLSources);
+}
+
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1]):Function<Any>[1]
+{
+  $sqlString->sqlToPure(getSources());
+}
+
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1], sources:DynamicSQLSource[*]):Function<Any>[1]
+{
+  parseSqlStatement($sqlString->toOne())->cast(@Query)->sqlToPure($sources);
+}
+
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1]):Function<Any>[1]
 {
-  let sources =  [^DynamicSQLSource(
-                        type = 'csv',
-                        func = x:String[1]|1,
-                        generationFunction = x:TableFunction[1]|meta::legend::compileVS('#TDS{\n'+$x.functionCall.arguments->cast(@StringLiteral)->toOne().value+'}#')
-                  ),
-                  ^DynamicSQLSource(
-                        type = 'tb',
-                        func = x:String[1]|1,
-                        generationFunction = x:TableFunction[1]|
+  $query->sqlToPure(getSources());
+}
 
-                        let param = $x.functionCall.arguments->cast(@StringLiteral)->toOne().value;
-
-                        // Manage retreiving the store 'compiled' vs in-flow
-                        // It helps manage all execution modes:
-                        //    - legend compiled within Pure IDE
-                        //    - Legend compiled stand-alone
-                        //    - Pure
-                        let store = $x->match(
-                          [
-                            a:meta::external::query::sql::expression::AccessorTableFunction[1]|$a.store,
-                            a:Any[1]|pathToElement($param->split('.')->at(0))
-                          ]
-                        )->cast(@meta::relational::metamodel::Database);
-
-                        let databaseStr = $store->meta::relational::grammar::serialization::printDatabase();
-
-                        let code =  '\n###Relational\n'+
-                                    $databaseStr+
-                                    '\n###Pure\n'+
-                                    'function test::container():Any[*]{\n'+
-                                    '  #>{'+$param+'}#\n'+
-                                    '}';
-
-                        meta::legend::compile($code)->filter(x|$x.name == 'container__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne();
-                  )
-                 ]->concatenate(meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(DynamicSQLSourceModule))->cast(@DynamicSQLSourceModule).extraDynamicSQLSources);
-
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:DynamicSQLSource[*]):Function<Any>[1]
+{
   let extensions = meta::relational::extension::relationalExtensions();
   let context = rootContext($sources, $extensions);
   let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true, withSupported = true));
