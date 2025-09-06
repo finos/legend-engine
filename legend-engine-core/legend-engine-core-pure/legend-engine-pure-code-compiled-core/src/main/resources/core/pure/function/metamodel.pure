@@ -21,12 +21,23 @@ Class meta::legend::function::metamodel::FunctionTestSuite extends meta::pure::t
   testData: meta::legend::function::metamodel::StoreTestData[*];
 }
 
-Class meta::legend::function::metamodel::StoreTestData
+Class meta::legend::function::metamodel::FunctionTestData
 {
   doc: String[0..1];
-  store: meta::pure::store::Store[1];
   data: EmbeddedData[1];
 }
+
+
+Class meta::legend::function::metamodel::StoreTestData extends meta::legend::function::metamodel::FunctionTestData
+{
+  store: meta::pure::store::Store[1];
+}
+
+Class meta::legend::function::metamodel::RelationElementTestData extends meta::legend::function::metamodel::FunctionTestData
+{
+  element: PackageableElement[1];
+}
+
 
 Class meta::legend::function::metamodel::FunctionTest extends meta::pure::test::AtomicTest
 {
