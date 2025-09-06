@@ -114,7 +114,7 @@
       "firstName": "Coralie",
       "lastName": "Batie",
       "age": 23,
-      "birthDate": new ISODate("1980-04-04T12:12:12.000+0500"),
+      "birthDate": new ISODate("1980-04-04T07:12:12.000Z"),
       "legallyCompetent": false,
       "otherPhoneNumbers": [
         "+1 571 689 6039",
