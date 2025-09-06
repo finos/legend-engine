@@ -24,7 +24,25 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-language-pure-modelManager-sdlc</artifactId>
     <name>Legend Engine - Language Pure - Model Manager - SDLC</name>
-
+    <build>
+        <plugins>
+            <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>dependency-analyze</id>
+                    <configuration>
+                        <!-- The dependency plugin analyzer raises these as false positives -->
+                        <ignoredUnusedDeclaredDependencies>
+                            <dependency>org.mongodb:mongodb-driver-sync:jar</dependency>
+                        </ignoredUnusedDeclaredDependencies>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+        </plugins>
+    </build>
     <dependencies>
 
         <!-- ENGINE -->
@@ -34,14 +52,18 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.mongodb</groupId>
-                    <artifactId>mongo-java-driver</artifactId>
+                    <artifactId>mongodb-driver-sync</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
+            <artifactId>mongodb-driver-sync</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>bson</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
