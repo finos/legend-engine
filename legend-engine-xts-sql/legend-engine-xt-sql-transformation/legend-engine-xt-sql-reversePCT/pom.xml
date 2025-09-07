@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-sql-transformation</artifactId>
-        <version>4.98.1-SNAPSHOT</version>
+        <version>4.99.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
