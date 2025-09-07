@@ -6,28 +6,28 @@
     "firm":     {
       "legalName": "Devpoint",
       "address":       {
-        "lastUpdated": "2022-01-01T21:10:00.000",
+        "lastUpdated": "2022-01-01T21:10:00",
         "city": "Saint Paul",
         "buildingNumber": 974,
         "isActive": true
       },
       "public": false,
-      "dateFounded": "2018-01-14T00:36:08.000",
+      "dateFounded": "2018-01-14T00:36:08",
       "department": [
         {
-          "dateCreated": "2017-09-11T21:10:22.000",
+          "dateCreated": "2017-09-11T21:10:22",
           "name": "Communication",
           "isActive": true,
           "numberOfEmployees": 5
         },
         {
-          "dateCreated": "2013-12-13T21:10:22.000",
+          "dateCreated": "2013-12-13T21:10:22",
           "name": "Engineering",
           "isActive": true,
           "numberOfEmployees": 40
         },
         {
-          "dateCreated": "2014-12-14T21:10:22.000",
+          "dateCreated": "2014-12-14T21:10:22",
           "name": "Sales",
           "isActive": true,
           "numberOfEmployees": 6
@@ -36,7 +36,7 @@
       "numberOfEmployees": 50
     },
     "address":     {
-      "lastUpdated": "2022-06-06T21:10:00.000",
+      "lastUpdated": "2022-06-06T21:10:00",
       "city": "Little Rock",
       "buildingNumber": 99,
       "isActive": true
@@ -47,12 +47,12 @@
 "+1 414 760 1884"
     ],
     "department":     {
-      "dateCreated": "2017-09-11T21:10:22.000",
+      "dateCreated": "2017-09-11T21:10:22",
       "name": "Communication",
       "isActive": true,
       "numberOfEmployees": 5
     },
-    "birthDate": "1980-04-04T07:12:12.000",
+    "birthDate": "1980-04-04T07:12:12",
     "age": 23
   },
   "builder":   {
