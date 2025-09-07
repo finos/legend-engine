@@ -617,12 +617,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   $sqlDialect->generateFunctionCallWithArgs('from_utf8', [$sqlDialect->generateFunctionCallWithArgs('from_base64', $processedArgs, [], $state, $config)], [], $state, $config);
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForToChar(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  $sqlDialect->generateCast($processedArgs->at(0), 'VARCHAR', $state, $config);
-}
-
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForToUuidV4(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let ceilCall = simpleFunctionProcessor('uuid').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
@@ -768,7 +762,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   generateFunctionCallWithArgs($sqlDialect, 'date_format', [$processedArgs->at(0), $processedArgs->at(1)->dateFormatSpecifierForAthena()], [], $state, $config);
 }
-
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::dateFormatSpecifierForAthena(f:String[1]): String[1]
 {
