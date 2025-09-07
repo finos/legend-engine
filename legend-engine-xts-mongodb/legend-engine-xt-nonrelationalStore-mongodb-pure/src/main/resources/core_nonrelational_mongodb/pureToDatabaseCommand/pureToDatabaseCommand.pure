@@ -191,8 +191,9 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
     b: Boolean[1]     | ^LiteralValue(value=^BoolTypeValue(value=$b)),
     f: Float[1]       | ^LiteralValue(value=^FloatTypeValue(value=$f)),
     d: Decimal[1]     | ^LiteralValue(value=^DecimalTypeValue(value=$d)),
-    sd: StrictDate[1] | ^LiteralValue(value=^DateTypeValue(value=meta::pure::functions::date::date(year($sd), monthNumber($sd), dayOfMonth($sd), 0, 0 ,0)->toString()));,                 // type cast StrictDate to dateTime,(as strictdates in expected value are converted to datetime,to retain timezone info)
-    dt: DateTime[1]   | ^LiteralValue(value=^DateTypeValue(value=$dt->toString()));,
+    sd: StrictDate[1] | let dt = meta::pure::functions::date::date(year($sd), monthNumber($sd), dayOfMonth($sd), 0, 0 ,0)->toString(); // type cast StrictDate to dateTime,(as strictdates in expected value are converted to datetime,to retain timezone info)
+                        ^LiteralValue(value=^DateTypeValue(value=$dt->toString()->substring(0, $dt->toString()->indexOf('+')+3)));,
+    dt: DateTime[1]   | ^LiteralValue(value=^DateTypeValue(value=$dt->toString()->substring(0, $dt->toString()->indexOf('+')+3)));,
     l: LambdaFunction<Any>[1] |
       $i.values->cast(@LambdaFunction<Any>).expressionSequence->match(
           [
