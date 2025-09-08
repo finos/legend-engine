@@ -331,6 +331,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='DATE_TRUNC(\'WEEK\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp')),
     dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateSnowflake()})),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimal()})),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),

@@ -241,7 +241,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAY_OF_WEEK(%s) > 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp()')),
     dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='cast(parsedatetime(%s,%s) as timestamp)')),
-    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal(5,2))')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimalH2()})),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='legend_h2_extension_json_parse(%s)')),
@@ -436,6 +436,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
 }
 
+function meta::relational::functions::sqlQueryToString::h2::v2_1_214::transformParseDecimalH2(params:String[*]):String[1]
+{
+  if ($params->size() == 1,
+        |format('cast(%s as decimal(5, 2))', [$params->at(0)]);,
+        |format('cast(%s as DECIMAL(%s,%s))', [$params->at(0),$params->at(1),$params->at(2)]);
+      );
+}
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::convertToDateH2(params:String[*]):String[1]
 {
 

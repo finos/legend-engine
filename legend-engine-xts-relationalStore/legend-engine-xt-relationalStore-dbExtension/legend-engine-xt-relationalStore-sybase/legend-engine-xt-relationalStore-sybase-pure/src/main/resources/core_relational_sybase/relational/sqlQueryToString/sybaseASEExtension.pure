@@ -137,7 +137,7 @@ function meta::relational::functions::sqlQueryToString::sybaseASE::getDynaFuncti
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='dateadd(Day, case when %s - datepart(DW, %s) > 0 then %s - datepart(DW, %s) - 7 else %s - datepart(DW, %s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentSybase('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='getDate(%s)', transform={p:String[*] | ''})),
     dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | if( $p->size()==1,|'cast('+$p->at(0)+' as timestamp)' ,|'convert( datetime,'+ $p->at(0)+','+$p->at(1)+')' )})),
-    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimal()})),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='charindex(%s, %s)')),
