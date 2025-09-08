@@ -95,6 +95,14 @@ function <<test.Test>> meta::relational::tests::mapping::function::snowflake::te
     assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root" where concat("root".string1, "root".string2) = \'Joe Bloggs \'',$snowflakeSql);
 }
 
+function <<test.Test>>  meta::relational::tests::mapping::function::snowflake::testToSQLStringParseDecimalSnowflake():Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Decimal], ['parseDecimal']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select cast("root".string2Decimal as decimal) as "parseDecimal" from dataTable as "root"',$s);
+}
+
 function <<test.Test>>  meta::relational::tests::mapping::function::snowflake::testToSQLStringParseDateForSnowFlakeddMMMyyyy():Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2DateUserDefinedFormatddMMMyyyy], ['parseDate']),

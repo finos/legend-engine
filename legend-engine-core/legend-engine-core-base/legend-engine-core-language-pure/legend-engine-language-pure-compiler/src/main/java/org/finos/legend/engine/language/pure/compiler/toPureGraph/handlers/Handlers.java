@@ -2070,7 +2070,8 @@ public class Handlers
         register("meta::pure::functions::string::parseDate_String_1__Date_1_", true, ps -> res("Date", "one"));
         register("meta::pure::functions::string::parseFloat_String_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::string::parseInteger_String_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::string::parseDecimal_String_1__Decimal_1_", true, ps -> res("Decimal", "one"));
+        register(m(m(h("meta::pure::functions::string::parseDecimal_String_1__Integer_1__Integer_1__Decimal_1_", true, ps -> res("Decimal", "one"), ps  -> ps.size() == 3)),
+                m(h("meta::pure::functions::string::parseDecimal_String_1__Decimal_1_", true, ps -> res("Decimal", "one")))));
         register("meta::pure::functions::string::repeatString_String_$0_1$__Integer_1__String_$0_1$_", false, ps -> res("String", "zeroOne"));
         register("meta::pure::functions::string::replace_String_1__String_1__String_1__String_1_", true, ps -> res("String", "one"));
         register("meta::pure::functions::string::reverseString_String_1__String_1_", true, ps -> res("String", "one"));
@@ -3583,6 +3584,7 @@ public class Handlers
         map.put("meta::pure::functions::string::parseBoolean_String_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::string::parseDate_String_1__Date_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::string::parseDecimal_String_1__Decimal_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::string::parseDecimal_String_1__Integer_1__Integer_1__Decimal_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_Integer").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::string::parseFloat_String_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::string::parseInteger_String_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::string::plus_String_MANY__String_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && taxoMap.get("cov_String").contains(ps.get(0)._genericType()._rawType()._name()));
