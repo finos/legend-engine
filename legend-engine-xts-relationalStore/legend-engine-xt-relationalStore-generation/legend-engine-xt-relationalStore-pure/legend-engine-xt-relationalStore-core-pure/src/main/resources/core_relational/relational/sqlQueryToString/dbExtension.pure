@@ -1222,7 +1222,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   percentRank,
   plus,
   position,
-  pow,  
+  pow,
   previousDayOfWeek,
   quarter,
   quarterNumber,

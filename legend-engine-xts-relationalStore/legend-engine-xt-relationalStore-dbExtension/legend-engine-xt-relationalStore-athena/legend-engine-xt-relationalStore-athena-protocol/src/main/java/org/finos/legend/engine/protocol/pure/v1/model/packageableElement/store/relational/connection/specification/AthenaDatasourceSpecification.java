@@ -19,6 +19,7 @@ public class AthenaDatasourceSpecification extends DatasourceSpecification
     public String awsRegion;
     public String s3OutputLocation;
     public String databaseName;
+    public String workgroup;
 
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)
