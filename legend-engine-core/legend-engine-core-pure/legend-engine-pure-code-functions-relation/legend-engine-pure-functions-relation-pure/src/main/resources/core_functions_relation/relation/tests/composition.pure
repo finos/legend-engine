@@ -1211,3 +1211,30 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   3,[1,2,3,4,5,6],-3,-1,[]\n'+
                 '#', $res->toString());
 }
+
+function <<PCTRelationQualifier.relation, PCT.test>> meta::pure::functions::relation::tests::composition::testProjectOfComputedColumn_withCast<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  val, val2
+                  1, 2
+                  3, 5
+                  4, 9
+                  5, 14
+                  6, 20
+                #->project(~[
+                  val3:c|$c.val->toOne() + $c.val2->toOne()
+                ])->cast(@Relation<(val3:Integer[1])>)
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val3\n'+
+                  '   3\n'+
+                  '   8\n'+
+                  '   13\n'+
+                  '   19\n'+
+                  '   26\n'+
+                  '#', $res->sort([~val3->ascending()])->toString());
+}
