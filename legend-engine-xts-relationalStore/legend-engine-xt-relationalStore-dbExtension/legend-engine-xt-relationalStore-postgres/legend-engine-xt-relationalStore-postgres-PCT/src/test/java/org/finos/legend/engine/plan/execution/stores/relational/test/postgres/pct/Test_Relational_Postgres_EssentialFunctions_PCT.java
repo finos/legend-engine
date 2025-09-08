@@ -302,6 +302,7 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
 
             // ParseDecimal
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: invalid input syntax for type numeric: \"3.14159d\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimalWithPrecisionScale_Function_1__Boolean_1_", "\"\nexpected: 123.12300D\nactual:   123.123D\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\"", AdapterQualifier.needsInvestigation),
 
             //variant
