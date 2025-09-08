@@ -1216,25 +1216,25 @@ function <<PCTRelationQualifier.relation, PCT.test>> meta::pure::functions::rela
 {
     let expr = {
                 |#TDS
-                  val, str
-                  1, a
-                  3, ewe
-                  4, qw
-                  5, wwe
-                  6, weq
+                  val, val2
+                  1, 2
+                  3, 5
+                  4, 9
+                  5, 14
+                  6, 20
                 #->project(~[
-                  name:c|$c.str->toOne() + $c.val->toOne()->toString()
-                ])->cast(@Relation<(name:String[1])>)
+                  val3:c|$c.val->toOne() + $c.val2->toOne()
+                ])->cast(@Relation<(val3:Integer[1])>)
               };
 
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   name\n'+
-                  '   a1\n'+
-                  '   ewe3\n'+
-                  '   qw4\n'+
-                  '   weq6\n'+
-                  '   wwe5\n'+
-                  '#', $res->sort([~name->ascending()])->toString());
+                  '   val3\n'+
+                  '   3\n'+
+                  '   8\n'+
+                  '   13\n'+
+                  '   19\n'+
+                  '   26\n'+
+                  '#', $res->sort([~val3->ascending()])->toString());
 }
