@@ -399,7 +399,6 @@ function meta::relational::functions::pureToSqlQuery::processValueSpecification(
 
 function meta::relational::functions::pureToSqlQuery::processValueSpecificationReturnPropertyMapping(vs:ValueSpecification[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[*]
 {
-
    let res = $vs->evaluateAndDeactivate()->match(
              [
                  r:StoreMappingRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, ^$state(propertyMappingFromRouter = $r.propertyMapping), $joinType, $nodeId, $aggFromMap, $context, $extensions),
@@ -2267,15 +2266,14 @@ function meta::relational::functions::pureToSqlQuery::flattenConcatenate(f:Value
 
 function meta::relational::functions::pureToSqlQuery::processConcatenate(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  
    let targetType =  $f.genericType.rawType->toOne();
    let isDataType = $targetType->instanceOf(DataType);
-   assert(!$targetType->instanceOf(Enum), 'Enumerations are not yet supported in this context');
+   assert(!$f.genericType.rawType->toOne()->instanceOf(Enum), 'Enumerations are not yet supported in this context');
 
    let elements = $f->flattenConcatenate();
 
    let processed_pre = $elements->map(e|$e->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, ^$state(shouldIsolateNestedFilter=false, importDataFlowCurrentSetOffsetInUnion=$elements->indexOf($e)), $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne(););
-    
+
    let processed = $processed_pre->map(p|let selectWithCursor = $p.element->cast(@SelectWithCursor);
                                          let select = $selectWithCursor.select;
 
@@ -2318,7 +2316,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
        let firstSel = $transformed->at(0).element->cast(@SelectWithCursor).select;
 
        let selects = $transformed.element->cast(@SelectWithCursor).select->map(s | $s->pushSavedFilteringOperation($extensions));
- 
+
        let rootTable = ^TableAlias(
                                      name = 'union',
                                      relationalElement = if($f.functionName == 'union',
