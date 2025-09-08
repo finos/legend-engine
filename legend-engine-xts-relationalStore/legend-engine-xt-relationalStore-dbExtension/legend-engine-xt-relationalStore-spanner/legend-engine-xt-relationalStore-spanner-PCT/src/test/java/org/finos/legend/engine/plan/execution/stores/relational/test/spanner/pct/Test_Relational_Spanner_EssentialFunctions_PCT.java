@@ -255,7 +255,6 @@ public class Test_Relational_Spanner_EssentialFunctions_PCT extends PCTReportCon
 
             //mod
             one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\"", AdapterQualifier.needsInvestigation),
 
             //pow
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\"\nexpected: 9.0\nactual:   27.0\"", AdapterQualifier.needsInvestigation),
