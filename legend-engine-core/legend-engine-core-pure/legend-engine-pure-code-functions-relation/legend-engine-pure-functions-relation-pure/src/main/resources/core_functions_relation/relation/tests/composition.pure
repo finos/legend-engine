@@ -1238,3 +1238,46 @@ function <<PCTRelationQualifier.relation, PCT.test>> meta::pure::functions::rela
                   '   26\n'+
                   '#', $res->sort([~val3->ascending()])->toString());
 }
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_contains<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, payload:meta::pure::metamodel::variant::Variant, val
+                  1, "[1,2,3]", 1
+                  2, "[1,2,3]", 4
+                  3, "null", 0
+                #->extend(~contains : x | $x.payload->toMany(@Integer)->contains($x.val->toOne()));
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,val,contains\n'+
+                '   1,[1,2,3],1,true\n'+
+                '   2,[1,2,3],4,false\n'+
+                '   3,null,0,false\n'+
+                '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, payload:meta::pure::metamodel::variant::Variant
+                  1, "[1,2,3]"
+                  2, "[1,2,3,4,4,3,2,3,4,1,2]"
+                  3, "null"
+                #->extend(~distinct : x | $x.payload->toMany(@Integer)->distinct()->sort()->toVariant())
+                 ->extend(~removeDuplicates : x | $x.payload->toMany(@Integer)->removeDuplicates()->sort()->toVariant());
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,distinct,removeDuplicates\n'+
+                '   1,[1,2,3],[1,2,3],[1,2,3]\n'+
+                '   2,[1,2,3,4,4,3,2,3,4,1,2],[1,2,3,4],[1,2,3,4]\n'+
+                '   3,null,null,null\n'+
+                '#', $res->toString());
+}
