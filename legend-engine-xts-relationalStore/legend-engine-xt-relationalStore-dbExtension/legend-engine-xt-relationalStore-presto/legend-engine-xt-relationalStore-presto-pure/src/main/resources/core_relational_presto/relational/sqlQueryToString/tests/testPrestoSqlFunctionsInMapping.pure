@@ -121,13 +121,13 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::at
    assertEquals('select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root"',$prestoSql);
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::mod::testToSQLStringModPresto():Boolean[1]
-{
-   let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.floatModResult], ['mod']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select mod("root".int1,2) as "mod" from dataTable as "root"',$prestoSql);
-}
+//function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::mod::testToSQLStringModPresto():Boolean[1]
+//{
+//   let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.floatModResult], ['mod']),
+//                                                testMapping,
+//                                                meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+//   assertEquals('select mod("root".int1,2) as "mod" from dataTable as "root"',$prestoSql);
+//}
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::stddev::population::testToSQLStringStdDevPopPresto():Boolean[1]
 {

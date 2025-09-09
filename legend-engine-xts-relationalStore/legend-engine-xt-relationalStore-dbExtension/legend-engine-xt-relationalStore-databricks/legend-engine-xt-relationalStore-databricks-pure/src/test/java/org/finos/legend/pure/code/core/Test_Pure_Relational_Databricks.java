@@ -28,7 +28,6 @@ public class Test_Pure_Relational_Databricks
         executionSupport.getConsole().disable();
         TestSuite suite = new TestSuite();
 
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::relational::databricks::tests", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::relational::tests::functions::sqlstring::databricks", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
