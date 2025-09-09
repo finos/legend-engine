@@ -915,8 +915,9 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         ._values(
                                 FastList.newListWith(
                                         new Root_meta_pure_store_RelationStoreAccessor_Impl<>("", new org.finos.legend.pure.m4.coreinstance.SourceInformation("X", 0, 0, 0, 0), null)
-                                                ._store(ds)
+                                                ._sourceElementContainer(ds)
                                                 ._sourceElement(table)
+                                                ._store(ds)
                                                 ._classifierGenericType(genericType)
                                 )
                         );

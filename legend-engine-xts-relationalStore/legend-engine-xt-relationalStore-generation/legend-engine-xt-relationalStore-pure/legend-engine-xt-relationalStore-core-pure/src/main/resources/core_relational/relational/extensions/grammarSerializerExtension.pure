@@ -111,6 +111,10 @@ function meta::relational::grammar::serialization::relationGrammarExtension():me
               '#>{' + $x.store->elementToPath() + '.' + $schemaName + $table.name->toOne() + '}#';
               ,
             t:meta::pure::metamodel::relation::TDS<Any>[1]|'#TDS{\n'+$t.csv->replace(' ','')+'}#';
+          ],
+        extraPackageableElementHandlers =
+          [
+            x:Database[1]|'###Relational\n'+$x->printDatabase()
           ]
     );
 }

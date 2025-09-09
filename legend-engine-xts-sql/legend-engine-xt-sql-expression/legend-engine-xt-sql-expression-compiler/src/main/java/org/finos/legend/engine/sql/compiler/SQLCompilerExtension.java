@@ -35,6 +35,7 @@ import org.finos.legend.pure.generated.core_external_query_sql_binding_fromPure_
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.navigation.type.Type;
 
 import java.util.Map;
 
@@ -60,11 +61,11 @@ public class SQLCompilerExtension implements CompilerExtension
                     String sqlText = ((SQLExpressionProtocol) obj).sql;
                     Root_meta_external_query_sql_metamodel_Statement statement = new ModifiedTranslator().translate(SQLGrammarParser.newInstance().parseStatement(sqlText), context.pureModel);
 
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> x = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__Function_1_((Root_meta_external_query_sql_metamodel_Query)statement, context.pureModel.getExecutionSupport());
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType returnType = ((FunctionType)x._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType();
-                    if (returnType._rawType() != context.pureModel.getClass("meta::pure::metamodel::relation::Relation"))
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> x = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, context.pureModel.getExecutionSupport());
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType returnType = ((FunctionType) x._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType();
+                    if (!Type.subTypeOf(returnType._rawType(), context.pureModel.getClass("meta::pure::metamodel::relation::Relation"), context.pureModel.getExecutionSupport().getProcessorSupport()))
                     {
-                        throw new RuntimeException("The expected return-type should be 'Relation' but it was " + org.finos.legend.pure.m3.navigation.generictype.GenericType.print(returnType, context.pureModel.getExecutionSupport().getProcessorSupport()));
+                        throw new RuntimeException("The expected return-type should be a subType of 'Relation' but it was " + org.finos.legend.pure.m3.navigation.generictype.GenericType.print(returnType, context.pureModel.getExecutionSupport().getProcessorSupport()));
                     }
                     org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType relationType = returnType._typeArguments().getFirst();
 

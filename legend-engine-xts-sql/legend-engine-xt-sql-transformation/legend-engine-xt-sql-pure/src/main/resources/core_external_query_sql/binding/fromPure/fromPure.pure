@@ -116,10 +116,9 @@ function meta::external::query::sql::transformation::queryToPure::getSources():D
             ]
           )->cast(@meta::relational::metamodel::Database);
 
-          let databaseStr = $store->meta::relational::grammar::serialization::printDatabase();
+          let databaseStr = $store->printPackageableElements(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration());
 
-          let code =  '\n###Relational\n'+
-                      $databaseStr+
+          let code =  $databaseStr+
                       '\n###Pure\n'+
                       'function test::container():Any[*]{\n'+
                       '  #>{'+$param+'}#\n'+
@@ -4009,11 +4008,11 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
       | // TO FIX. Lambda is called far too many times. In clone. In ProcessRootQuery. in SQL to Pure.
         // One simple translation seems to call it minimum 4 times, which is excessive.
         // We need to generate in one shot and compile at the end (including dependencies or expending the scope of compile so that it inherits state from its caller)
-        let functionStr = $lambda->removeFrom()->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''));
-        let databaseStr = $lambda->meta::external::query::sql::transformation::queryToPure::_extractDependencies()->map(x|$x->cast(@meta::relational::metamodel::Database)->meta::relational::grammar::serialization::printDatabase())->joinStrings('\n');
+        let config = meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration();
+        let functionStr = $lambda->removeFrom()->printFunctionDefinition($config, ^GContext(space=''));
+        let dependenciesAsStr = $lambda->meta::external::query::sql::transformation::queryToPure::_extractDependencies()->map(x|$x->printPackageableElements($config))->joinStrings('\n');
 
-        let code =  '\n###Relational\n'+
-                    $databaseStr+
+        let code =  $dependenciesAsStr+
                     '\n###Pure\n'+
                     'function test::container():Any[*]{\n'+
                     '  ' + $functionStr + '\n'+
@@ -4049,7 +4048,7 @@ function meta::external::query::sql::transformation::queryToPure::_extractDepend
     x:SimpleFunctionExpression[1]|let res = $x.parametersValues->evaluateAndDeactivate()->map(p|$p->_extractDependencies());
                                   $res->concatenate($x.func->_extractDependencies());,
     i: InstanceValue[1] | $i.values->evaluateAndDeactivate()->map(p|$p->_extractDependencies()),
-    x: RelationStoreAccessor<Any>[1] | $x.store,
+    x: meta::pure::metamodel::relation::RelationElementAccessor<Any>[1] | $x.sourceElementContainer,
     a:Any[1] | []
   ]);
 }
