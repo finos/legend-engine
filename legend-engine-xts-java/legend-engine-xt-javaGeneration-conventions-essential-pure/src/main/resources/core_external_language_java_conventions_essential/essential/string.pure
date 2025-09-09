@@ -41,6 +41,7 @@ function meta::external::language::java::generation::essential::string::register
          fc1(parseBoolean_String_1__Boolean_1_,                                  {ctx,s                       | $ctx.conventions->codeParseBoolean($s)}),
          fc1(parseDate_String_1__Date_1_,                                        {ctx,str                                | $pureDate->j_invoke('parsePureDate', [$str], $ctx.conventions->className(PureDate))}),
          fc1(parseDecimal_String_1__Decimal_1_,                                  {ctx,s                       | $ctx.conventions->codeParseDecimal($s)}),
+         fc3(parseDecimal_String_1__Integer_1__Integer_1__Decimal_1_,            {ctx,s,precision,scale       | $ctx.conventions->codeParseDecimalWithPrecisionScale($s, $precision, $scale)}),
          fc1(parseFloat_String_1__Float_1_,                                      {ctx,s                       | $ctx.conventions->codeParseFloat($s)}),
          fc1(parseInteger_String_1__Integer_1_,                                  {ctx,s                       | $ctx.conventions->codeParseInteger($s)}),
 

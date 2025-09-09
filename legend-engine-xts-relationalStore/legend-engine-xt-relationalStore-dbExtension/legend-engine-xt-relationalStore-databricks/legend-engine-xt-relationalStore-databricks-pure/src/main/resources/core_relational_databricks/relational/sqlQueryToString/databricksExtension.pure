@@ -118,7 +118,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 0 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp')),
     dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='to_date(%s,%s)')),
-    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as double)')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimal()})),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as int)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),

@@ -334,8 +334,9 @@ public class Test_Relational_Spanner_EssentialFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toTimestamp' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             //parseDecimal
-            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseDecimal' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseDecimal' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: INVALID_ARGUMENT: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: INVALID_ARGUMENT: [ERROR] invalid input syntax for type numeric: \"3.14159d\" - Statement: 'select cast(Text'3.14159d' as decimal)'", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimalWithPrecisionScale_Function_1__Boolean_1_", "\"\nexpected: 123.12300D\nactual:   123.123D\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\"", AdapterQualifier.needsInvestigation),
 
             //parseFloat
             one("meta::pure::functions::string::tests::parseFloat::testParseFloat_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseFloat' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),

@@ -122,6 +122,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     // dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     // dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     // dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimal()})),
     dynaFnToSql('plus',                   $allStates,            ^ToSql(format='%s', transform=getTransformForAddPlus())),
     dynaFnToSql('pow',                    $allStates,            ^ToSql(format='dpow(%s, %s)')),
     // dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),

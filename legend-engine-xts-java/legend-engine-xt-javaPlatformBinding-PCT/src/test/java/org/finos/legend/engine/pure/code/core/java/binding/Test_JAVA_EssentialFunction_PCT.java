@@ -155,6 +155,7 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
 
             // String
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "\"\nexpected: 3.1415900000D\nactual:   3.14159D\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimalWithPrecisionScale_Function_1__Boolean_1_", "\"\nexpected: 123.12300D\nactual:   123.123D\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::reverse::testReverseString_Function_1__Boolean_1_", "\"meta::pure::functions::string::reverseString_String_1__String_1_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::trim::testLTrim_Function_1__Boolean_1_", "\"Type not found for method ltrim from String\"", AdapterQualifier.needsInvestigation),
