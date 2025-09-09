@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::runtime::*;
 import meta::pure::store::*;
 import meta::external::store::relational::postgresSql::parser::*;
 import meta::pure::metamodel::serialization::grammar::*;
@@ -137,7 +138,7 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
   let extensions = meta::relational::extension::relationalExtensions();
   let context = rootContext($sources, $extensions);
   let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true, withSupported = true));
-  let pureFunc = $sqlTransformContext.lambda()->meta::pure::router::preeval::preval($extensions);
+  let pureFunc = $sqlTransformContext.lambda($context.scopeWithFrom->isTrue())->meta::pure::router::preeval::preval($extensions);
 //  println('Transfomed: '+$pureFunc->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
   // SQL to Pure ---
   $pureFunc;
@@ -171,7 +172,7 @@ function meta::external::query::sql::transformation::queryToPure::getPlanResult(
 
 
   let plan = if ($context.relation->isTrue(), | [], | getPlan($context, $sources, $extensions));
-  let lambda = if ($context.relation->isTrue(), | $context.protocol->meta::alloy::metadataServer::alloyToJSON(), | []);
+  let lambda = if ($context.relation->isTrue(), | $context.protocol($context.scopeWithFrom->isTrue())->meta::alloy::metadataServer::alloyToJSON(), | []);
   let mapping = if ($context.relation->isTrue(), | getMapping($sources), | []);
   let runtime = if ($context.relation->isTrue(), | getRuntime($sources, $extensions), | []);
 
@@ -205,7 +206,7 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
   //NOTE: we should remove this once issues with enum mappings in plan transformation are fixed.
   let mapping = if ($sources.mapping->isNotEmpty(), | $sources.mapping->removeDuplicates()->toOneMany()->mergeMappings(), | emptyMapping());
   let runtime = if ($sources.runtime->isNotEmpty(), | $sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(), | ^Runtime());
-  let lambda = $context.lambda()->meta::pure::router::preeval::preval($extensions);
+  let lambda = $context.lambda($context.scopeWithFrom->isTrue())->meta::pure::router::preeval::preval($extensions);
 
 //  println('Generated Pure Function:'+$lambda->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
 
@@ -316,7 +317,7 @@ function meta::external::query::sql::transformation::queryToPure::processRootQue
   trace({|
     let newQuery = $query->cast(@Query)->processQuery($context);
     let processed = wrapWithFrom($newQuery);
-    let variables = $processed.lambda()->extractPositionals($positionals.index->map(i | positionalName($i)));
+    let variables = $processed.lambda(false)->extractPositionals($positionals.index->map(i | positionalName($i)));
 
     ^$processed(positionals = $processed.positionals->concatenate($variables)->removeDuplicatesBy(v | $v.name));
   }, 'converting query');
@@ -1575,6 +1576,25 @@ function meta::external::query::sql::transformation::queryToPure::requiresWrapWi
       && $f.parametersValues->first()->requiresWrapWithFrom(),
     v:ValueSpecification[0..1] | true
   ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithLambdaFrom(lambda:LambdaFunction<Any>[1], sources:SQLSource[*], extensions: meta::pure::extension::Extension[*]):LambdaFunction<Any>[1]
+{
+  let mapping = if ($sources.mapping->isNotEmpty(), | $sources.mapping->removeDuplicates()->toOneMany()->mergeMappings(), | []);
+  let runtime = if ($sources.runtime->isNotEmpty(), | $sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(), | ^Runtime());
+
+  let params = $lambda->iv()->concatenate($mapping->iv())->concatenate($runtime->iv());
+
+  let func = [
+    pair($mapping->isEmpty() && $runtime->instanceOf(PackageableRuntime), from_FunctionDefinition_1__PackageableRuntime_1__T_m_->cast(@FunctionDefinition<Any>)),
+    pair($mapping->isEmpty() && $runtime->instanceOf(Runtime), from_FunctionDefinition_1__Runtime_1__T_m_->cast(@FunctionDefinition<Any>)),
+    pair($mapping->isNotEmpty() && $runtime->instanceOf(PackageableRuntime), from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_->cast(@FunctionDefinition<Any>)),
+    pair($mapping->isNotEmpty() && $runtime->instanceOf(Runtime), from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_->cast(@FunctionDefinition<Any>))
+  ]->getValue(true);
+
+  let sfe = sfe($func, $lambda->functionReturnType(), [], PureOne, $params);
+
+  ^$lambda(expressionSequence = $sfe);
 }
 
 //TODO we can be much smarter by understanding whether x-store is in play and not wrap if true.
@@ -3967,12 +3987,13 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
     $found->first();
   }:SQLColumnAlias[0..1];
 
-  lambda(){
+  lambda(wrapWithFromIfRequired:Boolean[1]){
     let lambda = lambda(
                     functionType($this.parametersRecursive.variable->concatenate($this.positionals), ^GenericType(rawType = TabularDataSet), PureOne),
                     $this.cteAssignments->concatenate($this.assignmentsRecursive)->concatenate($this.expression)->evaluateAndDeactivate()
                  );
-    if ($this.relation->isTrue(),
+
+    let compiled = if ($this.relation->isTrue(),
       | // TO FIX. Lambda is called far too many times. In clone. In ProcessRootQuery. in SQL to Pure.
         // One simple translation seems to call it minimum 4 times, which is excessive.
         // We need to generate in one shot and compile at the end (including dependencies or expending the scope of compile so that it inherits state from its caller)
@@ -3989,10 +4010,15 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
         meta::legend::compile($code)->filter(x|$x.name == 'container__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@LambdaFunction<Any>);,
       | $lambda
     );
+
+    if ($this.withQueries->isNotEmpty() && $wrapWithFromIfRequired,
+      | wrapWithLambdaFrom($compiled, $this.sources, $this.extensions),
+      | $compiled);
+
   }: LambdaFunction<Any>[1];
 
-  protocol() {
-    ^$this(relation = false).lambda()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($this.extensions)
+  protocol(wrapWithFromIfRequired:Boolean[1]) {
+    ^$this(relation = false).lambda($wrapWithFromIfRequired)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($this.extensions)
   }:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 
   source(type:String[1], arguments:SQLSourceArgument[*]){
@@ -4198,7 +4224,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   if ($cloned.expression != $oldContext.expression,
     |
-      let columns = meta::external::query::sql::transformation::queryToPure::resolveSchema($cloned.lambda(), $cloned.extensions);
+      let columns = meta::external::query::sql::transformation::queryToPure::resolveSchema($cloned.lambda(false), $cloned.extensions);
       ^$cloned(columns = $columns);,
     | $cloned);
 }
