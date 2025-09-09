@@ -34,7 +34,7 @@ import meta::analytics::lineage::property::relation::scanRelations::*;
 Class meta::analytics::lineage::property::relation::scanRelations::NamedTransform
 {
   name:String[1];
-  function:LambdaFunction<Any>[1];
+  function:FunctionDefinition<Any>[1];
 }
 
 

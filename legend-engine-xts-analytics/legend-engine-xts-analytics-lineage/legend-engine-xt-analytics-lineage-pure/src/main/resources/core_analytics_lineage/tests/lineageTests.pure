@@ -596,7 +596,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
   let mapping = meta::relational::tests::simpleRelationalMapping;
   let runtime = meta::external::store::relational::tests::testRuntime();
 
-  let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtime, meta::relational::extension::relationalExtensions(),propertyLineageConfig());
+  let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
 
   meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultpersonTable'],
                                           ['Lambda', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
@@ -604,6 +604,46 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
                                            $lineage);
 
 } 
+
+
+###Pure
+import meta::analytics::lineage::*;
+import meta::pure::mapping::modelToModel::test::shared::*;
+import meta::external::store::model::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::mapping::modelToModel::test::simple::*;
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::modeltomodel::testSimpleChain():Boolean[1]
+{
+ let  func = {|meta::pure::mapping::modelToModel::test::shared::dest::Firm.all()->project([f|$f.legalName], ['legalNameResult'])};
+  let mapping = simpleModelMappingWithAssociation;
+  let runtime = ^meta::core::runtime::Runtime(connectionStores = [
+                                  ^meta::core::runtime::ConnectionStore(
+                                    element = ^ModelStore(),
+                                    connection=
+                                      ^ModelChainConnection(
+                                                        mappings = relationalMapping
+                                      )),
+                                      getConnection()
+                                  ]
+                   );
+                         
+               
+  let lineage = meta::analytics::lineage::computeLineage($func, $mapping, $runtime, meta::relational::extension::relationalExtensions(),meta::analytics::lineage::tests::relation::propertyLineageConfig());
+      assertSameElements(['db_relationalDB -> tb_relationalDBdefaultFirm', 'tb_relationalDBdefaultFirm -> Lambda'],  $lineage.databaseLineage.edges.data->map(e|  $e.source.data.id+ ' -> ' + $e.target.data.id));
+      assertSameElements([ ['MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_dest_Firm_meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation -> Query_project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_',
+       'MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_src__Firm_meta::pure::mapping::modelToModel::test::shared::relationalMapping -> MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_dest_Firm_meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation', 
+       'Query_project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_ -> Root',
+        'RelationalPropertyOwner_meta::pure::mapping::modelToModel::test::shared::relationalDB.default.Firm -> MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_src__Firm_meta::pure::mapping::modelToModel::test::shared::relationalMapping',
+       'meta::pure::mapping::modelToModel::test::shared::relationalDB -> RelationalPropertyOwner_meta::pure::mapping::modelToModel::test::shared::relationalDB.default.Firm']],  $lineage.propertyLineage.ownerLink->map(e|  $e.source+ ' -> ' + $e.target));
+
+meta::analytics::lineage::assertLineage(['Lambda', 'db_relationalDB', 'tb_relationalDBdefaultFirm'],
+                                          [],
+                                          '[legalNameResult: [query.legalNameResult->[MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_dest_Firm_meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation.Firm.legalName->[MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_src__Firm_meta::pure::mapping::modelToModel::test::shared::relationalMapping._Firm.name->[RelationalPropertyOwner_meta::pure::mapping::modelToModel::test::shared::relationalDB.default.Firm.name]]]]]',
+                                           $lineage);
+}
+
 
 
 ###Pure
@@ -624,7 +664,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relation::testRelationOn
 
   meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable'],
                                           [],
-                                          '[firm: [query.firm->[meta::relational::tests::simpleRelationalMapping.meta_relational_tests_model_simple_Person.firm->[RelationalPropertyOwner_meta::relational::tests::dbInc.default.firmTable.ID,RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.FIRMID,RelationalPropertyOwner_meta::relational::tests::dbInc.default.firmTable.LEGALNAME]]], firstName: [query.firstName->[meta::relational::tests::simpleRelationalMapping.meta_relational_tests_model_simple_Person.firstName->[RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.FIRSTNAME]]], fullName: [query.fullName->[meta::relational::tests::simpleRelationalMapping.meta_relational_tests_model_simple_Person.fullName->[RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.FIRSTNAME,RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.LASTNAME]]], name: [query.name->[meta::relational::tests::simpleRelationalMapping.meta_relational_tests_model_simple_Person.name->[RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.FIRSTNAME,RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.LASTNAME]]]]',
+                                          '[firm: [query.firm->[MappedClassOwner_meta_relational_tests_model_simple_Person.Person.firm->[RelationalPropertyOwner_meta::relational::tests::dbInc.default.firmTable.ID,RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.FIRMID],MappedClassOwner_meta_relational_tests_model_simple_Person.Person.firm.legalName->[RelationalPropertyOwner_meta::relational::tests::dbInc.default.firmTable.ID,RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.FIRMID,RelationalPropertyOwner_meta::relational::tests::dbInc.default.firmTable.LEGALNAME],MappedClassOwner_meta_relational_tests_model_simple_Person.Person.firm->[RelationalPropertyOwner_meta::relational::tests::dbInc.default.firmTable.ID,RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.FIRMID]]], firstName: [query.firstName->[MappedClassOwner_meta_relational_tests_model_simple_Person.Person.firstName->[RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.FIRSTNAME]]], fullName: [query.fullName->[MappedClassOwner_meta_relational_tests_model_simple_Person.Person.fullName.Person.firstName.lastName->[RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.FIRSTNAME,RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.LASTNAME]]], name: [query.name->[MappedClassOwner_meta_relational_tests_model_simple_Person.Person.name.Person.firstName.lastName->[RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.FIRSTNAME,RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.LASTNAME]]]]',
                                            $lineage);
 
 }
@@ -692,6 +732,37 @@ function <<test.Test>> meta::analytics::lineage::tests::relation::testJoin():Boo
                                           $lineage);
 
 }
+
+function <<access.private>> meta::analytics::lineage::tests::relation::joinFN():Relation<(firstName:Any[*],FIRMIDFK:Any[*])>[1]
+{
+  
+#>{meta::analytics::lineage::tests::db.personTable}#->project(~['firstName': x| $x.FIRSTNAME, 'FIRMIDFK': x| $x.FIRMID  ]);
+}
+
+function <<access.private>> meta::analytics::lineage::tests::relation::joinFN2():Relation<(FIRMID:Any[*])>[1]
+{
+  
+#>{meta::analytics::lineage::tests::db.firmTable}#->project(~['FIRMID': x| $x.FIRM_ID])
+}
+
+
+
+function <<test.Test>> meta::analytics::lineage::tests::relation::testJoinChainOnFunction():Boolean[1]
+{
+  let query = {|meta::analytics::lineage::tests::relation::joinFN()->join(meta::analytics::lineage::tests::relation::joinFN2()->project(~['FIRMID1': x| $x.FIRMID]), JoinKind.INNER, {x,y| $x.FIRMIDFK == $y.FIRMID1})
+                                                                   ->join(meta::analytics::lineage::tests::relation::joinFN()->project(~['FIRMID2': x| $x.FIRMIDFK]), JoinKind.INNER, {x,y| $x.FIRMIDFK == $y.FIRMID2})    
+  
+   };
+
+  let lineage = meta::analytics::lineage::computeLineage($query, [], [], [],propertyLineageConfig());
+
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc','tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable'],
+                                          [],
+                                          '[FIRMID1: [Root.FIRMID1->[Root.FIRMID->[RelationalPropertyOwner_meta::analytics::lineage::tests::dbInc.default.firmTable.FIRM_ID]]], FIRMID2: [Root.FIRMID2->[Root.FIRMIDFK->[RelationalPropertyOwner_meta::analytics::lineage::tests::dbInc.default.personTable.FIRMID]]], FIRMIDFK: [Root.FIRMIDFK->[RelationalPropertyOwner_meta::analytics::lineage::tests::dbInc.default.personTable.FIRMID]], firstName: [Root.firstName->[RelationalPropertyOwner_meta::analytics::lineage::tests::dbInc.default.personTable.FIRSTNAME]]]',
+                                          $lineage);
+
+}
+
 
 function <<access.private>> meta::analytics::lineage::tests::relation::joinParam(input:Relation<(firstName:Varchar, FIRMIDFK:Integer)>[1]):Relation<Any>[1]
 {
@@ -865,6 +936,7 @@ function meta::analytics::lineage::tests::relation::propertyLineageConfig(): Fun
     classLineage = true,
     relationTree = false,
     reportLineage = true,
-    propertyLineage = true
+    propertyLineage = true,
+    useV2Lineage= true
   )
 }

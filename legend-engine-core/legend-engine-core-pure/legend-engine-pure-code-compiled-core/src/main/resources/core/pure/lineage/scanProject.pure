@@ -97,7 +97,7 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
                                                     ];
                                      let funcFullPath = $fe.func->toOne()->elementToPath();
                                      let res = $dispatch->filter(d|$funcFullPath == $d.first);
-                                     if ($res->isEmpty(),
+                                     if ($res->isEmpty(),  
                                          |let params = $fe.parametersValues->map(a|$a->scanProjectRecursive($project, $processed,$vars));
                                           if($processed->contains($fe.func->toOne()) || $fe.func->toOne()->elementToPath()->startsWith('meta::'),
                                              |[],
@@ -127,7 +127,7 @@ function <<access.private>> meta::pure::lineage::scanProject::getRootTree(a:Any[
               r:RootGraphFetchTree<Any>[1]| $r ])->cast(@RootGraphFetchTree<Any>);
 
 }
-function <<access.private>> meta::pure::lineage::scanProject::extractCol(vs:ValueSpecification[1],vars:Map<String, List<Any>>[1]):BasicColumnSpecification<Any>[*]
+function  meta::pure::lineage::scanProject::extractCol(vs:ValueSpecification[1],vars:Map<String, List<Any>>[1]):BasicColumnSpecification<Any>[*]
 { 
  $vs->match(
           [
