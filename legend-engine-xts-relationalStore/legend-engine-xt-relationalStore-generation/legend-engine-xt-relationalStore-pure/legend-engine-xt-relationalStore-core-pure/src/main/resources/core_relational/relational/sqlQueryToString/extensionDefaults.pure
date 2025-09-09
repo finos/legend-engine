@@ -245,7 +245,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('median',                 $allStates,            ^ToSql(format='median(%s)')),
     dynaFnToSql('min',                    $allStates,            ^ToSql(format='min(%s)')),
     dynaFnToSql('minus',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|if($p->size() == 1, | '-' + $p->toOne(), | $p->joinStrings('(', ' - ', ')'))})),
-    dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(mod(%s, %s) + %s, %s)', transform={p:String[2] | $p->at(0)->concatenate($p->at(1))->concatenate($p->at(1))->concatenate($p->at(1))})),
+    dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(mod(%s, %s) + %s, %s)', transform={p:String[*] | assert($p->size() == 2, |'mod only expect two arguments, but got ' + $p->size()->toString()); $p->at(0)->concatenate($p->at(1))->concatenate($p->at(1))->concatenate($p->at(1));})),
     dynaFnToSql('mode',                   $allStates,            ^ToSql(format='mode(%s)')),
     dynaFnToSql('notEqual',               $allStates,            ^ToSql(format='%s != %s')),
     dynaFnToSql('notEqualAnsi',           $allStates,            ^ToSql(format='%s <> %s')),

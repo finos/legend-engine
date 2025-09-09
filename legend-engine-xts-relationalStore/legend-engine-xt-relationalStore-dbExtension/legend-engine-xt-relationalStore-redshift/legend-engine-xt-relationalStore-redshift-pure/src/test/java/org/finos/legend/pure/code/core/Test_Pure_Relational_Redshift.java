@@ -28,7 +28,6 @@ public class Test_Pure_Relational_Redshift
         executionSupport.getConsole().disable();
         TestSuite suite = new TestSuite();
 
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::relational::functions::sqlQueryToString::tests::redshift", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::executionPlan::tests::redshift", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
