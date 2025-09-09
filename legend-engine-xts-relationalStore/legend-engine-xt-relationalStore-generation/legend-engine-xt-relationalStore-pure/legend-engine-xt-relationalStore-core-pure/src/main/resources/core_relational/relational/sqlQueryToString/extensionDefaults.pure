@@ -690,6 +690,14 @@ function meta::relational::functions::sqlQueryToString::default::transformRound(
        | [$p->at(0), '0']);
 }
 
+function meta::relational::functions::sqlQueryToString::default::transformParseDecimal(params:String[*]):String[1]
+{
+  if ($params->size() == 1,
+        |format('cast(%s as decimal)', [$params->at(0)]);,
+        |format('cast(%s as DECIMAL(%s,%s))', [$params->at(0),$params->at(1),$params->at(2)]);
+      );
+}
+
 function meta::relational::functions::sqlQueryToString::default::processJoinStringsOperation(js:JoinStrings[1], sgc:SqlGenerationContext[1],
          groupByCat:meta::pure::metamodel::function::Function<{String[1], String[1] -> String[1]}>[0..1], stringCat:meta::pure::metamodel::function::Function<{String[*], String[1] -> String[1]}>[0..1]):String[1]
 {

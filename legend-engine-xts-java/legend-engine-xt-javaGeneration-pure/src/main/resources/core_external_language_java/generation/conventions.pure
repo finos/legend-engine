@@ -479,6 +479,23 @@ function meta::external::language::java::transform::codeParseDecimal(conventions
    );
 }
 
+function meta::external::language::java::transform::codeParseDecimalWithPrecisionScale(conventions: Conventions[1], toParse:Code[1], precision:Code[1], scale:Code[1]): Code[1]
+{
+   let decimalType = $conventions->decimalType()->toBoxed();
+
+   if($decimalType == javaBigDecimal(),
+      | javaBigDecimal()->j_new(
+    [j_conditional(
+        $toParse->j_invoke('endsWith', j_string('D'))->j_or($toParse->j_invoke('endsWith', j_string('d'))),
+        $toParse->j_invoke('substring', [j_int(0), $toParse->j_invoke('length', [])->j_minus(j_int(1))]),
+        $toParse
+    ),
+    javaMathContext()->j_new([j_cast($precision, javaInt()), javaRoundingMode()->j_field('HALF_UP')])]
+)->j_invoke('setScale', [j_cast($scale, javaInt()), javaRoundingMode()->j_field('HALF_UP')]),
+      | fail('Unsupported Decimal type: '+$decimalType->typeToString()); j_null();
+   );
+}
+
 function meta::external::language::java::transform::codeParseFloat(conventions: Conventions[1], toParse:Code[1]): Code[1]
 {
    let floatType = $conventions->floatType()->toBoxed();

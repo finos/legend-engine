@@ -213,7 +213,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='date_part(\'month\', %s)')),
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='cast(%s as date) + cast(case when %s - date_part(\'dow\', %s) > 0 then %s - date_part(\'dow\', %s) - 7 else %s - date_part(\'dow\', %s) end as integer)', transform={p:String[1..2] | $p->formatMostRecentPostgres('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
-    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimal()})),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),

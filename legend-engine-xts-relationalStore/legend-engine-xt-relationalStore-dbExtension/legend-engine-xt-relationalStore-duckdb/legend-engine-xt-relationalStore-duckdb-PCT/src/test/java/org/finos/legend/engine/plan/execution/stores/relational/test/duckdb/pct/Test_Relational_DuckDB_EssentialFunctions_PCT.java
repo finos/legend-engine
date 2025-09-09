@@ -279,6 +279,7 @@ public class Test_Relational_DuckDB_EssentialFunctions_PCT extends PCTReportConf
 
             // ParseDecimal
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "java.sql.SQLException: Conversion Error: Could not convert string \"3.14159d\" to DECIMAL(18,3)\n\nLINE 1: select cast('3.14159d' as decimal)\n               ^", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimalWithPrecisionScale_Function_1__Boolean_1_", "\"\nexpected: 123.12300D\nactual:   123.123D\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\"", AdapterQualifier.needsInvestigation)
     );
 

@@ -80,7 +80,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'FMMonth\')')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='extract(month from %s)')),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
-    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimal()})),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),

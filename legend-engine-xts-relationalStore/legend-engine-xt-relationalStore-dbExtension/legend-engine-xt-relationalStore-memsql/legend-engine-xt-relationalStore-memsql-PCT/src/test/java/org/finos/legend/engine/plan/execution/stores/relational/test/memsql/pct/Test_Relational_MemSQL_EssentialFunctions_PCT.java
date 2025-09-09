@@ -343,8 +343,9 @@ public class Test_Relational_MemSQL_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "Unable to convert string for format element 'HH24'", AdapterQualifier.needsInvestigation),
 
             // ParseDecimal
-            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseDecimal' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseDecimal' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "\"\nexpected: 3.14159D\nactual:   3D\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimalWithPrecisionScale_Function_1__Boolean_1_", "\"\nexpected: 123.12300D\nactual:   123.123D\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.0D\nactual:   0D\"", AdapterQualifier.needsInvestigation),
 
             //variant
             one("meta::pure::functions::collection::tests::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
