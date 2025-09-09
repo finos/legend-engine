@@ -597,7 +597,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processPivotForSnowflake(p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
 {
-  let pivotColumnName = $p.pivotColumns->toOne()->cast(@ColumnName).name;
+  let pivotColumnName = $dbConfig.identifierProcessor($p.pivotColumns->toOne()->cast(@ColumnName).name);
   let aggregateColumn = processSelectColumns($p.aggColumns->toOne(), $dbConfig, $format->indent(), $config, true, $extensions);
   ' ' + $format.separator + 'pivot (' + $aggregateColumn +
   ' ' + $format.separator + 'for ' +  $pivotColumnName +
