@@ -2732,11 +2732,11 @@ function meta::external::query::sql::transformation::queryToPure::tests::toCharT
         }->appendTdsFunc(project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_, list(iv($cols)));
 
 
-        assertLambdaEquals($expected, $sqlTransformContext.lambda());,
+        assertLambdaEquals($expected, $sqlTransformContext.lambda(false));,
     | []);
 
 
-  let tds = meta::pure::router::execute($sqlTransformContext.lambda()->toOne()->cast(@LambdaFunction<{->TabularDataSet[1]}>), dummyMapping, $runtime, relationalExtensions()).values;
+  let tds = meta::pure::router::execute($sqlTransformContext.lambda(false)->toOne()->cast(@LambdaFunction<{->TabularDataSet[1]}>), dummyMapping, $runtime, relationalExtensions()).values;
   let values = $tds.rows->at(0).values;
 
   $items->forAll(i |
@@ -3644,6 +3644,28 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     ]
   )
 }
+
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSimpleWithQueryFromScoping():Boolean[1]
+{
+
+  let runtime = dummyRuntime();
+
+  test(
+    'WITH myCTE AS (SELECT * FROM service."/service/service1") select Integer as int from myCTE',
+
+    [
+      c({|from({| 
+            let myCTE = FlatInput.all()->project(
+                          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+                          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]);
+            $myCTE->restrict('Integer')->renameColumns(pair('Integer', 'int'));
+      }, dummyMapping, $runtime)}, false, true)    
+    ], true
+  );
+}
+
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJoinWithQuery():Boolean[1]
 {
   test(
@@ -3815,7 +3837,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::testEnu
   let sqlString = 'SELECT 1 AS "one", "The Enum Value" AS "enum" FROM service."/service/service3" WHERE "The Enum Value" = \'Value1\' OR "The Enum Value" IN (\'Value1\', \'Value2\')';
   let sqlTransformContext = $sqlString->processQuery(false, $relation);
 
-  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda(false));
   let plan = $sqlTransformContext->getPlan($sqlTransformContext.sources, $sqlTransformContext.extensions);
 
   let sql = $plan.rootExecutionNode->cast(@meta::relational::mapping::RelationalTdsInstantiationExecutionNode).executionNodes->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
