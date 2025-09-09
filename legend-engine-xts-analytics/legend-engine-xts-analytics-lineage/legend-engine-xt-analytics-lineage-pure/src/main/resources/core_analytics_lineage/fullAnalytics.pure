@@ -65,6 +65,7 @@ Class meta::analytics::lineage::FunctionAnalyticsConfig
   relationTree: Boolean[1];
   reportLineage: Boolean[1];
   propertyLineage:Boolean[0..1]; 
+  useV2Lineage:Boolean[0..1];
 }
 
 Class meta::analytics::lineage::ReportLineage
@@ -132,7 +133,8 @@ function meta::analytics::lineage::buildDefaultAnalyticsConfig(): FunctionAnalyt
     classLineage = true,
     relationTree = true,
     reportLineage = true,
-    propertyLineage = false
+    propertyLineage = false,
+    useV2Lineage = false
   )
 }
 Class meta::analytics::lineage::LineageInputFromFunctionDefinition
@@ -237,17 +239,10 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
   let reprocessedFuncBody = if($modelToModelMappings->isEmpty() && ($mappings->size() <= 1),
                                 |$updatedFuncBody,
                                 |$updatedFuncBody->map(e|$e->cast(@FunctionExpression)->meta::pure::mapping::modelToModel::chain::allReprocess([], $modelToModelMappings, $extensions, noDebug()).res));
-
-
-
-  if( $updatedFuncBody->last()->toOne().genericType.rawType->isNotEmpty() &&  ($updatedFuncBody->last()->toOne().genericType.rawType->toOne() == meta::pure::metamodel::relation::Relation || $updatedFuncBody->last()->toOne().genericType.rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::RelationElementAccessor) ) ,
-      |
-                 let relationElementAccessor = $updatedFuncBody->map(v | $v->cast(@ValueSpecification)->extractRelationElementAccessor(noDebug()));
-
-      if ($config.propertyLineage->isNotEmpty() && $config.propertyLineage->toOne(),
-           | let propLineage =  meta::analytics::lineage::property::buildPropertyLineageReport($reprocessedFuncBody->last()->toOne(), 'Root', ^meta::analytics::lineage::property::scanner::ScannerState(vars=$f->openVariableValues(), mapping=$sourceMapping), $lineageExtensions);
-             let propReport = $propLineage->scannerToPropertyReport();
-             let relationElementAccessor = $updatedFuncBody->map(v | $v->cast(@ValueSpecification)->extractRelationElementAccessor(noDebug()));
+  if(($config.useV2Lineage->isNotEmpty() && $config.useV2Lineage->toOne()) || ($updatedFuncBody->last()->toOne().genericType.rawType->isNotEmpty() &&  ($updatedFuncBody->last()->toOne().genericType.rawType->toOne() == meta::pure::metamodel::relation::Relation || $updatedFuncBody->last()->toOne().genericType.rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::RelationElementAccessor)) ) ,
+      | let mergedMapping = if($mappings->isNotEmpty(),|$mappings->toOneMany()->meta::pure::mapping::mergeMappings(),|[] );
+        let propLineage =  meta::analytics::lineage::property::buildPropertyLineageReport($updatedFuncBody->last()->toOne(), 'Root', ^meta::analytics::lineage::property::scanner::ScannerState(vars=$f->openVariableValues(), mapping=$mergedMapping,extensions=$extensions), $lineageExtensions);
+         let propReport = $propLineage->scannerToPropertyReport();
           ^FunctionAnalytics
           (
               databaseLineage = if($config.databaseLineage,| $propLineage->meta::analytics::lineage::property::toGraphFromPropertyLineage($f, $lineageExtensions),|^Graph()),
@@ -258,16 +253,7 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
               propertyLineage = $propReport
 
           );,
-    
-         | ^FunctionAnalytics
-          (
-              databaseLineage = if($config.databaseLineage,| $relationElementAccessor->map(r |$r-> meta::analytics::lineage::relationAccessorToFlow($f, $lineageExtensions))->merge()->toGraph($lineageExtensions),|^Graph()),
-              classLineage = ^Graph(),
-              functionTrees = ^PropertyPathTree(display='root', value='root'),  // Assuming that in the simple case, there are no model joins and hence no property trees
-              relationTree = ^RelationTree(),
-              reportLineage =^ReportLineage(),
-              propertyLineage = ^PropertyLineageReport()
-          ));,
+          
 
       |
           let propertyTrees = $updatedFuncBody->map(e|$e->buildMultiLevelPropertyTrees($modelToModelMappings, $extensions));
@@ -865,15 +851,29 @@ function meta::analytics::lineage::ReportLineageToString(reportLineage:ReportLin
   $reportLineage.columns->map(c |   if($c.lineageProperty->isEmpty(),
                                           |$c.name  + $c.columns->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')
                                                                       ->concatenate($c.accessorColumns->map(c|$c.database+'.'+$c.schema+'.'+$c.table+'.'+$c.name  ))->removeDuplicates()->sort()->makeString(': [', ', ', ']')
-                                        ,| $c.name +  $c.lineageProperty->map(p|$p->lineagePropertyToString([]))->sort()->makeString(': [', ', ', ']')
+                                        ,| $c.name +  $c.lineageProperty->map(p|$p->lineagePropertyToString(false,'',[]))->sort()->makeString(': [', ', ', ']')
                                         ))
 
   ->sort()->joinStrings('[', ', ', ']');
 }
 
+//testing purpose
+function meta::analytics::lineage::printReportLineage(reportLineage:ReportLineage[1],pretty:Boolean[1]):String[1]
+{
+
+  $reportLineage.columns->map(c |   if($c.lineageProperty->isEmpty(),
+                                          |$c.name  + $c.columns->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')
+                                                                      ->concatenate($c.accessorColumns->map(c|$c.database+'.'+$c.schema+'.'+$c.table+'.'+$c.name  ))->removeDuplicates()->sort()->makeString(': [', ', ', ']')
+                                        ,| $c.name +  $c.lineageProperty->map(p|$p->lineagePropertyToString($pretty,'',[]))->sort()->makeString(': [', ', '+if($pretty,|'\n',|''), ']')
+                                        ))
+
+  ->sort()->joinStrings('[', ', ', ']');
+}
+
+
 function meta::analytics::lineage::assertLineage(databaseLineage:String[*], classLineage:String[*], reportLineage:String[1], functionAnalytics:FunctionAnalytics[1]):Boolean[1]
 {
-  assertSameElements($databaseLineage, $functionAnalytics.databaseLineage.nodes.data.id) && assertSameElements($classLineage, $functionAnalytics.classLineage.nodes.data.id) && assertEquals($reportLineage, ReportLineageToString($functionAnalytics.reportLineage));
+  assertSameElements($databaseLineage, $functionAnalytics.databaseLineage.nodes.data.id) && assertSameElements($classLineage, $functionAnalytics.classLineage.nodes.data.id) && assertEquals($reportLineage, printReportLineage($functionAnalytics.reportLineage,false));
 }
 
 

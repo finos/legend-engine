@@ -143,9 +143,15 @@ Class meta::pure::mapping::modelToModel::chain::Container
 {
    res : ValueSpecification[1];
    ex : StoreMappingRoutedValueSpecification[*];
+   propertyFunctions:Pair<Property<Nil,Any|*>, ValueSpecification>[*];
 }
 
 function meta::pure::mapping::modelToModel::chain::allReprocess(vs:ValueSpecification[1], r:StoreMappingRoutedValueSpecification[0..1], mappings:Mapping[*], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Container[1]
+{
+   meta::pure::mapping::modelToModel::chain::allReprocess($vs,$r,$mappings,$extensions,false,$debug);
+}
+
+function meta::pure::mapping::modelToModel::chain::allReprocess(vs:ValueSpecification[1], r:StoreMappingRoutedValueSpecification[0..1], mappings:Mapping[*], extensions:meta::pure::extension::Extension[*],trackPropertyFunction:Boolean[1], debug:DebugContext[1]):Container[1]
 {
    $mappings->fold(
                      {a,b|
@@ -153,15 +159,13 @@ function meta::pure::mapping::modelToModel::chain::allReprocess(vs:ValueSpecific
                         let rez = ^LambdaFunction<{->Any[*]}>(expressionSequence = $b.res->cast(@FunctionExpression))->routeFunction($a, ^Runtime(), $extensions, $debug);
                         print(if(!$debug.debug, |'', | $debug.space+'  Routed: '+$rez->at(0)->asString()+'\n'));
                         let res = $rez.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification).val->match(
-                        // let res = $rez.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification).val->match(
-
                            [
-                              e:StoreMappingRoutedValueSpecification[1]|pair(list($e), $e.value->cast(@FunctionExpression)->toOne()->reprocess($e, $a, $mappings, [], $extensions).newExpression);,
-                              f:FunctionExpression[1]|pair(list($r), $vs->reprocess($r, $a, $mappings, [], $extensions).newExpression);
+                              e:StoreMappingRoutedValueSpecification[1]|pair(list($e), $e.value->cast(@FunctionExpression)->toOne()->reprocess($e, $a, $mappings, [], $trackPropertyFunction, $extensions));,
+                              f:FunctionExpression[1]|pair(list($r), $vs->reprocess($r, $a, $mappings, [], $trackPropertyFunction, $extensions));
                            ]
                         );
-                        print(if(!$debug.debug, |'', | $debug.space+'  Chain Reprocessed Query: '+$res.second->cast(@ValueSpecification)->asString()+'\n'));
-                        ^Container(res=$res.second->cast(@FunctionExpression), ex=$b.ex->concatenate($res.first.values));
+                        print(if(!$debug.debug, |'', | $debug.space+'  Chain Reprocessed Query: '+$res.second.newExpression->cast(@ValueSpecification)->asString()+'\n'));
+                        ^Container(res=$res.second.newExpression->cast(@FunctionExpression), ex=$b.ex->concatenate($res.first.values), propertyFunctions=$res.second.propertyFunctions  );
                      },
                      ^Container(res=$vs)
                    );
@@ -171,20 +175,24 @@ Class meta::pure::mapping::modelToModel::chain::Res
 {
    newExpression : Any[1];
    vars : Map<String, GenericType>[0..1];
+   propertyFunctions: Pair<Property<Nil,Any|*>, ValueSpecification>[*];
 }
-
 function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecification[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], r:FunctionRoutedValueSpecification[0..1], extensions:meta::pure::extension::Extension[*]):Res[1]
+{
+      meta::pure::mapping::modelToModel::chain::reprocess($vs,$e,$mapping,$mappings,$r,false,$extensions);
+}
+function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecification[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], r:FunctionRoutedValueSpecification[0..1],trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):Res[1]
 {
    $vs->match(
       [ fe:FunctionExpression[1]|
-      let results = $fe.parametersValues->evaluateAndDeactivate()->map(p|$p->reprocess($e, $mapping, $mappings, [], $extensions));
+      let results = $fe.parametersValues->evaluateAndDeactivate()->map(p|$p->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions)); 
                                   let newFunc = if ($fe.func->instanceOf(Property),
-                                                   |let setImpl = $fe.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation);
+                                                   |
+                                                    let setImpl = $fe.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation);
                                                     let pm = if ($fe.func->functionReturnType().rawType->toOne()->instanceOf(DataType),
                                                                  |$setImpl->_propertyMappingsByPropertyName($fe.func.name->toOne())->cast(@PurePropertyMapping)->toOne();,
                                                                  |$setImpl->propertyMappingByPropertyNameAndTargetId($fe.func.name->toOne(), $e.sets.id->toOne())->cast(@PurePropertyMapping)->toOne()
                                                              );
-
                                                     let srcValueSpecification = $results.newExpression->at(0)->cast(@ValueSpecification);
                                                     let modelTransformLambda = $pm.transform->manageEnumeration([]);
                                                     let modelTransformLambdaEvalExpression = createEvalFunctionExpression($modelTransformLambda, $srcValueSpecification, $fe);
@@ -193,7 +201,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                         | $modelTransformLambdaEvalExpression,
                                                         | createEvalFunctionExpression($modelTransformerLambda->toOne(), $modelTransformLambdaEvalExpression, $fe)
                                                     );,
-                                                  |
+                                                  |  
                                                     let newTypeParams =  $fe.genericType.typeArguments->map(t| let typeParam = $t.rawType->toOne();
                                                                                                                if($typeParam->instanceOf(DataType),
                                                                                                                   | if($typeParam->instanceOf(Enumeration),| ^GenericType(rawType=String),| $t),
@@ -213,6 +221,8 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                         parametersValues=manageMilestoning($fe.func, $results.newExpression->cast(@ValueSpecification))
                                                    );
                                               );
+                                                                             
+
                                   let newFuncF = if ((
                                                       ($fe.func->instanceOf(Property) && $fe.func->functionReturnType().rawType->toOne()->instanceOf(Class))
                                                       || $fe.func->in([getAll_Class_1__T_MANY_, getAllVersions_Class_1__T_MANY_, getAll_Class_1__Date_1__T_MANY_, getAll_Class_1__Date_1__Date_1__T_MANY_, getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_])
@@ -221,35 +231,35 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                       |$newFunc
                                   );
                                   ^Res(newExpression=$newFuncF,
-                                       vars=if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())))
-
+                                       vars=if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues()))),
+                                       propertyFunctions =   if( $trackPropertyFunction && $fe.func->instanceOf(Property) ,| pair($fe.func->cast(@Property<Nil,Any|*>), $newFuncF),|[])->concatenate($results.propertyFunctions)        
                                   );,
-         r:FunctionRoutedValueSpecification[1]|$r.value->reprocess($e, $mapping, $mappings, $r, $extensions);,
-         e:StoreMappingRoutedValueSpecification[1]|$e.value->reprocess($e, $mapping, $mappings, [], $extensions);,
-         s:StoreMappingClusteredValueSpecification[1] | $s.val->reprocess($e, $mapping, $mappings, [], $extensions);,
+         r:FunctionRoutedValueSpecification[1]|$r.value->reprocess($e, $mapping, $mappings, $r,$trackPropertyFunction, $extensions);,
+         e:StoreMappingRoutedValueSpecification[1]|$e.value->reprocess($e, $mapping, $mappings, [],$trackPropertyFunction, $extensions);,
+         s:StoreMappingClusteredValueSpecification[1] | $s.val->reprocess($e, $mapping, $mappings, [],$trackPropertyFunction, $extensions);,
          v:VariableExpression[1]| let newGenericType = if($v.genericType.rawType->toOne()->instanceOf(Class) && $e.sets->isNotEmpty(),| ^GenericType(rawType=$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass), | $v.genericType);
                                   ^Res(
                                        newExpression = ^$v(genericType=$newGenericType),
                                        vars = newMap(pair($v.name, $newGenericType))
                                   );,
          i:InstanceValue[1]|let results = $i.values->map(v|$v->match([a:Class<Any>[1]|$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass,
-                                                                      l:FunctionRoutedValueSpecification[1]| $l.value->reprocess($e, $mapping, $mappings, $l, $extensions),
-                                                                      vs:ValueSpecification[1]|$vs->reprocess($e, $mapping, $mappings, [], $extensions),
+                                                                      l:FunctionRoutedValueSpecification[1]| $l.value->reprocess($e, $mapping, $mappings, $l,$trackPropertyFunction, $extensions),
+                                                                      vs:ValueSpecification[1]|$vs->reprocess($e, $mapping, $mappings, [],$trackPropertyFunction, $extensions),
                                                                       f:LambdaFunction<Any>[1]|
                                                                                                let functionParam = if($f->genericType().typeArguments.rawType->cast(@FunctionType).parameters->isNotEmpty(),
                                                                                                                   |let param = $f->genericType().typeArguments.rawType->cast(@FunctionType).parameters->at(0)->cast(@VariableExpression);
                                                                                                                     pair($param.name, $param.genericType);,
                                                                                                                   | []);
                                                                                                let intermediateRes = $f.expressionSequence->evaluateAndDeactivate()->map(vs|$vs->inlineQualifiedProperties(^Map<VariableExpression, ValueSpecification>(), $f->openVariableValues(),$functionParam ,$extensions));
-                                                                                               let results=  $intermediateRes->map(ir| $ir->reprocessVar($functionParam))->cast(@ValueSpecification)->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $extensions));
+                                                                                               let results=  $intermediateRes->map(ir| $ir->reprocessVar($functionParam))->cast(@ValueSpecification)->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions));
                                                                                                let varMap = if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())->reprocessVars($functionParam)));
-                                                                                               ^$f(
-                                                                                                     classifierGenericType=$f->buildLambdaType($varMap, $r),
-                                                                                                     expressionSequence=$results.newExpression->cast(@ValueSpecification)
-                                                                                               );,
+                                                                                               ^Res(newExpression=^$f(classifierGenericType=$f->buildLambdaType($varMap, $r),
+                                                                                                                      expressionSequence=$results.newExpression->cast(@ValueSpecification)),
+                                                                                                     propertyFunctions= $results.propertyFunctions);               
+                                                                                               ,
                                                                       agg:meta::pure::functions::collection::AggregateValue<Any,Any,Any>[1]|
                                                                                                            let f = $agg.mapFn;
-                                                                                                           let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $extensions));
+                                                                                                           let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions));
                                                                                                            let varMap = if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())));
                                                                                                            let fType = $f->functionType();
 
@@ -301,7 +311,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                       st:StoreMappingClusteredValueSpecification[1]| $st,
                                                                       gft:meta::pure::graphFetch::GraphFetchTree[1] | $gft
                                                                      ]););
-                            let values = $results->map(r|$r->match([v:Res[1]|$v.newExpression->match([i:InstanceValue[1]|$i.values,a:Any[1]|$a]),k:Any[1]|$k]));
+                            let values = $results->map(r|$r->match([v:Res[1]|$v.newExpression->match([i:InstanceValue[1]|$i.values,a:Any[1]|$a]),k:Any[1]|$k])); 
 
                             let genericTypeGenerator = {firstValue:Any[1] |
                                                 let firstValueGenericType = $firstValue->genericType();
@@ -322,7 +332,8 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                |^GenericType(rawType=Any));
                               let newInstanceValue = ^$i(genericType = $genericType, values=$values)->evaluateAndDeactivate();
                             let vars = $results->map(r|$r->match([v:Res[1]|$v.vars,a:Any[1]|[]]));
-                            ^Res(newExpression=$newInstanceValue, vars=if($vars->isEmpty(),|[],|newMap($vars->map(r|$r->keyValues()))));
+                            let propertyFunctions =  $results->map(r|$r->match([v:Res[1]|$v.propertyFunctions,a:Any[1]|[]]));
+                            ^Res(newExpression=$newInstanceValue, vars=if($vars->isEmpty(),|[],|newMap($vars->map(r|$r->keyValues()))),propertyFunctions=$propertyFunctions);
       ]
    );
 }
