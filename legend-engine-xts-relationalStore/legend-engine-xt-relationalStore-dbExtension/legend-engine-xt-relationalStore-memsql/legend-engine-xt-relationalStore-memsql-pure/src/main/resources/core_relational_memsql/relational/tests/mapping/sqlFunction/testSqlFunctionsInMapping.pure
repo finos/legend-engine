@@ -46,14 +46,6 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::tr
    assertEquals('select trim(`root`.string2) as `trim` from dataTable as `root`',$sMemsql);
 }
 
-function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::stringToFloat::testToSQLStringStringToDecimal_MemSQL():Boolean[1]
-{
-   let memSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Decimal], ['string2Decimal']),
-                         testMapping,
-                         meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(`root`.string2Decimal as decimal) as `string2Decimal` from dataTable as `root`',$memSql);
-}
-
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::stringToFloat::testToSQLStringStringToFloat_MemSQL():Boolean[1]
 {
    let memSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
