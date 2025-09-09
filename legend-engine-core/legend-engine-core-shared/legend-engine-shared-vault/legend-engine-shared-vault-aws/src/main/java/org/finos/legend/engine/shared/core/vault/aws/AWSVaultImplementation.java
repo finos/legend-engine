@@ -76,9 +76,7 @@ public class AWSVaultImplementation implements VaultImplementation
             val = object.get(key);
             if (val == null)
             {
-                throw new RuntimeException("The key " + key + " can't be found. Available ones: " + Lists.mutable.fromStream(StreamSupport.stream(
-                        Spliterators.spliteratorUnknownSize(object.fieldNames(), Spliterator.ORDERED),
-                        false)).makeString(", "));
+                return null;
             }
         }
         catch (JsonProcessingException e)
