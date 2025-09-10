@@ -92,14 +92,14 @@ function meta::external::store::relational::sqlDialectTranslation::athena::athen
     pair('FuncTests - jarowinkler_similarity(2/2)', 'Athena SQL Dialect does not support the function - jarowinkler_similarity'),
     pair(
       'FuncTests - parseJson(0/0)',
-      'Expected - {"columnNames":["result"],"rows":[{"values":["{\n  \"foo\": \"bar\"\n}"]}]}\n' +
+      'Expected - {"columnNames":["result"],"rows":[{"values":["{\\n  \\\"foo\\\": \\\"bar\\\"\\n}"]}]}\\n' +
       'Actual - {"columnNames":["result"],"rows":[{"values":["{\"foo\":\"bar\"}"]}]}"'
     ),
     pair('FuncTests - mode(0/1)','Athena SQL Dialect does not support the function - mode'),
     pair('FuncTests - mode(1/1)', 'Athena SQL Dialect does not support the function - mode'),
     pair('FuncTests - dateadd(1/3)', 'Athena SQL Dialect does not support adding microsecond to date'),
-    pair('FuncTests - time_bucket(0/1)', 'Athena SQL Dialect does not support time bucket'),
-    pair('FuncTests - time_bucket(1/1)', 'Athena SQL Dialect does not support time bucket'),
+    pair('FuncTests - time_bucket(0/1)', 'Athena SQL Dialect does not support the function - time bucket'),
+    pair('FuncTests - time_bucket(1/1)', 'Athena SQL Dialect does not support the function - time bucket'),
     pair('SQLStructureTests - AsOfJoin', 'Athena SQL Dialect does not support AsOfJoin!')        
   ]->newMap()->cast(@Map<String, String>)
 }
@@ -304,8 +304,20 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     decimalLiteralNodeProcessor_default(),
     dateLiteralNodeProcessor_default(),
     timestampLiteralNodeProcessor_default(),
-    nullLiteralNodeProcessor_default()
+    nullLiteralNodeProcessor_default(),
+    partialDateLiteralNodeProcessorForAthena()
   ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::partialDateLiteralNodeProcessorForAthena(): NodeProcessor<PartialDateLiteral>[1]
+{
+  nodeProcessor(
+    PartialDateLiteral,
+    {sqlDialect, d, state, config |
+      'DATE \'' + $d.value->convertDateToSqlString($config.dbConfig.dbTimeZone) + '\''
+    },
+    {n | true}
+  )
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::athenaDialectSelectItemProcessors(): NodeProcessor<SelectItem>[*]
@@ -514,11 +526,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(VarianceSample, simpleFunctionProcessor('var_samp')),
     pair(StdDevSample, simpleFunctionProcessor('stddev_samp')),
     pair(StdDevPopulation, simpleFunctionProcessor('stddev_pop')),
-    pair(PercentileContinuous, simpleFunctionProcessor('percentile_cont')), //not supported
-    pair(PercentileDiscrete, simpleFunctionProcessor('percentile_disc')),  //not supported
 
     // String
-    pair(Ascii, simpleFunctionProcessor('codepoint')),
+    pair(Ascii, customFunctionProcessor(processorForAscii_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(CharLength, simpleFunctionProcessor('length')),
     pair(Chr, simpleFunctionProcessor('chr')),
     pair(Concat, customFunctionProcessor(processorForConcat_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -533,7 +543,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Right, customFunctionProcessor(processorForRight_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)), // Custom handling to handle negative index
     pair(Rpad, customFunctionProcessor(processorForRpad_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Rtrim, simpleFunctionProcessor('rtrim')),
-    pair(SplitPart, simpleFunctionProcessor('split_part')),
+    pair(SplitPart, customFunctionProcessor(processorForSplitPart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(StrPos, argTransformFunctionProcessor('strpos', {n:Node[*]| $n->concatenate(literal(1))})),
     pair(Substring, simpleFunctionProcessor('substring')),
     pair(Upper, simpleFunctionProcessor('upper')),
@@ -590,7 +600,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(EncodeBase64, customFunctionProcessor(processorForEncodeBase64_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DecodeBase64, customFunctionProcessor(processorForDecodeBase64_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(EditDistance, simpleFunctionProcessor('levenshtein_distance')),
-    pair(JaroWinklerSimilarity, simpleFunctionProcessor('jarowinkler_similarity')),
     pair(StartsWith, simpleFunctionProcessor('starts_with')),
     pair(EndsWith, customFunctionProcessor(processorForEndsWithAthena_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -632,6 +641,15 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   $sqlDialect->generateCast($ceilCall, 'INTEGER', $state, $config);
 }
 
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForAscii(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config)->at(0)->removeQuotes($sqlDialect);
+  if ($processedArgs->meta::pure::functions::string::length() == 0,
+      | '0',
+      | $sqlDialect->generateFunctionCallWithArgs('codepoint', $processedArgs->substring(0, 1)->addQuotes($sqlDialect), [], $state, $config)
+      );
+}
+
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForConcat(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config)->map({arg | let generatedCast = $sqlDialect->generateCast($arg, 'VARCHAR', $state, $config);
@@ -655,21 +673,28 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   if($processedArgs->size()==2,
   | $sqlDialect->generateFunctionCallWithArgs('lpad', [$processedArgs->at(0), $processedArgs->at(1), '\' \''], [], $state, $config),
-  | $sqlDialect->generateFunctionCallWithArgs('lpad', [$processedArgs->at(0), $processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)
+  | if ($processedArgs->at(2) == '\'\'', 
+        | $processedArgs->at(0),
+        | $sqlDialect->generateFunctionCallWithArgs('lpad', [$processedArgs->at(0), $processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)
+       )
   );
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForMd5(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  $sqlDialect->generateFunctionCallWithArgs('md5', [$sqlDialect->generateFunctionCallWithArgs('to_utf8', $processedArgs, [], $state, $config)], [], $state, $config);
+  let md5Call = $sqlDialect->generateFunctionCallWithArgs('md5', [$sqlDialect->generateFunctionCallWithArgs('to_utf8', $processedArgs, [], $state, $config)], [], $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('lower', [$sqlDialect->generateFunctionCallWithArgs('to_hex', $md5Call, [], $state, $config)], [], $state, $config);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForRepeat(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   let lengthToRepeat = generateFunctionCallWithArgs($sqlDialect, 'length', [$processedArgs->at(0)], $state, $config) + ' * ' +$processedArgs->at(1);
-  generateFunctionCallWithArgs($sqlDialect, 'rpad', ['\'\'', $lengthToRepeat, $processedArgs->at(0)], $state, $config);
+  if ($processedArgs->at(0) == '\'\'',
+      | $processedArgs->at(0),
+      | generateFunctionCallWithArgs($sqlDialect, 'rpad', ['\'\'', $lengthToRepeat, $processedArgs->at(0)], $state, $config)
+      );
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForRpad(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
@@ -677,8 +702,20 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   if($processedArgs->size()<3,
   | $sqlDialect->generateFunctionCallWithArgs('rpad', [$processedArgs->at(0), $processedArgs->at(1), '\' \''], [], $state, $config),
-  | $sqlDialect->generateFunctionCallWithArgs('rpad', [$processedArgs->at(0), $processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)
+  | if ($processedArgs->at(2) == '\'\'', 
+        | $processedArgs->at(0),
+        | $sqlDialect->generateFunctionCallWithArgs('rpad', [$processedArgs->at(0), $processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)
+       )
   );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForSplitPart(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  if ($processedArgs->at(1) == '\'\'', 
+      | $processedArgs->at(0), 
+      | $sqlDialect->generateFunctionCallWithArgs('split_part', [$processedArgs->at(0), $processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)
+     );
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForAverageRank(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
@@ -697,13 +734,15 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForSha1(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  $sqlDialect->generateFunctionCallWithArgs('sha1', [$sqlDialect->generateFunctionCallWithArgs('to_utf8', $processedArgs, [], $state, $config)], [], $state, $config);
+  let md5Call = $sqlDialect->generateFunctionCallWithArgs('sha1', [$sqlDialect->generateFunctionCallWithArgs('to_utf8', $processedArgs, [], $state, $config)], [], $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('lower', [$sqlDialect->generateFunctionCallWithArgs('to_hex', $md5Call, [], $state, $config)], [], $state, $config);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForSha256(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  $sqlDialect->generateFunctionCallWithArgs('sha256', [$sqlDialect->generateFunctionCallWithArgs('to_utf8', $processedArgs, [], $state, $config)], [], $state, $config);
+  let md5Call = $sqlDialect->generateFunctionCallWithArgs('sha256', [$sqlDialect->generateFunctionCallWithArgs('to_utf8', $processedArgs, [], $state, $config)], [], $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('lower', [$sqlDialect->generateFunctionCallWithArgs('to_hex', $md5Call, [], $state, $config)], [], $state, $config);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForContainsAthena(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
