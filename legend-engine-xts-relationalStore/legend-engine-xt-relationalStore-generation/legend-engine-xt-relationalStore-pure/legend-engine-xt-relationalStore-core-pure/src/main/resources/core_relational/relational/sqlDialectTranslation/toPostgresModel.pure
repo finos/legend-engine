@@ -264,7 +264,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('bitShiftLeft',              {p:meta::external::query::sql::metamodel::Expression[*]| ^BitwiseShiftExpression(value = $p->at(0), shift = $p->at(1), direction = BitwiseShiftDirection.LEFT)}),
     pair('bitShiftRight',             {p:meta::external::query::sql::metamodel::Expression[*]| ^BitwiseShiftExpression(value = $p->at(0), shift = $p->at(1), direction = BitwiseShiftDirection.RIGHT)}),
     pair('abs',                       functionCall('abs')),
-    pair('mod',                       functionCall('mod')),
+    pair('mod',                       {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('mod', [^ArithmeticExpression(type = ArithmeticType.ADD, left = functionCall('mod', $p), right = $p->at(1)), $p->at(1)])}),
     pair('cbrt',                      functionCall('cbrt')),
     pair('ceiling',                   {p:meta::external::query::sql::metamodel::Expression[*]| castExpression(functionCall('ceiling', $p), 'bigint')}),
     pair('floor',                     {p:meta::external::query::sql::metamodel::Expression[*]| castExpression(functionCall('floor', $p), 'bigint')}),
