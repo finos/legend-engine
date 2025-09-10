@@ -53,7 +53,7 @@ public class Test_Relational_Athena_EssentialFunctions_PCT extends PCTReportConf
 
             // Contains
             one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. TYPE_MISMATCH: line 1:26: IN value and list items must be the same type or coercible to a common type. Cannot find common type between integer and varchar(1), all types (without duplicates): [integer, varchar(1), boolean, date]", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "TYPE_MISMATCH: line 1:26: IN value and list items must be the same type or coercible to a common type. Cannot find common type between integer and varchar(1), all types (without duplicates): [integer, varchar(1), boolean, date]", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'", AdapterQualifier.unsupportedFeature),
 
             // Drop
@@ -148,7 +148,7 @@ public class Test_Relational_Athena_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::collection::tests::slice::testSliceOnBounds_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::slice::testSliceOutOfBounds_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::slice::testSlice_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::slice::testSliceOnEmpty_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. line 1:21: mismatched input 'offset'. Expecting: <EOF> [Execution ID not available]",AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::slice::testSliceOnEmpty_Function_1__Boolean_1_", "line 1:21: mismatched input 'offset'. Expecting: <EOF> [Execution ID not available]",AdapterQualifier.unsupportedFeature),
 
             // Sort
             one("meta::pure::functions::collection::tests::sort::testMixedSortNoComparator_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList().", AdapterQualifier.unsupportedFeature),
@@ -229,16 +229,16 @@ public class Test_Relational_Athena_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::date::tests::testMonthNumber_Function_1__Boolean_1_", "Date has no day: 2015-04", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\"", AdapterQualifier.unsupportedFeature),
 
-            one("meta::pure::functions::date::tests::testAdjustByDaysBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. GENERIC_INTERNAL_ERROR: integer overflow", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testAdjustByHoursBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_FUNCTION_ARGUMENT: integer overflow", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testAdjustByMicrosecondsBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_FUNCTION_ARGUMENT: 'microsecond' is not a valid TIMESTAMP field", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testAdjustByMicroseconds_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_FUNCTION_ARGUMENT: 'microsecond' is not a valid TIMESTAMP field", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testAdjustByMillisecondsBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_FUNCTION_ARGUMENT: integer overflow", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testAdjustByMinutesBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_FUNCTION_ARGUMENT: integer overflow", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. GENERIC_INTERNAL_ERROR: integer overflow", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::date::tests::testAdjustByDaysBigNumber_Function_1__Boolean_1_", "GENERIC_INTERNAL_ERROR: integer overflow", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::date::tests::testAdjustByHoursBigNumber_Function_1__Boolean_1_", "INVALID_FUNCTION_ARGUMENT: integer overflow", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::date::tests::testAdjustByMicrosecondsBigNumber_Function_1__Boolean_1_", "INVALID_FUNCTION_ARGUMENT: 'microsecond' is not a valid TIMESTAMP field", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::date::tests::testAdjustByMicroseconds_Function_1__Boolean_1_", "INVALID_FUNCTION_ARGUMENT: 'microsecond' is not a valid TIMESTAMP field", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::date::tests::testAdjustByMillisecondsBigNumber_Function_1__Boolean_1_", "INVALID_FUNCTION_ARGUMENT: integer overflow", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::date::tests::testAdjustByMinutesBigNumber_Function_1__Boolean_1_", "INVALID_FUNCTION_ARGUMENT: integer overflow", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_", "GENERIC_INTERNAL_ERROR: integer overflow", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_", "Date has no day: 2012-03", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::date::tests::testAdjustBySecondsBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_FUNCTION_ARGUMENT: integer overflow", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. GENERIC_INTERNAL_ERROR: integer overflow", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::date::tests::testAdjustBySecondsBigNumber_Function_1__Boolean_1_", "INVALID_FUNCTION_ARGUMENT: integer overflow", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_", "GENERIC_INTERNAL_ERROR: integer overflow", AdapterQualifier.unsupportedFeature),
 
             //Abs
             one("meta::pure::functions::math::tests::abs::testDecimalAbs_Function_1__Boolean_1_", "\"\nexpected: 3.0D\nactual:   3D\""),
@@ -304,17 +304,17 @@ public class Test_Relational_Athena_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::string::tests::joinStrings::testJoinStringsSingleString_Function_1__Boolean_1_", "\"\nexpected: '[a]'\nactual:   'a'\"", AdapterQualifier.needsInvestigation),
 
             // ParseDate
-            one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_FUNCTION_ARGUMENT: Invalid format: \"2014-02-27T00:00:00.000000\" is malformed at \"T00:00:00.000000\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_FUNCTION_ARGUMENT: Invalid format: \"2014-02-27T10:01:35.231Z\" is malformed at \"T10:01:35.231Z\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_FUNCTION_ARGUMENT: Invalid format: \"2014-02-27T10:01:35.231\" is malformed at \"T10:01:35.231\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_FUNCTION_ARGUMENT: Invalid format: \"2014-02-27T10:01:35.231-0500\" is malformed at \"T10:01:35.231-0500\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "INVALID_FUNCTION_ARGUMENT: Invalid format: \"2014-02-27T00:00:00.000000\" is malformed at \"T00:00:00.000000\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_", "INVALID_FUNCTION_ARGUMENT: Invalid format: \"2014-02-27T10:01:35.231Z\" is malformed at \"T10:01:35.231Z\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "INVALID_FUNCTION_ARGUMENT: Invalid format: \"2014-02-27T10:01:35.231\" is malformed at \"T10:01:35.231\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_", "INVALID_FUNCTION_ARGUMENT: Invalid format: \"2014-02-27T10:01:35.231-0500\" is malformed at \"T10:01:35.231-0500\"", AdapterQualifier.needsInvestigation),
 
             // ParseDecimal
-            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_CAST_ARGUMENT: Cannot cast VARCHAR '3.14159d' to DECIMAL(5, 2). Value is not a number.", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "INVALID_CAST_ARGUMENT: Cannot cast VARCHAR '3.14159d' to DECIMAL(5, 2). Value is not a number.", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\"", AdapterQualifier.needsInvestigation),
 
             // ParseInteger
-            one("meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_", "java.sql.SQLException: [Simba][AthenaJDBC](100071) An error has been thrown from the AWS Athena client. INVALID_CAST_ARGUMENT: Cannot cast '9999999999999992' to INT", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_", "INVALID_CAST_ARGUMENT: Cannot cast '9999999999999992' to INT", AdapterQualifier.needsInvestigation),
 
             //Split
             one("meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
