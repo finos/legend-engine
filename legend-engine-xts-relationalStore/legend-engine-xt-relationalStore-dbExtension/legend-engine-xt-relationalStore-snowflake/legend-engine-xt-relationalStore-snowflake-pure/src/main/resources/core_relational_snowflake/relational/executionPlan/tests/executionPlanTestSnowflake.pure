@@ -48,6 +48,7 @@ import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::functions::collection::*;
 import meta::relational::graphFetch::executionPlan::*;
+import meta::pure::executionPlan::tests::snowflake::*;
 
 function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testFilterEqualsWithOptionalParameter_Snowflake():Boolean[1]
 {
@@ -139,6 +140,53 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testRelation
   let generatedPlan = executionPlan({|Product.all()->project(p|$p.name, 'Name')}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = 'database',connection=$conn)), meta::relational::extension::relationalExtensions());
   let expectedPlan = 'Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"connection=RelationalDatabaseConnection(type="Snowflake"))';
   assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+}
+
+function <<access.private>> meta::pure::executionPlan::tests::snowflake::runSnowflakePlanTest(func:FunctionDefinition<Any>[1], expected:String[1]): Boolean[1]
+{
+  runPlanTest($func, $expected, DatabaseType.Snowflake)
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testSliceLimitTakeDropWithVariables(): Boolean[1]
+{
+  let f1 = {i:Integer[1] | Product.all()->project(p|$p.name, 'Name')->slice($i, 5)};
+  let expected1 = 'RelationalBlockExecutionNode(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i:Integer[1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"limit5-${i?number}offset${i}connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+  runSnowflakePlanTest($f1, $expected1);
+
+  let f2 = {i:Integer[1] | Product.all()->project(p|$p.name, 'Name')->slice(4, $i)};
+  let expected2 = 'RelationalBlockExecutionNode(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i:Integer[1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"limit${i?number}-4offset4connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+  runSnowflakePlanTest($f2, $expected2);
+
+  let f3 = {i1:Integer[1], i2:Integer[1] | Product.all()->project(p|$p.name, 'Name')->slice($i1, $i2)};
+  let expected3 = 'RelationalBlockExecutionNode(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i1:Integer[1],i2:Integer[1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"limit${i2?number}-${i1?number}offset${i1}connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+  runSnowflakePlanTest($f3, $expected3);
+
+  let f4 = {i:Integer[1] | Product.all()->project(p|$p.name, 'Name')->drop($i)};
+  let expected4 = 'RelationalBlockExecutionNode(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i:Integer[1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"limit\'\'offset${i}connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+  runSnowflakePlanTest($f4, $expected4);
+
+  let f5 = {i:Integer[1] | Product.all()->project(p|$p.name, 'Name')->take($i)};
+  let expected5 = 'RelationalBlockExecutionNode(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i:Integer[1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"limit${i}connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+  runSnowflakePlanTest($f5, $expected5);
+
+  let f6 = {i:Integer[1] | Product.all()->project(p|$p.name, 'Name')->limit($i)};
+  let expected6 = 'RelationalBlockExecutionNode(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i:Integer[1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"limit${i}connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+  runSnowflakePlanTest($f6, $expected6);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testPaginatedWithVariables(): Boolean[1]
+{
+  let f1 = {i:Integer[1] | Product.all()->sortBy(p | $p.name)->paginated($i, 4)};
+  let expected1 = 'RelationalBlockExecutionNode(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*(FunctionParametersValidationNode(functionParameters=[i:Integer[1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*resultColumns=[("pk_0",INT),("name",VARCHAR(200))]sql=select"root".IDas"pk_0","root".NAMEas"name"fromproductSchema.productTableas"root"orderby"root".NAMElimit${(i?number*4?number)}-${((i?number-1?number)?number*4?number)}offset${((i?number-1?number)?number*4?number)}connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+  runSnowflakePlanTest($f1, $expected1);
+
+  let f2 = {i:Integer[1] | Product.all()->sortBy(p | $p.name)->paginated(1, $i)};
+  let expected2 = 'RelationalBlockExecutionNode(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*(FunctionParametersValidationNode(functionParameters=[i:Integer[1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*resultColumns=[("pk_0",INT),("name",VARCHAR(200))]sql=select"root".IDas"pk_0","root".NAMEas"name"fromproductSchema.productTableas"root"orderby"root".NAMElimit${(1?number*i?number)}-${((1?number-1?number)?number*i?number)}offset${((1?number-1?number)?number*i?number)}connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+  runSnowflakePlanTest($f2, $expected2);
+
+  let f3 = {i1:Integer[1], i2:Integer[1] | Product.all()->sortBy(p | $p.name)->paginated($i1, $i2)};
+  let expected3 = 'RelationalBlockExecutionNode(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*(FunctionParametersValidationNode(functionParameters=[i1:Integer[1],i2:Integer[1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*resultColumns=[("pk_0",INT),("name",VARCHAR(200))]sql=select"root".IDas"pk_0","root".NAMEas"name"fromproductSchema.productTableas"root"orderby"root".NAMElimit${(i1?number*i2?number)}-${((i1?number-1?number)?number*i2?number)}offset${((i1?number-1?number)?number*i2?number)}connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+  runSnowflakePlanTest($f3, $expected3);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testInExecutionWithLiteralListSnowflake():Boolean[1]

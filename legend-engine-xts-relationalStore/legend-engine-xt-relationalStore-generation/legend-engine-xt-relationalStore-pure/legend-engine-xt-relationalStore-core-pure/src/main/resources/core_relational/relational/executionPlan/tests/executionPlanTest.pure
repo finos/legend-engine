@@ -79,12 +79,29 @@ function meta::pure::executionPlan::tests::assertPlanGenerationForOptionalParame
 {
   assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, $dbType, $expectedPlan, meta::relational::extension::relationalExtensions())
 }
+
 function meta::pure::executionPlan::tests::assertPlanGenerationForOptionalParameterWithGreaterThanLessThan(func:FunctionDefinition<Any>[1], dbType:DatabaseType[1], expectedPlan:String[1], extensions:Extension[*]):Boolean[1]
 {
    let generatedPlan = executionPlan($func, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(connection=^meta::external::store::relational::runtime::DatabaseConnection(type=$dbType), element = relationalDB)), $extensions);
    let result = $generatedPlan->planToString($extensions);
    assertEquals($expectedPlan, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
+}
+
+function meta::pure::executionPlan::tests::runPlanTest(func:FunctionDefinition<Any>[1], expected:String[1], dbType:DatabaseType[1]): Boolean[1]
+{
+  runPlanTest($func, $expected, $dbType, relationalExtensions())
+}
+
+function meta::pure::executionPlan::tests::runPlanTest(func:FunctionDefinition<Any>[1], expected:String[1], dbType:DatabaseType[1], extensions:Extension[*]): Boolean[1]
+{
+  let res = executionPlan(
+    $func,
+    simpleRelationalMapping, 
+    ^Runtime(connectionStores = ^ConnectionStore(element = relationalDB, connection = ^DatabaseConnection(type = $dbType))), 
+    $extensions
+  );
+  assertEquals($expected, $res->planToStringWithoutFormatting($extensions));
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterInWithResultSorcedFromAnExpression():Boolean[1]

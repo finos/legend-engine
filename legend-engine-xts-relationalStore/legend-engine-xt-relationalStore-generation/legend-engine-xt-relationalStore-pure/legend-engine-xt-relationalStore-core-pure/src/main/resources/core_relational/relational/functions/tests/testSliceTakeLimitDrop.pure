@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::tests::query::*;
+import meta::json::*;
+import meta::relational::extension::*;
+import meta::pure::mapping::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
@@ -119,3 +123,43 @@ function <<test.Test>> meta::relational::tests::query::take::testFilterLimitInSe
     ->  meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions());
    assertEquals('Relational(type=TDS[(FIRSTNAME,meta::pure::precisePrimitives::Varchar,VARCHAR(1024),""),(LASTNAME,meta::pure::precisePrimitives::Varchar,VARCHAR(1024),"")]resultColumns=[("FIRSTNAME",VARCHAR(200)),("LASTNAME",VARCHAR(200))]sql=select"subselect"."FIRSTNAME"as"FIRSTNAME","subselect"."LASTNAME"as"LASTNAME"from(selecttop1"persontable_1".IDas"ID","persontable_1".FIRSTNAMEas"FIRSTNAME","persontable_1".LASTNAMEas"LASTNAME","persontable_1".AGEas"AGE","persontable_1".ADDRESSIDas"ADDRESSID","persontable_1".FIRMIDas"FIRMID","persontable_1".MANAGERIDas"MANAGERID"frompersonTableas"persontable_1"where"persontable_1".AGEisnotnulland"persontable_1".AGE>25)as"subselect"connection=TestDatabaseConnection(type="H2"))', $actualPlan);
 }
+
+function meta::relational::tests::query::runLegendTest(f:FunctionDefinition<Any>[1], vars:Pair<String, Any>[*], expectedValues:String[*]): Boolean[1]
+{
+  let resultJson = meta::legend::executeLegendQuery($f, $vars, relationalExtensions());
+  let result = $resultJson->meta::json::parseJSON()->cast(@JSONObject).keyValuePairs->filter(kv|$kv.key.value == 'result').value->toOne();
+  let rows = $result->cast(@JSONObject).keyValuePairs->filter(kv|$kv.key.value == 'rows').value->cast(@JSONArray).values->cast(@JSONObject);
+  let values = $rows.keyValuePairs.value->cast(@JSONArray).values->cast(@JSONString).value;
+  assertEquals($expectedValues, $values);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::slice::testSliceWithVariables(): Boolean[1]
+{
+  let f1 = {i:Integer[1] | Person.all()->project(p|$p.firstName, 'name')->slice($i, 5)->from(simpleRelationalMapping, testRuntime())};
+  runLegendTest($f1, [pair('i', 2)],  ['John', 'Anthony', 'Fabrice']);
+
+  let f2 = {i:Integer[1] | Person.all()->project(p|$p.firstName, 'name')->slice(3, $i)->from(simpleRelationalMapping, testRuntime())};
+  runLegendTest($f2, [pair('i', 4)],  ['Anthony']);
+
+  let f3 = {i1:Integer[1], i2:Integer[1] | Person.all()->project(p|$p.firstName, 'name')->slice($i1, $i2)->from(simpleRelationalMapping, testRuntime())};
+  runLegendTest($f3, [pair('i1', 2), pair('i2', 3)],  ['John']);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::drop::testDropWithVariables(): Boolean[1]
+{
+  let f = {i:Integer[1] | Person.all()->project(p|$p.firstName, 'name')->drop($i)->from(simpleRelationalMapping, testRuntime())};
+  runLegendTest($f, [pair('i', 5)], ['Oliver', 'David', 'No address', 'No firm', 'New', 'Elena', 'Don']);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::take::testTakeWithVariables(): Boolean[1]
+{
+  let f = {i:Integer[1] | Person.all()->project(p|$p.firstName, 'name')->take($i)->from(simpleRelationalMapping, testRuntime())};
+  runLegendTest($f, [pair('i', 5)],  ['Peter', 'John', 'John', 'Anthony', 'Fabrice']);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::limit::testLimitWithVariables(): Boolean[1]
+{
+  let f = {i:Integer[1] | Person.all()->project(p|$p.firstName, 'name')->limit($i)->from(simpleRelationalMapping, testRuntime())};
+  runLegendTest($f, [pair('i', 5)],  ['Peter', 'John', 'John', 'Anthony', 'Fabrice']);
+}
+
