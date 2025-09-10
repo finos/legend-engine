@@ -92,7 +92,7 @@ function meta::external::store::relational::sqlDialectTranslation::athena::athen
     pair('FuncTests - jarowinkler_similarity(2/2)', 'Athena SQL Dialect does not support the function - jarowinkler_similarity'),
     pair(
       'FuncTests - parseJson(0/0)',
-      'Expected - {"columnNames":["result"],"rows":[{"values":["{\n  \"foo\": \"bar\"\n}"]}]}\n' +
+      'Expected - {"columnNames":["result"],"rows":[{"values":["{\\n  \\\"foo\\\": \\\"bar\\\"\\n}"]}]}\\n' +
       'Actual - {"columnNames":["result"],"rows":[{"values":["{\"foo\":\"bar\"}"]}]}"'
     ),
     pair('FuncTests - mode(0/1)','Athena SQL Dialect does not support the function - mode'),
@@ -303,6 +303,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     doubleLiteralNodeProcessor_default(),
     decimalLiteralNodeProcessor_default(),
     dateLiteralNodeProcessor_default(),
+    partialDateLiteralNodeProcessor_default(),
     timestampLiteralNodeProcessor_default(),
     nullLiteralNodeProcessor_default(),
     partialDateLiteralNodeProcessorForAthena()
@@ -526,8 +527,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(VarianceSample, simpleFunctionProcessor('var_samp')),
     pair(StdDevSample, simpleFunctionProcessor('stddev_samp')),
     pair(StdDevPopulation, simpleFunctionProcessor('stddev_pop')),
-    pair(PercentileContinuous, simpleFunctionProcessor('percentile_cont')), //not supported
-    pair(PercentileDiscrete, simpleFunctionProcessor('percentile_disc')),  //not supported
 
     // String
     pair(Ascii, customFunctionProcessor(processorForAscii_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -602,7 +601,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(EncodeBase64, customFunctionProcessor(processorForEncodeBase64_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DecodeBase64, customFunctionProcessor(processorForDecodeBase64_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(EditDistance, simpleFunctionProcessor('levenshtein_distance')),
-    pair(JaroWinklerSimilarity, simpleFunctionProcessor('jarowinkler_similarity')),
     pair(StartsWith, simpleFunctionProcessor('starts_with')),
     pair(EndsWith, customFunctionProcessor(processorForEndsWithAthena_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
