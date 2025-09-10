@@ -503,30 +503,37 @@ function meta::relational::functions::sqlQueryToString::default::processLimit(s:
               takeProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*] -> String[1]}>[0..1],
               sliceOrDropProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*], Any[1] -> String[1]}>[1]):String[1]
 {
-   if ($s.fromRow == [] && $s.toRow == [],
-      |
-         // No limit or offset required
-         '';
-      , |let size = if ($s.toRow == [] || $s.fromRow == [],
-                      | -1,
-                      |$s.toRow.value->match([
-                          i:Integer[1]| $s.toRow->toOne().value->cast(@Integer) - $s.fromRow->toOne().value->cast(@Integer) ,
-                          v:VarPlaceHolder[1]|[$s.toRow->toOne().value->cast(@VarPlaceHolder).name, $s.fromRow->toOne().value->cast(@VarPlaceHolder).name]->joinStrings('${','?number - ', '?number}'),
-                          fmoh:FreeMarkerOperationHolder[1]|$fmoh->processOperation($dbConfig,$format,$extensions)
-                          ])
-                      );
-         if ($s.fromRow == [],
-            |
-               // We have a "take"
-               assert($s.toRow->isNotEmpty());
-               if($takeProcessor->isNotEmpty(), |$takeProcessor->toOne()->eval($s, $format, $dbConfig, $extensions), |'');
-            ,
-            |
-               //We have a "slice" or a "drop"
-               assert($s.fromRow->isNotEmpty());
-               $sliceOrDropProcessor->eval($s, $format, $dbConfig, $extensions, $size);
-            );
+  if ($s.fromRow == [] && $s.toRow == [],
+    | // No limit or offset required
+      '',
+    | let size = if ($s.toRow == [] || $s.fromRow == [],
+        | -1,
+        | let toRow = $s.toRow->toOne()->processRowLimitOffsetLiteral($dbConfig, $format, $extensions);
+          let fromRow = $s.fromRow->toOne()->processRowLimitOffsetLiteral($dbConfig, $format, $extensions);
+          if($toRow->instanceOf(Integer) && $fromRow->instanceOf(Integer),
+            | ($toRow->cast(@Integer) - $fromRow->cast(@Integer))->toString(),
+            | '%s - %s'->format([$toRow->toString(), $fromRow->toString()])
+          );
       );
+      if ($s.fromRow == [],
+        | // We have a "take"
+          assert($s.toRow->isNotEmpty());
+          if($takeProcessor->isNotEmpty(), |$takeProcessor->toOne()->eval($s, $format, $dbConfig, $extensions), |'');,
+        | // We have a "slice" or a "drop"
+          $sliceOrDropProcessor->eval($s, $format, $dbConfig, $extensions, $size)
+      );
+  );
+}
+
+function meta::relational::functions::sqlQueryToString::default::processRowLimitOffsetLiteral(l:Literal[1], dbConfig: DbConfig[1], format:Format[1], extensions:Extension[*]):Any[1]
+{
+  $l.value->match(
+    [
+      i:Integer[1]| $i,
+      v:VarPlaceHolder[1]| '${%s?number}'->format($v.name),
+      fmoh:FreeMarkerOperationHolder[1]| $fmoh->processOperation($dbConfig, $format, $extensions)
+    ]
+  )
 }
 
 function meta::relational::functions::sqlQueryToString::default::processSliceOrDropDefault(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]

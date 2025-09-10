@@ -220,3 +220,50 @@ function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testExecution
    let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>250000))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(1024))]connection=DatabaseConnection(type="SybaseIQ"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(\'A\',\'B\')connection=DatabaseConnection(type="SybaseIQ"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
+
+function <<access.private>> meta::pure::executionPlan::tests::sybaseIQ::runSybaseIQPlanTest(func:FunctionDefinition<Any>[1], expected:String[1]): Boolean[1]
+{
+  runPlanTest($func, $expected, DatabaseType.SybaseIQ)
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testSliceLimitTakeDropWithVariables(): Boolean[1]
+{
+  let f1 = {i:Integer[1] | Product.all()->project(p|$p.name, 'Name')->sort(asc('Name'))->slice($i, 5)};
+  let expected1 = 'Sequence(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i:Integer[1]])Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"orderby"Name"limit${i},5-${i?number}connection=DatabaseConnection(type="SybaseIQ"))))';
+  runSybaseIQPlanTest($f1, $expected1);
+
+  let f2 = {i:Integer[1] | Product.all()->project(p|$p.name, 'Name')->sort(asc('Name'))->slice(4, $i)};
+  let expected2 = 'Sequence(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i:Integer[1]])Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"orderby"Name"limit4,${i?number}-4connection=DatabaseConnection(type="SybaseIQ"))))';
+  runSybaseIQPlanTest($f2, $expected2);
+
+  let f3 = {i1:Integer[1], i2:Integer[1] | Product.all()->project(p|$p.name, 'Name')->sort(asc('Name'))->slice($i1, $i2)};
+  let expected3 = 'Sequence(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i1:Integer[1],i2:Integer[1]])Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"orderby"Name"limit${i1},${i2?number}-${i1?number}connection=DatabaseConnection(type="SybaseIQ"))))';
+  runSybaseIQPlanTest($f3, $expected3);
+
+  let f4 = {i:Integer[1] | Product.all()->project(p|$p.name, 'Name')->sort(asc('Name'))->drop($i)};
+  let expected4 = 'Sequence(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i:Integer[1]])Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"orderby"Name"limit${i},-1connection=DatabaseConnection(type="SybaseIQ"))))';
+  runSybaseIQPlanTest($f4, $expected4);
+
+  let f5 = {i:Integer[1] | Product.all()->project(p|$p.name, 'Name')->sort(asc('Name'))->take($i)};
+  let expected5 = 'Sequence(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i:Integer[1]])Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=selecttop${i}"root".NAMEas"Name"fromproductSchema.productTableas"root"orderby"Name"connection=DatabaseConnection(type="SybaseIQ"))))';
+  runSybaseIQPlanTest($f5, $expected5);
+
+  let f6 = {i:Integer[1] | Product.all()->project(p|$p.name, 'Name')->sort(asc('Name'))->limit($i)};
+  let expected6 = 'Sequence(type=TDS[(Name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[i:Integer[1]])Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=selecttop${i}"root".NAMEas"Name"fromproductSchema.productTableas"root"orderby"Name"connection=DatabaseConnection(type="SybaseIQ"))))';
+  runSybaseIQPlanTest($f6, $expected6);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testPaginatedWithVariables(): Boolean[1]
+{
+  let f1 = {i:Integer[1] | Product.all()->sortBy(p | $p.name)->paginated($i, 4)};
+  let expected1 = 'Sequence(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*(FunctionParametersValidationNode(functionParameters=[i:Integer[1]])Relational(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*resultColumns=[("pk_0",INT),("name",VARCHAR(200))]sql=select"root".IDas"pk_0","root".NAMEas"name"fromproductSchema.productTableas"root"orderby"root".NAMElimit${((i?number-1?number)?number*4?number)},${(i?number*4?number)}-${((i?number-1?number)?number*4?number)}connection=DatabaseConnection(type="SybaseIQ"))))';
+  runSybaseIQPlanTest($f1, $expected1);
+
+  let f2 = {i:Integer[1] | Product.all()->sortBy(p | $p.name)->paginated(1, $i)};
+  let expected2 = 'Sequence(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*(FunctionParametersValidationNode(functionParameters=[i:Integer[1]])Relational(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*resultColumns=[("pk_0",INT),("name",VARCHAR(200))]sql=select"root".IDas"pk_0","root".NAMEas"name"fromproductSchema.productTableas"root"orderby"root".NAMElimit${((1?number-1?number)?number*i?number)},${(1?number*i?number)}-${((1?number-1?number)?number*i?number)}connection=DatabaseConnection(type="SybaseIQ"))))';
+  runSybaseIQPlanTest($f2, $expected2);
+
+  let f3 = {i1:Integer[1], i2:Integer[1] | Product.all()->sortBy(p | $p.name)->paginated($i1, $i2)};
+  let expected3 = 'Sequence(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*(FunctionParametersValidationNode(functionParameters=[i1:Integer[1],i2:Integer[1]])Relational(type=Class[impls=(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)]asmeta::relational::tests::model::simple::ProductresultSizeRange=*resultColumns=[("pk_0",INT),("name",VARCHAR(200))]sql=select"root".IDas"pk_0","root".NAMEas"name"fromproductSchema.productTableas"root"orderby"root".NAMElimit${((i1?number-1?number)?number*i2?number)},${(i1?number*i2?number)}-${((i1?number-1?number)?number*i2?number)}connection=DatabaseConnection(type="SybaseIQ"))))';
+  runSybaseIQPlanTest($f3, $expected3);
+}
