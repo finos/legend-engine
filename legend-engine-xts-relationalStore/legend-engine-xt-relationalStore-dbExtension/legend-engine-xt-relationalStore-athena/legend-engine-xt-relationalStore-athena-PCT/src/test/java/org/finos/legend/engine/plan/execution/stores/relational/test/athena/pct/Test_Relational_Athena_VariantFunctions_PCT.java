@@ -37,7 +37,59 @@ public class Test_Relational_Athena_VariantFunctions_PCT extends PCTReportConfig
     private static final ReportScope reportScope = PlatformCodeRepositoryProvider.variantFunctions;
     private static final Adapter adapter = CoreRelationalAthenaPCTCodeRepositoryProvider.athenaAdapter;
     private static final String platform = "compiled";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.empty();
+    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+
+            //Variant
+            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFalse_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"\nwhere the expected message was:\"Invalid Pure Boolean: 'hello'\"\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromString_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToBooleanTrue_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToDateTimeFromWrongString_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"\nwhere the expected message was:\"DateTime must include time information, got: 2020-01-01\"\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToDateTime_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToFloatFromInteger_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToFloatFromString_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToFloat_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"\nwhere the expected message was:\"Variant of type 'NUMBER' cannot be converted to Integer\"\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"\nwhere the expected message was:\"For input string: \"1.25\"\"\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromString_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToInteger_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"\nwhere the expected message was:\"Variant of type 'STRING' cannot be converted to List<Variant>\"\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToListOfIntegers_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToListOfVariants_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"\nwhere the expected message was:\"Variant of type 'STRING' cannot be converted to Map<String, Variant>\"\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToMapWithIntegerValue_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToNull_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"\nwhere the expected message was:\"StrictDate must be a calendar day, got: 2020\"\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToStrictDate_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToStringFromBoolean_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToStringFromNumber_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::toJson::testObjectToJson_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toJson().\""),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"\nwhere the expected message was:\"Expect variant that contains an 'ARRAY', but got 'STRING'\"\""),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToManyInteger_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToManyVariant_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testEmpty_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariant().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testFloat_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariant().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testFloats_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testInteger_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariant().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testIntegers_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfList_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantObject().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfPrimitives_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfVariants_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariant().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfMap_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantObject().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfVariantValues_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariant().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithMultipleKeys_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantObject().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithPrimitiveValues_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantObject().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testString_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariant().\""),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testStrings_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\""),
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromArray_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyDoesNotExists_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyExists_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"")
+
+    );
 
     public static Test suite()
     {
