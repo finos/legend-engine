@@ -366,7 +366,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       $sqlDialect->executeIdentifierProcessor($c.tableName, $config.dbConfig.quoteIdentifiers, $state, $config) +
       ' (' + $state.separatorIfPretty(1, $config) +
       $c.columns->map(c|$sqlDialect->executeIdentifierProcessor($c.first, $config.dbConfig.quoteIdentifiers, $state, $config) + ' ' + $supportedTypes->get($c.second.name)->orElse($c.second.name))->joinStrings(',' + $state.separator(1, $config)) + $state.separatorIfPretty(0, $config) +
-      ') Location \'s3://parth-aws-bucket-1/' + $tableLocationKey + '/\'';
+      ') Location \'s3://legend-athena-query-results/' + $tableLocationKey + '/\'';
     }
   );
 }
