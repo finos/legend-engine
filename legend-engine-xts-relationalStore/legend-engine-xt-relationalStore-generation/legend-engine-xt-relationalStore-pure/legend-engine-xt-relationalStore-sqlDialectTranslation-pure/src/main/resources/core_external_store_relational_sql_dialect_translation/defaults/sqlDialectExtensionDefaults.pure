@@ -349,7 +349,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::fre
 
       if($state.nestedFreeMarkerOperation,
         | format($f.template, $processedParams),
-        | if($f.template->contains('enumMap_') || $f.template->startsWith('equalEnumOperationSelector') || $f.template->startsWith('number'),
+        | if($f.template->contains('enumMap_') || $f.template->startsWith('equalEnumOperationSelector') || $f.template->contains('?number'),
           | '${' + format($f.template, $processedParams) + '}',
           | '(${' + format($f.template, $processedParams) + '})'
         )
