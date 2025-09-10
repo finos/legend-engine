@@ -702,10 +702,10 @@ public class RelationNativeImplementation
     private static MutableList<ColumnValue> aggregateTDS(Window window, MutableList<SortInfo> sortInfos, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes, MutableList<? extends AggColSpecTrans> aggColSpecTransAll, boolean compress, ExecutionSupport es)
     {
         int size = compress ? sortRes.getTwo().size() : (int) sortRes.getOne().getRowCount();
-        boolean[] nulls = new boolean[(int) size];
         MutableList<ColumnValue> columnValues = Lists.mutable.empty();
         for (AggColSpecTrans aggColSpecTrans : aggColSpecTransAll)
         {
+            boolean[] nulls = new boolean[(int) size];
             switch (aggColSpecTrans.reduceType)
             {
                 case M3Paths.String:
@@ -988,8 +988,8 @@ public class RelationNativeImplementation
                 if (compress)
                 {
                     subList.removeIf(Objects::isNull);
-                    Object result = reduce.value(subList, es);
-                    setter.value(j, result);
+                    Object result = (subList.isEmpty()) ? null : reduce.value(subList, es);
+                    setter.value(cursor++, result);
                 }
                 else
                 {
