@@ -41,6 +41,9 @@ public class Test_Interpreted_RelationFunctions_PCT extends PCTReportConfigurati
             one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Function_1__Boolean_1_",
                     "Error instantiating the type 'SortInfo<T>'. Could not resolve type for the property 'column': ColSpec<T>"),
 
+            // 0 vs null for aggregation on no rows
+            one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   country,\'2011__|__newCol\',\'2012__|__newCol\',newCol\n   UK,3000,null,UK_0\n   USA,7600,15200,USA_0\n#'\nactual:   '#TDS\n   country,\'2011__|__newCol\',\'2012__|__newCol\',newCol\n   UK,3000,0,UK_0\n   USA,7600,15200,USA_0\n#'\"", AdapterQualifier.needsInvestigation),
+
             one("meta::pure::functions::relation::tests::composition::testExtendAddOnNull_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,grp,newCol\n   null,0,null\n   8,1,8\n   null,1,8\n   null,1,8\n   1,2,6\n   5,2,6\n   3,3,10\n   7,3,10\n   4,4,4\n   9,5,9\n#'\nactual:   '#TDS\n   id,grp,newCol\n   null,0,0\n   8,1,8\n   null,1,8\n   null,1,8\n   1,2,6\n   5,2,6\n   3,3,10\n   7,3,10\n   4,4,4\n   9,5,9\n#'\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::relation::tests::composition::testExtendFilterOutNull_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   p,o,i,newCol\n   300,2,20,30\n   300,1,10,30\n   200,3,30,80\n   200,3,30,80\n   200,1,10,80\n   200,1,10,80\n   100,3,30,60\n   100,2,20,60\n   100,1,10,60\n   0,1,10,20\n   0,1,10,20\n#'\nactual:   '#TDS\n   p,o,i,newCol\n   300,2,20,30\n   300,1,10,30\n   200,3,30,110\n   200,3,30,110\n   200,1,10,110\n   200,1,10,110\n   100,3,30,110\n   100,2,20,110\n   100,1,10,110\n   0,1,10,50\n   0,1,10,50\n#'\"", AdapterQualifier.needsInvestigation),
             // empty vs null
