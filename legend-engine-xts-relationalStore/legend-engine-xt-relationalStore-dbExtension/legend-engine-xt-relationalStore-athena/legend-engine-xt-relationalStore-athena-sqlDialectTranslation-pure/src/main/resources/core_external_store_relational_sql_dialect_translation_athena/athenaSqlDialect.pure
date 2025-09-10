@@ -303,6 +303,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     doubleLiteralNodeProcessor_default(),
     decimalLiteralNodeProcessor_default(),
     dateLiteralNodeProcessor_default(),
+    partialDateLiteralNodeProcessor_default(),
     timestampLiteralNodeProcessor_default(),
     nullLiteralNodeProcessor_default(),
     partialDateLiteralNodeProcessorForAthena()
