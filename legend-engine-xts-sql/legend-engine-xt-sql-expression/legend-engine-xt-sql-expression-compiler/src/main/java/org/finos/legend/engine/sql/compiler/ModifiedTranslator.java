@@ -23,6 +23,8 @@ import org.finos.legend.pure.generated.Root_meta_external_query_sql_expression_A
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_TableFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
+import java.util.Objects;
+
 public class ModifiedTranslator extends ProtocolToMetamodelTranslator
 {
     @Override
@@ -39,7 +41,7 @@ public class ModifiedTranslator extends ProtocolToMetamodelTranslator
         }
         else
         {
-            MutableList<Root_meta_external_query_sql_metamodel_TableFunction> result = TableFunctionCompilerExtensionLoader.extensions().collect(x -> x.translate(tablefunction, pureModel));
+            MutableList<Root_meta_external_query_sql_metamodel_TableFunction> result = TableFunctionCompilerExtensionLoader.extensions().collect(x -> x.translate(tablefunction, pureModel)).select(Objects::nonNull);
             if (result.size() > 1)
             {
                 throw new RuntimeException("Error, " + result.size() + " table function handlers found for  '" + tablefunction.functionCall.name.parts.get(0) + "'");
