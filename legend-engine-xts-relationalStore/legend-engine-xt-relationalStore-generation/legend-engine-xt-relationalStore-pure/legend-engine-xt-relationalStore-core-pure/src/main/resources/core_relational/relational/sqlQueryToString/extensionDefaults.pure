@@ -508,11 +508,12 @@ function meta::relational::functions::sqlQueryToString::default::processLimit(s:
       '',
     | let size = if ($s.toRow == [] || $s.fromRow == [],
         | -1,
-        | let toRow = $s.toRow->toOne()->processRowLimitOffsetLiteral($dbConfig, $format, $extensions);
-          let fromRow = $s.fromRow->toOne()->processRowLimitOffsetLiteral($dbConfig, $format, $extensions);
-          if($toRow->instanceOf(Integer) && $fromRow->instanceOf(Integer),
-            | ($toRow->cast(@Integer) - $fromRow->cast(@Integer))->toString(),
-            | '%s - %s'->format([$toRow->toString(), $fromRow->toString()])
+        | let toRow = $s.toRow->toOne();
+          let fromRow = $s.fromRow->toOne();
+          if($toRow.value->instanceOf(Integer) && $fromRow.value->instanceOf(Integer),
+            | ($toRow.value->cast(@Integer) - $fromRow.value->cast(@Integer))->toString(), 
+            | // The subtraction is evaluated during freemarker processing of SQL. This is because some databases don't support operations (for ex. 3 - 2) in limit/offset expresisons.
+              ^FreeMarkerOperationHolder(name = 'numberSubtract', parameters = [$toRow, $fromRow])->processOperation($dbConfig, $format, $extensions)
           );
       );
       if ($s.fromRow == [],
@@ -523,17 +524,6 @@ function meta::relational::functions::sqlQueryToString::default::processLimit(s:
           $sliceOrDropProcessor->eval($s, $format, $dbConfig, $extensions, $size)
       );
   );
-}
-
-function meta::relational::functions::sqlQueryToString::default::processRowLimitOffsetLiteral(l:Literal[1], dbConfig: DbConfig[1], format:Format[1], extensions:Extension[*]):Any[1]
-{
-  $l.value->match(
-    [
-      i:Integer[1]| $i,
-      v:VarPlaceHolder[1]| '${%s?number}'->format($v.name),
-      fmoh:FreeMarkerOperationHolder[1]| $fmoh->processOperation($dbConfig, $format, $extensions)
-    ]
-  )
 }
 
 function meta::relational::functions::sqlQueryToString::default::processSliceOrDropDefault(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
