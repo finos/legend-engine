@@ -53,14 +53,14 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
 
             // Max
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_", "\"\nexpected: 2\nactual:   2.0\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
 
             // MaxBy
             one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'max_by(INTEGER, INTEGER, INTEGER, INTEGER)'", AdapterQualifier.unsupportedFeature),
 
             // Min
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
 
             // MinBy
             one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'min_by(INTEGER, INTEGER, INTEGER, INTEGER)'", AdapterQualifier.unsupportedFeature),
@@ -82,7 +82,7 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\"", AdapterQualifier.unsupportedFeature),
 
             // Percentile
-            one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'range_Integer_1__Integer_1__Integer_1__Integer_MANY_'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "No function matches the given name and argument types 'quantile_cont(BIGINT[], DECIMAL(3,2))'", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "java.sql.SQLException: Catalog Error: Aggregate Function with name percentile_cont does not exist!", AdapterQualifier.needsInvestigation),
 
             // CosH

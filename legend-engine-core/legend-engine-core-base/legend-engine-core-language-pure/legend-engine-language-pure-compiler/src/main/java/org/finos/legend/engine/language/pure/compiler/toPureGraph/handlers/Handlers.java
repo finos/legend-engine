@@ -1295,7 +1295,7 @@ public class Handlers
                             );
                         },
                         ps -> true),
-                h("meta::pure::functions::collection::concatenate_T_MANY__T_MANY__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true));
+                h("meta::pure::functions::collection::concatenate_T_MANY__T_MANY__T_MANY_", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "zeroMany"), ps -> Lists.fixedSize.of(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel)), ps -> true));
 
         register(m(h("meta::pure::functions::collection::greatest_X_$1_MANY$__X_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> matchOneMany(ps.get(0)._multiplicity())),
                 h("meta::pure::functions::collection::greatest_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true)));
@@ -1304,16 +1304,18 @@ public class Handlers
                 h("meta::pure::functions::collection::least_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true)));
 
         register(m(
-                        m(h("meta::pure::functions::collection::first_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"))),
+                        m(h("meta::pure::functions::collection::first_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true)),
                         m(h("meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_", true, ps -> res(ps.get(2)._genericType(), "zeroOne")))
                 )
         );
 
         register(m(
-                        m(h("meta::pure::functions::collection::last_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"))),
+                        m(h("meta::pure::functions::collection::last_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true)),
                         m(h("meta::pure::functions::relation::last_Relation_1___Window_1__T_1__T_$0_1$_", true, ps -> res(ps.get(2)._genericType(), "zeroOne")))
                 )
         );
+
+        register(h("meta::pure::functions::collection::init_T_MANY__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true));
 
         register("meta::pure::functions::meta::enumName_Enumeration_1__String_1_", true, ps -> res("String", "one"));
         register("meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
@@ -1455,8 +1457,8 @@ public class Handlers
         register(m(m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_", true, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 3)),
                 m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 2)),
                 m(h("meta::pure::functions::collection::range_Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 1))));
-        register("meta::pure::functions::collection::tail_T_MANY__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"));
-        register("meta::pure::functions::collection::head_T_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"));
+        register(h("meta::pure::functions::collection::tail_T_MANY__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true));
+        register(h("meta::pure::functions::collection::head_T_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true));
         register("meta::pure::functions::collection::oneOf_Boolean_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
         register("meta::pure::functions::collection::defaultIfEmpty_T_MANY__T_$1_MANY$__T_$1_MANY$_", false, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "oneMany"));
 
