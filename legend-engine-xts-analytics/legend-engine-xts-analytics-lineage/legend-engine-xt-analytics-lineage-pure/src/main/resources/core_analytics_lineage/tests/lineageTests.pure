@@ -895,6 +895,7 @@ Database meta::analytics::lineage::tests::db
 )
 
 ###Pure
+import meta::analytics::lineage::tests::relation::*;
 import meta::pure::lineage::scanRelations::*;
 import meta::relational::extension::*;
 import meta::relational::metamodel::join::*;
@@ -917,6 +918,22 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
                                            $lineage);
 }
 
+
+
+function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.AlloyOnly>> meta::analytics::lineage::tests::relation::testSimpleSQLAccessor():Boolean[1]
+{
+  let fn = meta::analytics::lineage::tests::relation::getFunction('simpleSQLAccessor__Relation_1_');
+
+  
+  let lineage = meta::analytics::lineage::computeLineage($fn, [], [], [],propertyLineageConfig());
+    assertSameElements([['db_db -> tb_dbdefaultpersonTable', 'tb_dbdefaultpersonTable -> Lambda']],  $lineage.databaseLineage.edges.data->map(e|  $e.source.data.id+ ' -> ' + $e.target.data.id));
+
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_db', 'tb_dbdefaultpersonTable'],
+                                          [],
+                                          '[FIRSTNAME: [RelationalPropertyOwner_meta::analytics::lineage::tests::db.default.personTable.FIRSTNAME]]',
+                                          $lineage);
+
+}
 
 
 function <<access.protected>> meta::analytics::lineage::tests::relation::getFunction(function:String[1]):FunctionDefinition<Any>[1]

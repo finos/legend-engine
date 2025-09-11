@@ -150,8 +150,10 @@ function <<access.private>> meta::analytics::lineage::lineagePreEvalExtension():
  ^Extension(type='lineage',
             availableFeatures = ^FeatureExtension(id='lineage',
                                                  shouldStopPreeval= {a:Any[*] | $a->match([ f: SimpleFunctionExpression[1] | $f.func->in([meta::pure::functions::string::parseDate_String_1__Date_1_,meta::pure::functions::lang::cast_Any_m__T_1__T_m_ ]), //
-                                                                    a: Any[*] | false
-                                                           ])}
+                                                                                            s: meta::external::query::sql::expression::SQLExpression<Any>[1] |true,
+
+                                                                                            a: Any[*] |false
+                                                                                              ])}
                      ));
 }
 

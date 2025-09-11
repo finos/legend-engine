@@ -353,6 +353,7 @@ function meta::analytics::lineage::property::scanBuildPropertyLineage(vs: Any[1]
                                                                   |  $i.values->evaluateAndDeactivate()->at(0)->scanBuildPropertyLineage($state,$extension)
                                                                        ),
               r:RelationElementAccessor<Any>[1] | $r->meta::analytics::lineage::property::buildAccessorPropertyNode($state, $extension);,
+              s:meta::external::query::sql::expression::SQLExpression<Any>[1] |  $s.pureFunction->scanBuildPropertyLineage($state,$extension),
               a:Any[*]                                 |  $state;
             ])->toOneMany())->toOne();
 }
