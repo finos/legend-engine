@@ -694,7 +694,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    let processedParams = $freeMarkerOp.parameters->map(p | $p->match([
                                                                f:FreeMarkerOperationHolder[1] | $f->processFreeMarkerOperationHolder($dbConfig, $format, $generationState, $config, true, $extensions);,
                                                                l:Literal[1]                   | $l.value->match([v:VarPlaceHolder[1] | if($v->isOptionalPlaceHolder(), |$v.name + '![]', |$v.name);,
-                                                                                                                 a:Any[1]            | $a->toString();]),
+                                                                                                                 f:FreeMarkerOperationHolder[1] | $f->processFreeMarkerOperationHolder($dbConfig, $format, $generationState, $config, true, $extensions);, 
+                                                                                                                 a:Any[1]            | $a->toString();
+                                                                                                                ]),
                                                                a:RelationalOperationElement[1]| '\'' + $a->processOperation($dbConfig, $format, $generationState, $config, $extensions)->replace('\'', '\\\'') + '\'';
    ]));
    let params = if($res.transform->isEmpty(), | $processedParams, | $res.transform->toOne()->eval($processedParams));

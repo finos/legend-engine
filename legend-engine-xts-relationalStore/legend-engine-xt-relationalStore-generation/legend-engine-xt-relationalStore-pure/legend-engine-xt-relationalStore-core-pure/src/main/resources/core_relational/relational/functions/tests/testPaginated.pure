@@ -124,18 +124,18 @@ function <<test.Test>> meta::relational::tests::query::paginate::testPaginatedBy
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::paginate::testPaginatedWithVariables(): Boolean[1]
 {
   let f1 = {i:Integer[1] | Person.all()->sortBy(p | $p.firstName)->paginated($i, 2)->from(simpleRelationalMapping, testRuntime())};
-  runTest($f1, [pair('i', 2)], 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME asc offset 2 rows fetch next 4 - 2 rows only', 2);
+  runTest($f1, [pair('i', 2)], 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME asc offset 2 rows fetch next 2 rows only', 2);
   
   let f2 = {i:Integer[1] | Person.all()->sortBy(p | $p.firstName)->paginated(3, $i)->from(simpleRelationalMapping, testRuntime())};
-  runTest($f2, [pair('i', 1)], 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME asc offset 2 rows fetch next 3 - 2 rows only', 1);
+  runTest($f2, [pair('i', 1)], 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME asc offset 2 rows fetch next 1 rows only', 1);
   
   let f3 = {i:Integer[1] | Person.all()->sortBy(p | $p.firstName)->paginated(3, $i)->from(simpleRelationalMapping, testRuntime())};
-  runTest($f3, [pair('i', 2)], 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME asc offset 4 rows fetch next 6 - 4 rows only', 2);
+  runTest($f3, [pair('i', 2)], 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME asc offset 4 rows fetch next 2 rows only', 2);
   
   let f4 = {i1:Integer[1], i2:Integer[1] | Person.all()->sortBy(p | $p.firstName)->paginated($i1, $i2)->from(simpleRelationalMapping, testRuntime())};
-  runTest($f4, [pair('i1', 1), pair('i2', 3)], 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME asc offset 0 rows fetch next 3 - 0 rows only', 3);
+  runTest($f4, [pair('i1', 1), pair('i2', 3)], 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME asc offset 0 rows fetch next 3 rows only', 3);
 
   let f5 = {i1:Integer[1], i2:Integer[1] | Person.all()->sortBy(p | $p.firstName)->paginated($i1, $i2)->from(simpleRelationalMapping, testRuntime())};
-  runTest($f5, [pair('i1', 2), pair('i2', 3)], 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME asc offset 3 rows fetch next 6 - 3 rows only', 3);
+  runTest($f5, [pair('i1', 2), pair('i2', 3)], 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".FIRSTNAME asc offset 3 rows fetch next 3 rows only', 3);
 }
 

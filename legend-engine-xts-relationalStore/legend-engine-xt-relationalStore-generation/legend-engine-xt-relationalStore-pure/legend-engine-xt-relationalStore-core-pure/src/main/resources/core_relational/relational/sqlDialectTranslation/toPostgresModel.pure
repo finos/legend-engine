@@ -148,16 +148,17 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertLimit(s:SelectSQLQuery[*], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Expression[0..1]
 {
-  let fromRow = $s.fromRow->convertOptionalElementToExpression($state);
-  let toRow = $s.toRow->convertOptionalElementToExpression($state);
-  if($toRow->isEmpty(),
+  if($s.toRow->isEmpty(),
     | [],
-    | if($fromRow->isEmpty(),
-        | $toRow->toOne(),
-        | if($fromRow->toOne()->instanceOf(IntegerLiteral) && $toRow->toOne()->instanceOf(IntegerLiteral),
-          | ^IntegerLiteral(value = $toRow->toOne()->cast(@IntegerLiteral).value - $fromRow->toOne()->cast(@IntegerLiteral).value),
-          | ^ArithmeticExpression(type = ArithmeticType.SUBTRACT, left = $toRow->toOne(), right = $fromRow->toOne())
-        )
+    | if($s.fromRow->isEmpty(), 
+        | $s.toRow->toOne()->convertElementToExpression($state),
+        | let fromRow = $s.fromRow->toOne();
+          let toRow = $s.toRow->toOne(); 
+          if($fromRow.value->instanceOf(Integer) && $toRow.value->toOne()->instanceOf(Integer),
+            | ^IntegerLiteral(value = $toRow.value->cast(@Integer) - $fromRow.value->cast(@Integer)),
+            | // The subtraction is evaluated during freemarker processing of SQL. This is because some databases don't support operations (for ex. 3 - 2) in limit/offset expresisons.
+              ^FreeMarkerOperationHolder(name = 'numberSubtract', parameters = [$toRow, $fromRow])->convertElementToExpression($state)
+          );
       )
   );
 }
@@ -868,6 +869,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
       f:FreeMarkerOperationHolder[1] |            $f->convertFreeMarkerOperationHolder($state);,
       l:meta::relational::metamodel::Literal[1] | $l.value->match([
                                                     v:VarPlaceHolder[1] | ^StringLiteral(value = if($v->isOptionalPlaceHolder(), |$v.name + '![]', |$v.name));,
+                                                    f:FreeMarkerOperationHolder[1] | $f->convertFreeMarkerOperationHolder($state);,
                                                     a:Any[1]            | $l->convertElement($state);
                                                   ]),
       r:RelationalOperationElement[1]|            $r->convertElement($state);
