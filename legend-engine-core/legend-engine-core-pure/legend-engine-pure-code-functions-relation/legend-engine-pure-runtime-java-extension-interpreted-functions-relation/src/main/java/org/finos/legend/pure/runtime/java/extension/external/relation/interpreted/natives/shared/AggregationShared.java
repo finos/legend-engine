@@ -126,7 +126,6 @@ public abstract class AggregationShared extends Shared
         FixedSizeList<CoreInstance> mapParameters = twoParamFunc ? Lists.fixedSize.with((CoreInstance) null,(CoreInstance) null, (CoreInstance) null) : Lists.fixedSize.with((CoreInstance) null);
         FixedSizeList<CoreInstance> reduceParameters = Lists.fixedSize.with((CoreInstance) null);
         int size = orderedSource.getTwo().size();
-        int uncompressedCursor = 0;
         ProjectExtend.RepoPrimitiveHandler repoPrimitiveHandler = new ProjectExtend.RepoPrimitiveHandler(repository);
         for (int j = 0; j < size; j++)
         {
@@ -391,9 +390,16 @@ public abstract class AggregationShared extends Shared
                 if (compress)
                 {
                     subList.removeIf(Objects::isNull);
-                    reduceParameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(subList, true, processorSupport));
-                    CoreInstance re = this.functionExecution.executeFunction(false, reduceF, reduceParameters, resolvedTypeParameters, resolvedMultiplicityParameters, reduceFVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
-                    setter.value(j, re.getValueForMetaPropertyToOne("values"));
+                    if (subList.isEmpty())
+                    {
+                        setter.value(j, null);
+                    }
+                    else
+                    {
+                        reduceParameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(subList, true, processorSupport));
+                        CoreInstance re = this.functionExecution.executeFunction(false, reduceF, reduceParameters, resolvedTypeParameters, resolvedMultiplicityParameters, reduceFVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
+                        setter.value(j, re.getValueForMetaPropertyToOne("values"));
+                    }
                 }
                 else
                 {

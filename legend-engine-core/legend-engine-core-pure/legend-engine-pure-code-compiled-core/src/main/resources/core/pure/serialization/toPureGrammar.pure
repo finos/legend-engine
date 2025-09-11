@@ -215,7 +215,7 @@ function meta::pure::metamodel::serialization::grammar::printColSpec(functionExp
 
 function meta::pure::metamodel::serialization::grammar::printColName(name:String[1]):String[1]
 {
-  if($name->contains(' ') || $name->contains('('),|'\''+$name+'\'',|$name);
+  $name->convertIdentifier();
 }
 
 function meta::pure::metamodel::serialization::grammar::printFunctionExpression(functionExpression:FunctionExpression[1], configuration:Configuration[0..1], _context:GContext[1]):String[1]
@@ -495,9 +495,14 @@ function meta::pure::metamodel::serialization::grammar::printFunctionType(functi
     +printGenericType($functionType.returnType)+'['+printMultiplicity($functionType.returnMultiplicity)+']}';
 }
 
+function <<access.private>> meta::pure::metamodel::serialization::grammar::convertIdentifier(unescapeIdentifier:String[1]):String[1]
+{
+  if ($unescapeIdentifier->matches('[A-Za-z_][A-Za-z0-9_$~]*'), | $unescapeIdentifier, | '\'' + $unescapeIdentifier->replace('\'', '\\\'') + '\''); // TODO: Should do this similar to how Engine composer does this 
+}
+
 function meta::pure::metamodel::serialization::grammar::printRelationType(rType:meta::pure::metamodel::relation::RelationType<Any>[1]):String[1]
 {
-    '('+$rType.columns->map(x|if($x.nameWildCard,|'?',|$x.name->toOne())+':'+$x.classifierGenericType.typeArguments->at(1)->printGenericType())->joinStrings(', ')+')';
+    '('+$rType.columns->map(x|if($x.nameWildCard,|'?',|$x.name->toOne()->convertIdentifier())+':'+$x.classifierGenericType.typeArguments->at(1)->printGenericType())->joinStrings(', ')+')';
 }
 
 function meta::pure::metamodel::serialization::grammar::printFunctionSignature(func:Function<Any>[1]):String[1]
