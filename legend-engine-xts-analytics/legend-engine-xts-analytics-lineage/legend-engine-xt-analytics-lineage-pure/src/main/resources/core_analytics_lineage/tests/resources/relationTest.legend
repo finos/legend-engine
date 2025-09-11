@@ -36,3 +36,16 @@ function  meta::analytics::lineage::tests::relation::selectExtend():Relation<Any
 
                 
 }
+
+
+
+###Pure
+function analytics::lineage::tests::relation::simpleSQLAccessor():Relation<Any>[1]
+{
+  #SQL{select FIRSTNAME from tb('meta::analytics::lineage::tests::db.personTable') as t where t.FIRSTNAME = 'www'}#;
+}
+
+//function analytics::lineage::tests::relation::joinOnSQLAccessor():Relation<Any>[1]
+//{
+  //#SQL{select FIRSTNAME,FIRMID from tb('meta::analytics::lineage::tests::db.personTable')}#->join( #SQL{select FIRM_ID from tb('meta::analytics::lineage::tests::db.firmTable')}#, JoinKind.INNER, {x,y| $x.FIRMID == $y.FIRM_ID}) ;
+//}
