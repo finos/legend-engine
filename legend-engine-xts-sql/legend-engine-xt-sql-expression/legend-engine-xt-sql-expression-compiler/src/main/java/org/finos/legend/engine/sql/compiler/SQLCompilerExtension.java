@@ -62,8 +62,7 @@ public class SQLCompilerExtension implements CompilerExtension
 
                     org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> x = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__Function_1_((Root_meta_external_query_sql_metamodel_Query)statement, context.pureModel.getExecutionSupport());
                     org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType relationType = ((FunctionType)x._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType()._typeArguments().getFirst();
-
-                    GenericType genericType = context.pureModel.getGenericType("meta::external::query::sql::expression::SQLExpression")._typeArguments(Lists.mutable.with(relationType));
+                    GenericType genericType =  context.pureModel.getGenericType("meta::external::query::sql::expression::SQLExpression").copy()._typeArguments(Lists.mutable.with(relationType));
                     return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                             ._genericType(genericType)
                             ._multiplicity(context.pureModel.getMultiplicity("one"))

@@ -61,6 +61,27 @@ public class TestCompilerFromGrammar
                 "}");
     }
 
+    @Test
+    public void testJoin()
+    {
+        testCompile("###Relational\n" +
+                "Database meta::analytics::lineage::tests::db\n" +
+                "(\n" +
+                "  Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)\n" +
+                "    Table firmTable (FIRM_ID INT PRIMARY KEY, NAME VARCHAR(200))\n" +
+                "\n" +
+                ")\n" +
+                "###Pure\n" +
+                "function test::joinOnSQLAccessor():Boolean[1]\n" +
+                "{\n" +
+                " #SQL{select FIRSTNAME,FIRMID from tb('meta::analytics::lineage::tests::db.personTable') as t }#->join( #SQL{select FIRM_ID, NAME from tb('meta::analytics::lineage::tests::db.firmTable')}#, JoinKind.INNER, {x,y| $x.FIRMID == $y.FIRM_ID}) ;\n" +
+                "true;\n" +
+                "}\n"
+             );
+    }
+
+
+
     private void testCompile(String code)
     {
         new PureModel(PureGrammarParser.newInstance().parseModel(code), null, DeploymentMode.PROD);
