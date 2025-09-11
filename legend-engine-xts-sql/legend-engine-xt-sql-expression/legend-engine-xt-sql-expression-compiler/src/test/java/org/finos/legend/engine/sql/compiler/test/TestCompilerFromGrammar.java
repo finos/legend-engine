@@ -60,6 +60,7 @@ public class TestCompilerFromGrammar
                 "   true;" +
                 "}");
     }
+
     @Test
     public void testJoin()
     {
