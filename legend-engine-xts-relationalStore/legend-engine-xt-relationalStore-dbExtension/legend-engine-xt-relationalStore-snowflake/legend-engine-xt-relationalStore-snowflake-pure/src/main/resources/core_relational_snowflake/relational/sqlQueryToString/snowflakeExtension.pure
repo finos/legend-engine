@@ -290,6 +290,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeSnowflake()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='to_char(%s)')),
     dynaFnToSql('contains',               $allStates,            ^ToSql(format='contains(%s,%s)', transform={p:String[2]|$p})),
+    dynaFnToSql('currentUserId',          $allStates,            ^ToSql(format='COALESCE( SYS_CONTEXT(\'SNOWFLAKE$ORGANIZATION_SESSION\',\'PRINCIPAL_NAME\'), SYS_CONTEXT(\'SNOWFLAKE$SESSION\',\'PRINCIPAL_NAME\')) ')),
     dynaFnToSql('date',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformDateConstructionForSnowflake()})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSnowflake(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
