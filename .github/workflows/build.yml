@@ -92,26 +92,26 @@ jobs:
         if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'finos/legend-engine') || github.event_name == 'push'
         run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
 
-      - name: Build (PR)
-        if: github.ref != 'refs/heads/master'
+      - name: Build
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
           mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }}
 
-      - name: Build (Master + Docker Snapshot)
-        if: github.ref == 'refs/heads/master'
-        env:
-          DOCKER_USERNAME: finos
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          MAVEN_OPTS: "-Xmx8g"
-        # NOTE: here we publish snapshot to a staging Maven registry
-        # some registry like Maven Central requires javadoc, but for now we
-        # don't need to, if we do, call javadoc:jar goal instead of javadoc:javadoc
-        # as the latter binds to generate-sources which runs before compile phase
-        # and can cause problem with some code generators
-        # See https://github.com/finos/legend-engine/pull/924
-        run: mvn -B -e -DskipTests=true install -P docker-snapshot,pct-cloud-test
+#  After merging, the workflwo is failing here.  We dont run deploy, hence the docker does nothing atm
+#      - name: Build (Master + Docker Snapshot)
+#        if: github.ref == 'refs/heads/master'
+#        env:
+#          DOCKER_USERNAME: finos
+#          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+#          MAVEN_OPTS: "-Xmx8g"
+#        # NOTE: here we publish snapshot to a staging Maven registry
+#        # some registry like Maven Central requires javadoc, but for now we
+#        # don't need to, if we do, call javadoc:jar goal instead of javadoc:javadoc
+#        # as the latter binds to generate-sources which runs before compile phase
+#        # and can cause problem with some code generators
+#        # See https://github.com/finos/legend-engine/pull/924
+#        run: mvn -B -e -DskipTests=true install -P docker-snapshot,pct-cloud-test
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4
