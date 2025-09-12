@@ -12,4 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::test::pct::*;
+
 native function <<functionType.SideEffectFunction>> meta::core::runtime::currentUserId():String[1];
+
+function <<PCT.function>> meta::pure::functions::runtime::currentUserId():String[1]
+{
+  meta::core::runtime::currentUserId();
+}
+
+function <<PCT.test>> meta::pure::functions::runtime::currentUserId::testCurrentUserId<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertNotEmpty($f->eval(|meta::pure::functions::runtime::currentUserId()));
+}
