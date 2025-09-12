@@ -26,7 +26,7 @@ import io.crate.types.DataTypes;*/
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Locale;
 import java.time.format.DateTimeFormatter;
 
@@ -40,11 +40,11 @@ final class TimestampZType extends BaseTimestampType
 
     // For Golang if date is AD (after Christ), era abbreviation is not parsed.
     private static final DateTimeFormatter ISO_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS+00", Locale.ENGLISH).withZone(ZoneId.of("UTC"));
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS+00", Locale.ENGLISH).withZone(ZoneOffset.UTC);
 
     // For Golang if date is BC (before Christ), era abbreviation needs to be appended.
     private static final DateTimeFormatter ISO_FORMATTER_WITH_ERA =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS+00 G", Locale.ENGLISH).withZone(ZoneId.of("UTC"));
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS+00 G", Locale.ENGLISH).withZone(ZoneOffset.UTC);
 
     private static final DateTimeFormatter[] PARSERS_WITHOUT_ERA = generateParseFormatters(false);
     private static final DateTimeFormatter[] PARSERS_WITH_ERA = generateParseFormatters(true);
