@@ -1,0 +1,5 @@
+###Relational
+Database legend::db
+(
+  Table myTb(a Varchar(200), b INT)
+)

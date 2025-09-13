@@ -28,6 +28,7 @@ Class meta::pure::metamodel::serialization::grammar::GrammarExtension
 {
   extraConnectionHandlers : Function<{Nil[0..1]->String[1]}>[*];
   extraInstanceValueHandlers : Function<{Nil[0..1]->String[1]}>[*];
+  extraPackageableElementHandlers : Function<{Nil[1]->String[1]}>[*];
 }
 
 Class meta::pure::metamodel::serialization::grammar::GContext
@@ -574,6 +575,11 @@ function meta::pure::metamodel::serialization::grammar::printType(type : meta::p
 
 function meta::pure::metamodel::serialization::grammar::printPackageableElements(packageableElements:PackageableElement[*]): String[1]
 {
+  printPackageableElements($packageableElements, []);
+}
+
+function meta::pure::metamodel::serialization::grammar::printPackageableElements(packageableElements:PackageableElement[*], configuration:Configuration[0..1]): String[1]
+{
    $packageableElements->map(pe| $pe->match([
             t:Type[1]                    | $t->printType(),
             a:Association[1]             | $a->printAssociation(),
@@ -581,7 +587,9 @@ function meta::pure::metamodel::serialization::grammar::printPackageableElements
             f:FunctionDefinition<Any>[1] | 'function ' + printStereotypes($f->cast(@ElementWithStereotypes)) + printTaggedValues($f->cast(@ElementWithTaggedValues)) + $f->printFunctionDefinition(^GContext(space='')),
             x:NativeFunction<Any>[1]     | '',
             p:Package[1]                 | ''
-   ]))->filter(x|$x!='')->joinStrings('\n\n');
+        ]->concatenate($configuration.extensions.extraPackageableElementHandlers)->toOneMany()
+      )
+   )->filter(x|$x!='')->joinStrings('\n\n');
 }
 
 function meta::pure::metamodel::serialization::grammar::printAllElementsFromPackageStr(_package:String[1]): String[1]
