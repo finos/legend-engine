@@ -3989,7 +3989,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
     let alias = $this.aliases->filter(a | $a.name == $name || $a.alias == $name)->first();
     let column = $columns->filter(c|$c.name == $name || $c.name == $alias.alias || $c.name == $alias.realias)->first();
 
-    assert($column->isNotEmpty() || !$failIfNotFound, | 'no column found named ' + $name + ' available columns '+$columns.name->joinStrings('[',', ',']'));
+    assert($column->isNotEmpty() || !$failIfNotFound, | 'no column found named: \'' + $name + '\'. Available columns: '+$columns.name->joinStrings('[',', ',']'));
 
     $column;
   }: meta::external::query::sql::transformation::queryToPure::QueryColumn[0..1];
