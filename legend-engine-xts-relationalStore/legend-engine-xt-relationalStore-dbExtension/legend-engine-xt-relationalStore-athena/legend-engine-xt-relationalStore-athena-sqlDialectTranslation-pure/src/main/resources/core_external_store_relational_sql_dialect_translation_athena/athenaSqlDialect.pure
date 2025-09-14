@@ -998,13 +998,13 @@ function meta::external::store::relational::sqlDialectTranslation::athena::dateD
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForDateAdd(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{ 
+{
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   let timeUnit = $processedArgs->at(2)->toLower();
   if ($timeUnit == '\'microsecond\'',
       |failWithMessage('Athena SQL Dialect does not support adding microsecond to date'),
       |generateFunctionCallWithArgs($sqlDialect, 'date_add', [$timeUnit, $processedArgs->at(1), $processedArgs->at(0)], [], $state, $config)
-     ); 
+     );
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForConvertTimeZone(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]

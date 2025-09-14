@@ -148,7 +148,6 @@ public class Test_Relational_Athena_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::collection::tests::slice::testSliceOnBounds_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::slice::testSliceOutOfBounds_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::slice::testSlice_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::slice::testSliceOnEmpty_Function_1__Boolean_1_", "line 1:21: mismatched input 'offset'. Expecting: <EOF> [Execution ID not available]",AdapterQualifier.unsupportedFeature),
 
             // Sort
             one("meta::pure::functions::collection::tests::sort::testMixedSortNoComparator_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList().", AdapterQualifier.unsupportedFeature),
