@@ -107,7 +107,7 @@ jobs:
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         env:
-          MAVEN_OPTS: "-Xmx8g"
+          MAVEN_OPTS: "-Xmx7g"
         run: |
           mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }} -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-athena/legend-engine-xt-relationalStore-athena-SDT -am
 
@@ -116,7 +116,7 @@ jobs:
         env:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          MAVEN_OPTS: "-Xmx8g"
+          MAVEN_OPTS: "-Xmx7g"
         # NOTE: here we publish snapshot to a staging Maven registry
         # some registry like Maven Central requires javadoc, but for now we
         # don't need to, if we do, call javadoc:jar goal instead of javadoc:javadoc
