@@ -549,7 +549,7 @@ public class PostgresServerTest
             ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
             Assert.assertNotNull(serverErrorMessage);
             Assert.assertNotNull(serverErrorMessage.getMessage());
-            Assert.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named some_random_column_name\""));
+            Assert.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named: 'some_random_column_name'. Available columns: [Id, Name, Employee Type, Full Name, Derived Name]\""));
         }
     }
 
@@ -582,7 +582,7 @@ public class PostgresServerTest
             ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
             Assert.assertNotNull(serverErrorMessage);
             Assert.assertNotNull(serverErrorMessage.getMessage());
-            Assert.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named some_random_column_name\""));
+            Assert.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named: 'some_random_column_name'. Available columns: [Id, Name, Employee Type, Full Name, Derived Name]\""));
         }
     }
 
