@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::pureToSqlQuery::*;
 import meta::relational::functions::sqlQueryToString::athena::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
@@ -88,10 +89,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
   let currentTimeKey = now()->toString()->chunk(1)->filter(x | $x->matches('[0-9]'))->makeString();
   let tableKey = $tableName->chunk(1)->filter(x | $x->matches('[a-zA-Z0-9]'))->makeString();
   let tableLocationKey = $tableKey + $currentTimeKey;
+
   'Create External Table '+ $tableName +
       + '('
       + $t.columns->cast(@meta::relational::metamodel::Column)
-         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextForAthena($c.type))
+         ->map(c | let colName = $c.name->processColumnName($dbConfig);
+                   let colType = getColumnTypeSqlTextForAthena($c.type);
+                   if ($colType->toLower() == 'semistructured', 
+                        | fail('Athena does not support type - semistructured'); '';, 
+                        | $colName + ' ' + $colType
+                      )->toString();
+              )
         ->joinStrings(',')
       +') Location \'s3://legend-athena-query-results/' + $tableLocationKey + '/\';';
 }
@@ -120,7 +128,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
     let literalStr = $strs->at($x)->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($types->at($x));
     $types->at($x)->match([
       d:meta::relational::metamodel::datatype::Date[1] | 'Date ' +  $literalStr,
-      t:meta::relational::metamodel::datatype::Timestamp[1] | 'Timestamp ' + $literalStr,
+      t:meta::relational::metamodel::datatype::Timestamp[1] | if ($literalStr->matches('\'\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?\''), 
+                                                                   | 'Timestamp ' + $literalStr->split('T')->at(0) + ' ' + $literalStr->split('T')->at(1),
+                                                                   | 'Timestamp ' + $literalStr
+                                                                  ),
       a:Any[1] | $literalStr
     ]);)->makeString(', ');
 }
