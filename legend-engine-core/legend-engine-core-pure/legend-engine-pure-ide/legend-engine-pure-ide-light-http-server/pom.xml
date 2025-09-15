@@ -317,6 +317,11 @@
             <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-functions-interpreted</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-interpreted</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- Engine extensions -->
 
         <dependency>
