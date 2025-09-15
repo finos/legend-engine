@@ -74,7 +74,7 @@ function meta::relational::functions::sqlDialectTranslation::relOpToString(r:Rel
 
 function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], pretty:Boolean[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], shouldOptimize:Boolean[1], extensions:Extension[*]):String[1]
 {
-  relOpToString($r, $dbType, ^FormatConfig(pretty = $pretty, upperCaseKeywords = false), $dbTimeZone, $quoteIdentifiers, false, $extensions);
+  relOpToString($r, $dbType, ^FormatConfig(pretty = $pretty, upperCaseKeywords = false), $dbTimeZone, $quoteIdentifiers, $shouldOptimize, $extensions);
 }
 
 function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], format:FormatConfig[1], extensions:Extension[*]):String[1]
