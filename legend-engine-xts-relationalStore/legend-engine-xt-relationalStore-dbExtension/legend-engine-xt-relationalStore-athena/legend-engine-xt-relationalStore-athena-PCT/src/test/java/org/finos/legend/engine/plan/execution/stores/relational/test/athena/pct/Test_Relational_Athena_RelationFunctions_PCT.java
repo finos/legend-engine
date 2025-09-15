@@ -144,7 +144,7 @@ public class Test_Relational_Athena_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "Window frame RANGE value type (integer) not compatible with sort item type (timestamp(3))"),
             one("meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "Window frame RANGE value type (integer) not compatible with sort item type (timestamp(3))")
 
-        );
+    );
 
     public static Test suite()
     {
