@@ -27,7 +27,6 @@ import meta::external::query::sql::transformation::utils::*;
 import meta::external::query::sql::transformation::compile::utils::*;
 import meta::pure::functions::relation::*;
 
-
 Class meta::external::query::sql::transformation::queryToPure::SQLSourceArgument
 {
   name: String[0..1];
@@ -58,7 +57,7 @@ Class meta::external::query::sql::transformation::queryToPure::SQLSource
 
 Class meta::external::query::sql::transformation::queryToPure::DynamicSQLSource extends meta::external::query::sql::transformation::queryToPure::SQLSource
 {
-  generationFunction : FunctionDefinition<Any>[1];
+  generationFunction : FunctionDefinition<{TableFunction[1], SqlTransformContext[1]->Any[1]}>[1];
 }
 
 
@@ -84,59 +83,85 @@ Class meta::external::query::sql::transformation::queryToPure::SQLProcessedResul
   plan: meta::pure::executionPlan::ExecutionPlan[0..1];
 }
 
-
-function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1]):Function<Any>[1]
-{
-  parseSqlStatement($sqlString->toOne())->cast(@Query)->sqlToPure();
-
-}
-
 Class meta::external::query::sql::transformation::queryToPure::DynamicSQLSourceModule extends ModuleExtension
 {
   extraDynamicSQLSources : DynamicSQLSource[*];
 }
 
+function meta::external::query::sql::transformation::queryToPure::getSources():DynamicSQLSource[*]
+{
+   [
+     ^DynamicSQLSource(
+          type = 'csv',
+          func = x:String[1]|1,
+          generationFunction = {x:TableFunction[1], s:SqlTransformContext[1]|meta::legend::compileVS('#TDS{\n'+$x.functionCall.arguments->cast(@StringLiteral)->toOne().value+'}#')}
+     ),
+     ^DynamicSQLSource(
+          type = 'tb',
+          func = x:String[1]|1,
+          generationFunction = {x:TableFunction[1], s:SqlTransformContext[1]|
+              let param = $x.functionCall.arguments->cast(@StringLiteral)->toOne().value;
+
+              // Manage retreiving the store 'compiled' vs in-flow
+              // It helps manage all execution modes:
+              //    - legend compiled within Pure IDE
+              //    - Legend compiled stand-alone
+              //    - Pure
+              let store = $x->match(
+                [
+                  a:meta::external::query::sql::expression::AccessorTableFunction[1]|$a.store,
+                  a:Any[1]| let fullPath = $param->split('.')->at(0);
+                            let element = lenientPathToElement($fullPath);
+                            if ($element->isEmpty(),
+                              |let res = $s.extraPackageableElements->filter(e|$e->elementToPath() == $fullPath);
+                               if ($res->isEmpty(),
+                                  |fail('The element \''+$fullPath+'\' can\'t be found in the graph or in the extra elements.'),
+                                  |$res->toOne()
+                               );,
+                              |$element->toOne()
+                            );
+                ]
+              )->cast(@meta::relational::metamodel::Database);
+
+              let databaseStr = $store->printPackageableElements(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration());
+
+              let code =  $databaseStr+
+                          '\n###Pure\n'+
+                          'function test::container():Any[*]{\n'+
+                          '  #>{'+$param+'}#\n'+
+                          '}';
+
+              meta::legend::compile($code)->filter(x|$x.name == 'container__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne();
+          }
+     )
+    ]->concatenate(meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(DynamicSQLSourceModule))->cast(@DynamicSQLSourceModule).extraDynamicSQLSources);
+}
+
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1]):Function<Any>[1]
+{
+  $sqlString->sqlToPure(getSources(), []);
+}
+
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1], extraPackages:PackageableElement[*]):Function<Any>[1]
+{
+  $sqlString->sqlToPure(getSources(), $extraPackages);
+}
+
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1], sources:DynamicSQLSource[*], extraPackages:PackageableElement[*]):Function<Any>[1]
+{
+  parseSqlStatement($sqlString->toOne())->cast(@Query)->sqlToPure($sources, $extraPackages);
+}
+
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1]):Function<Any>[1]
 {
-  let sources =  [^DynamicSQLSource(
-                        type = 'csv',
-                        func = x:String[1]|1,
-                        generationFunction = x:TableFunction[1]|meta::legend::compileVS('#TDS{\n'+$x.functionCall.arguments->cast(@StringLiteral)->toOne().value+'}#')
-                  ),
-                  ^DynamicSQLSource(
-                        type = 'tb',
-                        func = x:String[1]|1,
-                        generationFunction = x:TableFunction[1]|
+  $query->sqlToPure(getSources(), []);
+}
 
-                        let param = $x.functionCall.arguments->cast(@StringLiteral)->toOne().value;
-
-                        // Manage retreiving the store 'compiled' vs in-flow
-                        // It helps manage all execution modes:
-                        //    - legend compiled within Pure IDE
-                        //    - Legend compiled stand-alone
-                        //    - Pure
-                        let store = $x->match(
-                          [
-                            a:meta::external::query::sql::expression::AccessorTableFunction[1]|$a.store,
-                            a:Any[1]|pathToElement($param->split('.')->at(0))
-                          ]
-                        )->cast(@meta::relational::metamodel::Database);
-
-                        let databaseStr = $store->meta::relational::grammar::serialization::printDatabase();
-
-                        let code =  '\n###Relational\n'+
-                                    $databaseStr+
-                                    '\n###Pure\n'+
-                                    'function test::container():Any[*]{\n'+
-                                    '  #>{'+$param+'}#\n'+
-                                    '}';
-
-                        meta::legend::compile($code)->filter(x|$x.name == 'container__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne();
-                  )
-                 ]->concatenate(meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(DynamicSQLSourceModule))->cast(@DynamicSQLSourceModule).extraDynamicSQLSources);
-
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:DynamicSQLSource[*], extraPackages:PackageableElement[*]):Function<Any>[1]
+{
   let extensions = meta::relational::extension::relationalExtensions();
-  let context = rootContext($sources, $extensions);
+  let _context = rootContext($sources, $extensions);
+  let context = ^$_context(extraPackageableElements=$extraPackages);
   let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true, withSupported = true));
   let pureFunc = $sqlTransformContext.lambda($context.scopeWithFrom->isTrue())->meta::pure::router::preeval::preval($extensions);
 //  println('Transfomed: '+$pureFunc->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
@@ -1397,7 +1422,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     [
       d:DynamicSQLSource[1] |
         //HERE
-        let vs = evaluate($d.generationFunction, list($tableFunc));
+        let vs = evaluate($d.generationFunction, [list($tableFunc), list($_context)]);
         ^$context
         (
           columns = $vs->genericType().typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns
@@ -3890,6 +3915,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   debug: DebugContext[1];
   relation:Boolean[0..1];
   columns:QueryColumn[*];
+  extraPackageableElements:PackageableElement[*];
 
   withQuery(name:String[1]){
     let cte = $this.withQueries->filter(w | $w.context.name == $name);
@@ -3963,7 +3989,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
     let alias = $this.aliases->filter(a | $a.name == $name || $a.alias == $name)->first();
     let column = $columns->filter(c|$c.name == $name || $c.name == $alias.alias || $c.name == $alias.realias)->first();
 
-    assert($column->isNotEmpty() || !$failIfNotFound, | 'no column found named ' + $name);
+    assert($column->isNotEmpty() || !$failIfNotFound, | 'no column found named: \'' + $name + '\'. Available columns: '+$columns.name->joinStrings('[',', ',']'));
 
     $column;
   }: meta::external::query::sql::transformation::queryToPure::QueryColumn[0..1];
@@ -3997,11 +4023,11 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
       | // TO FIX. Lambda is called far too many times. In clone. In ProcessRootQuery. in SQL to Pure.
         // One simple translation seems to call it minimum 4 times, which is excessive.
         // We need to generate in one shot and compile at the end (including dependencies or expending the scope of compile so that it inherits state from its caller)
-        let functionStr = $lambda->removeFrom()->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''));
-        let databaseStr = $lambda->meta::external::query::sql::transformation::queryToPure::_extractDependencies()->map(x|$x->cast(@meta::relational::metamodel::Database)->meta::relational::grammar::serialization::printDatabase())->joinStrings('\n');
+        let config = meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration();
+        let functionStr = $lambda->removeFrom()->printFunctionDefinition($config, ^GContext(space=''));
+        let dependenciesAsStr = $lambda->meta::external::query::sql::transformation::queryToPure::_extractDependencies()->map(x|$x->printPackageableElements($config))->joinStrings('\n');
 
-        let code =  '\n###Relational\n'+
-                    $databaseStr+
+        let code =  $dependenciesAsStr+
                     '\n###Pure\n'+
                     'function test::container():Any[*]{\n'+
                     '  ' + $functionStr + '\n'+
@@ -4037,7 +4063,8 @@ function meta::external::query::sql::transformation::queryToPure::_extractDepend
     x:SimpleFunctionExpression[1]|let res = $x.parametersValues->evaluateAndDeactivate()->map(p|$p->_extractDependencies());
                                   $res->concatenate($x.func->_extractDependencies());,
     i: InstanceValue[1] | $i.values->evaluateAndDeactivate()->map(p|$p->_extractDependencies()),
-    x: RelationStoreAccessor<Any>[1] | $x.store,
+    x: meta::pure::metamodel::relation::RelationElementAccessor<Any>[1] | $x.sourceElementContainer,
+    s: meta::external::query::sql::expression::SQLExpression<Any>[1]|$s.pureFunction->_extractDependencies(),
     a:Any[1] | []
   ]);
 }
