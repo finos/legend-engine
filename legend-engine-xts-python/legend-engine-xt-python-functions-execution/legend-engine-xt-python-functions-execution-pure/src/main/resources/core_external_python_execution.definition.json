@@ -1,0 +1,7 @@
+{
+  "name": "core_external_python_execution",
+  "pattern": "(meta::python::execution)(::.*)?",
+  "dependencies": [
+    "platform"
+  ]
+}

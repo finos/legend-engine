@@ -104,6 +104,9 @@
         <!-- Application -->
         <module>legend-engine-application-query</module>
         <module>legend-engine-xts-identity</module>
+
+        <!-- Python -->
+        <module>legend-engine-xts-python</module>
     </modules>
 
     <properties>
@@ -3201,6 +3204,32 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xts-deployment-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-python-functions-execution-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-python-functions-execution-pure</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-interpreted</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-compiled</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
