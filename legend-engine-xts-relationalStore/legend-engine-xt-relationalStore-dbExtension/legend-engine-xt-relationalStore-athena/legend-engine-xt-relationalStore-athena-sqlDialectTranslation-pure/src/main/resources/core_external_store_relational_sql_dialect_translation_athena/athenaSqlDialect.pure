@@ -92,14 +92,14 @@ function meta::external::store::relational::sqlDialectTranslation::athena::athen
     pair('FuncTests - jarowinkler_similarity(2/2)', 'Athena SQL Dialect does not support the function - jarowinkler_similarity'),
     pair(
       'FuncTests - parseJson(0/0)',
-      'Expected - {"columnNames":["result"],"rows":[{"values":["{\\n  \\\"foo\\\": \\\"bar\\\"\\n}"]}]}\\n' +
+      'Expected - {"columnNames":["result"],"rows":[{"values":["{\\n  \\\"foo\\\": \\\"bar\\\"\\n}"]}]}\n' +
       'Actual - {"columnNames":["result"],"rows":[{"values":["{\"foo\":\"bar\"}"]}]}"'
     ),
     pair('FuncTests - mode(0/1)','Athena SQL Dialect does not support the function - mode'),
     pair('FuncTests - mode(1/1)', 'Athena SQL Dialect does not support the function - mode'),
     pair('FuncTests - dateadd(1/3)', 'Athena SQL Dialect does not support adding microsecond to date'),
-    pair('FuncTests - time_bucket(0/1)', 'Athena SQL Dialect does not support the function - time bucket'),
-    pair('FuncTests - time_bucket(1/1)', 'Athena SQL Dialect does not support the function - time bucket'),
+    pair('FuncTests - time_bucket(0/1)', 'Athena SQL Dialect does not support the function - time_bucket'),
+    pair('FuncTests - time_bucket(1/1)', 'Athena SQL Dialect does not support the function - time_bucket'),
     pair('SQLStructureTests - Qualify', 'Athena SQL Dialect does not support Qualify!'),
     pair('SQLStructureTests - AsOfJoin', 'Athena SQL Dialect does not support AsOfJoin!')        
   ]->newMap()->cast(@Map<String, String>)
@@ -296,7 +296,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair('numeric', 'double'),
     pair('character', 'varchar'),
     pair('character varying', 'varchar'),
-
+    pair('semistructured', 'string'),
     pair('bool', 'boolean') 
 
   ]);  
@@ -998,9 +998,13 @@ function meta::external::store::relational::sqlDialectTranslation::athena::dateD
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForDateAdd(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
+{ 
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  generateFunctionCallWithArgs($sqlDialect, 'date_add', [$processedArgs->at(2)->toLower(), $processedArgs->at(1), $processedArgs->at(0)], [], $state, $config);
+  let timeUnit = $processedArgs->at(2)->toLower();
+  if ($timeUnit == '\'microsecond\'',
+      |failWithMessage('Athena SQL Dialect does not support adding microsecond to date'),
+      |generateFunctionCallWithArgs($sqlDialect, 'date_add', [$timeUnit, $processedArgs->at(1), $processedArgs->at(0)], [], $state, $config)
+     ); 
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForConvertTimeZone(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
