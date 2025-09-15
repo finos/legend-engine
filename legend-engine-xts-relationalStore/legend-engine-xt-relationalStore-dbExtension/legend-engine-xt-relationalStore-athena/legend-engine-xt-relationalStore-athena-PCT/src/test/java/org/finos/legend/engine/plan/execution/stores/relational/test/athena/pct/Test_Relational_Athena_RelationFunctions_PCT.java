@@ -57,11 +57,12 @@ public class Test_Relational_Athena_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_", "\"Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::PivotedRelation\" not implemented in SqlDialect for database type \"Athena\"\""),
             one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_", "\"Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::PivotedRelation\" not implemented in SqlDialect for database type \"Athena\"\""),
             one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "\"Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::PivotedRelation\" not implemented in SqlDialect for database type \"Athena\"\""),
-            one("meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_", "mismatched input 'qualify"),
-            one("meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_", "mismatched input 'qualify"),
-            one("meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameExtend_Function_1__Boolean_1_", "Error evaluating generic types: QuerySpecification, ExtendedQuerySpecification"),
-            one("meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameFilter_Function_1__Boolean_1_", "Error evaluating generic types: QuerySpecification, ExtendedQuerySpecification"),
+            one("meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_", "\"Athena SQL Dialect does not support Qualify!\""),
+            one("meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_", "\"Athena SQL Dialect does not support Qualify!\""),
+            one("meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameExtend_Function_1__Boolean_1_", "Error during dynamic function evaluation. The type QuerySpecification is not compatible with the type ExtendedQuerySpecification"),
+            one("meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameFilter_Function_1__Boolean_1_", "Error during dynamic function evaluation. The type QuerySpecification is not compatible with the type ExtendedQuerySpecification"),
             one("meta::pure::functions::relation::tests::composition::testVariant_if_Function_1__Boolean_1_", "Athena does not support type - semistructured"),
+            one("meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_", "must be an aggregate expression or appear in GROUP BY clause"),
 
             //Extend Variant
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_", "\"Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda\""),
