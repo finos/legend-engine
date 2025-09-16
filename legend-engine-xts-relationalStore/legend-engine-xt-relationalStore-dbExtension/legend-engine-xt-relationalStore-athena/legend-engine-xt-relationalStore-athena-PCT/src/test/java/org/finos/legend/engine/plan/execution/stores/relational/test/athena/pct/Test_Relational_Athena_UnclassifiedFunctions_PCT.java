@@ -47,8 +47,12 @@ public class Test_Relational_Athena_UnclassifiedFunctions_PCT extends PCTReportC
 
             //Jarowinkler Similarity
             one("meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual_Function_1__Boolean_1_", "\"Athena SQL Dialect does not support the function - jarowinkler_similarity\""),
-            one("meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityNotEqual_Function_1__Boolean_1_", "\"Athena SQL Dialect does not support the function - jarowinkler_similarity\"")
-    );
+            one("meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityNotEqual_Function_1__Boolean_1_", "\"Athena SQL Dialect does not support the function - jarowinkler_similarity\""),
+
+            //Current UserId
+            one("meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for currentUserId().\"")
+
+        );
 
     public static Test suite()
     {

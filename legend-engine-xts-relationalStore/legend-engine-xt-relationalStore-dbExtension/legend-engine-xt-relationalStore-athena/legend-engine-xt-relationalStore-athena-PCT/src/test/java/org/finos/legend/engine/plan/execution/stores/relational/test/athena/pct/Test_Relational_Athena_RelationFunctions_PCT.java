@@ -71,6 +71,8 @@ public class Test_Relational_Athena_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_", "\"Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda\""),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_Function_1__Boolean_1_", "Athena does not support type - semistructured"),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_contains_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),
 
             //Filter
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\""),

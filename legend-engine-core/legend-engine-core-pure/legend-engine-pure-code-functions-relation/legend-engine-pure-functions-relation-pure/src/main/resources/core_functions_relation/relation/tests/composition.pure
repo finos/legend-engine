@@ -923,7 +923,7 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
 {
   let expr = {
                 | #TDS
-                  colOneNum, _Col_two_letter, col_3Mix
+                  colOneNum, Col_two_letter, col_3Mix
                   1, A, 1
                   2, A, 1
                   3, B, 2
@@ -935,12 +935,12 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                   9, C, 3
                   10, D, 1
                 #->rename(~colOneNum, ~col_one_num)
-                 ->rename(~_Col_two_letter, ~colTwoLetter)
-                 ->rename(~col_3Mix, ~_Col_3mix)
-                 ->extend(~newCol:c|$c.col_one_num->toOne()->toString() + $c.colTwoLetter->toOne()->toString() + $c._Col_3mix->toOne()->toString())
-                 ->rename(~newCol, ~_new_col)
-                 ->filter(x|$x._new_col->toOne()->toString()->contains('A'))
-                 ->rename(~_new_col, ~Result)
+                 ->rename(~Col_two_letter, ~colTwoLetter)
+                 ->rename(~col_3Mix, ~Col_3_mix)
+                 ->extend(~newCol:c|$c.col_one_num->toOne()->toString() + $c.colTwoLetter->toOne()->toString() + $c.Col_3_mix->toOne()->toString())
+                 ->rename(~newCol, ~new_col)
+                 ->filter(x|$x.new_col->toOne()->toString()->contains('A'))
+                 ->rename(~new_col, ~Result)
                  ->select(~[col_one_num, colTwoLetter, Result])
               };
 
