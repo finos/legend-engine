@@ -28,6 +28,15 @@ runs:
         server-username: CI_DEPLOY_USERNAME
         server-password: CI_DEPLOY_PASSWORD
 
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.13'
+
+    - name: Check Python
+      shell: bash
+      run: python3 --version
+
     - name: Cache Maven dependencies
       uses: actions/cache/restore@v4
       env:
