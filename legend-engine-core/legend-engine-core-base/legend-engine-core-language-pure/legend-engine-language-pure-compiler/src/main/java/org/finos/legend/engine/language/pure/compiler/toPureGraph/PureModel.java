@@ -62,6 +62,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.pure.generated.Package_Impl;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
@@ -1182,6 +1183,24 @@ public class PureModel implements IPureModel
         return packageableRuntime == null ? null : packageableRuntime._runtimeValue();
     }
 
+    public Root_meta_external_format_shared_binding_Binding getBinding(String fullPath)
+    {
+        return getBinding(fullPath, SourceInformation.getUnknownSourceInformation());
+    }
+
+    public Root_meta_external_format_shared_binding_Binding getBinding(String fullPath, SourceInformation sourceInformation)
+    {
+        Root_meta_external_format_shared_binding_Binding binding = getBinding_safe(fullPath);
+        Assert.assertTrue(binding != null, () -> "Can't find binding '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return binding;
+    }
+
+    public Root_meta_external_format_shared_binding_Binding getBinding_safe(String fullPath)
+    {
+        Root_meta_external_format_shared_binding_Binding binding = lookupAndCastPackageableElement(packagePrefix(fullPath), Root_meta_external_format_shared_binding_Binding.class);
+        return binding == null ? null : binding;
+    }
+    
     public Root_meta_core_runtime_Connection getConnection(String fullPath, SourceInformation sourceInformation)
     {
         Root_meta_core_runtime_Connection connection = this.getConnection_safe(fullPath);

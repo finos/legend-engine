@@ -521,6 +521,31 @@ public class TestGraphQLAPI extends TestGraphQLApiAbstract
 
 
     @Test
+    public void testGraphQLExecuteGeneratePlansDevAPI_Mutation() throws Exception
+    {
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(cache);
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "mutation {\n" +
+                "  allFirms {\n" +
+                "      legalName,\n" +
+                "      id\n" +
+                "    }\n" +
+                "  }";
+        query.variables = "{\n" +
+                "  \"legalName\": \"name 71\",\n" +
+                "  \"id\": 1234\n" +
+                "}";
+        
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", "simple::binding::Firm_Binding", query, null);
+
+        String expected = "{\"result\":{\"\\\"Success - 1 rows updated!\\\"\"}}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
     public void testCacheUsed() throws Exception
     {
         GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());

@@ -161,6 +161,67 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
         );
 }
 
+function meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery(
+                                                                          cl:Class<Any>[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1],
+                                                                          mapping:meta::pure::mapping::Mapping[0..1],
+                                                                          runtime:meta::core::runtime::Runtime[0..1],
+                                                                          binding:meta::external::format::shared::binding::Binding[0..1]
+                                                                      ): meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters[*]
+{
+  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
+  $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true, isMutation($query), $mapping, $runtime, $binding)->map(
+    r | ^meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters(
+      propertyName = $r.propertyName,
+      functionDef = $r.functionDef->addDynamicFilter($cl,$query)
+    )
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(
+                                                                          cl:Class<Any>[1],
+                                                                          mapping:meta::pure::mapping::Mapping[1],
+                                                                          runtime:meta::core::runtime::Runtime[1],
+                                                                          binding: meta::external::format::shared::binding::Binding[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1],
+                                                                          extensions:meta::pure::extension::Extension[*]
+                                                                      ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
+{
+  meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery($cl, $query, $mapping, $runtime, $binding)->map(r|
+              pair(
+                $r.propertyName,
+                meta::pure::executionPlan::executionPlan(
+                  $r.functionDef,
+                  $mapping,
+                  $runtime,
+                  $extensions
+                )
+              )
+        );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPlansWithParameters(
+                                                                          cl:Class<Any>[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1],
+                                                                          mapping:meta::pure::mapping::Mapping[1],
+                                                                          runtime:meta::core::runtime::Runtime[1],
+                                                                          binding:meta::external::format::shared::binding::Binding[1],
+                                                                          extensions:meta::pure::extension::Extension[*]
+                                                                      ):meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan[*]
+{
+  meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery($cl, $query, $mapping, $runtime, $binding)->map(r|
+              ^meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan(
+               name = $r.propertyName,
+               plan =  meta::pure::executionPlan::executionPlan(
+                  $r.functionDef,
+                  $mapping,
+                  $runtime,
+                  $extensions
+                )
+              )
+        );
+}
+
 function meta::external::query::graphQL::transformation::queryToPure::addDynamicFilter(
                                                                           f: LambdaFunction<Any>[1],
                                                                           cl: Class<Any>[1],
@@ -284,6 +345,29 @@ function meta::external::query::graphQL::transformation::queryToPure::getPlanFor
     )
   );
 }
+
+function meta::external::query::graphQL::transformation::queryToPure::getPlanForTotalCountDirective(
+                                                                          cl:Class<Any>[1],
+                                                                          mapping:meta::pure::mapping::Mapping[1],
+                                                                          runtime:meta::core::runtime::Runtime[1],
+                                                                          binding:meta::external::format::shared::binding::Binding[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1],
+                                                                          extensions:meta::pure::extension::Extension[*]
+                                                                      ):meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan[*]
+{
+  meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery($cl, $query,$mapping, $runtime, $binding)->map(r|
+    ^meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan(
+      name = $r.propertyName + '@totalCount',
+      plan =  meta::pure::executionPlan::executionPlan(
+                meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($r, $query),
+                $mapping,
+                $runtime,
+                $extensions
+              )
+    )
+  );
+}
+
 
 function meta::external::query::graphQL::transformation::queryToPure::isASortingFunction(func: Function<Any>[1]): Boolean[1]
 {
@@ -413,5 +497,25 @@ function meta::external::query::graphQL::transformation::queryToPure::getGraphFe
     graphFetchTree = $graphFetch,
     explodedDomain = $res->map(r|pair($r.first, $r.second))
   );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::getGraphFetchFromGraphQL(cl:Class<Any>[1], query:meta::external::query::graphQL::metamodel::sdl::Document[1], mapping: meta::pure::mapping::Mapping[0..1], runtime: meta::core::runtime::Runtime[0..1], binding: meta::external::format::shared::binding::Binding[0..1]):GraphFetchResult[1]
+{
+  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
+  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(isMutation($query), $mapping, $runtime, $binding);
+  ^GraphFetchResult
+  (
+    graphFetchTree = $graphFetch,
+    explodedDomain = $res->map(r|pair($r.first, $r.second))
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::isMutation(query:meta::external::query::graphQL::metamodel::sdl::Document[1]): Boolean[1]
+{
+  $query.definitions->map(d|
+    $d->match([
+      o : OperationDefinition[1]| $o.type == meta::external::query::graphQL::metamodel::sdl::executable::OperationType.mutation
+    ])
+  )->at(0);
 }
 
