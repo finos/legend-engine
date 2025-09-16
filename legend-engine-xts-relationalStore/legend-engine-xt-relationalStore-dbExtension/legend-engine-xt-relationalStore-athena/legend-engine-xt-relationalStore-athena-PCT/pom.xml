@@ -171,7 +171,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <skip>false</skip>
-                            <forkCount>4</forkCount>
                             <reuseForks>false</reuseForks>
                             <systemPropertyVariables>
                                 <AWS_ACCESS_KEY_ID>${env.AWS_ACCESS_KEY_ID}</AWS_ACCESS_KEY_ID>
