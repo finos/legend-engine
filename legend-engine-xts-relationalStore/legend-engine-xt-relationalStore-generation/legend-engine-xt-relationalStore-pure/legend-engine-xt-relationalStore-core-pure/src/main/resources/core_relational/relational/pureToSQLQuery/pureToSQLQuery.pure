@@ -4619,6 +4619,7 @@ function meta::relational::functions::pureToSqlQuery::processRelation(r: Relatio
                             let selectWithFiltersProcessed = $select->pushExtraFilteringOperation($extensions)->pushSavedFilteringOperation($extensions);
                             ^ViewSelectSQLQuery(view=$v, name=$v.name, columns = $selectWithFiltersProcessed.columns, selectSQLQuery = $selectWithFiltersProcessed, schema=$v->mainTable().schema);,
                s:SemiStructuredArrayFlatten[1] | $s,
+               s:SemiStructuredArrayFlattenRelation[1] | $s,
                t:RelationFunction[1] | $t.owner->processRelationFunctionClassMapping(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>)), $state, $milestoningContext, $joinType, $nodeId, $context, $extensions).select
              ]);
 }
@@ -7686,6 +7687,7 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
          ssp:SemiStructuredPropertyAccess[1]|'ssp('+$ssp.operand->buildUniqueName($alias, $selectColumns, $extensions)+'['+$ssp.property->buildUniqueName($alias, $selectColumns, $extensions)+']'+if($ssp.index->isEmpty(),|'',|'['+$ssp.index->toOne()->buildUniqueName($alias, $selectColumns, $extensions)+']')+')',
          ssa:SemiStructuredArrayElementAccess[1]|'ssa('+$ssa.operand->buildUniqueName($alias, $selectColumns, $extensions)+'['+$ssa.index->buildUniqueName($alias, $selectColumns, $extensions)+'])',
          ssf:SemiStructuredArrayFlatten[1]|'ss_flatten('+$ssf.navigation->buildUniqueName($alias, $selectColumns, $extensions)+')',
+         ssfr:SemiStructuredArrayFlattenRelation[1]|'ss_flatten_relation('+$ssfr.navigation->buildUniqueName($alias, $selectColumns, $extensions)+')',
          ssf:SemiStructuredArrayFlattenOutput[1]|'ss_flatten_output('+$ssf.tableAliasColumn->buildUniqueName($alias, $selectColumns, $extensions)+')',
          t:TableFunctionParamPlaceHolder[1] | 'tablefunc_param_holder_(' + $t.var.name + ')',
          p:ProcedureVariablePlaceHolder[1] | 'procedure_variable_param_holder_(' + $p.var.name + ')',
@@ -8244,7 +8246,7 @@ function meta::relational::functions::pureToSqlQuery::extractValue(src:Relationa
 function meta::relational::functions::pureToSqlQuery::reprocessJoinTreeNode(source:RelationalTreeNode[1], target:JoinTreeNode[1], list:OldAliasToNewAlias[*], nodeId:String[1]):Pair<JoinTreeNode, List<OldAliasToNewAlias>>[1]
 {
    let oldTargetAlias = $target.alias;
-   let newTargetAlias = ^TableAlias(name = $oldTargetAlias.name+$nodeId, relationalElement = $oldTargetAlias.relation->match([s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessAliases($list)), r:RelationalOperationElement[1]|$r]));
+   let newTargetAlias = ^TableAlias(name = $oldTargetAlias.name+$nodeId, relationalElement = $oldTargetAlias.relation->match([s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessAliases($list)), s:SemiStructuredArrayFlattenRelation[1] | ^$s(navigation = $s.navigation->reprocessAliases($list)), r:RelationalOperationElement[1]|$r]));
    let newAliasMapping = ^OldAliasToNewAlias(first=$oldTargetAlias.name, second=$newTargetAlias);
    let val = $list->concatenate($newAliasMapping);
 
@@ -8995,6 +8997,7 @@ function meta::relational::functions::pureToSqlQuery::reprocessAliases(element:R
                         s:SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->reprocessAliases($map, $oldColumnToNewColumn), property = $s.property->reprocessAliases($map, $oldColumnToNewColumn), index = $s.index->map(i | $i->reprocessAliases($map, $oldColumnToNewColumn))),
                         s:SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->reprocessAliases($map, $oldColumnToNewColumn), index = $s.index->reprocessAliases($map, $oldColumnToNewColumn)),
                         s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessAliases($map, $oldColumnToNewColumn)),
+                        s:SemiStructuredArrayFlattenRelation[1] | ^$s(navigation = $s.navigation->reprocessAliases($map, $oldColumnToNewColumn)),
                         s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->reprocessAliases($map, $oldColumnToNewColumn)->cast(@TableAliasColumn)),
                         r:RelationalOperationElement[1] | $r;
                     ]
@@ -9130,6 +9133,7 @@ function meta::relational::functions::pureToSqlQuery::extractTableAliasColumns(e
                               f:meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder[1]| $f.parameters->map(p|$p->extractTableAliasColumns());,
                               s:SemiStructuredObjectNavigation[1]|if($s.operand->type() != RelationalOperationElement, | $s.operand->extractTableAliasColumns(), | []),
                               s:SemiStructuredArrayFlatten[1]|$s.navigation->extractTableAliasColumns(),
+                              s:SemiStructuredArrayFlattenRelation[1]|$s.navigation->extractTableAliasColumns(),
                               s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->extractTableAliasColumns(),
                               a:Any[*]|[]
                           ]

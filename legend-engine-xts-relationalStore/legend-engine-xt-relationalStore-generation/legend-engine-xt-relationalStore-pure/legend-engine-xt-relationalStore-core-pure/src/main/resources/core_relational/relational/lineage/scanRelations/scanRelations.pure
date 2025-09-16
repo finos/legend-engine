@@ -703,6 +703,8 @@ function <<access.private>> meta::pure::lineage::scanRelations::extractSourceCol
                                                                 assert($colNames->size() <=1 ,|'Expected max 1 column a union . Found : ' + $colNames->size()->toString()+ ' in '  +$u.setImplementations.id->joinStrings()  );
                                                                 if($colNames->isEmpty(), | [], | $colNames->toOne());,
                               s:SemiStructuredArrayFlatten[1] | let tac = $s->extractTableAliasColumns();
+                                                                if($tac->isEmpty(), | [], | $tac->toOne()->extractSourceColumn($tac.alias.relation->toOne(), $relationIdentifiers, $sourceTree));,
+                              s:SemiStructuredArrayFlattenRelation[1] | let tac = $s->extractTableAliasColumns();
                                                                 if($tac->isEmpty(), | [], | $tac->toOne()->extractSourceColumn($tac.alias.relation->toOne(), $relationIdentifiers, $sourceTree));
                            ]);
 }
