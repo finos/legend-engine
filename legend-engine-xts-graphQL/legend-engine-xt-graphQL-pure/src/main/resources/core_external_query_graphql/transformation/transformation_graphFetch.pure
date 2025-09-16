@@ -62,25 +62,45 @@ function <<access.private>> meta::external::query::graphQL::transformation::quer
 {
   $selection->map(s|$s->match(
     [
-      field : Field[1] |let property = $root->meta::pure::functions::meta::allProperties()->filter(p|$p.name == $field.name);
-                        assert(!$property->isEmpty(), |'Property "'+$field.name+'" can\'t be found in the type '+$root->elementToPath());
-
-
-                         let params =  if($property->toOne()->instanceOf(QualifiedProperty) ,
-                                                    | $property->cast(@QualifiedProperty<Any>).classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType).parameters->tail(),
-                                                    |  []
-                                           );
-                        ^meta::external::query::graphQL::transformation::queryToPure::IntermediatePropertyNode
-                        (
-                            propertyFetch = ^PropertyGraphFetchTree
-                                          (
-                                            property = $property->toOne(),
-                                            parameters = $params),
-                          children = if ($field.selectionSet->isEmpty(),|[],|$field.selectionSet->transformSelectionToPure($property->toOne()->functionReturnType().rawType->cast(@Class<Any>)->toOne()))
-                        );,
+      field : Field[1] |let property = $root->meta::pure::functions::meta::allProperties()->find(p|$p->isValidProperty($field));
+                          assert(!$property->isEmpty(), |'Property "'+$field.name+'" can\'t be found in the type '+$root->elementToPath());
+                          let params =  $property->toOne()->meta::external::query::graphQL::transformation::queryToPure::getQualifiedPropertiesParams();               
+                          ^meta::external::query::graphQL::transformation::queryToPure::IntermediatePropertyNode
+                          (
+                            propertyFetch = ^PropertyGraphFetchTree (property = $property->toOne(), parameters = $params),
+                            children = if ($field.selectionSet->isEmpty(),|[],|$field.selectionSet->transformSelectionToPure($property->toOne()->functionReturnType().rawType->cast(@Class<Any>)->toOne()))
+                          );,
       fragmentId : FragmentSpread[1] | ^meta::external::query::graphQL::transformation::queryToPure::IntermediateFragmentNode(name = $fragmentId.name);
     ]
   ));
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::isValidProperty(property:AbstractProperty<Any>[1],field: Field[1]):Boolean[1]
+{      
+  let propFunc = {|$property->meta::external::query::graphQL::transformation::queryToPure::getQualifiedPropertiesParams()->removeCustomArgs()};
+  let argFunc = {|$field.arguments->evaluateAndDeactivate()->removeCustomArgs()};
+  $property.name == $field.name && if($property->instanceOf(QualifiedProperty),
+                                        |$propFunc->size() == $argFunc->size(),
+                                        |true
+                                      );
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::removeCustomArgs<T>(arguments:T[*]):T[*]
+{
+  let customArguments = ['where'];
+  $arguments->filter(a|if($a->instanceOf(VariableExpression),
+                            |!$a->evaluateAndDeactivate()->cast(@VariableExpression).name->in($customArguments),
+                            |!$a->cast(@Argument).name->in($customArguments)
+                         )
+                    );
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::getQualifiedPropertiesParams(property:AbstractProperty<Any>[1]):VariableExpression[*]
+{
+ if($property->instanceOf(QualifiedProperty),
+    | $property->functionType().parameters->tail(),
+    | []
+  )
 }
 
 function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::buildGraphFetchFromIntermediateNodes(nodes : meta::external::query::graphQL::transformation::queryToPure::IntermediateNode[*], fragments : Map<String, List<meta::external::query::graphQL::transformation::queryToPure::IntermediateNode>>[1]) : PropertyGraphFetchTree[*]
