@@ -27,6 +27,28 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Relational Store - Athena - Execution</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>com.amazon.athena:AthenaJDBC42:jar:2.1.5.1000</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -72,13 +94,26 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- athena driver is not available on maven, it needs to be manually downloaded from https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html -->
-<!--        <dependency>-->
-<!--            <groupId>com.syncron.amazonaws</groupId>-->
-<!--            <artifactId>simba-athena-jdbc-driver</artifactId>-->
-<!--            <version>2.0.34.1000</version>-->
-<!--            <scope>system</scope>-->
-<!--            <systemPath>${basedir}/AthenaJDBC42-2.0.34.1000.jar</systemPath>-->
-<!--        </dependency>-->
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>pct-cloud-test</id>
+            <dependencies>
+                <!-- athena driver is not available on maven, it needs to be manually downloaded from https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html -->
+                <dependency>
+                    <groupId>com.amazon.athena</groupId>
+                    <artifactId>AthenaJDBC42</artifactId>
+                    <version>2.1.5.1000</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-api</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
 </project>
