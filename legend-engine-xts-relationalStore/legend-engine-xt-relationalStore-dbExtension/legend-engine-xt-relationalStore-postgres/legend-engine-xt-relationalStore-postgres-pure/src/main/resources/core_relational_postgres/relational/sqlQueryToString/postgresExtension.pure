@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::functions::sqlQueryToString::postgres::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
@@ -42,11 +43,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForPostgres_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      semiStructuredElementProcessor = processSemiStructuredElementForPostgres_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForPostgres_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslator = getDDLCommandsTranslatorForPostgres()
+      ddlCommandsTranslator = getDDLCommandsTranslatorForPostgres(),
+      dataTypeToSqlText = meta::relational::functions::sqlQueryToString::postgres::dataTypeToSqlTextPostgres_DataType_1__String_1_
    );
 }
 
@@ -177,6 +180,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   let allStates = allGenerationStates();
 
   [
+    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='coalesce(to_json(%s), \'null\'::json)')),
+    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='json_build_array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='json_build_object(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('variantTo',              $allStates,            ^ToSql(format='cast(cast(%s as TEXT) as %s)')),
+    dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='cast(%s as JSON)')),
+    dynaFnToSql('toJson',                 $allStates,            ^ToSql(format='%s')),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='(%s + (INTERVAL \'1 %s\' * %s))', transform={p:String[3] | [$p->at(0), $p->at(2)->replace('Text', '')->removeQuotesIfExist(), $p->at(1)]})), //https://www.postgresql.org/message-id/2B704E31-B533-4159-B6F0-EC284CFE824C%40skype.net,
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
@@ -362,4 +371,29 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
       pair(list([$enumProc.formatValue(DayOfWeek.Saturday, []), $stringProc.formatValue(DayOfWeek.Saturday->toString(), [])]), 6),
       pair(list([$enumProc.formatValue(DayOfWeek.Sunday, []), $stringProc.formatValue(DayOfWeek.Sunday->toString(), [])]), 0)
    ]->filter(p | $p.first.values->contains($day)).second->toOne();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSemiStructuredElementForPostgres(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   $s->match([
+      o:SemiStructuredObjectNavigation[1]     | $o->processSemiStructuredObjectNavigationForPostgres($sgc)
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSemiStructuredObjectNavigationForPostgres(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   let processedOperand = $s.operand->processOperation($sgc);
+
+   let elementAccess = $s->match([
+      p: SemiStructuredPropertyAccess[1]     | 'json_extract_path(%s, %s)'->format([$processedOperand, $p.property->processOperation($sgc)]),
+      a: SemiStructuredArrayElementAccess[1] | '(%s->%s)'->format([$processedOperand, $a.index->processOperation($sgc)])
+   ]);
+
+   if ($s.returnType->isNotEmpty(), 
+    |
+      let dbType = meta::relational::functions::pureToSqlQuery::genericTypeToDataType(^GenericType(rawType = $s.returnType), PureOne)->meta::relational::functions::sqlQueryToString::postgres::dataTypeToSqlTextPostgres();
+      'cast(cast(%s as TEXT) as %s)'->format([$elementAccess, $dbType]);,
+    | 
+      $elementAccess
+  );
 }

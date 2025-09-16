@@ -4043,7 +4043,7 @@ function meta::relational::functions::pureToSqlQuery::processTo(f:FunctionExpres
 
   let castingType = ^DataTypeInfo(dataType = $typeParam.genericType->genericTypeToDataType(ZeroOne));
 
-  let dynaFunc = newDynaFunction('cast', [$valueToCast, $castingType]);
+  let dynaFunc = newDynaFunction('variantTo', [$valueToCast, $castingType]);
 
   let select = $operation.select;
   ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $dynaFunc),|^$select(columns = $dynaFunc)));  
@@ -4059,7 +4059,7 @@ function meta::relational::functions::pureToSqlQuery::processToMany(f:FunctionEx
 
   let castingType = ^DataTypeInfo(dataType = ^meta::relational::metamodel::datatype::Array(type = $typeParam.genericType->genericTypeToDataType(ZeroOne)));
 
-  let dynaFunc = newDynaFunction('cast', [$valueToCast, $castingType]);
+  let dynaFunc = newDynaFunction('variantTo', [$valueToCast, $castingType]);
 
   let select = $operation.select;
   ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $dynaFunc),|^$select(columns = $dynaFunc)));    
@@ -4145,7 +4145,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantAt(f:Functio
     ->cast(@SelectWithCursor);
   let property = $propertyToAccess.select.columns->toOne();
 
-  let relOpElement = ^SemiStructuredArrayElementAccess(index = $property, operand = $operand);
+  let relOpElement = ^SemiStructuredArrayElementAccess(index = $property, operand = $operand, returnType = $f.genericType.rawType);
 
   let select = $operation.select;
   ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $relOpElement),|^$select(columns = $relOpElement)));
@@ -4163,7 +4163,7 @@ function meta::relational::functions::pureToSqlQuery::processMapGet(f:FunctionEx
     ->cast(@SelectWithCursor);
   let property = $propertyToAccess.select.columns->toOne();
 
-  let relOpElement = ^SemiStructuredPropertyAccess(property = $property, operand = $operand);
+  let relOpElement = ^SemiStructuredPropertyAccess(property = $property, operand = $operand, returnType = $f.genericType.rawType);
 
   let select = $operation.select;
   ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $relOpElement),|^$select(columns = $relOpElement)));  

@@ -58,7 +58,7 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
             // In
             one("meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_", "NullPointer exception", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: operator does not exist: integer = text\n  Hint: No operator matches the given name and argument type(s). You might need to add explicit type casts.\n  Position: 10", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "ERROR: operator does not exist: integer = text", AdapterQualifier.needsInvestigation),
 
             // Max
             one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
@@ -118,14 +118,9 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'range_Integer_1__Integer_1__Integer_1__Integer_MANY_'", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: OVER is not supported for ordered-set aggregate percentile_cont", AdapterQualifier.unsupportedFeature),
 
-            // CosH
-            pack("meta::pure::functions::math::tests::trigonometry::cosh", "does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8", AdapterQualifier.needsInvestigation),
-
-            // SinH
-            pack("meta::pure::functions::math::tests::trigonometry::sinh", "does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8", AdapterQualifier.needsInvestigation),
-
-            // TanH
-            pack("meta::pure::functions::math::tests::trigonometry::tanh", "does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 8", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"cosh(%s)\"\""),
+            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"sinh(%s)\"\""),
+            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"tanh(%s)\"\""),
 
             // Bitwise
             pack("meta::pure::functions::math::tests::bitAnd", "\"[unsupported-api] The function 'bitAnd' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),

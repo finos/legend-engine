@@ -48,7 +48,7 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
 
             // Contains
             one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: operator does not exist: integer = text\n  Hint: No operator matches the given name and argument type(s). You might need to add explicit type casts.\n  Position: 10", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "ERROR: operator does not exist: integer = text", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'", AdapterQualifier.unsupportedFeature),
 
             // Drop
@@ -294,10 +294,10 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::string::tests::parseBoolean::testParseTrue_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseBoolean' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             // ParseDate
-            one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "\"expected %2014-02-27 to be an instance of DateTime, actual: StrictDate\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_", "\"\nexpected: %2014-02-27T15:01:35.231+0000\nactual:   %2014-02-27T10:01:35+0000\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_", "\"\nexpected: %2014-02-27T10:01:35.231+0000\nactual:   %2014-02-27T10:01:35+0000\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "\"\nexpected: %2014-02-27T10:01:35.231+0000\nactual:   %2014-02-27T10:01:35+0000\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "ERROR: invalid value \"T0\" for \"HH24\"\n  Detail: Value must be an integer.", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_", "ERROR: invalid value \"T1\" for \"HH24\"\n  Detail: Value must be an integer.", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_", "ERROR: invalid value \"T1\" for \"HH24\"\n  Detail: Value must be an integer.", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "ERROR: invalid value \"T1\" for \"HH24\"\n  Detail: Value must be an integer.", AdapterQualifier.needsInvestigation),
 
             // ParseDecimal
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: invalid input syntax for type numeric: \"3.14159d\"", AdapterQualifier.needsInvestigation),
@@ -307,7 +307,6 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
             //variant
             one("meta::pure::functions::collection::tests::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Postgres", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::fold::testFold_FromVariant_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Postgres", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::get::testGet_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Postgres\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::collection::tests::keys::testKeys_Function_1__Boolean_1_", "\"[unsupported-api] The function 'keys' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::collection::tests::values::testValues_Function_1__Boolean_1_", "\"[unsupported-api] The function 'values' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::collection::tests::put::testPut_addsEntry_Function_1__Boolean_1_", "\"[unsupported-api] The function 'mapConcatenate' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
