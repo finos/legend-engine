@@ -21,9 +21,12 @@ import java.util.Properties;
 
 public class AthenaDatasourceSpecificationRuntime extends org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification
 {
+    private static final int ATHENA_MAX_POOL_SIZE = 20;
+    private static final int ATHENA_MIN_POOL_SIZE = 0;
+
     public AthenaDatasourceSpecificationRuntime(AthenaDatasourceSpecificationKey key, DatabaseManager driver, org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy authenticationStrategyRuntime)
     {
-        super(key, driver, authenticationStrategyRuntime, addPropertiesFromDataSource(key));
+        super(key, driver, authenticationStrategyRuntime, addPropertiesFromDataSource(key), ATHENA_MAX_POOL_SIZE, ATHENA_MIN_POOL_SIZE);
     }
 
     private static Properties addPropertiesFromDataSource(AthenaDatasourceSpecificationKey key)

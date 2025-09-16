@@ -60,7 +60,6 @@ public class Test_Relational_Athena_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_", "\"Athena SQL Dialect does not support Qualify!\""),
             one("meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_", "\"Athena SQL Dialect does not support Qualify!\""),
             one("meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameExtend_Function_1__Boolean_1_", "Error during dynamic function evaluation. The type QuerySpecification is not compatible with the type ExtendedQuerySpecification"),
-            one("meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameFilter_Function_1__Boolean_1_", "Error during dynamic function evaluation. The type QuerySpecification is not compatible with the type ExtendedQuerySpecification"),
             one("meta::pure::functions::relation::tests::composition::testVariant_if_Function_1__Boolean_1_", "Athena does not support type - semistructured"),
             one("meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_", "must be an aggregate expression or appear in GROUP BY clause"),
 
