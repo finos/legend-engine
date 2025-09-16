@@ -26,10 +26,24 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   assertEquals('|#TDS{\na,b\n1,2\n2,3}#->meta::pure::functions::relation::select(~[a])',
                 transform('select a from csv(\'a,b\n1,2\n2,3\')',[]));
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicTable():Boolean[1]
+{
   assertEquals('|#>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->meta::pure::functions::relation::select(~[n])',
-                transform('select n from tb(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb\')',[]));
+              transform('select n from tb(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb\')',[]));
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicTableInjectedSpec():Boolean[1]
+{
   assertEquals('|#>{legend::db.myTb}#->meta::pure::functions::relation::select(~[a])',
                 transform('select a from tb(\'legend::db.myTb\')', meta::legend::compile(readFile('/core_external_query_sql/binding/fromPure/tests/dynamic/db.legend')->toOne())));
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testStarOnDynamicTable():Boolean[1]
+{
+  assertEquals('|#>{legend::db.myTb}#',
+                transform('select * from tb(\'legend::db.myTb\')', meta::legend::compile(readFile('/core_external_query_sql/binding/fromPure/tests/dynamic/db.legend')->toOne())));
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::dynamic::transform(sql:String[1], extraPacks:PackageableElement[*]):String[1]

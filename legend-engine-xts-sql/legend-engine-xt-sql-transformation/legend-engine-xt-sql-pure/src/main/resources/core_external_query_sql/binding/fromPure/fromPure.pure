@@ -1423,20 +1423,21 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       d:DynamicSQLSource[1] |
         //HERE
         let vs = evaluate($d.generationFunction, [list($tableFunc), list($_context)]);
+        let columns = $vs->genericType().typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns;
         ^$context
         (
-          columns = $vs->genericType().typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns
-          ->map(c | ^QueryColumn(
-                        name = $c.name->toOne(),
-                        type = $c.classifierGenericType.typeArguments->last().rawType->cast(@DataType),
-                        multiplicity = $c.classifierGenericType.multiplicityArguments->first());
-          ),
+          columns = $columns->map(c | ^QueryColumn(
+                                          name = $c.name->toOne(),
+                                          type = $c.classifierGenericType.typeArguments->last().rawType->cast(@DataType),
+                                          multiplicity = $c.classifierGenericType.multiplicityArguments->first());
+                              ),
           expression = ^InstanceValue
                        (
                         genericType=$vs->genericType(),
                         multiplicity = PureOne,
                         values = $vs->toOne()
-                       )
+                       ),
+          aliases = $columns->map(c | ^SQLColumnAlias(name = $c.name->toOne()))
         );,
       s:SQLSource[1]|
           let parameters = $source.func->getParameters()->evaluateAndDeactivate();
