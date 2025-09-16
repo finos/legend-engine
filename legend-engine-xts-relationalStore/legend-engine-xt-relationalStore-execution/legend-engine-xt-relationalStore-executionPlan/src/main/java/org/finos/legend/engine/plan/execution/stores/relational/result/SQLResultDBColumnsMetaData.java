@@ -98,7 +98,7 @@ public class SQLResultDBColumnsMetaData
         int zeroBasedIndex = index - 1;
         SQLResultColumn sqlResultColumn = this.sqlResultColumns.get(zeroBasedIndex);
         String colTypeName = this.dbMetaDataType.get(zeroBasedIndex).getTwo();
-        return (colTypeName != null && colTypeName.startsWith(dbColumnTypeName)) || alloyColumnType.equals(sqlResultColumn.dataType);
+        return (colTypeName != null && colTypeName.toUpperCase().startsWith(dbColumnTypeName)) || alloyColumnType.equals(sqlResultColumn.dataType);
     }
 
     private boolean columnIsOfType(int index, int dbColumnType, String alloyColumnType)
