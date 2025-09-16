@@ -21,10 +21,7 @@ env:
 on:
   push:
     branches:
-      - master
-  pull_request:
-    branches:
-      - master
+      - feature-athena-*
 
 # Cancel running jobs from previous pipelines of the same workflow on PR to save resource when commits are pushed quickly
 # NOTE: we don't want this behavior on default branch
@@ -79,6 +76,21 @@ jobs:
           git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global author.name "${GITHUB_ACTOR}"
 
+      - name: Setup Athena JDBC Driver Jar and pom
+        run: |
+          mkdir -p ~/.m2/repository/com/amazon/athena/AthenaJDBC42/2.1.5.1000
+          wget -q --show-progress https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.1.5.1000/AthenaJDBC42-2.1.5.1000.jar -O ~/.m2/repository/com/amazon/athena/AthenaJDBC42/2.1.5.1000/AthenaJDBC42-2.1.5.1000.jar
+          echo '<?xml version="1.0" encoding="UTF-8"?>
+          <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+                   xmlns="http://maven.apache.org/POM/4.0.0"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>com.amazon.athena</groupId>
+              <artifactId>AthenaJDBC42</artifactId>
+              <version>2.1.5.1000</version>
+              <description>POM for AthenaJDBC42 jar</description>
+          </project>' > ~/.m2/repository/com/amazon/athena/AthenaJDBC42/2.1.5.1000/AthenaJDBC42-2.1.5.1000.pom
+
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
 
@@ -97,7 +109,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx7g"
         run: |
-          mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }}
+          mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }} -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-athena/legend-engine-xt-relationalStore-athena-SDT -am
 
       - name: Build (Master + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
