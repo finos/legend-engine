@@ -27,7 +27,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionS
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.function.extension.FunctionTestableRunnerExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
@@ -214,6 +213,41 @@ public class TestFunctionTestSuite
         Assert.assertTrue(modelRelationFunctionTestResults.get(0) instanceof TestExecuted);
         TestExecuted testExecuted = (TestExecuted) modelRelationFunctionTestResults.get(0);
         Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+    }
+
+    @Test
+    public void testRelationFunctionTestWithRelationAccessor()
+    {
+        List<TestResult> relationFunctionTestResults = executeFunctionTest("legend-testable-function-test-relation-relationDatabaseAccessor.pure", "model::RelationQuery__Relation_1_");
+        Assert.assertEquals(2, relationFunctionTestResults.size());
+
+        Assert.assertTrue(relationFunctionTestResults.get(0) instanceof TestExecuted);
+        TestExecuted testExecuted = (TestExecuted) relationFunctionTestResults.get(0);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+
+        Assert.assertTrue(relationFunctionTestResults.get(1) instanceof TestExecuted);
+        testExecuted = (TestExecuted) relationFunctionTestResults.get(1);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+    }
+
+    @Test
+    public void testModelRelationFunctionTestWithRelationAccessor()
+    {
+        List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-relation-model-relationDatabaseAccessor.pure", "model::PersonQuery__TabularDataSet_1_");
+        Assert.assertEquals(1, inlineServiceStoreTestResults.size());
+        Assert.assertTrue(inlineServiceStoreTestResults.get(0) instanceof TestExecuted);
+        TestExecuted testExecuted = (TestExecuted) inlineServiceStoreTestResults.get(0);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+
+        List<TestResult> testResults = executeFunctionTest("legend-testable-function-test-relation-model-relationDatabaseAccessor.pure", "model::PersonWithParams_String_1__TabularDataSet_1_");
+        Assert.assertEquals(2, testResults.size());
+        Assert.assertTrue(hasTestPassed(findTestById(testResults, "testPass")));
+        String expected = "[]";
+        String actual = "[ {\n" +
+                "  \"First Name\" : \"Nicole\",\n" +
+                "  \"Last Name\" : \"Smith\"\n" +
+                "} ]";
+        testFailingTest(findTestById(testResults, "testFail"), expected, actual);
     }
 
     private List<TestResult> executeFunctionTest(String grammar, String fullPath)

@@ -1,0 +1,381 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "from",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "project",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "getAll",
+                  "parameters": [
+                    {
+                      "_type": "packageableElementPtr",
+                      "fullPath": "model::Person",
+                      "sourceInformation": {
+                        "endColumn": 15,
+                        "endLine": 80,
+                        "sourceId": "",
+                        "startColumn": 3,
+                        "startLine": 80
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 21,
+                    "endLine": 80,
+                    "sourceId": "",
+                    "startColumn": 16,
+                    "startLine": 80
+                  }
+                },
+                {
+                  "_type": "collection",
+                  "multiplicity": {
+                    "lowerBound": 2,
+                    "upperBound": 2
+                  },
+                  "sourceInformation": {
+                    "endColumn": 5,
+                    "endLine": 84,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 81
+                  },
+                  "values": [
+                    {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "x",
+                              "sourceInformation": {
+                                "endColumn": 28,
+                                "endLine": 82,
+                                "sourceId": "",
+                                "startColumn": 27,
+                                "startLine": 82
+                              }
+                            }
+                          ],
+                          "property": "firstName",
+                          "sourceInformation": {
+                            "endColumn": 38,
+                            "endLine": 82,
+                            "sourceId": "",
+                            "startColumn": 30,
+                            "startLine": 82
+                          }
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "genericType": {
+                            "multiplicityArguments": [],
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "model::Person",
+                              "sourceInformation": {
+                                "endColumn": 22,
+                                "endLine": 82,
+                                "sourceId": "",
+                                "startColumn": 10,
+                                "startLine": 82
+                              }
+                            },
+                            "typeArguments": [],
+                            "typeVariableValues": []
+                          },
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          },
+                          "name": "x",
+                          "sourceInformation": {
+                            "endColumn": 25,
+                            "endLine": 82,
+                            "sourceId": "",
+                            "startColumn": 7,
+                            "startLine": 82
+                          }
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 38,
+                        "endLine": 82,
+                        "sourceId": "",
+                        "startColumn": 26,
+                        "startLine": 82
+                      }
+                    },
+                    {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "x",
+                              "sourceInformation": {
+                                "endColumn": 28,
+                                "endLine": 83,
+                                "sourceId": "",
+                                "startColumn": 27,
+                                "startLine": 83
+                              }
+                            }
+                          ],
+                          "property": "lastName",
+                          "sourceInformation": {
+                            "endColumn": 37,
+                            "endLine": 83,
+                            "sourceId": "",
+                            "startColumn": 30,
+                            "startLine": 83
+                          }
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "genericType": {
+                            "multiplicityArguments": [],
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "model::Person",
+                              "sourceInformation": {
+                                "endColumn": 22,
+                                "endLine": 83,
+                                "sourceId": "",
+                                "startColumn": 10,
+                                "startLine": 83
+                              }
+                            },
+                            "typeArguments": [],
+                            "typeVariableValues": []
+                          },
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          },
+                          "name": "x",
+                          "sourceInformation": {
+                            "endColumn": 25,
+                            "endLine": 83,
+                            "sourceId": "",
+                            "startColumn": 7,
+                            "startLine": 83
+                          }
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 37,
+                        "endLine": 83,
+                        "sourceId": "",
+                        "startColumn": 26,
+                        "startLine": 83
+                      }
+                    }
+                  ]
+                },
+                {
+                  "_type": "collection",
+                  "multiplicity": {
+                    "lowerBound": 2,
+                    "upperBound": 2
+                  },
+                  "sourceInformation": {
+                    "endColumn": 5,
+                    "endLine": 88,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 85
+                  },
+                  "values": [
+                    {
+                      "_type": "string",
+                      "sourceInformation": {
+                        "endColumn": 18,
+                        "endLine": 86,
+                        "sourceId": "",
+                        "startColumn": 7,
+                        "startLine": 86
+                      },
+                      "value": "First Name"
+                    },
+                    {
+                      "_type": "string",
+                      "sourceInformation": {
+                        "endColumn": 17,
+                        "endLine": 87,
+                        "sourceId": "",
+                        "startColumn": 7,
+                        "startLine": 87
+                      },
+                      "value": "Last Name"
+                    }
+                  ]
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 30,
+                "endLine": 80,
+                "sourceId": "",
+                "startColumn": 24,
+                "startLine": 80
+              }
+            },
+            {
+              "_type": "packageableElementPtr",
+              "fullPath": "execution::RelationalMapping",
+              "sourceInformation": {
+                "endColumn": 32,
+                "endLine": 90,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 90
+              }
+            },
+            {
+              "_type": "packageableElementPtr",
+              "fullPath": "execution::Runtime",
+              "sourceInformation": {
+                "endColumn": 22,
+                "endLine": 91,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 91
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 9,
+            "endLine": 89,
+            "sourceId": "",
+            "startColumn": 6,
+            "startLine": 89
+          }
+        }
+      ],
+      "name": "PersonQuery2__TabularDataSet_1_",
+      "package": "model",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "meta::pure::tds::TabularDataSet",
+          "sourceInformation": {
+            "endColumn": 63,
+            "endLine": 78,
+            "sourceId": "",
+            "startColumn": 33,
+            "startLine": 78
+          }
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 106,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 78
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": [
+        {
+          "_type": "functionTestSuite",
+          "id": "testSuite_1",
+          "sourceInformation": {
+            "endColumn": 3,
+            "endLine": 105,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 95
+          },
+          "testData": [
+            {
+              "data": {
+                "_type": "modelStore",
+                "modelData": [
+                  {
+                    "_type": "modelEmbeddedData",
+                    "data": {
+                      "_type": "externalFormat",
+                      "contentType": "application/json",
+                      "data": "{\n  \"employees\": [\n    {\n      \"firstName\": \"firstEmployeeName\",\n      \"lastName\": \"secondEmployeeName\"\n    }\n  ],\n  \"legalName\": \"Apple Inc\"\n}"
+                    },
+                    "model": "model::Firm"
+                  }
+                ]
+              },
+              "store": {
+                "path": "ModelStore",
+                "type": "STORE"
+              }
+            }
+          ],
+          "tests": [
+            {
+              "_type": "functionTest",
+              "assertions": [
+                {
+                  "_type": "equalToJson",
+                  "expected": {
+                    "_type": "externalFormat",
+                    "contentType": "application/json",
+                    "data": "[{\n  \"First Name\" : \"Nicole\",\"Last Name\" : \"Smith\"} ]",
+                    "sourceInformation": {
+                      "endColumn": 96,
+                      "endLine": 104,
+                      "sourceId": "",
+                      "startColumn": 34,
+                      "startLine": 104
+                    }
+                  },
+                  "id": "default",
+                  "sourceInformation": {
+                    "endColumn": 96,
+                    "endLine": 104,
+                    "sourceId": "",
+                    "startColumn": 34,
+                    "startLine": 104
+                  }
+                }
+              ],
+              "id": "testPass",
+              "sourceInformation": {
+                "endColumn": 97,
+                "endLine": 104,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 104
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

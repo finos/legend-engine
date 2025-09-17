@@ -330,7 +330,7 @@ public class HelperRuntimeBuilder
 
     public static Store getStore(StoreProviderPointer storeProviderPointer, CompileContext context)
     {
-        return StoreProviderCompilerHelper.getStoreFromStoreProviderPointers(storeProviderPointer, context);
+        return StoreProviderCompilerHelper.getStoreFromPackageableElementPointer(storeProviderPointer, context);
     }
 
     /**

@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.*;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -37,6 +38,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -54,6 +56,27 @@ public interface EmbeddedDataCompilerHelper
             return new Root_meta_external_format_shared_metamodel_data_ExternalFormatData_Impl("", m3SourceInformation, context.pureModel.getClass("meta::external::format::shared::metamodel::data::ExternalFormatData"))
                     ._contentType(externalFormatData.contentType)
                     ._data(externalFormatData.data);
+        }
+        else if (embeddedData instanceof RelationElementsData)
+        {
+            RelationElementsData relationElementsData = (RelationElementsData) embeddedData;
+            HashSet<String> relationElementsPaths = new HashSet<>();
+            relationElementsData.relationElements.forEach(relationElement ->
+            {
+                String paths = String.join(".", relationElement.paths);
+                if (relationElementsPaths.contains(paths))
+                {
+                    throw new EngineException("Duplicated relation element path: '" + paths + "'", relationElement.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                relationElementsPaths.add(paths);
+            });
+            return new Root_meta_pure_data_RelationElementsData_Impl("", m3SourceInformation, context.pureModel.getClass("meta::pure::data::RelationElementsData"))
+                    ._relationElements(ListIterate.collect(relationElementsData.relationElements, relationElement ->
+                            new Root_meta_pure_data_RelationElement_Impl("", SourceInformationHelper.toM3SourceInformation(relationElement.sourceInformation), context.pureModel.getClass("meta::pure::data::RelationElement"))
+                                    ._columns(Lists.immutable.ofAll(relationElement.columns))
+                                    ._paths(Lists.immutable.ofAll(relationElement.paths))
+                                    ._rows(ListIterate.collect(relationElement.rows, row -> new Root_meta_pure_data_RelationRow_Impl("", null, context.pureModel.getClass("meta::pure::data::RelationRow"))
+                                            ._values(Lists.immutable.ofAll(row.values))))));
         }
         else if (embeddedData instanceof ModelStoreData)
         {

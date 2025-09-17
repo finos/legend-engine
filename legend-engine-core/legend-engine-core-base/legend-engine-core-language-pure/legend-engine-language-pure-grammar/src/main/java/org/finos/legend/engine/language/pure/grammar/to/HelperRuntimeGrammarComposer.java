@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
@@ -103,7 +104,7 @@ public class HelperRuntimeGrammarComposer
                     connectionStoreStrings.add(
                             getTabString(baseIndentation + 1) + PureGrammarComposerUtility.convertPath(connectionPointerStore.connectionPointer.connection) + ":\n" +
                                     getTabString(baseIndentation + 1) + "[\n" +
-                                    (LazyIterate.collect(connectionPointerStore.storePointers, storePointer -> getTabString(baseIndentation + 2) + renderStoreProviderPointer(storePointer))).makeString(",\n") + "\n" +
+                                    (LazyIterate.collect(connectionPointerStore.storePointers, storePointer -> getTabString(baseIndentation + 2) + renderPackageableElementPointer(storePointer))).makeString(",\n") + "\n" +
                                     getTabString(baseIndentation + 1) + "]"
                     );
                 }
@@ -116,8 +117,8 @@ public class HelperRuntimeGrammarComposer
         return builder.toString();
     }
 
-    public static String renderStoreProviderPointer(StoreProviderPointer storeProviderPointer)
+    public static String renderPackageableElementPointer(PackageableElementPointer packageableElementPointer)
     {
-        return (storeProviderPointer.type.equals(PackageableElementType.STORE) ?  "" : ("(" + storeProviderPointer.type.toString().toLowerCase() + ") ")) + PureGrammarComposerUtility.convertPath(storeProviderPointer.path);
+        return (packageableElementPointer.type == null || packageableElementPointer.type.equals(PackageableElementType.STORE) ?  "" : ("(" + packageableElementPointer.type.toString().toLowerCase() + ") ")) + PureGrammarComposerUtility.convertPath(packageableElementPointer.path);
     }
 }

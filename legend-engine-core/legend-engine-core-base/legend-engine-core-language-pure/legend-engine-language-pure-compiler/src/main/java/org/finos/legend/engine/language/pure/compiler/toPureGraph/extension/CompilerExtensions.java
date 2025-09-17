@@ -50,11 +50,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance.RelationStoreAccessor;
@@ -64,6 +64,7 @@ import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime;
+import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestData;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
@@ -123,6 +124,7 @@ public class CompilerExtensions
     private final ImmutableList<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> extraExecutionOptionProcessors;
     private final ImmutableList<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> extraEmbeddedDataProcessors;
     private final ImmutableList<Procedure3<Set<PackageableElementPointer>, EmbeddedData, CompileContext>> extraEmbeddedDataPrerequisiteElementsPassProcessors;
+    private final ImmutableList<Function4<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, FunctionTestData, CompileContext, ProcessingContext, Root_meta_legend_function_metamodel_FunctionTestData>> extraFunctionTestDataProcessors;
     private final ImmutableList<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> extraTestProcessors;
     private final ImmutableList<Procedure3<Set<PackageableElementPointer>, Test, CompileContext>> extraTestPrerequisiteElementsPassProcessors;
     private final ImmutableList<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> extraTestAssertionProcessors;
@@ -169,6 +171,7 @@ public class CompilerExtensions
         this.extraExecutionOptionProcessors = this.extensions.flatCollect(CompilerExtension::getExtraExecutionOptionProcessors);
         this.extraEmbeddedDataProcessors = this.extensions.flatCollect(CompilerExtension::getExtraEmbeddedDataProcessors);
         this.extraEmbeddedDataPrerequisiteElementsPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraEmbeddedDataPrerequisiteElementsPassProcessors);
+        this.extraFunctionTestDataProcessors = this.extensions.flatCollect(CompilerExtension::getExtraFunctionTestDataProcessors);
         this.extraTestProcessors = this.extensions.flatCollect(CompilerExtension::getExtraTestProcessors);
         this.extraTestPrerequisiteElementsPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraTestPrerequisiteElementsPassProcessors);
         this.extraTestAssertionProcessors = this.extensions.flatCollect(CompilerExtension::getExtraTestAssertionProcessors);
@@ -358,6 +361,11 @@ public class CompilerExtensions
     public List<Procedure3<Set<PackageableElementPointer>, EmbeddedData, CompileContext>> getExtraEmbeddedDataPrerequisiteElementsPassProcessors()
     {
         return this.extraEmbeddedDataPrerequisiteElementsPassProcessors.castToList();
+    }
+
+    public List<Function4<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, FunctionTestData, CompileContext, ProcessingContext, Root_meta_legend_function_metamodel_FunctionTestData>> getExtraFunctionTestDataProcessors()
+    {
+        return this.extraFunctionTestDataProcessors.castToList();
     }
 
     public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> getExtraTestProcessors()

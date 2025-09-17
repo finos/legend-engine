@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function;
+lexer grammar RelationElementsDataLexerGrammar;
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
+import M3LexerGrammar;
 
-import java.util.List;
+// -------------------------------------- KEYWORD --------------------------------------
 
-public class FunctionTestSuite extends TestSuite
-{
-    public List<FunctionTestData> testData;
-}
+RELATION:                          'relation';
+TABLE_START: (COLON WHITESPACE*) -> pushMode(TABLE_MODE);
+
+mode TABLE_MODE;
+
+    ROW_VALUE: (EscSeq | ~[,\r\n;])+;
+    ROW_COMMA: ',';
+    NEWLINE: '\r'?'\n' [ \t]*;
+    TABLE_END: ';' -> popMode;

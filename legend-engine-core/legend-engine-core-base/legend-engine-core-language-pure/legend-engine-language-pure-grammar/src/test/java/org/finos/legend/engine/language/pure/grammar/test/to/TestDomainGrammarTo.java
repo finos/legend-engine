@@ -28,4 +28,30 @@ public class TestDomainGrammarTo extends TestGrammarRoundtrip.TestGrammarRoundtr
                             "  |showcase::DataDefect.all()->filter(x|$x.status == showcase::Status.'Closed by DGO')\n" +
                             "}\n");
     }
+
+    @Test
+    public void testBackwardCompatibilityWithStoreTestData()
+    {
+        testTo("simpleFunctionWithStoreTestDataCompatibility.json",
+                "function model::PersonQuery2(): meta::pure::tds::TabularDataSet[1]\n" +
+                        "{\n" +
+                        "  model::Person.all()->project([x: model::Person[1]|$x.firstName, x: model::Person[1]|$x.lastName], ['First Name', 'Last Name'])->from(execution::RelationalMapping, execution::Runtime)\n" +
+                        "}\n" +
+                        "{\n" +
+                        "  testSuite_1\n" +
+                        "  (\n" +
+                        "    ModelStore:\n" +
+                        "        ModelStore\n" +
+                        "        #{\n" +
+                        "          model::Firm:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/json';\n" +
+                        "              data: '{\\n  \"employees\": [\\n    {\\n      \"firstName\": \"firstEmployeeName\",\\n      \"lastName\": \"secondEmployeeName\"\\n    }\\n  ],\\n  \"legalName\": \"Apple Inc\"\\n}';\n" +
+                        "            }#\n" +
+                        "        }#;\n" +
+                        "    testPass | PersonQuery2() => (JSON) '[{\\n  \"First Name\" : \"Nicole\",\"Last Name\" : \"Smith\"} ]';\n" +
+                        "  )\n" +
+                        "}\n");
+    }
 }

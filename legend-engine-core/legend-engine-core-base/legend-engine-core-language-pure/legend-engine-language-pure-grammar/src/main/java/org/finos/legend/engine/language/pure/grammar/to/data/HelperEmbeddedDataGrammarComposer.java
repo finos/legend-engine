@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.to.data;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ExternalFormatEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ModelStoreEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ReferenceEmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.RelationElementsEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
@@ -25,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
 
 import java.util.Objects;
 
@@ -70,6 +72,12 @@ public class HelperEmbeddedDataGrammarComposer
             String content = new ModelStoreDataGrammarComposer(context).compose((ModelStoreData) embeddedData);
 
             return new ContentWithType(ModelStoreEmbeddedDataParser.TYPE, content);
+        }
+        else if (embeddedData instanceof RelationElementsData)
+        {
+            String content = new HelperRelationElementsDataComposer(context).visitRelationElementsData((RelationElementsData) embeddedData);
+
+            return new ContentWithType(RelationElementsEmbeddedDataParser.TYPE, content);
         }
         else
         {

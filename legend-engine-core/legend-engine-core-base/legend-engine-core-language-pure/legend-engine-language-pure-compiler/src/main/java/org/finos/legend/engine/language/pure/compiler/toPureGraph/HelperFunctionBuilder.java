@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
@@ -28,21 +27,19 @@ import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData;
-import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTest;
+import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestData;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestSuite;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestSuite_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTest_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_ParameterValue;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_ParameterValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_StoreTestData;
-import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_StoreTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Set;
 
@@ -69,7 +66,7 @@ public class HelperFunctionBuilder
             Root_meta_legend_function_metamodel_FunctionTestSuite metamodelSuite =  new Root_meta_legend_function_metamodel_FunctionTestSuite_Impl("", SourceInformationHelper.toM3SourceInformation(test.sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::FunctionTestSuite"));
             if (testSuite.testData != null && !testSuite.testData.isEmpty())
             {
-                TestBuilderHelper.validateIds(ListIterate.collect(testSuite.testData, testData -> testData.store.path), testSuite.sourceInformation, "Multiple test data found for stores");
+                TestBuilderHelper.validateIds(ListIterate.collect(testSuite.testData, testData -> testData.packageableElementPointer.path), testSuite.sourceInformation, "Multiple test data found for stores");
                 RichIterable<? extends org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime>  runtimes;
                 // TODO: we can remove some of these checks once we support these use cases
                 try
@@ -80,16 +77,11 @@ public class HelperFunctionBuilder
                 {
                     throw new EngineException("Unable to extract runtime from function which test data is provided for. Test Data is only supported to be provided for runtimes", testSuite.sourceInformation, EngineErrorType.COMPILATION, error);
                 }
-                if (runtimes.isEmpty())
-                {
-                    throw new EngineException("Function test data requires a function to have one runtime: No runtimes found in function." + metamodelFunction.getName(), testSuite.sourceInformation, EngineErrorType.COMPILATION);
-                }
                 if (runtimes.size() > 1)
                 {
                     throw new EngineException("Function test data requires a function to have one runtime. Found " + runtimes.size() + " runtimes in function " + metamodelFunction.getName(), testSuite.sourceInformation, EngineErrorType.COMPILATION);
                 }
-                org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime runtime = runtimes.getOnly();
-                metamodelSuite._testData(ListIterate.collect(testSuite.testData, storeData -> buildFunctionTestData(runtime, storeData, compileContext, processingContext)));
+                metamodelSuite._testData(ListIterate.collect(testSuite.testData, storeData -> buildFunctionTestData(storeData, compileContext, processingContext)));
             }
             metamodelSuite
                     ._id(testSuite.id)
@@ -128,7 +120,7 @@ public class HelperFunctionBuilder
                 EmbeddedDataPrerequisiteElementsPassBuilder embeddedDataPrerequisiteElementsPassBuilder = new EmbeddedDataPrerequisiteElementsPassBuilder(compileContext, prerequisiteElements);
                 ListIterate.forEach(testSuite.testData, storeData ->
                 {
-                    prerequisiteElements.add(storeData.store);
+                    prerequisiteElements.add(storeData.packageableElementPointer);
                     storeData.data.accept(embeddedDataPrerequisiteElementsPassBuilder);
                 });
             }
@@ -147,23 +139,22 @@ public class HelperFunctionBuilder
         }
     }
 
-    private static Root_meta_legend_function_metamodel_StoreTestData buildFunctionTestData(org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime runtime, StoreTestData storeTestData, CompileContext compileContext, ProcessingContext ctx)
+    private static Root_meta_legend_function_metamodel_FunctionTestData buildFunctionTestData(FunctionTestData functionTestData, CompileContext compileContext, ProcessingContext ctx)
     {
-        Root_meta_legend_function_metamodel_StoreTestData_Impl metamodelStoreTestData = new Root_meta_legend_function_metamodel_StoreTestData_Impl("", SourceInformationHelper.toM3SourceInformation(storeTestData.sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::StoreTestData"));
-        Store resolvedStore = StoreProviderCompilerHelper.getStoreFromStoreProviderPointers(storeTestData.store, compileContext);
+        PackageableElement element;
         try
         {
-            org.finos.legend.pure.generated.Root_meta_core_runtime_Connection connection = runtime.connectionByElement(resolvedStore, compileContext.pureModel.getExecutionSupport());
-            Assert.assertTrue(connection != null, () -> "connection not found");
+            element = StoreProviderCompilerHelper.getStoreFromPackageableElementPointer(functionTestData.packageableElementPointer, compileContext);
         }
-        catch (Exception exception)
+        catch (Exception e)
         {
-            // throw new EngineException("Store '" + storeTestData.store + "' not specified in the runtime in the function", storeTestData.sourceInformation, EngineErrorType.COMPILATION, exception);
+            element = compileContext.resolvePackageableElement(functionTestData.packageableElementPointer);
         }
-        metamodelStoreTestData._data(storeTestData.data.accept(new EmbeddedDataFirstPassBuilder(compileContext, ctx)));
-        metamodelStoreTestData._store(resolvedStore);
-        metamodelStoreTestData._doc(storeTestData.doc);
-        return metamodelStoreTestData;
+        PackageableElement resolvedElement = element;
+        return compileContext.getCompilerExtensions().getExtraFunctionTestDataProcessors().stream().map(processor -> processor.value(resolvedElement, functionTestData, compileContext, ctx))
+                .filter(java.util.Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new EngineException("Unsupported relation accessor"));
     }
 
     private static Root_meta_legend_function_metamodel_ParameterValue processFunctionTestParameterValue(ParameterValue parameterValue, CompileContext context)
