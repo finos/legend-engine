@@ -376,7 +376,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSemiStructuredElementForPostgres(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
 {
    $s->match([
-      o:SemiStructuredObjectNavigation[1]     | $o->processSemiStructuredObjectNavigationForPostgres($sgc)
+      o:SemiStructuredObjectNavigation[1]     | $o->processSemiStructuredObjectNavigationForPostgres($sgc),
+      f:SemiStructuredArrayFlatten[1]         | fail('Flatten is not supported in Postgres'); '';,
+      f:SemiStructuredArrayFlattenRelation[1] | fail('Flatten is not supported in Postgres'); '';
    ])
 }
 

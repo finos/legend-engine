@@ -94,10 +94,10 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
 
             // flatten
             pack("meta::pure::functions::relation::variant::tests::flatten", "[unsupported-api] Lateral operation not supported for Database Type: Postgres", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_", "function unnest(json, recursive => boolean) does not exist", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Array_Function_1__Boolean_1_", "function unnest(json, recursive => boolean) does not exist", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Map_Function_1__Boolean_1_", "function unnest(json, recursive => boolean) does not exist", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_", "function unnest(json, recursive => boolean) does not exist", AdapterQualifier.unsupportedFeature)
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_", "Flatten is not supported in Postgres", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Array_Function_1__Boolean_1_", "Flatten is not supported in Postgres", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Map_Function_1__Boolean_1_", "Flatten is not supported in Postgres", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_", "Flatten is not supported in Postgres", AdapterQualifier.unsupportedFeature)
         );
 
     public static Test suite()
