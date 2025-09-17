@@ -41,10 +41,6 @@ public class Test_Relational_Athena_UnclassifiedFunctions_PCT extends PCTReportC
             //Ascii
             one("meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_", "Unexpected token"),
 
-            //Failures due to substring issue
-            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'xoXoXoX'\nactual:   'XoXoXoX'\""),
-            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'xOxOxOx'\""),
-
             //Jarowinkler Similarity
             one("meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual_Function_1__Boolean_1_", "\"Athena SQL Dialect does not support the function - jarowinkler_similarity\""),
             one("meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityNotEqual_Function_1__Boolean_1_", "\"Athena SQL Dialect does not support the function - jarowinkler_similarity\"")
