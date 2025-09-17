@@ -5868,7 +5868,7 @@ function meta::relational::functions::pureToSqlQuery::processLateral(expression:
         );                   
 
    let join = ^Join(
-     name = 'lateralJoin',
+     name = 'lateralJoin' + $nodeId,
      target = $lateralSelectRootNode.alias,
      aliases = [pair($lateralInputRootNode.alias, $lateralSelectRootNode.alias), pair($lateralSelectRootNode.alias, $lateralInputRootNode.alias)],
      operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)]) // True operation
@@ -5876,7 +5876,7 @@ function meta::relational::functions::pureToSqlQuery::processLateral(expression:
 
    let lateralJoinNode = ^JoinTreeNode(
      database = ^Database(),
-     joinName = 'lateralJoin',
+     joinName = 'lateralJoin' + $nodeId,
      alias = $lateralSelectRootNode.alias,
      join = $join,
      joinType = $joinType,

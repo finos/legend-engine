@@ -186,7 +186,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
    let expr = {|
                   $tds->lateral(x | $x.payload->toMany(@Variant)->flatten(~firstFlattened))
                         ->lateral(x | $x.firstFlattened->get('key')->toMany(@Variant)->flatten(~secondFlattened))
-                        ->extend(~value: x | $x.secondFlattened->get('innerKey')->toMany(@Integer)->at(0))
+                        ->extend(~value: x | $x.secondFlattened->get('innerKey')->toMany(@Variant)->filter(y | $y->to(@Integer)->toOne()->rem(2) == 0)->at(0))
                         ->sort([~id->ascending(), ~value->ascending()])
               };
 
@@ -195,14 +195,14 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
     assertEquals('#TDS\n' +
                  '   id,payload,firstFlattened,secondFlattened,value\n' +
                  '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"innerKey":[-2,-1,0]},-2\n' +
-                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"innerKey":[1,2,3]},1\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"innerKey":[1,2,3]},2\n' +
                  '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[4,5,6]}]},{"innerKey":[4,5,6]},4\n' +
-                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[7,8,9]}]},{"innerKey":[7,8,9]},7\n' +
-                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[1,2,3]}]},{"innerKey":[1,2,3]},1\n' +
+                 '   1,[{"key":[{"innerKey":[-2,-1,0]},{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[7,8,9]}]}],{"key":[{"innerKey":[7,8,9]}]},{"innerKey":[7,8,9]},8\n' +
                  '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[10,11,12]}]},{"innerKey":[10,11,12]},10\n' +
-                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[13,14,15]}]},{"innerKey":[13,14,15]},13\n' +
-                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[4,5,6]}]},{"innerKey":[4,5,6]},4\n' +
+                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[13,14,15]}]},{"innerKey":[13,14,15]},14\n' +
+                 '   2,[{"key":[{"innerKey":[1,2,3]}]},{"key":[{"innerKey":[10,11,12]}]},{"key":[{"innerKey":[13,14,15]}]}],{"key":[{"innerKey":[1,2,3]}]},{"innerKey":[1,2,3]},2\n' +
                  '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[16,17,18]}]},{"innerKey":[16,17,18]},16\n' +
-                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[19,20,21]}]},{"innerKey":[19,20,21]},19\n' +
+                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[19,20,21]}]},{"innerKey":[19,20,21]},20\n' +
+                 '   3,[{"key":[{"innerKey":[4,5,6]}]},{"key":[{"innerKey":[16,17,18]}]},{"key":[{"innerKey":[19,20,21]}]}],{"key":[{"innerKey":[4,5,6]}]},{"innerKey":[4,5,6]},4\n' +
                  '#', $res->toString());
 }
