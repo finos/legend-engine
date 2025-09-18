@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -14,23 +14,23 @@
 
 package org.finos.legend.engine.postgres.types;
 
+import org.junit.Assert;
 import org.junit.Test;
-import junit.framework.TestCase;
 import java.nio.charset.StandardCharsets;
 
-public class TimestampZTypeTest extends TestCase
+public class TimestampZTypeTest
 {
     @Test
     public void testEncodeAsUTF8Text_AD()
     {
-        assertEquals("2023-02-20 00:00:00.000+00",
+        Assert.assertEquals("2023-02-20 00:00:00.000+00",
                 new String(TimestampZType.INSTANCE.encodeAsUTF8Text(1676851200000L), StandardCharsets.UTF_8));
     }
 
     @Test
     public void testEncodeAsUTF8Text_BD()
     {
-        assertEquals("0667-01-01 00:00:00.000+00 BC",
+        Assert.assertEquals("0667-01-01 00:00:00.000+00 BC",
                 new String(TimestampZType.INSTANCE.encodeAsUTF8Text(-83184105600000L), StandardCharsets.UTF_8));
     }
 
@@ -40,7 +40,7 @@ public class TimestampZTypeTest extends TestCase
         String input = "2023-02-20 00:00:00.000+00";
         long expected = 1676851200000L;
         Object result = TimestampZType.INSTANCE.decodeUTF8Text(input.getBytes(StandardCharsets.UTF_8));
-        assertEquals(expected, result);
+        Assert.assertEquals(expected, result);
     }
 
     @Test
@@ -49,6 +49,6 @@ public class TimestampZTypeTest extends TestCase
         String input = "0667-01-01 00:00:00.000+00 BC";
         long expected = -83184105600000L;
         Object result = TimestampZType.INSTANCE.decodeUTF8Text(input.getBytes(StandardCharsets.UTF_8));
-        assertEquals(expected, result);
+        Assert.assertEquals(expected, result);
     }
 }
