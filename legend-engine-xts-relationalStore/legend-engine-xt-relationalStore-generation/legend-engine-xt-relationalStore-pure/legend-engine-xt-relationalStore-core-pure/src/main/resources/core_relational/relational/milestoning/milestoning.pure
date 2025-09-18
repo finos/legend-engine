@@ -147,6 +147,7 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                     s:SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), property = $s.property->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), index = $s.index->map(i | $i->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))),
                     s:SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), index = $s.index->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
+                    s:SemiStructuredArrayFlattenRelation[1] | ^$s(navigation = $s.navigation->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAliasColumn)),
                     t:TableFunctionParamPlaceHolder[1] | $t,
                     dt:DataTypeInfo[1] | $dt
@@ -167,7 +168,8 @@ function meta::relational::milestoning::applyMilestoningFilters(j:RelationalTree
                                            c:CommonTableExpressionReference[1] | $join,
                                            u:Union[1] | $join,
                                            s:SelectSQLQuery[1] | $join,
-                                           s:SemiStructuredArrayFlatten[1] | $join
+                                           s:SemiStructuredArrayFlatten[1] | $join,
+                                           s:SemiStructuredArrayFlattenRelation[1] | $join
                                      ]);
                                      let newAlias = $j.alias->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAlias);
                                      let joinWithAliasProcessed = reprocessJoin($newJoin, ^OldAliasToNewAlias(first=$j.alias.name, second=$newAlias), []);
