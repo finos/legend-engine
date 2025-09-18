@@ -94,6 +94,7 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
 
             // flatten
             pack("meta::pure::functions::relation::variant::tests::flatten", "[unsupported-api] Lateral operation not supported for Database Type: Postgres", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Extend_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Postgres", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_", "Flatten is not supported in Postgres", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Array_Function_1__Boolean_1_", "Flatten is not supported in Postgres", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Map_Function_1__Boolean_1_", "Flatten is not supported in Postgres", AdapterQualifier.unsupportedFeature),
