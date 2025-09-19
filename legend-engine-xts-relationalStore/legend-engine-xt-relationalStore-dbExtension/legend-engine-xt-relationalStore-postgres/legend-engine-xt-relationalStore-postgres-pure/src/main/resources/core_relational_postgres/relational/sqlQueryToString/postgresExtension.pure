@@ -49,7 +49,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslatorForPostgres(),
-      dataTypeToSqlText = meta::relational::functions::sqlQueryToString::postgres::dataTypeToSqlTextPostgres_DataType_1__String_1_
+      buildDummyConnection = meta::relational::functions::sqlQueryToString::postgres::buildDummyConnection__RelationalDatabaseConnection_1_,
+      dataTypeToSqlText = meta::relational::functions::sqlQueryToString::postgres::dataTypeToSqlTextPostgres_DataType_1__String_1_,
+      pureTypeToDatabaseTypeConverter = meta::relational::functions::sqlQueryToString::postgres::convert_GenericType_1__DataType_1_
    );
 }
 
