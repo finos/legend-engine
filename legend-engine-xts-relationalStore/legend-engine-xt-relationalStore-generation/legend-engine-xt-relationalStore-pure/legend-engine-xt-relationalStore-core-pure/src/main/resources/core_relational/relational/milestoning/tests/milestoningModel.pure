@@ -380,11 +380,16 @@ Class meta::relational::tests::milestoning::NewProductActivityInfo{
    createdBy : String[1];
 }
 
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Trade
+{
+  id : Integer[1];
+  tradePnl : TradePnl[*];
+}
+
 Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::TradePnl
 {
    pnl:Float[1];
    supportContactName:String[1];
-   //trade:Trade[1];
 }
 
 Association meta::relational::tests::milestoning::OrderProduct{
