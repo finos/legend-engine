@@ -126,10 +126,10 @@ public class HelperRuntimeBuilder
 
     public static Root_meta_core_runtime_EngineRuntime buildEngineRuntime(EngineRuntime engineRuntime, Root_meta_core_runtime_EngineRuntime pureRuntime, CompileContext context)
     {
-//        if (engineRuntime.mappings.isEmpty())
-//        {
-//            context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Runtime must cover at least one mapping")));
-//        }
+        if (engineRuntime.mappings.isEmpty())
+        {
+            context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Runtime must cover at least one mapping")));
+        }
         // verify if each mapping associated with the PackageableRuntime exists
         MutableList<Mapping> mappings = engineRuntime.mappings.isEmpty() ? Lists.mutable.empty() : ListIterate.collect(engineRuntime.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation));
         pureRuntime._mappings(mappings);
