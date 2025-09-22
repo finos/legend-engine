@@ -40,7 +40,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator(),
-      processTempTableName = processTempTableNameDefault_String_1__DatabaseConnection_1__String_1_
+      processTempTableName = processTempTableNameDefault_String_1__DatabaseConnection_1__String_1_,
+      pureTypeToDatabaseTypeConverter = convert_GenericType_1__DataType_1_,
+      buildDummyConnection = buildDummyConnection__RelationalDatabaseConnection_1_
    );
 }
 
@@ -348,7 +350,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
                 dropSchema =  translateDropSchemaStatementMemSQL_DropSchemaSQL_1__DbConfig_1__String_MANY_,
                 createTable =  translateCreateTableStatementMemSQL_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementMemSQL_DropTableSQL_1__DbConfig_1__String_1_,
-                loadTable =  loadValuesToDbTableMemSQL_LoadTableSQL_1__DbConfig_1__String_MANY_
+                loadTable =  loadValuesToDbTableMemSQL_LoadTableSQL_1__DbConfig_1__String_MANY_,
+                createPipeline = createPipeline_CreatePipelineSQL_1__DbConfig_1__String_1_
               );
 }
 
@@ -404,4 +407,63 @@ function meta::relational::functions::sqlQueryToString::memsql::loadValuesToDbTa
             + ');';
     );
   );
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::createPipeline(createPipelineSQL: CreatePipelineSQL[1], dbConfig: DbConfig[1]) : String[1]
+{
+  'CREATE PIPELINE ' +  $createPipelineSQL.name->processOperation($dbConfig.dbType, []) + ' AS\n' + 
+  'LOAD DATA ' + $createPipelineSQL.target->processOperation($dbConfig.dbType, []) + ' ' + $createPipelineSQL.targetName->processOperation($dbConfig.dbType, []) + '\n' + 
+  'CONFIG ' + $createPipelineSQL.config->processOperation($dbConfig.dbType, []) + '\n' +
+  'CREDENTIALS ' + $createPipelineSQL.credentials->processOperation($dbConfig.dbType, []) + '\n' + 
+  'REPLACE INTO TABLE ' + $createPipelineSQL.table.name + ' (\n' +
+        $createPipelineSQL.table.columns->map(c | $c->cast(@meta::relational::metamodel::Column).name + ' <- ' + $c->cast(@meta::relational::metamodel::Column).name )->joinStrings(',\n') +
+  '\n) FORMAT ' + $createPipelineSQL.source->processOperation($dbConfig.dbType, []) + ';';
+}
+
+
+function meta::relational::functions::sqlQueryToString::memsql::convert(genericType:GenericType[1]):meta::relational::metamodel::datatype::DataType[1]
+{
+    let path = $genericType.rawType.name->toOne();
+    let variables = $genericType.typeVariableValues;
+    if (
+        [
+            pair(|$path == 'Boolean', |^meta::relational::metamodel::datatype::Boolean()),
+            pair(|$path == 'Integer', |^meta::relational::metamodel::datatype::BigInt()),
+            pair(|$path == 'Float', |^meta::relational::metamodel::datatype::Double()),
+            pair(|$path == 'Byte', |^meta::relational::metamodel::datatype::Binary(size=10000)),
+            pair(|$path == 'Decimal', |^meta::relational::metamodel::datatype::Decimal(precision=10, scale=10)),
+            pair(|$path == 'String', |^meta::relational::metamodel::datatype::Varchar(size=1024)),
+            pair(|$path == 'DateTime', |^meta::relational::metamodel::datatype::Timestamp()),
+            pair(|$path == 'Number', |^meta::relational::metamodel::datatype::Decimal(precision=10, scale=10)),
+            pair(|$path == 'Date', |^meta::relational::metamodel::datatype::Timestamp()),
+
+            pair(|$path == 'BigInt', |^meta::relational::metamodel::datatype::BigInt()),
+            pair(|$path == 'StrictDate', |^meta::relational::metamodel::datatype::Date()),
+            pair(|$path == 'Numeric', |^meta::relational::metamodel::datatype::Decimal(precision=$variables->at(0)->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer), scale=$variables->at(1)->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer))),
+            pair(|$path == 'Double', |^meta::relational::metamodel::datatype::Double()),
+            pair(|$path == 'Float4', |^meta::relational::metamodel::datatype::Float()),
+            pair(|$path == 'Int', |^meta::relational::metamodel::datatype::Integer()),
+            pair(|$path == 'SmallInt', |^meta::relational::metamodel::datatype::SmallInt()),
+            pair(|$path == 'Timestamp', |^meta::relational::metamodel::datatype::Timestamp()),
+            pair(|$path == 'TinyInt', |^meta::relational::metamodel::datatype::TinyInt()),
+            pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer))),
+            pair(|$path == 'Variant', |^meta::relational::metamodel::datatype::Json())
+        ],
+        | fail ($path + ' is not managed yet');
+    )->cast(@meta::relational::metamodel::datatype::DataType);
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::buildDummyConnection():RelationalDatabaseConnection[1]
+{
+    ^RelationalDatabaseConnection
+    (
+        type = DatabaseType.MemSQL,
+        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::MemsqlDatasourceSpecification(
+                                    host = 'test',
+                                    port = 9090,
+                                    databaseName = 'test',
+                                    useSsl = false
+                                  ),
+        authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+    )
 }
