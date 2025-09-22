@@ -17,11 +17,12 @@ package org.finos.legend.engine.postgres;
 
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
-import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
-import org.finos.legend.engine.postgres.handler.PostgresStatement;
-import org.finos.legend.engine.postgres.handler.SessionHandler;
-import org.finos.legend.engine.postgres.handler.empty.EmptySessionHandler;
-import org.finos.legend.engine.postgres.handler.txn.TxnIsolationSessionHandler;
+import org.finos.legend.engine.postgres.protocol.sql.ExecutionDispatcher;
+import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepared.PostgresPreparedStatement;
+import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.PostgresStatement;
+import org.finos.legend.engine.postgres.protocol.sql.handler.SessionHandler;
+import org.finos.legend.engine.postgres.protocol.sql.handler.empty.EmptySessionHandler;
+import org.finos.legend.engine.postgres.protocol.sql.handler.txn.TxnIsolationSessionHandler;
 import org.junit.Assert;
 import org.junit.Test;
 

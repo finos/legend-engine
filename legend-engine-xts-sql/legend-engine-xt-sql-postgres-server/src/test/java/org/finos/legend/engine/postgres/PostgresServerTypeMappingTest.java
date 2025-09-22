@@ -32,15 +32,16 @@ import java.time.ZoneOffset;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
 import java.util.TimeZone;
-import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
-import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.identity.AnonymousIdentityProvider;
+import org.finos.legend.engine.postgres.auth.method.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
-import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
-import org.finos.legend.engine.postgres.handler.legend.LegendHttpClient;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendExecutionService;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendHttpClient;
 
-import static org.finos.legend.engine.postgres.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
+import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
 
-import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendSessionFactory;
+import org.finos.legend.engine.postgres.protocol.wire.Messages;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -48,7 +49,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.finos.legend.engine.postgres.handler.legend.LegendDataType.*;
+import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendDataType.*;
 
 
 public class PostgresServerTypeMappingTest

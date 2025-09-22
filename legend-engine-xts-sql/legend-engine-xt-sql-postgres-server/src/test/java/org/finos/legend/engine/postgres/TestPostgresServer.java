@@ -20,6 +20,8 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
 import org.finos.legend.engine.postgres.config.ServerConfig;
+import org.finos.legend.engine.postgres.protocol.wire.Messages;
+import org.finos.legend.engine.postgres.protocol.wire.session.SessionsFactory;
 
 public class TestPostgresServer extends PostgresServer
 {

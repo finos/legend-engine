@@ -39,7 +39,10 @@ import java.net.SocketAddress;
 import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
 import org.finos.legend.engine.postgres.config.GSSConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
-import org.finos.legend.engine.postgres.transport.Netty4OpenChannelsHandler;
+import org.finos.legend.engine.postgres.protocol.wire.Messages;
+import org.finos.legend.engine.postgres.protocol.wire.PostgresWireProtocol;
+import org.finos.legend.engine.postgres.protocol.wire.session.SessionsFactory;
+import org.finos.legend.engine.postgres.utils.netty.Netty4OpenChannelsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

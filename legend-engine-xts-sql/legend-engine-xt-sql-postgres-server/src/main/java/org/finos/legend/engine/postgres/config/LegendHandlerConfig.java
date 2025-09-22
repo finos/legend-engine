@@ -15,10 +15,10 @@
 package org.finos.legend.engine.postgres.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.postgres.SessionsFactory;
-import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
-import org.finos.legend.engine.postgres.handler.legend.LegendHttpClient;
-import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
+import org.finos.legend.engine.postgres.protocol.wire.session.SessionsFactory;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendExecutionService;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendHttpClient;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendSessionFactory;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LegendHandlerConfig implements HandlerConfig

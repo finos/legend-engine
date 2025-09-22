@@ -15,8 +15,8 @@
 package org.finos.legend.engine.postgres.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.postgres.SessionsFactory;
-import org.finos.legend.engine.postgres.handler.jdbc.JDBCSessionFactory;
+import org.finos.legend.engine.postgres.protocol.wire.session.SessionsFactory;
+import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.JDBCSessionFactory;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JDBCHandlerConfig implements HandlerConfig

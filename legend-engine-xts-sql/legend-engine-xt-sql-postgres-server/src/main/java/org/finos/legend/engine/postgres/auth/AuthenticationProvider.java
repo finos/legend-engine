@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.postgres.auth;
 
-import org.finos.legend.engine.postgres.ConnectionProperties;
+import org.finos.legend.engine.postgres.auth.method.AuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.method.ConnectionProperties;
 
 public interface AuthenticationProvider
 {
