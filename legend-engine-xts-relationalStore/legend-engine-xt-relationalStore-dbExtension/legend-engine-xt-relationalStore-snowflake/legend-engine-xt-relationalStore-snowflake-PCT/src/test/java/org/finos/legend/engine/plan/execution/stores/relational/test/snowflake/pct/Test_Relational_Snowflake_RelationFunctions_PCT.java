@@ -49,8 +49,8 @@ public class Test_Relational_Snowflake_RelationFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::relation::tests::nth::testOLAPWithPartitionAndOrderNthWindow2_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,grp,name,newCol\n   10,0,J,null\n   8,1,H,null\n   6,1,F,6\n   2,1,B,6\n   5,2,E,null\n   1,2,A,1\n   7,3,G,null\n   3,3,C,3\n   4,4,D,null\n   9,5,I,null\n#'\nactual:   '#TDS\n   id,grp,name,newCol\n   10,0,J,null\n   8,1,H,6\n   6,1,F,6\n   2,1,B,6\n   5,2,E,1\n   1,2,A,1\n   7,3,G,3\n   3,3,C,3\n   4,4,D,null\n   9,5,I,null\n#'\"", AdapterQualifier.needsInvestigation),
 
             // Composition
-            one("meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,payload,empty\n   0,[],true\n   1,[1],false\n   2,[2,3,4],false\n   3,null,true\n#'\nactual:   '#TDS\n   id,payload,empty\n   0,\"[]\",false\n   1,\"[1]\",false\n   2,[2,3,4],false\n   3,null,true\n#'\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,payload,notEmpty\n   0,[],false\n   1,[1],true\n   2,[2,3,4],true\n   3,null,false\n#'\nactual:   '#TDS\n   id,payload,notEmpty\n   0,\"[]\",true\n   1,\"[1]\",true\n   2,[2,3,4],true\n   3,null,false\n#'\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_", "Typed object schema mismatch in conversion", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_", "Typed object schema mismatch in conversion", AdapterQualifier.needsInvestigation),
 
             // Snowflake doesn't support window frame without ORDER BY
             one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_", "Window frame requires an ORDER BY clause", AdapterQualifier.unsupportedFeature),
