@@ -47,22 +47,26 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::collection::tests::at::testAt_Function_1__Boolean_1_", "->at(...) function is supported only after direct access of 1->MANY properties. Current expression: ['a', 'b', 'c'] -> at(0)", AdapterQualifier.unsupportedFeature),
 
             //concatenate
-            one("meta::pure::functions::collection::tests::concatenate::testConcatenateMixedType_Function_1__Boolean_1_", "Cannot cast a collection of size 3 to multiplicity [1]", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::concatenate::testConcatenateSimple_Function_1__Boolean_1_", "Cannot cast a collection of size 3 to multiplicity [1]", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference_Function_1__Boolean_1_", "Cannot cast a collection of size 3 to multiplicity [1]", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::concatenate::testConcatenateMixedType_Function_1__Boolean_1_", "\"Any is not managed yet!\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::concatenate::testConcatenateSimple_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_concatenate' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_concatenate' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsInvestigation),
 
             //contains
             one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'", AdapterQualifier.needsInvestigation),
 
             //drop
-            one("meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnNonEmptyList_Function_1__Boolean_1_", "Variant ->drop() not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::drop::testDropInList_Function_1__Boolean_1_", "Variant ->drop() not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::drop::testDropManyOnNonEmptyList_Function_1__Boolean_1_", "Variant ->drop() not supported yet", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnNonEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::drop::testDropInList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::drop::testDropManyOnNonEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::drop::testDropNegativeOnEmptyList_Function_1__Boolean_1_", "Invalid type for parameter inside the drop function. Expected a value, found operation/function", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::drop::testDropNegativeOnNonEmptyList_Function_1__Boolean_1_", "Variant ->drop() not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::drop::testDropOneOnNonEmptyList_Function_1__Boolean_1_", "Variant ->drop() not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::drop::testDropZeroOnNonEmptyList_Function_1__Boolean_1_", "Variant ->drop() not supported yet", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::drop::testDropNegativeOnNonEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::drop::testDropOneOnNonEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::drop::testDropZeroOnNonEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::drop::testDropManyOnEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::drop::testDropOneOnEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::drop::testDropZeroOnEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             //exists
             one("meta::pure::functions::collection::tests::exists::testExists_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]", AdapterQualifier.needsInvestigation),
@@ -75,8 +79,8 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
 
             // Fold
             one("meta::pure::functions::collection::tests::fold::testFoldCollectionAccumulator_Function_1__Boolean_1_", "\"[unsupported-api] relational lambda processing not supported for Database Type: Databricks\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::fold::testFoldEmptyListAndNonEmptyIdentity_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_", "Any is not managed yet!", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::fold::testFoldEmptyListAndNonEmptyIdentity_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: ", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_", "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::fold::testFoldMixedAccumulatorTypes_Function_1__Boolean_1_", "\"[unsupported-api] relational lambda processing not supported for Database Type: Databricks\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_", "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'", AdapterQualifier.unsupportedFeature),
@@ -102,24 +106,24 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::collection::tests::forall::testforAllOnNonEmptySetIsTrue_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'forAll_T_MANY__Function_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
 
             //head
-            one("meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::head::testHeadOnOneElement_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::head::testHeadSimple_Function_1__Boolean_1_", "Cannot cast a collection of size 2 to multiplicity [1]", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_", "->first() only works on variant values", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_", "[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::head::testHeadOnOneElement_Function_1__Boolean_1_", "[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::head::testHeadSimple_Function_1__Boolean_1_", "[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
 
             //indexOf
             one("meta::pure::functions::collection::tests::indexof::testIndexOfOneElement_Function_1__Boolean_1_", "\nexpected: 0\nactual:   1", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::indexof::testIndexOf_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_position' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             // Init
-            one("meta::pure::functions::collection::tests::init::testInitOnEmptySet_Function_1__Boolean_1_", "Function does not exist 'meta::pure::functions::collection::init(Nil[0])'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::init::testInitOneElement_Function_1__Boolean_1_", "Function does not exist 'meta::pure::functions::collection::init(String[1])'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::init::testInit_Function_1__Boolean_1_", "Function does not exist 'meta::pure::functions::collection::init(String[3])'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::init::testInitOnEmptySet_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_init' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::init::testInitOneElement_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_init' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::init::testInit_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_init' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             //last
-            one("meta::pure::functions::collection::tests::last::testLastFromEmpty_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'last_T_MANY__T_$0_1$_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::last::testLastOfOneElementList_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'last_T_MANY__T_$0_1$_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::last::testLast_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'last_T_MANY__T_$0_1$_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::last::testLastFromEmpty_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_last' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::last::testLastOfOneElementList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_last' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::last::testLast_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_last' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             //removeDuplicates
             one("meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesEmptyListExplicit_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'", AdapterQualifier.unsupportedFeature),
@@ -141,6 +145,7 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::collection::tests::slice::testSliceOnBounds_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::slice::testSliceOutOfBounds_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::slice::testSlice_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::slice::testSliceOnEmpty_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             //sort
             one("meta::pure::functions::collection::tests::sort::testMixedSortNoComparator_Function_1__Boolean_1_", "[unsupported-api] The function 'array_sort' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
@@ -152,18 +157,22 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::collection::tests::sort::testSortEmptySet_Function_1__Boolean_1_", "[unsupported-api] The function 'array_sort' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
 
             //tail
-            one("meta::pure::functions::collection::tests::tail::testTailOnEmptySet_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::tail::testTailOneElement_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::tail::testTail_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::tail::testTailOnEmptySet_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_tail' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::tail::testTailOneElement_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_tail' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::tail::testTail_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_tail' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             //take
-            one("meta::pure::functions::collection::tests::take::testTakeExceedsSizeOnNonEmptyList_Function_1__Boolean_1_", "Variant ->take() not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::take::testTakeInList_Function_1__Boolean_1_", "Variant ->take() not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::take::testTakeManyOnNonEmptyList_Function_1__Boolean_1_", "Variant ->take() not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList_Function_1__Boolean_1_", "Invalid type for parameter inside the take/limit function. Expected a value, found operation/function", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::take::testTakeNegativeOnNonEmptyList_Function_1__Boolean_1_", "Variant ->take() not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::take::testTakeOneOnNonEmptyList_Function_1__Boolean_1_", "Variant ->take() not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::take::testTakeZeroOnNonEmptyList_Function_1__Boolean_1_", "Variant ->take() not supported yet", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::take::testTakeExceedsSizeOnEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::take::testTakeOneOnEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::take::testTakeManyOnEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::take::testTakeZeroOnEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::take::testTakeExceedsSizeOnNonEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::take::testTakeInList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::take::testTakeManyOnNonEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::take::testTakeNegativeOnNonEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::take::testTakeOneOnNonEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::take::testTakeZeroOnNonEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             //zip
             one("meta::pure::functions::collection::tests::zip::testZipBothListsAreOfPairs_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'zip_T_MANY__U_MANY__Pair_MANY_'.", AdapterQualifier.needsInvestigation),
@@ -262,7 +271,7 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::indexOf::testFromIndex_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'indexOf_String_1__String_1__Integer_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::indexOf::testSimple_Function_1__Boolean_1_", "\nexpected: 4\nactual:   5", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_tail' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::joinStrings::testJoinStringsSingleString_Function_1__Boolean_1_", "The database type 'Databricks' is not supported yet!", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::joinStrings::testJoinStringsUsingGenericArrow_Function_1__Boolean_1_", "\nexpected: '[a,b,c]'\nactual:   '[,a,b,c,]'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::joinStrings::testJoinStrings_Function_1__Boolean_1_", "\nexpected: '[a,b,c]'\nactual:   '[,a,b,c,]'", AdapterQualifier.needsInvestigation),
