@@ -45,6 +45,9 @@ function <<test.Test>> meta::relational::tests::milestoning::applyMilestoningFil
    let ssf = ^SemiStructuredArrayFlatten(navigation = $ssp);
    meta::relational::milestoning::applyMilestoningFilters($ssf, {t|[]}, {t|$t}, false, $extensions);
 
+   let ssfr = ^meta::relational::functions::pureToSqlQuery::metamodel::SemiStructuredArrayFlattenRelation(navigation = $ssp);
+   meta::relational::milestoning::applyMilestoningFilters($ssf, {t|[]}, {t|$t}, false, $extensions);
+
    let ssfo = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = ^TableAlias(name = 'ssf', relationalElement = $ssf), column = ^Column(name = 'result', type = ^meta::relational::metamodel::datatype::Integer())), returnType  = Integer);
    meta::relational::milestoning::applyMilestoningFilters($ssfo, {t|[]}, {t|$t}, false, $extensions);
 

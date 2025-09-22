@@ -308,6 +308,7 @@ function <<access.private>> meta::pure::lineage::scanColumns::extractTableAliasC
                               f:meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder[1]| $f.parameters->map(p|$p->extractTableAliasColumns($nContext));,
                               s:SemiStructuredObjectNavigation[1]|if($s.operand->type() != RelationalOperationElement, | $s.operand->extractTableAliasColumns($nContext), | []),
                               s:SemiStructuredArrayFlatten[1]|$s.navigation->extractTableAliasColumns($nContext),
+                              s:meta::relational::functions::pureToSqlQuery::metamodel::SemiStructuredArrayFlattenRelation[1]|$s.navigation->extractTableAliasColumns($nContext),
                               s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->extractTableAliasColumns($nContext)
                           ]
                       );

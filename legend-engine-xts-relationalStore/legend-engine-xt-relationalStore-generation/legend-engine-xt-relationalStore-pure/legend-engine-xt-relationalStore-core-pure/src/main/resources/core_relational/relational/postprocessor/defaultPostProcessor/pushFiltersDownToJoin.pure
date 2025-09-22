@@ -270,6 +270,7 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::ext
     {s: SemiStructuredPropertyAccess[1] | $s.operand->concatenate($s.property)->concatenate($s.index)->extractRelationalElements($recurseSubQueries)},
     {s: SemiStructuredArrayElementAccess[1] | $s.operand->concatenate($s.index)->extractRelationalElements($recurseSubQueries)},
     {s: SemiStructuredArrayFlatten[1] | $s.navigation->extractRelationalElements($recurseSubQueries)},
+    {s: SemiStructuredArrayFlattenRelation[1] | $s.navigation->extractRelationalElements($recurseSubQueries)},
     {s: SemiStructuredArrayFlattenOutput[1] | $s.tableAliasColumn->extractRelationalElements($recurseSubQueries)},
     {a: Any[*] | /*println('Encountered unknown element of type: ' +  $el->type()->elementToPath());*/ collection(false, []);}
   ]);

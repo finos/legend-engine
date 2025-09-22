@@ -76,7 +76,8 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
                                                            tf:TabularFunction[1]|[],
                                                            u: Union[1]|$u->search($runtime),
                                                            s: SelectSQLQuery[1]|$s->search($runtime);,
-                                                           s: SemiStructuredArrayFlatten[1]|$s.navigation->search($runtime)
+                                                           s: SemiStructuredArrayFlatten[1]|$s.navigation->search($runtime),
+                                                           s: SemiStructuredArrayFlattenRelation[1]|$s.navigation->search($runtime)
                                                           ]);,
                      tac:TableAliasColumn[1]| $tac.column->search($runtime);,
                      tacn:TableAliasColumnName[1]| getSanitizedAndOriginalNamePair($tacn.columnName, lengthConfig($runtime));,
@@ -91,6 +92,7 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
                      s:SemiStructuredPropertyAccess[1] | $s.operand->concatenate($s.property)->concatenate($s.index)->search($runtime),
                      s:SemiStructuredArrayElementAccess[1] | $s.operand->concatenate($s.index)->search($runtime),
                      s:SemiStructuredArrayFlatten[1] | $s.navigation->search($runtime),
+                     s:SemiStructuredArrayFlattenRelation[1] | $s.navigation->search($runtime),
                      s:SemiStructuredArrayFlattenOutput[1] | $s.tableAliasColumn->search($runtime),
                      any:Any[1]| [];
                    ]);
