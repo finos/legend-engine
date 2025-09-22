@@ -535,9 +535,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredArrayFlattenForSnowflake(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
 {
    // https://docs.snowflake.com/en/sql-reference/functions/flatten.html
-
    let processedNavigation = $s.navigation->processOperation($sgc);
-   'flatten(input => ' + $processedNavigation + ', outer => true, recursive => false, mode => \'array\')';
+   'flatten(input => (' + $processedNavigation + ')::ARRAY, outer => true, recursive => false, mode => \'array\')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredArrayFlattenRelationForSnowflake(s:SemiStructuredArrayFlattenRelation[1], sgc:SqlGenerationContext[1]): String[1]
