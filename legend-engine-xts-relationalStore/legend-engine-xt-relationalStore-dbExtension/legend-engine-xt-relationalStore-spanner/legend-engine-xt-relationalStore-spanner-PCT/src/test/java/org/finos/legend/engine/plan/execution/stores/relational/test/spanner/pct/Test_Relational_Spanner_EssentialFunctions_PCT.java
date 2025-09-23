@@ -107,7 +107,7 @@ public class Test_Relational_Spanner_EssentialFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::collection::tests::forall::testforAllOnNonEmptySetIsTrue_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'forAll_T_MANY__Function_1__Boolean_1_'.", AdapterQualifier.unsupportedFeature),
 
             //head
-            one("meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_", "->first() only works on variant values", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_", "[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::head::testHeadOnOneElement_Function_1__Boolean_1_", "[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::head::testHeadSimple_Function_1__Boolean_1_", "[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),

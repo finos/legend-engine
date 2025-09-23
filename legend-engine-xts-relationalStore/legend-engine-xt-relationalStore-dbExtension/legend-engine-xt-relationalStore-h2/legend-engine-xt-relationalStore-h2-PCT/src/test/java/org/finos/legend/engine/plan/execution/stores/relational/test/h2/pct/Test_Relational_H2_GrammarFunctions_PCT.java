@@ -73,7 +73,7 @@ public class Test_Relational_H2_GrammarFunctions_PCT extends PCTReportConfigurat
             one("meta::pure::functions::collection::tests::filter::testLambdaAsFunctionParameter_Function_1__Boolean_1_", "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda", AdapterQualifier.needsInvestigation),
 
             // First
-            one("meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_", "->first() only works on variant values", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_", "Expected at most one object, but found many", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::first::testFirstSimple_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList().", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::collection::tests::first::testFirstOnEmptySet_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::first::testFirstOnOneElement_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\"", AdapterQualifier.unsupportedFeature),

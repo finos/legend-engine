@@ -92,7 +92,7 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
 
             // Head
             pack("meta::pure::functions::collection::tests::head", "[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_", "->first() only works on variant values", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]", AdapterQualifier.unsupportedFeature),
 
             // Last
             one("meta::pure::functions::collection::tests::last::testLastFromEmpty_Function_1__Boolean_1_", "[unsupported-api] The function 'array_last' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),

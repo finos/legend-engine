@@ -97,7 +97,7 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::collection::tests::values::testValues_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for toVariantObject().\"", AdapterQualifier.unsupportedFeature),
 
             // Head
-            one("meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_", "->first() only works on variant values", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList().", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::head::testHeadOnOneElement_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList().", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::head::testHeadSimple_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList().", AdapterQualifier.needsInvestigation),
