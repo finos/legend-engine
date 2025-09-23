@@ -30,7 +30,6 @@ import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -45,9 +44,10 @@ import org.finos.legend.engine.postgres.protocol.wire.FormatCodes;
 import org.finos.legend.engine.postgres.PostgresServerException;
 import org.finos.legend.engine.postgres.protocol.wire.ResultSetReceiver;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepared.PostgresPreparedStatement;
-import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
+import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepared.PreparedStatementExecutionTask;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.PostgresStatement;
 import org.finos.legend.engine.postgres.protocol.sql.handler.SessionHandler;
+import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.StatementExecutionTask;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
@@ -414,185 +414,5 @@ public class Session implements AutoCloseable
         return portal;
     }
 
-
-    /**
-     * Represents a PostgeSQL Prepared Obj
-     */
-    static class Prepared
-    {
-
-        /**
-         * Object name
-         */
-        String name;
-
-        /**
-         * The SQL Statement
-         */
-        String sql;
-
-        /**
-         * The prepared Statment
-         */
-        PostgresPreparedStatement prep;
-
-        /**
-         * The list of param types
-         */
-        Integer[] paramType;
-    }
-
-    /**
-     * Represents a PostgreSQL Portal object
-     */
-    static class Portal
-    {
-
-        /**
-         * The portal name
-         */
-        String name;
-
-        /**
-         * The format use in the result set column  (if set)
-         */
-        FormatCodes.FormatCode[] resultColumnFormat;
-
-        /**
-         * The prepared object
-         */
-        Prepared prep;
-
-
-        public Portal(String portalName, Prepared preparedStmt,
-                      FormatCodes.FormatCode[] resultColumnFormat)
-        {
-            this.name = portalName;
-            this.prep = preparedStmt;
-            this.resultColumnFormat = resultColumnFormat;
-        }
-    }
-
-
-    private static class StatementExecutionTask implements Callable<Boolean>
-    {
-        private final PostgresStatement statement;
-        private final ResultSetReceiver resultSetReceiver;
-        private final String query;
-
-        public StatementExecutionTask(PostgresStatement statement, String query, ResultSetReceiver resultSetReceiver)
-        {
-            this.statement = statement;
-            this.resultSetReceiver = resultSetReceiver;
-            this.query = query;
-        }
-
-        @Override
-        public Boolean call()
-        {
-            OpenTelemetryUtil.TOTAL_EXECUTE.add(1);
-            OpenTelemetryUtil.ACTIVE_EXECUTE.add(1);
-            long startTime = System.currentTimeMillis();
-
-            Tracer tracer = OpenTelemetryUtil.getTracer();
-            Span span = tracer.spanBuilder("Statement ExecutionTask Execute").startSpan();
-            try (Scope ignored = span.makeCurrent())
-            {
-                boolean results = statement.execute(query);
-                span.addEvent("receivedResults");
-                if (!results)
-                {
-                    resultSetReceiver.allFinished();
-                }
-                else
-                {
-                    PostgresResultSet rs = statement.getResultSet();
-                    resultSetReceiver.sendResultSet(rs, 0);
-                    resultSetReceiver.allFinished();
-                }
-                OpenTelemetryUtil.TOTAL_SUCCESS_EXECUTE.add(1);
-                OpenTelemetryUtil.EXECUTE_DURATION.record(System.currentTimeMillis() - startTime);
-            }
-            catch (Exception e)
-            {
-                span.setStatus(StatusCode.ERROR, FAILED_TO_EXECUTE);
-                span.recordException(e);
-                resultSetReceiver.fail(e);
-                OpenTelemetryUtil.TOTAL_FAILURE_EXECUTE.add(1);
-            }
-            finally
-            {
-                span.end();
-                OpenTelemetryUtil.ACTIVE_EXECUTE.add(-1);
-            }
-            return true;
-        }
-    }
-
-    private static class PreparedStatementExecutionTask implements Callable<Boolean>
-    {
-        private final PostgresPreparedStatement preparedStatement;
-        private final ResultSetReceiver resultSetReceiver;
-
-        public PreparedStatementExecutionTask(PostgresPreparedStatement preparedStatement, ResultSetReceiver resultSetReceiver)
-        {
-            this.preparedStatement = preparedStatement;
-            this.resultSetReceiver = resultSetReceiver;
-        }
-
-        @Override
-        public Boolean call()
-        {
-            OpenTelemetryUtil.TOTAL_EXECUTE.add(1);
-            OpenTelemetryUtil.ACTIVE_EXECUTE.add(1);
-            long startTime = System.currentTimeMillis();
-
-            Tracer tracer = OpenTelemetryUtil.getTracer();
-            Span span = tracer.spanBuilder("PreparedStatement ExecutionTask Execute").startSpan();
-            try (Scope ignored = span.makeCurrent())
-            {
-                boolean results = true;
-                if (!preparedStatement.isExecuted())
-                {
-                    results = preparedStatement.execute();
-                }
-                span.addEvent("receivedResults");
-                if (!results)
-                {
-                    resultSetReceiver.allFinished();
-                }
-                else
-                {
-                    PostgresResultSet rs = preparedStatement.getResultSet();
-                    int maxRows = preparedStatement.getMaxRows();
-                    resultSetReceiver.sendResultSet(rs, maxRows);
-                    if (maxRows == 0)
-                    {
-                        resultSetReceiver.allFinished();
-                    }
-                    else
-                    {
-                        resultSetReceiver.batchFinished();
-                    }
-                }
-                OpenTelemetryUtil.TOTAL_SUCCESS_EXECUTE.add(1);
-            }
-            catch (Exception e)
-            {
-                span.setStatus(StatusCode.ERROR, FAILED_TO_EXECUTE);
-                span.recordException(e);
-                resultSetReceiver.fail(e);
-                OpenTelemetryUtil.TOTAL_FAILURE_EXECUTE.add(1);
-                OpenTelemetryUtil.EXECUTE_DURATION.record(System.currentTimeMillis() - startTime);
-
-            }
-            finally
-            {
-                span.end();
-                OpenTelemetryUtil.ACTIVE_EXECUTE.add(-1);
-            }
-            return true;
-        }
-    }
 
 }

@@ -36,7 +36,10 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
+
+import org.eclipse.collections.api.block.function.Function2;
+import org.finos.legend.engine.postgres.auth.method.AuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.method.ConnectionProperties;
 import org.finos.legend.engine.postgres.config.GSSConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.protocol.wire.Messages;
@@ -53,7 +56,7 @@ public class PostgresServer
     private static final Logger logger = LoggerFactory.getLogger(PostgresServer.class);
     private final int port;
     private final SessionsFactory sessionsFactory;
-    private final AuthenticationProvider authenticationProvider;
+    private final Function2<String, ConnectionProperties, AuthenticationMethod> authenticationProvider;
     private final GSSConfig gssConfig;
     private Channel channel;
     private EventLoopGroup bossGroup;
@@ -61,7 +64,7 @@ public class PostgresServer
 
     private final Messages messages;
 
-    public PostgresServer(ServerConfig serverConfig, SessionsFactory sessionsFactory, AuthenticationProvider authenticationProvider, Messages messages)
+    public PostgresServer(ServerConfig serverConfig, SessionsFactory sessionsFactory, Function2<String, ConnectionProperties, AuthenticationMethod> authenticationProvider, Messages messages)
     {
         this.port = serverConfig.getPort();
         this.sessionsFactory = sessionsFactory;

@@ -33,12 +33,12 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import org.eclipse.collections.api.block.function.Function2;
 import org.finos.legend.engine.postgres.auth.AuthenticationContext;
 import org.finos.legend.engine.postgres.auth.method.ConnectionProperties;
 import org.finos.legend.engine.postgres.PostgresServerException;
 import org.finos.legend.engine.postgres.auth.method.AuthenticationMethod;
 import org.finos.legend.engine.postgres.auth.method.AuthenticationMethodType;
-import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
 import org.finos.legend.engine.postgres.auth.identity.KerberosIdentityProvider;
 import org.finos.legend.engine.postgres.config.GSSConfig;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
@@ -204,7 +204,7 @@ public class PostgresWireProtocol
     public final PgDecoder decoder;
     public final MessageHandler handler;
     private final SessionsFactory sessions;
-    private final AuthenticationProvider authService;
+    private final Function2<String, ConnectionProperties, AuthenticationMethod> authService;
     private final GSSConfig gssConfig;
     private final Messages messages;
     private DelayableWriteChannel channel;
@@ -216,7 +216,7 @@ public class PostgresWireProtocol
     private CompletableFuture<?> activeExecution;
 
     public PostgresWireProtocol(SessionsFactory sessions,
-                                AuthenticationProvider authService,
+                                Function2<String, ConnectionProperties, AuthenticationMethod> authService,
                                 GSSConfig gssConfig, Supplier<SslContext> getSslContext,
                                 Messages messages)
     {
@@ -514,8 +514,7 @@ public class PostgresWireProtocol
         SSLSession sslSession = getSession(channel);
         ConnectionProperties connProperties = new ConnectionProperties(address, sslSession);
 
-        AuthenticationMethod authMethod = authService.resolveAuthenticationType(userName,
-                connProperties);
+        AuthenticationMethod authMethod = authService.apply(userName, connProperties);
         if (authMethod == null)
         {
             String errorMessage = String.format(
