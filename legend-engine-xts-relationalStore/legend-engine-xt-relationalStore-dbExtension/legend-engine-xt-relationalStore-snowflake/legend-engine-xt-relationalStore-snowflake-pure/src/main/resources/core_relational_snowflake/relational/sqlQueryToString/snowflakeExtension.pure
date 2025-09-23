@@ -295,7 +295,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSnowflake(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='DAYOFMONTH(%s)')),
-    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='to_char(%s, \'DYDY\')')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='DECODE(EXTRACT(dayofweek FROM %s), 1, \'Monday\', 2, \'Tuesday\', 3, \'Wednesday\', 4, \'Thursday\', 5, \'Friday\', 6, \'Saturday\', 7, \'Sunday\')')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='DAYOFWEEKISO(%s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='DAYOFYEAR(%s)')),
     dynaFnToSql('endsWith',               $allStates,            ^ToSql(format='endswith(%s,%s)', transform={p:String[2]|$p})),

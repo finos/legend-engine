@@ -116,7 +116,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
               $x.first.values;,
             | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
               // processResult
-              if ($resultType->instanceOf(PrimitiveType) || $resultType->in([Variant, List, Map, Nil]),
+              if ($resultType->instanceOf(PrimitiveType) || $resultType->instanceOf(Enumeration) || $resultType->in([Variant, List, Map, Nil]),
                 | let preResultFinal = $res.result.rows->head().values->head();
 
                   print(if($debug.debug,|'\nRaw Result:\n'+$preResultFinal->makeString('[',',',']'),|''));
@@ -165,6 +165,7 @@ function meta::relational::tests::pct::process::resultToType(preResultFinal: Any
         pair(|$resultType->subTypeOf(Integer), |$preResultFinal->toOne()->cast(@Number)->round()),
         pair(|$resultType->subTypeOf(Float), |$preResultFinal->toOne()->cast(@Number)->toFloat()),
         pair(|$resultType->subTypeOf(Number), |$preResultFinal->toOne()->cast(@Number)),
+        pair(|$resultType->instanceOf(Enumeration), | meta::pure::functions::lang::extractEnumValue($resultType->cast(@Enumeration<Any>), $preResultFinal->toOne()->toString())),
         pair(|$resultType == Variant, |$preResultFinal->toOne()->cast(@String)->fromJson()),
         pair(|$resultType->in([List, Map]), |$preResultFinal->toOne()->cast(@String)->fromJson()->to($type))
       ],

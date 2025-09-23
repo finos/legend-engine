@@ -27,7 +27,6 @@ import org.finos.legend.engine.test.shared.framework.TestServerResource;
 public class H2TestConnectionIntegration implements TestConnectionIntegration, TestServerResource
 {
     private org.h2.tools.Server h2Server = null;
-    private int port;
 
     @Override
     public MutableList<String> group()
@@ -44,8 +43,7 @@ public class H2TestConnectionIntegration implements TestConnectionIntegration, T
     @Override
     public void setup() throws Exception
     {
-        this.port = DynamicPortGenerator.generatePort();
-        this.h2Server = AlloyH2Server.startServer(this.port);
+        this.h2Server = AlloyH2Server.startServer(0);
     }
 
     @Override
@@ -65,7 +63,7 @@ public class H2TestConnectionIntegration implements TestConnectionIntegration, T
         }
         StaticDatasourceSpecification H2DataSourceSpecification = new StaticDatasourceSpecification();
         H2DataSourceSpecification.host = "localhost";
-        H2DataSourceSpecification.port = this.port;
+        H2DataSourceSpecification.port = this.h2Server.getPort();
         H2DataSourceSpecification.databaseName = "default";
 
         TestDatabaseAuthenticationStrategy authSpec = new TestDatabaseAuthenticationStrategy();
