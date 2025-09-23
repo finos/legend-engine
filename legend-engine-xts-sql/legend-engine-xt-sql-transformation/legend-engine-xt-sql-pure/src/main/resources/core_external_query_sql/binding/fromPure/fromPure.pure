@@ -357,7 +357,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let withQueries = $query.with->processWith($_context);
 
   let scopedContext = ^$_context(
-    withQueries = $withQueries,
+    withQueries = $_context.withQueries->concatenate($withQueries),
     scopeWithFrom = if ($_context.scopeWithFrom->isFalse(), | false, | $query.with.withQueries->isEmpty())
   );
 
@@ -384,7 +384,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   assert(($runtimes->size() <=1) && ($mapping->size() <=1), 'With queries with multiple runtimes/mappings currently not supported');
 
-  $with.withQueries->map(w| $w->processWithQuery(^$context(name = $w.name, root = false)));
+  $with.withQueries->fold({w, acc | $acc->concatenate($w->processWithQuery(^$context(name = $w.name, root = false, withQueries = $context.withQueries->concatenate($acc))))}, []);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processWithQuery(query: WithQuery[1], _context: SqlTransformContext[1]): WithQueryContext[1]
@@ -807,7 +807,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       let aggregation = processAggregationLambda($extacted.aggregate, Number, $context);
 
       let type = $aggregation->functionReturnType().rawType->toOne()->normalizeType();
-      assertEquals(Number, $type, | 'only numberic aggregations supported in window aggregation expression');
 
       let map = $extacted.map->match([
         q:QualifiedNameReference[1] | $q.name,
@@ -833,7 +832,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
             appendTdsFunc($tds, extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_, [list($over), list($aggregations)]);,
         |
-
+          assertEquals(Number, $type, | 'only numberic aggregations supported in window aggregation expression');
           let mapColumn = $context.columnByNameParts($map.parts, true).name;
           let func = sfe(func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_, [iv($mapColumn), iv($aggregation)]);
 
@@ -884,10 +883,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   if ($window.windowFrame.mode == WindowFrameMode.ROWS,
     | if ($frame->isNotEmpty(),
       | sfe(over_ColSpecArray_1__SortInfo_MANY__Rows_1___Window_1_, [$columns, $sorts->iv(), $frame->toOne()]),
-      | sfe(over_ColSpecArray_1__SortInfo_MANY___Window_1_, [$columns, $sorts->iv()])),
+      | if ($partitions->isEmpty(),
+          | sfe(over_SortInfo_MANY___Window_1_, [$sorts->iv()]),
+          | sfe(over_ColSpecArray_1__SortInfo_MANY___Window_1_, [$columns, $sorts->iv()]))),
     | if ($frame->isNotEmpty(),
-      | sfe(over_ColSpecArray_1__SortInfo_1___Range_1___Window_1_, [$columns, $sorts->iv(), $frame->toOne()]),
-      | sfe(over_ColSpecArray_1__SortInfo_MANY___Window_1_, [$columns, $sorts->iv()])));
+      | if ($partitions->isEmpty(),
+          | sfe(over_SortInfo_1___Range_1___Window_1_, [$sorts->iv(), $frame->toOne()]),
+          | sfe(over_ColSpecArray_1__SortInfo_1___Range_1___Window_1_, [$columns, $sorts->iv(), $frame->toOne()])),
+      | if ($partitions->isEmpty(),
+          | sfe(over_SortInfo_MANY___Window_1_, [$sorts->iv()]),
+          | sfe(over_ColSpecArray_1__SortInfo_MANY___Window_1_, [$columns, $sorts->iv()]))));
 }
 
 
@@ -2812,7 +2817,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         getWindowPropertyArg($args->first(), $lead, 'lead');
       }),
 
-      window('nth', [], {args, fc, ctx |
+      window('nth_value', [], {args, fc, ctx |
         assertRelation($ctx.relation, 'lead');
         assertEquals(2, $args->size(), 'incorrect number of args for nth');
 
@@ -3964,7 +3969,8 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
       if ($this.aliases->isNotEmpty(), | $indent + 'aliases: \n' + $indent + '  ' + $this.aliases.toString()->joinStrings('\n' + $indent + '  ') + '\n', | '') +
       if ($this.contexts->isNotEmpty(), | $indent + 'contexts: \n' + $this.contexts->map(c | $c.toString($indent + '    '))->joinStrings('\n'), | '') +
       if ($this.assignments->isNotEmpty(), | $indent + 'assigments: ' + $this.assignments->size()->toString(), | '') +
-      if ($this.parameters->isNotEmpty(), | $indent + 'parameters: ' + $this.parameters->map(p | $p.toString)->joinStrings('\n'), | '')
+      if ($this.parameters->isNotEmpty(), | $indent + 'parameters: ' + $this.parameters->map(p | $p.toString)->joinStrings('\n'), | '') +
+      if ($this.withQueries->isNotEmpty(), | $indent + 'ctes: ' + $this.withQueries.context.name->joinStrings('[', ',', ']'), | '')
   }:String[1];
 
   context(name:String[0..1]){
@@ -4492,7 +4498,9 @@ aggregation(
     let aggs = $this.aggregations($aggregates);
 
     if ($relation,
-      | appendTdsFunc($func, groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, [list(iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $groupByColumns))), list($aggs)]),
+      | if ($groupByColumns->isEmpty(),
+          | appendTdsFunc($func, aggregate_Relation_1__AggColSpecArray_1__Relation_1_, [list($aggs)]),
+          | appendTdsFunc($func, groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, [list(iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $groupByColumns))), list($aggs)])),
       | appendTdsFunc($func, groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_, [list(iv($groupByColumns)), list($aggs)]));
 
   }:ValueSpecification[1];

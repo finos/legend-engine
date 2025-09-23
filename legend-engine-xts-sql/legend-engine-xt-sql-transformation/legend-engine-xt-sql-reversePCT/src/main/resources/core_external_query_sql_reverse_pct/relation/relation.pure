@@ -19,10 +19,16 @@ function meta::external::query::sql::reversePCT::tests::relation::reverses():Rev
   [
     meta::external::query::sql::reversePCT::tests::relation::iteration::filter::reverses(),
 
+    meta::external::query::sql::reversePCT::tests::relation::functions::olap::over::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::ranking::rank::reverses(),
-
+    
     meta::external::query::sql::reversePCT::tests::relation::slice::drop::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::slice::first::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::slice::lag::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::slice::last::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::slice::lead::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::slice::limit::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::slice::nth::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::slice::slice::reverses(),
 
     meta::external::query::sql::reversePCT::tests::relation::transformation::groupBy::reverses()

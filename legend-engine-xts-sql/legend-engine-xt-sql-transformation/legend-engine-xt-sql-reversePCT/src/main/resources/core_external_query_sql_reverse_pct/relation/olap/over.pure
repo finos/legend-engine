@@ -1,0 +1,1728 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::relation::functions::olap::over::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_relation/relation/functions/olap/over.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_CurrentRow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(0)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_CurrentRow_UnboundedFollowing_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], 0->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_NPreceding_NPreceding_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::rows(-2, -1)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN 2 PRECEDING AND 1 PRECEDING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_NPreceding_NFollowing_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::rows(-1, 1)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_NFollowing_NFollowing_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], 1->meta::pure::functions::relation::rows(2)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN 1 FOLLOWING AND 2 FOLLOWING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_NPreceding_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(-1)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_NFollowing_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(1)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN UNBOUNDED PRECEDING AND 1 FOLLOWING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_NPreceding_UnboundedFollowing_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::rows(-1, meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN 1 PRECEDING AND UNBOUNDED FOLLOWING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_NFollowing_UnboundedFollowing_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], 1->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN 1 FOLLOWING AND UNBOUNDED FOLLOWING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_CurrentRow_CurrentRow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], 0->meta::pure::functions::relation::rows(0)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN CURRENT ROW AND CURRENT ROW) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_NPreceding_CurrentRow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::rows(-1, 0)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_CurrentRow_NFollowing_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], 0->meta::pure::functions::relation::rows(1)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC, "table0_0".i ASC ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~[p,o]->meta::pure::functions::relation::over(meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p,"table0_0".o ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_CurrentRow_WithMultiplePartitions_WithSingleOrderBy_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,2,20\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,30\n'+
+                            '100,2,5\n'+
+                            '100,3,11\n'+
+                            '100,3,120\n'+
+                            '200,1,10000\n'+
+                            '200,1,200\n'+
+                            '200,1,808080\n'+
+                            '200,2,33333\n'+
+                            '200,3,0\n'+
+                            '200,3,4\n'+
+                            '300,1,0\n'+
+                            '300,2,0}#->meta::pure::functions::relation::extend(~[p,o]->meta::pure::functions::relation::over(~i->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(0)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p,"table0_0".o Order By "table0_0".i ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "sum_i_Rows" from csv(\'p,o,i\n0,1,10\n0,2,20\n0,3,30\n100,1,10\n100,2,30\n100,2,5\n100,3,11\n100,3,120\n200,1,10000\n200,1,200\n200,1,808080\n200,2,33333\n200,3,0\n200,3,4\n300,1,0\n300,2,0\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                //  revsForTest(
+                //       'meta::pure::functions::relation::tests::over::testRows_InvalidWindowFrameBoundary_Function_1__Boolean_1_',
+                //       [
+
+                //       ]
+                //  ),
+                //  revsForTest(
+                //       'meta::pure::functions::relation::tests::over::testRange_InvalidWindowFrameBoundary_Function_1__Boolean_1_',
+                //       [
+
+                //       ]
+                //  ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(0)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(0)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(-1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(-1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN UNBOUNDED PRECEDING AND 1 FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN UNBOUNDED PRECEDING AND 1 FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN 1 PRECEDING AND UNBOUNDED FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN 1 PRECEDING AND UNBOUNDED FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN 1 FOLLOWING AND UNBOUNDED FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN 1 FOLLOWING AND UNBOUNDED FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-2, -1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN 2 PRECEDING AND 1 PRECEDING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-2, -1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN 2 PRECEDING AND 1 PRECEDING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, 1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN 1 PRECEDING AND 1 FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, 1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN 1 PRECEDING AND 1 FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 1->meta::pure::functions::relation::_range(2)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN 1 FOLLOWING AND 2 FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,3,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,2,20\n'+
+                            '100,3,30\n'+
+                            '100,3,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,2,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 1->meta::pure::functions::relation::_range(2)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN 1 FOLLOWING AND 2 FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,3,30\n100,1,10\n100,2,20\n100,2,20\n100,3,30\n100,3,30\n200,1,10\n200,1,10\n200,1,10\n200,2,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,null,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,null,20\n'+
+                            '100,3,30\n'+
+                            '100,null,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,null,10\n'+
+                            '200,null,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, 1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN 1 PRECEDING AND 1 FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,null,30\n100,1,10\n100,2,20\n100,null,20\n100,3,30\n100,null,30\n200,1,10\n200,1,10\n200,null,10\n200,null,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,null,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,null,20\n'+
+                            '100,3,30\n'+
+                            '100,null,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,null,10\n'+
+                            '200,null,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, 1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN 1 PRECEDING AND 1 FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,null,30\n100,1,10\n100,2,20\n100,null,20\n100,3,30\n100,null,30\n200,1,10\n200,1,10\n200,null,10\n200,null,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,null,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,null,20\n'+
+                            '100,3,30\n'+
+                            '100,null,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,null,10\n'+
+                            '200,null,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN UNBOUNDED PRECEDING AND 1 FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,null,30\n100,1,10\n100,2,20\n100,null,20\n100,3,30\n100,null,30\n200,1,10\n200,1,10\n200,null,10\n200,null,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_NPreceding_UnboundedFollowing_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,1,10\n'+
+                            '0,1,10\n'+
+                            '0,null,30\n'+
+                            '100,1,10\n'+
+                            '100,2,20\n'+
+                            '100,null,20\n'+
+                            '100,3,30\n'+
+                            '100,null,30\n'+
+                            '200,1,10\n'+
+                            '200,1,10\n'+
+                            '200,null,10\n'+
+                            '200,null,20\n'+
+                            '200,3,30\n'+
+                            '200,3,30\n'+
+                            '300,1,10\n'+
+                            '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN 1 PRECEDING AND UNBOUNDED FOLLOWING) as "newCol" from csv(\'p,o,i\n0,1,10\n0,1,10\n0,null,30\n100,1,10\n100,2,20\n100,null,20\n100,3,30\n100,null,30\n200,1,10\n200,1,10\n200,null,10\n200,null,20\n200,3,30\n200,3,30\n300,1,10\n300,2,20\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_WithNumbers_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'menu_category,menu_cogs_usd\n'+
+                            'Beverage,0.5\n'+
+                            'Beverage,0.65\n'+
+                            'Beverage,0.75\n'+
+                            'Dessert,0.50\n'+
+                            'Dessert,1.00\n'+
+                            'Dessert,1.25\n'+
+                            'Dessert,2.50\n'+
+                            'Dessert,3.00\n'+
+                            'Snack,1.25\n'+
+                            'Snack,2.25\n'+
+                            'Snack,4.00}#->meta::pure::functions::relation::extend(~menu_cogs_usd->meta::pure::functions::relation::ascending()->meta::pure::functions::relation::over(0->meta::pure::functions::relation::_range(2.1)), ~sum_cogs:{p: meta::pure::metamodel::relation::Relation<(menu_category:String, menu_cogs_usd:Float)>[1], w: meta::pure::functions::relation::_Window<(menu_category:String, menu_cogs_usd:Float)>[1], r: (menu_category:String, menu_cogs_usd:Float)[1]|$r.menu_cogs_usd}:y: Float[*]|$y->plus())',
+                            'select "table0_0".menu_category as "menu_category", "table0_0".menu_cogs_usd as "menu_cogs_usd", sum("table0_0".menu_cogs_usd) OVER (Order By "table0_0".menu_cogs_usd ASC RANGE BETWEEN CURRENT ROW AND 2.1 FOLLOWING) as "sum_cogs" from csv(\'menu_category,menu_cogs_usd\nBeverage,0.5\nBeverage,0.65\nBeverage,0.75\nDessert,0.50\nDessert,1.00\nDessert,1.25\nDessert,2.50\nDessert,3.00\nSnack,1.25\nSnack,2.25\nSnack,4.00\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'menu_category,menu_cogs_usd\n'+
+                            'Beverage,0.5\n'+
+                            'Beverage,0.65\n'+
+                            'Beverage,0.75\n'+
+                            'Dessert,0.50\n'+
+                            'Dessert,1.00\n'+
+                            'Dessert,1.25\n'+
+                            'Dessert,2.50\n'+
+                            'Dessert,3.00\n'+
+                            'Snack,1.25\n'+
+                            'Snack,2.25\n'+
+                            'Snack,4.00}#->meta::pure::functions::relation::extend(~menu_cogs_usd->meta::pure::functions::relation::ascending()->meta::pure::functions::relation::over(0.5D->meta::pure::functions::relation::_range(2.5)), ~sum_cogs:{p: meta::pure::metamodel::relation::Relation<(menu_category:String, menu_cogs_usd:Float)>[1], w: meta::pure::functions::relation::_Window<(menu_category:String, menu_cogs_usd:Float)>[1], r: (menu_category:String, menu_cogs_usd:Float)[1]|$r.menu_cogs_usd}:y: Float[*]|$y->plus())',
+                            'select "table0_0".menu_category as "menu_category", "table0_0".menu_cogs_usd as "menu_cogs_usd", sum("table0_0".menu_cogs_usd) OVER (Order By "table0_0".menu_cogs_usd ASC RANGE BETWEEN 0.5 FOLLOWING AND 2.5 FOLLOWING) as "sum_cogs" from csv(\'menu_category,menu_cogs_usd\nBeverage,0.5\nBeverage,0.65\nBeverage,0.75\nDessert,0.50\nDessert,1.00\nDessert,1.25\nDessert,2.50\nDessert,3.00\nSnack,1.25\nSnack,2.25\nSnack,4.00\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o ASC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "newCol" from csv(\'p,o,i\n0,2024-01-29T00:32:34.000000000+0000,10\n0,2024-01-29T00:32:34.000000000+0000,10\n0,2024-01-31T00:32:34.000000000+0000,30\n100,2024-01-29T00:32:34.000000000+0000,10\n100,2024-01-30T00:32:34.000000000+0000,20\n100,2024-01-30T00:32:34.000000000+0000,20\n100,2024-01-31T00:32:34.000000000+0000,30\n100,2024-01-31T00:32:34.000000000+0000,30\n200,2024-01-29T00:32:34.000000000+0000,10\n200,2024-01-29T00:32:34.000000000+0000,10\n200,2024-01-29T00:32:34.000000000+0000,10\n200,2024-01-30T00:32:34.000000000+0000,20\n200,2024-01-31T00:32:34.000000000+0000,30\n200,2024-01-31T00:32:34.000000000+0000,30\n300,2024-01-29T00:32:34.000000000+0000,10\n300,2024-01-30T00:32:34.000000000+0000,20\') as "table0_0"',
+                            'Non-numeric values for order by column are not currently supported for range frame',
+                            'Needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".p as "p", "table0_0".o as "o", "table0_0".i as "i", sum("table0_0".i) OVER (Partition By "table0_0".p Order By "table0_0".o DESC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "newCol" from csv(\'p,o,i\n0,2024-01-29T00:32:34.000000000+0000,10\n0,2024-01-29T00:32:34.000000000+0000,10\n0,2024-01-31T00:32:34.000000000+0000,30\n100,2024-01-29T00:32:34.000000000+0000,10\n100,2024-01-30T00:32:34.000000000+0000,20\n100,2024-01-30T00:32:34.000000000+0000,20\n100,2024-01-31T00:32:34.000000000+0000,30\n100,2024-01-31T00:32:34.000000000+0000,30\n200,2024-01-29T00:32:34.000000000+0000,10\n200,2024-01-29T00:32:34.000000000+0000,10\n200,2024-01-29T00:32:34.000000000+0000,10\n200,2024-01-30T00:32:34.000000000+0000,20\n200,2024-01-31T00:32:34.000000000+0000,30\n200,2024-01-31T00:32:34.000000000+0000,30\n300,2024-01-29T00:32:34.000000000+0000,10\n300,2024-01-30T00:32:34.000000000+0000,20\') as "table0_0"',
+                            'Non-numeric values for order by column are not currently supported for range frame',
+                            'Needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, 0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, 0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-2, meta::pure::functions::date::DurationUnit.DAYS, -1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-2, meta::pure::functions::date::DurationUnit.DAYS, -1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 2, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 2, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.SECONDS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'p,o,i\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '0,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '100,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '200,2024-01-30T00:32:34.000000000+0000,20\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '200,2024-01-31T00:32:34.000000000+0000,30\n'+
+                            '300,2024-01-29T00:32:34.000000000+0000,10\n'+
+                            '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.SECONDS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
+                                 '',
+                                 'Unexpected token',
+                                 'Window function with range frame using interval is not supported'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
