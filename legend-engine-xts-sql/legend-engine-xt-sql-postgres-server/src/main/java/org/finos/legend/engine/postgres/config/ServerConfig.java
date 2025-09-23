@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.postgres.config;
 
-import org.finos.legend.engine.postgres.auth.method.AuthenticationMethodType;
-import org.finos.legend.engine.postgres.auth.identity.IdentityType;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethodType;
+import org.finos.legend.engine.postgres.protocol.wire.auth.identity.IdentityType;
 
 public class ServerConfig
 {

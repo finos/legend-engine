@@ -20,19 +20,20 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.collections.api.block.function.Function2;
-import org.finos.legend.engine.postgres.auth.method.AuthenticationMethod;
-import org.finos.legend.engine.postgres.auth.method.ConnectionProperties;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethod;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.ConnectionProperties;
 import org.finos.legend.engine.postgres.config.ServerConfig;
-import org.finos.legend.engine.postgres.protocol.wire.Messages;
-import org.finos.legend.engine.postgres.protocol.wire.session.SessionsFactory;
+import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 
 public class TestPostgresServer extends PostgresServer
 {
 
-    public TestPostgresServer(ServerConfig serverConfig, SessionsFactory sessionsFactory,
+    public TestPostgresServer(ServerConfig serverConfig,
+                              SQLManager sqlManager,
                               Function2<String, ConnectionProperties, AuthenticationMethod> authenticationProvider, Messages messages)
     {
-        super(serverConfig, sessionsFactory, authenticationProvider, messages);
+        super(serverConfig, sqlManager, authenticationProvider, messages);
     }
 
     public void startUp()

@@ -36,17 +36,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
-import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
-import org.finos.legend.engine.postgres.protocol.wire.DescribeResult;
-import org.finos.legend.engine.postgres.protocol.sql.ExecutionDispatcher;
-import org.finos.legend.engine.postgres.protocol.wire.FormatCodes;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.DescribeResult;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.FormatCodes;
 import org.finos.legend.engine.postgres.PostgresServerException;
-import org.finos.legend.engine.postgres.protocol.wire.ResultSetReceiver;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.ResultSetReceiver;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepared.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepared.PreparedStatementExecutionTask;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.PostgresStatement;
-import org.finos.legend.engine.postgres.protocol.sql.handler.SessionHandler;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.StatementExecutionTask;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -61,14 +57,12 @@ public class Session implements AutoCloseable
     public static final String FAILED_TO_EXECUTE = "Failed to execute";
     private final Map<String, Prepared> parsed = new ConcurrentHashMap<>();
     private final Map<String, Portal> portals = new ConcurrentHashMap<>();
-    private final ExecutionDispatcher dispatcher;
     private final ExecutorService executorService;
     private final Identity identity;
 
-    public Session(SessionHandler dataSessionHandler, SessionHandler metaDataSessionHandler, ExecutorService executorService, Identity identity)
+    public Session(ExecutorService executorService, Identity identity)
     {
         this.executorService = executorService;
-        this.dispatcher = new ExecutionDispatcher(dataSessionHandler, metaDataSessionHandler);
         this.identity = identity;
         OpenTelemetryUtil.ACTIVE_SESSIONS.add(1);
         OpenTelemetryUtil.TOTAL_SESSIONS.add(1);
@@ -85,63 +79,20 @@ public class Session implements AutoCloseable
         LOGGER.info("Sync");
     }
 
-    public void parse(String statementName, String query, List<Integer> paramTypes)
+    public void parse(String statementName, String query, List<Integer> paramTypes, PostgresPreparedStatement postgresPreparedStatement)
     {
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug("method=parse stmtName={} query={} paramTypes={}", statementName, query,
-                    paramTypes);
+            LOGGER.debug("method=parse stmtName={} query={} paramTypes={}", statementName, query, paramTypes);
         }
-
         Prepared p = new Prepared();
         p.name = statementName;
         p.sql = query;
         p.paramType = paramTypes.toArray(new Integer[]{});
+        p.prep = postgresPreparedStatement;
 
-        if (query != null)
-        {
-            try
-            {
-                SessionHandler sessionHandler;
-                if (query.isEmpty())
-                {
-                    // Parser can't handle empty string, but postgres requires support for it
-                    // Using an empty session handler for empty queries
-                    sessionHandler = ExecutionDispatcher.getEmptySessionHandler();
-                }
-                else
-                {
-                    sessionHandler = getSessionHandler(query);
-                }
-                p.prep = sessionHandler.prepareStatement(query);
-            }
-            catch (Exception e)
-            {
-                throw PostgresServerException.wrapException(e);
-            }
-        }
-        parsed.put(p.name, p);
+        this.parsed.put(p.name, p);
     }
-
-    /**
-     * Identify type of query and return appropriate session handler
-     * based on schema of the query.
-     *
-     * @param query SQL query to be executed
-     * @return session handler for the given query
-     */
-    private SessionHandler getSessionHandler(String query)
-    {
-        SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
-        SqlBaseParser.SingleStatementContext singleStatementContext = parser.singleStatement();
-        SessionHandler sessionHandler = singleStatementContext.accept(dispatcher);
-        if (sessionHandler == null)
-        {
-            throw new PostgresServerException(String.format("Unable to determine session handler for query[%s]", query));
-        }
-        return sessionHandler;
-    }
-
 
     public int getParamType(String statementName, int idx)
     {
@@ -350,9 +301,8 @@ public class Session implements AutoCloseable
     }
 
 
-    public CompletableFuture<Void> executeSimple(String query, Supplier<ResultSetReceiver> resultSetReceiverProvider)
+    public CompletableFuture<Void> executeSimple(PostgresStatement statement, String query, Supplier<ResultSetReceiver> resultSetReceiverProvider)
     {
-
         if (LOGGER.isDebugEnabled())
         {
             LOGGER.debug("Executing simple {} ", query);
@@ -361,7 +311,6 @@ public class Session implements AutoCloseable
         Span span = tracer.spanBuilder("Session Execute Simple").startSpan();
         try (Scope ignored1 = span.makeCurrent())
         {
-            PostgresStatement statement = getSessionHandler(query).createStatement();
             span.addEvent("submit StatementExecutionTask");
             ResultSetReceiver resultSetReceiver = resultSetReceiverProvider.get();
             Context.taskWrapping(executorService).submit(new StatementExecutionTask(statement, query, resultSetReceiver));

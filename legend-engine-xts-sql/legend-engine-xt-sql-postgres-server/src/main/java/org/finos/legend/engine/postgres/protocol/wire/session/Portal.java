@@ -21,7 +21,7 @@
 
 package org.finos.legend.engine.postgres.protocol.wire.session;
 
-import org.finos.legend.engine.postgres.protocol.wire.FormatCodes;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.FormatCodes;
 
 /**
  * Represents a PostgreSQL Portal object

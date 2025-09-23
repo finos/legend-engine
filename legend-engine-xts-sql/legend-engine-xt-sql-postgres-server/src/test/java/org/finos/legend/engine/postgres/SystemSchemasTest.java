@@ -15,7 +15,7 @@
 
 package org.finos.legend.engine.postgres;
 
-import org.finos.legend.engine.postgres.protocol.sql.SystemSchemas;
+import org.finos.legend.engine.postgres.protocol.sql.dispatcher.SystemSchemas;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;

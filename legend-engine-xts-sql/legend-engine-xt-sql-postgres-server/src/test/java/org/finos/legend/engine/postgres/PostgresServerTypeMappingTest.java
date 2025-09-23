@@ -18,6 +18,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -32,16 +33,17 @@ import java.time.ZoneOffset;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
 import java.util.TimeZone;
-import org.finos.legend.engine.postgres.auth.identity.AnonymousIdentityProvider;
-import org.finos.legend.engine.postgres.auth.method.NoPasswordAuthenticationMethod;
+
+import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
+import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendExecutionService;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendHttpClient;
 
 import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
 
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendSessionFactory;
-import org.finos.legend.engine.postgres.protocol.wire.Messages;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -67,10 +69,10 @@ public class PostgresServerTypeMappingTest
     public static void setUpClass()
     {
         LegendExecutionService client = new LegendExecutionService(new LegendHttpClient("http", "localhost", String.valueOf(wireMockRule.port())));
-        LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
-        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory,
+        testPostgresServer = new TestPostgresServer(serverConfig,
+                new SQLManager(client),
                 (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),
                 new Messages((exception) -> exception.getMessage()));
         testPostgresServer.startUp();

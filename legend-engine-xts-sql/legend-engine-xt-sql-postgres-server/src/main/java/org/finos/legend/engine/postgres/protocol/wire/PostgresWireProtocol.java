@@ -34,18 +34,25 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import org.eclipse.collections.api.block.function.Function2;
-import org.finos.legend.engine.postgres.auth.AuthenticationContext;
-import org.finos.legend.engine.postgres.auth.method.ConnectionProperties;
+import org.finos.legend.engine.postgres.protocol.wire.auth.AuthenticationContext;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.ConnectionProperties;
 import org.finos.legend.engine.postgres.PostgresServerException;
-import org.finos.legend.engine.postgres.auth.method.AuthenticationMethod;
-import org.finos.legend.engine.postgres.auth.method.AuthenticationMethodType;
-import org.finos.legend.engine.postgres.auth.identity.KerberosIdentityProvider;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethod;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethodType;
+import org.finos.legend.engine.postgres.protocol.wire.auth.identity.KerberosIdentityProvider;
 import org.finos.legend.engine.postgres.config.GSSConfig;
+import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.ClientInterrupted;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.DescribeResult;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.FormatCodes;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.PgDecoder;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.QueryStringSplitter;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.ResultSetReceiver;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.protocol.wire.session.Session;
-import org.finos.legend.engine.postgres.protocol.wire.session.SessionsFactory;
-import org.finos.legend.engine.postgres.protocol.wire.types.PGType;
-import org.finos.legend.engine.postgres.protocol.wire.types.PGTypes;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.types.PGType;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.types.PGTypes;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.postgres.utils.netty.DelayableWriteChannel;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -78,9 +85,10 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
-import static org.finos.legend.engine.postgres.protocol.wire.FormatCodes.getFormatCode;
+import static org.finos.legend.engine.postgres.protocol.wire.serialization.FormatCodes.getFormatCode;
 
 
 /**
@@ -203,7 +211,7 @@ public class PostgresWireProtocol
 
     public final PgDecoder decoder;
     public final MessageHandler handler;
-    private final SessionsFactory sessions;
+    private final SQLManager sqlManager;
     private final Function2<String, ConnectionProperties, AuthenticationMethod> authService;
     private final GSSConfig gssConfig;
     private final Messages messages;
@@ -215,12 +223,12 @@ public class PostgresWireProtocol
 
     private CompletableFuture<?> activeExecution;
 
-    public PostgresWireProtocol(SessionsFactory sessions,
+    public PostgresWireProtocol(SQLManager sqlManager,
                                 Function2<String, ConnectionProperties, AuthenticationMethod> authService,
                                 GSSConfig gssConfig, Supplier<SslContext> getSslContext,
                                 Messages messages)
     {
-        this.sessions = sessions;
+        this.sqlManager = sqlManager;
         this.authService = authService;
         this.decoder = new PgDecoder(getSslContext);
         this.handler = new MessageHandler();
@@ -588,8 +596,8 @@ public class PostgresWireProtocol
 
     private void handleAuthSuccess(Channel channel, Identity authenticatedUser) throws Exception
     {
-        String database = properties.getProperty("database");
-        session = sessions.createSession(database, authenticatedUser);
+//        String database = properties.getProperty("database");
+        this.session = new Session(Executors.newCachedThreadPool(), authenticatedUser);
         MDC.put("user", authenticatedUser.getName());
         messages.sendAuthenticationOK(channel)
                 .addListener(f -> sendParams(channel))
@@ -674,7 +682,7 @@ public class PostgresWireProtocol
         }
         this.addTaskToQueue(() ->
         {
-            session.parse(statementName, query, paramTypes);
+            session.parse(statementName, query, paramTypes, this.sqlManager.buildPreparedStatement(query, session.getIdentity()));
             messages.sendParseComplete(channel);
         });
     }
@@ -850,8 +858,7 @@ public class PostgresWireProtocol
                     }
                     else
                     {
-                        FormatCodes.FormatCode[] resultFormatCodes =
-                                type == 'P' ? session.getResultFormatCodes(portalOrStatement) : null;
+                        FormatCodes.FormatCode[] resultFormatCodes = type == 'P' ? session.getResultFormatCodes(portalOrStatement) : null;
                         messages.sendRowDescription(channel, fields, resultFormatCodes);
                     }
                     OpenTelemetryUtil.TOTAL_SUCCESS_METADATA.add(1);
@@ -1026,7 +1033,6 @@ public class PostgresWireProtocol
 
     private CompletableFuture<Void> handleSingleQuery(String query, DelayableWriteChannel channel)
     {
-
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("WireProtocol Handle Simple Query").startSpan();
         try (Scope ignored = span.makeCurrent())
@@ -1041,7 +1047,7 @@ public class PostgresWireProtocol
             }
             try
             {
-                return session.executeSimple(query, () -> new ResultSetReceiver(query, channel, true, null, messages));
+                return session.executeSimple(this.sqlManager.buildStatement(query, session.getIdentity()), query, () -> new ResultSetReceiver(query, channel, true, null, messages));
             }
             catch (Throwable t)
             {

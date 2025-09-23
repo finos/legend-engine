@@ -17,13 +17,13 @@ package org.finos.legend.engine.postgres;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.postgres.auth.identity.AnonymousIdentityProvider;
-import org.finos.legend.engine.postgres.auth.method.NoPasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
+import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendExecutionService;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendSessionFactory;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsTestClient;
-import org.finos.legend.engine.postgres.protocol.wire.Messages;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecuteTest;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -90,12 +90,12 @@ public class PostgresServerAsyncTest
                 return super.executeQueryApi(query);
             }
         };
-        LegendSessionFactory legendSessionFactory = new LegendSessionFactory(new LegendExecutionService(client));
 
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
 
-        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory,
+        testPostgresServer = new TestPostgresServer(serverConfig,
+                new SQLManager(new LegendExecutionService(client)),
                 (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),
                 new Messages(Throwable::getMessage));
         testPostgresServer.startUp();

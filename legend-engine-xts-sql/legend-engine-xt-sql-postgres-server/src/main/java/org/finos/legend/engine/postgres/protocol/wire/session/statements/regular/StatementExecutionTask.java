@@ -25,7 +25,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import org.finos.legend.engine.postgres.protocol.wire.ResultSetReceiver;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.ResultSetReceiver;
 import org.finos.legend.engine.postgres.protocol.wire.session.Session;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;

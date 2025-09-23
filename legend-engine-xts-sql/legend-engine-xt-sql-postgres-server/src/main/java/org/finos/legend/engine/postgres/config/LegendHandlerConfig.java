@@ -15,15 +15,10 @@
 package org.finos.legend.engine.postgres.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.postgres.protocol.wire.session.SessionsFactory;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendExecutionService;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendHttpClient;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendSessionFactory;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LegendHandlerConfig implements HandlerConfig
 {
-
     private String protocol;
     private String host;
     private String port;
@@ -53,14 +48,6 @@ public class LegendHandlerConfig implements HandlerConfig
     public String getPort()
     {
         return port;
-    }
-
-
-    @Override
-    public SessionsFactory buildSessionsFactory()
-    {
-        LegendExecutionService client = new LegendExecutionService(new LegendHttpClient(getProtocol(), getHost(), getPort()));
-        return new LegendSessionFactory(client);
     }
 
     @Override

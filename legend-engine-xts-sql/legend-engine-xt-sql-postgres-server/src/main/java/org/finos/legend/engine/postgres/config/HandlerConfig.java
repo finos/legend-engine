@@ -15,11 +15,8 @@
 package org.finos.legend.engine.postgres.config;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.finos.legend.engine.postgres.protocol.wire.session.SessionsFactory;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, property = "className")
 public interface HandlerConfig
 {
-    SessionsFactory buildSessionsFactory();
-
 }
