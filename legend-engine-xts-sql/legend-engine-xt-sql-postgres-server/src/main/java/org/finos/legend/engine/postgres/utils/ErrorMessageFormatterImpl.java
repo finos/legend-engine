@@ -15,6 +15,7 @@
 package org.finos.legend.engine.postgres.utils;
 
 import java.util.Map;
+
 import org.finos.legend.engine.postgres.PostgresServerException;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 
@@ -25,7 +26,7 @@ public class ErrorMessageFormatterImpl implements ErrorMessageFormatter
 
     public ErrorMessageFormatterImpl(ServerConfig serverConfig)
     {
-        traceURLEndpoint = serverConfig.getOtelConfig().getTraceURLEndpoint();
+        traceURLEndpoint = serverConfig.getOtelConfig() == null ? null : serverConfig.getOtelConfig().getTraceURLEndpoint();
     }
 
     @Override

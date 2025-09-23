@@ -15,10 +15,6 @@
 package org.finos.legend.engine.postgres.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.postgres.SessionsFactory;
-import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
-import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
-import org.finos.legend.engine.postgres.handler.legend.LegendStaticClient;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class StaticHandlerConfig implements HandlerConfig
@@ -51,14 +47,6 @@ public class StaticHandlerConfig implements HandlerConfig
     public int getDelay()
     {
         return delay;
-    }
-
-    @Override
-    public SessionsFactory buildSessionsFactory()
-    {
-        LegendStaticClient executionClient = new LegendStaticClient(getResult(), getSchema(), getDelay());
-        LegendExecutionService client = new LegendExecutionService(executionClient);
-        return new LegendSessionFactory(client);
     }
 
     @Override

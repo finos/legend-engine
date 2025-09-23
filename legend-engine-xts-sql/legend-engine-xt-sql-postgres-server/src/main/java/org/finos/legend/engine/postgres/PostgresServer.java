@@ -36,35 +36,39 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
+
+import org.eclipse.collections.api.block.function.Function2;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethod;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.ConnectionProperties;
 import org.finos.legend.engine.postgres.config.GSSConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
-import org.finos.legend.engine.postgres.transport.Netty4OpenChannelsHandler;
+import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
+import org.finos.legend.engine.postgres.protocol.wire.PostgresWireProtocol;
+import org.finos.legend.engine.postgres.utils.netty.Netty4OpenChannelsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class PostgresServer
 {
-
     private static final Logger logger = LoggerFactory.getLogger(PostgresServer.class);
     private final int port;
-    private final SessionsFactory sessionsFactory;
-    private final AuthenticationProvider authenticationProvider;
+    private final Function2<String, ConnectionProperties, AuthenticationMethod> authenticationProvider;
     private final GSSConfig gssConfig;
     private Channel channel;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
-
     private final Messages messages;
+    private final SQLManager sqlManager;
 
-    public PostgresServer(ServerConfig serverConfig, SessionsFactory sessionsFactory, AuthenticationProvider authenticationProvider, Messages messages)
+    public PostgresServer(ServerConfig serverConfig, SQLManager sqlManager, Function2<String, ConnectionProperties, AuthenticationMethod> authenticationProvider, Messages messages)
     {
         this.port = serverConfig.getPort();
-        this.sessionsFactory = sessionsFactory;
         this.authenticationProvider = authenticationProvider;
         this.gssConfig = serverConfig.getGss();
         this.messages = messages;
+        this.sqlManager = sqlManager;
     }
 
     public void run()
@@ -87,8 +91,7 @@ public class PostgresServer
                         @Override
                         protected void initChannel(SocketChannel ch)
                         {
-                            PostgresWireProtocol postgresWireProtocol = new PostgresWireProtocol(sessionsFactory,
-                                    authenticationProvider, gssConfig, () -> null, messages);
+                            PostgresWireProtocol postgresWireProtocol = new PostgresWireProtocol(sqlManager, authenticationProvider, gssConfig, () -> null, messages);
                             ChannelPipeline pipeline = ch.pipeline();
                             pipeline.addLast("open_channels", openChannelsHandler);
                             pipeline.addLast("frame-decoder", postgresWireProtocol.decoder);
