@@ -592,11 +592,12 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testOptionalLim
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testOptionalLimit_WithValue():Boolean[1]
 {
+   let l = 1->first();
    let result = execute(
       |Person.all()
          ->project(col(p|$p.age, 'age'))
          ->sort(asc('age'))
-         ->limit(1->first())
+         ->limit($l)
          ,
       simpleRelationalMapping,
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
