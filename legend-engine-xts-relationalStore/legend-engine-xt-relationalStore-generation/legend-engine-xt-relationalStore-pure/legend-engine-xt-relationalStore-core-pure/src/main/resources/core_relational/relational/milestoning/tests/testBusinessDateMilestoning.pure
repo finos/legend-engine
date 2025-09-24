@@ -1030,6 +1030,13 @@ function <<test.Test>> meta::relational::tests::milestoning::qualifier::testProj
    );
 }
 
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestonedChainedJoinsWithAlias(): Boolean[1]
+{
+  let businessDate = %2025-01-01;
+  let result = execute(|meta::relational::tests::milestoning::inheritance::Car.all($businessDate)->project([x|$x.id, x|$x.bicycle.id, x|$x.description, x|$x.bicycle.description],['Car Id','Bicycle/Id', 'Car Description', 'Bicycle/Description']);, milestoningmapWithVehicles, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+  assertSameElements(['1 | 1 | Sedan | Folding Bike', '2 | 2 | SUV | Electric Bike', '3 | 3 | Hatchback | Hybrid Bike', '4 | 4 | Convertible | Road Bike', '5 | 5 | Truck | Mountain Bike'], $result.values.rows->map(r | $r.values->makeString(' | ')));
+  assertEquals('select "root".id as "Car Id", "person_0".id_1 as "Bicycle/Id", "root".description as "Car Description", "person_0".description as "Bicycle/Description" from Cars as "root" left outer join (select "person_1".id as id, "bicycles_0".id as id_1, "bicycles_0".description as description from Person as "person_1" inner join Bicycles as "bicycles_0" on ("person_1".id = "bicycles_0".id) where "bicycles_0".in_z <= DATE\'2025-01-01\' and "bicycles_0".out_z > DATE\'2025-01-01\') as "person_0" on ("person_0".id = "root".id) where "root".in_z <= DATE\'2025-01-01\' and "root".out_z > DATE\'2025-01-01\'', $result->sqlRemoveFormatting());
+}
 
 function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningCriteriaOriginatingFromQualifiedPropertyAppliedToSimplePropertyMultiOperationalJoinFromTemporalClass():Boolean[1]
 {
