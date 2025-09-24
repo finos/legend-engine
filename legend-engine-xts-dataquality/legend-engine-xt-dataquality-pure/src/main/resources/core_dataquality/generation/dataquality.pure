@@ -606,16 +606,16 @@ function meta::external::dataquality::enrichDQColumns(f:ValueSpecification[1], i
 {
   let relParamName = 'row';
 
-  let newRelTypeWithLogicalDefectId = $inputRelType->addColumns(~[DQ_LOGICAL_DEFECT_ID: String[1]])->evaluateAndDeactivate();
-  let withLogicalId = $f->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildHashFunctionExpression($inputRelType, $inputRelType.columns.name, $relParamName), $relParamName, $inputRelType, $newRelTypeWithLogicalDefectId, String);
+  let newRelTypeWithRuleId = $inputRelType->addColumns(~[DQ_RULE_NAME: String[1]])->evaluateAndDeactivate();
+  let withRuleId = $f->buildExtendExpression('DQ_RULE_NAME', ^InstanceValue(values=$selectedValidation.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), $relParamName, $inputRelType, $newRelTypeWithRuleId, String);
+
+  let newRelTypeWithLogicalDefectId = $newRelTypeWithRuleId->addColumns(~[DQ_LOGICAL_DEFECT_ID: String[1]])->evaluateAndDeactivate();
+  let withLogicalId = $withRuleId->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildHashFunctionExpression($newRelTypeWithRuleId, $newRelTypeWithRuleId.columns.name, $relParamName), $relParamName, $newRelTypeWithRuleId, $newRelTypeWithLogicalDefectId, String);
 
   let newRelTypeWithDefectId = $newRelTypeWithLogicalDefectId->addColumns(~[DQ_DEFECT_ID: String[1]])->evaluateAndDeactivate();
   let withDefectId = $withLogicalId->buildExtendExpression('DQ_DEFECT_ID', buildGenerateGuidExpression(), $relParamName, $newRelTypeWithLogicalDefectId, $newRelTypeWithDefectId, String);
 
-  let newRelTypeWithRuleId = $newRelTypeWithDefectId->addColumns(~[DQ_RULE_NAME: String[1]])->evaluateAndDeactivate();
-  let withRuleId = $withDefectId->buildExtendExpression('DQ_RULE_NAME', ^InstanceValue(values=$selectedValidation.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), $relParamName, $newRelTypeWithDefectId, $newRelTypeWithRuleId, String);
-
-  ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withRuleId, second=$newRelTypeWithRuleId);
+  ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withDefectId, second=$newRelTypeWithDefectId);
 }
 
 //TODO move this inferrence into correct place,
@@ -623,16 +623,16 @@ function meta::external::dataquality::enrichDQColumnsPrecise(f:ValueSpecificatio
 {
   let relParamName = 'row';
 
-  let newRelTypeWithLogicalDefectId = $inputRelType->addColumns(~[DQ_LOGICAL_DEFECT_ID: Varchar(32)[1]])->evaluateAndDeactivate();
-  let withLogicalId = $f->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildVarcharCast(buildHashFunctionExpression($inputRelType, $inputRelType.columns.name, $relParamName), 32), $relParamName, $inputRelType, $newRelTypeWithLogicalDefectId, String);
+  let newRelTypeWithRuleId = $inputRelType->addColumns(~[DQ_RULE_NAME: Varchar(200)[1]])->evaluateAndDeactivate();
+  let withRuleId = $f->buildExtendExpression('DQ_RULE_NAME', buildVarcharCast(^InstanceValue(values=$selectedValidation.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), 255), $relParamName, $inputRelType, $newRelTypeWithRuleId, String);
+
+  let newRelTypeWithLogicalDefectId = $newRelTypeWithRuleId->addColumns(~[DQ_LOGICAL_DEFECT_ID: Varchar(32)[1]])->evaluateAndDeactivate();
+  let withLogicalId = $withRuleId->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildVarcharCast(buildHashFunctionExpression($newRelTypeWithRuleId, $newRelTypeWithRuleId.columns.name, $relParamName), 32), $relParamName, $newRelTypeWithRuleId, $newRelTypeWithLogicalDefectId, String);
 
   let newRelTypeWithDefectId = $newRelTypeWithLogicalDefectId->addColumns(~[DQ_DEFECT_ID: Varchar(36)[1]])->evaluateAndDeactivate();
   let withDefectId = $withLogicalId->buildExtendExpression('DQ_DEFECT_ID', buildVarcharCast(buildGenerateGuidExpression(), 36), $relParamName, $newRelTypeWithLogicalDefectId, $newRelTypeWithDefectId, String);
 
-  let newRelTypeWithRuleId = $newRelTypeWithDefectId->addColumns(~[DQ_RULE_NAME: Varchar(200)[1]])->evaluateAndDeactivate();
-  let withRuleId = $withDefectId->buildExtendExpression('DQ_RULE_NAME', buildVarcharCast(^InstanceValue(values=$selectedValidation.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), 255), $relParamName, $newRelTypeWithDefectId, $newRelTypeWithRuleId, String);
-
-  ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withRuleId, second=$newRelTypeWithRuleId);
+  ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withDefectId, second=$newRelTypeWithDefectId);
 }
 
 function meta::external::dataquality::getRelationType(selectedValidation: RelationValidation[1]):meta::pure::metamodel::relation::RelationType<Any>[1]
