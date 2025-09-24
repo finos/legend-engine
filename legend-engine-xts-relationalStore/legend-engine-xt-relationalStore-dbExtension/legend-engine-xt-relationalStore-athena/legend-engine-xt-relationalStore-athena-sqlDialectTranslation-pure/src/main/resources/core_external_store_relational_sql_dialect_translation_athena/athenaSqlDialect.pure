@@ -816,12 +816,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::athena::processorForSubstring(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  if ($processedArgs->at(1) == '0',
-      | if ($processedArgs->size() == 2,
-            | $sqlDialect->generateFunctionCallWithArgs('substring', [$processedArgs->at(0), ($processedArgs->at(1) + '+' + '1')], [], $state, $config),
-            | $sqlDialect->generateFunctionCallWithArgs('substring', [$processedArgs->at(0), ($processedArgs->at(1) + '+' + '1'), $processedArgs->at(2)], [], $state, $config)
-            ),
-      | $sqlDialect->generateFunctionCallWithArgs('substring', $processedArgs, [], $state, $config)
+  if ($processedArgs->size() == 2,
+      | $sqlDialect->generateFunctionCallWithArgs('substring', [$processedArgs->at(0), ($processedArgs->at(1) + '+' + '1')], [], $state, $config),
+      | $sqlDialect->generateFunctionCallWithArgs('substring', [$processedArgs->at(0), ($processedArgs->at(1) + '+' + '1'), $processedArgs->at(2)], [], $state, $config)
      );
 }
 
