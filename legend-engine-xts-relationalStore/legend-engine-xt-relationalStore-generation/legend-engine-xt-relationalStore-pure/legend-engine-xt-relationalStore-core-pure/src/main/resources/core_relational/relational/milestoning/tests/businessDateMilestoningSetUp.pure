@@ -372,6 +372,19 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
    executeInDb('drop table if exists intermediateTwo;', $connection);
    executeInDb('Create Table intermediateTwo(joinId INT NOT NULL,linkToProduct INT NULL,type VARCHAR(200) NULL, PRIMARY KEY(joinId));', $connection);
 
+   executeInDb('DROP TABLE IF EXISTS Person;', $connection);
+   executeInDb('DROP TABLE IF EXISTS Cars;', $connection);
+   executeInDb('DROP TABLE IF EXISTS Bicycles;', $connection);
+   executeInDb('DROP TABLE IF EXISTS Jets;', $connection);
+   executeInDb('CREATE TABLE Person (name VARCHAR(100),id INTEGER, PRIMARY KEY(id));', $connection);
+   executeInDb('CREATE TABLE Cars (in_z TIMESTAMP,  out_z TIMESTAMP, id INTEGER PRIMARY KEY,  description VARCHAR(200));', $connection);
+   executeInDb('CREATE TABLE Bicycles (in_z TIMESTAMP, out_z TIMESTAMP,  id INTEGER PRIMARY KEY,  description VARCHAR(200));', $connection);
+   executeInDb('CREATE TABLE Jets (in_z TIMESTAMP,  out_z TIMESTAMP,  id INTEGER PRIMARY KEY,  description VARCHAR(200));', $connection);
+   executeInDb('INSERT INTO Person (name, id) VALUES (\'Alice\', 1), (\'Bob\', 2), (\'Charlie\', 3), (\'Diana\', 4), (\'Eve\', 5);', $connection);
+   executeInDb('INSERT INTO Cars (in_z, out_z, id, description) VALUES\n(\'2020-01-01\', \'2050-01-01\', 1, \'Sedan\'),\n(\'2020-01-01\', \'2050-01-01\', 2, \'SUV\'),\n(\'2020-01-01\', \'2050-01-01\', 3, \'Hatchback\'),\n(\'2020-01-01\', \'2050-01-01\', 4, \'Convertible\'),\n(\'2020-01-01\', \'2050-01-01\', 5, \'Truck\');', $connection);
+   executeInDb('INSERT INTO Bicycles (in_z, out_z, id, description) VALUES\n(\'2020-01-01\', \'2050-01-01\', 5, \'Mountain Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 4, \'Road Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 3, \'Hybrid Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 2, \'Electric Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 1, \'Folding Bike\');', $connection);
+   executeInDb('INSERT INTO Jets (in_z, out_z, id, description) VALUES\n(\'2020-01-01\', \'2050-01-01\', 3, \'Fighter Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 8, \'Water Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 6, \'Hybrid Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 4, \'Supersonic Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 2, \'Transformer Jet\');', $connection);
+
    ^Runtime(connectionStores=$connectionStore);
 }
 
@@ -1474,6 +1487,45 @@ Mapping meta::relational::tests::milestoning::milestoningmapWithMappingExtension
 
 )
 
+###Mapping
+import meta::relational::tests::milestoning::*;
+import meta::relational::tests::milestoning::inheritance::*;
+
+Mapping meta::relational::tests::milestoning::milestoningmapWithVehicles
+(
+  *Car[c]: Relational
+  {
+    ~primaryKey (
+      [db]Cars.id
+    )
+    ~mainTable [db]Cars
+    id: [db]Cars.id,
+    description: [db]Cars.description,
+    wheelCount: 4
+  }
+
+  *Bicycle[b]: Relational
+  {
+    ~primaryKey (
+      [db]Bicycles.id
+    )
+    ~mainTable [db]Bicycles
+    id: [db]Bicycles.id,
+    description: [db]Bicycles.description,
+    wheelCount: 2
+  }
+
+  CarBicycle: Relational
+  {
+    AssociationMapping
+    (
+      car[b, c]: [db]@PersonBicycle > [db]@PersonCar,
+      bicycle[c, b]: [db]@PersonCar > (INNER) [db]@PersonBicycle
+    )
+  }
+
+)
+
 ###Relational
 Database meta::relational::tests::milestoning::dbWithInclusion(
   include  meta::relational::tests::milestoning::dbInclusion
@@ -2148,6 +2200,38 @@ Database meta::relational::tests::milestoning::db(
       thru_z DATE
    )
 
+   Table Person
+    (
+      name VARCHAR(100),
+      id INTEGER PRIMARY KEY
+    )
+
+    Table Cars
+    (
+      milestoning
+      (
+        business(BUS_FROM = in_z, BUS_THRU = out_z, INFINITY_DATE = %9999-12-31T00:00:00.000+0000)
+      )
+
+      in_z INTEGER,
+      out_z INTEGER,
+      id INTEGER PRIMARY KEY,
+      description VARCHAR(200) 
+    )
+
+    Table Bicycles
+    (
+      milestoning
+      (
+        business(BUS_FROM = in_z, BUS_THRU = out_z, INFINITY_DATE = %9999-12-31T00:00:00.000+0000)
+      )
+
+      in_z INTEGER,
+      out_z INTEGER,
+      id INTEGER PRIMARY KEY,
+      description VARCHAR(200) 
+    )
+
 
    Join Order_Product(OrderTable.prodFk=ProductTable.id)
    Join Order_MilestonedProductTable2(OrderTable.prodFk=MilestonedProductTable2.id)
@@ -2237,6 +2321,8 @@ Database meta::relational::tests::milestoning::db(
    Join SalesPersonTable_SalesPersonView(salesPersonTable.ACCOUNT_ID = salesPersonView.ACCOUNT_ID)
    Join tradePnlIntermediateView_TradePnlTable(tradePnlIntermediateView.TRADE_ID = tradePnlTable.TRADE_ID)
    Join stockProductView_ProductTable(stockProductView.id = ProductTable.id)
+   Join PersonCar(Person.id = Cars.id)
+   Join PersonBicycle(Person.id = Bicycles.id)
 
    Filter IsStockType(ProductTable.type='STOCK')
    Filter LNSEProducts(ProductExchangeTable.name='STOCK')
