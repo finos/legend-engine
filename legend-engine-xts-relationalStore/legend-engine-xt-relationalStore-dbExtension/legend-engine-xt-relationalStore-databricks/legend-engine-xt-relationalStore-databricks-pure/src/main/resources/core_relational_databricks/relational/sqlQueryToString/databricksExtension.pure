@@ -88,6 +88,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='dayofmonth(%s)')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='dayofweek(%s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='dayofyear(%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='DECODE(EXTRACT(dayofweek FROM %s), 2, \'Monday\', 3, \'Tuesday\', 4, \'Wednesday\', 5, \'Thursday\', 6, \'Friday\', 7, \'Saturday\', 1, \'Sunday\')')),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='cast(unbase64(%s) AS STRING)')),
     dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='base64(%s)')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='trunc(%s, \'MONTH\')')),

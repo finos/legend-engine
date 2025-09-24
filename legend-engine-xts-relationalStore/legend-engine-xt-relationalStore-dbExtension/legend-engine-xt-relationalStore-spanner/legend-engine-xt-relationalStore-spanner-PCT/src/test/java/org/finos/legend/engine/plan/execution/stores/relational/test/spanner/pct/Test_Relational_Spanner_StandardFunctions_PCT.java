@@ -192,6 +192,10 @@ public class Test_Relational_Spanner_StandardFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::collection::tests::least::testLeast_Number_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: INVALID_ARGUMENT: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: INVALID_ARGUMENT: Unsupported type PG.NUMERIC when calling pg.least() - Statement: 'select least(1.23, 2)'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::collection::tests::least::testLeast_Single_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: INVALID_ARGUMENT: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: INVALID_ARGUMENT: Unsupported type PG.NUMERIC when calling pg.least() - Statement: 'select least(1.0)'", AdapterQualifier.needsInvestigation),
 
+            //dayofweek
+            one("meta::pure::functions::tests::date::testDayOfWeek_Function_1__Boolean_1_", "[ERROR] column \"%A\" does not exist - Statement: 'select format_datetime(\"%A\", DATETIME(Date'1985-01-12'))'", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::tests::date::testDayOfWeek_Relation_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+
             // UUID
             pack("meta::pure::functions::string::generation::tests::generateGuid", "[unsupported-api] The function 'generateGuid' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature)
     );
