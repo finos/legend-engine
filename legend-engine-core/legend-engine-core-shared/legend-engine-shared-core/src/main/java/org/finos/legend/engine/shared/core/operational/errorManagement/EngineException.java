@@ -14,14 +14,19 @@
 
 package org.finos.legend.engine.shared.core.operational.errorManagement;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+
+import java.util.List;
 
 public class EngineException extends RuntimeException
 {
     private EngineErrorType errorType = null;
     private SourceInformation sourceInformation = SourceInformation.getUnknownSourceInformation();
     private ExceptionCategory errorCategory = ExceptionCategory.UNKNOWN_ERROR;
+    private ImmutableList<ChangeInstruction> changeInstructions = Lists.immutable.empty();
 
     public EngineException(String message)
     {
@@ -102,6 +107,13 @@ public class EngineException extends RuntimeException
         this.errorCategory = errorCategory;
     }
 
+    public EngineException(String message, SourceInformation sourceInformation, List<ChangeInstruction> changeInstructions)
+    {
+        this(message);
+        this.sourceInformation = sourceInformation;
+        this.changeInstructions = Lists.immutable.withAll(changeInstructions);
+    }
+
     public EngineErrorType getErrorType()
     {
         return errorType;
@@ -115,6 +127,11 @@ public class EngineException extends RuntimeException
     public SourceInformation getSourceInformation()
     {
         return this.sourceInformation;
+    }
+
+    public List<ChangeInstruction> getChangeInstructions()
+    {
+        return this.changeInstructions.castToList();
     }
 
     public static EngineException findException(Throwable throwable)

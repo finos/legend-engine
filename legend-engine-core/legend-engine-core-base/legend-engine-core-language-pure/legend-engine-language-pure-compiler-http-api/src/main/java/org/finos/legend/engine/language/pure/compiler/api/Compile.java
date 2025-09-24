@@ -49,6 +49,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
@@ -153,7 +154,15 @@ public class Compile
     private Response handleException(UriInfo uriInfo, Identity identity, long start, Exception ex)
     {
         Response.Status status = ex instanceof EngineException ? Response.Status.BAD_REQUEST : Response.Status.INTERNAL_SERVER_ERROR;
-        Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, status, identity.getName());
-        return errorResponse;
+        return ex instanceof EngineException && !((EngineException) ex).getChangeInstructions().isEmpty() ?
+                handleChangeInstructionsExceptions((EngineException) ex)
+                : ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, status, identity.getName());
+    }
+
+    private Response handleChangeInstructionsExceptions(EngineException ex)
+    {
+        return Response.status(Response.Status.BAD_REQUEST).type(MediaType.APPLICATION_JSON_TYPE)
+                .entity(new CompileResult("Following changes must be applied before your model can compile.", new ArrayList<>(), ex.getChangeInstructions()))
+                .build();
     }
 }

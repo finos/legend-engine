@@ -23,6 +23,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
@@ -57,6 +58,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ChangeInstruction;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.pure.generated.Package_Impl;
@@ -114,10 +116,12 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -148,6 +152,7 @@ public class PureModel implements IPureModel
     final CompilerExtensions extensions;
 
     private final MutableList<Warning> warnings = Lists.mutable.empty();
+    private final MutableList<ChangeInstruction> changeInstructions = Lists.mutable.empty();
 
     final Handlers handlers;
 
@@ -417,6 +422,11 @@ public class PureModel implements IPureModel
             LOGGER.info("{}", new LogInfo(user, "GRAPH_POST_VALIDATION_COMPLETED", nanosDurationToMillis(postValidationStart, postValidationEnd)));
             span.log("GRAPH_POST_VALIDATION_COMPLETED");
 
+            if (!changeInstructions.isEmpty())
+            {
+                throw new EngineException(getChangeInstructionsExceptionMessage(), changeInstructions.getFirst().getSourceInformation(), changeInstructions);
+            }
+
             long end = System.nanoTime();
             LOGGER.info("{}", new LogInfo(user, "GRAPH_STOP", nanosDurationToMillis(start, end)));
             span.log("GRAPH_STOP");
@@ -490,6 +500,24 @@ public class PureModel implements IPureModel
     public MutableList<Warning> getWarnings()
     {
         return this.warnings;
+    }
+
+    public synchronized void addChangeInstructions(Iterable<ChangeInstruction> changeInstructions)
+    {
+        this.changeInstructions.addAllIterable(changeInstructions);
+    }
+
+    public ListIterable<ChangeInstruction> getChangeInstructions()
+    {
+        return this.changeInstructions.asUnmodifiable();
+    }
+
+    public String getChangeInstructionsExceptionMessage()
+    {
+        this.changeInstructions.sort(Comparator.comparing(c -> c.getSourceInformation().sourceId));
+        StringJoiner changeInstructionsString = new StringJoiner(",\n", "The following changes must be applied before your model can compile:\n", "");
+        changeInstructions.forEach(i -> changeInstructionsString.add("   " + i.getSourceInformation().sourceId + i.getSourceInformation().getMessage() + ": " + i.getMessageToUser()));
+        return changeInstructionsString.toString();
     }
 
     // ------------------------------------------ INITIALIZATION -----------------------------------------

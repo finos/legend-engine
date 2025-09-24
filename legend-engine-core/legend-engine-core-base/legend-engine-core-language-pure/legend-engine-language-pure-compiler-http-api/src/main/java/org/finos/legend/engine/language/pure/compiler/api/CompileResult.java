@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.api;
 
+import org.finos.legend.engine.shared.core.operational.errorManagement.ChangeInstruction;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 
 import java.util.List;
@@ -22,10 +23,18 @@ public class CompileResult
 {
     public String message;
     public List<Warning> warnings;
+    public List<ChangeInstruction> changeInstructions;
 
     public CompileResult(String message, List<Warning> warnings)
     {
         this.message = message;
         this.warnings = warnings;
+    }
+
+    public CompileResult(String message, List<Warning> warnings, List<ChangeInstruction> changeInstructions)
+    {
+        this.message = message;
+        this.warnings = warnings;
+        this.changeInstructions = changeInstructions;
     }
 }
