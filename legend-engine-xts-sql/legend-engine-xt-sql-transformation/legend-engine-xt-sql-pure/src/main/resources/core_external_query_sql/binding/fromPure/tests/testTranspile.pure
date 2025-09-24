@@ -1243,17 +1243,16 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('CAST', row | $row.getInteger('Integer'), y | $y->sum()->toString()),
           agg('FUNC', row | $row.getInteger('Integer'), y | floor($y->sum()))
         ])
-      }, true, false)
+      }, true, false),
 
-      //TODO empty groupBy does not compile
-      // c({|FlatInput.all()
-      //   ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-      //   ->groupBy(~[], 
-      //     ~[
-      //       'MIN/MAX' : x|$x.Integer : y|if($y->sum() < 10, |$y->max(), |$y->min()), 
-      //       'HIGH/LOW' : x|$x.Integer : y|if($y->sum() < 10, |'LOW', |'HIGH'), 
-      //       CAST : x|$x.Integer : y|$y->sum()->toString(), 
-      //       FUNC : x|$x.Integer : y|$y->sum()->floor()])}, true, false)
+      c({|FlatInput.all()
+        ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+        ->aggregate(
+          ~[
+            'MIN/MAX' : x|$x.Integer : y|if($y->sum() < 10, |$y->max(), |$y->min()), 
+            'HIGH/LOW' : x|$x.Integer : y|if($y->sum() < 10, |'LOW', |'HIGH'), 
+            CAST : x|$x.Integer : y|$y->sum()->toString(), 
+            FUNC : x|$x.Integer : y|$y->sum()->floor()])}, true, false)
     ]
   )
 }
@@ -3093,7 +3092,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'lag(String, 2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "LAG2", ' +
     'lead(String) OVER (PARTITION BY String ORDER BY Integer ASC) AS "LEAD", ' +
     'lead(String, 2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "LEAD2", ' +
-    'nth(String, 2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "NTH", ' +
+    'nth_value(String, 2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "NTH", ' +
     'ntile(2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "NTILE", ' +
     'percent_rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "PERCENT_RANK", ' +
     'cume_dist() OVER (PARTITION BY String ORDER BY Integer ASC) AS "CUME_DIST" ' +
@@ -3140,7 +3139,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN 1 PRECEDING AND UNBOUNDED FOLLOWING) as "RANGE_1_PRECEDING_UNBOUNDED_FOLLOWING", ' +
     'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "RANGE_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING", ' +
     'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN 1 FOLLOWING AND 1 FOLLOWING) as "RANGE_1_FOLLOWING_1_FOLLOWING", ' +
-    'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "RANGE_UNBOUNDED_PRECEDING_CURRENT" ' +
+    'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "RANGE_UNBOUNDED_PRECEDING_CURRENT", ' +
+    'sum(Integer) OVER (ORDER BY Integer ASC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "RANGE_UNBOUNDED_PRECEDING_CURRENT_NO_PARTITION",' +
+    'sum(Integer) OVER (ORDER BY Integer) as "NO_PARTITION_NO_FRAME" ' +
     'FROM service."/service/service1"',
 
     [
@@ -3162,9 +3163,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->extend(over(~[String], [~Integer->ascending()], _range(meta::pure::functions::relation::unbounded(), meta::pure::functions::relation::unbounded())), ~[RANGE_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING:{p,w,r|$r.Integer}:y|$y->sum()])
               ->extend(over(~[String], [~Integer->ascending()], _range(1, 1)), ~[RANGE_1_FOLLOWING_1_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
               ->extend(over(~[String], [~Integer->ascending()], _range(meta::pure::functions::relation::unbounded(), 0)), ~[RANGE_UNBOUNDED_PRECEDING_CURRENT:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over([~Integer->ascending()], _range(meta::pure::functions::relation::unbounded(), 0)), ~[RANGE_UNBOUNDED_PRECEDING_CURRENT_NO_PARTITION:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over([~Integer->ascending()]), ~[NO_PARTITION_NO_FRAME:{p,w,r|$r.Integer}:y|$y->sum()])
 
               ->select(~[ROWS_CURRENT_UNBOUNDED_FOLLOWING, ROWS_1_FOLLOWING_UNBOUNDED_FOLLOWING, ROWS_1_PRECEDING_UNBOUNDED_FOLLOWING, ROWS_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING, ROWS_1_FOLLOWING_1_FOLLOWING, ROWS_UNBOUNDED_PRECEDING_CURRENT,
-                        RANGE_CURRENT_UNBOUNDED_FOLLOWING, RANGE_1_FOLLOWING_UNBOUNDED_FOLLOWING, RANGE_1_PRECEDING_UNBOUNDED_FOLLOWING, RANGE_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING, RANGE_1_FOLLOWING_1_FOLLOWING, RANGE_UNBOUNDED_PRECEDING_CURRENT
+                        RANGE_CURRENT_UNBOUNDED_FOLLOWING, RANGE_1_FOLLOWING_UNBOUNDED_FOLLOWING, RANGE_1_PRECEDING_UNBOUNDED_FOLLOWING, RANGE_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING, RANGE_1_FOLLOWING_1_FOLLOWING, RANGE_UNBOUNDED_PRECEDING_CURRENT,
+                        RANGE_UNBOUNDED_PRECEDING_CURRENT_NO_PARTITION, NO_PARTITION_NO_FRAME
                       ])
       }, true, false)
     ]
@@ -3618,6 +3622,37 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       //       ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
       //     ->filter(x | $x.Integer == $_1 && $x.String == $_2 && $x.StrictDate == $_3)
       // }, true, false)
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiWithQueryReferencePrevious():Boolean[1]
+{
+  test(
+    'WITH ' + 
+    'cte1 AS (SELECT * FROM service."/service/service1"), ' + 
+    'cte2 AS (SELECT * FROM cte1) ' + 
+    'select Integer from cte1 UNION select Integer from cte2',
+
+    [
+      c({| 
+            let cte1 = FlatInput.all()->project(
+                          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+                          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]);
+
+            let cte2 = $cte1;
+
+            $cte1->restrict('Integer')->concatenate($cte2->restrict('Integer'));
+      }),
+      c({| 
+            let cte1 = FlatInput.all()->project(
+              ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+            );
+
+            let cte2 = $cte1;
+
+            $cte1->select(~[Integer])->concatenate($cte2->select(~[Integer]));
+      })      
     ]
   )
 }

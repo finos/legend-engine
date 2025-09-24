@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.postgres.auth;
 
+import org.finos.legend.engine.postgres.protocol.wire.auth.SecureString;
 import org.junit.Assert;
 import org.junit.Test;
 

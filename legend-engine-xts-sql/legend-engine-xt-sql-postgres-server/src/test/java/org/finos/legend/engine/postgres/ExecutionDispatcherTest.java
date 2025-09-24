@@ -16,20 +16,17 @@
 package org.finos.legend.engine.postgres;
 
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
-import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
-import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
-import org.finos.legend.engine.postgres.handler.PostgresStatement;
-import org.finos.legend.engine.postgres.handler.SessionHandler;
-import org.finos.legend.engine.postgres.handler.empty.EmptySessionHandler;
-import org.finos.legend.engine.postgres.handler.txn.TxnIsolationSessionHandler;
+import org.finos.legend.engine.postgres.protocol.sql.dispatcher.StatementDispatcherVisitor;
+import org.finos.legend.engine.postgres.protocol.sql.dispatcher.ExecutionType;
+import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepared.PostgresPreparedStatement;
+import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.PostgresStatement;
+import org.finos.legend.engine.postgres.protocol.sql.handler.SessionHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class ExecutionDispatcherTest
 {
-    private static final SessionHandler dataSessionHandler = new TestSessionHandler();
-    private static final SessionHandler metadataSessionHandler = new TestSessionHandler();
-    private static final ExecutionDispatcher dispatcher = new ExecutionDispatcher(dataSessionHandler, metadataSessionHandler);
+    private static final StatementDispatcherVisitor dispatcher = new StatementDispatcherVisitor();
 
     @Test
     public void testSetQuery()
@@ -92,32 +89,31 @@ public class ExecutionDispatcherTest
 
     private static void assertEmptySessionHandler(String query)
     {
-        SessionHandler sessionHandler = getSessionHandler(query);
-        Assert.assertTrue(sessionHandler instanceof EmptySessionHandler);
+        ExecutionType executionType = getExecutionType(query);
+        Assert.assertEquals(ExecutionType.Empty, executionType);
     }
 
     private static void assertMetadataSessionHandler(String query)
     {
-        SessionHandler sessionHandler = getSessionHandler(query);
-        Assert.assertSame(metadataSessionHandler, sessionHandler);
+        ExecutionType executionType = getExecutionType(query);
+        Assert.assertEquals(ExecutionType.Metadata, executionType);
     }
 
     private static void assertTxnIsoSessionHandler(String query)
     {
-        SessionHandler sessionHandler = getSessionHandler(query);
-        Assert.assertTrue(sessionHandler instanceof TxnIsolationSessionHandler);
+        ExecutionType executionType = getExecutionType(query);
+        Assert.assertEquals(ExecutionType.TX, executionType);
     }
 
     private static void assertDataSessionHandler(String query)
     {
-        SessionHandler sessionHandler = getSessionHandler(query);
-        Assert.assertSame(dataSessionHandler, sessionHandler);
+        ExecutionType executionType = getExecutionType(query);
+        Assert.assertEquals(ExecutionType.Legend, executionType);
     }
 
-    private static SessionHandler getSessionHandler(String query)
+    private static ExecutionType getExecutionType(String query)
     {
-        SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
-        return parser.singleStatement().accept(dispatcher);
+        return SQLGrammarParser.getSqlBaseParser(query, "query").singleStatement().accept(dispatcher);
     }
 
     private static class TestSessionHandler implements SessionHandler

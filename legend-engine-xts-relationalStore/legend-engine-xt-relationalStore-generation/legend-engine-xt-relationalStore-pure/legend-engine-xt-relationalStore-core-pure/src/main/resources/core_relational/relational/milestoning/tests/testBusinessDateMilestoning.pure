@@ -912,6 +912,14 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testM
    );
 }
 
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningContextPropagatedThruPropertyToViewWithNonMilestonedRoot():Boolean[1]
+{
+  let businessDate = %2013-7-22;
+  let result = execute(|Trade.all($businessDate)->project([o|$o.id, o|$o.tradePnl.supportContactName],['id', 'supportContactName']), milestoningmap3, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+  let tds = $result.values->at(0);
+  assertEquals(['1,Joe Martinez', '1,Joe Martinez', '2,TDSNull'],$tds.rows->map(r|$r.values->makeString(',')));
+}
+
 function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningContextPropagatedFromParentViewToViewsReferencedInItsColumns():Boolean[1]
 {
    let businessDate = %2016-7-22;

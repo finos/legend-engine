@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
+import org.finos.legend.engine.postgres.protocol.sql.dispatcher.TableNameExtractor;
 import org.finos.legend.engine.protocol.sql.metamodel.QualifiedName;
 import org.junit.Test;
 

@@ -29,16 +29,21 @@ import io.opentelemetry.semconv.ResourceAttributes;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
-import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
-import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
-import org.finos.legend.engine.postgres.auth.GSSAuthenticationMethod;
-import org.finos.legend.engine.postgres.auth.IdentityProvider;
-import org.finos.legend.engine.postgres.auth.IdentityType;
-import org.finos.legend.engine.postgres.auth.KerberosIdentityProvider;
-import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
-import org.finos.legend.engine.postgres.auth.UsernamePasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethod;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.GSSAuthenticationMethod;
+import org.finos.legend.engine.postgres.protocol.wire.auth.identity.IdentityProvider;
+import org.finos.legend.engine.postgres.protocol.wire.auth.identity.IdentityType;
+import org.finos.legend.engine.postgres.protocol.wire.auth.identity.KerberosIdentityProvider;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.UsernamePasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.config.LegendHandlerConfig;
 import org.finos.legend.engine.postgres.config.OpenTelemetryConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
+import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendExecutionService;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendHttpClient;
+import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.finos.legend.engine.postgres.utils.ErrorMessageFormatter;
 import org.finos.legend.engine.postgres.utils.ErrorMessageFormatterImpl;
 import org.slf4j.Logger;
@@ -73,7 +78,10 @@ public class PostgresServerLauncher
             System.setProperty("java.security.krb5.conf", serverConfig.getGss().getKerberosConfigFile());
         }
 
-        setupOpenTelemetry(serverConfig.getOtelConfig());
+        if (serverConfig.getOtelConfig() != null)
+        {
+            setupOpenTelemetry(serverConfig.getOtelConfig());
+        }
 
         //Log config has been initiated. We can create a logger now.
         Logger logger = LoggerFactory.getLogger(PostgresServerLauncher.class);
@@ -81,12 +89,14 @@ public class PostgresServerLauncher
         // install jul to slf4j bridge
         SLF4JBridgeHandler.install();
 
-        SessionsFactory sessionFactory = serverConfig.getHandler().buildSessionsFactory();
         AuthenticationMethod authenticationMethod = buildAuthenticationMethod(serverConfig);
         ErrorMessageFormatter errorMessageFormatter = buildErrorMessageFormatter(serverConfig);
         logger.info("Starting server in port: {}", serverConfig.getPort());
 
-        new PostgresServer(serverConfig, sessionFactory, (user, connectionProperties) -> authenticationMethod, new Messages(errorMessageFormatter)).run();
+        LegendHandlerConfig config = (LegendHandlerConfig)serverConfig.getHandler();
+        SQLManager sqlManager = new SQLManager(new LegendExecutionService(new LegendHttpClient(config.getProtocol(), config.getHost(), config.getPort())));
+
+        new PostgresServer(serverConfig, sqlManager, (user, connectionProperties) -> authenticationMethod, new Messages(errorMessageFormatter)).run();
     }
 
 

@@ -588,7 +588,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationStoreAccess
               )
             );
 
-  let milestonedRes = if($operation.milestoningContext->isNotEmpty(), | applyMilestoningTypeFilters($res, $operation.milestoningContext->toOne(), $state, false, $extensions), | $res);
+  let milestonedRes = if($operation.milestoningContext->isNotEmpty(), | applyMilestoningTypeFilters($res, $operation.milestoningContext->toOne(), $state, false, false, $extensions), | $res);
   
   print(if(!$context.debug, |'', | $context.space+'>Processing Relation Database Accessor: ' + $milestonedRes.select->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.DebugPrint, $extensions) + '\n'));
 
@@ -1559,7 +1559,7 @@ function meta::relational::functions::pureToSqlQuery::processClassMappingInnerJo
 
    if($base.milestoningContext->isNotEmpty(),
       |
-         let swcWithMilestoningFilters    = $updatedQuery->applyMilestoningTypeFilters($base.milestoningContext->toOne(), $state, true, $extensions);
+         let swcWithMilestoningFilters    = $updatedQuery->applyMilestoningTypeFilters($base.milestoningContext->toOne(), $state, true, false, $extensions);
          let selectWithMilestoneFilters   = $swcWithMilestoningFilters.select;
          let ctnWithMilestoneFilters      = $updatedQuery.currentTreeNode->toOne()->findOneNode($updatedQuery.select.data->toOne(), $selectWithMilestoneFilters.data->toOne())->cast(@JoinTreeNode);
          let ctnWithJoinReprocessed       = $ctnWithMilestoneFilters->replaceTreeNodeRelationalElement($ctnWithMilestoneFilters.alias.relationalElement, false, $extensions);
@@ -4602,8 +4602,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalMappingSp
       currentTreeNode = $merged.data
    );
 
-   if(!$milestoningContext->isEmpty() ,|applyMilestoningTypeFilters($s, $milestoningContext->toOne(), $state, $innerJoinFilterExists, $extensions),|$s);
-
+   if(!$milestoningContext->isEmpty() ,|applyMilestoningTypeFilters($s, $milestoningContext->toOne(), $state, $innerJoinFilterExists, $viewSpecification->instanceOf(View), $extensions),|$s);
 }
 
 function meta::relational::functions::pureToSqlQuery::processRelation(r: RelationalOperationElement[1], c:Class<Any>[0..1], joinType:JoinType[1], nodeId:String[1], addPk:Boolean[1], pkOffset:Integer[1], addAllColumns:Boolean[1], milestoningContext: TemporalMilestoningContext[0..1], state:State[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -4624,13 +4623,13 @@ function meta::relational::functions::pureToSqlQuery::processRelation(r: Relatio
              ]);
 }
 
-function meta::relational::functions::pureToSqlQuery::applyMilestoningTypeFilters(select: SelectWithCursor[1], milestoningContext: TemporalMilestoningContext[1], state:State[1], innerJoinFilterExists: Boolean[1], extensions:Extension[*]):SelectWithCursor[1]
+function meta::relational::functions::pureToSqlQuery::applyMilestoningTypeFilters(select: SelectWithCursor[1], milestoningContext: TemporalMilestoningContext[1], state:State[1], innerJoinFilterExists: Boolean[1], isFromView:Boolean[1], extensions:Extension[*]):SelectWithCursor[1]
 {
    let query = $select.select;
    let milestoningStrategy = $milestoningContext.currentMilestoningStrategy->toOne();
    let nestedRoot = if($select.currentTreeNode->isNotEmpty(), | $select.alias.relationalElement, | $query.data.alias.relationalElement)->toOne()->instanceOf(SelectSQLQuery);
-   if(!$milestoningContext.isAllVersions() && !$milestoningContext.isAllForEachDate() && if($nestedRoot && $innerJoinFilterExists ,| $select.alias.relationalElement->toOne()->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->relationalElementIsMilestoned(),|$query.data.alias.relationalElement->toOne()->relationalElementIsMilestoned())
 
+   if(!$milestoningContext.isAllVersions() && !$milestoningContext.isAllForEachDate() && if($nestedRoot && $innerJoinFilterExists ,| $select.alias.relationalElement->toOne()->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->relationalElementIsMilestoned(),|($query.data.alias.relationalElement->toOne()->relationalElementIsMilestoned() || $isFromView))
       ,|
          let tableFilter = $milestoningStrategy->getAllMilestonedTableFilter($query, $milestoningContext, $state.inScopeVars, $extensions);
          let queryWithMilestoningFilters = $query->applyMilestoningFilters($tableFilter, getTableToTableIdentifyFunction(), true, $extensions)->cast(@SelectSQLQuery);

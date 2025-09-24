@@ -1,0 +1,53 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::relation::slice::limit::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_relation/relation/functions/slice/limit.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::limit::testSimpleLimitShared_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq}#->meta::pure::functions::relation::sort(~val->meta::pure::functions::relation::ascending())->meta::pure::functions::relation::limit(3)',
+                            'select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0" order by "val" limit 3'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::limit::testSimpleLimit_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'val,str\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq}#;\n'+
+                            ' $t->meta::pure::functions::relation::sort(~val->meta::pure::functions::relation::ascending())->meta::pure::functions::relation::limit(3);\n'+
+                            '',
+                            'WITH t AS (select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0") select "subselect"."val" as "val", "subselect"."str" as "str" from (select "t_1"."val", "t_1"."str" from t as "t_1" order by "val" limit 3) as "subselect"'
+                        )
+                      ]
+                 )
+               ]
+  )
+}

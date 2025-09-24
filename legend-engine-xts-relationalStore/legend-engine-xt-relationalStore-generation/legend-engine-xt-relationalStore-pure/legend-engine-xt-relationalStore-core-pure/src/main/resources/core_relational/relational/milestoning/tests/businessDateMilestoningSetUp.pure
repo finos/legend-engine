@@ -306,6 +306,12 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
    executeInDb('insert into tradePnlTable (TRADE_ID, pnl, from_z, thru_z) values (1, 101,\'2016-6-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
    executeInDb('insert into tradePnlTable (TRADE_ID, pnl, from_z, thru_z) values (2, 200,\'2016-1-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
 
+   executeInDb('Drop table if exists tradePnlTableNoMilestoning;', $connection);
+   executeInDb('Create Table tradePnlTableNoMilestoning(TRADE_ID INT, pnl FLOAT);', $connection);
+   executeInDb('insert into tradePnlTableNoMilestoning (TRADE_ID, pnl) values (1, 100);', $connection);
+   executeInDb('insert into tradePnlTableNoMilestoning (TRADE_ID, pnl) values (1, 101);', $connection);
+   executeInDb('insert into tradePnlTableNoMilestoning (TRADE_ID, pnl) values (2, 200);', $connection);
+
    executeInDb('Drop table if exists salesPersonTable;', $connection);
    executeInDb('Create Table salesPersonTable(ACCOUNT_ID INT, NAME VARCHAR(200),from_z TIMESTAMP, thru_z TIMESTAMP);', $connection);
    executeInDb('insert into salesPersonTable (account_id, name, from_z, thru_z) values (1, \'Joe Martinez\',\'2013-1-1 00:00:00\',\'9999-12-31 00:00:00\');', $connection);
@@ -431,6 +437,19 @@ Mapping meta::relational::tests::milestoning::milestoningmap2
    meta::relational::tests::milestoning::Product : Relational{
       id : [db]ProductTable.id,
       isBrexitClassificationTypeExchange : [db]@Product_Classification > [db]@Classification_Exchange| case(equal([db]ProductExchangeTable.city,'London'), 'true', 'false')
+   }
+)
+
+Mapping meta::relational::tests::milestoning::milestoningmap3
+(
+  Trade : Relational{
+      id : [db]tradeTable.ID,
+      tradePnl : [db]@TradeTable_TradePnlViewNoRootMilestoning
+   }
+
+   TradePnl : Relational{
+      pnl : [db]tradePnlViewNoRootMilestoning.pnl,
+      supportContactName : [db]tradePnlViewNoRootMilestoning.supportContact
    }
 )
 
@@ -569,8 +588,7 @@ Mapping meta::relational::tests::milestoning::milestoningmap
 
    TradePnl : Relational{
       pnl : [db]tradePnlView.pnl,
-      supportContactName : [db]tradePnlView.supportContact//,
-      //trade: [db]@TradePnlView_Trade
+      supportContactName : [db]tradePnlView.supportContact
    }
 
    meta::relational::tests::milestoning::Trader : Relational {
@@ -2018,6 +2036,8 @@ Database meta::relational::tests::milestoning::db(
 
     Table tradeTable(ID INT PRIMARY KEY, accountID INT)
 
+    Table tradePnlTableNoMilestoning(TRADE_ID INT PRIMARY KEY, pnl FLOAT)
+
     Table tradePnlTable(
             milestoning(business(BUS_FROM=from_z, BUS_THRU=thru_z))
             TRADE_ID INT PRIMARY KEY, pnl FLOAT,from_z DATE,thru_z DATE)
@@ -2059,9 +2079,17 @@ Database meta::relational::tests::milestoning::db(
     View tradePnlView
     (
        ~distinct
-        TRADE_ID: tradePnlTable.TRADE_ID PRIMARY KEY,
-        pnl: tradePnlTable.pnl,
-        supportContact : @TradePnlTable_Trade > @Trade_SalesPerson | salesPersonTable.NAME
+       TRADE_ID: tradePnlTable.TRADE_ID PRIMARY KEY,
+       pnl: tradePnlTable.pnl,
+       supportContact : @TradePnlTable_Trade > @Trade_SalesPerson | salesPersonTable.NAME
+    )
+
+    View tradePnlViewNoRootMilestoning
+    (
+       ~distinct
+       TRADE_ID: tradePnlTableNoMilestoning.TRADE_ID PRIMARY KEY,
+       pnl: tradePnlTableNoMilestoning.pnl,
+       supportContact : @TradePnlTableNoMilestoning_Trade > @Trade_SalesPerson | salesPersonTable.NAME
     )
 
     View salesPersonView
@@ -2189,6 +2217,8 @@ Database meta::relational::tests::milestoning::db(
    Join ProductClassificationTableNoMilestoning_ExchangeNoMilestoning(ProductClassificationTableNoMilestoning.exchange=ProductExchangeTableNoMilestoning.name)
    Join System_SystemDescrption(SystemTable.name=SystemDescriptionTable.systemName)
    Join TradePnlTable_Trade(tradePnlTable.TRADE_ID = tradeTable.ID)
+   Join TradePnlTableNoMilestoning_Trade(tradePnlTableNoMilestoning.TRADE_ID = tradeTable.ID)
+   Join TradeTable_TradePnlViewNoRootMilestoning(tradeTable.ID=tradePnlViewNoRootMilestoning.TRADE_ID)
    Join Trade_SalesPerson(tradeTable.accountID = salesPersonTable.ACCOUNT_ID)
    Join Trader_Certifications(TraderTable.kerberos = CertificationTable.kerberos)
    Join Trader_BiTemporalLocation(TraderTable.kerberos = BiTemporalLocationTable.kerberos)

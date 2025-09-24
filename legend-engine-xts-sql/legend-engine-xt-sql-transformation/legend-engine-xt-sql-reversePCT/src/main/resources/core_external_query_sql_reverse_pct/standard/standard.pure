@@ -18,6 +18,7 @@ function meta::external::query::sql::reversePCT::tests::standard::reverses():Rev
 {
   [
     meta::external::query::sql::reversePCT::tests::standard::math::aggregator::max::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::math::aggregator::min::reverses(),
     meta::external::query::sql::reversePCT::tests::standard::math::aggregator::average::reverses()
   ]
 }
