@@ -24,4 +24,6 @@ public interface PostgresResultSetMetaData
     int getColumnType(int i) throws Exception;
 
     int getScale(int i) throws Exception;
+
+    String getColumnTypeName(int i) throws Exception;
 }

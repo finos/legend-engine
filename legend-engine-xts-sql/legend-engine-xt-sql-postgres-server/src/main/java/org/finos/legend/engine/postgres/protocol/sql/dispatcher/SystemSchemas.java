@@ -22,7 +22,12 @@ public enum SystemSchemas
 
     INFORMATION_SCHEMA("information_schema"),
     PG_CATALOG("pg_catalog"),
-    PG_TYPE("pg_type");
+    PG_TYPE("pg_type"),
+    PG_USER("pg_user"),
+    PG_DEPEND("pg_depend"),
+    PG_AM("pg_am"),
+    PG_NAMESPACE("pg_namespace"),
+    PG_EXTENSION("pg_extension");
 
     private final String schemaName;
 

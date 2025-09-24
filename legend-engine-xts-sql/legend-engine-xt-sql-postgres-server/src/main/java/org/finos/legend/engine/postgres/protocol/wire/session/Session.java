@@ -112,12 +112,12 @@ public class Session implements AutoCloseable
         Portal portal = new Portal(portalName, preparedStmt, resultFormatCodes);
         portals.put(portalName, portal);
 
-        PostgresPreparedStatement preparedStatement = portal.prep.prep;
-        for (int i = 0; i < params.size(); i++)
+        PostgresPreparedStatement preparedStatement = preparedStmt.prep;
+        for (int i = 1; i <= params.size(); i++)
         {
             try
             {
-                preparedStatement.setObject(i, params.get(i));
+                preparedStatement.setObject(i, params.get(i - 1));
             }
             catch (Exception e)
             {

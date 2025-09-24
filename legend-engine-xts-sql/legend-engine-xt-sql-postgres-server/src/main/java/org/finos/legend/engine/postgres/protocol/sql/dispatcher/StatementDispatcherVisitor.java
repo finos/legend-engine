@@ -45,13 +45,12 @@ public class StatementDispatcherVisitor extends SqlBaseParserBaseVisitor<Executi
         return ExecutionType.TX;
     }
 
-    /**
-     * Visit the <code>SELECT</code> query context.
-     * Select query gets the name default from the antlr definition
-     *
-     * @param ctx the parse tree
-     * @return the session handler responsible for handling given query
-     */
+    @Override
+    public ExecutionType visitShowSessionParameter(SqlBaseParser.ShowSessionParameterContext ctx)
+    {
+        return ExecutionType.Metadata;
+    }
+
     @Override
     public ExecutionType visitDefault(SqlBaseParser.DefaultContext ctx)
     {
