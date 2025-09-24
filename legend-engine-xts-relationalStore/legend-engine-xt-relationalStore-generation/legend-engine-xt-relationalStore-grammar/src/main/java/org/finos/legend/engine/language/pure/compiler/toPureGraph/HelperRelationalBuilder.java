@@ -159,7 +159,7 @@ public class HelperRelationalBuilder
 
     public static Column getColumn(Relation tb, final String _column, SourceInformation sourceInformation)
     {
-        Column column = (Column) tb._columns().detect(col -> _column.equals(col.getName()));
+        Column column = (Column) tb._columns().detect(col -> _column.equals(((Column)col)._name()));
         Assert.assertTrue(column != null, () -> "Can't find column '" + _column + "'", sourceInformation, EngineErrorType.COMPILATION);
         return column;
     }
@@ -263,10 +263,33 @@ public class HelperRelationalBuilder
 
     public static Relation getRelation(Database db, final String _schema, final String _table, SourceInformation sourceInformation)
     {
-        validateSchemaExists(db, _schema, sourceInformation);
+        return getRelation(db, _schema, _table, null, null, sourceInformation);
+    }
+
+    public static Relation getRelation(TablePtr tableptr, CompileContext context)
+    {
+        return getRelation(resolveDatabase(tableptr.database, tableptr.sourceInformation, context), tableptr.schema, tableptr.table, tableptr, context, SourceInformation.getUnknownSourceInformation());
+    }
+
+    public static Relation getRelation(Database db, final String _schema, final String _table, TablePtr tableptr, CompileContext context, SourceInformation sourceInformation)
+    {
+        validateSchemaExists(db, _schema, tableptr, context, sourceInformation);
         Relation table = findRelation(db, _schema, _table, sourceInformation);
         if (table == null)
         {
+            if (tableptr != null && context != null && context.pureModel != null && context.pureModel.tableTransformationMap != null)
+            {
+                TablePtr mappedTablePtr = context.pureModel.tableTransformationMap.getTableMappings().get(tableptr);
+                if (mappedTablePtr != null)
+                {
+                    table = findRelation(db, mappedTablePtr.schema, mappedTablePtr.table, sourceInformation);
+                    if (table != null)
+                    {
+                        return table;
+                    }
+                    throw new EngineException("Can't find table '" + mappedTablePtr.table + "' in schema '" + mappedTablePtr.schema + "' and database '" + db.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
+                }
+            }
             throw new EngineException("Can't find table '" + _table + "' in schema '" + _schema + "' and database '" + db.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
         return table;
@@ -328,10 +351,30 @@ public class HelperRelationalBuilder
 
     private static void validateSchemaExists(Database db, String _schema, SourceInformation sourceInformation)
     {
-        if (!schemaExists(db, _schema))
+        validateSchemaExists(db, _schema, null, null, sourceInformation);
+    }
+
+    private static void validateSchemaExists(Database db, String _schema, TablePtr tableptr, CompileContext context, SourceInformation sourceInformation)
+    {
+        if (schemaExists(db, _schema))
         {
-            throw new EngineException("Can't find schema '" + _schema + "' in database '" + db + "'", sourceInformation, EngineErrorType.COMPILATION);
+            return;
         }
+        String schemaToReportInError = _schema;
+        if (tableptr != null && context != null && context.pureModel != null && context.pureModel.tableTransformationMap != null)
+        {
+            TablePtr ptr = context.pureModel.tableTransformationMap.getTableMappings().get(tableptr);
+            if (ptr != null && ptr.schema != null)
+            {
+                String generatedSchemaName = ptr.schema;
+                if (schemaExists(db, generatedSchemaName))
+                {
+                    return;
+                }
+                schemaToReportInError = generatedSchemaName;
+            }
+        }
+        throw new EngineException("Can't find schema '" + schemaToReportInError + "' in database '" + db + "'", sourceInformation, EngineErrorType.COMPILATION);
     }
 
     private static SetIterable<Table> getAllTables(Database db, Predicate<Schema> schemaPredicate)
@@ -811,7 +854,7 @@ public class HelperRelationalBuilder
                 selfJoinTargets.add(selfJoin);
                 return selfJoin;
             }
-            Relation relation = getRelation((Database) context.resolveStore(tableAliasColumn.table.database, tableAliasColumn.table.sourceInformation), tableAliasColumn.table.schema, tableAliasColumn.table.table, tableAliasColumn.table.sourceInformation);
+            Relation relation = getRelation((Database) context.resolveStore(tableAliasColumn.table.database, tableAliasColumn.table.sourceInformation), tableAliasColumn.table.schema, tableAliasColumn.table.table, tableAliasColumn.table, context, tableAliasColumn.table.sourceInformation);
             Column col = getColumn(relation, tableAliasColumn.column, tableAliasColumn.sourceInformation);
             TableAlias alias = aliasMap.getIfAbsentPut(tableAliasColumn.table.schema + "." + tableAliasColumn.tableAlias, () -> new Root_meta_relational_metamodel_TableAlias_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::TableAlias"))
                     ._name(tableAliasColumn.tableAlias)
@@ -1215,11 +1258,6 @@ public class HelperRelationalBuilder
         }
     }
 
-    public static Relation getRelation(TablePtr tableptr, CompileContext context)
-    {
-        return getRelation(resolveDatabase(tableptr.database, tableptr.sourceInformation, context), tableptr.schema, tableptr.table);
-    }
-
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getPropertyOwnerForRelationalPropertyMapping(CompileContext context, RelationalPropertyMapping propertyMapping, PropertyMappingsImplementation immediateParent)
     {
         if (propertyMapping.property._class != null)
@@ -1562,7 +1600,7 @@ public class HelperRelationalBuilder
         Pair<? extends TableAlias, ? extends TableAlias> tableAliasPair = join._aliases().detect(aliasPair -> aliasPair._first() != null && startTable == aliasPair._first()._relationalElement());
         if (tableAliasPair == null)
         {
-            throw new EngineException("Mapping error: the join " + join._name() + " does not contain the source table " + startTable.getName(), sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Mapping error: the join " + join._name() + " does not contain the source table " + ((Table)startTable)._name(), sourceInformation, EngineErrorType.COMPILATION);
         }
         return tableAliasPair._second();
     }

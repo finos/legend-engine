@@ -111,7 +111,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.60.0</legend.pure.version>
+        <legend.pure.version>5.60.1-SNAPSHOT</legend.pure.version>
         <legend.shared.version>0.29.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -240,7 +240,7 @@
         <google.maven.download.plugin.version>1.8.1</google.maven.download.plugin.version>
 
         <!--NPM registry -->
-        <npm.registry.url>https://registry.npmjs.org</npm.registry.url>
+        <npm.registry.url>http://npmscopes.site.gs.com</npm.registry.url>
     </properties>
 
     <scm>
