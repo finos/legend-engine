@@ -72,13 +72,6 @@
       ]
     },
     {
-      "name": "athena",
-      "modules": [
-        "legend-engine-xt-relationalStore-athena-PCT",
-        "legend-engine-xt-relationalStore-athena-SDT"
-      ]
-    },
-    {
       "name": "databricks",
       "modules": [
         "legend-engine-xt-relationalStore-databricks-PCT"
