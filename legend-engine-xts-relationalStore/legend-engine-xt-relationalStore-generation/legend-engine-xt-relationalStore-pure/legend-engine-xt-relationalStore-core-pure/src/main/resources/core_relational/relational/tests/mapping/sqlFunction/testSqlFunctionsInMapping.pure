@@ -363,14 +363,14 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::mod::testP
 {
     let result = execute(|SqlFunctionDemo.all()->project([s | $s.floatModResult ], ['mod']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1, 0], $result.values->at(0).rows.values);
-    assertEquals('select mod("root".int1, 2) as "mod" from dataTable as "root"',$result->sqlRemoveFormatting());
+    assertEquals('select mod(mod("root".int1, 2) + 2, 2) as "mod" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::mod::testFilter():Boolean[1]
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatModResult  > 0)->project([s | $s.floatModResult], ['mod']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1], $result.values->at(0).rows.values);
-    assertEquals('select mod("root".int1, 2) as "mod" from dataTable as "root" where mod("root".int1, 2) > 0',$result->sqlRemoveFormatting());
+    assertEquals('select mod(mod("root".int1, 2) + 2, 2) as "mod" from dataTable as "root" where mod(mod("root".int1, 2) + 2, 2) > 0',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rem::testProject():Boolean[1]
