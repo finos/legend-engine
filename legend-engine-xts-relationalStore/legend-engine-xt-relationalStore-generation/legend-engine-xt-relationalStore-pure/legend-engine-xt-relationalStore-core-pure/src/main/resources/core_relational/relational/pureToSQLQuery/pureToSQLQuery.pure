@@ -1319,6 +1319,24 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::extract
               ]);
 }
 
+function meta::relational::functions::pureToSqlQuery::getNewColumnNameWithAlias(s: SelectSQLQuery[1], foundColumn: RelationalOperationElement[0..1], aliasesToUse: TableAliasColumn[*]): String[1] 
+{
+  let existingColumnCount = $s.columns->map(c | $c->match([
+                                                            a: Alias[1] | $a.name->toLower()->stripMatchingQuotes(),
+                                                            t: TableAliasColumn[1] | $t.column.name->toLower()->stripMatchingQuotes()
+                                                          ])
+                                            )->filter(c|$c->startsWith($aliasesToUse->toOne().column.name->toLower()->stripMatchingQuotes() + '_'))->size();
+  let existingColumnName = $aliasesToUse->toOne().column.name;
+  
+  if ($foundColumn->isEmpty(),
+        | $existingColumnName,
+        | if ($existingColumnName->startsWith('"') && $existingColumnName->endsWith('"'),
+                | '"' + $existingColumnName->stripMatchingQuotes() + '_' + ($existingColumnCount + 1)->toString() + '"',
+                | $existingColumnName + '_' + ($existingColumnCount + 1)->toString()
+             )
+     );
+}
+
 function meta::relational::functions::pureToSqlQuery::processColumnsInRelationalOperationElements(z:RelationalOperationElement[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
    $srcOperation->validate([], $extensions);
@@ -1334,33 +1352,51 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
                               // Make sure the column is available a potentially SQL
                               let result = $relationalElement->match([
                                  s:SelectSQLQuery[1] |  let foundColumn = $s->findColumn($t.column.name);
-                                                        if ($foundColumn->isNotEmpty(),
-                                                         | pair($srcOperation, ^$column(name=$foundColumn->toOne()->extractColumnName()));,
-                                                         |// Add the missing columns in the nested select (coming most likely from isolation)
+
+                                                        let foundColumnOwner = if($foundColumn->isNotEmpty(),
+                                                                                   | $foundColumn->match([
+                                                                                        a: Alias[1] | if ($a.relationalElement->instanceOf(TableAliasColumn),
+                                                                                                          |$a.relationalElement->cast(@TableAliasColumn).column.owner,
+                                                                                                          |[]
+                                                                                                          ),
+                                                                                        tac: TableAliasColumn[1] | $tac.column.owner,
+                                                                                        any: Any[1] | $any
+                                                                                      ]),
+                                                                                   | []);
+
+                                                        if ($foundColumn->isNotEmpty() && (($column->instanceOf(RelationFunctionColumn) && $column.owner->isEmpty()) || ($column.owner == $foundColumnOwner)),
+                                                         |//Use the foundColumn with same owner
+                                                          pair($srcOperation, ^$column(name=$foundColumn->toOne()->extractColumnName()));,
+                                                         |//Create new column if foundColumn is empty or owners are different
+                                                          // Add the missing columns in the nested select (coming most likely from isolation)
                                                           // 1. find the right alias within the nested SQL ...
                                                           // the alias we are trying to find might be from a view
+
                                                           let allNodes = $s.data->toOne()->getAllNodes()->cast(@RelationalTreeNode);
                                                           let aliasesToUse = $t.column->extractColumnAliasesInRelationalTreeNodes($t.alias.relationalElement, $allNodes, $context, $extensions);
+
                                                           assert($aliasesToUse->size() == 1, | 'Found too many (or not enough) tables that could support the column '+$t.column.name+' in the nested SQL '+$s->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions));
-                                                          let newSQL = ^$s(columns+=^Alias(name=$aliasesToUse->toOne().column.name, relationalElement=$aliasesToUse->toOne()));
+
+                                                          let newColumnName = $s->getNewColumnNameWithAlias($foundColumn, $aliasesToUse);
+                                                          let newSQL = ^$s(columns+=^Alias(name=$newColumnName, relationalElement=$aliasesToUse->toOne()));
                                                           let newTreeNode = ^$currentTreeNode(alias = ^$alias(relationalElement = $newSQL));
                                                           let newData = if ($currentTreeNode->instanceOf(RootJoinTreeNode),
-                                                                               |$newTreeNode,
-                                                                               |$srcOperation.select.data->toOne()->replaceJoin($currentTreeNode->toOne()->cast(@JoinTreeNode), $newTreeNode->cast(@JoinTreeNode))
+                                                                              |$newTreeNode,
+                                                                              |$srcOperation.select.data->toOne()->replaceJoin($currentTreeNode->toOne()->cast(@JoinTreeNode), $newTreeNode->cast(@JoinTreeNode))
                                                                         );
                                                           let oldToNew = $srcOperation.select.data->toOne()->getAllNodes()->cast(@RelationalTreeNode).alias->zip($newData->getAllNodes()->cast(@RelationalTreeNode).alias)->map(o|^OldAliasToNewAlias(first=$o.first.name, second=$o.second));
                                                           let opSelect = $srcOperation.select;
 
                                                           let operation = ^$srcOperation(
                                                                 select = ^$opSelect(
-                                                                               data = $newData->cast(@RootJoinTreeNode),
-                                                                               leftSideOfFilter = if($opSelect.leftSideOfFilter->isEmpty(),|[],|$opSelect.leftSideOfFilter->toOne()->findOneNode($opSelect.data->toOne(), $newData)),
-                                                                               savedFilteringOperation = $opSelect.savedFilteringOperation->map(p|pair($p.first->findOneNode($srcOperation.select.data->toOne(), $newData), $p.second->reprocessAliases($oldToNew)))
-                                                                         ),
+                                                                              data = $newData->cast(@RootJoinTreeNode),
+                                                                              leftSideOfFilter = if($opSelect.leftSideOfFilter->isEmpty(),|[],|$opSelect.leftSideOfFilter->toOne()->findOneNode($opSelect.data->toOne(), $newData)),
+                                                                              savedFilteringOperation = $opSelect.savedFilteringOperation->map(p|pair($p.first->findOneNode($srcOperation.select.data->toOne(), $newData), $p.second->reprocessAliases($oldToNew)))
+                                                                        ),
                                                                 positionBeforeLastApplyJoinTreeNode = if($srcOperation.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$srcOperation.positionBeforeLastApplyJoinTreeNode->toOne()->findOneNode($opSelect.data->toOne(), $newData)),
                                                                 currentTreeNode = $newTreeNode
                                                           );
-                                                          pair($operation, $column);
+                                                          pair($operation, ^$column(name=$newColumnName));
                                                       );
                                                       ,
                                  a:Any[1]|pair($srcOperation, $column)
@@ -1433,6 +1469,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
    $result->validate([], $extensions);
    $result;
 }
+
 
 function meta::relational::functions::pureToSqlQuery::extractColumnAliasesInRelationalTreeNodes(column:Column[1], relationalElement:RelationalOperationElement[1], nodes:RelationalTreeNode[*], context:DebugContext[1], extensions:Extension[*]): TableAliasColumn[*]
 {

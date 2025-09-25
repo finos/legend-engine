@@ -440,7 +440,7 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheri
 
 Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::Car extends RoadVehicle
 {
-   engineType : EngineType[1];
+   engineType : EngineType[0..1];
 }
 
 
@@ -459,4 +459,10 @@ Association meta::relational::tests::milestoning::inheritance::PersonVehicle
 {
    person : Person[1];
    vehicles : Vehicle[*];
+}
+
+Association meta::relational::tests::milestoning::inheritance::CarBicycle
+{
+   car : Car[0..1];
+   bicycle : Bicycle[*];
 }
