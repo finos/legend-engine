@@ -35,7 +35,8 @@ public class AthenaManager extends DatabaseManager
         return "jdbc:awsathena://"
                 + "AwsRegion=" + extraUserDataSourceProperties.getProperty("awsRegion") + ";"
                 + "S3OutputLocation=" + extraUserDataSourceProperties.getProperty("s3OutputLocation") + ";"
-                + "databaseName=" + databaseName;
+                + (extraUserDataSourceProperties.getProperty("workgroup") == null ? "" : "Workgroup=" + extraUserDataSourceProperties.getProperty("workgroup") + ";")
+                + "Schema=" + databaseName;
     }
 
     @Override

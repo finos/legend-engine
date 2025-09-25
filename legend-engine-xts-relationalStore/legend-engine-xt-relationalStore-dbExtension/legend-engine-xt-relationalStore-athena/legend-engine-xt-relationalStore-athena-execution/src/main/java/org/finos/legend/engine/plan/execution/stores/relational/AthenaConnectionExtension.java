@@ -78,7 +78,8 @@ public class AthenaConnectionExtension implements ConnectionExtension, Strategic
                 return new AthenaDatasourceSpecificationKey(
                         athenaDatasourceSpecification.awsRegion,
                         athenaDatasourceSpecification.s3OutputLocation,
-                        athenaDatasourceSpecification.databaseName);
+                        athenaDatasourceSpecification.databaseName,
+                        athenaDatasourceSpecification.workgroup);
             }
             return null;
         };

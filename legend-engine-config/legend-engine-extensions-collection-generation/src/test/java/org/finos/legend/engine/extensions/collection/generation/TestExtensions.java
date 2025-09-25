@@ -651,6 +651,7 @@ public class TestExtensions
                 .with("core_persistence_relational")
                 .with("core_dataquality")
                 .with("core_relational")
+                .with("core_relational_athena")
                 .with("core_relational_bigquery")
                 .with("core_relational_spanner")
                 .with("core_relational_trino")

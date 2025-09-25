@@ -863,7 +863,7 @@ function meta::relational::tests::pct::process::buildJoins(class:Class<Any>[1], 
                         let targetType = $p->functionReturnType().rawType->toOne();
                         let target = $classTableMappings->filter(ctm|$ctm.class == $targetType)->toOne();
                         let srcColumn = $src.table.columns->cast(@Column)->filter(c|$c.name == '_pureId')->toOne();
-                        let fkColumn = ^Column(name='_'+$class.name->toOne()+'_'+$p.name->toOne(), type=^meta::relational::metamodel::datatype::Integer());
+                        let fkColumn = ^Column(name=$class.name->toOne()+'_'+$p.name->toOne() + '_', type=^meta::relational::metamodel::datatype::Integer());
                         let targetTable = $target.table;                        
                         $targetTable->mutateAdd('columns', $fkColumn);
                         let srcAlias = ^TableAlias(database=$db, name='src', relationalElement=$src.table);

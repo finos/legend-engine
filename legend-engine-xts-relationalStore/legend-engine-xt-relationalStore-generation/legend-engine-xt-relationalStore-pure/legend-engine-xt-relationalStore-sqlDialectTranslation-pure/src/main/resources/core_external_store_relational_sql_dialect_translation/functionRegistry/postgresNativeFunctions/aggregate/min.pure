@@ -76,11 +76,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
           tableName = 'testTable', 
           columns = [pair('name', 'varchar'), pair('class', 'varchar'), pair('dob', 'date')], 
           data = [
-            dataRow(['Robert', 'Fifth', '2015-12-30']), 
-            dataRow(['Julie', 'Fifth', '2015-12-31']), 
-            dataRow(['Alex', 'Fourth', '2014-11-30']), 
-            dataRow(['Katie', 'Fourth', '2014-07-30']), 
-            dataRow(['Thomas', 'Third', '2013-07-30'])
+            dataRow(['Robert', 'Fifth', %2015-12-30]), 
+            dataRow(['Julie', 'Fifth', %2015-12-31]), 
+            dataRow(['Alex', 'Fourth', %2014-11-30]), 
+            dataRow(['Katie', 'Fourth', %2014-07-30]), 
+            dataRow(['Thomas', 'Third', %2013-07-30])
           ]
         ),
         // SELECT class, min(dob) AS result FROM testTable GROUP BY class ORDER BY result ASC NULLS LAST

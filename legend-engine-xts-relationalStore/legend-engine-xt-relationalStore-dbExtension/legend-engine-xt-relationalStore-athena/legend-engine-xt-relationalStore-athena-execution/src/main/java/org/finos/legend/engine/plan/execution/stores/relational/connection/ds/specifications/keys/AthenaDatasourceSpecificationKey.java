@@ -23,12 +23,14 @@ public class AthenaDatasourceSpecificationKey implements DataSourceSpecification
     private final String awsRegion;
     private final String s3OutputLocation;
     private final String databaseName;
+    private final String workgroup;
 
-    public AthenaDatasourceSpecificationKey(String awsRegion, String s3OutputLocation, String databaseName)
+    public AthenaDatasourceSpecificationKey(String awsRegion, String s3OutputLocation, String databaseName, String workgroup)
     {
         this.awsRegion = awsRegion;
         this.s3OutputLocation = s3OutputLocation;
         this.databaseName = databaseName;
+        this.workgroup = workgroup;
     }
 
     public String getAwsRegion()
@@ -46,6 +48,11 @@ public class AthenaDatasourceSpecificationKey implements DataSourceSpecification
         return databaseName;
     }
 
+    public String getWorkgroup()
+    {
+        return workgroup;
+    }
+
     @Override
     public String toString()
     {
@@ -53,6 +60,7 @@ public class AthenaDatasourceSpecificationKey implements DataSourceSpecification
                 "awsRegion='" + awsRegion + '\'' +
                 ", s3OutputLocation=" + s3OutputLocation +
                 ", databaseName='" + databaseName + '\'' +
+                (workgroup == null ? "" : ", workgroup='" + workgroup + '\'') +
                 '}';
     }
 
@@ -62,7 +70,8 @@ public class AthenaDatasourceSpecificationKey implements DataSourceSpecification
         return "Athena_" +
                 "awsRegion:" + awsRegion + "_" +
                 "s3OutputLocation:" + s3OutputLocation + "_" +
-                "db:" + databaseName;
+                "db:" + databaseName +
+                (workgroup == null ? "" : "_workgroup:" + workgroup);
     }
 
     @Override
@@ -79,12 +88,13 @@ public class AthenaDatasourceSpecificationKey implements DataSourceSpecification
         AthenaDatasourceSpecificationKey that = (AthenaDatasourceSpecificationKey) o;
         return Objects.equals(s3OutputLocation, that.s3OutputLocation) &&
                 Objects.equals(awsRegion, that.awsRegion) &&
-                Objects.equals(databaseName, that.databaseName);
+                Objects.equals(databaseName, that.databaseName) &&
+                Objects.equals(workgroup, that.workgroup);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(awsRegion, s3OutputLocation, databaseName);
+        return Objects.hash(awsRegion, s3OutputLocation, databaseName, workgroup);
     }
 }

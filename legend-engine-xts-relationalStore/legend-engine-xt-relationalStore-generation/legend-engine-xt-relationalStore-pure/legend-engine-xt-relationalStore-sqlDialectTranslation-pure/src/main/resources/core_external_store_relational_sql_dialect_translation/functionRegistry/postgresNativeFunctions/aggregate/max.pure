@@ -39,48 +39,48 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       )
     }),
     tests = [
-      sqlFunctionTest(
-        ^TestSetupData(
-          tableName = 'testTable', 
-          columns = [pair('marks', 'integer'), pair('subject', 'varchar'), pair('name', 'varchar')], 
-          data = [
-            dataRow([18, 'Math', 'Robert']), 
-            dataRow([32, 'Physics', 'Robert']), 
-            dataRow([20, 'Math', 'Jane']),
-            dataRow([25, 'Physics', 'Jane']),
-            dataRow([16, 'Math', 'John']),
-            dataRow([43, 'Chemistry', 'Robert']), 
-            dataRow([26, 'Chemistry', 'Jane'])
-          ]
-        ),
-        // SELECT subject, max(marks) AS result FROM testTable GROUP BY subject ORDER BY result ASC NULLS LAST
-        simpleAggFunctionCall(
-          ^FunctionCall(
-            name = ^QualifiedName(parts = 'max'), 
-            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'marks'))]
-          ),
-          'testTable',
-          'subject'
-        ),
-        ^TestExpectedResult(
-          columns = ['subject', 'result'], 
-          data = [
-            list(['Math', 20]), 
-            list(['Physics', 32]), 
-            list(['Chemistry', 43])
-          ]
-        )
-      ),
+       sqlFunctionTest(
+         ^TestSetupData(
+           tableName = 'testTable',
+           columns = [pair('marks', 'integer'), pair('subject', 'varchar'), pair('name', 'varchar')],
+           data = [
+             dataRow([18, 'Math', 'Robert']),
+             dataRow([32, 'Physics', 'Robert']),
+             dataRow([20, 'Math', 'Jane']),
+             dataRow([25, 'Physics', 'Jane']),
+             dataRow([16, 'Math', 'John']),
+             dataRow([43, 'Chemistry', 'Robert']),
+             dataRow([26, 'Chemistry', 'Jane'])
+           ]
+         ),
+         // SELECT subject, max(marks) AS result FROM testTable GROUP BY subject ORDER BY result ASC NULLS LAST
+         simpleAggFunctionCall(
+           ^FunctionCall(
+             name = ^QualifiedName(parts = 'max'),
+             arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'marks'))]
+           ),
+           'testTable',
+           'subject'
+         ),
+         ^TestExpectedResult(
+           columns = ['subject', 'result'],
+           data = [
+             list(['Math', 20]),
+             list(['Physics', 32]),
+             list(['Chemistry', 43])
+           ]
+         )
+       ),
       sqlFunctionTest(
         ^TestSetupData(
           tableName = 'testTable', 
           columns = [pair('name', 'varchar'), pair('class', 'varchar'), pair('dob', 'date')], 
           data = [
-            dataRow(['Robert', 'Fifth', '2015-12-30']), 
-            dataRow(['Julie', 'Fifth', '2015-12-31']), 
-            dataRow(['Alex', 'Fourth', '2014-11-30']), 
-            dataRow(['Katie', 'Fourth', '2014-07-30']), 
-            dataRow(['Thomas', 'Third', '2013-07-30'])
+            dataRow(['Robert', 'Fifth', %2015-12-30]), 
+            dataRow(['Julie', 'Fifth', %2015-12-31]), 
+            dataRow(['Alex', 'Fourth', %2014-11-30]), 
+            dataRow(['Katie', 'Fourth', %2014-07-30]), 
+            dataRow(['Thomas', 'Third', %2013-07-30])
           ]
         ),
         // SELECT class, max(dob) AS result FROM testTable GROUP BY class ORDER BY result ASC NULLS LAST

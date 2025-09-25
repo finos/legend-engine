@@ -200,7 +200,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx1g"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}          
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
