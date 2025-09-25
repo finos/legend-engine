@@ -629,10 +629,7 @@ function meta::external::dataquality::enrichDQColumnsPrecise(f:ValueSpecificatio
   let newRelTypeWithLogicalDefectId = $newRelTypeWithRuleId->addColumns(~[DQ_LOGICAL_DEFECT_ID: Varchar(32)[1]])->evaluateAndDeactivate();
   let withLogicalId = $withRuleId->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildVarcharCast(buildHashFunctionExpression($newRelTypeWithRuleId, $newRelTypeWithRuleId.columns.name, $relParamName), 32), $relParamName, $newRelTypeWithRuleId, $newRelTypeWithLogicalDefectId, String);
 
-  let newRelTypeWithDefectId = $newRelTypeWithLogicalDefectId->addColumns(~[DQ_DEFECT_ID: Varchar(36)[1]])->evaluateAndDeactivate();
-  let withDefectId = $withLogicalId->buildExtendExpression('DQ_DEFECT_ID', buildVarcharCast(buildGenerateGuidExpression(), 36), $relParamName, $newRelTypeWithLogicalDefectId, $newRelTypeWithDefectId, String);
-
-  ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withDefectId, second=$newRelTypeWithDefectId);
+  ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withLogicalId, second=$newRelTypeWithLogicalDefectId);
 }
 
 function meta::external::dataquality::getRelationType(selectedValidation: RelationValidation[1]):meta::pure::metamodel::relation::RelationType<Any>[1]
