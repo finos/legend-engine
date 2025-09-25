@@ -128,7 +128,6 @@
         <timestamp>${maven.build.timestamp}</timestamp>
 
         <!-- Build Variables -->
-        <project.root.dir>${project.basedir}</project.root.dir>
         <dependencies.failOnWarning>true</dependencies.failOnWarning>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

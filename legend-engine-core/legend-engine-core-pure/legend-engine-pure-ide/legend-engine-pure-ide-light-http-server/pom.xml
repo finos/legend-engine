@@ -93,23 +93,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>dependency-analyze</id>
-                        <configuration>
-                            <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-api</ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
-                            <ignoredUsedUndeclaredDependencies>
-                                <ignoredUsedUndeclaredDependency>com.amazon.athena:AthenaJDBC42</ignoredUsedUndeclaredDependency>
-                            </ignoredUsedUndeclaredDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -383,12 +366,6 @@
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <!-- DropWizard -->

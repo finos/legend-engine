@@ -68,7 +68,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::athena::translateCreateSchemaStatementForAthena(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
-   if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema if not exists ' + $createSchemaSQL.schema.name);
+   if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema ' + $createSchemaSQL.schema.name);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::athena::translateDropSchemaStatementForAthena(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]

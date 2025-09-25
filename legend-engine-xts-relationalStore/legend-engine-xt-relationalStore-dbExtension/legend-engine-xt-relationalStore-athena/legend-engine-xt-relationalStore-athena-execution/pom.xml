@@ -100,7 +100,6 @@
         <profile>
             <id>pct-cloud-test</id>
             <dependencies>
-                <!-- athena driver is not available on maven, it needs to be manually downloaded from https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html -->
                 <dependency>
                     <groupId>com.amazon.athena</groupId>
                     <artifactId>AthenaJDBC42</artifactId>
