@@ -220,7 +220,6 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
                     "  mod(DoubleSqlType, DoubleSqlType):DoubleSqlType,\n" +
                     "  mod(AbstractNumericSqlType, AbstractNumericSqlType):AbstractNumericSqlType\n" +
                     "]\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\"", AdapterQualifier.needsInvestigation),
 
             // Rem
             one("meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\"", AdapterQualifier.needsInvestigation),
