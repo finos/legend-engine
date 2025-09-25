@@ -98,7 +98,7 @@
 
     <profiles>
         <profile>
-            <id>pct-cloud-test</id>
+            <id>pct-cloud-test-athena</id>
             <dependencies>
                 <dependency>
                     <groupId>com.amazon.athena</groupId>
