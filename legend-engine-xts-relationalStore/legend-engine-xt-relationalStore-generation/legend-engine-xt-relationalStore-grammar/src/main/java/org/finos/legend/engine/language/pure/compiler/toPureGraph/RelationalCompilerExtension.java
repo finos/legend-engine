@@ -217,6 +217,11 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         },
                         (Database srcDatabase, CompileContext context) ->
                         {
+                            if (!srcDatabase.includedStoreSpecifications.isEmpty())
+                            {
+                                List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
+                                ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraIncludeStorePreProcessors).forEach(pre -> pre.apply(srcDatabase, context));
+                            }
                             org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = HelperRelationalBuilder.getDatabase(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), srcDatabase.sourceInformation, context);
                             if (srcDatabase.joins != null)
                             {
@@ -279,7 +284,11 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
     private Set<PackageableElementPointer> databasePrerequisiteElementsPass(Database srcDatabase, CompileContext context)
     {
-        return Sets.fixedSize.withAll(srcDatabase.includedStores);
+        return Stream.concat(
+                        srcDatabase.includedStores.stream(),
+                        srcDatabase.includedStoreSpecifications.stream().filter(java.util.Objects::nonNull).map(p -> p.packageableElementPointer)
+                )
+                .collect(Collectors.toSet());
     }
 
     private Set<PackageableElementPointer> relationalMapperPrerequisiteElementsPass(RelationalMapper relationalMapper, CompileContext context)

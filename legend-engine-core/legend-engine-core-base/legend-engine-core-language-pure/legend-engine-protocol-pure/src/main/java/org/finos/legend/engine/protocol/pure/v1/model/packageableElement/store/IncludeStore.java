@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 
-public class TablePtr
+public class IncludeStore
 {
-    public String _type;
-    public String table;
-    public String schema;
-    public String database;
-    public String mainTableDb;
+    public PackageableElementPointer packageableElementPointer;
+    public String storeType;
     public SourceInformation sourceInformation;
-
-    @JsonIgnore
-    @BsonIgnore
-    public String getDb()
-    {
-        return mainTableDb == null ? database : mainTableDb;
-    }
 }

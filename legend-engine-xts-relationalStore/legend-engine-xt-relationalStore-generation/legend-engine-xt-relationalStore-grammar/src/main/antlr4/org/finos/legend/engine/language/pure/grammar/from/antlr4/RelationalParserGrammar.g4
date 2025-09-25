@@ -31,6 +31,7 @@ definition:                                 (database)*
 database:                                   DATABASE stereotypes? taggedValues? qualifiedName
                                                 PAREN_OPEN
                                                     include*
+                                                    (includeStore)*
                                                     (
                                                         schema
                                                         | table
@@ -44,7 +45,8 @@ database:                                   DATABASE stereotypes? taggedValues? 
 ;
 include:                                    INCLUDE qualifiedName
 ;
-
+includeStore:                               INCLUDE identifier qualifiedName
+;
 // -------------------------------------- STEREOTYPE --------------------------------------
 
 stereotypes:                        LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN;

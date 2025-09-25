@@ -38,6 +38,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludeStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.EmbeddedRelationalPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterPointer;
@@ -127,6 +128,10 @@ public class RelationalParseTreeWalker
                     String path = PureGrammarParserUtility.fromQualifiedName(includeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : includeContext.qualifiedName().packagePath().identifier(), includeContext.qualifiedName().identifier());
                     return new PackageableElementPointer(PackageableElementType.STORE, path, this.walkerSourceInformation.getSourceInformation(includeContext));
                 });
+        if (ctx.includeStore() != null && !ctx.includeStore().isEmpty())
+        {
+            database.includedStoreSpecifications = ListIterate.collect(ctx.includeStore(), this::visitIncludedStoreSpecifications);
+        }
         database.schemas = ListIterate.collect(ctx.schema(), schemaCtx -> this.visitSchema(schemaCtx, scopeInfo));
         database.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         if (ctx.taggedValues() != null)
@@ -639,6 +644,18 @@ public class RelationalParseTreeWalker
         return filter;
     }
 
+
+    // ----------------------------------------------- INCLUDED_STORE_SPECIFICATIONS -----------------------------------------------
+
+    private IncludeStore visitIncludedStoreSpecifications(RelationalParserGrammar.IncludeStoreContext ctx)
+    {
+        IncludeStore store = new IncludeStore();
+        store.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        store.storeType = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        String path = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        store.packageableElementPointer = new PackageableElementPointer(null, path, this.walkerSourceInformation.getSourceInformation(ctx));
+        return store;
+    }
 
     // ----------------------------------------------- MULTIGRAIN_FILTER -----------------------------------------------
 
