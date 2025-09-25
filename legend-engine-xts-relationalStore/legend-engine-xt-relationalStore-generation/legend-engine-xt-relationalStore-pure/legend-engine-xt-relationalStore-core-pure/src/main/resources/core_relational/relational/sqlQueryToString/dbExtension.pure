@@ -309,6 +309,7 @@ Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTransl
   createView : meta::pure::metamodel::function::Function<{CreateViewSQL[1], DbConfig[1], Extension[*] ->  String[*]}>[0..1];
   createProcedure : meta::pure::metamodel::function::Function<{CreateProcedureSQL[1], DbConfig[1], Extension[*] ->  String[*]}>[0..1];
   createFunction : meta::pure::metamodel::function::Function<{CreateFunctionSQL[1], DbConfig[1], Extension[*] ->  String[*]}>[0..1];
+  createPipeline : meta::pure::metamodel::function::Function<{CreatePipelineSQL[1], DbConfig[1]->  String[*]}>[0..1];
 }
 
 Class meta::relational::functions::sqlQueryToString::DbExtensionLoader

@@ -73,6 +73,17 @@ Class meta::relational::metamodel::CreateProcedureSQL extends ParameterizedQuery
     declarations : VariableDeclaration[*];
 }
 
+Class meta::relational::metamodel::CreatePipelineSQL
+{
+  name: Literal[1];
+  target: RelationalOperationElement[1];
+  targetName: Literal[1];
+  config : RelationalOperationElement[1];
+  credentials : RelationalOperationElement[1];
+  table: Table[1]; 
+  source: RelationalOperationElement[1];
+}
+
 Class meta::relational::metamodel::VariableDeclaration extends RelationalOperationElement
 {
     name : String[1];
