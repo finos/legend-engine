@@ -30,7 +30,7 @@ public class Database extends Store
     public List<Filter> filters = Collections.emptyList();
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues;
-    public List<IncludeStore> includedStoreSpecifications = Collections.emptyList();
+    public List<IncludeStore> includedStoreSpecifications;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

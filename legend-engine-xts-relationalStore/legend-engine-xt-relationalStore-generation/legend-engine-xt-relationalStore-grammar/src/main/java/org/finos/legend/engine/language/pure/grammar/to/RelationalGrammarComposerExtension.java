@@ -289,7 +289,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
             builder.append("\n");
             nonEmpty = true;
         }
-        if (!database.includedStoreSpecifications.isEmpty())
+        if (database.includedStoreSpecifications != null && !database.includedStoreSpecifications.isEmpty())
         {
             builder.append(LazyIterate.collect(database.includedStoreSpecifications, includeElement -> getTabString(1) + "include " + includeElement.storeType + " " + includeElement.packageableElementPointer.path).makeString("\n"));
             builder.append("\n");

@@ -62,6 +62,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludeStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -217,7 +218,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         },
                         (Database srcDatabase, CompileContext context) ->
                         {
-                            if (!srcDatabase.includedStoreSpecifications.isEmpty())
+                            if (srcDatabase.includedStoreSpecifications != null && !srcDatabase.includedStoreSpecifications.isEmpty())
                             {
                                 List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
                                 ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraIncludeStorePreProcessors).forEach(pre -> pre.apply(srcDatabase, context));
@@ -284,9 +285,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
     private Set<PackageableElementPointer> databasePrerequisiteElementsPass(Database srcDatabase, CompileContext context)
     {
+        Stream<IncludeStore> includedStoreSpecificationsStream = (srcDatabase.includedStoreSpecifications != null) ? srcDatabase.includedStoreSpecifications.stream() : Stream.empty();
         return Stream.concat(
                         srcDatabase.includedStores.stream(),
-                        srcDatabase.includedStoreSpecifications.stream().filter(java.util.Objects::nonNull).map(p -> p.packageableElementPointer)
+                        includedStoreSpecificationsStream.filter(Objects::nonNull).map(p -> p.packageableElementPointer)
                 )
                 .collect(Collectors.toSet());
     }
