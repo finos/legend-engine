@@ -40,3 +40,21 @@ function meta::relational::functions::sqlQueryToString::duckDB::createView(creat
     $createViewSQL.generatedSQL +
     ';'
 }
+
+function meta::relational::functions::sqlQueryToString::duckDB::createFunction(createFunc:CreateFunctionSQL[1], dbConfig:DbConfig[1], extensions:Extension[*]):String[1]
+{
+    // Secure is not supported
+    // Copy Grants is not supported
+    'CREATE MACRO ' +
+    if($createFunc.schemaName->isEmpty(),|'',|$createFunc.schemaName->toOne() + '.') +
+    $createFunc.name +
+    +'('+ $createFunc.parameters->meta::relational::functions::sqlQueryToString::duckDB::fixInputParams()+ ')'+ 
+    +' AS TABLE\n'+
+    '   '+$createFunc.generatedSQL
+}
+
+//TODO: change metamodel for param to relational operation element
+function meta::relational::functions::sqlQueryToString::duckDB::fixInputParams(in:String[1]):String[1]
+{
+  $in->split(',')->map(v| $v->split(' ')->at(0)->trim())->joinStrings(' ')
+}

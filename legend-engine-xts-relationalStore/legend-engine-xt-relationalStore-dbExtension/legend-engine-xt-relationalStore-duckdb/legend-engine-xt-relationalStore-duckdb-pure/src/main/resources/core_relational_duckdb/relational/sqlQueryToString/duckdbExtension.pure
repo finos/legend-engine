@@ -33,6 +33,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       literalProcessor = $literalProcessor,
       joinProcessor = meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForDuckDB_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
+      tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
+      tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::duckDB::tabularFunctionProcessor_String_1__String_1__FunctionParameter_MANY__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
@@ -52,6 +54,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processCommitQueryForDuckDB(b:CommitQuery[1], s: SqlGenerationContext[1]):String[1]
 {
   'COMMIT;';
+}
+
+function meta::relational::functions::sqlQueryToString::duckDB::tabularFunctionProcessor(schema:String[1], functionName: String[1], params: FunctionParameter[*]):String[1]
+{
+   if($schema=='', | $functionName,| $schema+'.'+$functionName) + '('+ $params->map(p|$p.name)->joinStrings(', ')+ ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
@@ -78,7 +85,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
                 createTable = translateCreateTableStatementDuckDB_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
                 loadTable = loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_,
-                createView = createView_CreateViewSQL_1__DbConfig_1__Extension_MANY__String_1_
+                createView = createView_CreateViewSQL_1__DbConfig_1__Extension_MANY__String_1_,
+                createFunction = createFunction_CreateFunctionSQL_1__DbConfig_1__Extension_MANY__String_1_              
+
               );
 }
 
@@ -139,7 +148,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(len(%s), 0)')),
     dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)')),
     dynaFnToSql('array_position',         $allStates,            ^ToSql(format='(ifnull(array_position(%s, %s), 0)-1)')),
-    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='array_slice(%s, greatest(%s + 1, 1), greatest(%s, 0))')),
+    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='(%s[greatest(%s + 1, 1) : greatest(%s, 0)])')),
+    dynaFnToSql('array_drop',             $allStates,            ^ToSql(format='(%s[greatest(%s + 1, 1) : ])')),
+    dynaFnToSql('array_take',             $allStates,            ^ToSql(format='(%s[ : greatest(%s, 0)])')),
+    dynaFnToSql('array_first',            $allStates,            ^ToSql(format='(%s[1])')),
+    dynaFnToSql('array_last',             $allStates,            ^ToSql(format='(%s[-1])')),
+    dynaFnToSql('array_init',             $allStates,            ^ToSql(format='array_pop_back(%s)')),
+    dynaFnToSql('array_tail',             $allStates,            ^ToSql(format='array_pop_front(%s)')),    
+    dynaFnToSql('array_concatenate',      $allStates,            ^ToSql(format='array_cat(%s, %s)')),
+    dynaFnToSql('range',                  $allStates,            ^ToSql(format='range(%s, %s, %s)')),
     dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='ifnull(array_contains(%s, %s), false)')),
     dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='array_distinct(%s)')),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
@@ -166,7 +183,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='day(%s)')),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='decode(from_base64(%s))')),
     dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='base64(encode(%s))')),
-    // dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),
+    dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsFoDuckDb()})),
     dynaFnToSql('first',                  $allStates,            ^ToSql(format='first(%s)')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)', transform={p:String[1] | $p->repeat(1)})),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)', transform={p:String[1] | $p->repeat(1)})),
@@ -240,6 +257,43 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_pop('+$p->toOne()+')',|'list_var_pop('+$p->joinStrings('[',',',']')+')'); })),
     dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processExtractFromSemiStructuredParamsFoDuckDb(params:String[3]):String[1]
+{
+  let baseRelationalOp = $params->at(0);
+  let pathNavigation = $params->at(1);
+  let returnType = $params->at(2);
+
+  let elementAccess = format('json_extract(%s, \'$.%s\')', [$baseRelationalOp, $pathNavigation]);
+
+  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'cast(' + $elementAccess + ' as VARCHAR)', |
+  if ($returnType->in(['DATE','DATETIME', 'TIMESTAMP']), | 'cast(' + $elementAccess + ' as TIMESTAMP)', |
+  if ($returnType == 'BOOLEAN', | 'cast(' + $elementAccess + ' as BOOLEAN)', |
+  if ($returnType == 'FLOAT', | 'cast(' + $elementAccess + ' as DOUBLE)', |
+  if ($returnType == 'INTEGER', | 'cast(' + $elementAccess + 'as INTEGER)', |
+  $elementAccess)))));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  $r->match([
+    t: TableFunctionParamPlaceHolder[1] | $t.var->replaceVarPlaceHolderForAppGeneration($sgc),
+    t: ProcedureVariablePlaceHolder[1] | $t.var->replaceProcedurevariable($sgc),
+    r: RelationalOperationElement[1] | 'sqlQueryToString for relational element ' + $r->type().name->toOne() + ' has not been implemented yet for snowflake'
+   ]);
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::duckDB::replaceVarPlaceHolderForAppGeneration(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
+{
+  assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
+  $v.name;
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::duckDB::replaceProcedurevariable(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
+{
+  assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
+  ':'+$v.name;
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::dayOfWeekNumberForDuckDB(dayOfWeek: String[1..2]):String[1]

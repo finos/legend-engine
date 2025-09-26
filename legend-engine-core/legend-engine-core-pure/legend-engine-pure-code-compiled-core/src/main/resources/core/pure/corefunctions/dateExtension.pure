@@ -477,16 +477,9 @@ meta::pure::functions::date::convertTimeZone(time:DateTime[1], targetZone:String
    format( '%t{['+$targetZone+']'+$targetFormat+'}'   ,$time);
 }   
 
- 
-
 function meta::pure::functions::date::hasYear(d:Date[1]):Boolean[1]
 {
     true;
-}
-
-function meta::pure::functions::date::dayOfWeek(d:Date[1]):DayOfWeek[1]
-{
-    $d->dayOfWeekNumber()->dayOfWeek()
 }
 
 function meta::pure::functions::date::month(d:Date[1]):Month[1]
@@ -569,25 +562,6 @@ function meta::pure::functions::date::monthNumber(month:Month[1]):Integer[1]
 function meta::pure::functions::date::month(number:Integer[1]):Month[1]
 {
     Month->enumValues()->at($number - 1)
-}
-
-function meta::pure::functions::date::dayOfWeekNumber(day:DayOfWeek[1]):Integer[1]
-{
-    DayOfWeek->enumValues()->indexOf($day) + 1
-}
-
-function meta::pure::functions::date::dayOfWeekNumber(day:Date[1], firstDay:DayOfWeek[1]):Integer[1]
-[
-   firstDayMondayOrSundayOnly : $firstDay->in([DayOfWeek.Monday, DayOfWeek.Sunday])
-]
-{
-  if($firstDay==DayOfWeek.Sunday,| dayOfWeekNumber($day)->mod(7)+1;
-                                ,| dayOfWeekNumber($day));
-}
-
-function meta::pure::functions::date::dayOfWeek(number:Integer[1]):DayOfWeek[1]
-{
-    DayOfWeek->enumValues()->at($number - 1)
 }
 
 function meta::pure::functions::date::add(date:Date[1], duration:Duration[1]):Date[1]

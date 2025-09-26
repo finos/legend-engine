@@ -18,6 +18,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
+import java.util.Objects;
+
 public class TablePtr
 {
     public String _type;
@@ -32,5 +34,30 @@ public class TablePtr
     public String getDb()
     {
         return mainTableDb == null ? database : mainTableDb;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        TablePtr tablePtr = (TablePtr) o;
+        return Objects.equals(_type, tablePtr._type) &&
+                Objects.equals(table, tablePtr.table) &&
+                Objects.equals(schema, tablePtr.schema) &&
+                Objects.equals(database, tablePtr.database);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        // Use Objects.hash() to generate a hash code from the same fields used in equals()
+        return Objects.hash(_type, table, schema, database);
     }
 }

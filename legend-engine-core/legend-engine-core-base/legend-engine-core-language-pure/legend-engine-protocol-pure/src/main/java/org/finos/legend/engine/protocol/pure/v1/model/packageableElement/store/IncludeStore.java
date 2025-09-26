@@ -12,16 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.pure.code.core.functions.unclassified.base.date;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store;
 
-import org.finos.legend.pure.m3.tests.function.base.PureExpressionTest;
-import org.junit.Test;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 
-public abstract class AbstractTestWeekOfYear extends PureExpressionTest
+public class IncludeStore
 {
-    @Test
-    public void testWeekOfYearError() throws Exception
-    {
-        assertExpressionRaisesPureException("Cannot get week of year for 2017", 3, 16, "%2017->weekOfYear()");
-    }
+    public PackageableElementPointer packageableElementPointer;
+    public String storeType;
+    public SourceInformation sourceInformation;
 }

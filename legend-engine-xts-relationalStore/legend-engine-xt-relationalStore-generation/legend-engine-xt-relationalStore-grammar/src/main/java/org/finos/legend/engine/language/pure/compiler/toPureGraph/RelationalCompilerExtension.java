@@ -62,6 +62,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludeStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -217,6 +218,11 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         },
                         (Database srcDatabase, CompileContext context) ->
                         {
+                            if (srcDatabase.includedStoreSpecifications != null && !srcDatabase.includedStoreSpecifications.isEmpty())
+                            {
+                                List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
+                                ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraIncludeStorePreProcessors).forEach(pre -> pre.apply(srcDatabase, context));
+                            }
                             org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = HelperRelationalBuilder.getDatabase(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), srcDatabase.sourceInformation, context);
                             if (srcDatabase.joins != null)
                             {
@@ -279,7 +285,12 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
     private Set<PackageableElementPointer> databasePrerequisiteElementsPass(Database srcDatabase, CompileContext context)
     {
-        return Sets.fixedSize.withAll(srcDatabase.includedStores);
+        Stream<IncludeStore> includedStoreSpecificationsStream = (srcDatabase.includedStoreSpecifications != null) ? srcDatabase.includedStoreSpecifications.stream() : Stream.empty();
+        return Stream.concat(
+                        srcDatabase.includedStores.stream(),
+                        includedStoreSpecificationsStream.filter(Objects::nonNull).map(p -> p.packageableElementPointer)
+                )
+                .collect(Collectors.toSet());
     }
 
     private Set<PackageableElementPointer> relationalMapperPrerequisiteElementsPass(RelationalMapper relationalMapper, CompileContext context)

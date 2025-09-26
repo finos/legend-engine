@@ -273,6 +273,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)')),
     dynaFnToSql('array_position',         $allStates,            ^ToSql(format='ifnull(array_position(%s, %s), -1)', transform= {vals:String[*] | $vals->reverse()})),
     dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='array_slice(%s, greatest(%s, 0), greatest(%s, 0))')),
+    dynaFnToSql('array_drop',             $allStates,            ^ToSql(format='array_slice(%s, greatest(%s, 0), array_size(%s))', transform= {vals:String[*] | $vals->concatenate($vals->at(0))})),
+    dynaFnToSql('array_take',             $allStates,            ^ToSql(format='array_slice(%s, 0, greatest(%s, 0))')),
+    dynaFnToSql('array_first',            $allStates,            ^ToSql(format='(%s[0])')),
+    dynaFnToSql('array_last',             $allStates,            ^ToSql(format='(%s[array_size(%s) - 1])', transform= {vals:String[*] | $vals->concatenate($vals->at(0))})),
+    dynaFnToSql('array_init',             $allStates,            ^ToSql(format='array_slice(%s, 0, array_size(%s) - 1)', transform= {vals:String[*] | $vals->concatenate($vals->at(0))})),
+    dynaFnToSql('array_tail',             $allStates,            ^ToSql(format='array_slice(%s, 1, array_size(%s))', transform= {vals:String[*] | $vals->concatenate($vals->at(0))})),
+    dynaFnToSql('array_concatenate',      $allStates,            ^ToSql(format='array_cat(%s, %s)')),
+    dynaFnToSql('range',                  $allStates,            ^ToSql(format='array_generate_range(%s, %s, %s)')),
     dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='ifnull(array_contains(%s, %s), false)', transform= {vals:String[*] | $vals->reverse()})),
     dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='array_distinct(%s)')),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
@@ -295,7 +303,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSnowflake(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='DAYOFMONTH(%s)')),
-    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='to_char(%s, \'DYDY\')')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='DECODE(EXTRACT(dayofweek FROM %s), 1, \'Monday\', 2, \'Tuesday\', 3, \'Wednesday\', 4, \'Thursday\', 5, \'Friday\', 6, \'Saturday\', 7, \'Sunday\')')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='DAYOFWEEKISO(%s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='DAYOFYEAR(%s)')),
     dynaFnToSql('endsWith',               $allStates,            ^ToSql(format='endswith(%s,%s)', transform={p:String[2]|$p})),
@@ -527,9 +535,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredArrayFlattenForSnowflake(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
 {
    // https://docs.snowflake.com/en/sql-reference/functions/flatten.html
-
    let processedNavigation = $s.navigation->processOperation($sgc);
-   'flatten(input => ' + $processedNavigation + ', outer => true, recursive => false, mode => \'array\')';
+   'flatten(input => (' + $processedNavigation + ')::ARRAY, outer => true, recursive => false, mode => \'array\')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredArrayFlattenRelationForSnowflake(s:SemiStructuredArrayFlattenRelation[1], sgc:SqlGenerationContext[1]): String[1]

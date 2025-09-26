@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-memsql</artifactId>
-        <version>4.101.3-SNAPSHOT</version>
+        <version>4.101.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-relationalStore-memsql-pure</artifactId>
@@ -205,7 +205,10 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>

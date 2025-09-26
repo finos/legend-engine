@@ -158,6 +158,7 @@ public class PureModel implements IPureModel
     final MutableMap<String, GenericType> typesGenericTypeIndex;
     private final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> packageableElementsIndex;
     private final ConcurrentLinkedQueue<EngineException> engineExceptions = new ConcurrentLinkedQueue<>();
+    public final TableTransformationMap tableTransformationMap = new TableTransformationMap();
 
     public PureModel(PureModelContextData pure, String user, DeploymentMode deploymentMode)
     {

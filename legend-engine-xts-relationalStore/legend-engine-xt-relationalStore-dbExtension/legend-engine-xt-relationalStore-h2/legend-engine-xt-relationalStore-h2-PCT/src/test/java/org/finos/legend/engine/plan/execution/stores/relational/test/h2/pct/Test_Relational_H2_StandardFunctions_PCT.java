@@ -64,7 +64,7 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList().", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList().", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]", AdapterQualifier.needsInvestigation),
 
             // MaxBy
             one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for maxBy().\"", AdapterQualifier.needsImplementation),
@@ -74,7 +74,7 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList().", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList().", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]", AdapterQualifier.unsupportedFeature),
 
             // MinBy
             one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for minBy().\"", AdapterQualifier.needsImplementation),
@@ -103,7 +103,7 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
 
             // Percentile
-            one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'range_Integer_1__Integer_1__Integer_1__Integer_MANY_'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda", AdapterQualifier.unsupportedFeature),
 
             // CosH
             one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "No matched function in function registry for - cosh(DoubleSqlType, DoubleSqlType).\nAvailable variations for that function - [\n  cosh(AbstractNumericSqlType):DoubleSqlType\n]", AdapterQualifier.unsupportedFeature),

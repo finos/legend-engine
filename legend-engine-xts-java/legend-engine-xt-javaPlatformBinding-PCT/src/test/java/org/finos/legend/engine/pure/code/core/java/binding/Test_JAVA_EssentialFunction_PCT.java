@@ -55,9 +55,6 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             pack("meta::pure::functions::collection::tests::find", "Can't find variable class for variable '", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::find::testFindUsingVarForFunction_Function_1__Boolean_1_", "Error in 'test::testFunction': Function does not exist 'find(CO_Person[3],LambdaFunction<{CO_Person[1]->Boolean[1]}>[1])'", AdapterQualifier.unsupportedFeature),
 
-            // Init (Not Supported Yet)
-            pack("meta::pure::functions::collection::tests::init", "Function does not exist 'init(", AdapterQualifier.unsupportedFeature),
-
             one("meta::pure::functions::collection::tests::get::testGet_Function_1__Boolean_1_", "\"get_Map_1__U_1__V_$0_1$_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::keys::testKeys_Function_1__Boolean_1_", "\"keys_Map_1__U_MANY_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::put::testPut_addsEntry_Function_1__Boolean_1_", "\"put_Map_1__U_1__V_1__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),

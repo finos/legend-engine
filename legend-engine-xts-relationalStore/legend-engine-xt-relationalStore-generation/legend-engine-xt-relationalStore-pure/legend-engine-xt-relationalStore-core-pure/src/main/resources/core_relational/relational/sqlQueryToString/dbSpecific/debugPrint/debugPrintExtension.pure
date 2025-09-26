@@ -230,14 +230,6 @@ function meta::relational::functions::sqlQueryToString::debugPrint::getDynaFunct
 }
 
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::transformConvertTimeZone(params:String[3]):String[1]
-{
-  let unWrappedfmt =  $params->at(2)->substring(1, $params->at(2)->length()-1);
-  assert($unWrappedfmt->validateDateTimeFormat(),'Found an invalid date format');
-  let formatpairs = meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeParts();
-  let datefmt = $formatpairs->fold( {sub, date|  $date->toOne()->replace($sub.first,$sub.second)},$params->at(2));
-  format('TO_CHAR(legend_h2_extension_convertTimeZone(\'%s\',%s),%s)',[$params->at(0),$params->at(1),$datefmt]);
-}
 function meta::relational::functions::sqlQueryToString::debugPrint::processUpsertSQLQueryForH2(upsertQuery: UpsertSQLQuery[1], sgc: SqlGenerationContext[1]): String[1]
 {
   // Map of Column to Literals of VarPlaceHolder
@@ -381,110 +373,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::debug
 {
    processJoinStringsOperation($js, $sgc, {col, sep| 'group_concat(' + $col + if($sep == '\'\'', |'', |' separator ' + $sep) + ' )'},
     {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::convertToDateH2(params:String[*]):String[1]
-{
-
-      assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
-      let dateFormat = if( $params->size() == 1,|'\'yyyy-MM-dd\'' ,| let normalizedFormat = $params->at(1)->normalizeH2DateFormat();
-                                                                     assert(dateFormatsH2()->contains($normalizedFormat->replace('\'', '')), $normalizedFormat +' not supported ');
-                                                                     $normalizedFormat;
-                                                                     );
-      // FIXME: we currently allow MMMyyyy as a dateformat which requires the following hack similar to IQ
-      if($dateFormat == '\'MMMyyyy\'',
-      | 'cast( parseDateTime(concat(\'01\', %s), \'%s\') as date)'->format([
-          $params->at(0),
-          joinStrings(['dd', $dateFormat->replace('\'', '')])
-        ]),
-      | 'cast( parseDateTime('+$params->at(0)+','+$dateFormat +') as date)'
-      );
-
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::normalizeH2DateFormat(params:String[1]):String[1]
-{
-   [
-    pair('YYYY', 'yyyy'),
-    pair('DD', 'dd')
-   ]->fold({e, a| $a->replace($e.first,$e.second)}, $params);
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::dateFormatsH2():String[*]
-{
-   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd'];
-}
-
-// Overrides convertToDateTime acceptable formats
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::convertToDateTimeH2(params:String[*]):String[1]
-{
-   $params->convertDateTimeFunctionHasCorrectParamsH2();
-
-   let dateTimeFormat = if( $params->size() == 1,
-     |'\'yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]\'',
-     | $params->at(1)
-   );
-   'parseDateTime('+$params->at(0)+','+$dateTimeFormat +')';
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::convertDateTimeFunctionHasCorrectParamsH2(params:String[*]):Boolean[1]
-{
-   assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDateTime: convertDateTime(column,[dateTimeformat])');
-
-   let supportedDateTimeFormat = if($params->size() == 2,
-     | let userFormat = $params->at(1);
-       dateTimeFormatsH2()->get($userFormat->normalizeH2DateTimeFormat()->replace('\'', ''));,
-     | []
-   );
-   assert($params->size() ==1 || $supportedDateTimeFormat->size() == 1 , | $params->at(1) +' not supported ');
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::normalizeH2DateTimeFormat(userFormat: String[1]): String[1]
-{
-  $userFormat->normalizeH2DateFormat()->normalizeH2TimeFormat()
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::normalizeH2TimeFormat(userFormat: String[1]): String[1]
-{
-  [pair('hh', 'HH')]->fold({e, a| $a->replace($e.first,$e.second)}, $userFormat)
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::dateTimeFormatsH2():Map<String,Integer>[1]
-{
-   newMap([
-     pair('yyyy-MM-dd HH:mm:ss',120),  // no decimal use-case compatibility
-     pair('yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]',121)
-   ]);
-}
-
-// FIXME: Are datetime and timestamp not treated the same in the backend (because parsedatetime always returns TIMESTAMP_WITH_TIMEZONE)?
-// If so, this and the above logic (convertToDateTimeH2) should be identical
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::transformToTimestampH2(params:String[2]):String[1]
-{
-  // Standardizing the format as per Postgres specification, will include mappings for the formats in future.
-   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
-   let timestampFormat = '\'yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]\'';
-   'cast(parsedatetime('+$params->at(0)+','+ $timestampFormat+') as timestamp)';
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::processDateDiffDurationUnitForH2(durationUnit:String[1]):String[1]
-{
-   let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
-   let durationDbNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'];
-   $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::formatMostRecentH2(p:String[1..2], defaultDay:String[1]):String[*]
-{
-   let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
-   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
-   [$day, $current, $day, $current, $day, $current, $current];
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::dayOfWeekNumberH2(dayOfWeek: String[*]):String[1]
-{
-   assert(or($dayOfWeek->at(1)=='Sunday',$dayOfWeek->at(1)=='Monday'),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
-   if($dayOfWeek->at(1)=='Sunday',|'DAY_OF_WEEK('+$dayOfWeek->at(0)+')',|'ISO_DAY_OF_WEEK('+$dayOfWeek->at(0)+')');
 }
 
 // Need to override how limit is processed

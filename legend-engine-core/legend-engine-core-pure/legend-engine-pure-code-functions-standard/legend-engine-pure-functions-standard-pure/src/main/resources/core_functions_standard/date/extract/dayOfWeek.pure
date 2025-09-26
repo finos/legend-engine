@@ -1,0 +1,68 @@
+// Copyright 2025 Goldman Sachs
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> meta::pure::functions::date::dayOfWeek(d:Date[1]):DayOfWeek[1]
+{
+    $d->dayOfWeekNumber()->dayOfWeek()
+}
+
+function <<PCT.test>> meta::pure::functions::tests::date::testDayOfWeek<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   assertEquals(DayOfWeek.Saturday, $f->eval(|%1985-01-12->dayOfWeek()));
+   assertEquals(DayOfWeek.Monday, $f->eval(|%2025-09-22->dayOfWeek()));
+   assertEquals(DayOfWeek.Thursday, $f->eval(|%2008-07-17->dayOfWeek()));
+   assertEquals(DayOfWeek.Wednesday, $f->eval(|%2020-03-18->dayOfWeek()));
+}
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::tests::date::testDayOfWeek_Relation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  date
+                  1985-01-12T06:30:00Z
+                  2025-09-22T06:30:00Z
+                  2008-07-17T06:30:00Z
+                  2020-03-18T06:30:00Z
+                #->extend(~dayOfWeek: x | $x.date->toOne()->dayOfWeek()->toString())
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   date,dayOfWeek\n'+
+                  '   1985-01-12T06:30:00.000+0000,Saturday\n'+
+                  '   2008-07-17T06:30:00.000+0000,Thursday\n'+
+                  '   2020-03-18T06:30:00.000+0000,Wednesday\n'+
+                  '   2025-09-22T06:30:00.000+0000,Monday\n'+
+                  '#', $res->sort(~date->ascending())->toString());
+}
+
+function meta::pure::functions::date::dayOfWeek(number:Integer[1]):DayOfWeek[1]
+{
+    DayOfWeek->enumValues()->at($number - 1)
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testDayOfWeekForNumber():Boolean[1]
+{
+    assertEq(DayOfWeek.Monday, 1->dayOfWeek());
+    assertEq(DayOfWeek.Tuesday, 2->dayOfWeek());
+    assertEq(DayOfWeek.Wednesday, 3->dayOfWeek());
+    assertEq(DayOfWeek.Thursday, 4->dayOfWeek());
+    assertEq(DayOfWeek.Friday, 5->dayOfWeek());
+    assertEq(DayOfWeek.Saturday, 6->dayOfWeek());
+    assertEq(DayOfWeek.Sunday, 7->dayOfWeek());
+}

@@ -1,4 +1,4 @@
-// Copyright 2025 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.pure.code.core.functions.unclassified.base.date;
+package org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted;
 
-import org.finos.legend.pure.m3.tests.function.base.PureExpressionTest;
-import org.junit.Test;
+import junit.framework.TestSuite;
+import org.finos.legend.pure.runtime.java.interpreted.testHelper.PureTestBuilderInterpreted;
 
-public abstract class AbstractTestDayOfWeekNumber extends PureExpressionTest
+public class Test_Pure_Core_Functions
 {
-    @Test
-    public void testDayOfWeekNumberError() throws Exception
+    public static TestSuite suite()
     {
-        assertExpressionRaisesPureException("Cannot get day of week for 2017", 3, 16, "%2017->dayOfWeekNumber()");
-
+        return PureTestBuilderInterpreted.buildSuite("meta::pure::milestoning", "meta::pure::functions");
     }
 }

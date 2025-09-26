@@ -3454,4 +3454,22 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "COMPILATION error at [22:5-28:5]: Duplicate column mapping definitions [description, status] in view: LegalEntity_View2"
         ));
     }
+
+    @Test
+    public void testDatabaseIncludeStoreType()
+    {
+        test("###Relational\n" +
+                "Database stores::SimpleDB\n" +
+                "(\n" +
+                "  Table People\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    name VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "Database stores::testDB\n" +
+                "(\n" +
+                "  include storeTypeABC stores::SimpleDB\n" +
+                ")\n");
+    }
 }

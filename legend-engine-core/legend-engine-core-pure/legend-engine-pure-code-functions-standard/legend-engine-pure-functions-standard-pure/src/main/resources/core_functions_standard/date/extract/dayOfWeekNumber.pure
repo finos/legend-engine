@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+native function meta::pure::functions::date::dayOfWeekNumber(d:Date[1]):Integer[1];
+
+function meta::pure::functions::date::dayOfWeekNumber(day:Date[1], firstDay:DayOfWeek[1]):Integer[1]
+[
+   firstDayMondayOrSundayOnly : $firstDay->in([DayOfWeek.Monday, DayOfWeek.Sunday])
+]
+{
+  if($firstDay==DayOfWeek.Sunday,| dayOfWeekNumber($day)->mod(7)+1;
+                                ,| dayOfWeekNumber($day));
+}
+
+function meta::pure::functions::date::dayOfWeekNumber(day:DayOfWeek[1]):Integer[1]
+{
+    DayOfWeek->enumValues()->indexOf($day) + 1
+}
+
+function <<test.Test>> meta::pure::functions::date::tests::testDayOfWeekNumber():Boolean[1]
+{
+    assertEquals(3, %2015-04-15->dayOfWeekNumber());
+    assertEquals(3, %2015-04-15T17->dayOfWeekNumber());
+    assertEquals(3, %2015-04-15T17:09->dayOfWeekNumber());
+    assertEquals(3, %2015-04-15T17:09:21->dayOfWeekNumber());
+    assertEquals(3, %2015-04-15T17:09:21.398->dayOfWeekNumber());
+
+    assertEquals(1, %2015-04-13->dayOfWeekNumber());
+    assertEquals(2, %2015-04-14->dayOfWeekNumber());
+    assertEquals(3, %2015-04-15->dayOfWeekNumber());
+    assertEquals(4, %2015-04-16->dayOfWeekNumber());
+    assertEquals(5, %2015-04-17->dayOfWeekNumber());
+    assertEquals(6, %2015-04-18->dayOfWeekNumber());
+    assertEquals(7, %2015-04-19->dayOfWeekNumber());
+}
+
 function <<test.Test>> meta::pure::functions::date::tests::testDayOfWeekNumberForDayOfWeek():Boolean[1]
 {
     assertEq(1, DayOfWeek.Monday->dayOfWeekNumber());
@@ -21,17 +54,6 @@ function <<test.Test>> meta::pure::functions::date::tests::testDayOfWeekNumberFo
     assertEq(5, DayOfWeek.Friday->dayOfWeekNumber());
     assertEq(6, DayOfWeek.Saturday->dayOfWeekNumber());
     assertEq(7, DayOfWeek.Sunday->dayOfWeekNumber());
-}
-
-function <<test.Test>> meta::pure::functions::date::tests::testDayOfWeekForNumber():Boolean[1]
-{
-    assertEq(DayOfWeek.Monday, 1->dayOfWeek());
-    assertEq(DayOfWeek.Tuesday, 2->dayOfWeek());
-    assertEq(DayOfWeek.Wednesday, 3->dayOfWeek());
-    assertEq(DayOfWeek.Thursday, 4->dayOfWeek());
-    assertEq(DayOfWeek.Friday, 5->dayOfWeek());
-    assertEq(DayOfWeek.Saturday, 6->dayOfWeek());
-    assertEq(DayOfWeek.Sunday, 7->dayOfWeek());
 }
 
 function <<test.Test>> meta::pure::functions::date::tests::testDayOfWeekNumberForDayOfWeekWithNewDay():Boolean[1]

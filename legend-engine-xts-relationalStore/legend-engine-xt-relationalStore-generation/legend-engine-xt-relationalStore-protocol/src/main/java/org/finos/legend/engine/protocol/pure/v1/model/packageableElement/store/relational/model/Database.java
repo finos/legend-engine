@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludeStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
 import java.util.Collections;
@@ -29,6 +30,7 @@ public class Database extends Store
     public List<Filter> filters = Collections.emptyList();
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues;
+    public List<IncludeStore> includedStoreSpecifications;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)
