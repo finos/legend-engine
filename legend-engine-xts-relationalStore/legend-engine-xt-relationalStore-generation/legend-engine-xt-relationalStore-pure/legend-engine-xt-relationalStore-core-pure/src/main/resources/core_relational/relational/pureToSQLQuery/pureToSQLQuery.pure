@@ -5916,6 +5916,57 @@ function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecif
    );
 }
 
+function meta::relational::functions::pureToSqlQuery::processRecurse(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  let initial = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_d0'), $aggFromMap, $context, $extensions)
+                        ->toOne()
+                        ->cast(@SelectWithCursor);
+
+  let cteColumns = $initial.select.columns->map(c |
+        $c->match([
+          a: Alias[1] | ^Column(name = $a.name, type = ^meta::relational::metamodel::datatype::Other()),
+          tac: TableAliasColumn[1] | ^Column(name = $tac.columnName->orElse($tac.column.name), type = $tac.column.type)
+        ]);
+  );
+
+  let refCte = ^CommonTableExpressionReference(name =  $nodeId + '_rcte', columns = $cteColumns);
+
+  let refCteAlias = ^TableAlias(name = buildNodeId($nodeId,'_d1'), relationalElement = $refCte);
+  
+  let cteReferenceSelect = ^TdsSelectSqlQuery
+  (
+    columns = $cteColumns->map(c | ^TableAliasColumn(columnName = $c.name, column = $c, alias = $refCteAlias)),
+    data = ^RootJoinTreeNode(alias = $refCteAlias),
+    paths =  $cteColumns->map(c| pair($c.name, ^PathInformation(type = $c->meta::relational::metamodel::datatype::pureTypeForDbColumn(), relationalType = $c.type)))
+  );
+
+  let recurseFunc = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->cast(@FunctionDefinition<Any>)->toOne();
+
+  let newState = $state->updateFunctionParamScope($recurseFunc.classifierGenericType.typeArguments.rawType->cast(@FunctionType)->toOne(), ^$initial(select = $cteReferenceSelect));
+
+  let recurse = processValueSpecification($recurseFunc.expressionSequence->toOne('recurse only support single expression'), $currentPropertyMapping, $operation, $vars, $newState, $joinType, buildNodeId($nodeId, '_d2'), $aggFromMap, $context, $extensions)
+                        ->toOne()
+                        ->cast(@SelectWithCursor);
+
+  let unionTable = ^TableAlias(
+                                name = 'union',
+                                relationalElement = ^UnionAll(queries = $initial.select->concatenate($recurse.select))
+                  );
+
+  let unionRoot = ^RootJoinTreeNode(alias = $unionTable);  
+
+  let unionSelect = ^TdsSelectSqlQuery
+  (
+    columns = $cteColumns->map(c | ^TableAliasColumn(columnName = $c.name, column = $c, alias = $unionTable)),
+    data = $unionRoot,
+    paths =  $cteColumns->map(c| pair($c.name, ^PathInformation(type = $c->meta::relational::metamodel::datatype::pureTypeForDbColumn(), relationalType = $c.type)))
+  );
+
+  let rcte = ^RecursiveCommonTableExpression(name = $refCte.name, sqlQuery = $unionSelect);
+
+  ^$recurse(select = ^$cteReferenceSelect(commonTableExpressions = $rcte));
+}
+
 function meta::relational::functions::pureToSqlQuery::processLateral(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let lateralInput = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_d0'), $aggFromMap, $context, $extensions)
@@ -10054,6 +10105,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_, second = meta::relational::functions::pureToSqlQuery::processLateral_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::recurse_Relation_1__Function_1__Relation_1_, second = meta::relational::functions::pureToSqlQuery::processRecurse_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
 
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_, second = meta::relational::functions::pureToSqlQuery::processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::denseRank_Relation_1___Window_1__T_1__Integer_1_, second = meta::relational::functions::pureToSqlQuery::processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

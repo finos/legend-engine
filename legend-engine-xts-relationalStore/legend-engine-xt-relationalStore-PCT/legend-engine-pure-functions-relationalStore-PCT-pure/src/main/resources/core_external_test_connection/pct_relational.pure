@@ -61,7 +61,12 @@ function <<PCT.adapter>> {PCT.adapterName='MemSQL'} meta::relational::tests::pct
 function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
 {
   $f->match([
-    z:FunctionDefinition<Any>[1] |if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z,|[])->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions()));,
+    z:FunctionDefinition<Any>[1] |  if([
+                                         pair(|$z->hasStereotype('function', PCT), |[]),
+                                         pair(|$z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'), |$z->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions())))
+                                       ],  
+                                         |$z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctions())
+                                      );,
     x:SimpleFunctionExpression[1]|let res = $x.parametersValues->map(p|$p->extractDependentFunctions());
                                   $res->concatenate($x.func->extractDependentFunctions());,
     i: InstanceValue[1] | $i.values->map(p|$p->extractDependentFunctions()),                                  

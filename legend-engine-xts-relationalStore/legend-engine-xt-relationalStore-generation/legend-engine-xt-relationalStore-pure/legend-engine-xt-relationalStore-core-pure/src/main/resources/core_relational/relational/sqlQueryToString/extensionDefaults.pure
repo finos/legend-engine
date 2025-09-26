@@ -343,7 +343,13 @@ function meta::relational::functions::sqlQueryToString::default::processCommonTa
 {
    if($ctes->isNotEmpty(),
    | 'WITH ' + $ctes->map(cte |
-                    $cte.name + ' AS (' + $sgc.dbConfig.selectSQLQueryProcessor($cte.sqlQuery, ^$sgc(format = $sgc.format->indent()), $isSubSelect) + ')'
+                   $cte->match([
+                    rcte: RecursiveCommonTableExpression[1] | 
+                      'RECURSIVE ' + $cte.name + '(' + $cte.sqlQuery.columns->cast(@TableAliasColumn).column.name->map(x | $x->processColumnName($sgc.dbConfig))->joinStrings(', ') + ') AS (\n\t' + 
+                        $cte.sqlQuery.data.alias.relationalElement->cast(@UnionAll).queries->map(q | $sgc.dbConfig.selectSQLQueryProcessor($q, ^$sgc(format = $sgc.format->indent()), $isSubSelect))->joinStrings('', '\nUNION ALL\n\t', '') + '\n)',
+                    any: CommonTableExpression[1] |
+                       $cte.name + ' AS (' + $sgc.dbConfig.selectSQLQueryProcessor($cte.sqlQuery, ^$sgc(format = $sgc.format->indent()), $isSubSelect) + ')';
+                   ]);  
                   )->joinStrings(', \n') + ' \n',
    | '');
 }
