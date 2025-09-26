@@ -117,13 +117,13 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
         if ($filterGroupsForAlias->isNotEmpty(),
             | if ($t.query->isQueryPlainQuerySpecification(),
                   | let subQuery = $t.query;
-                    let subQuerySpec = $subQuery.queryBody->cast(@QuerySpecification);
-                    let subQuerySpecHasLimitOrOffset = $subQuerySpec.limit->isNotEmpty() || $subQuerySpec.offset->isNotEmpty();
+                    let subQuerySpec = $subQuery.queryBody;
+                    let subQuerySpecHasLimitOrOffset = $subQuerySpec->cast(@QuerySpecification).limit->isNotEmpty() || $subQuerySpec->cast(@QuerySpecification).offset->isNotEmpty();
                     let subQuerySpecHasWindowColumns = $subQuerySpec->fetchAllSubNodesRecursivelyWithFilter({n | $n->instanceOf(TableSubquery)})->exists(n | $n->instanceOf(meta::external::query::sql::metamodel::Window));
                     let cannotPushFiltersIntoSubQuery = $subQuerySpecHasLimitOrOffset || $subQuerySpecHasWindowColumns;
                     if ($cannotPushFiltersIntoSubQuery,
                         | pair(false, $t),
-                        | let newSubQuerySpec = $filterGroupsForAlias->fold({fg, agg | let res = $agg.second->pushSingleFilter($fg); pair($agg.first || $res.first, $res.second);}, pair(false, $subQuerySpec));
+                        | let newSubQuerySpec = $filterGroupsForAlias->fold({fg, agg | let res = $agg.second->pushSingleFilter($fg); pair($agg.first || $res.first, $res.second);}, pair(false, $subQuerySpec->cast(@QuerySpecification)));
                           if ($newSubQuerySpec.first,
                               | pair(true, ^$t(query = ^$subQuery(queryBody = $newSubQuerySpec.second))),
                               | pair(false, $t)
