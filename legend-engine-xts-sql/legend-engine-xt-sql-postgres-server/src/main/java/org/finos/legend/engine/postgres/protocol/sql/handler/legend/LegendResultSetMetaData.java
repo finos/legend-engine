@@ -21,7 +21,6 @@ import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.Legen
 
 public class LegendResultSetMetaData implements PostgresResultSetMetaData
 {
-
     private List<LegendColumn> legendColumns;
 
     public LegendResultSetMetaData(List<LegendColumn> legendColumns)
@@ -75,5 +74,11 @@ public class LegendResultSetMetaData implements PostgresResultSetMetaData
     public int getScale(int i) throws Exception
     {
         return 0;
+    }
+
+    @Override
+    public String getColumnTypeName(int i) throws Exception
+    {
+        return null;
     }
 }

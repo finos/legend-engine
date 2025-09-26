@@ -88,6 +88,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+
 import static org.finos.legend.engine.postgres.protocol.wire.serialization.FormatCodes.getFormatCode;
 
 
@@ -772,8 +773,9 @@ public class PostgresWireProtocol
             }
             else
             {
+                this.activeExecution.join();
                 int paramType = session.getParamType(statementName, i);
-                PGType pgType = PGTypes.get(paramType, 0);
+                PGType pgType = PGTypes.get(paramType, null, 0);
                 FormatCodes.FormatCode formatCode = getFormatCode(formatCodes, i);
                 switch (formatCode)
                 {

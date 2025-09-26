@@ -39,7 +39,7 @@ public class JDBCSessionHandler implements SessionHandler
     @Override
     public PostgresPreparedStatement prepareStatement(String query) throws SQLException
     {
-        return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(query));
+        return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(query.replaceAll("\\$\\d+", "?")));
     }
 
     @Override
