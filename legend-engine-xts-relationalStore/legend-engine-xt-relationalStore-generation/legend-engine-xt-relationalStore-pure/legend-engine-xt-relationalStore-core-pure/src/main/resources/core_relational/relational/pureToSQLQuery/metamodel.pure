@@ -117,3 +117,8 @@ Class meta::relational::metamodel::StaticPivot extends meta::relational::metamod
 {
   values : meta::relational::metamodel::Literal[1..*];
 }
+
+Class meta::relational::metamodel::relation::RecursiveCommonTableExpression extends meta::relational::metamodel::relation::CommonTableExpression
+{
+  
+}

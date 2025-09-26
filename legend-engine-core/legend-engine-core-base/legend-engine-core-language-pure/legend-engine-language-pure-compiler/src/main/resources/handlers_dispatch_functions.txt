@@ -777,6 +777,7 @@ meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_
 meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_1___RangeInterval_1___Window_1_
 meta::pure::functions::relation::over_ColSpec_1__SortInfo_1___RangeInterval_1___Window_1_
 meta::pure::functions::relation::over_SortInfo_1___RangeInterval_1___Window_1_
+meta::pure::functions::relation::recurse_Relation_1__Function_1__Relation_1_
 meta::pure::functions::relation::rows_Integer_1__Integer_1__Rows_1_
 meta::pure::functions::relation::rows_Integer_1__UnboundedFrameValue_1__Rows_1_
 meta::pure::functions::relation::rows_UnboundedFrameValue_1__Integer_1__Rows_1_
