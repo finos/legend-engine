@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Maven clean install all Relational PCT Modules" type="MavenRunConfiguration" factoryName="Maven">
+  <configuration default="false" name="Maven clean install all PCT Modules" type="MavenRunConfiguration" factoryName="Maven">
     <MavenSettings>
       <option name="myGeneralSettings" />
       <option name="myRunnerSettings" />
@@ -15,7 +15,7 @@
               <option value="install" />
               <option value="--fail-at-end" />
               <option value="-pl" />
-              <option value=":legend-engine-xt-relationalStore-h2-PCT,:legend-engine-xt-relationalStore-duckdb-PCT,:legend-engine-xt-relationalStore-memsql-PCT,:legend-engine-xt-relationalStore-spanner-PCT,:legend-engine-xt-relationalStore-postgres-PCT,:legend-engine-xt-relationalStore-snowflake-PCT" />
+              <option value=":legend-engine-xt-relationalStore-h2-PCT,:legend-engine-xt-relationalStore-duckdb-PCT,:legend-engine-xt-relationalStore-memsql-PCT,:legend-engine-xt-relationalStore-spanner-PCT,:legend-engine-xt-relationalStore-postgres-PCT,:legend-engine-xt-relationalStore-snowflake-PCT,:legend-engine-xt-javaPlatformBinding-PCT" />
             </list>
           </option>
           <option name="multimoduleDir" />

@@ -15,7 +15,10 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-function <<PCT.function>> meta::pure::functions::relation::recurse<T>(
+function
+    <<PCT.function>>
+    {doc.doc = 'Given a set of initial values in the form of a Relation, evaluate the given function recursively until the function result is empty.  The result is the concatenation of the initial Relation and the results of all the recursive evaluations.  The recurse function needs to include a condition to prevent infinite recursion if the recursion is not finite.'}
+meta::pure::functions::relation::recurse<T>(
   initial:Relation<T>[1], 
   recurse:Function<{Relation<T>[1]->Relation<T>[1]}>[1]
 ):Relation<T>[1]
@@ -57,4 +60,52 @@ function <<PCT.test>> meta::pure::functions::relation::tests::recurse::testFibon
                 '   8,21,34\n'+
                 '   9,34,55\n'+
                 '#', $res->sort([~depth->ascending(),~number->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              title, employeeId, managerId
+              President, 1, null
+              Vice President Engineering, 10, 1
+              Programmer, 100, 10
+              QA Engineer, 101, 10
+              Vice President HR, 20, 1
+              Recruitment Analyst, 200, 20
+            #;
+
+  let expr = {|
+                let initial = $tds->filter(r | $r.title == 'President')
+                                  ->extend(~managerTitle:x|'N/A');
+
+                $initial->recurse(x |
+                                    $x->join(
+                                        $tds->project(~[
+                                                eTitle: r | $r.title,
+                                                eId: r | $r.employeeId,
+                                                mId: r | $r.managerId
+                                        ]),
+                                        JoinKind.INNER,
+                                        {x,y| $x.employeeId == $y.mId}
+                                    )
+                                    ->project(~[
+                                        title: r | $r.eTitle,
+                                        employeeId: r | $r.eId,
+                                        managerId: r | $r.mId,
+                                        managerTitle: r | $r.title
+                                      ])
+                             );
+             };
+
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   title,employeeId,managerId,managerTitle\n'+
+                '   President,1,null,N/A\n'+
+                '   Vice President Engineering,10,1,President\n'+
+                '   Vice President HR,20,1,President\n'+
+                '   Programmer,100,10,Vice President Engineering\n'+
+                '   QA Engineer,101,10,Vice President Engineering\n'+
+                '   Recruitment Analyst,200,20,Vice President HR\n'+
+                '#', $res->sort([~employeeId->ascending()])->toString());
 }

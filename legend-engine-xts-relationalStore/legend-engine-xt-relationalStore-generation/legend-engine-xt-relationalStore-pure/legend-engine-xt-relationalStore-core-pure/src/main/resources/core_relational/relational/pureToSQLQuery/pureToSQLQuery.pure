@@ -5929,7 +5929,7 @@ function meta::relational::functions::pureToSqlQuery::processRecurse(expression:
         ]);
   );
 
-  let refCte = ^CommonTableExpressionReference(name =  $nodeId + '_rcte', columns = $cteColumns);
+  let refCte = ^CommonTableExpressionReference(name =  $nodeId->replace('#', '_') + '_rcte', columns = $cteColumns);
 
   let refCteAlias = ^TableAlias(name = buildNodeId($nodeId,'_d1'), relationalElement = $refCte);
   
