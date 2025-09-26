@@ -105,3 +105,8 @@ Class meta::relational::metamodel::FilterRelationalLambda extends meta::relation
 {
 
 }
+
+Class meta::relational::metamodel::relation::RecursiveCommonTableExpression extends meta::relational::metamodel::relation::CommonTableExpression
+{
+  
+}

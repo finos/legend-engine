@@ -46,6 +46,8 @@ public class Test_Relational_MemSQL_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_Function_1__Boolean_1_", "'GROUP_CONCAT in window function' is not supported by SingleStore.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\"", AdapterQualifier.unsupportedFeature),
 
+            pack("meta::pure::functions::relation::tests::recurse", "\"Common table expression not supported on DB MemSQL\"", AdapterQualifier.unsupportedFeature),
+
             //asOfJoin
             one("meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_Function_1__Boolean_1_", "AsOfJoins are not supported in the generic generator!", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB MemSQL\"", AdapterQualifier.unsupportedFeature),

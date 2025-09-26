@@ -1811,6 +1811,10 @@ public class Handlers
                 h("meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(0)._genericType()._typeArguments().getOnly()._rawType(), (RelationType<?>) funcReturnType(ps.get(1))._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getOnly(), funcReturnType(ps.get(1))._typeArguments().getOnly()), ps -> true)
         ));
 
+        register(grp(LambdaInference,
+                h("meta::pure::functions::relation::recurse_Relation_1__Function_1__Relation_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getOnly()), ps -> true)
+        ));
+
         register(grp(FlattenColInference,
                     h("meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> true)
                 )
