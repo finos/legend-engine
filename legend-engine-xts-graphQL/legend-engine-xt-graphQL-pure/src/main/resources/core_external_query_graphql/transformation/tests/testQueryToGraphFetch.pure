@@ -378,6 +378,47 @@ Class meta::external::query::graphQL::transformation::queryToPure::tests::model:
   firms() {Firm.all()}: Firm[*];
 }
 
+
+Class <<temporal.processingtemporal>> meta::external::query::graphQL::transformation::queryToPure::tests::model::Position
+{
+  id: Integer[1];
+  quantity: Float[1];
+}
+
+Class <<temporal.processingtemporal>> meta::external::query::graphQL::transformation::queryToPure::tests::model::BaseOrganizationalEntity
+{
+  name: String[1];
+  id: Integer[1];
+}
+
+Class <<temporal.processingtemporal>> meta::external::query::graphQL::transformation::queryToPure::tests::model::OrganizationalEntity extends BaseOrganizationalEntity
+{
+  name: String[1];
+  isActive: Boolean[1];
+  parent: OrganizationalEntity[1];
+  parentAtDate(date:Date[1])
+  {
+    $this.parent($date);
+  }:OrganizationalEntity[1];
+
+  latestPositions()
+  {
+    $this.positions(now());
+  }:Position[*];
+}
+
+Association meta::external::query::graphQL::transformation::queryToPure::tests::model::PositionClient
+{
+  positions:meta::external::query::graphQL::transformation::queryToPure::tests::model::Position[*];
+  client:meta::external::query::graphQL::transformation::queryToPure::tests::model::OrganizationalEntity[1];
+}
+
+Class meta::external::query::graphQL::transformation::queryToPure::tests::model::TempoQuery
+{
+  activeClient(isActive: Boolean[1]){OrganizationalEntity.all(%1994-12-09)->filter(p|$p.isActive == $isActive)->first()}: OrganizationalEntity[0..1];
+
+}
+
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithOneParamToGraphFetch():Boolean[1]
 {
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByName(name:"John Doe") { firstName lastName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
@@ -396,6 +437,18 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
   let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query_ExtendedPrimitives);
   assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query_ExtendedPrimitives {\n' +
                '    personByName($name) {\n' +
+               '        firstName, \n'+
+               '        lastName\n'+
+               '    }\n' +
+               '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithLimitToGraphFetchUsingExtendedPrimitives():Boolean[1]
+{
+  let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personsWithLimit(limit:10) { firstName lastName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query_ExtendedPrimitives);
+  assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query_ExtendedPrimitives {\n' +
+               '    personsWithLimit($limit) {\n' +
                '        firstName, \n'+
                '        lastName\n'+
                '    }\n' +
@@ -424,6 +477,24 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
                '        firm {\n'+
                '            id\n'+
                '        }\n'+
+               '    }\n' +
+               '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
+}
+
+
+
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithAssociationPropertiesOnTemporalClass():Boolean[1]
+{
+  let graphQLDocument = meta::legend::compileVS('#GQL{ query { clients: activeClient(isActive:true limit:10) { name isActive positions { id } } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, TempoQuery);
+  assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::TempoQuery {\n' +
+               '    activeClient($isActive) {\n' +
+               '        name, \n' +
+               '        isActive, \n' +
+               '        positions() {\n' +
+               '            id\n' +
+               '        }\n' +
                '    }\n' +
                '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
 }
