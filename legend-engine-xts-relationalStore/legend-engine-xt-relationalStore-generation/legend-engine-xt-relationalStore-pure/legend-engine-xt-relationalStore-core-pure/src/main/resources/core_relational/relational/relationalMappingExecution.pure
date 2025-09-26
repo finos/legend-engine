@@ -243,9 +243,9 @@ function meta::relational::mapping::addEnumMapSupportFunctions(sq:meta::pure::ma
 {
    let enumParam = $sq.inScopeVars->keyValues().second->map(p | $p.values)->filter(e | $e->instanceOf(PlanVarPlaceHolder))->map(p | $p->cast(@PlanVarPlaceHolder).genericType.rawType->toOne())->filter(e | $e->instanceOf(Enumeration));
    let enumMapTemplateFunctions = if($enumParam->isNotEmpty(),
-                                      |$m->toOne()->allEnumerationMappings()->filter(e | $e.enumeration->in($enumParam))->map(enum | let concatStr = if($enum.enumValueMappings->at(0).sourceValues->type() == String, |'\'', |'');
-                                                                                                                            let enumHashMap = $enum.enumValueMappings->map(e | '"'+ $e.enum->cast(@Enum).name +'":"'+ $concatStr + $e.sourceValues->makeString('\', \'') + $concatStr + '"')->makeString(', ');
-                                                                                                                            '<#function enumMap_' + fetchEnumFullPath($enum) + ' inputVal> <#assign enumMap = {'->concatenate($enumHashMap)->concatenate('}> <#if inputVal?has_content> <#return enumMap[inputVal]> <#else> <#return ""> </#if> </#function>')->makeString(' ');),
+                                      |$m->toOne()->allEnumerationMappings()->filter(e | $e.enumeration->in($enumParam);)->map(enum | let concatStr = if($enum.enumValueMappings->at(0).sourceValues->type() == String, |'\'', |'');
+                                                                                                                            let enumHashMap = $enum.enumValueMappings->map(e | '"'+ $e.enum.name +'":"'+ $concatStr + $e.sourceValues->makeString('\', \'') + $concatStr + '"')->makeString(', ');
+                                                                                                                            meta::relational::mapping::createEnumSupportFunctions(fetchEnumFullPath($enum), $enumHashMap);),
                                       |[]);
 }
 
@@ -257,6 +257,23 @@ function meta::relational::mapping::fetchEnumFullPath(enum:EnumerationMapping<An
 function meta::relational::mapping::relationalPlanSupportFunctions(c:meta::external::store::relational::runtime::DatabaseConnection[1]):String[*]
 {
    if($c.timeZone->isNotEmpty() && !meta::pure::functions::date::systemDefaultTimeZones()->contains($c.timeZone->toOne()),|utcToTimeZoneSupportFunction(),|[])->concatenate(collectionRenderFunction())->concatenate(collectionSizeFunction())->concatenate(optionalVarPlaceHolderOperationSelectorFunction())->concatenate(varPlaceHolderToStringFunction())->concatenate(equalEnumOperationSelectorFunction());
+}
+
+function meta::relational::mapping::createEnumSupportFunctions(enumFullPath: String[1], enumHashMap: String[1]):String[*]
+{
+  '<#function enumMap_' + $enumFullPath + ' inputVal>' +
+      '<#assign enumMap = {' + $enumHashMap + '}>' +
+          '<#if inputVal?has_content>' + 
+              '<#if inputVal?is_sequence>' + 
+                  '<#assign results = []>' +
+                  '<#list inputVal as item>' +
+                      '<#assign results += [enumMap[item]!""]>' +
+                  '</#list><#return results?join(", ")>' +
+              '<#else>' +
+                  '<#return enumMap[inputVal]!""></#if>' +
+          '<#else>' + 
+              '<#return ""> </#if>' +
+  ' </#function>';
 }
 
 function meta::relational::mapping::varPlaceHolderToStringFunction():String[*]

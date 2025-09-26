@@ -232,7 +232,6 @@ function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], 
 function <<access.private>> meta::pure::executionPlan::addFunctionParametersValidationNode(node:ExecutionNode[1], f:FunctionDefinition<Any>[1], planVarPlaceHolders:PlanVarPlaceHolder[*], routedFunction:FunctionDefinition<Any>[1]):ExecutionNode[1]
 {
    let collectionEnumParams = $planVarPlaceHolders->filter(p | $p.genericType.rawType->toOne()->instanceOf(Enumeration) && $p.multiplicity == ZeroMany);
-   assert($collectionEnumParams->size() == 0, |'Collection of Enums is not supported as service parameter ' + $collectionEnumParams->map(p | $p.name)->makeString('[',', ',']'));
    let parameterValidationContexts = $planVarPlaceHolders->map(p |
                                              if(
                                                [

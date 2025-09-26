@@ -51,6 +51,17 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "{\n" +
             "    name : String[1];\n" +
             "    street : String[0..1];\n" +
+            "}\n" +
+            "Class test::Location\n" +
+            "{\n" +
+            "  id: String[1];\n" +
+            "  city: test::LocationEnum[1];\n" +
+            "}\n" +
+            "Enum test::LocationEnum\n" +
+            "{\n" +
+            "    AMERICAS,\n" +
+            "    EMEA,\n" +
+            "    ASIA_PACIFIC\n" +
             "}\n";
 
     public static final String STORE_MODEL = "###Relational\n" +
@@ -69,6 +80,10 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "  Table Street(\n" +
             "    name VARCHAR(255) PRIMARY KEY,\n" +
             "    address_name VARCHAR(255) \n" +
+            "  )\n" +
+            "  Table Location(\n" +
+            "    id VARCHAR(200) PRIMARY KEY,\n" +
+            "    city VARCHAR(200) \n" +
             "  )\n" +
             "Join Address_Street(Address.name = Street.address_name)\n" +
             ")\n\n\n";
@@ -92,6 +107,22 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "     ~mainTable [test::DB]Address\n" +
             "     name: [test::DB]Address.name,\n" +
             "     street: [test::DB]@Address_Street | Street.name\n" +
+            "   }\n" +
+            "   test::Location: Relational\n" +
+            "   {\n" +
+            "    ~primaryKey\n" +
+            "    (\n" +
+            "      [test::DB]Location.id\n" +
+            "    )\n" +
+            "    ~mainTable [test::DB]Location\n" +
+            "    id: [test::DB]Location.id,\n" +
+            "    city: EnumerationMapping LocationEnumMapping: [test::DB]Location.city\n" +
+            "   }\n" +
+            "test::LocationEnum: EnumerationMapping LocationEnumMapping\n" +
+            "  {\n" +
+            "    AMERICAS: ['NewYork', 'Dallas'],\n" +
+            "    EMEA: ['Paris', 'Stockholm'],\n" +
+            "    ASIA_PACIFIC: ['Singapore', 'HongKong']\n" +
             "   }\n" +
             ")\n\n\n";
 
@@ -146,6 +177,16 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         statement.execute("create schema user_view;");
         statement.execute("Create Table user_view.UV_User_Roles_Public(CptyrRole VARCHAR(128) NOT NULL,RoleOrder INT NULL,UserID VARCHAR(32) NOT NULL, PRIMARY KEY(CptyrRole,UserID));");
         statement.execute("Create Table user_view.UV_INQUIRY__PL_CADM(rpt_inq_oid BIGINT NOT NULL, rpt_inq_sourceinquiryid VARCHAR(200) NULL, PRIMARY KEY(rpt_inq_oid));");
+
+        statement.execute("Drop table if exists Location;");
+        statement.execute("Create Table Location(id VARCHAR(200) NOT NULL, city VARCHAR(200))");
+        statement.execute("insert into Location (id, city) values ('L1','NewYork');");
+        statement.execute("insert into Location (id, city) values ('L2','Paris');");
+        statement.execute("insert into Location (id, city) values ('L3','NewYork');");
+        statement.execute("insert into Location (id, city) values ('L4','Singapore');");
+        statement.execute("insert into Location (id, city) values ('L5','Singapore');");
+        statement.execute("insert into Location (id, city) values ('L6','Dallas');");
+        statement.execute("insert into Location (id, city) values ('L7','SomewhereElse');");
     }
 
     @Test
@@ -358,6 +399,31 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             expectedResWithSingleValue = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]}]}}";
             expectedResWithMultipleValues = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00','2020-12-13 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]},{\"values\":[\"SpecialName'1\"]},{\"values\":[\"SpecialName'2\"]}]}}";
         }
+
+        Assert.assertEquals(expectedResWithEmptyList, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithEmptyList)));
+        Assert.assertEquals(expectedResWithSingleValue, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithSingleValue)));
+        Assert.assertEquals(expectedResWithMultipleValues, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithMultipleValues)));
+    }
+
+    @Test
+    public void testInExecutionWithEnumList() throws JsonProcessingException
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[1]\n" +
+                "{\n" +
+                "  {cityList:test::LocationEnum[*] | test::Location.all()\n" +
+                "                               ->filter(l:test::Location[1] | $l.city->in($cityList))\n" +
+                "                               ->project([x | $x.id], ['Id'])}\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction, false);
+        Map<String, ?> paramWithEmptyList = Maps.mutable.with("cityList", Lists.mutable.empty());
+        Map<String, ?> paramWithSingleValue = Maps.mutable.with("cityList", Lists.mutable.with("AMERICAS"));
+        Map<String, ?> paramWithMultipleValues = Maps.mutable.with("cityList", Lists.mutable.with("AMERICAS", "ASIA_PACIFIC"));
+
+        String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Id\",\"type\":\"String\",\"relationalType\":\"VARCHAR(200)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".id as \\\"Id\\\" from Location as \\\"root\\\" where (0 = 1)\"}],\"result\":{\"columns\":[\"Id\"],\"rows\":[]}}";
+        String expectedResWithSingleValue = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Id\",\"type\":\"String\",\"relationalType\":\"VARCHAR(200)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".id as \\\"Id\\\" from Location as \\\"root\\\" where (\\\"root\\\".city in ('NewYork', 'Dallas'))\"}],\"result\":{\"columns\":[\"Id\"],\"rows\":[{\"values\":[\"L1\"]},{\"values\":[\"L3\"]},{\"values\":[\"L6\"]}]}}";
+        String expectedResWithMultipleValues = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Id\",\"type\":\"String\",\"relationalType\":\"VARCHAR(200)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".id as \\\"Id\\\" from Location as \\\"root\\\" where (\\\"root\\\".city in ('NewYork', 'Dallas', 'Singapore', 'HongKong'))\"}],\"result\":{\"columns\":[\"Id\"],\"rows\":[{\"values\":[\"L1\"]},{\"values\":[\"L3\"]},{\"values\":[\"L4\"]},{\"values\":[\"L5\"]},{\"values\":[\"L6\"]}]}}";
 
         Assert.assertEquals(expectedResWithEmptyList, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithEmptyList)));
         Assert.assertEquals(expectedResWithSingleValue, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithSingleValue)));
