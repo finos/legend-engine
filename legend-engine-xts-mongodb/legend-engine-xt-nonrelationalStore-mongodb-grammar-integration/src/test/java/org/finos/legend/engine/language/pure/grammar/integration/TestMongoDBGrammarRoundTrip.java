@@ -54,4 +54,30 @@ public class TestMongoDBGrammarRoundTrip extends TestGrammarRoundtrip.TestGramma
                 "  )\n" +
                 ")\n");
     }
+
+    @Test
+    public void testSingleCollectionMongoDBStoreGrammarWithSpaces()
+    {
+        test("###MongoDB\n" +
+                "Database test::testEmptyDatabase\n" +
+                "(\n" +
+                "  Collection \"Person With Spaces\"\n" +
+                "  (\n" +
+                "    validationLevel: strict;\n" +
+                "    validationAction: error;\n" +
+                "    jsonSchema: {\n" +
+                "      \"bsonType\": \"object\",\n" +
+                "      \"title\": \"Record of Firm\",\n" +
+                "      \"properties\": {\n" +
+                "        \"name\": {\n" +
+                "          \"bsonType\": \"string\",\n" +
+                "          \"description\": \"name of the firm\",\n" +
+                "          \"minLength\": 2\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"additionalProperties\": false\n" +
+                "    };\n" +
+                "  )\n" +
+                ")\n");
+    }
 }

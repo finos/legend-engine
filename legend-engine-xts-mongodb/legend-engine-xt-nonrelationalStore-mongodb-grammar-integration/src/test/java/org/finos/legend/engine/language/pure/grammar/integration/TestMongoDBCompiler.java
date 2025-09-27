@@ -14,7 +14,12 @@
 
 package org.finos.legend.engine.language.pure.grammar.integration;
 
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestMongoDBCompiler extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -91,5 +96,40 @@ public class TestMongoDBCompiler extends TestCompilationFromGrammar.TestCompilat
                 "\n" +
                 ")\n" +
                 "\n");
+    }
+
+    @Test
+    public void testCollectionNameUnescaping()
+    {
+        Pair<PureModelContextData, PureModel> testResult = test("###MongoDB\n" +
+                "Database test::testEmptyDatabase\n" +
+                "(\n" +
+                "  Collection \"Person With Spaces\"\n" +
+                "  (\n" +
+                "    validationLevel: strict;\n" +
+                "    validationAction: error;\n" +
+                "    jsonSchema: {\n" +
+                "      \"bsonType\": \"object\",\n" +
+                "      \"title\": \"Record of Firm\",\n" +
+                "      \"properties\": {\n" +
+                "        \"name\": {\n" +
+                "          \"bsonType\": \"string\",\n" +
+                "          \"description\": \"name of the firm\",\n" +
+                "          \"minLength\": 2\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"additionalProperties\": false\n" +
+                "    };\n" +
+                "  )\n" +
+                ")\n");
+        PureModelContextData result = testResult.getOne();
+        MongoDatabase database = (MongoDatabase) result.getElements().stream()
+                .filter(element -> element instanceof MongoDatabase)
+                .findFirst()
+                .orElse(null);
+        Assert.assertNotNull("MongoDB database should be parsed", database);
+        Assert.assertEquals("Database should have one collection", 1, database.collections.size());
+        String collectionName = database.collections.get(0).name;
+        Assert.assertEquals("Collection name should have quotes removed", "Person With Spaces", collectionName);
     }
 }

@@ -78,7 +78,7 @@ public class MongoDBSchemaParseTreeWalker
         Collection colxn = new Collection();
         if (ctx.identifier().QUOTED_STRING() != null)
         {
-            colxn.name = ctx.identifier().QUOTED_STRING().getText();
+            colxn.name = PureGrammarParserUtility.fromGrammarString(ctx.identifier().QUOTED_STRING().getText(), true);
         }
         else
         {
