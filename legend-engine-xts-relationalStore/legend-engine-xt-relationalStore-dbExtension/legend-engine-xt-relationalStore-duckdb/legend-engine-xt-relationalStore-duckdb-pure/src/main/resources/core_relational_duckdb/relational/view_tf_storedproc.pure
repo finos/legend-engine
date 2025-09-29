@@ -45,7 +45,7 @@ function meta::relational::functions::sqlQueryToString::duckDB::createFunction(c
 {
     // Secure is not supported
     // Copy Grants is not supported
-    'CREATE MACRO ' +
+    'CREATE OR REPLACE MACRO ' +
     if($createFunc.schemaName->isEmpty(),|'',|$createFunc.schemaName->toOne() + '.') +
     $createFunc.name +
     +'('+ $createFunc.parameters->meta::relational::functions::sqlQueryToString::duckDB::fixInputParams()+ ')'+ 
