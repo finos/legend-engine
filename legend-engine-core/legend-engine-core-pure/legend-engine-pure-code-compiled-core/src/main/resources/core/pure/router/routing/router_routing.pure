@@ -961,7 +961,8 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_,
     meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_,
     flatten_T_MANY__ColSpec_1__Relation_1_,
-    lateral_Relation_1__Function_1__Relation_1_
+    lateral_Relation_1__Function_1__Relation_1_,
+    recurse_Relation_1__Function_1__Relation_1_
   ]->concatenate($extensions.routerExtensions().shouldStopRouting)
 }
 
