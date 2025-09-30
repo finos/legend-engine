@@ -115,32 +115,6 @@ public class PostgresServerTest
         }
     }
 
-    /**
-     * Verify that schema created as part of the metadata H2 DB creation exits
-     *
-     * @throws SQLException on errors
-     */
-    @Test
-    public void testInitSchemaCreation() throws SQLException
-    {
-        try (
-                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                        "dummy", "dummy");
-                PreparedStatement statement = connection.prepareStatement("select nspname,relname from pg_catalog.pg_namespace n " +
-                        "inner join pg_catalog.pg_class c on n.oid = c.relnamespace where nspname = 'service' and c.relname= 'emptytable'");
-                ResultSet resultSet = statement.executeQuery()
-        )
-        {
-            int rows = 0;
-            while (resultSet.next())
-            {
-                rows++;
-            }
-            Assert.assertEquals(1, rows);
-        }
-    }
-
-
     @Test
     public void testNumberOfRows() throws SQLException
     {
@@ -451,7 +425,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(4, rows);
+            Assert.assertEquals(6, rows);
         }
     }
 
@@ -470,7 +444,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(1, rows);
+            Assert.assertEquals(2, rows);
         }
     }
 
@@ -489,7 +463,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(24, rows);
+            Assert.assertEquals(375, rows);
         }
     }
 

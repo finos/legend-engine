@@ -209,7 +209,7 @@ filter
 
 relation
     : left=relation
-      ( CROSS JOIN right=aliasedRelation
+      ( CROSS JOIN right=aliasedRelation (WITH ORDINALITY AS? ident aliasedColumns)?
       | joinType JOIN rightRelation=relation joinCriteria
       | NATURAL joinType JOIN right=aliasedRelation
       )                                                                              #joinRelation
@@ -275,6 +275,7 @@ expr
 
 booleanExpression
     : predicated                                                                     #booleanDefault
+    | OPEN_ROUND_BRACKET qnames CLOSE_ROUND_BRACKET EQ OPEN_ROUND_BRACKET qnames CLOSE_ROUND_BRACKET #multicolumns
     | NOT booleanExpression                                                          #logicalNot
     | left=booleanExpression operator=AND right=booleanExpression                    #logicalBinary
     | left=booleanExpression operator=OR right=booleanExpression                     #logicalBinary
@@ -826,5 +827,5 @@ nonReserved
     | CURRENT_SCHEMA | PROMOTE | CHARACTER | VARYING | SUBSTRING
     | DISCARD | PLANS | SEQUENCES | TEMPORARY | TEMP | METADATA
     | PUBLICATION | SUBSCRIPTION | ENABLE | DISABLE | CONNECTION | DECLARE | CURSOR | HOLD | FORWARD | BACKWARD
-    | RELATIVE | PRIOR | ASENSITIVE | INSENSITIVE | BINARY | NO | SCROLL | ABSOLUTE
+    | RELATIVE | PRIOR | ASENSITIVE | INSENSITIVE | BINARY | NO | SCROLL | ABSOLUTE | USER
     ;

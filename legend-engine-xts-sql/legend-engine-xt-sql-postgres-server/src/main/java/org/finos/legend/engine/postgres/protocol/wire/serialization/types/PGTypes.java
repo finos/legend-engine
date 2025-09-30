@@ -24,6 +24,7 @@ package org.finos.legend.engine.postgres.protocol.wire.serialization.types;
 import com.google.common.collect.ImmutableMap;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
+
 import java.sql.Types;
 import java.util.HashSet;
 import java.util.Locale;
@@ -39,21 +40,22 @@ public class PGTypes
             .put(Types.VARCHAR, VarCharType.INSTANCE)
             .put(Types.CHAR, CharType.INSTANCE)
             .put(Types.BOOLEAN, BooleanType.INSTANCE)
-            .put(Types.BIT, BitType.INSTANCE)
+            .put(Types.BIT, BooleanType.INSTANCE)
             //.put(DataTypes.UNTYPED_OBJECT, JsonType.INSTANCE)
             //.put(RowType.EMPTY, RecordType.EMPTY_RECORD)
-            .put(Types.SMALLINT, SmallIntType.INSTANCE)
+            .put(Types.SMALLINT, IntegerType.INSTANCE)
             .put(Types.INTEGER, IntegerType.INSTANCE)
             .put(Types.BIGINT, BigIntType.INSTANCE)
             .put(Types.FLOAT, RealType.INSTANCE)
+            .put(Types.REAL, RealType.INSTANCE)
             .put(Types.DOUBLE, DoubleType.INSTANCE)
             .put(Types.NUMERIC, NumericType.INSTANCE)
             .put(Types.DECIMAL, DoubleType.INSTANCE)
+            .put(Types.OTHER, AnyType.INSTANCE)
             //.put(Types.TIMESTAMP_WITH_TIMEZONE, TimeTZType.INSTANCE)
             //.put(Types.TIMESTAMP, TimestampZType.INSTANCE)
             .put(Types.TIMESTAMP, TimestampType.INSTANCE)
             .put(Types.DATE, DateType.INSTANCE)
-            .put(Types.ARRAY, PGArray.CHAR_ARRAY) // TODO: identify other types of array and use accordingly
             .build();
      /*   .put(DataTypes.IP, VarCharType.INSTANCE) // postgres has no IP type, so map it to varchar - it matches the client representation
         .put(DataTypes.UNDEFINED, VarCharType.INSTANCE)
@@ -137,9 +139,52 @@ public class PGTypes
         return PG_TYPES_TO_SQL_TYPE.get(oid);
     }
 
-    public static PGType get(int columnType, int scale)
+    public static PGType get(int columnType, String parameterTypeName, int scale)
     {
-
+        if (columnType == Types.ARRAY)
+        {
+            if ("_int2".equals(parameterTypeName))
+            {
+                return PGArray.INT2_ARRAY;
+            }
+            else if ("_int4".equals(parameterTypeName))
+            {
+                return PGArray.INT4_ARRAY;
+            }
+            else if ("_int8".equals(parameterTypeName))
+            {
+                return PGArray.INT8_ARRAY;
+            }
+            else if ("_char".equals(parameterTypeName))
+            {
+                return PGArray.CHAR_ARRAY;
+            }
+            else if ("_oid".equals(parameterTypeName))
+            {
+                return PGArray.OID_ARRAY;
+            }
+            else if ("_float4".equals(parameterTypeName))
+            {
+                return PGArray.FLOAT4_ARRAY;
+            }
+            else if ("_float8".equals(parameterTypeName))
+            {
+                return PGArray.FLOAT8_ARRAY;
+            }
+            else if ("_text".equals(parameterTypeName))
+            {
+                return PGArray.VARCHAR_ARRAY;
+            }
+            else if ("_aclitem".equals(parameterTypeName))
+            {
+                return PGArray.ACLTYPE_ARRAY;
+            }
+            else if ("_varchar".equals(parameterTypeName))
+            {
+                return PGArray.VARCHAR_ARRAY;
+            }
+            throw new IllegalArgumentException("Unknown array type: " + parameterTypeName);
+        }
         //TODO why do we need this block?
         if (columnType == Types.CHAR && scale != 1)
         {

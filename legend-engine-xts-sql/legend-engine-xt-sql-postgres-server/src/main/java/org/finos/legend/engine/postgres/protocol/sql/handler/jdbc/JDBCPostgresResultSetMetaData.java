@@ -48,6 +48,14 @@ class JDBCPostgresResultSetMetaData implements PostgresResultSetMetaData
     }
 
     @Override
+    public String getColumnTypeName(int i) throws Exception
+    {
+        return resultSetMetaData.getColumnTypeName(i);
+    }
+
+
+
+    @Override
     public int getScale(int i) throws Exception
     {
         return resultSetMetaData.getScale(i);
