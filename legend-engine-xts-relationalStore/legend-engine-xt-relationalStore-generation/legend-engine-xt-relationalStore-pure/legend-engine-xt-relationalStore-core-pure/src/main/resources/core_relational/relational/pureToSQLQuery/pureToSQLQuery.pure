@@ -2635,7 +2635,6 @@ function meta::relational::functions::pureToSqlQuery::processHash(f:FunctionExpr
 
   let oldFunc = $f.func;
   let functionExpression = ^$f(func = ^$oldFunc(functionName = $name->toOne()), parametersValues = $f.parametersValues->at(0));
-  $f.parametersValues->at(0)->println();
   $functionExpression->processDynaFunction($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
