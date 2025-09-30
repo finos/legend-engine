@@ -39,7 +39,7 @@ public class ParameterValidationContextExecutor implements ParameterValidationCo
         List<String> validEnumValues = enumValidationContext.validEnumValues;
         if (value instanceof List)
         {
-            throw new IllegalArgumentException("Collection of Enums (" + value + ") is not supported as service parameter");
+            return ((List<?>) value).stream().allMatch(item -> validEnumValues.contains(item.toString())) ? ValidationResult.successValidationResult() : ValidationResult.errorValidationResult("Invalid enum value " + value + " for " + ((PackageableType) var.genericType.rawType).fullPath + ", valid enum values: " + validEnumValues);
         }
         return (validEnumValues.contains(value.toString())) ? ValidationResult.successValidationResult() : ValidationResult.errorValidationResult("Invalid enum value " + value + " for " + ((PackageableType) var.genericType.rawType).fullPath + ", valid enum values: " + validEnumValues);
     }

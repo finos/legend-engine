@@ -1,0 +1,75 @@
+###Service
+Service service::RelationalServiceWithEnumListParams
+{
+  pattern: '/myService/{eList}';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: eList: model::EmployeeType[*]|model::Person.all()->filter(
+      p|$p.employeeType->in(
+        $eList
+      )
+    )->project(
+      [
+        x|$x.firstName,
+        x|$x.lastName
+      ],
+      [
+        'First Name',
+        'Last Name'
+      ]
+    );
+    mapping: execution::FirmMapping;
+    runtime: execution::Runtime;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          model::MyConnection:
+            Reference
+            #{
+              data::RelationalData
+            }#,
+          model::MyConnection:
+            DataspaceTestData
+            #{
+              model::com::PersonDataspace
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            eList = [
+  model::EmployeeType.FULL_TIME,
+  model::EmployeeType.CONTRACT
+]
+          ]
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[ {\n  "First Name" : "John",\n  "Last Name" : "Doe"\n}, {\n  "First Name" : "Nicole",\n  "Last Name" : "Smith"\n}, {\n  "First Name" : "Time",\n  "Last Name" : "Smith"\n} ]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
