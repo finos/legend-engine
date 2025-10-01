@@ -23,16 +23,19 @@ package org.finos.legend.engine.postgres.protocol.wire.serialization.types;
 
 import com.google.common.primitives.Bytes;
 import io.netty.buffer.ByteBuf;
+
+import java.sql.Array;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
-public class PGArray extends PGType<List<Object>>
+public class PGArray extends PGType<Array>
 {
 
     private final PGType<?> innerType;
 
-    static final PGArray CHAR_ARRAY = new PGArray(1002, CharType.INSTANCE);
+    static final PGArray CHAR_ARRAY = new PGArray(1002, VarCharType.INSTANCE);
     static final PGArray INT2_ARRAY = new PGArray(1005, SmallIntType.INSTANCE);
     static final PGArray INT4_ARRAY = new PGArray(1007, IntegerType.INSTANCE);
     static final PGArray OID_ARRAY = new PGArray(1028, OidType.INSTANCE);
@@ -49,12 +52,15 @@ public class PGArray extends PGType<List<Object>>
     static final PGArray VARCHAR_ARRAY = new PGArray(1015, VarCharType.INSTANCE);
     static final PGArray TEXT_ARRAY = new PGArray(1009, VarCharType.TextType.INSTANCE);
     static final PGArray JSON_ARRAY = new PGArray(199, JsonType.INSTANCE);
+    static final PGArray ANY_ARRAY = new PGArray(2277, AnyType.INSTANCE);
+    static final PGArray ACLTYPE_ARRAY = new PGArray(1034, AclitemType.INSTANCE);
     /*static final PGArray POINT_ARRAY = new PGArray(1017, PointType.INSTANCE);
     static final PGArray INTERVAL_ARRAY = new PGArray(1187, IntervalType.INSTANCE);
     static final PGArray EMPTY_RECORD_ARRAY = new PGArray(2287, RecordType.EMPTY_RECORD);
     static final PGArray REGPROC_ARRAY = new PGArray(1008, RegprocType.INSTANCE);
     static final PGArray REGCLASS_ARRAY = new PGArray(2210, RegclassType.INSTANCE);*/
     public static final PGArray BIT_ARRAY = new PGArray(1561, BitType.INSTANCE);
+    public static final PGArray NAME_ARRAY = new PGArray(1003, NameType.INSTANCE);
    /* public static final PGArray ANY_ARRAY = new PGArray(
         2277,
         AnyType.INSTANCE.typName() + "array",
@@ -105,8 +111,18 @@ public class PGArray extends PGType<List<Object>>
     }
 
     @Override
-    public int writeAsBinary(ByteBuf buffer, List<Object> value)
+    public int writeAsBinary(ByteBuf buffer, Array _value)
     {
+        List<Object> value = null;
+        try
+        {
+            value = Arrays.asList(_value.getArray());
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+
         int dimensions = getDimensions(value);
 
         List<Integer> dimensionsList = new ArrayList<>();
@@ -158,27 +174,42 @@ public class PGArray extends PGType<List<Object>>
     }
 
     @Override
-    public List<Object> readBinaryValue(ByteBuf buffer, int valueLength)
+    public Array readBinaryValue(ByteBuf buffer, int valueLength)
     {
-        int dimensions = buffer.readInt();
-        buffer.readInt(); // flags bit 0: 0=no-nulls, 1=has-nulls
-        buffer.readInt(); // element oid
-        if (dimensions == 0)
-        {
-            return Collections.emptyList();
-        }
-        int[] dims = new int[dimensions];
-        for (int d = 0; d < dimensions; ++d)
-        {
-            dims[d] = buffer.readInt();
-            buffer.readInt(); // lowerBound ignored
-        }
-        List<Object> values = new ArrayList<>(dims[0]);
-        readArrayAsBinary(buffer, values, dims, 0);
-        return values;
+        throw new RuntimeException("Not implemented");
+//        int dimensions = buffer.readInt();
+//        buffer.readInt(); // flags bit 0: 0=no-nulls, 1=has-nulls
+//        buffer.readInt(); // element oid
+//        if (dimensions == 0)
+//        {
+//            return Collections.emptyList();
+//        }
+//        int[] dims = new int[dimensions];
+//        for (int d = 0; d < dimensions; ++d)
+//        {
+//            dims[d] = buffer.readInt();
+//            buffer.readInt(); // lowerBound ignored
+//        }
+//        List<Object> values = new ArrayList<>(dims[0]);
+//        readArrayAsBinary(buffer, values, dims, 0);
+//        return values;
     }
 
     @Override
+    byte[] encodeAsUTF8Text(Array _array)
+    {
+        List<Object> array = null;
+        try
+        {
+            array = Arrays.asList((Object[])_array.getArray());
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+        return encodeAsUTF8Text(array);
+    }
+
     byte[] encodeAsUTF8Text(List<Object> array)
     {
         boolean isJson = JsonType.OID == innerType.oid();
@@ -187,9 +218,9 @@ public class PGArray extends PGType<List<Object>>
         for (int i = 0; i < array.size(); i++)
         {
             Object o = array.get(i);
-            if (o instanceof List)
+            if (o instanceof Object[])
             { // Nested Array -> recursive call
-                byte[] bytes = encodeAsUTF8Text((List) o);
+                byte[] bytes = encodeAsUTF8Text(Arrays.asList(o));
                 addAll(encodedValues, bytes);
                 if (i == 0)
                 {
@@ -247,7 +278,7 @@ public class PGArray extends PGType<List<Object>>
     }
 
     @Override
-    List<Object> decodeUTF8Text(byte[] bytes)
+    Array decodeUTF8Text(byte[] bytes)
     {
         /*
          * text representation:
@@ -264,7 +295,8 @@ public class PGArray extends PGType<List<Object>>
          *      {{"{"x": 10}","{"y": 20}"},{"{"x": 30}","{"y": 40}"}}
          */
         //TODO ADD ARRAY DECODING
-        return new ArrayList<>();
+        throw new RuntimeException("Not implemented");
+        //return new ArrayList<>();
         //return (List<Object>) PgArrayParser.parse(bytes, innerType::decodeUTF8Text);
     }
 
