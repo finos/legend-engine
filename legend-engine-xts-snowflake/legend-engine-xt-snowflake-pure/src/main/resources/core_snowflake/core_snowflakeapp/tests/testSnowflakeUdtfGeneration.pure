@@ -1,0 +1,139 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::function::activator::snowflakeApp::tests::*;
+import  meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::core::runtime::*;
+import meta::relational::runtime::*;
+
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::test::testSimpleFunctionWithJoin():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("LEGAL NAME" VARCHAR,"EMPLOYEES/NAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRMNAME as "Legal Name", "persontable_0".NAME as "Employees/Name" from FirmTable as "root" left outer join PersonTable as "persontable_0" on ("persontable_0".FIRMID = "root".ID and cast("persontable_0".startDate as TIMESTAMP) = cast("root".startDate as TIMESTAMP)) $$;';
+  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::test::mySimpleFunc__TabularDataSet_1_, $expected);
+}
+
+function meta::external::function::activator::snowflakeApp::test::mySimpleFunc(): meta::pure::tds::TabularDataSet[1]
+{
+  meta::external::function::activator::snowflakeApp::test::Firm.all()->project(
+    [
+      x|$x.legalName,
+      x|$x.employees.name
+    ],
+    [
+      'Legal Name',
+      'Employees/Name'
+    ]
+  )->meta::pure::mapping::from(
+    meta::external::function::activator::snowflakeApp::test::map,
+     meta::external::function::activator::snowflakeApp::test::runtime()
+  )
+}
+
+function meta::external::function::activator::snowflakeApp::test::runtime():meta::core::runtime::Runtime[1]
+{
+  let connection = ^meta::external::store::relational::runtime::RelationalDatabaseConnection
+                  (
+                      type = DatabaseType.Snowflake,
+                      datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-east-1', warehouseName='DEMO_WH',databaseName='SNOWFLAKE_SAMPLE_DATA',accountName = 'sfceawseast1d01', enableQueryTags = false),
+                      authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                      postProcessors = [],
+                      queryPostProcessorsWithParameter = []
+                  );
+  ^Runtime(
+      connectionStores = [
+        ^ConnectionStore(
+            element = meta::external::function::activator::snowflakeApp::test::db,
+            connection = $connection)
+      ]
+   );
+
+}
+
+###Relational
+Database meta::external::function::activator::snowflakeApp::test::db
+(
+  Table PersonTable
+  (
+    NAME CHAR(200),
+    FIRMID INTEGER,
+    startDate TIMESTAMP PRIMARY KEY
+  )
+  Table FirmTable
+  (
+    FIRMNAME CHAR(200),
+    ID INTEGER,
+    startDate TIMESTAMP PRIMARY KEY
+  )
+
+  Join Firm_Person(PersonTable.FIRMID = FirmTable.ID
+    and PersonTable.startDate = FirmTable.startDate)
+)
+
+###Pure
+Class meta::external::function::activator::snowflakeApp::test::Person
+{
+  name: String[1];
+  firmID: Integer[1];
+
+}
+
+Class meta::external::function::activator::snowflakeApp::test::Firm
+{
+  legalName: String[1];
+  id: Integer[1];
+  startDate: Date[1];
+}
+
+Association meta::external::function::activator::snowflakeApp::test::Employment
+{
+  firm: meta::external::function::activator::snowflakeApp::test::Firm[0..1];
+  employees: meta::external::function::activator::snowflakeApp::test::Person[*];
+}
+
+
+
+###Mapping
+Mapping meta::external::function::activator::snowflakeApp::test::map
+(
+  meta::external::function::activator::snowflakeApp::test::Person[per1]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::external::function::activator::snowflakeApp::test::db]PersonTable.startDate
+    )
+    ~mainTable [meta::external::function::activator::snowflakeApp::test::db]PersonTable
+    name: [meta::external::function::activator::snowflakeApp::test::db]PersonTable.NAME
+  }
+  meta::external::function::activator::snowflakeApp::test::Firm[fir1]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::external::function::activator::snowflakeApp::test::db]FirmTable.startDate
+    )
+    ~mainTable [meta::external::function::activator::snowflakeApp::test::db]FirmTable
+    legalName: [meta::external::function::activator::snowflakeApp::test::db]FirmTable.FIRMNAME,
+    startDate: [meta::external::function::activator::snowflakeApp::test::db]FirmTable.startDate
+  }
+
+  meta::external::function::activator::snowflakeApp::test::Employment: Relational
+  {
+    AssociationMapping
+    (
+      employees[fir1,per1]: [meta::external::function::activator::snowflakeApp::test::db]@Firm_Person,
+      firm[per1,fir1]: [meta::external::function::activator::snowflakeApp::test::db]@Firm_Person
+    )
+  }
+)
