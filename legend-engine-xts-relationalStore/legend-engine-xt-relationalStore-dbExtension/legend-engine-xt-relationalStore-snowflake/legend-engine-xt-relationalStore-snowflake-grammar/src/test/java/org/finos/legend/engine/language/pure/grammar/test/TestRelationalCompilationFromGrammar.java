@@ -429,6 +429,32 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     }
 
     @Test
+    public void testNestedView()
+    {
+        test("###Relational\n" +
+                "Database store::SimpleDB\n" +
+                "(\n" +
+                " Schema SimpleSchema\n" +
+                " (\n" +
+                "  Table PeopleTable\n" +
+                "            (\n" +
+                "                    id INTEGER PRIMARY KEY,\n" +
+                "                    name VARCHAR(200),\n" +
+                "                    firm_id INTEGER\n" +
+                "            )\n" +
+
+                "    View PeopleView\n" +
+                "            (\n" +
+                "                    id: SimpleSchema.PeopleTable.id PRIMARY KEY,\n" +
+                "                    name2: SimpleSchema.PeopleTable.name,\n" +
+                "                    calc: if((SimpleSchema.PeopleView.name2 = 'GSG'\n" +
+                "                    or SimpleSchema.PeopleView.name2 = 'GSGI'), 'True', 'False')\n" +
+                "            )\n" +
+                " )\n" +
+                ")\n", "COMPILATION error at [12:5-18:1]: View: PeopleView contains multiple main tables: [PeopleTable,PeopleView] there should be only one root Table for Views");
+    }
+
+    @Test
     public void testFaultyDb()
     {
         test("###Relational\n" +
