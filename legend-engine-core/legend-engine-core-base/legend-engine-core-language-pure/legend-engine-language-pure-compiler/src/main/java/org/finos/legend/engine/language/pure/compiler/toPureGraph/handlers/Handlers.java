@@ -2097,6 +2097,64 @@ public class Handlers
         register(m(m(h("meta::pure::functions::string::rpad_String_1__Integer_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
                 m(h("meta::pure::functions::string::rpad_String_1__Integer_1__String_1__String_1_", false, ps -> res("String", "one"), ps -> true))));
         register("meta::pure::functions::string::matches_String_1__String_1__Boolean_1_", true, ps -> res("Boolean", "one"));
+        register(
+                m(
+                        m(
+                                h("meta::pure::functions::string::regexpLike_String_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                        ),
+                        m(
+                                h("meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
+                        )
+                )
+        );
+        register(
+                m(
+                        m(
+                                h("meta::pure::functions::string::regexpCount_String_1__String_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2)
+                        ),
+                        m(
+                                h("meta::pure::functions::string::regexpCount_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 3)
+                        )
+                )
+        );
+        register(
+                m(
+                        m(
+                                h("meta::pure::functions::string::regexpReplace_String_1__String_1__String_1__Boolean_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 4)
+                        ),
+                        m(
+                                h("meta::pure::functions::string::regexpReplace_String_1__String_1__String_1__Boolean_1__RegexpParameter_$1_MANY$__String_1_", true, ps -> res("String", "one"), ps -> ps.size() == 5)
+                        )
+                )
+        );
+        register(
+                m(
+                        m(
+                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__String_MANY_", false, ps -> res("String", "zeroMany"), ps -> ps.size() == 3)
+                        ),
+                        m(
+                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__Integer_1__String_MANY_", false, ps -> res("String", "zeroMany"), ps -> ps.size() == 4 && typeOne(ps.get(3), "Integer")),
+                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__RegexpParameter_$1_MANY$__String_MANY_", false, ps -> res("String", "zeroMany"), ps -> ps.size() == 4)
+                        ),
+                        m(
+                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__Integer_1__RegexpParameter_$1_MANY$__String_MANY_", true, ps -> res("String", "zeroMany"), ps -> ps.size() == 5)
+                        )
+                )
+        );
+        register(
+                m(
+                        m(
+                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2)
+                        ),
+                        m(
+                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "Integer")),
+                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 3)
+                        ),
+                        m(
+                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1__RegexpParameter_$1_MANY$__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 4)
+                        )
+                )
+        );
         register("meta::pure::functions::string::isAlphaNumeric_String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
         register("meta::pure::functions::string::isNoLongerThan_String_$0_1$__Integer_1__Boolean_1_", false, ps -> res("Boolean", "one"));
         register("meta::pure::functions::string::isNoShorterThan_String_$0_1$__Integer_1__Boolean_1_", false, pp -> res("Boolean", "one"));

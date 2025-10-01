@@ -40,9 +40,6 @@ public class Test_Relational_DuckDB_UnclassifiedFunctions_PCT extends PCTReportC
             //SplitPart
             one("meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_", "\"\nexpected: 'Hello World'\nactual:   'H'\"", AdapterQualifier.needsInvestigation),
 
-            //ascii
-            one("meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_", "Unexpected token", AdapterQualifier.needsInvestigation),
-            
             //base64
             one("meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_", "java.sql.SQLException: Conversion Error: Could not decode string \"SGVsbG8sIFdvcmxkIQ\" as base64: length must be a multiple of 4", AdapterQualifier.unsupportedFeature),
 
@@ -56,7 +53,17 @@ public class Test_Relational_DuckDB_UnclassifiedFunctions_PCT extends PCTReportC
             one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'xoXoXoX'\nactual:   'XoXoXoX'\"", AdapterQualifier.needsInvestigation),
 
             //toupperfirstcharacter
-            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'xOxOxOx'\"", AdapterQualifier.needsInvestigation)
+            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'xOxOxOx'\"", AdapterQualifier.needsInvestigation),
+
+            // 0-indexed (Pure) vs 1-indexed (SQL standard)
+            one("meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   4\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   4\"", AdapterQualifier.needsInvestigation),
+
+            // Multiline regexp parameter needs to be investigated
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()

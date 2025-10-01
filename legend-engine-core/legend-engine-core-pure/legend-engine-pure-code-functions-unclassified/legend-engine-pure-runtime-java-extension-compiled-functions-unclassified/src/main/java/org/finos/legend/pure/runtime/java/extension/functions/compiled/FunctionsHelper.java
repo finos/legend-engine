@@ -49,6 +49,7 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 import org.finos.legend.pure.runtime.java.extension.functions.shared.cipher.AESCipherUtil;
+import org.finos.legend.pure.runtime.java.extension.functions.shared.string.RegexpParameter;
 import org.finos.legend.pure.runtime.java.shared.hash.HashType;
 import org.finos.legend.pure.runtime.java.shared.hash.HashingUtil;
 import org.finos.legend.pure.runtime.java.shared.identity.IdentityManager;
@@ -71,6 +72,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FunctionsHelper
 {
@@ -320,6 +323,90 @@ public class FunctionsHelper
     public static boolean matches(String str, String regexp)
     {
         return str.matches(regexp);
+    }
+
+    private static int bitOrPatternFlags(Object regexpParameters)
+    {
+        int patternFlags = 0;
+        for (Object o : CompiledSupport.toPureCollection(regexpParameters))
+        {
+            Enum regexpParameterEnum = (Enum) o;
+            RegexpParameter regexpParameter = RegexpParameter.valueOf(regexpParameterEnum._name());
+            patternFlags |= RegexpParameter.toPatternFlag(regexpParameter);
+        }
+        return patternFlags;
+    }
+
+    public static boolean regexpLike(String str, String regexp, Object regexpParameters)
+    {
+        int patternFlags = bitOrPatternFlags(regexpParameters);
+        Pattern pattern = Pattern.compile(regexp, patternFlags);
+        return pattern.matcher(str).find();
+    }
+
+    public static Long regexpCount(String str, String regexp, Object regexpParameters)
+    {
+        int patternFlags = bitOrPatternFlags(regexpParameters);
+        Pattern pattern = Pattern.compile(regexp, patternFlags);
+        Matcher matcher = pattern.matcher(str);
+        long count = 0;
+        while (matcher.find())
+        {
+            count++;
+        }
+        return count;
+    }
+
+    public static String regexpReplace(String str, String regexp, String replacement, boolean replaceAll, Object regexpParameters)
+    {
+        int patternFlags = bitOrPatternFlags(regexpParameters);
+        Pattern pattern = Pattern.compile(regexp, patternFlags);
+        Matcher matcher = pattern.matcher(str);
+        return replaceAll ? matcher.replaceAll(replacement) : matcher.replaceFirst(replacement);
+    }
+
+    public static RichIterable<String> regexpExtract(String str, String regexp, boolean extractAll, long groupNumber, Object regexpParameters)
+    {
+        int patternFlags = bitOrPatternFlags(regexpParameters);
+        Pattern pattern = Pattern.compile(regexp, patternFlags);
+        Matcher matcher = pattern.matcher(str);
+        int groupNum = (int) groupNumber;
+        MutableList<String> result = Lists.mutable.empty();
+        while (matcher.find())
+        {
+            if (groupNum == 0)
+            {
+                result.add(matcher.group());
+            }
+            else if (groupNum <= matcher.groupCount())
+            {
+                result.add(matcher.group(groupNum));
+            }
+            else
+            {
+                result.add(null);
+            }
+            if (!extractAll)
+            {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public static Long regexpIndexOf(String str, String regexp, long groupNumber, Object regexpParameters)
+    {
+        int patternFlags = bitOrPatternFlags(regexpParameters);
+        Pattern pattern = Pattern.compile(regexp, patternFlags);
+        Matcher matcher = pattern.matcher(str);
+        long startIndex = -1;
+        if (matcher.find())
+        {
+            startIndex = groupNumber == 0 ? matcher.start() :
+                         groupNumber <= matcher.groupCount() ? matcher.start((int) groupNumber) : -1;
+        }
+        return startIndex;
     }
 
     public static Double jaroWinklerSimilarity(String str1, String str2)

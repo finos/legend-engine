@@ -37,9 +37,6 @@ public class Test_Relational_Snowflake_UnclassifiedFunctions_PCT extends PCTRepo
     private static final Adapter adapter = CoreRelationalSnowflakePCTCodeRepositoryProvider.snowflakeAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            //ascii
-            one("meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_", "Unexpected token", AdapterQualifier.needsInvestigation),
-
             //base64
             one("meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: The following string is not a legal base64-encoded value: 'SGVsbG8sIFdvcmxkIQ'", AdapterQualifier.unsupportedFeature),
 
@@ -51,7 +48,17 @@ public class Test_Relational_Snowflake_UnclassifiedFunctions_PCT extends PCTRepo
             //toupperfirstcharacter
             one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower_Function_1__Boolean_1_", "\"\nexpected: 'XoXoXoX'\nactual:   'XXoXoXoX'\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber_Function_1__Boolean_1_", "\"\nexpected: '1isOne'\nactual:   '11isOne'\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'XxOxOxOx'\"", AdapterQualifier.needsInvestigation)
+            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'XxOxOxOx'\"", AdapterQualifier.needsInvestigation),
+
+            // 0-indexed (Pure) vs 1-indexed (SQL standard)
+            one("meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   4\""),
+            one("meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   4\""),
+
+            // Multiline regexp parameter needs to be investigated
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()
