@@ -126,6 +126,7 @@ public class PGTypes
         // But want to expose text additionally as well
         TYPES.add(VarCharType.TextType.INSTANCE);
         TYPES.add(PGArray.TEXT_ARRAY);
+        TYPES.add(NameType.INSTANCE);
     }
 
     public static Iterable<PGType> pgTypes()
@@ -182,6 +183,10 @@ public class PGTypes
             else if ("_varchar".equals(parameterTypeName))
             {
                 return PGArray.VARCHAR_ARRAY;
+            }
+            else if ("_name".equals(parameterTypeName))
+            {
+                return PGArray.NAME_ARRAY;
             }
             throw new IllegalArgumentException("Unknown array type: " + parameterTypeName);
         }

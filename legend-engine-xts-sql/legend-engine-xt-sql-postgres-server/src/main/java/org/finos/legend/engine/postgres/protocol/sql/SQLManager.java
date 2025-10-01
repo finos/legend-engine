@@ -55,8 +55,9 @@ public class SQLManager
     {
         try
         {
+            String dockerHost = System.getenv("DOCKER_HOST");
             DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                    .withDockerHost("unix:///var/run/docker.sock")
+                    .withDockerHost(dockerHost == null ? "unix:///var/run/docker.sock" : dockerHost)
                     .build();
 
             DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()

@@ -60,6 +60,7 @@ public class PGArray extends PGType<Array>
     static final PGArray REGPROC_ARRAY = new PGArray(1008, RegprocType.INSTANCE);
     static final PGArray REGCLASS_ARRAY = new PGArray(2210, RegclassType.INSTANCE);*/
     public static final PGArray BIT_ARRAY = new PGArray(1561, BitType.INSTANCE);
+    public static final PGArray NAME_ARRAY = new PGArray(1003, NameType.INSTANCE);
    /* public static final PGArray ANY_ARRAY = new PGArray(
         2277,
         AnyType.INSTANCE.typName() + "array",

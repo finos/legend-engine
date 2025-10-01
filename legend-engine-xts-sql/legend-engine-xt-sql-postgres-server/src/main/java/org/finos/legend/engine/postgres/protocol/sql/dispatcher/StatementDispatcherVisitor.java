@@ -55,7 +55,7 @@ public class StatementDispatcherVisitor extends SqlBaseParserBaseVisitor<Executi
     public ExecutionType visitDefault(SqlBaseParser.DefaultContext ctx)
     {
         List<QualifiedName> qualifiedNames = ctx.accept(EXTRACTOR);
-        boolean isMetadataQuery = qualifiedNames.isEmpty() || qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(SystemSchemas::contains);
+        boolean isMetadataQuery = qualifiedNames.isEmpty() || qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(s -> s.equalsIgnoreCase("information_schema") || s.toLowerCase().startsWith("pg_"));
         if (isMetadataQuery)
         {
             return ExecutionType.Metadata;
