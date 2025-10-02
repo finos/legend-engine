@@ -161,7 +161,15 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                                     r:Runtime[1]|'^meta::core::runtime::Runtime('+
                                                   'connectionStores='+$r.connectionStores->map(s|'^meta::core::runtime::ConnectionStore(connection='+$s.connection->printConnection($configuration)+', element='+$s.element->match([x:String[1]|$x,x:Store[1]|$x->elementToPath()])+')')->makeString(',')+
                                                   ')',
-                                    s:RelationElementAccessor<Any>[1]|'RelationElementAccessor('+$s->genericType().rawType.name->toOne()+')';,
+                                    s:RelationElementAccessor<Any>[1]|'RelationElementAccessor('+$s->genericType().rawType.name->toOne()+')',
+                                    s:BasicColumnSpecification<Any>[1]|'^BasicColumnSpecification<%s>(name = \'%s\', func = %s)'->format([$s->genericType().typeArguments->toOne()->genericTypeClass()->elementToPath(), $s.name, $s.func->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^GContext(space=''))]),
+                                    s:meta::pure::functions::collection::AggregateValue<Any, Any, Any>[1]| '^meta::pure::functions::collection::AggregateValue<%s,%s,%s>(mapFn = %s, aggregateFn = %s)'->format([
+                                              $s->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(),
+                                              $s->genericType().typeArguments->at(1).rawType->toOne()->elementToPath(),
+                                              $s->genericType().typeArguments->at(2).rawType->toOne()->elementToPath(),
+                                              $s.mapFn->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^GContext(space='')),
+                                              $s.aggregateFn->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^GContext(space=''))
+                                              ]);, 
                                     a:Any[1] | $a->toRepresentation()
                                   ])->toOneMany()
                             )
@@ -233,7 +241,7 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
                                                    |$genericType.typeArguments->at(0).rawType->toOne()->cast(@Class<Any>),
                                                    |$main
                                                 );
-                                   $val->elementToPath() + '.all()';),
+                                   $val->elementToPath() + '.all' + $functionExpression.parametersValues->drop(1)->map(vs | printValueSpecification($vs, $configuration, $context))->joinStrings('(', ', ', ')');),
           pair(|$name == 'new',| '^'+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).genericType.typeArguments->at(0)->printGenericType() +
                                     '(' + if ($functionExpression.parametersValues->size() > 2,
                                               | $functionExpression.parametersValues->at(2)->cast(@InstanceValue).values->cast(@KeyExpression)->map(x|$x.key.values->toOne()->toString() + '=' + $x.expression->printValueSpecification(^GContext(space='')))->joinStrings(', '),

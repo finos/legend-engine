@@ -20,11 +20,16 @@ import org.junit.Test;
 public class TestMixedBooleanArithmeticConstraint extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
-    public void testSimpleClassWithMixedBooleanArithmeticConstraint()
+    public void testSimpleClassWithMixedBooleanArithmeticConstraints()
     {
         testFrom("Class test::C\n" +
                     "[\n" +
-                    "   $this.id > 0 && $this.id < 30\n" +
+                    "   $this.id > 0 && $this.id < 30,\n" +
+                    "  constraint1\n" +
+                    "  (\n" +
+                    "    ~function: $this.id > 0 && $this.id < 30\n" +
+                    "    ~message: $this.id->toString() + ' is invalid'\n" +
+                    "  )\n" +
                     "]\n" +
                     "{\n" +
                     "  id : Integer[1];\n" +
