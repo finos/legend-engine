@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mapping::*;
 import meta::pure::executionPlan::engine::java::roadmap::*;
 import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
@@ -22,6 +23,7 @@ import meta::pure::mapping::modelToModel::test::alloy::chain::parameters::src::*
 import meta::pure::mapping::modelToModel::test::alloy::chain::parameters::bridge::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::parameters::dest::*;
 import meta::core::runtime::*;
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
 meta::pure::mapping::modelToModel::test::alloy::chain::parameters::qualifiedPropertyAccessWithConstantParameter(): Boolean[1]
 {
@@ -156,46 +158,77 @@ meta::pure::mapping::modelToModel::test::alloy::chain::parameters::qualifiedProp
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
 meta::pure::mapping::modelToModel::test::alloy::chain::parameters::qualifiedPropertyAccessWithVariableParameter(): Boolean[1]
 {
-   let sourceFirms = '[{"name":"Firm1", "employees":[{"fullName":"Person1"}, {"fullName":"Person2"}]},{"name":"Firm2", "employees":[{"fullName":"Person3"}]}]';
+  let sourceFirms = '[{"name":"Firm1", "employees":[{"fullName":"Person1"}, {"fullName":"Person2"}]},{"name":"Firm2", "employees":[{"fullName":"Person3"}]}]';
 
-   let result = execute(
-      {|
-         let title = 'Mr';
-         Firm.all()
-         ->graphFetchChecked(#{
-            Firm {
-               name,
-               employees {
-                  fullName,
-                  'nameWithTitle' : nameWithTitle($title)
-               }
-            }
-         }#)
-         ->serialize(#{
-            Firm {
-               name,
-               employees {
-                  fullName,
-                  'nameWithTitle' : nameWithTitle($title)
-               }
-            }
-         }#);
-      },
-      BridgeToDestMapping,
-      ^Runtime(
-        connectionStores =[
-          ^ConnectionStore(
-            connection=^ModelChainConnection(
-              mappings = [SrcToBridgeMapping]
-              ),
-            element=^ModelStore()),
-          ^ConnectionStore(
-            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
-            element=^ModelStore())
-         ]
-      ),
-      meta::pure::extension::defaultExtensions()
-   );
+  let func1 = {|
+    let title = 'Mr';
+    Firm.all()
+    ->graphFetchChecked(#{
+        Firm {
+          name, 
+          employees {
+            fullName,
+            'nameWithTitle' : nameWithTitle($title)
+          }
+        }
+      }#
+    )
+    ->serialize(#{
+        Firm {
+          name,
+          employees {
+            fullName,
+            'nameWithTitle' : nameWithTitle($title)
+          }
+        }
+      }#
+    );
+  };
+
+  let func2 = {|
+    let title = 'Mr';
+    Firm.all()
+    ->graphFetchChecked(#{
+        Firm {
+          name, 
+          employees {
+            fullName,
+            'nameWithTitle' : nameWithTitle($title)
+          }
+        }
+      }#
+    )
+    ->serialize(#{
+        Firm {
+          name,
+          employees {
+            fullName,
+            'nameWithTitle' : nameWithTitle($title)
+          }
+        }
+      }#
+    )->withChainedMappings([BridgeToDestMapping, SrcToBridgeMapping]);
+  };
+
+  let chainedConnStore = ^ConnectionStore(connection = ^ModelChainConnection(mappings = [SrcToBridgeMapping]), element = ^ModelStore());
+  let jsonConnStore = ^ConnectionStore(connection = ^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms), element=^ModelStore());
+
+  let runtime = ^Runtime(connectionStores = [$jsonConnStore]);
+  let runtimeWithChain = ^Runtime(connectionStores = [$jsonConnStore, $chainedConnStore]);
+
+  let result1 = execute(
+    $func1,
+    BridgeToDestMapping,
+    $runtimeWithChain,
+    meta::pure::extension::defaultExtensions()
+  );
+
+  let result2 = execute(
+    $func2,
+    BridgeToDestMapping,
+    $runtime,
+    meta::pure::extension::defaultExtensions()
+  );
 
    let expected =
    '[' +
@@ -292,7 +325,10 @@ meta::pure::mapping::modelToModel::test::alloy::chain::parameters::qualifiedProp
    '    }' +
    '  }' +
    ']';
-   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+
+  assert(jsonEquivalent($expected->parseJSON(), $result1.values->toOne()->parseJSON()));
+  assert(jsonEquivalent($expected->parseJSON(), $result2.values->toOne()->parseJSON()));
+
 }
 
 ###Pure

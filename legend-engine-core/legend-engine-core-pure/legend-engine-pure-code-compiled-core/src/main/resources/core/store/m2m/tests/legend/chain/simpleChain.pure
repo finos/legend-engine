@@ -23,6 +23,7 @@ import meta::pure::mapping::modelToModel::test::alloy::chain::simple::src::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::simple::bridge::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::simple::dest::*;
 import meta::core::runtime::*;
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
 meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerializeFlat(): Boolean[1]
 {
@@ -43,6 +44,35 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
             connection= ^ModelChainConnection(mappings = [SrcToBridgeMapping]),
             element = ^ModelStore()
           ),
+          ^ConnectionStore(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element = ^ModelStore()
+          )
+         ]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let expected = '{"name":"|$Firm1$|"}';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerializeFlatWithChainedMappingsFunc(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         name
+      }
+   }#;
+
+   let sourceFirms = '{"name":"Firm1"}';
+
+   let result = execute(
+      {|Firm.all()->graphFetch($tree)->serialize($tree)->withChainedMappings([BridgeToDestMapping, SrcToBridgeMapping])},
+      BridgeToDestMapping,
+      ^Runtime(
+         connectionStores = [
           ^ConnectionStore(
             connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
             element = ^ModelStore()

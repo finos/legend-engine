@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::model::*;
 import meta::external::format::shared::binding::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::pure::runtime::*;
@@ -583,6 +584,32 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                 ^$processedFunction(value = $wrappedValueSpec);
         }
     ),
+    pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::mapping::withMapping_T_m__Mapping_1__T_m_, meta::pure::mapping::withChainedMappings_T_m__Mapping_MANY__T_m_]),
+      {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+        assert($state.routingStrategy->instanceOf(StoreRoutingStrategy), '%s() called without a runtime context! Add a ->from(Runtime) call to add context!'->format($fe.functionName->toOne()));
+        let routingStrategy = $state.routingStrategy->cast(@StoreRoutingStrategy);
+        let runtime = $routingStrategy.runtime;
+        let params = $fe.parametersValues->tail()->processArguments($vars, $inScopeVars, $extensions, $debug);
+        let mappingAndRuntime = if($fe.func->in([meta::pure::mapping::withMapping_T_m__Mapping_1__T_m_]),
+                                  | pair($params->cast(@Mapping)->toOne(), $runtime),
+                                  | let chainedMappings = $params->match([i:InstanceValue[*]|$i.values, a:Any[*]|$a])->cast(@Mapping);
+                                    let mainMapping     = $chainedMappings->at(0);
+                                    let mcc             = ^ModelChainConnection(mappings = $chainedMappings->tail());
+                                    let newConnStore    = ^ConnectionStore(element = ^ModelStore(), connection = $mcc);
+                                    pair($mainMapping, ^$runtime(connectionStores += $newConnStore));
+                                );
+        let newRoutingStrategy = getRoutingStrategyFromMappingAndRuntime($routingStrategy, $mappingAndRuntime.first, $mappingAndRuntime.second, $extensions);
+        let newState = ^$state(routingStrategy = $newRoutingStrategy);
+        let processedFunction      = ^$newState(value = $fe.parametersValues->at(0)->match([v:VariableExpression[1] | meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values->cast(@FunctionExpression)->at(0),
+                                                                                 f:FunctionExpression[1] |$f])->evaluateAndDeactivate())->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
+        let valueSpec              = $processedFunction.value;
+        let wrappedValueSpec       = $valueSpec->evaluateAndDeactivate()->match([
+                                                  evs: ExtendedRoutedValueSpecification[1] | $evs,
+                                                  vs: ValueSpecification[1]                | $processedFunction.routingStrategy.wrapValueSpec($vs, 'from wrapper', $executionContext, $extensions, $debug)
+                                                ]);
+        ^$processedFunction(value = $wrappedValueSpec);
+      }
+    ),
     pair(fe:FunctionExpression[1] | $fe.func->in(meta::pure::graphFetch::execution::graphFetchFunctions()),
       {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
 
@@ -685,6 +712,17 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
       }
     )
   ];
+}
+
+function <<access.private>> meta::pure::router::store::routing::processArguments(args:ValueSpecification[*], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] ): Any[*]
+{
+  $args->map(a|$a->evaluateAndDeactivate()->match(
+    [
+      v:VariableExpression[1] | meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values,
+      f:FunctionExpression[1] | $f->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug)->reactivate($inScopeVars),
+      i:InstanceValue[1]      | $i.values
+    ]
+  ));
 }
 
 function <<access.private>> meta::pure::router::store::routing::updateRouterUnionSetWithSingleSet(m: Mapping[1], opSetId: String[1], paramSetId: String[1]): Mapping[1]
