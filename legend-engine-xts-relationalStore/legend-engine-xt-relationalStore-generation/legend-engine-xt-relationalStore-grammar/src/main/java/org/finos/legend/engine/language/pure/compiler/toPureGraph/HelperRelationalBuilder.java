@@ -624,9 +624,9 @@ public class HelperRelationalBuilder
         {
             RichIterable<? extends RelationalOperationElement> params = ((DynaFunction) relationalOperationElement)._parameters();
             MutableList<RelationalOperationElement> tablesForParams = params.flatCollect(HelperRelationalBuilder::findAllTablesRootFirst, Lists.mutable.empty());
-            if (tablesForParams.size() == 1)
+            if (tablesForParams.size() >= 1)
             {
-                allTables.add(tablesForParams.toList().getFirst());
+                allTables.addAll(tablesForParams.toList());
             }
         }
         return allTables.distinct().toImmutable();
