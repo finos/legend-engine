@@ -247,7 +247,7 @@ function meta::protocols::pure::v1_33_0::extension::getRelationalExtension():met
                                                                                                     name = $c.name,
                                                                                                     doc = $c.documentation,
                                                                                                     type = $c.type->toOne()->elementToPath(),
-                                                                                                    enumMapping = if($c.enumMappingId->isEmpty(),|[],|meta::protocols::pure::v1_33_0::transformation::fromPureGraph::executionPlan::transformEnumMapping($mapping->enumerationMappingByName($c.enumMappingId->toOne())->toOne())),
+                                                                                                    enumMapping = if($c.enumMappingId->isEmpty() || $mapping->enumerationMappingByName($c.enumMappingId->toOne())->isEmpty(),|[],|meta::protocols::pure::v1_33_0::transformation::fromPureGraph::executionPlan::transformEnumMapping($mapping->enumerationMappingByName($c.enumMappingId->toOne())->toOne())),
                                                                                                     relationalType = $c.sourceDataType->match(
                                                                                                        [
                                                                                                           d:meta::relational::metamodel::datatype::DataType[0]|[],

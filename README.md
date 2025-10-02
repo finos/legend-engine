@@ -21,6 +21,10 @@ Execution engine for Legend. It provides:
 > 
 > ⚠️ It's also important to disable the `Clear output directory on rebuild` in `Preferences > Build, Execution, Deployment > Complier` as this removes generated resources needed to run the servers from the IDE.
 
+### Running memSQL tests on Mac
+
+- Follow these instructions: https://github.com/singlestore-labs/singlestoredb-dev-image?tab=readme-ov-file#how-to-run-the-docker-image-on-apple-silicon-m1m2-chips
+
 ### Starting Pure IDE
 
 If you're making changes to the `Pure` codebase, it's highly recommended that you also spin up our `Pure IDE` application:

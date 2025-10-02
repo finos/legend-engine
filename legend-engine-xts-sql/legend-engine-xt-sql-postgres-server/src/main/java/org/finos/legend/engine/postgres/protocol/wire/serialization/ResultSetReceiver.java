@@ -56,7 +56,7 @@ public class ResultSetReceiver
     private long rowCount = 0;
 
     public ResultSetReceiver(String query, DelayableWriteChannel channel,
-                      boolean isSimpleQuery, FormatCodes.FormatCode[] formatCodes, Messages messages)
+                             boolean isSimpleQuery, FormatCodes.FormatCode[] formatCodes, Messages messages)
     {
         this.query = query;
         this.channel = channel;
@@ -87,7 +87,7 @@ public class ResultSetReceiver
                 List<PGType<?>> columnTypes = new ArrayList<>(metaData.getColumnCount());
                 for (int i = 0; i < metaData.getColumnCount(); i++)
                 {
-                    PGType<?> pgType = PGTypes.get(metaData.getColumnType(i + 1), metaData.getScale(i + 1));
+                    PGType<?> pgType = PGTypes.get(metaData.getColumnType(i + 1), metaData.getColumnTypeName(i + 1), metaData.getScale(i + 1));
                     columnTypes.add(pgType);
                 }
                 //TODO add column types to the span

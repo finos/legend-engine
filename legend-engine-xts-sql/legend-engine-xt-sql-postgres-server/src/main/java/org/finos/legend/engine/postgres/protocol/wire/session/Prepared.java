@@ -26,26 +26,26 @@ import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepare
 /**
  * Represents a PostgeSQL Prepared Obj
  */
-class Prepared
+public class Prepared
 {
 
     /**
      * Object name
      */
-    String name;
+    public String name;
 
     /**
      * The SQL Statement
      */
-    String sql;
+    public String sql;
 
     /**
      * The prepared Statment
      */
-    PostgresPreparedStatement prep;
+    public PostgresPreparedStatement prep;
 
     /**
      * The list of param types
      */
-    Integer[] paramType;
+    public Integer[] paramType;
 }

@@ -51,6 +51,12 @@ public class TxnIsolationPreparedStatement implements PostgresPreparedStatement
         {
             return 0;
         }
+
+        @Override
+        public String getColumnTypeName(int i) throws Exception
+        {
+            return null;
+        }
     };
 
     @Override
