@@ -607,6 +607,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
 
 
 ###Pure
+import meta::pure::mapping::*;
 import meta::analytics::lineage::*;
 import meta::pure::mapping::modelToModel::test::shared::*;
 import meta::external::store::model::*;
@@ -616,32 +617,41 @@ import meta::pure::mapping::modelToModel::test::simple::*;
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::modeltomodel::testSimpleChain():Boolean[1]
 {
- let  func = {|meta::pure::mapping::modelToModel::test::shared::dest::Firm.all()->project([f|$f.legalName], ['legalNameResult'])};
+  let func1 = {|meta::pure::mapping::modelToModel::test::shared::dest::Firm.all()->project([f|$f.legalName], ['legalNameResult'])};
+  let func2 = {|meta::pure::mapping::modelToModel::test::shared::dest::Firm.all()->project([f|$f.legalName], ['legalNameResult'])->withChainedMappings([simpleModelMappingWithAssociation, relationalMapping])};
+
   let mapping = simpleModelMappingWithAssociation;
-  let runtime = ^meta::core::runtime::Runtime(connectionStores = [
+  let runtime = ^meta::core::runtime::Runtime(connectionStores = getConnection());
+  let runtimeWithChain = ^meta::core::runtime::Runtime(connectionStores = [
                                   ^meta::core::runtime::ConnectionStore(
-                                    element = ^ModelStore(),
-                                    connection=
-                                      ^ModelChainConnection(
-                                                        mappings = relationalMapping
-                                      )),
-                                      getConnection()
+                                      element = ^ModelStore(),
+                                      connection = ^ModelChainConnection(mappings = relationalMapping)
+                                    ),
+                                    getConnection()
                                   ]
-                   );
+                          );
                          
                
-  let lineage = meta::analytics::lineage::computeLineage($func, $mapping, $runtime, meta::relational::extension::relationalExtensions(),meta::analytics::lineage::tests::relation::propertyLineageConfig());
-      assertSameElements(['db_relationalDB -> tb_relationalDBdefaultFirm', 'tb_relationalDBdefaultFirm -> Lambda'],  $lineage.databaseLineage.edges.data->map(e|  $e.source.data.id+ ' -> ' + $e.target.data.id));
-      assertSameElements([ ['MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_dest_Firm_meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation -> Query_project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_',
-       'MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_src__Firm_meta::pure::mapping::modelToModel::test::shared::relationalMapping -> MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_dest_Firm_meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation', 
-       'Query_project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_ -> Root',
-        'RelationalPropertyOwner_meta::pure::mapping::modelToModel::test::shared::relationalDB.default.Firm -> MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_src__Firm_meta::pure::mapping::modelToModel::test::shared::relationalMapping',
-       'meta::pure::mapping::modelToModel::test::shared::relationalDB -> RelationalPropertyOwner_meta::pure::mapping::modelToModel::test::shared::relationalDB.default.Firm']],  $lineage.propertyLineage.ownerLink->map(e|  $e.source+ ' -> ' + $e.target));
-
-meta::analytics::lineage::assertLineage(['Lambda', 'db_relationalDB', 'tb_relationalDBdefaultFirm'],
+  let lineage1 = meta::analytics::lineage::computeLineage($func1, $mapping, $runtimeWithChain, meta::relational::extension::relationalExtensions(), meta::analytics::lineage::tests::relation::propertyLineageConfig());
+  assertSameElements(['db_relationalDB -> tb_relationalDBdefaultFirm', 'tb_relationalDBdefaultFirm -> Lambda'],  $lineage1.databaseLineage.edges.data->map(e|  $e.source.data.id+ ' -> ' + $e.target.data.id));
+  assertSameElements([ ['MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_dest_Firm_meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation -> Query_project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_',
+    'MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_src__Firm_meta::pure::mapping::modelToModel::test::shared::relationalMapping -> MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_dest_Firm_meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation', 
+    'Query_project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_ -> Root',
+    'RelationalPropertyOwner_meta::pure::mapping::modelToModel::test::shared::relationalDB.default.Firm -> MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_src__Firm_meta::pure::mapping::modelToModel::test::shared::relationalMapping',
+    'meta::pure::mapping::modelToModel::test::shared::relationalDB -> RelationalPropertyOwner_meta::pure::mapping::modelToModel::test::shared::relationalDB.default.Firm']],  $lineage1.propertyLineage.ownerLink->map(e|  $e.source+ ' -> ' + $e.target));
+  
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_relationalDB', 'tb_relationalDBdefaultFirm'],
                                           [],
                                           '[legalNameResult: [query.legalNameResult->[MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_dest_Firm_meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation.Firm.legalName->[MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_src__Firm_meta::pure::mapping::modelToModel::test::shared::relationalMapping._Firm.name->[RelationalPropertyOwner_meta::pure::mapping::modelToModel::test::shared::relationalDB.default.Firm.name]]]]]',
-                                           $lineage);
+                                          $lineage1);
+
+  let lineage2 = meta::analytics::lineage::computeLineage($func2, $mapping, $runtime, meta::relational::extension::relationalExtensions(), meta::analytics::lineage::tests::relation::propertyLineageConfig());
+  assertEquals($lineage1.databaseLineage.edges.data->map(e|  $e.source.data.id+ ' -> ' + $e.target.data.id), $lineage2.databaseLineage.edges.data->map(e|  $e.source.data.id+ ' -> ' + $e.target.data.id));
+  assertEquals($lineage1.propertyLineage.ownerLink->map(e|  $e.source+ ' -> ' + $e.target), $lineage2.propertyLineage.ownerLink->map(e|  $e.source+ ' -> ' + $e.target));
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_relationalDB', 'tb_relationalDBdefaultFirm'],
+                                          [],
+                                          '[legalNameResult: [query.legalNameResult->[MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_dest_Firm_meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation.Firm.legalName->[MappedClassOwner_meta_pure_mapping_modelToModel_test_shared_src__Firm_meta::pure::mapping::modelToModel::test::shared::relationalMapping._Firm.name->[RelationalPropertyOwner_meta::pure::mapping::modelToModel::test::shared::relationalDB.default.Firm.name]]]]]',
+                                          $lineage2);
 }
 
 
