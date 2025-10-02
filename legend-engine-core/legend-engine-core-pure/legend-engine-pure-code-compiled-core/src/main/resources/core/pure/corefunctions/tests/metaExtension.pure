@@ -361,3 +361,75 @@ function <<test.Test>> meta::pure::functions::meta::tests::testAllGeneralization
   assertEquals(['Parent'], meta::pure::functions::meta::validGeneralizations(meta::pure::functions::meta::tests::packageA::Child)->map(t | $t.name));
   assertEquals(['Parent', 'GrandParent', 'GreatGrandParent'], meta::pure::functions::meta::hierarchicalAllGeneralizations(meta::pure::functions::meta::tests::packageA::Child)->map(t | $t.name));
 }
+
+function <<test.Test>> meta::pure::functions::meta::tests::testResolveResolvedTypeParameters():Boolean[1]
+{
+  let getSfeFunc = {fd:FunctionDefinition<Any>[1]| 
+      $fd
+        ->evaluateAndDeactivate().expressionSequence->toOne('Expected only one expression sequence in function')
+        ->cast(@FunctionExpression);
+      };
+
+  let getResolvedTypeParamsFunc = {sfe: FunctionExpression[1]|
+    $sfe->meta::pure::functions::meta::resolveResolvedTypeParameters();
+    };
+
+  $getSfeFunc->eval({| sort(['hello'])}->evaluateAndDeactivate())
+    ->map(sfe|$getResolvedTypeParamsFunc->eval($sfe))
+    ->list()->forAll(v| 
+      let gt = $v.values;
+
+      assertEquals( 1, $gt->size());
+      assertEquals( String, $gt.rawType);
+      assertEquals( [], $gt.typeArguments);
+      );
+
+  $getSfeFunc->eval({| ^Pair<String,Integer>(first='hello', second=1) })
+    ->map(sfe|$getResolvedTypeParamsFunc->eval($sfe))
+    ->list()->forAll(v| 
+      let gt = $v.values;
+
+      assertEquals( 1, $gt->size());
+      assertEquals( Pair, $gt->at(0).rawType);
+      assertEquals( String, $gt->at(0).typeArguments->at(0).rawType);
+      assertEquals( Integer, $gt->at(0).typeArguments->at(1).rawType);
+    );
+
+  $getSfeFunc->eval({| eval({|'hello'}) })
+    ->map(sfe|$getResolvedTypeParamsFunc->eval($sfe))
+    ->list()->forAll(v| 
+      let gt = $v.values;
+
+      assertEquals( 1, $gt->size());
+      assertEquals( String, $gt->at(0).rawType);
+      assertEquals( [], $gt->at(0).typeArguments);
+    );
+
+  $getSfeFunc->eval({| {y|'hello' + $y->makeString()}->eval(1) })
+    ->map(sfe|$getResolvedTypeParamsFunc->eval($sfe))
+    ->list()->forAll(v| 
+      let gt = $v.values;
+
+      assertEquals( 2, $gt->size());
+      assertEquals( Integer, $gt->at(0).rawType);
+      assertEquals( [], $gt->at(0).typeArguments);
+      assertEquals( String, $gt->at(1).rawType);
+      assertEquals( [], $gt->at(1).typeArguments);
+      );
+
+  $getSfeFunc->eval({| project(pair('hello', 1), ~[first:p|$p.first]) })
+    ->map(sfe|$getResolvedTypeParamsFunc->eval($sfe))
+    ->list()->forAll(v| 
+      let gt = $v.values;
+
+      assertEquals( 2, $gt->size());
+      assertEquals( Pair, $gt->at(0).rawType);
+      assertEquals( 2, $gt->at(0).typeArguments->size());
+      assertEquals( String, $gt->at(0).typeArguments->at(0).rawType);
+      assertEquals( Integer, $gt->at(0).typeArguments->at(1).rawType);
+
+
+      assertEquals( true, $gt->at(1).rawType->toOne()->instanceOf( meta::pure::metamodel::relation::RelationType));
+    );
+  true;
+}

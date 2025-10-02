@@ -1,0 +1,79 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+
+Class meta::pure::constraints::functions::tests::SimplePerson
+[
+  ageMustBePositive:$this.age > 0,
+  nameNotBlank: $this.name->length() > 0
+]
+{
+  age : Integer[1];
+  name : String[1];
+}
+
+
+Class meta::pure::constraints::functions::tests::OtherPerson extends meta::pure::constraints::functions::tests::SimplePerson
+[
+  heightIsValid( ~function: $this.height > 0 ~message: 'Height must not be negative')
+]
+{
+  height : Integer[1];
+}
+
+function <<test.Test>> meta::pure::constraints::functions::tests::testEvaluateConstraint():Boolean[1]
+{
+  let o1 = ^meta::pure::constraints::functions::tests::SimplePerson(age = 18, name = 'Alex');
+
+  assert(meta::pure::constraints::functions::evaluateConstraint($o1, 'ageMustBePositive'));
+  assert(meta::pure::constraints::functions::evaluateConstraint($o1, 'nameNotBlank'));
+
+  let o2 = ^meta::pure::constraints::functions::tests::OtherPerson(age = 18, name = 'Alex', height=135);
+  assert(meta::pure::constraints::functions::evaluateConstraint($o2, 'ageMustBePositive'));
+  assert(meta::pure::constraints::functions::evaluateConstraint($o2, 'nameNotBlank'));
+  assert(meta::pure::constraints::functions::evaluateConstraint($o2, 'heightIsValid'));
+
+  let o3 = dynamicNew(meta::pure::constraints::functions::tests::SimplePerson, [^KeyValue(key='age',value=-20), ^KeyValue(key='name',value='Alex')], [], [], [], meta::pure::constraints::functions::noOpConstraintHandler_Any_1__Any_1_)->cast(@meta::pure::constraints::functions::tests::SimplePerson);
+
+  assert($o3.age < 0);
+  assert(!meta::pure::constraints::functions::evaluateConstraint($o3, 'ageMustBePositive'));
+}
+
+function <<test.Test>> meta::pure::constraints::functions::tests::testEvaluateConstraintMessage():Boolean[1]
+{
+  let o1 = ^meta::pure::constraints::functions::tests::SimplePerson(age = 18, name = 'Alex');
+
+  assertEquals('Constraint failed: ageMustBePositive', meta::pure::constraints::functions::evaluateConstraintMessageFunction($o1, 'ageMustBePositive'));
+  assertEquals('Constraint failed: nameNotBlank', meta::pure::constraints::functions::evaluateConstraintMessageFunction($o1, 'nameNotBlank'));
+
+  let o2 = ^meta::pure::constraints::functions::tests::OtherPerson(age = 18, name = 'Alex', height=135);
+  assertEquals('Constraint failed: ageMustBePositive', meta::pure::constraints::functions::evaluateConstraintMessageFunction($o2, 'ageMustBePositive'));
+  assertEquals('Constraint failed: nameNotBlank', meta::pure::constraints::functions::evaluateConstraintMessageFunction($o2, 'nameNotBlank'));
+  assertEquals('Height must not be negative', meta::pure::constraints::functions::evaluateConstraintMessageFunction($o2, 'heightIsValid'));
+}
+
+function <<test.Test>> meta::pure::constraints::functions::tests::testCreateConstraintFailureMessage():Boolean[1]
+{
+  let o1 = ^meta::pure::constraints::functions::tests::SimplePerson(age = 18, name = 'Alex');
+
+  assertEquals([], meta::pure::constraints::functions::createConstraintFailureMessage($o1, 'ageMustBePositive'));
+
+  // need to use dynamic new (instead of "new") to create the invalid object
+  let o2 = dynamicNew(meta::pure::constraints::functions::tests::SimplePerson, [^KeyValue(key='age',value=-20), ^KeyValue(key='name',value='Alex')], [], [], [], meta::pure::constraints::functions::noOpConstraintHandler_Any_1__Any_1_)->cast(@meta::pure::constraints::functions::tests::SimplePerson);
+
+  assert($o2.age < 0);  
+
+  assertEquals('Constraint failed: ageMustBePositive', meta::pure::constraints::functions::createConstraintFailureMessage($o2, 'ageMustBePositive'));
+}
