@@ -362,7 +362,7 @@ function <<test.Test>> meta::pure::functions::meta::tests::testAllGeneralization
   assertEquals(['Parent', 'GrandParent', 'GreatGrandParent'], meta::pure::functions::meta::hierarchicalAllGeneralizations(meta::pure::functions::meta::tests::packageA::Child)->map(t | $t.name));
 }
 
-function <<test.Test>> meta::pure::functions::meta::tests::testResolveResolvedTypeParameters():Boolean[1]
+function meta::pure::functions::meta::tests::testResolveResolvedTypeParameters():Boolean[1]
 {
   let getSfeFunc = {fd:FunctionDefinition<Any>[1]| 
       $fd
