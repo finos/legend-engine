@@ -1901,6 +1901,9 @@ public class Handlers
                         )
                 )
         );
+        
+        register(h("meta::pure::mapping::withMapping_T_m__Mapping_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), taxoMap.get("cov_mapping_Mapping"))));
+        register(h("meta::pure::mapping::withChainedMappings_T_m__Mapping_MANY__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeMany(ps.get(1), taxoMap.get("cov_mapping_Mapping"))));
 
         register(m(grp(LambdaCollectionInference, h("meta::pure::tds::tdsContains_T_1__Function_MANY__TabularDataSet_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),
                 grp(TDSContainsInference, h("meta::pure::tds::tdsContains_T_1__Function_MANY__String_MANY__TabularDataSet_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> true))));
@@ -3640,6 +3643,8 @@ public class Handlers
         map.put("meta::pure::mapping::with_T_m__Mapping_1__Runtime_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_mapping_Mapping").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_runtime_Runtime").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::mapping::with_T_m__PackageableRuntime_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_runtime_PackageableRuntime").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::mapping::with_T_m__Runtime_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_runtime_Runtime").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::mapping::withChainedMappings_T_m__Mapping_MANY__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && taxoMap.get("cov_mapping_Mapping").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::mapping::withMapping_T_m__Mapping_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_mapping_Mapping").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_function_FunctionDefinition").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_function_FunctionDefinition").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::asc_String_1__SortInformation_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::col_Function_1__String_1__BasicColumnSpecification_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || check(funcType(ps.get(0)._genericType()), (FunctionType ft) -> check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1 && isOne(nps.get(0)._multiplicity())))) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(1)._genericType()._rawType()._name()));

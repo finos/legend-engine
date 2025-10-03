@@ -9,31 +9,45 @@ import meta::external::store::model::*;
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp1():Boolean[1]
 {
-   let result = meta::pure::executionPlan::executionPlan({|meta::relational::tests::m2m2r::Entitlement.all()
-                                                          ->project([x|$x.name,x|$x.prop1],
-                                                            ['name','prop1']);},
-                                              meta::relational::tests::m2m2r::AxionToModelMapping,
-                                              meta::relational::tests::m2m2r::runtime(),
-                                              meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
+  let result1 = meta::pure::executionPlan::executionPlan(|meta::relational::tests::m2m2r::Entitlement.all()->project([x|$x.name, x|$x.prop1], ['name', 'prop1']),
+                                                          meta::relational::tests::m2m2r::AxionToModelMapping,
+                                                          meta::relational::tests::m2m2r::runtime(),
+                                                          meta::relational::extension::relationalExtensions()
+                                                        )->planToString( meta::relational::extension::relationalExtensions());
+
+  let result2 = meta::pure::executionPlan::executionPlan(|meta::relational::tests::m2m2r::Entitlement.all()
+                                                            ->project([x|$x.name,x|$x.prop2], ['name','prop2'])
+                                                            ->meta::pure::mapping::withChainedMappings([meta::relational::tests::m2m2r::AxionToModelMapping, meta::relational::tests::m2m2r::AxionToModelMapping])
+                                                            ->meta::pure::mapping::from(meta::relational::tests::m2m2r::runtimeWithoutChain()),
+                                                          meta::relational::extension::relationalExtensions()
+                                                        )->planToString( meta::relational::extension::relationalExtensions());
+
   let expected ='Relational\n' +
             '(\n' +
             '  type = TDS[(name, String, VARCHAR(8192), ""), (prop1, Boolean, BIT, "")]\n' +
             '  resultColumns = [("name", VARCHAR(200)), ("prop1", "")]\n' +
             '  sql = select "root".name as "name", "sourceannouncement_0".name = \'ha\' as "prop1" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
             '  connection = RelationalDatabaseConnection(type = "H2")\n' +
-            ')\n' ;
-  assertEquals($expected, $result);
+            ')\n';
+
+  assertEquals($expected, $result1);
+  assertEquals($expected, $result1);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp2():Boolean[1]
 {
-   let result = meta::pure::executionPlan::executionPlan({|meta::relational::tests::m2m2r::Entitlement.all()
-                                                          ->project([x|$x.name,x|$x.prop2],
-                                                                    ['name','prop2']);},
+  let result1 = meta::pure::executionPlan::executionPlan(|meta::relational::tests::m2m2r::Entitlement.all()->project([x|$x.name, x|$x.prop2], ['name', 'prop2']),
+                                                          meta::relational::tests::m2m2r::AxionToModelMapping,
+                                                          meta::relational::tests::m2m2r::runtime(),
+                                                          meta::relational::extension::relationalExtensions()
+                                                        )->planToString( meta::relational::extension::relationalExtensions());
 
-                                              meta::relational::tests::m2m2r::AxionToModelMapping,
-                                              meta::relational::tests::m2m2r::runtime(),
-                                              meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
+  let result2 = meta::pure::executionPlan::executionPlan(|meta::relational::tests::m2m2r::Entitlement.all()
+                                                            ->project([x|$x.name, x|$x.prop2], ['name', 'prop2'])
+                                                            ->meta::pure::mapping::withChainedMappings([meta::relational::tests::m2m2r::AxionToModelMapping, meta::relational::tests::m2m2r::AxionToModelMapping])
+                                                            ->meta::pure::mapping::from(meta::relational::tests::m2m2r::runtimeWithoutChain()),
+                                                          meta::relational::extension::relationalExtensions() 
+                                                        )->planToString( meta::relational::extension::relationalExtensions());
   let expected =
                 'Relational\n' +
                 '(\n' +
@@ -41,48 +55,70 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
                 '  resultColumns = [("name", VARCHAR(200)), ("prop2", "")]\n' +
                 '  sql = select "root".name as "name", case when "sourceannouncement_0".description like \'%RECEIVE CASH%\' then \'Cash\' else \'Stock\' end as "prop2" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
                 '  connection = RelationalDatabaseConnection(type = "H2")\n' +
-                ')\n' ;
+                ')\n';
 
-    assertEquals($expected, $result);
+  assertEquals($expected, $result1);
+  assertEquals($expected, $result2);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp3():Boolean[1]
 {
-  let result = meta::pure::executionPlan::executionPlan({|meta::relational::tests::m2m2r::Entitlement.all()
-                                                          ->project([x|$x.name,x|$x.prop3],
-                                                                    ['name','prop3']);},
-    meta::relational::tests::m2m2r::AxionToModelMapping,
-    meta::relational::tests::m2m2r::runtime(),
-    meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
-    let expectedLegacyH2 =
-                'Relational\n' +
-                '(\n' +
-                '  type = TDS[(name, String, VARCHAR(8192), ""), (prop3, Number, FLOAT, "")]\n' +
-                '  resultColumns = [("name", VARCHAR(200)), ("prop3", "")]\n' +
-                '  sql = select "root".name as "name", case when "sourceannouncement_0".basis = 0.0 then 0.0 else (((1.0 * "root".entitledQuantity) / "sourceannouncement_0".basis) * "sourceannouncement_0".grossRate) end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
-                '  connection = RelationalDatabaseConnection(type = "H2")\n' +
-                ')\n' ;
-    let expectedNewH2 =
-                'Relational\n' +
-                '(\n' +
-                '  type = TDS[(name, String, VARCHAR(8192), ""), (prop3, Number, FLOAT, "")]\n' +
-                '  resultColumns = [("name", VARCHAR(200)), ("prop3", "")]\n' +
-                '  sql = select "root".name as "name", case when "sourceannouncement_0".basis = cast(0.0 as float) then cast(0.0 as float) else ((1.0 * "root".entitledQuantity) / ("sourceannouncement_0".basis)) * "sourceannouncement_0".grossRate end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
-                '  connection = RelationalDatabaseConnection(type = "H2")\n' +
-                ')\n' ;
-    assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result);
+  let result1 = meta::pure::executionPlan::executionPlan(|meta::relational::tests::m2m2r::Entitlement.all()->project([x|$x.name, x|$x.prop3], ['name', 'prop3']),
+                                                          meta::relational::tests::m2m2r::AxionToModelMapping,
+                                                          meta::relational::tests::m2m2r::runtime(),
+                                                          meta::relational::extension::relationalExtensions()
+                                                        )->planToString( meta::relational::extension::relationalExtensions());
+
+  let result2 = meta::pure::executionPlan::executionPlan(|meta::relational::tests::m2m2r::Entitlement.all()
+                                                            ->project([x|$x.name, x|$x.prop3], ['name', 'prop3'])
+                                                            ->meta::pure::mapping::withChainedMappings([meta::relational::tests::m2m2r::AxionToModelMapping, meta::relational::tests::m2m2r::AxionToModelMapping])
+                                                            ->meta::pure::mapping::from(meta::relational::tests::m2m2r::runtimeWithoutChain()),
+                                                          meta::relational::extension::relationalExtensions() 
+                                                        )->planToString( meta::relational::extension::relationalExtensions());
+
+  let expectedLegacyH2 =
+              'Relational\n' +
+              '(\n' +
+              '  type = TDS[(name, String, VARCHAR(8192), ""), (prop3, Number, FLOAT, "")]\n' +
+              '  resultColumns = [("name", VARCHAR(200)), ("prop3", "")]\n' +
+              '  sql = select "root".name as "name", case when "sourceannouncement_0".basis = 0.0 then 0.0 else (((1.0 * "root".entitledQuantity) / "sourceannouncement_0".basis) * "sourceannouncement_0".grossRate) end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
+              '  connection = RelationalDatabaseConnection(type = "H2")\n' +
+              ')\n';
+  let expectedNewH2 =
+              'Relational\n' +
+              '(\n' +
+              '  type = TDS[(name, String, VARCHAR(8192), ""), (prop3, Number, FLOAT, "")]\n' +
+              '  resultColumns = [("name", VARCHAR(200)), ("prop3", "")]\n' +
+              '  sql = select "root".name as "name", case when "sourceannouncement_0".basis = cast(0.0 as float) then cast(0.0 as float) else ((1.0 * "root".entitledQuantity) / ("sourceannouncement_0".basis)) * "sourceannouncement_0".grossRate end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
+              '  connection = RelationalDatabaseConnection(type = "H2")\n' +
+              ')\n';
+
+  assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result1);
+  assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result2);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp4():Boolean[1]
 {
-   let result = meta::pure::executionPlan::executionPlan({accountNum: String[1]|
-                                              meta::relational::tests::m2m2r::Entitlement.all()
-                                              ->filter(x|$x.prop4($accountNum))
-                                              ->project([x|$x.name,x|$x.prop4($accountNum)],
-                                                            ['name','prop4']);},
-                                              meta::relational::tests::m2m2r::AxionToModelMapping,
-                                              meta::relational::tests::m2m2r::runtime(),
-                                              meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
+  let result1 = meta::pure::executionPlan::executionPlan({accountNum: String[1]|
+                                                            meta::relational::tests::m2m2r::Entitlement.all()
+                                                            ->filter(x|$x.prop4($accountNum))
+                                                            ->project([x|$x.name,x|$x.prop4($accountNum)], ['name','prop4'])
+                                                          },
+                                                          meta::relational::tests::m2m2r::AxionToModelMapping,
+                                                          meta::relational::tests::m2m2r::runtime(),
+                                                          meta::relational::extension::relationalExtensions()
+                                                        )->planToString( meta::relational::extension::relationalExtensions());
+
+  let result2 = meta::pure::executionPlan::executionPlan({accountNum: String[1]|
+                                                            meta::relational::tests::m2m2r::Entitlement.all()
+                                                            ->filter(x|$x.prop4($accountNum))
+                                                            ->project([x|$x.name,x|$x.prop4($accountNum)], ['name','prop4'])
+                                                            ->meta::pure::mapping::withChainedMappings([meta::relational::tests::m2m2r::AxionToModelMapping, meta::relational::tests::m2m2r::AxionToModelMapping])
+                                                            ->meta::pure::mapping::from(meta::relational::tests::m2m2r::runtimeWithoutChain())
+                                                          },
+                                                          meta::relational::extension::relationalExtensions() 
+                                                        )->planToString( meta::relational::extension::relationalExtensions());
+
   let expected = 'Sequence\n' +
                 '(\n' +
                 '  type = TDS[(name, String, VARCHAR(8192), ""), (prop4, Boolean, BIT, "")]\n' +
@@ -99,7 +135,10 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
                 '      connection = RelationalDatabaseConnection(type = "H2")\n' +
                 '    )\n' +
                 '  )\n' +
-                ')\n';  assertEquals($expected, $result);
+                ')\n';
+  
+  assertEquals($expected, $result1);
+  assertEquals($expected, $result2);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testPreeavalOnSort():Boolean[1]
@@ -142,6 +181,21 @@ function meta::relational::tests::m2m2r::runtime():Runtime[1]
             datasourceSpecification = ^LocalH2DatasourceSpecification()
         )),
         ^ConnectionStore(element = ^ModelStore(),connection=^ModelChainConnection( mappings = [meta::relational::tests::m2m2r::AxionToModelMapping]))
+      ]
+  )
+}
+
+function meta::relational::tests::m2m2r::runtimeWithoutChain():Runtime[1]
+{
+ ^meta::core::runtime::Runtime(
+      connectionStores=[
+        ^meta::core::runtime::ConnectionStore(
+          element = meta::relational::tests::m2m2r::SourceDB,
+          connection = ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
+            type = DatabaseType.H2,
+            authenticationStrategy = ^TestDatabaseAuthenticationStrategy(),
+            datasourceSpecification = ^LocalH2DatasourceSpecification()
+        ))
       ]
   )
 }

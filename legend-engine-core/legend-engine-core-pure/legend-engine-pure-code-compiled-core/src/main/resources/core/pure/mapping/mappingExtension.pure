@@ -369,6 +369,15 @@ function <<functionType.NotImplementedFunction>> meta::pure::mapping::from(tds:T
    $tds;
 }
 
+function <<functionType.NotImplementedFunction>> meta::pure::mapping::withMapping<T|m>(t:T[m], m:meta::pure::mapping::Mapping[1]):T[m]
+{
+  $t;
+}
+
+function <<functionType.NotImplementedFunction>> meta::pure::mapping::withChainedMappings<T|m>(t:T[m], m:meta::pure::mapping::Mapping[*]):T[m]
+{
+  $t;
+}
 
 ###Mapping
 Mapping meta::pure::mapping::MergedMapping
