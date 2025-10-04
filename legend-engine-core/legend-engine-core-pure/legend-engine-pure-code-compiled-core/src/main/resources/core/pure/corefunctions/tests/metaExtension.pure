@@ -428,8 +428,8 @@ function <<test.Test>> meta::pure::functions::meta::tests::testResolveResolvedTy
       assertEquals( String, $gt->at(0).typeArguments->at(0).rawType);
       assertEquals( Integer, $gt->at(0).typeArguments->at(1).rawType);
 
-      // todo-:- this is failing in compiled mode as RelationType is not being set properly - reenable once this is fixed
-      // assertEquals( true, $gt->at(1).rawType->toOne()->instanceOf( meta::pure::metamodel::relation::RelationType));
+      //todo: this is failing in compiled mode as RelationType is not being set properly (currently being set as Any type) - re-enable once this is fixed
+      //assertEquals( true, $gt->at(1).rawType->toOne()->instanceOf( meta::pure::metamodel::relation::RelationType));
     );
   true;
 }
