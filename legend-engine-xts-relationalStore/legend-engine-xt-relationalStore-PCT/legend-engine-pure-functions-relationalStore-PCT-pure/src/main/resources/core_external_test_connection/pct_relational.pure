@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::executionPlan::toString::*;
 import meta::relational::grammar::serialization::*;
 import meta::pure::functions::variant::convert::*;
 import meta::pure::metamodel::variant::*;
@@ -85,9 +86,11 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
   testAdapterForRelationalExecution($f, $dbc, relationalExtensions());
 }
 
-function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], extensions:Extension[*]):X[o]
+function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], b:meta::external::store::relational::runtime::DatabaseConnection[1], extensions:Extension[*]):X[o]
 {
-    let debug = noDebug();
+    let debug = debug();
+
+    let dbc = ^$b(type = DatabaseType.Snowflake);
 
     let repocessed = $f->meta::relational::tests::pct::process::reprocess($dbc, $debug);
     let newFunction = $repocessed.first;
@@ -112,6 +115,8 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
     let plan = $planBindToJava->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($extensions);
 
+    println($planWithTeardown->planToString(relationalExtensions()));
+
     let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
 
     let x = meta::legend::executePlanAsJSON($planAsJson, []);
@@ -129,7 +134,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
               $x.first.values;,
             | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
               // processResult
-              if ($resultType->instanceOf(PrimitiveType) || $resultType->instanceOf(Enumeration) || $resultType->in([Variant, List, Map, Nil]),
+              if ($resultType->instanceOf(PrimitiveType) || $resultType->in([Variant, List, Map, Nil]),
                 | let preResultFinal = $res.result.rows->head().values->head();
 
                   print(if($debug.debug,|'\nRaw Result:\n'+$preResultFinal->makeString('[',',',']'),|''));
@@ -178,7 +183,6 @@ function meta::relational::tests::pct::process::resultToType(preResultFinal: Any
         pair(|$resultType->subTypeOf(Integer), |$preResultFinal->toOne()->cast(@Number)->round()),
         pair(|$resultType->subTypeOf(Float), |$preResultFinal->toOne()->cast(@Number)->toFloat()),
         pair(|$resultType->subTypeOf(Number), |$preResultFinal->toOne()->cast(@Number)),
-        pair(|$resultType->instanceOf(Enumeration), | meta::pure::functions::lang::extractEnumValue($resultType->cast(@Enumeration<Any>), $preResultFinal->toOne()->toString())),
         pair(|$resultType == Variant, |$preResultFinal->toOne()->cast(@String)->fromJson()),
         pair(|$resultType->in([List, Map]), |$preResultFinal->toOne()->cast(@String)->fromJson()->to($type))
       ],
@@ -280,6 +284,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
       z:FunctionDefinition<Any>[1]|
             print(if($debug.debug,|'BEFORE: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+'\n',|''));
 
+            // println(meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
             // Init
             let initState = meta::relational::tests::pct::process::initState(
               $z->openVariableValues(),
@@ -296,6 +301,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                   ->addWith($allReprocessed.mapping, $runtime);
 
             print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n',|''));
+            meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))->println();
 
             let otherFuncs = $allReprocessed.current->map(r | $r->meta::relational::tests::pct::extractDependentFunctions())->distinct();
 

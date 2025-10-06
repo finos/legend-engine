@@ -1,0 +1,51 @@
+import meta::external::query::sql::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::variant::navigation::get::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/variant/navigation/get.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyExists_Function_1__Boolean_1_',
+                      [
+                        revError('|\'{"hello":"world"}\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::navigation::get(\'hello\')->meta::pure::functions::multiplicity::toOne()',
+                            'select cast(json_extract_path(cast (Text\'{"hello":"world"}\' as JSON), Text\'hello\') as JSON)',
+                            'Error during dynamic reactivation',
+                            'investigation required'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyDoesNotExists_Function_1__Boolean_1_',
+                      [
+                        rev('|\'{"hello":"world"}\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::navigation::get(\'nonExisting\')',
+                            'select json_extract_path(cast(Text\'{"hello":"world"}\' as JSON), Text\'nonExisting\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::lang::cast(@meta::pure::metamodel::variant::Variant)->meta::pure::functions::variant::navigation::get(\'hello\')',
+                            'select json_extract_path(cast(cast(null as TEXT) as JSON), Text\'hello\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::navigation::tests::get::testGetFromArray_Function_1__Boolean_1_',
+                      [
+                        rev('|\'[1,2,3]\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::navigation::get(1)->meta::pure::functions::multiplicity::toOne()',
+                            'select cast(Text\'[1,2,3]\' as JSON)->1'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::variant::navigation::get::exec():Boolean[1]
+{
+   meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyExists(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyDoesNotExists(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::navigation::tests::get::testGetFromArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

@@ -1,0 +1,54 @@
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::standard::math::aggregator::variancePopulation::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/math/aggregator/variancePopulation.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_',
+                      [
+                        rev('|[1, 2]->meta::pure::functions::math::variancePopulation()',
+                            'select var_pop([1,2])'
+                        ),
+                        rev('|[2, 4]->meta::pure::functions::math::variancePopulation()',
+                            'select var_pop([2,4])'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::variance::testSimpleGroupByVariancePopulation_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,val\n'+
+                            '1,1\n'+
+                            '1,2\n'+
+                            '2,2\n'+
+                            '2,4}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer, val:Integer)[1]|$x.val:y: Integer[*]|$y->meta::pure::functions::math::variancePopulation()])',
+                            'select "table0_0".id as "id", var_pop("table0_0".val) as "newCol" from csv(\'id,val\n1,1\n1,2\n2,2\n2,4\') as "table0_0" group by "id"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::variance::testSimpleWindowVariancePopulation_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,val\n'+
+                            '1,1\n'+
+                            '1,2\n'+
+                            '2,2\n'+
+                            '2,4}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, val:Integer)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, val:Integer)>[1], r: (id:Integer, val:Integer)[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::variancePopulation())',
+                            'select "table0_0".id as "id", "table0_0".val as "val", var_pop("table0_0".val) OVER (Partition By "table0_0".id) as "newCol" from csv(\'id,val\n1,1\n1,2\n2,2\n2,4\') as "table0_0"'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::math::aggregator::variancePopulation::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::variance::testVariancePopulation(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::variance::testSimpleGroupByVariancePopulation(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::variance::testSimpleWindowVariancePopulation(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

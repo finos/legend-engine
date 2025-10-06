@@ -17,6 +17,10 @@ import meta::external::query::sql::reversePCT::framework::*;
 function meta::external::query::sql::reversePCT::tests::essential::reverses():ReversesForSource[*]
 {
   [
+    meta::external::query::sql::reversePCT::tests::essential::collection::slice::head::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::collection::slice::init::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::collection::slice::slice::reverses(),
+
     meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::cos::reverses(),
     meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::tan::reverses(),
     meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::sin::reverses()

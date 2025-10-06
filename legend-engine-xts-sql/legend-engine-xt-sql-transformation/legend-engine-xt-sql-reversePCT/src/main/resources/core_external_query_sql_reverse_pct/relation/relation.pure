@@ -17,6 +17,8 @@ import meta::external::query::sql::reversePCT::framework::*;
 function meta::external::query::sql::reversePCT::tests::relation::reverses():ReversesForSource[*]
 {
   [
+    meta::external::query::sql::reversePCT::tests::relation::relation::functions::size::size::reverses(),
+
     meta::external::query::sql::reversePCT::tests::relation::iteration::filter::reverses(),
 
     meta::external::query::sql::reversePCT::tests::relation::functions::olap::over::reverses(),

@@ -43,7 +43,7 @@ function meta::external::query::sql::reversePCT::generator::findTests(funcKind:S
                   p('variant', 'platform', 'pure/variant/')
                 ]->filter(x|$x.name == $funcKind)->toOne();
 
-  ConcreteFunctionDefinition.all()->filter(x|$x->sourceInformation().source == '/'+$pKind.module+'/'+$pKind.path+$filePath && $x->hasStereotype('test', PCT));
+  stereotype(PCT, 'test').modelElements->filter(x|$x->instanceOf(ConcreteFunctionDefinition) && $x->sourceInformation().source == '/'+$pKind.module+'/'+$pKind.path+$filePath)->cast(@ConcreteFunctionDefinition<Any>);
 }
 
 Class meta::external::query::sql::reversePCT::generator::FuncAndSQL

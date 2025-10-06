@@ -1,0 +1,59 @@
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::standard::tbd::bitShiftLeft::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/tbd/bitShiftLeft.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_',
+                      [
+                        rev('|0->meta::pure::functions::math::bitShiftLeft(0)',
+                            'select 0 << 0'
+                        ),
+                        rev('|1->meta::pure::functions::math::bitShiftLeft(0)',
+                            'select 1 << 0'
+                        ),
+                        rev('|1->meta::pure::functions::math::bitShiftLeft(1)',
+                            'select 1 << 1'
+                        ),
+                        rev('|1->meta::pure::functions::math::bitShiftLeft(10)',
+                            'select 1 << 10'
+                        ),
+                        rev('|1->meta::pure::functions::math::bitShiftLeft(20)',
+                            'select 1 << 20'
+                        ),
+                        rev('|1->meta::pure::functions::math::bitShiftLeft(46)',
+                            'select 1 << 46'
+                        ),
+                        rev('|1->meta::pure::functions::math::bitShiftLeft(62)',
+                            'select 1 << 62'
+                        ),
+                        rev('|5->meta::pure::functions::math::bitShiftLeft(0)',
+                            'select 5 << 0'
+                        ),
+                        rev('|25->meta::pure::functions::math::bitShiftLeft(11)',
+                            'select 25 << 11'
+                        ),
+                        rev('|1024->meta::pure::functions::math::bitShiftLeft(5)',
+                            'select 1024 << 5'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_',
+                      [
+                        rev('|1->meta::pure::functions::math::bitShiftLeft(63)',
+                            'select 1 << 63'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::tbd::bitShiftLeft::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_UpTo62Bits(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

@@ -309,7 +309,7 @@ public class TestSQLRoundTrip
     @Test
     public void testCast()
     {
-        check("SELECT CAST(1 AS VARCHAR), CAST(1 AS VARCHAR(1)), CAST(1 AS NUMERIC(1, 2)) FROM myTable");
+        check("SELECT CAST(1 AS VARCHAR), CAST(1 AS VARCHAR(1)), CAST(1 AS NUMERIC(1, 2)), CAST([1, 2] as int[]) FROM myTable");
     }
 
     @Test
@@ -352,7 +352,7 @@ public class TestSQLRoundTrip
     @Test
     public void testNested()
     {
-        check("SELECT * from (select col from myTable)");
+        check("SELECT * from (SELECT col from myTable)");
     }
 
     @Test
@@ -365,6 +365,54 @@ public class TestSQLRoundTrip
     public void testCommonTableExpressionMultiple()
     {
         check("WITH cte1 (col1, col2) AS (SELECT col1, col2 FROM myTable1 AS t1 INNER JOIN myTable2 AS t2 ON (t1.col1 = t2.col2)), cte2 AS (SELECT SUM(), col FROM cte1 GROUP BY col) SELECT col FROM cte1");
+    }
+
+    @Test
+    public void testSubscript()
+    {
+        check("SELECT value[1], value[1:2] from myTable");
+    }
+
+    @Test
+    public void testArray()
+    {
+        check("SELECT a::int[] from myTable");
+    }
+
+    @Test
+    public void testBitwise()
+    {
+        check("SELECT 1 & 2, 1 | 2, 1 # 2, 1 << 2, 1 >> 2 from myTable");
+    }
+
+    @Test
+    public void testValuesRelation()
+    {
+        check("SELECT * FROM (VALUES (1, 'one'), (2, 'two'), (3, 'three')) AS t (number, string)");
+    }    
+
+    @Test
+    public void testJSONExpressions()
+    {
+        // JSON extract operators
+        check("SELECT data -> 'name' FROM myTable");
+        check("SELECT data ->> 'name' FROM myTable");
+
+        // JSON path extract operators
+        check("SELECT data #> '{user,name}' FROM myTable");
+        check("SELECT data #>> '{user,name}' FROM myTable");
+
+        // JSONB containment operators
+        check("SELECT data @> '{\"name\": \"John\"}' FROM myTable");
+        check("SELECT data <@ '{\"name\": \"John\"}' FROM myTable");
+
+        // JSONB key existence operators
+        check("SELECT data ?& ['name', 'age'] FROM myTable");
+
+        // JSONB path operators
+        check("SELECT data #- '{user,address}' FROM myTable");
+        check("SELECT data @? '$.name' FROM myTable");
+        check("SELECT data @@ '$.age > 18' FROM myTable");
     }
 
     private void fail(String sql, int start, int end, String message)
