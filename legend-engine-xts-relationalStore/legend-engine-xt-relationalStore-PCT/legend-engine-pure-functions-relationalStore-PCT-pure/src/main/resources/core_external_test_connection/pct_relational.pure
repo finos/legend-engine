@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::executionPlan::toString::*;
 import meta::relational::grammar::serialization::*;
 import meta::pure::functions::variant::convert::*;
 import meta::pure::metamodel::variant::*;
@@ -66,18 +65,18 @@ function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Funct
 
 function meta::relational::tests::pct::extractDependentFunctionsImpl(f:Any[1], visitedFuncs : Function<Any>[*]):Function<Any>[*]
 {
-  if ($f->in($visitedFuncs), 
-    | [], 
+  if ($f->in($visitedFuncs),
+    | [],
     |  $f->match([
         z:FunctionDefinition<Any>[1] |
                     if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z,|[])
                       ->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctionsImpl($visitedFuncs->concatenate($z))));,
-        x:SimpleFunctionExpression[1]| 
+        x:SimpleFunctionExpression[1]|
                     let res = $x.parametersValues->map(p|$p->extractDependentFunctionsImpl($visitedFuncs));
                     $x.func->extractDependentFunctionsImpl($visitedFuncs)->concatenate($res);,
-        i: InstanceValue[1] | $i.values->map(p|$p->extractDependentFunctionsImpl($visitedFuncs)),                                  
+        i: InstanceValue[1] | $i.values->map(p|$p->extractDependentFunctionsImpl($visitedFuncs)),
         a:Any[1] | []
-      ]);  
+      ]);
     );
 }
 
@@ -86,11 +85,9 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
   testAdapterForRelationalExecution($f, $dbc, relationalExtensions());
 }
 
-function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], b:meta::external::store::relational::runtime::DatabaseConnection[1], extensions:Extension[*]):X[o]
+function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], extensions:Extension[*]):X[o]
 {
-    let debug = debug();
-
-    let dbc = ^$b(type = DatabaseType.Snowflake);
+    let debug = noDebug();
 
     let repocessed = $f->meta::relational::tests::pct::process::reprocess($dbc, $debug);
     let newFunction = $repocessed.first;
@@ -115,15 +112,13 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
     let plan = $planBindToJava->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($extensions);
 
-    println($planWithTeardown->planToString(relationalExtensions()));
-
     let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
 
     let x = meta::legend::executePlanAsJSON($planAsJson, []);
 
     print(if($debug.debug,|'\nResult JSON:\n'+$x+'\n',|''));
     // ----
-    
+
     let resultType = $f->functionReturnType().rawType->toOne();
     let json = $x->meta::json::parseJSON();
     if (!$json->instanceOf(JSONObject),
@@ -134,7 +129,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
               $x.first.values;,
             | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
               // processResult
-              if ($resultType->instanceOf(PrimitiveType) || $resultType->in([Variant, List, Map, Nil]),
+              if ($resultType->instanceOf(PrimitiveType) || $resultType->instanceOf(Enumeration) || $resultType->in([Variant, List, Map, Nil]),
                 | let preResultFinal = $res.result.rows->head().values->head();
 
                   print(if($debug.debug,|'\nRaw Result:\n'+$preResultFinal->makeString('[',',',']'),|''));
@@ -151,7 +146,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                         $f->functionReturnType().typeArguments->at(0).rawType->cast(@RelationType<Any>).columns->map(x | pair($x.name->toOne(), $x->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()->elementToPath()))->newMap();
                       ,
                       |
-                        $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | pair($c.name, $t)))->newMap(); 
+                        $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | pair($c.name, $t)))->newMap();
                     );
 
                     let tdsString = $cols->map(c | $c.name + $relType->get($c.name)->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
@@ -183,6 +178,7 @@ function meta::relational::tests::pct::process::resultToType(preResultFinal: Any
         pair(|$resultType->subTypeOf(Integer), |$preResultFinal->toOne()->cast(@Number)->round()),
         pair(|$resultType->subTypeOf(Float), |$preResultFinal->toOne()->cast(@Number)->toFloat()),
         pair(|$resultType->subTypeOf(Number), |$preResultFinal->toOne()->cast(@Number)),
+        pair(|$resultType->instanceOf(Enumeration), | meta::pure::functions::lang::extractEnumValue($resultType->cast(@Enumeration<Any>), $preResultFinal->toOne()->toString())),
         pair(|$resultType == Variant, |$preResultFinal->toOne()->cast(@String)->fromJson()),
         pair(|$resultType->in([List, Map]), |$preResultFinal->toOne()->cast(@String)->fromJson()->to($type))
       ],
@@ -240,7 +236,7 @@ function meta::relational::tests::pct::process::to(var: Variant[1], type: Generi
 function meta::relational::tests::pct::process::buildDate(dateStr:String[1]):Date[1]
 {
   // Need to find a better way...
-  
+
   // Manage SubSecond
   let _dot = if ($dateStr->contains('.'),
     | let subPart = $dateStr->substring($dateStr->indexOf('.') + 1, $dateStr->lastIndexOf('+'));
@@ -273,18 +269,17 @@ function meta::relational::tests::pct::process::buildDate(dateStr:String[1]):Dat
 
 
 function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], debug: DebugContext[1]):Pair<FunctionDefinition<Any>,ProcessingState>[1]
-{ 
+{
   let ext = ^meta::pure::metamodel::serialization::grammar::Configuration
             (
               fullPath = true,
-              extensions = meta::relational::grammar::serialization::relationGrammarExtension()  
+              extensions = meta::relational::grammar::serialization::relationGrammarExtension()
             );
   $f->match(
     [
       z:FunctionDefinition<Any>[1]|
             print(if($debug.debug,|'BEFORE: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+'\n',|''));
 
-            // println(meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
             // Init
             let initState = meta::relational::tests::pct::process::initState(
               $z->openVariableValues(),
@@ -301,7 +296,6 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                   ->addWith($allReprocessed.mapping, $runtime);
 
             print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n',|''));
-            meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))->println();
 
             let otherFuncs = $allReprocessed.current->map(r | $r->meta::relational::tests::pct::extractDependentFunctions())->distinct();
 
