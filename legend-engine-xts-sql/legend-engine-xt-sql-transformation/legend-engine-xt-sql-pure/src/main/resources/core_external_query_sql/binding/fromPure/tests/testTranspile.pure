@@ -3901,8 +3901,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
-//TODO we require casting in the sql to get correct type handling
-function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testVariant():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testVariant():Boolean[1]
 {
   test(
     'select ' + 
@@ -3912,13 +3911,6 @@ function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure:
     'json_extract_path(object_col::jsonb, \'hello\', \'world\') as object_nav_extract, ' +
     'json_extract_path_text(object_col::jsonb, \'hello\', \'world\') as object_nav_extract_text, ' +
     'int_array::jsonb -> 1 as array_index ' +
-    // 'variant[1] as at, ' + 
-    // 'variant[1 + 1] as at_exp, ' + 
-    // 'array_position(variant, 2) as position, ' +
-    // '(cast int_array as jsonb)[1] as at2, ' + 
-    // 'int_array[1 + 1] as at_exp2, ' + 
-    // 'array_position(int_array, 2) as position2, ' +
-    // '(int_array[1:2])[1] as slice ' +
     'from service."/service/service7"',
 
     [
