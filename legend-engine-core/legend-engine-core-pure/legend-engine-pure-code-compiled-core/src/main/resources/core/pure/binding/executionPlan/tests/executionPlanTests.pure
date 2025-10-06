@@ -533,7 +533,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
 {
   let binding    = testBinding();
   let tree       = #{TargetPerson{fullName}}#;
-  let planString = buildPlan({data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, mergeRuntimes(
+  let planString1 = buildPlan({data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, mergeRuntimes(
     [
       ^Runtime(
         connectionStores = ^ConnectionStore(
@@ -541,6 +541,13 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
           connection=^ModelChainConnection(mappings = M2MMapping1))
       ),
       getRuntimeWithModelQueryConnection(_Person, $binding, $data)]))->externalize($binding, $tree);});
+
+  let planString2 = buildPlan({data:Byte[*]| TargetPerson.all()
+                                              ->graphFetch($tree)
+                                              ->withChainedMappings([M2MMapping, M2MMapping1])
+                                              ->from(getRuntimeWithModelQueryConnection(_Person, $binding, $data))
+                                              ->externalize($binding, $tree)
+                              });
 
   let expected =
         'Sequence\n' +
@@ -636,7 +643,8 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
         '  )\n' +
         ')\n';
 
-   assertEquals($expected, $planString);
+  assertEquals($expected, $planString1);
+  assertEquals($expected, $planString2);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::external::format::shared::executionPlan::tests::testExtractRuntimeOnChainingQuery(): Boolean[1]
