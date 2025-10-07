@@ -1,0 +1,69 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::relation::functions::transformation::concatenate::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_relation/relation/functions/transformation/concatenate.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::concatenate::testSimpleConcatenateShared_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw}#->meta::pure::functions::relation::concatenate(#TDS{\n'+
+                            'val,str\n'+
+                            '5,qwea\n'+
+                            '6,eeewe\n'+
+                            '7,qqwew}#)',
+                            'select "unionalias_0"."val" as "val", "unionalias_0"."str" as "str" from (select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n1,a\n3,ewe\n4,qw\') as "table0_0" UNION ALL select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n  5,qwea\n  6,eeewe\n  7,qqwew\') as "table0_0") as "unionalias_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let a = #TDS{\n'+
+                            'val,str\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw}#;\n'+
+                            ' let b = #TDS{\n'+
+                            'val,str\n'+
+                            '5,qwea\n'+
+                            '6,eeewe\n'+
+                            '7,qqwew}#;\n'+
+                            ' let c = $a->meta::pure::functions::relation::concatenate($b);\n'+
+                            ' $c->meta::pure::functions::relation::concatenate($b);\n'+
+                            '',
+                            'WITH a AS (select "table1_0".val as "val", "table1_0".str as "str" from csv(\'val,str\n1,a\n3,ewe\n4,qw\') as "table1_0"), ' +
+                              'b AS (select "table1_0".val as "val", "table1_0".str as "str" from csv(\'val,str\n  5,qwea\n  6,eeewe\n  7,qqwew\') as "table1_0"), ' +
+                              'c AS (select "unionalias_0"."val", "unionalias_0"."str" from (select "a_0"."val", "a_0"."str" from a as "a_0" UNION ALL select "b_0"."val", "b_0"."str" from b as "b_0") as "unionalias_0") ' +
+                              'select "unionalias_0"."val", "unionalias_0"."str" from (select "c_0"."val", "c_0"."str" from c as "c_0" UNION ALL select "b_0"."val", "b_0"."str" from b as "b_0") as "unionalias_0"'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::relation::functions::transformation::concatenate::exec():Boolean[1]
+{
+   meta::pure::functions::relation::tests::concatenate::testSimpleConcatenateShared(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

@@ -1,0 +1,52 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::standard::collection::or::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/collection/or.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_',
+                      [
+                        rev('|or(true)',
+                            'select (Boolean\'true\')'
+                        ),
+                        rev('|or([true, true])',
+                            'select (Boolean\'true\' or Boolean\'true\')'
+                        ),
+                        rev('|or([true, false])',
+                            'select (Boolean\'true\' or Boolean\'false\')'
+                        ),
+                        rev('|or([true, true, false])',
+                            'select (Boolean\'true\' or Boolean\'true\' or Boolean\'false\')'
+                        ),
+                        rev('|or(false)',
+                            'select (Boolean\'false\')'
+                        ),
+                        rev('|or([false, false])',
+                            'select (Boolean\'false\' or Boolean\'false\')'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::collection::or::exec():Boolean[1]
+{
+   meta::pure::functions::collection::tests::or::testOr(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

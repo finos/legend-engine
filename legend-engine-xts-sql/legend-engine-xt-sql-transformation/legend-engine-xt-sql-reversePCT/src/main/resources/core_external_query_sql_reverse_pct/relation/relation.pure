@@ -21,8 +21,15 @@ function meta::external::query::sql::reversePCT::tests::relation::reverses():Rev
 
     meta::external::query::sql::reversePCT::tests::relation::iteration::filter::reverses(),
 
+    meta::external::query::sql::reversePCT::tests::relation::functions::order::sort::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::functions::olap::over::reverses(),
-    meta::external::query::sql::reversePCT::tests::relation::ranking::rank::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::relation::functions::ranking::cumulativeDistribution::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::functions::ranking::denseRank::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::functions::ranking::ntile::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::functions::ranking::percentRank::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::functions::ranking::rank::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::functions::ranking::rowNumber::reverses(),
     
     meta::external::query::sql::reversePCT::tests::relation::slice::drop::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::slice::first::reverses(),
@@ -33,6 +40,10 @@ function meta::external::query::sql::reversePCT::tests::relation::reverses():Rev
     meta::external::query::sql::reversePCT::tests::relation::slice::nth::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::slice::slice::reverses(),
 
-    meta::external::query::sql::reversePCT::tests::relation::transformation::groupBy::reverses()
+    meta::external::query::sql::reversePCT::tests::relation::functions::transformation::concatenate::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::functions::transformation::distinct::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::functions::transformation::aggregate::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::functions::transformation::groupBy::reverses()
+
   ]
 }

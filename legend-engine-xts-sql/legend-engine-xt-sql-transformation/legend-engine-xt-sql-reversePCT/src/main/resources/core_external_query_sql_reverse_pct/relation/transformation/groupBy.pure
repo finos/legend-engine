@@ -14,7 +14,7 @@
 
 import meta::external::query::sql::reversePCT::framework::*;
 
-function meta::external::query::sql::reversePCT::tests::relation::transformation::groupBy::reverses():ReversesForSource[1]
+function meta::external::query::sql::reversePCT::tests::relation::functions::transformation::groupBy::reverses():ReversesForSource[1]
 {
     ^ReversesForSource(
       source = '/core_functions_relation/relation/functions/transformation/groupBy.pure',
