@@ -32,13 +32,30 @@ public class Aggregate extends AbstractNative implements Native
     @Override
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
+        return getString(transformedParams.get(0), "Lists.mutable.with(" + transformedParams.get(1) + ")");
+    }
+
+    @Override
+    public String buildBody()
+    {
+        return "new SharedPureFunction<Object>()\n" +
+                "        {\n" +
+                "            @Override\n" +
+                "            public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
+                "            {\n" +
+                "                return " + getString("(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation)vars.get(0)", "((MutableList)vars.get(1))") + ";" +
+                "            }\n" +
+                "        }";
+    }
+
+    private String getString(String param1, String param2)
+    {
         StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.groupBy");
         result.append('(');
-        result.append(transformedParams.get(0));
+        result.append(param1);
         result.append(", ");
-        processAggColSpec(result, "Lists.mutable.with(" + transformedParams.get(1) + ")", false);
+        processAggColSpec(result, param2, false);
         result.append(", es)");
         return result.toString();
     }
-
 }

@@ -1,0 +1,65 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::standard::math::aggregator::percentile::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/math/aggregator/percentile.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::percentile::testPercentile_Relation_Aggregate_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,val\n'+
+                            '1,1.0\n'+
+                            '1,2.0\n'+
+                            '1,3\n'+
+                            '2,1.5\n'+
+                            '2,2.5\n'+
+                            '2,3.5\n'+
+                            '3,1\n'+
+                            '3,1.5\n'+
+                            '3,2.0}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer, val:Float)[1]|$x.val:y: Float[*]|$y->meta::pure::functions::math::percentile(0.6, true, false)])',
+                            'select "table0_0".id as "id", percentile_disc(0.6) within group (order by "table0_0".val asc) as "newCol" from csv(\'id,val\n                1,1.0\n                1,2.0\n                1,3\n                2,1.5\n                2,2.5\n                2,3.5\n                3,1\n                3,1.5\n                3,2.0\') as "table0_0" group by "id"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,val\n'+
+                            '1,1.0\n'+
+                            '1,2.0\n'+
+                            '1,3\n'+
+                            '2,1.5\n'+
+                            '2,2.5\n'+
+                            '2,3.5\n'+
+                            '3,1\n'+
+                            '3,1.5\n'+
+                            '3,2.0}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, val:Float)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, val:Float)>[1], r: (id:Integer, val:Float)[1]|$r.val}:y: Float[*]|$y->meta::pure::functions::math::percentile(0.6, false, true))',
+                            'select "table0_0".id as "id", "table0_0".val as "val", percentile_cont(0.6) within group (order by "table0_0".val desc) OVER (Partition By "table0_0".id) as "newCol" from csv(\'id,val\n                1,1.0\n                1,2.0\n                1,3\n                2,1.5\n                2,2.5\n                2,3.5\n                3,1\n                3,1.5\n                3,2.0\') as "table0_0"'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::math::aggregator::percentile::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::percentile::testPercentile_Relation_Aggregate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

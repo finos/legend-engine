@@ -1,0 +1,286 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::variant::convert::to::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/variant/convert/to.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToNull_Function_1__Boolean_1_',
+                      [
+                        revError('|\'null\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Integer)',
+                            '',
+                            'Unexpected token',
+                            'cannot cast null to int'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToInteger_Function_1__Boolean_1_',
+                      [
+                        rev('|\'1\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Integer)',
+                            'select cast(cast(cast(Text\'1\' as JSON) as TEXT) as BIGINT)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToIntegerFromString_Function_1__Boolean_1_',
+                      [
+                        revError('|\'"1"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Integer)',
+                            '',
+                            'Unexpected token',
+                            'cannot cast number to int'
+                        )
+                      ]
+                 ),
+                //  revsForTest(
+                //       'meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat_Function_1__Boolean_1_',
+                //       [
+                //         revError('|\'1.25\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Integer)',
+                //             '',
+                //             'Unexpected token',
+                //             'needs investigating'
+                //         )
+                //       ]
+                //  ),
+                //  revsForTest(
+                //       'meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat_Function_1__Boolean_1_',
+                //       [
+                //         revError('|\'"1.25"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Integer)',
+                //             '',
+                //             'Unexpected token',
+                //             'cannot cast string to number'
+                //         )
+                //       ]
+                //  ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToFloat_Function_1__Boolean_1_',
+                      [
+                        rev('|\'1.25\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Float)',
+                            'select cast(cast(cast(Text\'1.25\' as JSON) as TEXT) as FLOAT8)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToFloatFromInteger_Function_1__Boolean_1_',
+                      [
+                        rev('|\'1\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Float)',
+                            'select cast(cast(cast(Text\'1\' as JSON) as TEXT) as FLOAT8)'
+                        )
+                      ]
+                 ),
+                //  revsForTest(
+                //       'meta::pure::functions::variant::convert::tests::to::testToFloatFromString_Function_1__Boolean_1_',
+                //       [
+                //         revError('|\'"1.25"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Float)',
+                //             '',
+                //             'Unexpected token',
+                //             'needs investigating - select cast(cast(cast(Text\'"1.25"\' as JSON) as TEXT) as FLOAT8)'                           
+                //         )
+                //       ]
+                //  ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToBooleanTrue_Function_1__Boolean_1_',
+                      [
+                        rev('|\'true\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Boolean)',
+                            'select cast(cast(cast(Text\'true\' as JSON) as TEXT) as BOOLEAN)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToBooleanFalse_Function_1__Boolean_1_',
+                      [
+                        rev('|\'false\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Boolean)',
+                            'select cast(cast(cast(Text\'false\' as JSON) as TEXT) as BOOLEAN)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToBooleanFromString_Function_1__Boolean_1_',
+                      [
+                        revError('|\'"false"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Boolean)',
+                            '',
+                            'Unexpected token',
+                            'needs investigating - select cast(cast(cast(Text\'"false"\' as JSON) as TEXT) as BOOLEAN)'                            
+                        )
+                      ]
+                 ),
+                //  revsForTest(
+                //       'meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_',
+                //       [
+                //         revError('|\'"hello"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@Boolean)',
+                //             '',
+                //             'Unexpected token',
+                //             'needs investigating - select cast(cast(cast(Text\'"hello"\' as JSON) as TEXT) as BOOLEAN)'
+                //         )
+                //       ]
+                //  ),
+                //  revsForTest(
+                //       'meta::pure::functions::variant::convert::tests::to::testToStrictDate_Function_1__Boolean_1_',
+                //       [
+                //         rev('|\'"2020-01-01"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@StrictDate)',
+                //             'select cast(cast(cast(Text\'"2020-01-01"\' as JSON) as TEXT) as DATE)'
+                //         )
+                //       ]
+                //  ),
+                //  revsForTest(
+                //       'meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString_Function_1__Boolean_1_',
+                //       [
+                //         revError('|\'"2020"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@StrictDate)',
+                //             '',
+                //             'Unexpected token',
+                //             'needs investigating - select cast(cast(cast(Text\'"2020"\' as JSON) as TEXT) as DATE)'                            
+                //         )
+                //       ]
+                //  ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToDateTime_Function_1__Boolean_1_',
+                      [
+                        revError('|\'"2020-01-01T01:01:00.000"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@DateTime)',
+                            '',
+                            'Unexpected token',
+                            'needs investigating'
+                        )
+                      ]
+                 ),
+                //  revsForTest(
+                //       'meta::pure::functions::variant::convert::tests::to::testToDateTimeFromWrongString_Function_1__Boolean_1_',
+                //       [
+                //         revError('|\'"2020-01-01"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@DateTime)',
+                //             '',
+                //             'Unexpected token',
+                //             'needs investigating'
+                //         )
+                //       ]
+                //  ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_',
+                      [
+                        revError('|\'"Hello"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@String)',
+                            '',
+                            'Unexpected token',
+                            'support select cast(Text\'"Hello"\' as JSON)#>>\'{}\''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToStringFromNumber_Function_1__Boolean_1_',
+                      [
+                        rev('|\'1\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@String)',
+                            'select cast(cast(Text\'1\' as JSON) as TEXT)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToStringFromBoolean_Function_1__Boolean_1_',
+                      [
+                        rev('|\'true\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@String)',
+                            'select cast(cast(Text\'true\' as JSON) as TEXT)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues_Function_1__Boolean_1_',
+                      [
+                        rev('|\'{"hello":1}\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@meta::pure::functions::collection::Map<String, meta::pure::metamodel::variant::Variant>)->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::collection::get(\'hello\')->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::variant::convert::to(@Integer)',
+                            'select cast(cast(json_extract_path(cast(Text\'{"hello":1}\' as JSON), Text\'hello\') as TEXT) as BIGINT)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToMapWithIntegerValue_Function_1__Boolean_1_',
+                      [
+                        rev('|\'{"hello":1}\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@meta::pure::functions::collection::Map<String, Integer>)->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::collection::get(\'hello\')->meta::pure::functions::multiplicity::toOne()',
+                            'select cast(cast(json_extract_path(cast(Text\'{"hello":1}\' as JSON), Text\'hello\') as TEXT) as BIGINT)'
+                        )
+                      ]
+                 ),
+                //  revsForTest(
+                //       'meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant_Function_1__Boolean_1_',
+                //       [
+                //         revError('|\'"not an object"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@meta::pure::functions::collection::Map<String, meta::pure::metamodel::variant::Variant>)',
+                //             '',
+                //             'Unexpected token',
+                //             'needs investigating'
+                //         )
+                //       ]
+                //  ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToListOfVariants_Function_1__Boolean_1_',
+                      [
+                        revError('|\'[1, 2, 3]\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@meta::pure::functions::collection::List<meta::pure::metamodel::variant::Variant>)',
+                            '',
+                            'Unexpected token',
+                            'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::variant::convert::tests::to::testToListOfIntegers_Function_1__Boolean_1_',
+                      [
+                        revError('|\'[1, 2, 3]\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@meta::pure::functions::collection::List<Integer>)',
+                            '',
+                            'Unexpected token',
+                            'needs investigating'
+                        )
+                      ]
+                 )
+                //  revsForTest(
+                //       'meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant_Function_1__Boolean_1_',
+                //       [
+                //         revError('|\'"not an array"\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::convert::to(@meta::pure::functions::collection::List<meta::pure::metamodel::variant::Variant>)',
+                //             '',
+                //             'Unexpected token',
+                //             'needs investigating'
+                //         )
+                //       ]
+                //  )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::variant::convert::to::exec():Boolean[1]
+{
+   meta::pure::functions::variant::convert::tests::to::testToNull(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToInteger(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToIntegerFromString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToFloat(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToFloatFromInteger(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToFloatFromString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToBooleanTrue(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToBooleanFalse(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToBooleanFromString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToStrictDate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToDateTime(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToDateTimeFromWrongString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToStringFromNumber(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToStringFromBoolean(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToMapWithIntegerValue(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToMapWithNonStringKeys(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToListOfVariants(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToListOfIntegers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToEnum(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::variant::convert::tests::to::testToAny(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

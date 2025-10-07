@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::relation::*;
 import meta::external::query::sql::reversePCT::framework::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::test::pct::*;
@@ -58,7 +59,21 @@ function <<PCT.adapter>> meta::external::query::sql::reversePCT::framework::sql<
   if ($rev.shouldBeSupported,
     | let sqlString = $rev.reverse->toOne();
       let func = meta::external::query::sql::transformation::queryToPure::sqlToPure($sqlString->toOne());
-      $func->cast(@Function<{->X[o]}>)->eval();,
+      
+      let returnType = $func->functionReturnType();
+      let expectedReturnType = $f->functionReturnType();
+
+      if ($returnType.rawType == Relation && $expectedReturnType.rawType != Relation,
+        | 
+          let tds = $func->cast(@Function<{->Relation<Any>[1]}>)->eval();
+          let columns = $tds->columns();
+          let values = $tds->map(x | $columns->map(c | $c->eval($x)));
+
+          let functionType = $f.classifierGenericType.typeArguments->toOne().rawType->cast(@FunctionType)->toOne();
+          let newFunc = meta::pure::functions::meta::newLambdaFunction($functionType);
+          ^$newFunc(expressionSequence = ^InstanceValue(multiplicity=$f->functionReturnMultiplicity(),genericType=$f->functionReturnType(), values = $values))->cast(@Function<{->X[o]}>)->eval();,
+        | $func->cast(@Function<{->X[o]}>)->eval());,
+
     |fail('Should not be supported');@X->toMultiplicity(@[o]);
   );
 }
@@ -106,4 +121,5 @@ function meta::external::query::sql::reversePCT::framework::reverses():ReversesF
     ->concatenate(meta::external::query::sql::reversePCT::tests::essential::reverses())
     ->concatenate(meta::external::query::sql::reversePCT::tests::relation::reverses())
     ->concatenate(meta::external::query::sql::reversePCT::tests::standard::reverses())
+    ->concatenate(meta::external::query::sql::reversePCT::tests::variant::reverses())
 }

@@ -17,8 +17,20 @@ import meta::external::query::sql::reversePCT::framework::*;
 function meta::external::query::sql::reversePCT::tests::standard::reverses():ReversesForSource[*]
 {
   [
+    meta::external::query::sql::reversePCT::tests::standard::math::aggregator::average::reverses(),
     meta::external::query::sql::reversePCT::tests::standard::math::aggregator::max::reverses(),
     meta::external::query::sql::reversePCT::tests::standard::math::aggregator::min::reverses(),
-    meta::external::query::sql::reversePCT::tests::standard::math::aggregator::average::reverses()
+    meta::external::query::sql::reversePCT::tests::standard::math::aggregator::percentile::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::math::aggregator::stdDevPopulation::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::math::aggregator::stdDevSample::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::math::aggregator::sum::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::math::aggregator::variancePopulation::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::math::aggregator::varianceSample::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::standard::tbd::bitAnd::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::tbd::bitOr::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::tbd::bitShiftLeft::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::tbd::bitShiftRight::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::tbd::bitXor::reverses()
   ]
 }

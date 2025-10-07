@@ -63,6 +63,11 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-sql-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -132,6 +137,7 @@
                         <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_GrammarFunctions_Reverse_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_RelationFunctions_Reverse_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_StandardFunctions_Reverse_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_VariantFunctions_Reverse_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -264,6 +270,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -281,11 +291,5 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- TEST -->
     </dependencies>
 </project>

@@ -1,0 +1,236 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::relation::relation::functions::size::size::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_relation/relation/functions/size/size.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::size::testSimpleSize_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw}#->meta::pure::functions::relation::size()',
+                            'select count(*) from csv(\'val,str\n 1,a\n 3,ewe\n 4,qw\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::size::testSimpleSize_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'val,str\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw}#;\n'+
+                            ' $t->meta::pure::functions::relation::size();\n'+
+                            '',
+                            'WITH t AS (select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n 1,a\n 3,ewe\n 4,qw\') as "table0_0") select count(*) from t as "t_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::groupBy(~[grp], ~[newCol:x: (id:Integer, grp:Integer, name:String)[1]|$x.name:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),YoCol:x: (id:Integer, grp:Integer, name:String)[1]|$x.id:y: Integer[*]|$y->plus()])->meta::pure::functions::relation::size()',
+                            'select count(*) from (select "table0_1".grp as "grp", string_agg("table0_1".name, Text\'\') as "newCol", sum("table0_1".id) as "YoCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_1" group by "grp") as "subselect"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#;\n'+
+                            ' let t2 = $t->meta::pure::functions::relation::groupBy(~[grp], ~[newCol:x: (id:Integer, grp:Integer, name:String)[1]|$x.name:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),YoCol:x: (id:Integer, grp:Integer, name:String)[1]|$x.id:y: Integer[*]|$y->plus()]);\n'+
+                            ' $t2->meta::pure::functions::relation::size();\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"), t2 AS (select "t_0"."grp" as "grp", string_agg("t_0"."name", Text\'\') as "newCol", sum("t_0"."id") as "YoCol" from t as "t_0" group by "grp") select count(*) from t2 as "t2_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::size::testWindowSize_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|$y->plus())->meta::pure::functions::relation::size()',
+                            'select count(*) from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::test_Distinct_Size_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str,str2\n'+
+                            '2,a,b\n'+
+                            '3,a,b\n'+
+                            '4,qw,b\n'+
+                            '5,qw,c\n'+
+                            '2,weq,c}#->meta::pure::functions::relation::distinct(~[str,str2])->meta::pure::functions::relation::size()',
+                            'select count(*) from (select distinct "table0_1".str as "str", "table0_1".str2 as "str2" from csv(\'val,str,str2\n                2,a,b\n                3,a,b\n                4,qw,b\n                5,qw,c\n                2,weq,c\') as "table0_1") as "subselect"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::test_Limit_Size_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str,str2\n'+
+                            '2,a,b\n'+
+                            '3,a,b\n'+
+                            '4,qw,b\n'+
+                            '5,qw,c\n'+
+                            '2,weq,c}#->meta::pure::functions::relation::limit(2)->meta::pure::functions::relation::size()',
+                            'select count(*) from (select "table0_1".val as "val", "table0_1".str as "str", "table0_1".str2 as "str2" from csv(\'val,str,str2\n                2,a,b\n                3,a,b\n                4,qw,b\n                5,qw,c\n                2,weq,c\') as "table0_1" limit 2) as "subselect"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::test_Slice_Size_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str,str2\n'+
+                            '2,a,b\n'+
+                            '3,a,b\n'+
+                            '4,qw,b\n'+
+                            '5,qw,c\n'+
+                            '2,weq,c}#->meta::pure::functions::relation::slice(2, 4)->meta::pure::functions::relation::size()',
+                            'select count(*) from (select "table0_1".val as "val", "table0_1".str as "str", "table0_1".str2 as "str2" from csv(\'val,str,str2\n                2,a,b\n                3,a,b\n                4,qw,b\n                5,qw,c\n                2,weq,c\') as "table0_1" offset 2 limit 2) as "subselect"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'val,str\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw}#->meta::pure::functions::relation::size() > 0',
+                            'select count(*) > 0 from csv(\'val,str\n 1,a\n 3,ewe\n 4,qw\') as "table0_0"',
+                            'Boolean is not supported yet!',
+                            'investigation required'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        revError('|let t = #TDS{\n'+
+                            'val,str\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw}#;\n'+
+                            ' let s = $t->meta::pure::functions::relation::size();\n'+
+                            ' $s > 0;\n'+
+                            '',
+                            'WITH t AS (select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n 1,a\n 3,ewe\n 4,qw\') as "table0_0"), s AS (select count(*) as col_0 from t as "t_0") select "s_0".col_0 > 0 from s as "s_0"',
+                            'Error during dynamic reactivation',
+                            'investigation required'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::size::testSize_Relation_Aggregate_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp,name,employeeNumber\n'+
+                            '1,2,A,21\n'+
+                            '2,1,B,41\n'+
+                            '3,3,C,71\n'+
+                            '4,4,D,31\n'+
+                            '5,2,E,11\n'+
+                            '6,1,F,1\n'+
+                            '7,3,G,91\n'+
+                            '8,1,H,81\n'+
+                            '9,5,I,51\n'+
+                            '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Integer)[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::collection::size())',
+                            'select "table0_0".grp as "grp", count("table0_0".employeeNumber) as "newCol" from csv(\'id,grp,name,employeeNumber\n1,2,A,21\n2,1,B,41\n3,3,C,71\n4,4,D,31\n5,2,E,11\n6,1,F,1\n7,3,G,91\n8,1,H,81\n9,5,I,51\n10,0,J,101\') as "table0_0" group by "grp"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::size::testSize_Relation_Window_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::collection::size())',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", count("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+// function meta::external::query::sql::reversePCT::tests::relation::relation::functions::size::size::exec():Boolean[1]
+// {
+//    meta::pure::functions::relation::tests::size::testSimpleSize(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//    meta::pure::functions::relation::tests::size::testSimpleSize_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//    meta::pure::functions::relation::tests::size::testGroupBySize(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//    meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//    meta::pure::functions::relation::tests::size::testWindowSize(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//    meta::pure::functions::relation::tests::composition::test_Distinct_Size(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//    meta::pure::functions::relation::tests::composition::test_Limit_Size(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//    meta::pure::functions::relation::tests::composition::test_Slice_Size(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//    meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//    meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//    meta::pure::functions::relation::tests::size::testSize_Relation_Aggregate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//    meta::pure::functions::relation::tests::size::testSize_Relation_Window(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+// }

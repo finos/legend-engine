@@ -1075,7 +1075,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                      aggValue : TDSAggregateValue[1]| 'agg(\'%s\', %s, %s)'->format([$aggValue.name, $state->toPure($aggValue.mapFn), $state->toPure($aggValue.aggregateFn)]),
                      aggValue : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue[1]| 'agg(%s, %s)'->format([$state->toPure($aggValue.mapFn), $state->toPure($aggValue.aggregateFn)]),
                      sortInfo : TDSSortInformation[1]| '^SortInformation(column = \'%s\', direction = SortDirection.%s)'->format([$sortInfo.column, $sortInfo.direction]),
-                     extendInfo: TDSColumnInformation[1] | '^BasicColumnSpecification<%s>(name = \'%s\', func = %s)'->format([$extendInfo.columnFn->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction).parameters->at(0).genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath->toOne(), $extendInfo.name, $state->toPure($extendInfo.columnFn)]),
+                     extendInfo: TDSColumnInformation[1] | 
+                          '^BasicColumnSpecification<%s>(name = \'%s\', func = %s)'->format([
+                            $extendInfo.columnFn->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction).parameters->at(0).genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath->first()->orElse('???'), 
+                            $extendInfo.name, 
+                            $state->toPure($extendInfo.columnFn)
+                            ]);,
                      path : Path[1]| '#/%s/%s%s#'->format([$path.startType, $path.path->map(p|$p->match([ppe:PropertyPathElement[1]|$ppe.property]))->joinStrings('.'), if($path.name->isEmpty() || ($path.name->toOne()->length() == 0), |'', |'!' + $path.name->toOne())]);,
                      or : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank[1]|
                         '^TdsOlapRank<TDSRow>(func = %s)'->format($state->toPure($or.function)),

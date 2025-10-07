@@ -657,6 +657,30 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     )
 }
 
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_relationValidation_constraint():Boolean[1]
+{
+  doRelationTestWithoutDQColumns(
+    '###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: {|meta::external::dataquality::tests::domain::Person.all()->project(~[name: {x | $x.name},mustBeOfLegalAge: {x| $x->meta::pure::constraints::functions::createConstraintFailureMessage(\'mustBeOfLegalAge\')}])->from(meta::external::dataquality::tests::domain::DataQualityRuntime)};' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'mustBeOfLegalAge\';' +
+    '             description: \'mustBeOfLegalAge\';' +
+    '             assertion: rel|$rel->filter(row|$row.mustBeOfLegalAge->isNotEmpty())->meta::external::dataquality::assertRelationEmpty(~[name,mustBeOfLegalAge]);' +
+    '          }' +
+    '         ];' +
+    '      }',
+          'mustBeOfLegalAge',
+          {|meta::pure::functions::lang::eval(rel: meta::pure::metamodel::relation::Relation<(name:String, mustBeOfLegalAge:String)>[1]|
+            $rel->filter(row: (name:String, mustBeOfLegalAge:String)[1]|$row.mustBeOfLegalAge->isNotEmpty())
+              ->select(~[name,mustBeOfLegalAge]), 
+              Person.all()->project(~[name: {x | $x.name},mustBeOfLegalAge: {x| $x->meta::pure::constraints::functions::createConstraintFailureMessage('mustBeOfLegalAge')}]))},
+          'meta::external::dataquality::tests::domain::DataQualityRuntime'        
+    );
+}
+
 function <<test.Test>> meta::external::dataquality::tests::testFromFunctionListIsComplete():Boolean[1]
 {
   let funcs = meta::external::dataquality::fromFunctions();

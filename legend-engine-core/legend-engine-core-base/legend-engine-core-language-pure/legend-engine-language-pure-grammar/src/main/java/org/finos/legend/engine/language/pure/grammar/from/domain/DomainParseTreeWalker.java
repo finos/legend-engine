@@ -324,6 +324,13 @@ public class DomainParseTreeWalker
     {
         Constraint constraint = new Constraint();
         constraint.functionDefinition = new LambdaFunction();
+
+        Variable _this = new Variable();
+        _this.name = "this";
+        _this.multiplicity = new Multiplicity(1, 1);
+
+        constraint.functionDefinition.parameters = Collections.singletonList(_this);
+
         List<String> typeParametersNames = Lists.mutable.empty();
 
         if (ctx.simpleConstraint() != null)
@@ -348,6 +355,7 @@ public class DomainParseTreeWalker
             {
                 constraint.messageFunction = new LambdaFunction();
                 constraint.messageFunction.body = Collections.singletonList(this.combinedExpression(complexConstraintContext.constraintMessage().combinedExpression(), "message", typeParametersNames, lambdaContext, "", true, false));
+                constraint.messageFunction.parameters = Collections.singletonList(_this);
             }
             constraint.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         }
