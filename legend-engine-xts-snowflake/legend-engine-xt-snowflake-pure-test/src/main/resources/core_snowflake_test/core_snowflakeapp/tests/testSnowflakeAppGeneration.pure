@@ -92,7 +92,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeHardCoded():Boolean[1]
 {
   // the time zone info in the connection should be ignored in the generated sql
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = \'2024-02-27 16:21:53\'::timestamp $$;';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where cast("root".LAST_UPDATED as TIMESTAMP) = \'2024-02-27 16:21:53\'::timestamp $$;';
 
   let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeHardCoded():TabularDataSet[1];\n';
 
@@ -102,7 +102,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeParam():Boolean[1]
 {
   // the time zone info in the connection should be ignored in the generated sql
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("asOf" TIMESTAMP) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = asOf $$;';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("asOf" TIMESTAMP) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where cast("root".LAST_UPDATED as TIMESTAMP) = asOf $$;';
 
   let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeParam(DateTime[1]):TabularDataSet[1];\n';
 
