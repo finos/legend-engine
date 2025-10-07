@@ -13,6 +13,8 @@
 // limitations under the License.
 
 ###Pure
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::hash::*;
 import meta::relational::extension::*;
 import meta::external::query::sql::transformation::queryToPure::*;
@@ -884,6 +886,46 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       //   );
       // }, true, false)
     ])
+}
+
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testBitwiseOperations():Boolean[1]
+{
+  test(
+    'SELECT ' + 
+    'Integer & 1 as "AND", ' +
+    'Integer | 1 as "OR", ' +
+    'Integer # 1 as "XOR", ' +
+    'Integer << 1 as "LEFT", ' +
+    'Integer >> 1 as "RIGHT" ' +
+    'FROM service."/service/service1"',
+
+    [
+      c({| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->project([
+          col(row:TDSRow[1] | $row.getInteger('Integer')->bitAnd(1), 'AND'),
+          col(row:TDSRow[1] | $row.getInteger('Integer')->bitOr(1), 'OR'),
+          col(row:TDSRow[1] | $row.getInteger('Integer')->bitXor(1), 'XOR'),
+          col(row:TDSRow[1] | $row.getInteger('Integer')->bitShiftLeft(1), 'LEFT'),
+          col(row:TDSRow[1] | $row.getInteger('Integer')->bitShiftRight(1), 'RIGHT')
+        ])
+      })
+
+      //TODO 0..1 issue
+      // c({| FlatInput.all()->project(
+      //         ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+      //   ->project(~[
+      //     AND: x | $x.Integer->bitAnd(1),
+      //     OR: x | $x.Integer->bitOr(1),
+      //     XOR: x | $x.Integer->bitAXor(1),
+      //     LEFT: x | $x.Integer->bitShiftLeft(1),
+      //     RIGHT: x | $x.Integer->bitShiftRight(1)
+      //   ])
+      // })
+    ]
+  )
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinctFromOperator():Boolean[1]
@@ -3826,6 +3868,104 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testTableFunctionSources():Boolean[1]
+{
+  test(
+    'select avg(a) from unnest(ARRAY[5,1,2,8,3]) as a',
+
+    [
+      c({| 
+          [5, 1, 2, 8, 3]
+            ->meta::pure::functions::relation::variant::flatten(~a)
+            ->meta::pure::functions::relation::aggregate(~['avg(a)':x |$x.a:y: Integer[*]|$y->meta::pure::functions::math::average()])
+      })      
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testValuesRelation():Boolean[1]
+{
+  test(
+    'select t.number as "aliased", number as "not_aliased" from (values(1), (2), (3)) AS t (number)',
+
+    [
+      c({| 
+          [1, 2, 3]
+            ->meta::pure::functions::relation::variant::flatten(~number)
+            ->project(~[
+              aliased: x | $x.number,
+              not_aliased: x | $x.number
+            ])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testVariant():Boolean[1]
+{
+  test(
+    'select ' + 
+    'object_col::jsonb -> \'hello\' ->> \'world\' as object_nav, ' +
+    'object_col::jsonb #> \'{hello,world}\' as object_nav_path, ' +
+    'object_col::jsonb #>> \'{hello,world}\' as object_nav_path_text, ' +
+    'json_extract_path(object_col::jsonb, \'hello\', \'world\') as object_nav_extract, ' +
+    'json_extract_path_text(object_col::jsonb, \'hello\', \'world\') as object_nav_extract_text, ' +
+    'int_array::jsonb -> 1 as array_index ' +
+    'from service."/service/service7"',
+
+    [
+      c({| 
+          #TDS
+              id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col
+              1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": 1}}"
+              2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": 2}}"
+              3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}"
+            #->project(~[
+                  object_nav: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world')->to(@String),
+                  object_nav_path: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world'),
+                  object_nav_path_text: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world')->to(@String),
+                  object_nav_extract: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world'),
+                  object_nav_extract_text: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world')->to(@String),
+                  array_index: x | $x.int_array->toOne()->meta::pure::functions::variant::convert::fromJson()->get(1)
+                ])
+      }, true, false)      
+    ]
+  )
+}
+
+
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testJSON():Boolean[1]
+{
+  test(
+    'select ' + 
+    'cast(int_array as jsonb) -> 1 as "ARRAY_EXTRACT_JB", ' + 
+    'cast(int_array as json) -> 1 as "ARRAY_EXTRACT_J", ' + 
+    'cast(object_col as json) -> \'hello\' -> \'world\' -> 0 as "PATH_ARRAY_EXTRACT", ' + 
+    'cast(object_col as jsonb) #> \'{hello, world, 0}\' as "PATH_EXTRACT", ' + 
+    'cast(object_col as jsonb) #>> \'{hello, world, 0}\' as "PATH_EXTRACT_TEXT" ' +     
+    'from service."/service/service7"',
+
+    [
+      c({| 
+          #TDS
+                  id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col
+                  1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": [1]}}"
+                  2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": [2]}}"
+                  3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": [3]}}"
+                #->project(~[
+                            ARRAY_EXTRACT_JB: x | $x.int_array->toOne()->fromJson()->get(1),
+                            ARRAY_EXTRACT_J: x  | $x.int_array->toOne()->fromJson()->get(1),
+                            PATH_ARRAY_EXTRACT: x | $x.object_col->toOne()->fromJson()->get('hello')->get('world')->get(0),
+                            PATH_EXTRACT: x | $x.object_col->toOne()->fromJson()->get('hello')->get('world')->get(0),
+                            PATH_EXTRACT_TEXT: x | $x.object_col->toOne()->fromJson()->get('hello')->get('world')->get(0)->to(@String)
+                          ])
+      }, true, false)      
+    ]
+  )
+}
+
+
+
 //TODO fails to resolve enum column
 function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testEnumValuesRelation():Boolean[1]
 {
@@ -3992,6 +4132,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   doNameTest(^CurrentTime(type = CurrentTimeType.TIMESTAMP), 'CURRENT_TIMESTAMP');
   doNameTest(^CurrentTime(type = CurrentTimeType.DATE), 'CURRENT_DATE');
 
+  doNameTest(^CollectionColumnType(name = 'ARRAY', innerType = ^ColumnType(name = 'int')), 'int[]');
+
+  doNameTest(^ColumnType(name = 'int'), 'int');
+  doNameTest(^ColumnType(name = 'int', parameters = [1, 2]), 'int(1, 2)');
+
   doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.EQUAL, right = ^IntegerLiteral(value = 2)), '1 = 2');
   doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.NOT_EQUAL, right = ^IntegerLiteral(value = 2)), '1 != 2');
   doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.LESS_THAN, right = ^IntegerLiteral(value = 2)), '1 < 2');
@@ -4006,7 +4151,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.ILIKE, right = ^StringLiteral(value = 'def')), 'abc ~~* def');
   doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.NOT_LIKE, right = ^StringLiteral(value = 'def')), 'abc !~~ def');
   doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.NOT_ILIKE, right = ^StringLiteral(value = 'def')), 'abc !~~* def');
-
+  
   doNameTest(^Extract(field = ExtractField.DOW, expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'date'))), 'EXTRACT(\'dow\' FROM date)');
 
   doNameTest(^FunctionCall(name = ^QualifiedName(parts = 'myFunc'), arguments = ^IntegerLiteral(value = 1), distinct = false), 'myFunc(1)');

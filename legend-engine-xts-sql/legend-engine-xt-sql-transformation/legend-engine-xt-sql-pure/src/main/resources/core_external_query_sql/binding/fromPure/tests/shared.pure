@@ -372,3 +372,15 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
         ]);
     })
 }
+
+function meta::external::query::sql::transformation::queryToPure::tests::Service7Relation(): Service[1]
+{
+  createService('/service/service7', {|
+    #TDS
+        id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col
+        1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": 1}}"
+        2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": 2}}"
+        3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}"
+      #
+  })
+}
