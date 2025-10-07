@@ -376,7 +376,7 @@ public class TestSQLRoundTrip
     @Test
     public void testArray()
     {
-        check("SELECT a::int[] from myTable");
+        check("SELECT a::int[] from myTable", "SELECT cast(a as int[]) from myTable");
     }
 
     @Test
