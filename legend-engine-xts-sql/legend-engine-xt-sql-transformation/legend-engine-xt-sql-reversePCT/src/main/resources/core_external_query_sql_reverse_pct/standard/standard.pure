@@ -31,6 +31,14 @@ function meta::external::query::sql::reversePCT::tests::standard::reverses():Rev
     meta::external::query::sql::reversePCT::tests::standard::tbd::bitOr::reverses(),
     meta::external::query::sql::reversePCT::tests::standard::tbd::bitShiftLeft::reverses(),
     meta::external::query::sql::reversePCT::tests::standard::tbd::bitShiftRight::reverses(),
-    meta::external::query::sql::reversePCT::tests::standard::tbd::bitXor::reverses()
+    meta::external::query::sql::reversePCT::tests::standard::tbd::bitXor::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::standard::boolean::inequality::between::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::boolean::operation::xor::reverses(),
+
+    //meta::external::query::sql::reversePCT::tests::standard::collection::and::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::collection::greatest::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::collection::least::reverses()
+    //meta::external::query::sql::reversePCT::tests::standard::collection::or::reverses()
   ]
 }
