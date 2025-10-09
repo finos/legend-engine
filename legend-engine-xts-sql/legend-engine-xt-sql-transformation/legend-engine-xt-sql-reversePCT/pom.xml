@@ -137,6 +137,7 @@
                         <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_GrammarFunctions_Reverse_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_RelationFunctions_Reverse_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_StandardFunctions_Reverse_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_UnclassifiedFunctions_Reverse_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_VariantFunctions_Reverse_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
@@ -261,6 +262,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

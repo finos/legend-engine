@@ -1,0 +1,130 @@
+import meta::external::query::sql::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::grammar::math::operation::minus::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/grammar/functions/math/operation/minus.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::minus::testSimpleMinus_Function_1__Boolean_1_',
+                      [
+                        rev('|3 - 2',
+                            'select (3 - 2)'
+                        ),
+                        rev('|3 - (-2)',
+                            'select (3 - -2)'
+                        ),
+                        rev('|(-3) - 2',
+                            'select (-3 - 2)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::minus::testComplexMinus_Function_1__Boolean_1_',
+                      [
+                        rev('|6 - (4 - 5) - 7',
+                            'select (6 - (4 - 5) - 7)'
+                        ),
+                        rev('|3 - (4 - 5) - 7',
+                            'select (3 - (4 - 5) - 7)'
+                        ),
+                        rev('|(-3) - (4 - 5) - 7',
+                            'select (-3 - (4 - 5) - 7)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::minus::testFloatMinus_Function_1__Boolean_1_',
+                      [
+                        rev('|3 - 1.5',
+                            'select (3 - 1.5)'
+                        ),
+                        rev('|0 - 1.5',
+                            'select (0 - 1.5)'
+                        ),
+                        rev('|1.5 - 3',
+                            'select (1.5 - 3)'
+                        ),
+                        rev('|(-1.5) - 3',
+                            'select (-1.5 - 3)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_',
+                      [
+                        rev('|0 - 1',
+                            'select (0 - 1)'
+                        ),
+                        rev('|-1',
+                            'select -1'
+                        ),
+                        rev('|-(-1)',
+                            'select -(-1)'
+                        ),
+                        rev('|-(-(-1))',
+                            'select -(-(-1))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::meta::type(-1)->meta::pure::functions::multiplicity::toOne()'),
+                        noRev('|meta::pure::functions::meta::type(-1.0)->meta::pure::functions::multiplicity::toOne()')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_',
+                      [
+                        rev('|1.0D - 2.0D - 3.0D',
+                            'select (cast(1.0 as decimal) - cast(2.0 as decimal) - cast(3.0 as decimal))'
+                        ),
+                        rev('|1.0D - 2 - 3.0',
+                            'select (cast(1.0 as decimal) - 2 - 3.0)'
+                        ),
+                        rev('|(-4.0D) - 2.0D - 1',
+                            'select (cast(-4.0 as decimal) - cast(2.0 as decimal) - 1)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::minus::testSingleExpressionMinus_Function_1__Boolean_1_',
+                      [
+                        rev('|-$val',
+                            'select -1'
+                        ),
+                        rev('|-(3 - 2)',
+                            'select -(3 - 2)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_',
+                      [
+                        revError('|9223372036854775718 - 132',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigation'
+                        ),
+                        revError('|-9223372036854775718 - 132',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigation'
+                        )                        
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::grammar::math::operation::minus::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::minus::testSimpleMinus(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::minus::testComplexMinus(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::minus::testFloatMinus(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::minus::testSingleMinus(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::math::tests::minus::testSingleMinusType(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::minus::testDecimalMinus(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::minus::testSingleExpressionMinus(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::math::tests::minus::testLargeMinus(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

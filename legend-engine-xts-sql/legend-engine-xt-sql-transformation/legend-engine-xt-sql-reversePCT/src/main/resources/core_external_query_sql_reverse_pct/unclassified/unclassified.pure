@@ -1,0 +1,37 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::unclassified::reverses():ReversesForSource[*]
+{
+  [
+    meta::external::query::sql::reversePCT::tests::unclassified::string::ascii::ascii::reverses(),
+    meta::external::query::sql::reversePCT::tests::unclassified::string::ascii::char::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::unclassified::string::codec::decodeBase64::reverses(),
+    meta::external::query::sql::reversePCT::tests::unclassified::string::codec::encodeBase64::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::unclassified::string::padding::lpad::reverses(),
+    meta::external::query::sql::reversePCT::tests::unclassified::string::padding::repeatString::reverses(),
+    meta::external::query::sql::reversePCT::tests::unclassified::string::padding::rpad::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::unclassified::string::slice::left::reverses(),
+    meta::external::query::sql::reversePCT::tests::unclassified::string::slice::right::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::unclassified::string::split::splitPart::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::unclassified::tbd::coalesce::reverses()
+  ]
+}

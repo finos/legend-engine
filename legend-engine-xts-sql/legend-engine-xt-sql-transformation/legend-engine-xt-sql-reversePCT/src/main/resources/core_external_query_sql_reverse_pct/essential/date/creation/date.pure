@@ -1,0 +1,130 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::essential::date::creation::date::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/date/creation/date.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testDateFromYear_Function_1__Boolean_1_',
+                      [
+                        revError('|1973->meta::pure::functions::date::date()',
+                                 '',
+                                 'Unexpected token',
+                                 'No SQL Translation'
+                        ),
+                        revError('|2015->meta::pure::functions::date::date()',
+                                 '',
+                                 'Unexpected token',
+                                 'No SQL Translation'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testDateFromMonth_Function_1__Boolean_1_',
+                      [
+                        revError('|1973->meta::pure::functions::date::date(11)',
+                                 '',
+                                 'Unexpected token',
+                                 'No SQL Translation'
+                        ),
+                        revError('|2015->meta::pure::functions::date::date(4)',
+                                 '',
+                                 'Unexpected token',
+                                 'No SQL Translation'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testDateFromDay_Function_1__Boolean_1_',
+                      [
+                        rev('|1973->meta::pure::functions::date::date(11, 13)',
+                            'select make_date(1973,11,13)'
+                        ),
+                        rev('|2015->meta::pure::functions::date::date(4, 16)',
+                            'select make_date(2015,4,16)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testDateFromHour_Function_1__Boolean_1_',
+                      [
+                        revError('|1973->meta::pure::functions::date::date(11, 13, 23)',
+                                 '',
+                                 'Unexpected token',
+                                 'No SQL Translation'
+                        ),
+                        revError('|2015->meta::pure::functions::date::date(4, 16, 14)',
+                                 '',
+                                 'Unexpected token',
+                                 'No SQL Translation'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testDateFromMinute_Function_1__Boolean_1_',
+                      [
+                        revError('|1973->meta::pure::functions::date::date(11, 13, 23, 9)',
+                                 '',
+                                 'Unexpected token',
+                                 'No SQL Translation'
+                        ),
+                        revError('|2015->meta::pure::functions::date::date(4, 16, 14, 51)',
+                                 '',
+                                 'Unexpected token',
+                                 'No SQL Translation'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testDateFromSecond_Function_1__Boolean_1_',
+                      [
+                        rev('|1973->meta::pure::functions::date::date(11, 13, 23, 9, 11)',
+                            'select make_timestamp(1973,11,13,23,9,11)'
+                        ),
+                        rev('|2015->meta::pure::functions::date::date(4, 16, 14, 51, 59)',
+                            'select make_timestamp(2015,4,16,14,51,59)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testDateFromSubSecond_Function_1__Boolean_1_',
+                      [
+                        rev('|1973->meta::pure::functions::date::date(11, 13, 23, 9, 11.0)',
+                            'select make_timestamp(1973,11,13,23,9,11.0)'
+                        ),
+                        rev('|2015->meta::pure::functions::date::date(4, 16, 14, 51, 59.999)',
+                            'select make_timestamp(2015,4,16,14,51,59.999)'
+                        ),
+                        rev('|2015->meta::pure::functions::date::date(4, 16, 14, 51, 59.999D)',
+                            'select make_timestamp(2015,4,16,14,51,59.999)'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::date::creation::date::exec():Boolean[1]
+{
+   //meta::pure::functions::date::tests::testDateFromYear(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::date::tests::testDateFromMonth(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testDateFromDay(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::date::tests::testDateFromHour(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::date::tests::testDateFromMinute(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testDateFromSecond(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testDateFromSubSecond(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

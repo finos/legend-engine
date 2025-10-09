@@ -1,0 +1,139 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::standard::collection::in::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/collection/in.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_',
+                      [
+                        revError('|1->meta::pure::functions::collection::in($col)',
+                            '',
+                            'Unexpected token',
+                            'postgres doesnt support mixed type array - should this be noRev - select 1 in (1, 2, 5, 2, Text\'a\', Boolean\'true\', Date\'2014-02-01\', Text\'c\')'
+                        ),
+                        revError('|2->meta::pure::functions::collection::in($col)',
+                            '',
+                            'Unexpected token',
+                            'postgres doesnt support mixed type array - should this be noRev - select 2 in (1, 2, 5, 2, Text\'a\', Boolean\'true\', Date\'2014-02-01\', Text\'c\')'
+                        ),
+                        revError('|5->meta::pure::functions::collection::in($col)',
+                            '',
+                            'Unexpected token',
+                            'postgres doesnt support mixed type array - should this be noRev - select 5 in (1, 2, 5, 2, Text\'a\', Boolean\'true\', Date\'2014-02-01\', Text\'c\')'
+                        ),
+                        revError('|\'a\'->meta::pure::functions::collection::in($col)',
+                            '',
+                            'Unexpected token',
+                            'postgres doesnt support mixed type array - should this be noRev - select Text\'a\' in (1, 2, 5, 2, Text\'a\', Boolean\'true\', Date\'2014-02-01\', Text\'c\')'
+                        ),
+                        revError('|true->meta::pure::functions::collection::in($col)',
+                            '',
+                            'Unexpected token',
+                            'postgres doesnt support mixed type array - should this be noRev - select Boolean\'true\' in (1, 2, 5, 2, Text\'a\', Boolean\'true\', Date\'2014-02-01\', Text\'c\')'
+                        ),
+                        revError('|%2014-02-01->meta::pure::functions::collection::in($col)',
+                            '',
+                            'Unexpected token',
+                            'postgres doesnt support mixed type array - should this be noRev - select Date\'2014-02-01\' in (1, 2, 5, 2, Text\'a\', Boolean\'true\', Date\'2014-02-01\', Text\'c\')'
+                        ),
+                        revError('|\'c\'->meta::pure::functions::collection::in($col)',
+                            '',
+                            'Unexpected token',
+                            'postgres doesnt support mixed type array - should this be noRev - select Text\'c\' in (1, 2, 5, 2, Text\'a\', Boolean\'true\', Date\'2014-02-01\', Text\'c\')'
+                        ),
+                        revError('|meta::pure::functions::collection::in(-5, $col)',
+                            '',
+                            'Unexpected token',
+                            'postgres doesnt support mixed type array - should this be noRev - select -5 in (1, 2, 5, 2, Text\'a\', Boolean\'true\', Date\'2014-02-01\', Text\'c\')'
+                        ),
+                        revError('|%2014-02-02->meta::pure::functions::collection::in($col)',
+                            '',
+                            'Unexpected token',
+                            'postgres doesnt support mixed type array - should this be noRev - select Date\'2014-02-02\' in (1, 2, 5, 2, Text\'a\', Boolean\'true\', Date\'2014-02-01\', Text\'c\')'
+                        ),
+                        revError('|\'the quick brown fox\'->meta::pure::functions::collection::in($col)',
+                            '',
+                            'Unexpected token',
+                            'postgres doesnt support mixed type array - should this be noRev - select Text\'the quick brown fox\' in (1, 2, 5, 2, Text\'a\', Boolean\'true\', Date\'2014-02-01\', Text\'c\')'
+                        ),
+                        revError('|false->meta::pure::functions::collection::in($col)',
+                            '',
+                            'Unexpected token',
+                            'postgres doesnt support mixed type array - should this be noRev - select Boolean\'false\' in (1, 2, 5, 2, Text\'a\', Boolean\'true\', Date\'2014-02-01\', Text\'c\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_',
+                      [
+                        noRev('|$f1->meta::pure::functions::collection::in($col)'),
+                        noRev('|^meta::pure::functions::collection::tests::in::Firm(legalName=\'f1\')->meta::pure::functions::collection::in($col)'),
+                        noRev('|$f2->meta::pure::functions::collection::in($col)'),
+                        noRev('|^meta::pure::functions::collection::tests::in::Firm(legalName=\'f2\')->meta::pure::functions::collection::in($col)'),
+                        noRev('|3->meta::pure::functions::collection::in($col)'),
+                        noRev('|^meta::pure::functions::collection::tests::in::Firm(legalName=\'f3\')->meta::pure::functions::collection::in($col)')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::collection::in([\'a\', \'b\'])',
+                            'select null in (Text\'a\', Text\'b\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::in::testIn_relation_extend_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq}#->meta::pure::functions::relation::extend(~[isValid:c: (val:Integer, str:String)[1]|$c.str->meta::pure::functions::collection::in([\'a\', \'ewe\', \'wwe\'])])',
+                            'select "table0_0".val as "val", "table0_0".str as "str", "table0_0".str in (Text\'a\', Text\'ewe\', Text\'wwe\') as "isValid" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::in::testIn_relation_filter_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq}#->meta::pure::functions::relation::filter(c: (val:Integer, str:String)[1]|$c.str->meta::pure::functions::collection::in([\'a\', \'ewe\', \'wwe\']))',
+                            'select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0" where "table0_0".str in (Text\'a\', Text\'ewe\', Text\'wwe\')'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::collection::in::exec():Boolean[1]
+{
+   //meta::pure::functions::collection::tests::in::testInPrimitive(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::collection::tests::in::testInNonPrimitive(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::in::testInIsEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::in::testIn_relation_extend(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::in::testIn_relation_filter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

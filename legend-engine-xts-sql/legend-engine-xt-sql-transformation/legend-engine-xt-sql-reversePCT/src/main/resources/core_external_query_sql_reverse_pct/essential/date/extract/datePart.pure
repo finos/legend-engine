@@ -1,0 +1,84 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::essential::date::extract::datePart::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/date/extract/datePart.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testDatePart_Function_1__Boolean_1_',
+                      [
+                        rev('|%1973-11-05T13:01:25+0000->meta::pure::functions::date::datePart()',
+                            'select Date(Timestamp\'1973-11-05 13:01:25\')'
+                        ),
+                        rev('|%2015-08-29T22:22:22.9914234+0000->meta::pure::functions::date::datePart()',
+                            'select Date(Timestamp\'2015-08-29 22:22:22.9914234\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testDatePartTrivial_Function_1__Boolean_1_',
+                      [
+                        rev('|%1973-11-05->meta::pure::functions::date::datePart()',
+                            'select Date(Date\'1973-11-05\')'
+                        ),
+                        rev('|%2015-08-29->meta::pure::functions::date::datePart()',
+                            'select Date(Date\'2015-08-29\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testDatePartYearMonthOnly_Function_1__Boolean_1_',
+                      [
+                        revError('|%1973-11->meta::pure::functions::date::datePart()',
+                                 '',
+                                 'Unexpected token',
+                                 'No support for partial dates'
+                        ),
+                        revError('|%2015-08->meta::pure::functions::date::datePart()',
+                                 '',
+                                 'Unexpected token',
+                                 'No support for partial dates'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testDatePartYearOnly_Function_1__Boolean_1_',
+                      [
+                        revError('|%1973->meta::pure::functions::date::datePart()',
+                                 '',
+                                 'Unexpected token',
+                                 'No support for partial dates'
+                        ),
+                        revError('|%2015->meta::pure::functions::date::datePart()',
+                                 '',
+                                 'Unexpected token',
+                                 'No support for partial dates'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::date::extract::datePart::exec():Boolean[1]
+{
+   meta::pure::functions::date::tests::testDatePart(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testDatePartTrivial(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::date::tests::testDatePartYearMonthOnly(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::date::tests::testDatePartYearOnly(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}
