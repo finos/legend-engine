@@ -3472,4 +3472,33 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  include storeTypeABC stores::SimpleDB\n" +
                 ")\n");
     }
+
+    @Test
+    public void testTableReferencesWithDuplicatedSchemaNames()
+    {
+        test("###Relational\n" +
+                "Database stores::DB\n" +
+                "(\n" +
+                "  Schema mySchema\n" +
+                "  (\n" +
+                    "  Table Person\n" +
+                    "  (\n" +
+                    "    id INTEGER\n" +
+                    "  )\n" +
+                "  )\n" +
+                "  Schema mySchema\n" +
+                "  (\n" +
+                    "  Table Order\n" +
+                    "  (\n" +
+                    "    id INTEGER\n" +
+                    "  )\n" +
+                "  )\n" +
+                ")\n" +
+                "Database stores::SimpleDB\n" +
+                "(\n" +
+                "  include stores::DB\n" +
+                "  Join Person_Order([stores::DB]mySchema.Person.id = [stores::DB]mySchema.Order.id)\n" +
+                ")\n"
+        );
+    }
 }

@@ -300,8 +300,8 @@ public class HelperRelationalBuilder
         MutableList<Relation> tables = Lists.mutable.empty();
         for (Database db : getAllIncludedDBs(database))
         {
-            Schema schema = db._schemas().detect(s -> schemaName.equals(s._name()));
-            if (schema != null)
+            RichIterable<? extends Schema> schemasToSearch = db._schemas().select(s -> schemaName.equals(s._name()));
+            for (Schema schema : schemasToSearch)
             {
                 Relation table = schema._tables().detect(t -> tableName.equals(t._name()));
                 if (table == null)
