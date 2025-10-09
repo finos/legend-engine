@@ -263,6 +263,10 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 case "TdsOlapRank":
                     return convertNewTdsOlapRankToFuncFunctionCall(appliedFunction);
 
+                case "meta::pure::functions::collection::AggregateValue":
+                case "AggregateValue":
+                    return convertNewAggregateValueToFuncFunctionCall(appliedFunction);
+
                 case "meta::pure::functions::collection::Pair":
                 case "Pair":
                     return convertNewPairToPairFunctionCall(appliedFunction);
@@ -307,6 +311,53 @@ public class CorePureProtocolExtension implements PureProtocolExtension
         {
             appliedFunction.fControl = "col_Function_1__String_1__String_1__BasicColumnSpecification_1_";
         }
+
+        return appliedFunction;
+    }
+
+
+    /**
+     * Convert the usage of AggregateValue to the equivalent function
+     * ^AggregateValue(...) == agg(...)
+     */
+    private static AppliedFunction convertNewAggregateValueToFuncFunctionCall(AppliedFunction appliedFunction)
+    {
+        Collection collection = (Collection) appliedFunction.parameters.get(2);
+
+        Optional<CString> name = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("name"))
+                .map(KeyExpression.class::cast)
+                .map(x -> x.expression)
+                .filter(CString.class::isInstance)
+                .map(CString.class::cast);
+
+        Optional<LambdaFunction> mapFn = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("mapFn"))
+                .map(KeyExpression.class::cast)
+                .map(x -> x.expression)
+                .filter(LambdaFunction.class::isInstance)
+                .map(LambdaFunction.class::cast);
+
+        Optional<LambdaFunction> aggregateFn = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("aggregateFn"))
+                .map(KeyExpression.class::cast)
+                .map(x -> x.expression)
+                .filter(LambdaFunction.class::isInstance)
+                .map(LambdaFunction.class::cast);
+
+        appliedFunction.parameters = Stream.of(name, mapFn, aggregateFn).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+        if (appliedFunction.parameters.size() == 3)
+        {
+            appliedFunction.function = "meta::pure::tds::agg";
+            appliedFunction.fControl = "agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_";
+        }
+        else if (appliedFunction.parameters.size() == 2)
+        {
+            appliedFunction.function = "meta::pure::functions::collection::agg";
+            appliedFunction.fControl = "agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_";
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unexpected number of parameters values for AggregateValue, got " + appliedFunction.parameters.size());
+        }
+
 
         return appliedFunction;
     }

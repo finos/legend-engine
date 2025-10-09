@@ -240,6 +240,47 @@ public class TestFreemarker
         Assert.assertEquals("select case when 'EMEA' = 'EMEA' then \"root\".COUNTY else \"root\".COUNTY end as \"county\", \"root\".FIPS as \"fips\" from testTable as \"root\"", result4);
     }
 
+
+    @Test
+    public void testTemplatesEnumOne()
+    {
+        String testQuery = "select \"root\".id as \"Id\", \"root\".myEnum as \"EnumCol\" from ItemTable as \"root\" where (${optionalVarPlaceHolderOperationSelector(oneEnum, equalEnumOperationSelector(enumMap_mappings_MyMapping_MyEnumMapping(oneEnum), '\"root\".myEnum in (${enumMap_mappings_MyMapping_MyEnumMapping(oneEnum)})', '\"root\".myEnum = ${enumMap_mappings_MyMapping_MyEnumMapping(oneEnum)}'), '0 = 1')})";
+        String enumFullPath = "mappings_MyMapping_MyEnumMapping";
+        String enumHashMap = "\"VALUE_1\":\"'VAL1A', 'VAL1B', 'VAL1C'\", \"VALUE_2\":\"'VAL2'\", \"VALUE_3\":\"'VAL3'\", \"VALUE_4\":\"'VAL_FILL'\", \"VALUE_5\":\"'VAL_FILL'\"";
+
+        Map vars = new HashMap<>();
+        vars.put("oneEnum", "VALUE_1");
+
+        String templates = renderCollectionWithDefaultTemplate() + collectionSizeTemplate() + optionalVarPlaceHolderOperationSelectorTemplate() + varPlaceHolderToStringTemplate() + equalEnumOperationSelector();
+        String result = RelationalExecutor.process(testQuery, vars, templates + enumSupportFunction(enumFullPath, enumHashMap));
+        Assert.assertEquals("select \"root\".id as \"Id\", \"root\".myEnum as \"EnumCol\" from ItemTable as \"root\" where (\"root\".myEnum in ('VAL1A', 'VAL1B', 'VAL1C'))", result.trim());
+
+        // Test that old enum map function (which does not handle sequences) gives the same output - backwards compatibility.
+        String oldEnumMapSupportFunction = "<#function enumMap_mappings_MyMapping_MyEnumMapping inputVal> <#assign enumMap = { \"VALUE_1\":\"'VAL1A', 'VAL1B', 'VAL1C'\", \"VALUE_2\":\"'VAL2'\", \"VALUE_3\":\"'VAL3'\", \"VALUE_4\":\"'VAL_FILL'\", \"VALUE_5\":\"'VAL_FILL'\" }> <#if inputVal?has_content> <#return enumMap[inputVal]> <#else> <#return \"\"> </#if> </#function>";
+        String oldResult = RelationalExecutor.process(testQuery, vars, templates + oldEnumMapSupportFunction);
+        Assert.assertEquals(result.trim(), oldResult.trim());
+    }
+
+    @Test
+    public void testTemplatesEnumList()
+    {
+        String testQuery = "select \"root\".id as \"Id\", \"root\".myEnum as \"EnumCol\" from ItemTable as \"root\" where (${optionalVarPlaceHolderOperationSelector(enumList![], equalEnumOperationSelector(enumMap_mappings_MyMapping_MyEnumMapping(enumList![]), '\"root\".myEnum in (${enumMap_mappings_MyMapping_MyEnumMapping(enumList![])})', '\"root\".myEnum = ${enumMap_mappings_MyMapping_MyEnumMapping(enumList![])}'), '0 = 1')})";
+        String enumFullPath = "mappings_MyMapping_MyEnumMapping";
+        String enumHashMap = "\"VALUE_1\":\"'VAL1A', 'VAL1B', 'VAL1C'\", \"VALUE_2\":\"'VAL2'\", \"VALUE_3\":\"'VAL3'\", \"VALUE_4\":\"'VAL_FILL'\", \"VALUE_5\":\"'VAL_FILL'\"";
+
+        ArrayList<String> enumList = new ArrayList<>();
+        enumList.add("VALUE_1");
+        enumList.add("VALUE_2");
+        enumList.add("VALUE_3");
+        enumList.add("VALUE_4");
+        enumList.add("VALUE_5");
+        Map vars = new HashMap<>();
+        vars.put("enumList", enumList);
+
+        String result = RelationalExecutor.process(testQuery, vars, renderCollectionWithDefaultTemplate() + collectionSizeTemplate() + optionalVarPlaceHolderOperationSelectorTemplate() + varPlaceHolderToStringTemplate() + equalEnumOperationSelector() + enumSupportFunction(enumFullPath, enumHashMap));
+        Assert.assertEquals("select \"root\".id as \"Id\", \"root\".myEnum as \"EnumCol\" from ItemTable as \"root\" where (\"root\".myEnum in ('VAL1A', 'VAL1B', 'VAL1C', 'VAL2', 'VAL3', 'VAL_FILL', 'VAL_FILL'))", result.trim());
+    }
+
     @Test
     public void testTimeZoneOffsetAndCode()
     {
@@ -326,6 +367,47 @@ public class TestFreemarker
         return "<#function collectionSize collection>" +
                 "<#return collection?size?c> " +
                 "</#function>";
+    }
+
+    public static String optionalVarPlaceHolderOperationSelectorTemplate()
+    {
+        return "<#function optionalVarPlaceHolderOperationSelector optionalParameter trueClause falseClause>" +
+                "<#if optionalParameter?has_content || optionalParameter?is_string>" +
+                "<#return trueClause>" +
+                "<#else>" +
+                "<#return falseClause></#if>" +
+                "</#function>";
+    }
+
+    public static String varPlaceHolderToStringTemplate()
+    {
+        return "<#function varPlaceHolderToString optionalParameter prefix suffix replacementMap defaultValue>" +
+                "<#if optionalParameter?is_enumerable && !optionalParameter?has_content>" +
+                "<#return defaultValue>" +
+                "<#else>" +
+                "<#assign newParam = optionalParameter>" +
+                "<#list replacementMap as oldValue, newValue>" +
+                "<#assign newParam = newParam?replace(oldValue, newValue)>" +
+                "</#list>" +
+                "<#return prefix + newParam + suffix></#if>" +
+                "</#function>";
+    }
+
+    public static String enumSupportFunction(String enumFullPath, String enumHashMap)
+    {
+        return "<#function enumMap_" + enumFullPath + " inputVal>" +
+                "<#assign enumMap = {" + enumHashMap + "}>" +
+                "<#if inputVal?has_content>" +
+                "<#if inputVal?is_sequence>" +
+                "<#assign results = []>" +
+                "<#list inputVal as item>" +
+                "<#assign results += [enumMap[item]!\"\"]></#list>" +
+                "<#return results?join(\", \")>" +
+                "<#else>" +
+                "<#return enumMap[inputVal]!\"\"></#if>" +
+                "<#else>" +
+                "<#return \"\"> </#if>" +
+                " </#function>";
     }
 
     @Test

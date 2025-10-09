@@ -811,3 +811,93 @@ function meta::pure::functions::meta::removeAutomap(v:ValueSpecification[1]):Val
                                       ),
                v:ValueSpecification[1] |  $v]);
 }
+
+function meta::pure::functions::meta::resolveResolvedTypeParameters(fe : FunctionExpression[1]):GenericType[*]
+{
+  meta::pure::functions::meta::resolveResolvedTypeParameters($fe.func, $fe.resolvedTypeParameters, $fe.parametersValues);
+}
+
+function meta::pure::functions::meta::resolveResolvedTypeParameters(func : Function<Any>[1], resolvedTypeParameters : GenericType[*], parametersValues : ValueSpecification[*]):GenericType[*]
+{
+  let debug = noDebug();
+
+  if (!($func->instanceOf(NativeFunction) || $func->instanceOf(FunctionDefinition)), 
+  | 
+      // FunctionType is not supported on some function (e.g. Properties), so we have to assume they are correct
+      $resolvedTypeParameters, 
+  | 
+
+    let ft = $func->functionType();
+    let fTypeParams = $ft.typeParameters;
+
+    assertEquals($ft.parameters->size(), $parametersValues->size(), | 'For function %r expected %r parameters, actual parametersValues:   %r'->format([$func->elementToPath(), $ft.parameters->size(), $parametersValues->size()]));
+
+    let newResolvedTypeParams = range($ft.typeParameters->size())->zip($ft.typeParameters)->map(tpPair|
+      let tp = $tpPair.second;
+      let tpIndex = $tpPair.first;
+
+      if(!$debug.debug, | [], | println('Matching for : ' + $tp.name));
+
+      if ($fTypeParams->size() == $resolvedTypeParameters->size() && $resolvedTypeParameters->at($tpIndex)->meta::pure::functions::meta::isConcrete(), 
+        | $resolvedTypeParameters->at($tpIndex), 
+        |
+
+        let v = range($ft.parameters->size())->zip($ft.parameters)->map(p| 
+          let paramIndex = $p.first; 
+          let param = $p.second; 
+
+          if ($param.genericType.typeParameter.name == $tp.name, 
+            | 
+                //simple parameter value like meta::pure::functions::collection::sort_T_m__T_m_ or meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+                if(!$debug.debug, | [], | println('Matched at index: ' + $paramIndex->toString()));
+                if(!$debug.debug, | [], | println($parametersValues->at($paramIndex)));
+                $parametersValues->at($paramIndex).genericType;,         
+            | 
+              if(!$debug.debug, | [], | println('Checking values for param at index ' + $paramIndex->makeString()));       
+
+              if(!$debug.debug, | [], | println($param.genericType.typeParameter.name));
+              if(!$debug.debug, | [], | println($param.genericType));
+
+              if(!$debug.debug, | [], | println('Param value type is:'));
+              if(!$debug.debug, | [], | println($parametersValues->at($paramIndex).genericType));
+
+              range($param.genericType.typeArguments->size())->zip($param.genericType.typeArguments)->map(taP|
+                let ta = $taP.second;
+                let taIndex = $taP.first;
+
+                if(!$debug.debug, | [], | println('Checking values for param at index ' + $paramIndex->makeString() + ', ' + $taIndex->toString()));       
+
+                if ($param.genericType.typeArguments->at($taIndex).typeParameter.name == $tp.name,
+                  | 
+                      if(!$debug.debug, | [], | println('Matched for param at index ' + $paramIndex->makeString() + ', ' + $taIndex->toString()));       
+                      //parameterised type value like new instance, e.g. meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_ or ^Pair<String,Integer>(first='hello', second=1)
+                      $parametersValues->at($paramIndex).genericType.typeArguments->at($taIndex);
+                      , 
+                  | if($param.genericType.rawType->isNotEmpty() && $param.genericType.rawType->toOne()->subTypeOf(Function), 
+                      | 
+                        let paramFt = $param.genericType.typeArguments.rawType->cast(@FunctionType);
+                        if ($paramFt.returnType.typeParameter.name == $tp.name, 
+                          | 
+                              $parametersValues->at($paramIndex).genericType.typeArguments.rawType->cast(@FunctionType).returnType; 
+                          , 
+                          | //need to check fuction arg types
+                            []; 
+                          );
+                        ,  
+                      | []
+                      )
+                  );
+                );
+            );
+            );
+          if ($v->isEmpty(), 
+            | fail('Unable to resolve type param ' + $tp.name  + ' from parameter values'); [];, 
+            | 
+                $v->at(0);
+            );
+          );
+
+      );
+      $newResolvedTypeParams;
+  );
+}

@@ -1,0 +1,211 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::standard::collection::greatest::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/collection/greatest.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::greatest::testGreatest_Empty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::lang::cast(@Integer)->meta::pure::functions::collection::greatest()',
+                            'select greatest(null)'
+                        ),
+                        rev('|[]->meta::pure::functions::lang::cast(@Float)->meta::pure::functions::collection::greatest()',
+                            'select greatest(null)'
+                        ),
+                        rev('|[]->meta::pure::functions::lang::cast(@Number)->meta::pure::functions::collection::greatest()',
+                            'select greatest(null)'
+                        ),
+                        rev('|[]->meta::pure::functions::lang::cast(@StrictDate)->meta::pure::functions::collection::greatest()',
+                            'select greatest(null)'
+                        ),
+                        rev('|[]->meta::pure::functions::lang::cast(@DateTime)->meta::pure::functions::collection::greatest()',
+                            'select greatest(null)'
+                        ),
+                        rev('|[]->meta::pure::functions::lang::cast(@Date)->meta::pure::functions::collection::greatest()',
+                            'select greatest(null)'
+                        ),
+                        rev('|[]->meta::pure::functions::lang::cast(@Boolean)->meta::pure::functions::collection::greatest()',
+                            'select greatest(null)'
+                        ),
+                        rev('|[]->meta::pure::functions::lang::cast(@String)->meta::pure::functions::collection::greatest()',
+                            'select greatest(null)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::greatest::testGreatest_Single_Function_1__Boolean_1_',
+                      [
+                        rev('|-1->meta::pure::functions::collection::greatest()',
+                            'select -greatest(1)'
+                        ),
+                        rev('|1.0->meta::pure::functions::collection::greatest()',
+                            'select greatest(1.0)'
+                        ),
+                        rev('|1.0D->meta::pure::functions::collection::greatest()',
+                            'select greatest(cast(1.0 as decimal))'
+                        ),
+                        rev('|%2025-04-09->meta::pure::functions::collection::greatest()',
+                            'select greatest(Date\'2025-04-09\')'
+                        ),
+                        rev('|%2025-02-10T20:10:20+0000->meta::pure::functions::collection::greatest()',
+                            'select greatest(Timestamp\'2025-02-10 20:10:20\')'
+                        ),
+                        rev('|true->meta::pure::functions::collection::greatest()',
+                            'select greatest(Boolean\'true\')'
+                        ),
+                        rev('|false->meta::pure::functions::collection::greatest()',
+                            'select greatest(Boolean\'false\')'
+                        ),
+                        rev('|\'a\'->meta::pure::functions::collection::greatest()',
+                            'select greatest(Text\'a\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::greatest::testGreatest_Integer_Function_1__Boolean_1_',
+                      [
+                        rev('|[1, 2]->meta::pure::functions::collection::greatest()',
+                            'select greatest(1, 2)'
+                        ),
+                        rev('|[2, 1]->meta::pure::functions::collection::greatest()',
+                            'select greatest(2, 1)'
+                        ),
+                        rev('|[4, 7, 1, 3, 4]->meta::pure::functions::collection::greatest()',
+                            'select greatest(4, 7, 1, 3, 4)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::greatest::testGreatest_Float_Function_1__Boolean_1_',
+                      [
+                        rev('|[1.23, 2.8]->meta::pure::functions::collection::greatest()',
+                            'select greatest(1.23, 2.8)'
+                        ),
+                        rev('|[2.8, 1.23]->meta::pure::functions::collection::greatest()',
+                            'select greatest(2.8, 1.23)'
+                        ),
+                        rev('|[4.23, 7.345, 1.0, 3.678, 4.6]->meta::pure::functions::collection::greatest()',
+                            'select greatest(4.23, 7.345, 1.0, 3.678, 4.6)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::greatest::testGreatest_Number_Function_1__Boolean_1_',
+                      [
+                        rev('|[1.23, 2]->meta::pure::functions::collection::greatest()',
+                            'select greatest(1.23, 2)'
+                        ),
+                        rev('|[2, 1.23]->meta::pure::functions::collection::greatest()',
+                            'select greatest(2, 1.23)'
+                        ),
+                        rev('|[4.23, 7.345, 1.0, 3, 4]->meta::pure::functions::collection::greatest()',
+                            'select greatest(4.23, 7.345, 1.0, 3, 4)'
+                        ),
+                        rev('|[4.23, 7.345D, 1.0, 3, 4]->meta::pure::functions::collection::greatest()',
+                            'select greatest(4.23, cast(7.345 as decimal), 1.0, 3, 4)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::greatest::testGreatest_StrictDate_Function_1__Boolean_1_',
+                      [
+                        rev('|[%2025-04-09, %2025-02-09]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Date\'2025-04-09\', Date\'2025-02-09\')'
+                        ),
+                        rev('|[%2025-02-09, %2025-04-09]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Date\'2025-02-09\', Date\'2025-04-09\')'
+                        ),
+                        rev('|[%2025-02-09, %2025-04-09, %2025-01-01, %2024-12-14, %2025-04-02]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Date\'2025-02-09\', Date\'2025-04-09\', Date\'2025-01-01\', Date\'2024-12-14\', Date\'2025-04-02\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_',
+                      [
+                        rev('|[%2025-02-10T20:10:20+0000, %2025-01-10T15:25:30+0000]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Timestamp\'2025-02-10 20:10:20\', Timestamp\'2025-01-10 15:25:30\')'
+                        ),
+                        rev('|[%2025-01-10T15:25:30+0000, %2025-02-10T20:10:20+0000]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Timestamp\'2025-01-10 15:25:30\', Timestamp\'2025-02-10 20:10:20\')'
+                        ),
+                        rev('|[%2025-01-10T15:25:30+0000, %2025-02-10T10:11:15+0000, %2025-02-10T20:10:20+0000, %2024-05-17T23:11:14+0000]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Timestamp\'2025-01-10 15:25:30\', Timestamp\'2025-02-10 10:11:15\', Timestamp\'2025-02-10 20:10:20\', Timestamp\'2024-05-17 23:11:14\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::greatest::testGreatest_Date_Function_1__Boolean_1_',
+                      [
+                        rev('|[%2025-02-10T20:10:20+0000, %2025-02-10]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Timestamp\'2025-02-10 20:10:20\', Date\'2025-02-10\')'
+                        ),
+                        rev('|[%2025-02-10, %2025-02-10T20:10:20+0000]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Date\'2025-02-10\', Timestamp\'2025-02-10 20:10:20\')'
+                        ),
+                        rev('|[%2025-02-09, %2025-04-09, %2025-02-09T01:15:20+0000, %2025-01-10T15:25:30+0000]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Date\'2025-02-09\', Date\'2025-04-09\', Timestamp\'2025-02-09 01:15:20\', Timestamp\'2025-01-10 15:25:30\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::greatest::testGreatest_Boolean_Function_1__Boolean_1_',
+                      [
+                        rev('|[true, false]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Boolean\'true\', Boolean\'false\')'
+                        ),
+                        rev('|[false, true]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Boolean\'false\', Boolean\'true\')'
+                        ),
+                        rev('|[true, false, false, true, false]->meta::pure::functions::collection::greatest()',
+                            'select greatest(Boolean\'true\', Boolean\'false\', Boolean\'false\', Boolean\'true\', Boolean\'false\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::greatest::testGreatest_String_Function_1__Boolean_1_',
+                      [
+                        rev('|[\'a\', \'b\']->meta::pure::functions::collection::greatest()',
+                            'select greatest(Text\'a\', Text\'b\')'
+                        ),
+                        rev('|[\'b\', \'a\']->meta::pure::functions::collection::greatest()',
+                            'select greatest(Text\'b\', Text\'a\')'
+                        ),
+                        rev('|[\'a\', \'b\', \'abc\', \'def\']->meta::pure::functions::collection::greatest()',
+                            'select greatest(Text\'a\', Text\'b\', Text\'abc\', Text\'def\')'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::collection::greatest::exec():Boolean[1]
+{
+   meta::pure::functions::collection::tests::greatest::testGreatest_Empty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::greatest::testGreatest_Single(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::greatest::testGreatest_Integer(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::greatest::testGreatest_Float(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::greatest::testGreatest_Number(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::greatest::testGreatest_StrictDate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::greatest::testGreatest_DateTime(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::greatest::testGreatest_Date(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::greatest::testGreatest_Boolean(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::greatest::testGreatest_String(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

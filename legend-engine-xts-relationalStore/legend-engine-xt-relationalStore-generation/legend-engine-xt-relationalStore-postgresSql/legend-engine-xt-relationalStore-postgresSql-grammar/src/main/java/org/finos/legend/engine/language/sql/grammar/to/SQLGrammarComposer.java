@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class SQLGrammarComposer
 {
-    private final MutableMap<ComparisonOperator, String> comparator = UnifiedMap.newMapWith(
+    private final MutableMap<ComparisonOperator, String> COMPARATOR = UnifiedMap.newMapWith(
             Tuples.pair(ComparisonOperator.EQUAL, "="),
             Tuples.pair(ComparisonOperator.NOT_EQUAL, "!="),
             Tuples.pair(ComparisonOperator.GREATER_THAN, ">"),
@@ -44,12 +44,12 @@ public class SQLGrammarComposer
             Tuples.pair(ComparisonOperator.NOT_LIKE, "!~~"),
             Tuples.pair(ComparisonOperator.NOT_ILIKE, "!~~*")
     );
-    private final MutableMap<LogicalBinaryType, String> binaryComparator = UnifiedMap.newMapWith(
+    private final MutableMap<LogicalBinaryType, String> BINARY_COMPARATOR = UnifiedMap.newMapWith(
             Tuples.pair(LogicalBinaryType.AND, "AND"),
             Tuples.pair(LogicalBinaryType.OR, "OR")
     );
 
-    private final MutableMap<ArithmeticType, String> arithmetic = UnifiedMap.newMapWith(
+    private final MutableMap<ArithmeticType, String> ARITHMETIC_OPERATORS = UnifiedMap.newMapWith(
             Tuples.pair(ArithmeticType.ADD, "+"),
             Tuples.pair(ArithmeticType.SUBTRACT, "-"),
             Tuples.pair(ArithmeticType.MULTIPLY, "*"),
@@ -58,26 +58,51 @@ public class SQLGrammarComposer
             Tuples.pair(ArithmeticType.POWER, "^")
     );
 
-    private final MutableMap<JoinType, String> joins = UnifiedMap.newMapWith(
+    private final MutableMap<JoinType, String> JOIN_KIND = UnifiedMap.newMapWith(
             Tuples.pair(JoinType.LEFT, "LEFT OUTER"),
             Tuples.pair(JoinType.RIGHT, "RIGHT OUTER"),
             Tuples.pair(JoinType.INNER, "INNER"),
             Tuples.pair(JoinType.CROSS, "CROSS")
     );
 
-    private final MutableMap<CurrentTimeType, String> currentTime = UnifiedMap.newMapWith(
+    private final MutableMap<CurrentTimeType, String> CURRENT_TIME = UnifiedMap.newMapWith(
             Tuples.pair(CurrentTimeType.TIME, "CURRENT_TIME"),
             Tuples.pair(CurrentTimeType.TIMESTAMP, "CURRENT_TIMESTAMP"),
             Tuples.pair(CurrentTimeType.DATE, "CURRENT_DATE")
     );
 
-    private final MutableMap<FrameBoundType, String> frameBoundType = UnifiedMap.newMapWith(
+    private final MutableMap<FrameBoundType, String> FRAME_BOUND_TYPES = UnifiedMap.newMapWith(
             Tuples.pair(FrameBoundType.CURRENT_ROW, "CURRENT ROW"),
             Tuples.pair(FrameBoundType.FOLLOWING, "FOLLOWING"),
             Tuples.pair(FrameBoundType.PRECEDING, "PRECEDING"),
             Tuples.pair(FrameBoundType.UNBOUNDED_FOLLOWING, "UNBOUNDED FOLLOWING"),
             Tuples.pair(FrameBoundType.UNBOUNDED_PRECEDING, "UNBOUNDED PRECEDING")
     );
+
+    private final MutableMap<JSONOperator, String> JSON_OPERATORS = UnifiedMap.newMapWith(
+            Tuples.pair(JSONOperator.JSON_EXTRACT, "->"),
+            Tuples.pair(JSONOperator.JSON_EXTRACT_TEXT, "->>"),
+            Tuples.pair(JSONOperator.JSON_PATH_EXTRACT, "#>"),
+            Tuples.pair(JSONOperator.JSON_PATH_EXTRACT_TEXT, "#>>"),
+            Tuples.pair(JSONOperator.JSONB_CONTAIN_RIGHT, "@>"),
+            Tuples.pair(JSONOperator.JSONB_CONTAIN_LEFT, "<@"),
+            Tuples.pair(JSONOperator.JSONB_CONTAIN_ALL_TOP_KEY, "?&"),
+            Tuples.pair(JSONOperator.JSONB_PATH_DELETE, "#-"),
+            Tuples.pair(JSONOperator.JSONB_PATH_CONTAIN_ANY_VALUE, "@?"),
+            Tuples.pair(JSONOperator.JSONB_PATH_PREDICATE_CHECK, "@@")
+    );
+
+    private final MutableMap<BitwiseBinaryOperator, String> BITWISE_OPERATORS = UnifiedMap.newMapWith(
+            Tuples.pair(BitwiseBinaryOperator.OR, "|"),
+            Tuples.pair(BitwiseBinaryOperator.AND, "&"),
+            Tuples.pair(BitwiseBinaryOperator.XOR, "#")
+    );
+
+    private final MutableMap<BitwiseShiftDirection, String> BITWISE_SHIFT_DIRECTIONS = UnifiedMap.newMapWith(
+            Tuples.pair(BitwiseShiftDirection.LEFT, "<<"),
+            Tuples.pair(BitwiseShiftDirection.RIGHT, ">>")
+    );
+
 
     private SQLGrammarComposer()
     {
@@ -95,7 +120,9 @@ public class SQLGrammarComposer
             @Override
             public String visit(AliasedRelation val)
             {
-                return visit(val.relation) + " AS " + quoteIfNeeded(val.alias);
+                String columns = val.columnNames.isEmpty() ? "" : FastList.newList(val.columnNames).makeString(" (", ", ",  ")");
+
+                return visit(val.relation) + " AS " + quoteIfNeeded(val.alias) + columns;
             }
 
             @Override
@@ -178,7 +205,7 @@ public class SQLGrammarComposer
             {
                 String left = val.left.accept(this);
                 String right = val.right.accept(this);
-                String operator = comparator.get(val.operator);
+                String operator = COMPARATOR.get(val.operator);
 
                 if (operator == null)
                 {
@@ -191,7 +218,7 @@ public class SQLGrammarComposer
             public String visit(CurrentTime val)
             {
                 String params = val.precision != null ? "(" + val.precision + ")" : "";
-                return currentTime.get(val.type) + params;
+                return CURRENT_TIME.get(val.type) + params;
             }
 
             @Override
@@ -199,7 +226,7 @@ public class SQLGrammarComposer
             {
                 String left = val.left.accept(this);
                 String right = val.right.accept(this);
-                String operator = binaryComparator.get(val.type);
+                String operator = BINARY_COMPARATOR.get(val.type);
                 if (operator == null)
                 {
                     throw new IllegalArgumentException("Unknown operator: " + val.type);
@@ -244,7 +271,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(ArithmeticExpression val)
             {
-                String type = arithmetic.get(val.type);
+                String type = ARITHMETIC_OPERATORS.get(val.type);
                 return "(" + val.left.accept(this) + " " + type + " " + val.right.accept(this) + ")";
             }
 
@@ -268,7 +295,7 @@ public class SQLGrammarComposer
             {
                 String expression = val.value != null ? visit(val.value) + " " : "";
 
-                return expression + frameBoundType.get(val.type);
+                return expression + FRAME_BOUND_TYPES.get(val.type);
             }
 
             @Override
@@ -325,10 +352,17 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(JSONExpression val)
+            {
+                String operator = JSON_OPERATORS.get(val.operator);
+                return val.left.accept(this) + " " + operator + " " + val.right.accept(this);
+            }
+
+            @Override
             public String visit(Join val)
             {
                 NodeVisitor<String> visitor = this;
-                String type = joins.get(val.type);
+                String type = JOIN_KIND.get(val.type);
                 String left = val.left.accept(this);
                 String right = val.right.accept(this);
                 String natural = val.criteria instanceof NaturalJoin ? "NATURAL " : "";
@@ -405,6 +439,12 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(CollectionColumnType val)
+            {
+                return val.innerType.accept(this) + "[]";
+            }
+
+            @Override
             public String visit(ColumnType val)
             {
                 List<String> parameters = ListIterate.collect(val.parameters, Object::toString);
@@ -432,6 +472,15 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(ArraySliceExpression val)
+            {
+                String start = val.from != null ? visit(val.from) : "";
+                String end = val.to != null ? visit(val.to) : "";
+
+                return visit(val.value) + "[" + start + ":" + end + "]";
+            }
+
+            @Override
             public String visit(BetweenPredicate val)
             {
                 String value = val.value.accept(this);
@@ -439,6 +488,18 @@ public class SQLGrammarComposer
                 String max = val.max.accept(this);
 
                 return value + " BETWEEN " + min + " AND " +  max;
+            }
+
+            @Override
+            public String visit(BitwiseBinaryExpression val)
+            {
+                return visit(val.left) + " " + BITWISE_OPERATORS.get(val.operator) + " " + visit(val.right);
+            }
+
+            @Override
+            public String visit(BitwiseShiftExpression val)
+            {
+                return visit(val.value) + " " + BITWISE_SHIFT_DIRECTIONS.get(val.direction) + " " + visit(val.shift);
             }
 
             @Override
@@ -551,6 +612,12 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(SubscriptExpression val)
+            {
+                return visit(val.value) + "[" + visit(val.index) + "]";
+            }
+
+            @Override
             public String visit(Table val)
             {
                 return String.join(".", val.name.parts);
@@ -580,6 +647,18 @@ public class SQLGrammarComposer
             {
                 String operator = val.distinct ? " UNION " : " UNION ALL ";
                 return val.left.accept(this) + operator + val.right.accept(this);
+            }
+
+            @Override
+            public String visit(Values val)
+            {
+                return "VALUES " + visit(val.rows, ", ");
+            }
+
+            @Override
+            public String visit(ValuesList val)
+            {
+                return "(" + visit(val.values, ", ") + ")";
             }
 
             private String visit(List<? extends Node> nodes, String delimiter)

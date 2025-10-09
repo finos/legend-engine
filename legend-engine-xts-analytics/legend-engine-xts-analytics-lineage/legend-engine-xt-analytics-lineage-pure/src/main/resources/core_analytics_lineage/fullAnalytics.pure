@@ -160,9 +160,7 @@ function <<access.private>> meta::analytics::lineage::lineagePreEvalExtension():
 
 function meta::analytics::lineage::getLineageInputFromFunctionDefinition(f:FunctionDefinition<Any>[1], extensions:Extension[*]):LineageInputFromFunctionDefinition[1]
 {
-
-
-   let extensionsWithL = $extensions->concatenate(lineagePreEvalExtension());
+  let extensionsWithL = $extensions->concatenate(lineagePreEvalExtension());
 
   let fromExprList =   $f->evaluateAndDeactivate()->meta::pure::router::preeval::preval($extensionsWithL).expressionSequence->filter(x| $x->instanceOf(FunctionExpression))->map(seq| $seq->cast(@FunctionExpression)->evaluateAndDeactivate()->meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification([
         meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
@@ -170,17 +168,31 @@ function meta::analytics::lineage::getLineageInputFromFunctionDefinition(f:Funct
         meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
         meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_,
         meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
-        meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_])) //TODO: handle from_T_m__Runtime_1__T_m_
-        ->evaluateAndDeactivate();
+        meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_,
+        meta::pure::mapping::withMapping_T_m__Mapping_1__T_m_, 
+        meta::pure::mapping::withChainedMappings_T_m__Mapping_MANY__T_m_
+      ])) //TODO: handle from_T_m__Runtime_1__T_m_
+      ->evaluateAndDeactivate();
   let resolvedParams = if($fromExprList->isEmpty(), |[], |$fromExprList->map(x|$x.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([i:InstanceValue[1]|$i.values, a: Any[1]| []]))));
   let funcBody = $f.expressionSequence->evaluateAndDeactivate();
 
   ^LineageInputFromFunctionDefinition //TODO: investigate ordering with chained froms
   (
-    mapping = $resolvedParams->filter(x|$x->instanceOf(Mapping))->cast(@Mapping),
+    mapping = $resolvedParams->extractMappings(),
     runtime = $resolvedParams->map(r | $r->match([runtime:Runtime[1] | $runtime, packageableRuntime:meta::pure::runtime::PackageableRuntime[1] | $packageableRuntime.runtimeValue, any:Any[1] | []])),
     funcBody = $funcBody
   );
+}
+
+function <<access.private>> meta::analytics::lineage::extractMappings(values:Any[*]):Mapping[*]
+{
+  $values->map(v| $v->match(
+    [
+      m:Mapping[1] | $m,
+      i:InstanceValue[1] | $i.values->extractMappings(),
+      a:Any[1] | []
+    ]
+  ))
 }
 
 //TODO: remove once backward comaptibility is sorted

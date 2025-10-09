@@ -21,9 +21,13 @@ import org.finos.legend.engine.protocol.sql.metamodel.AliasedRelation;
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
 import org.finos.legend.engine.protocol.sql.metamodel.ArithmeticExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.ArrayLiteral;
+import org.finos.legend.engine.protocol.sql.metamodel.ArraySliceExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.BetweenPredicate;
+import org.finos.legend.engine.protocol.sql.metamodel.BitwiseBinaryExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.BitwiseShiftExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.BooleanLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Cast;
+import org.finos.legend.engine.protocol.sql.metamodel.CollectionColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.ColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.ComparisonExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.CurrentTime;
@@ -39,6 +43,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.IntegerLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.IntervalLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.IsNotNullPredicate;
 import org.finos.legend.engine.protocol.sql.metamodel.IsNullPredicate;
+import org.finos.legend.engine.protocol.sql.metamodel.JSONExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Join;
 import org.finos.legend.engine.protocol.sql.metamodel.JoinOn;
 import org.finos.legend.engine.protocol.sql.metamodel.LikePredicate;
@@ -68,11 +73,14 @@ import org.finos.legend.engine.protocol.sql.metamodel.SortItem;
 import org.finos.legend.engine.protocol.sql.metamodel.Statement;
 import org.finos.legend.engine.protocol.sql.metamodel.StringLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.SubqueryExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.SubscriptExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Table;
 import org.finos.legend.engine.protocol.sql.metamodel.TableFunction;
 import org.finos.legend.engine.protocol.sql.metamodel.TableSubquery;
 import org.finos.legend.engine.protocol.sql.metamodel.Trim;
 import org.finos.legend.engine.protocol.sql.metamodel.Union;
+import org.finos.legend.engine.protocol.sql.metamodel.Values;
+import org.finos.legend.engine.protocol.sql.metamodel.ValuesList;
 import org.finos.legend.engine.protocol.sql.metamodel.WhenClause;
 import org.finos.legend.engine.protocol.sql.metamodel.Window;
 import org.finos.legend.engine.protocol.sql.metamodel.WindowFrame;
@@ -116,11 +124,39 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     }
 
     @Override
+    public Node visit(ArraySliceExpression val)
+    {
+        val.value = _visit(val.value);
+        val.from = _visit(val.from);
+        val.to = _visit(val.to);
+
+        return val;
+    }
+
+    @Override
     public Node visit(BetweenPredicate val)
     {
         val.value = _visit(val.value);
         val.min = _visit(val.min);
         val.max = _visit(val.max);
+
+        return val;
+    }
+
+    @Override
+    public Node visit(BitwiseBinaryExpression val)
+    {
+        val.left = _visit(val.left);
+        val.right = _visit(val.right);
+
+        return val;
+    }
+
+    @Override
+    public Node visit(BitwiseShiftExpression val)
+    {
+        val.value = _visit(val.value);
+        val.shift = _visit(val.shift);
 
         return val;
     }
@@ -141,6 +177,12 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
 
     @Override
     public Node visit(ColumnType val)
+    {
+        return val;
+    }
+
+    @Override
+    public Node visit(CollectionColumnType val)
     {
         return val;
     }
@@ -259,6 +301,15 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     public Node visit(IsNullPredicate val)
     {
         val.value = _visit(val.value);
+
+        return val;
+    }
+
+    @Override
+    public Node visit(JSONExpression val)
+    {
+        val.left = _visit(val.left);
+        val.right = _visit(val.right);
 
         return val;
     }
@@ -467,6 +518,15 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     }
 
     @Override
+    public Node visit(SubscriptExpression val)
+    {
+        val.value = _visit(val.value);
+        val.index = _visit(val.index);
+
+        return val;
+    }
+
+    @Override
     public Node visit(Table val)
     {
         return val;
@@ -502,6 +562,22 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     {
         val.left = _visit(val.left);
         val.right = _visit(val.right);
+
+        return val;
+    }
+
+    @Override
+    public Node visit(Values val)
+    {
+        val.rows = _visit(val.rows);
+
+        return val;
+    }
+
+    @Override
+    public Node visit(ValuesList val)
+    {
+        val.values = _visit(val.values);
 
         return val;
     }

@@ -15,6 +15,8 @@
 import meta::pure::mapping::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
+import meta::relational::tests::fromMapping::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.BeforePackage>> meta::relational::tests::fromMapping::setUp():Boolean[1]{
   meta::relational::tests::query::setUp()
@@ -69,6 +71,48 @@ function <<test.Test>> meta::relational::tests::fromMapping::testEnumProjection(
   assertSameElements(['Firm A', 'Firm B', 'Firm C', 'Firm X', 'No Employees', GeographicEntityType.CITY, GeographicEntityType.CITY, GeographicEntityType.CITY, GeographicEntityType.CITY, GeographicEntityType.CITY], $result.values.rows.values);
 }
 
+function <<test.Test>> meta::relational::tests::fromMapping::testFromWithMapping():Boolean[1]
+{
+  let result = execute(|Person.all()->filter(p|$p.firstName == 'Peter')->project(p|$p.firm.legalName,'Name')->withMapping(meta::relational::tests::fromMapping::MappingWithAssociation)->from(meta::external::store::relational::tests::testRuntime()),
+                        ^Mapping(name = ''), 
+                        ^meta::core::runtime::Runtime(), 
+                        meta::relational::extension::relationalExtensions()
+                      );
+
+  assertSameElements(['Firm X'], $result.values.rows.values);
+  assertEquals('select "firmtable_0".LEGALNAME as "Name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "root".FIRSTNAME = \'Peter\'', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::fromMapping::testFromWithMappingAndIntermediateFuncCall():Boolean[1]
+{
+  let result = execute(|Person.all()
+                          ->filter(p|$p.firstName == 'Peter')
+                          ->project(p|$p.firm.legalName,'Name')
+                          ->withMapping(meta::relational::tests::fromMapping::MappingWithAssociation)
+                          ->cast(@TabularDataSet)
+                          ->from(meta::external::store::relational::tests::testRuntime()),
+                        ^Mapping(name = ''), 
+                        ^meta::core::runtime::Runtime(), 
+                        meta::relational::extension::relationalExtensions()
+                      );
+
+  assertSameElements(['Firm X'], $result.values.rows.values);
+  assertEquals('select "firmtable_0".LEGALNAME as "Name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "root".FIRSTNAME = \'Peter\'', $result->sqlRemoveFormatting());
+}
+
+// Found sets are lost when processing second from() call as routingStrategy changes to StoreRoutingStrategy (without mapping and set info).
+function <<test.Test, test.ToFix>> meta::relational::tests::fromMapping::testMultipleFromWithMapping():Boolean[1]
+{
+  let result = execute(|Person.all()->filter(p|$p.firstName == 'Peter')->project(p|$p.firstName,'FirstName')->withMapping(MappingWithClasses)->from(testRuntime())
+                          ->concatenate(Person.all()->filter(p|$p.firstName == 'Peter')->project(p|$p.firstName,'FirstName')->withMapping(MappingWithClasses2)->from(testRuntime())),
+                        ^Mapping(name = ''), 
+                        ^meta::core::runtime::Runtime(), 
+                        meta::relational::extension::relationalExtensions()
+                      );
+
+  assertSameElements(['Don', 'Peter'], $result.values.rows.values);
+  assertEquals('select "unionalias_0"."FirstName" as "FirstName" from (select "root".FIRSTNAME as "FirstName" from personTable as "root" where "root".FIRSTNAME = \'Peter\' union all select "root".FIRSTNAME as "FirstName" from personTable as "root" where "root".FIRSTNAME = \'Don\') as "unionalias_0"', $result->sqlRemoveFormatting());
+}
 
 ###Relational
 Database meta::relational::tests::fromMapping::mdb

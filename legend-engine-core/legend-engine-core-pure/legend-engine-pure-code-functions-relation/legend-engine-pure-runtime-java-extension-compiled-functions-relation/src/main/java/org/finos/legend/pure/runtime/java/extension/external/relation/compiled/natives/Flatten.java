@@ -16,6 +16,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives;
 
 import org.eclipse.collections.api.list.ListIterable;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
@@ -38,13 +39,32 @@ public class Flatten extends AbstractNative implements Native
         CoreInstance rawType = Instance.getValueForMetaPropertyToOneResolved(parameterValues.get(0), M3Properties.genericType, M3Properties.rawType, processorContext.getSupport());
         String type = PackageableElement.getUserPathForPackageableElement(rawType, "::");
 
+        return getString(transformedParams, "\"" + type + "\"");
+    }
+
+    //TODO the type inference here may not be bullet proof as we only get single value from vars[0]
+    @Override
+    public String buildBody()
+    {
+        return "new SharedPureFunction<Object>()\n" +
+                "        {\n" +
+                "            @Override\n" +
+                "            public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
+                "            {\n" +
+                "                return " + getString(Lists.mutable.with("(RichIterable)vars.get(0)", "((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec)vars.get(1))"), "CompiledSupport.getPureClassName(((RichIterable) vars.get(0)).getAny())") + ";" +
+                "            }\n" +
+                "        }";
+    }
+
+    private String getString(ListIterable<String> transformedParams, String type)
+    {
         StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.flatten");
         result.append('(');
         result.append(transformedParams.get(0));
         result.append(",");
         result.append(transformedParams.get(1)).append("._name()");
         result.append(",");
-        result.append("\"").append(type).append("\"");
+        result.append(type);
         result.append(",es)\n");
         return result.toString();
     }

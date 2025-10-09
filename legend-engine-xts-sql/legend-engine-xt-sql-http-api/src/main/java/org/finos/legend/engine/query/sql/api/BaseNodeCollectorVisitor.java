@@ -21,10 +21,18 @@ import org.finos.legend.engine.protocol.sql.metamodel.AliasedRelation;
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
 import org.finos.legend.engine.protocol.sql.metamodel.ArithmeticExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.ArrayLiteral;
+import org.finos.legend.engine.protocol.sql.metamodel.ArraySliceExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.BetweenPredicate;
+import org.finos.legend.engine.protocol.sql.metamodel.BitwiseBinaryExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.BitwiseShiftExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.BooleanLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Cast;
+import org.finos.legend.engine.protocol.sql.metamodel.CollectionColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.ColumnType;
+import org.finos.legend.engine.protocol.sql.metamodel.JSONExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.SubscriptExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.Values;
+import org.finos.legend.engine.protocol.sql.metamodel.ValuesList;
 import org.finos.legend.engine.protocol.sql.metamodel.WithQuery;
 import org.finos.legend.engine.protocol.sql.metamodel.With;
 import org.finos.legend.engine.protocol.sql.metamodel.ComparisonExpression;
@@ -148,9 +156,27 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     }
 
     @Override
+    public T visit(ArraySliceExpression val)
+    {
+        return collect(val.value, val.from, val.to);
+    }
+
+    @Override
     public T visit(BetweenPredicate val)
     {
         return collect(val.min, val.max, val.value);
+    }
+
+    @Override
+    public T visit(BitwiseBinaryExpression val)
+    {
+        return collect(val.left, val.right);
+    }
+
+    @Override
+    public T visit(BitwiseShiftExpression val)
+    {
+        return collect(val.value, val.shift);
     }
 
     @Override
@@ -167,6 +193,12 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
 
     @Override
     public T visit(ColumnType val)
+    {
+        return defaultValue();
+    }
+
+    @Override
+    public T visit(CollectionColumnType val)
     {
         return defaultValue();
     }
@@ -271,6 +303,12 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     public T visit(IsNullPredicate val)
     {
         return collect(val.value);
+    }
+
+    @Override
+    public T visit(JSONExpression val)
+    {
+        return collect(val.left, val.right);
     }
 
     @Override
@@ -451,6 +489,15 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     }
 
     @Override
+    public T visit(SubscriptExpression val)
+    {
+        T value = collect(val.value);
+        T index = collect(val.index);
+
+        return collate(value, index);
+    }
+
+    @Override
     public T visit(Table val)
     {
         return defaultValue();
@@ -478,6 +525,18 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     public T visit(Union val)
     {
         return collect(val.left, val.right);
+    }
+
+    @Override
+    public T visit(Values val)
+    {
+        return collect(val.rows);
+    }
+
+    @Override
+    public T visit(ValuesList val)
+    {
+        return collect(val.values);
     }
 
     @Override

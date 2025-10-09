@@ -192,12 +192,47 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
    );
 }
 
-function meta::pure::router::routing::prevalFunctionExpressionIfRequired(fe:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]) : ValueSpecification[1]
+function meta::pure::router::routing::prevalFunctionExpressionIfRequired(fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]) : ValueSpecification[1]
 {
     $fe.func->match(
       [
         f : FunctionDefinition<Any>[1] | if($f->hasStereotype('NormalizeRequiredFunction', functionType),
-                                            | $fe->meta::pure::router::preeval::preval($inScopeVars->putAll($f->openVariableValues()), $extensions, $debug),
+                                            | 
+                                                if(!$debug.debug, | '', | println('Performing preval of function expression for ' + $fe.func->elementToPath()));
+
+                                                let tmpFe = if ($fe.parametersValues->isEmpty() || $fe.parametersValues->forAll(pv|!$pv->instanceOf(VariableExpression)),  
+                                                  | $fe, 
+                                                  | $fe
+                                                    ->map(theFe|
+                                                        let processedParamValues = $theFe.parametersValues->map(p|
+                                                          $p->match([
+                                                            v:VariableExpression[1]|
+                                                              // Resolve any variables where possible to get the "resolved" / actual generic type for them
+                                                              let vValue = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars);
+                                                              if ($vValue->isEmpty() || !$vValue->toOne().genericType->isConcrete(), 
+                                                                | pair(false, $v), 
+                                                                | pair(true, ^$v(genericType = $vValue->toOne().genericType))
+                                                                );
+                                                              ,
+                                                            vs:ValueSpecification[1]| pair(false, $vs);
+                                                            ])
+                                                          );
+
+                                                        // If any of the parameters were resolved/modified, then update theFe, otherwise don't change it (so that we don't change 
+                                                        // the sourceInformation unecessarily)
+                                                        if ($processedParamValues.first->contains(true), 
+                                                          | ^$theFe(parametersValues = $processedParamValues.second), 
+                                                          | $theFe; 
+                                                          );
+                                                        )
+                                                    ->map(theFe|
+                                                        // TODO: Consider if this should be moved to happen inside the preval for FunctionExpressions
+                                                        ^$theFe(resolvedTypeParameters = meta::pure::functions::meta::resolveResolvedTypeParameters($theFe))
+                                                        );
+                                                  );
+
+                                                $tmpFe->meta::pure::router::preeval::preval($inScopeVars->putAll($f->openVariableValues()), $extensions, $debug);
+                                                ,
                                             | $fe
                                          ),
         a:Any[*] | $fe;
@@ -207,7 +242,7 @@ function meta::pure::router::routing::prevalFunctionExpressionIfRequired(fe:Func
 
 function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
-   let newFe = prevalFunctionExpressionIfRequired($fe,$inScopeVars, $extensions, $debug)->evaluateAndDeactivate();
+   let newFe = prevalFunctionExpressionIfRequired($fe,$state, $executionContext, $vars, $inScopeVars, $extensions, $debug)->evaluateAndDeactivate();
 
    $newFe->match([
                   nfe : FunctionExpression[1]|

@@ -15,6 +15,7 @@
 import meta::pure::extension::*;
 import meta::external::query::sql::transformation::utils::*;
 import meta::external::query::sql::transformation::compile::utils::*;
+import meta::pure::metamodel::serialization::grammar::*;
 
 function meta::external::query::sql::transformation::compile::utils::nullOrSfe(func: meta::pure::metamodel::function::Function<Any>[1], pvs:ValueSpecification[*]):ValueSpecification[1]
 {
@@ -182,6 +183,45 @@ function meta::external::query::sql::transformation::compile::utils::processExtr
 {
   sfe(extractEnumValue_Enumeration_1__String_1__T_1_, ^GenericType(rawType = $enumeration), [], [iv($enumeration), $value]);
 }
+
+function meta::external::query::sql::transformation::compile::utils::compileViaGrammar(lambda:LambdaFunction<Any>[1]):LambdaFunction<Any>[1]
+{
+  compileViaGrammar($lambda, false);
+}
+
+function meta::external::query::sql::transformation::compile::utils::compileViaGrammar(lambda:LambdaFunction<Any>[1], removeFrom:Boolean[1]):LambdaFunction<Any>[1]
+{
+  let config = meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration();
+  let functionStr = if ($removeFrom, | $lambda->removeFrom(), | $lambda)->printFunctionDefinition($config, ^GContext(space=''));
+  let dependenciesAsStr = $lambda->meta::external::query::sql::transformation::queryToPure::_extractDependencies()->map(x|$x->printPackageableElements($config))->joinStrings('\n');
+
+  let code =  $dependenciesAsStr+
+              '\n###Pure\n'+
+              'function test::container():Any[*]{\n'+
+              '  ' + $functionStr + '\n'+
+              '}';
+
+  meta::legend::compile($code)->filter(x|$x.name == 'container__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@LambdaFunction<Any>);
+}
+
+function meta::external::query::sql::transformation::compile::utils::removeFrom<T>(lambda:LambdaFunction<T>[1]):LambdaFunction<T>[1]
+{
+  ^$lambda(expressionSequence=$lambda.expressionSequence->evaluateAndDeactivate()->map(e | $e->removeFrom()));
+}
+
+function meta::external::query::sql::transformation::compile::utils::removeFrom(x:ValueSpecification[1]):ValueSpecification[1]
+{
+  $x->match(
+    [
+      v:FunctionExpression[1]| if($v.func == meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
+                                    |$v.parametersValues->at(0)->evaluateAndDeactivate()->removeFrom(),
+                                    |^$v(parametersValues=$v.parametersValues->evaluateAndDeactivate()->map(pv|$pv->removeFrom()))
+                               ),
+      x:ValueSpecification[1]|$x
+    ]
+  )
+}
+
 
 function meta::external::query::sql::transformation::compile::utils::compileViaProtocol(l:LambdaFunction<Any>[1], removeFunctions:String[*], extensions:Extension[*]):LambdaFunction<Any>[1]
 {

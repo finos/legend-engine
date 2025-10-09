@@ -14,7 +14,7 @@
 
 import meta::external::query::sql::reversePCT::framework::*;
 
-function meta::external::query::sql::reversePCT::tests::relation::ranking::rank::reverses():ReversesForSource[1]
+function meta::external::query::sql::reversePCT::tests::relation::functions::ranking::rank::reverses():ReversesForSource[1]
 {
     ^ReversesForSource(
       source = '/core_functions_relation/relation/functions/ranking/rank.pure',

@@ -1,0 +1,214 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::standard::boolean::inequality::between::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/boolean/inequality/between.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberInteger_Function_1__Boolean_1_',
+                      [
+                        rev('|1->meta::pure::functions::boolean::between(0, 3)',
+                            'select 1 between 0 and 3'
+                        ),
+                        rev('|meta::pure::functions::boolean::between(-10, -20, 0)',
+                            'select -10 between -20 and 0'
+                        ),
+                        rev('|10000000->meta::pure::functions::boolean::between(999999, 10000002)',
+                            'select 10000000 between 999999 and 10000002'
+                        ),
+                        rev('|meta::pure::functions::boolean::between(-10000000, -10000002, -999999)',
+                            'select -10000000 between -10000002 and -999999'
+                        ),
+                        rev('|0->meta::pure::functions::boolean::between(0, 0)',
+                            'select 0 between 0 and 0'
+                        ),
+                        rev('|1->meta::pure::functions::boolean::between(0, 1)',
+                            'select 1 between 0 and 1'
+                        ),
+                        rev('|5->meta::pure::functions::boolean::between(0, 3)',
+                            'select 5 between 0 and 3'
+                        ),
+                        rev('|100->meta::pure::functions::boolean::between(0, 3)',
+                            'select 100 between 0 and 3'
+                        ),
+                        rev('|meta::pure::functions::boolean::between(-21, -20, 0)',
+                            'select -21 between -20 and 0'
+                        ),
+                        rev('|10000003->meta::pure::functions::boolean::between(999999, 10000002)',
+                            'select 10000003 between 999999 and 10000002'
+                        ),
+                        rev('|meta::pure::functions::boolean::between(-10000003, -10000002, -999999)',
+                            'select -10000003 between -10000002 and -999999'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberLong_Function_1__Boolean_1_',
+                      [
+                        rev('|21474836471->meta::pure::functions::boolean::between(21474836470, 21474836473)',
+                            'select 21474836471 between 21474836470 and 21474836473'
+                        ),
+                        rev('|meta::pure::functions::boolean::between(-2147483647, -2147483648, 0)',
+                            'select -2147483647 between -2147483648 and 0'
+                        ),
+                        rev('|9223372036854775805->meta::pure::functions::boolean::between(9223372036854775804, 9223372036854775806)',
+                            'select 9223372036854775805 between 9223372036854775804 and 9223372036854775806'
+                        ),
+                        rev('|meta::pure::functions::boolean::between(-9223372036854775805, -9223372036854775806, -9223372036854775804)',
+                            'select -9223372036854775805 between -9223372036854775806 and -9223372036854775804'
+                        ),
+                        rev('|21474836470->meta::pure::functions::boolean::between(21474836471, 21474836473)',
+                            'select 21474836470 between 21474836471 and 21474836473'
+                        ),
+                        rev('|meta::pure::functions::boolean::between(-2147483648, -2147483647, 0)',
+                            'select -2147483648 between -2147483647 and 0'
+                        ),
+                        rev('|9223372036854775804->meta::pure::functions::boolean::between(9223372036854775805, 9223372036854775806)',
+                            'select 9223372036854775804 between 9223372036854775805 and 9223372036854775806'
+                        ),
+                        rev('|meta::pure::functions::boolean::between(-9223372036854775806, -9223372036854775805, -9223372036854775804)',
+                            'select -9223372036854775806 between -9223372036854775805 and -9223372036854775804'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberFloat_Function_1__Boolean_1_',
+                      [
+                        rev('|1.5->meta::pure::functions::boolean::between(1, 2)',
+                            'select 1.5 between 1 and 2'
+                        ),
+                        rev('|3.14159265359->meta::pure::functions::boolean::between(3.1415, 3.1415927)',
+                            'select 3.14159265359 between 3.1415 and 3.1415927'
+                        ),
+                        rev('|meta::pure::functions::boolean::between(-3.14159265359, -3.1415927, -3.1415)',
+                            'select -3.14159265359 between -3.1415927 and -3.1415'
+                        ),
+                        rev('|20->meta::pure::functions::boolean::between(20, 20.5)',
+                            'select 20 between 20 and 20.5'
+                        ),
+                        rev('|2.01->meta::pure::functions::boolean::between(1, 2)',
+                            'select 2.01 between 1 and 2'
+                        ),
+                        rev('|13.14159265359->meta::pure::functions::boolean::between(3.1415, 3.1415927)',
+                            'select 13.14159265359 between 3.1415 and 3.1415927'
+                        ),
+                        rev('|meta::pure::functions::boolean::between(-13.14159265359, -3.1415927, -3.1415)',
+                            'select -13.14159265359 between -3.1415927 and -3.1415'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::inequalities::between::testBetween_StrictDate_Function_1__Boolean_1_',
+                      [
+                        rev('|$date2->meta::pure::functions::boolean::between($date1, $date3)',
+                            'select Date\'1972-08-23\' between Date\'1951-10-01\' and Date\'2025-04-03\''
+                        ),
+                        rev('|$date4->meta::pure::functions::boolean::between($date5, $date6)',
+                            'select Date\'1032-01-01\' between Date\'1031-12-31\' and Date\'1032-12-31\''
+                        ),
+                        rev('|$date2->meta::pure::functions::boolean::between($date1, $date2)',
+                            'select Date\'1972-08-23\' between Date\'1951-10-01\' and Date\'1972-08-23\''
+                        ),
+                        rev('|$date2->meta::pure::functions::boolean::between($date2, $date1)',
+                            'select Date\'1972-08-23\' between Date\'1972-08-23\' and Date\'1951-10-01\''
+                        ),
+                        rev('|$date2->meta::pure::functions::boolean::between($date3, $date1)',
+                            'select Date\'1972-08-23\' between Date\'2025-04-03\' and Date\'1951-10-01\''
+                        ),
+                        rev('|$date4->meta::pure::functions::boolean::between($date6, $date5)',
+                            'select Date\'1032-01-01\' between Date\'1032-12-31\' and Date\'1031-12-31\''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::inequalities::between::testBetween_DateTime_Function_1__Boolean_1_',
+                      [
+                        rev('|$dateTime1->meta::pure::functions::boolean::between($dateTime3, $dateTime2)',
+                            'select Timestamp\'1032-01-01 00:32:34.000000000\' between Timestamp\'1031-12-31 07:22:22.000000000\' and Timestamp\'1951-10-01 14:01:01.000000000\''
+                        ),
+                        rev('|$dateTime4->meta::pure::functions::boolean::between($dateTime5, $dateTime6)',
+                            'select Timestamp\'2032-01-01 00:32:34.000000000\' between Timestamp\'2032-01-01 00:32:33.000000000\' and Timestamp\'2032-01-01 00:32:35.000000000\''
+                        ),
+                        rev('|$dateTime1->meta::pure::functions::boolean::between($dateTime1, $dateTime2)',
+                            'select Timestamp\'1032-01-01 00:32:34.000000000\' between Timestamp\'1032-01-01 00:32:34.000000000\' and Timestamp\'1951-10-01 14:01:01.000000000\''
+                        ),
+                        rev('|$dateTime1->meta::pure::functions::boolean::between($dateTime2, $dateTime1)',
+                            'select Timestamp\'1032-01-01 00:32:34.000000000\' between Timestamp\'1951-10-01 14:01:01.000000000\' and Timestamp\'1032-01-01 00:32:34.000000000\''
+                        ),
+                        rev('|$dateTime4->meta::pure::functions::boolean::between($dateTime5, $dateTime4)',
+                            'select Timestamp\'2032-01-01 00:32:34.000000000\' between Timestamp\'2032-01-01 00:32:33.000000000\' and Timestamp\'2032-01-01 00:32:34.000000000\''
+                        ),
+                        rev('|$dateTime4->meta::pure::functions::boolean::between($dateTime4, $dateTime5)',
+                            'select Timestamp\'2032-01-01 00:32:34.000000000\' between Timestamp\'2032-01-01 00:32:34.000000000\' and Timestamp\'2032-01-01 00:32:33.000000000\''
+                        ),
+                        rev('|$dateTime5->meta::pure::functions::boolean::between($dateTime5, $dateTime5)',
+                            'select Timestamp\'2032-01-01 00:32:33.000000000\' between Timestamp\'2032-01-01 00:32:33.000000000\' and Timestamp\'2032-01-01 00:32:33.000000000\''
+                        ),
+                        rev('|$dateTime1->meta::pure::functions::boolean::between($dateTime2, $dateTime3)',
+                            'select Timestamp\'1032-01-01 00:32:34.000000000\' between Timestamp\'1951-10-01 14:01:01.000000000\' and Timestamp\'1031-12-31 07:22:22.000000000\''
+                        ),
+                        rev('|$dateTime4->meta::pure::functions::boolean::between($dateTime6, $dateTime5)',
+                            'select Timestamp\'2032-01-01 00:32:34.000000000\' between Timestamp\'2032-01-01 00:32:35.000000000\' and Timestamp\'2032-01-01 00:32:33.000000000\''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::inequalities::between::testBetween_String_Function_1__Boolean_1_',
+                      [
+                        rev('|$s2->meta::pure::functions::boolean::between($s1, $s3)',
+                            'select Text\'hijklmn\' between Text\'abcdefg\' and Text\'opqrstu\''
+                        ),
+                        rev('|$s5->meta::pure::functions::boolean::between($s6, $s4)',
+                            'select Text\'ABcdefg\' between Text\'ABCdefg\' and Text\'Abcdefg\''
+                        ),
+                        rev('|$s7->meta::pure::functions::boolean::between($s4, $s1)',
+                            'select Text\'abcdefG\' between Text\'Abcdefg\' and Text\'abcdefg\''
+                        ),
+                        rev('|$s3->meta::pure::functions::boolean::between(\'O\', \'oq\')',
+                            'select Text\'opqrstu\' between Text\'O\' and Text\'oq\''
+                        ),
+                        rev('|$s1->meta::pure::functions::boolean::between($s2, $s3)',
+                            'select Text\'abcdefg\' between Text\'hijklmn\' and Text\'opqrstu\''
+                        ),
+                        rev('|$s5->meta::pure::functions::boolean::between($s4, $s6)',
+                            'select Text\'ABcdefg\' between Text\'Abcdefg\' and Text\'ABCdefg\''
+                        ),
+                        rev('|$s5->meta::pure::functions::boolean::between($s7, $s6)',
+                            'select Text\'ABcdefg\' between Text\'abcdefG\' and Text\'ABCdefg\''
+                        ),
+                        rev('|$s3->meta::pure::functions::boolean::between($s2, \'O\')',
+                            'select Text\'opqrstu\' between Text\'hijklmn\' and Text\'O\''
+                        ),
+                        rev('|$s3->meta::pure::functions::boolean::between($s3, $s3)',
+                            'select Text\'opqrstu\' between Text\'opqrstu\' and Text\'opqrstu\''
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::boolean::inequality::between::exec():Boolean[1]
+{
+   meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberInteger(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberLong(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberFloat(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::inequalities::between::testBetween_StrictDate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::inequalities::between::testBetween_DateTime(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::inequalities::between::testBetween_String(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

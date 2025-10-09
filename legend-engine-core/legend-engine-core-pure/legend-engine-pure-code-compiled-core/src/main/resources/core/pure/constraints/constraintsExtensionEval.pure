@@ -1,0 +1,60 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function 
+  <<access.public, PCT.function,
+
+  // TODO: this should not really be required, but is needed for routing issues
+  // due to the handling of inline a single "simple" expression, and the pre-eval of the
+  // nested functions that do need NormalizeRequiredFunction
+
+  functionType.NormalizeRequiredFunction
+  >>
+  {doc.doc = 'Evaluate if the given object meets the specified constraint, if it fails return a message else empty'}
+  meta::pure::constraints::functions::createConstraintFailureMessage<X>(item:X[1], name:String[1]):String[0..1]
+{
+    if (meta::pure::constraints::functions::evaluateConstraint($item, $name), 
+      | [], 
+      | meta::pure::constraints::functions::evaluateConstraintMessageFunction($item, $name)
+      );
+}
+
+function <<PCT.test>> meta::pure::constraints::functions::tests::pctTestCreateConstraintFailureMessage<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {
+                | [
+                    ^meta::pure::constraints::functions::tests::SimplePerson
+                    (
+                      name = 'Alex',
+                      age = 12
+                    ),
+                    // We need to use a "dynamic new" (rather than a regular "new") to allow us to create an "invalid" object
+                    dynamicNew(meta::pure::constraints::functions::tests::SimplePerson, [^KeyValue(key='age',value=-20), ^KeyValue(key='name',value='Bad Alex')], [], [], [], meta::pure::constraints::functions::noOpConstraintHandler_Any_1__Any_1_)->cast(@meta::pure::constraints::functions::tests::SimplePerson)
+                  ]
+                  ->project(~[
+                      name:x|$x.name,
+                      ageValid:x|$x->meta::pure::constraints::functions::createConstraintFailureMessage('ageMustBePositive')
+                    ])
+             };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   name,ageValid\n'+
+                '   Alex,null\n'+
+                '   Bad Alex,Constraint failed: ageMustBePositive\n'+
+                '#', $res->sort([~name->ascending()])->toString());
+}

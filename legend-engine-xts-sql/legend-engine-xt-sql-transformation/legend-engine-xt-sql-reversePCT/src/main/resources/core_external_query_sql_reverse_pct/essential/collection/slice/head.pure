@@ -1,0 +1,32 @@
+import meta::external::query::sql::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::essential::collection::slice::head::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/collection/slice/head.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::head::testHeadSimple_Function_1__Boolean_1_',
+                      [
+                        rev('|[\'a\', \'b\']->meta::pure::functions::collection::head()',
+                            'select (array[\'a\', \'b\'])[1]'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::head::testHeadOnOneElement_Function_1__Boolean_1_',
+                      [
+                        rev('|\'a\'->meta::pure::functions::collection::head()',
+                            'select (array[\'a\'])[1]'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::collection::slice::head::exec():Boolean[1]
+{
+   meta::pure::functions::collection::tests::head::testHeadSimple(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::head::testHeadOnOneElement(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

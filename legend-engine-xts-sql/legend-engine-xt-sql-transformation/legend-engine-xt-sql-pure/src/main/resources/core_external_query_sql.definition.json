@@ -6,6 +6,7 @@
     "platform_dsl_mapping",
     "platform_dsl_store",
     "platform_store_relational",
+    "platform_dsl_tds",
     "core_functions_unclassified",
     "core_functions_standard",
     "core_functions_json",

@@ -27,6 +27,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapSetter;
+
 import java.nio.charset.StandardCharsets;
 import java.sql.ParameterMetaData;
 import java.sql.SQLException;
@@ -456,7 +457,7 @@ public class Messages
         buffer.writeShort(parameters.getParameterCount());
         for (int i = 0; i < parameters.getParameterCount(); i++)
         {
-            int pgTypeId = PGTypes.get(parameters.getParameterType(i), parameters.getScale(i)).oid();
+            int pgTypeId = PGTypes.get(parameters.getParameterType(i), parameters.getParameterTypeName(i), parameters.getScale(i)).oid();
             buffer.writeInt(pgTypeId);
         }
         channel.writeAndFlush(buffer);
@@ -480,8 +481,8 @@ public class Messages
      * See https://www.postgresql.org/docs/current/static/protocol-message-formats.html
      */
     public void sendRowDescription(Channel channel,
-                            PostgresResultSetMetaData resultSetMetaData,
-                            FormatCodes.FormatCode[] formatCodes) throws Exception
+                                   PostgresResultSetMetaData resultSetMetaData,
+                                   FormatCodes.FormatCode[] formatCodes) throws Exception
     {
         int length = 4 + 2;
         int columnSize = 4 + 2 + 4 + 2 + 4 + 2;
@@ -517,7 +518,7 @@ public class Messages
             }*/
 
             PGType<?> pgType = PGTypes.get(resultSetMetaData.getColumnType(idx + 1),
-                    resultSetMetaData.getScale(idx + 1));
+                    resultSetMetaData.getColumnTypeName(idx + 1), resultSetMetaData.getScale(idx + 1));
             buffer.writeInt(pgType.oid());
             buffer.writeShort(pgType.typeLen());
             buffer.writeInt(pgType.typeMod());

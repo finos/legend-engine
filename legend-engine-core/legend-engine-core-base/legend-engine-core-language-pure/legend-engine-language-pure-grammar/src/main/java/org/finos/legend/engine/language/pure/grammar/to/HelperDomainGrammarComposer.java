@@ -181,6 +181,7 @@ public class HelperDomainGrammarComposer
             if (constraint.messageFunction != null)
             {
                 appendTabString(builder, 2);
+                constraint.messageFunction.parameters = Collections.emptyList();
                 String messageString = constraint.messageFunction.accept(transformer).replaceFirst("\\|", "");
                 builder.append("~message: ").append(messageString).append('\n');
             }

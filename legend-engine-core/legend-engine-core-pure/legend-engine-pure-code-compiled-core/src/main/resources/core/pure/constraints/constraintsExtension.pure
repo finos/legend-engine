@@ -82,6 +82,36 @@ function {doc.doc = 'Get constraint with the given name from the given class hie
     $class->allConstraintsInHierarchy()->filter(c | $c.name == $name)->first()
 }
 
+function 
+  <<access.public, functionType.NormalizeRequiredFunction>> 
+  {doc.doc = 'Evaluate if the given object meets the specified constraint'}
+  meta::pure::constraints::functions::evaluateConstraint<Z>(theItem:Z[1], name:String[1]):Boolean[1]
+{
+  meta::pure::constraints::functions::getConstraint($theItem, $name).functionDefinition->cast(@Function<{Z[1]->Boolean[1]}>)->eval($theItem)
+}
+
+function 
+  <<access.public, functionType.NormalizeRequiredFunction>> 
+  {doc.doc = 'Evaluate the message function for a given constraint'}
+  meta::pure::constraints::functions::evaluateConstraintMessageFunction<Z>(theItem:Z[1], name:String[1]):String[1]
+{
+  meta::pure::constraints::functions::getConstraint($theItem, $name).messageFunction->cast(@Function<{Z[1]->String[1]}>)
+    ->orElse({theItem:Z[1]|'Constraint failed: ' + $name})
+    ->eval($theItem)
+}
+
+function 
+  <<access.private>> 
+  {doc.doc = 'Helper function to get a give constraint based on the type of the item passed in'}
+  meta::pure::constraints::functions::getConstraint<X>(item:X[1], name:String[1]):Constraint[1]
+{
+    $item
+      ->genericType()->genericTypeClass()
+      ->allConstraintsInHierarchy()
+       ->filter(c | $c.name == $name)
+       ->toOne('Failed to find constraint with name "' + $name + '" in hierarchy for class ' + $item->genericType()->genericTypeClass()->elementToPath());
+}
+
 function meta::pure::constraints::functions::executeConstraints(instance:Any[1]):ValidatedInstance[1]
 {
    let constraints = $instance->genericType()->genericTypeClass()->allConstraintsInHierarchy();

@@ -27,7 +27,7 @@ Class meta::external::query::sql::transformation::queryToPure::tests::TestConfig
 
   expectedLambda() {
     if ($this.relation,
-      | $this.expected->cast(@LambdaFunction<Any>)->compileViaProtocol([], relationalExtensions()),
+      | $this.expected->cast(@LambdaFunction<Any>)->compileViaGrammar(),
       | $this.expected);
   }:FunctionDefinition<Any>[1];
 
@@ -119,7 +119,8 @@ function meta::external::query::sql::transformation::queryToPure::tests::relatio
     serviceToSource(Service1Relation()),
     serviceToSource(Service2Relation()),
     serviceToSource(Service3Relation()),
-    serviceToSource(Service4Relation())
+    serviceToSource(Service4Relation()),
+    serviceToSource(Service7Relation())
   ]
 }
 

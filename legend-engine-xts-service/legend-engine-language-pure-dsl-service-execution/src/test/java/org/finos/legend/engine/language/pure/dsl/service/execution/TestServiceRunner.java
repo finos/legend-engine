@@ -543,11 +543,8 @@ public class TestServiceRunner
     @Test
     public void testServiceWithCollectionEnumParam()
     {
-        Exception e1 = Assert.assertThrows(RuntimeException.class, () -> buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/enumServiceParameter.pure", "test::CollectionEnumParam_EmployeeType_MANY__TabularDataSet_1_"));
-        e1.getMessage().contains("Collection of Enums is not supported as service parameter [eType]");
-
-        Exception e2 = Assert.assertThrows(RuntimeException.class, () -> buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/enumServiceParameter.pure", "test::CollectionEnumParamGraphFetch_EmployeeType_MANY__String_1_"));
-        e2.getMessage().contains("Collection of Enums is not supported as service parameter [eType]");
+        this.testServiceExecutionWithEnumParam("test::CollectionEnumParam_EmployeeType_MANY__TabularDataSet_1_", "eType", Arrays.asList("FULL_TIME", "CONTRACT"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[101,\"Alice\",\"CONTRACT\"]},{\"values\":[102,\"Bob\",\"FULL_TIME\"]},{\"values\":[103,\"Curtis\",\"CONTRACT\"]}]}");
+        this.testServiceExecutionWithEnumParam("test::CollectionEnumParamGraphFetch_EmployeeType_MANY__String_1_", "eType", Arrays.asList("FULL_TIME", "CONTRACT"), "[{\"id\":101,\"name\":\"Alice\",\"employeeType\":\"CONTRACT\"},{\"id\":102,\"name\":\"Bob\",\"employeeType\":\"FULL_TIME\"},{\"id\":103,\"name\":\"Curtis\",\"employeeType\":\"CONTRACT\"}]");
     }
 
     private static class EnumMultipleParamServiceRunner extends AbstractServicePlanExecutor

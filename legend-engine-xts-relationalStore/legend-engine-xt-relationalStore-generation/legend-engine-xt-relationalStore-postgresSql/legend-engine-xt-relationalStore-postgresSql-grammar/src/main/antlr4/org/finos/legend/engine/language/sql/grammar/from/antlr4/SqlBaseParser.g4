@@ -209,7 +209,7 @@ filter
 
 relation
     : left=relation
-      ( CROSS JOIN right=aliasedRelation
+      ( CROSS JOIN right=aliasedRelation (WITH ORDINALITY AS? ident aliasedColumns)?
       | joinType JOIN rightRelation=relation joinCriteria
       | NATURAL joinType JOIN right=aliasedRelation
       )                                                                              #joinRelation
@@ -275,6 +275,7 @@ expr
 
 booleanExpression
     : predicated                                                                     #booleanDefault
+    | OPEN_ROUND_BRACKET qnames CLOSE_ROUND_BRACKET EQ OPEN_ROUND_BRACKET qnames CLOSE_ROUND_BRACKET #multicolumns
     | NOT booleanExpression                                                          #logicalNot
     | left=booleanExpression operator=AND right=booleanExpression                    #logicalBinary
     | left=booleanExpression operator=OR right=booleanExpression                     #logicalBinary
@@ -309,8 +310,28 @@ valueExpression
     | left=valueExpression operator=(PLUS | MINUS) right=valueExpression             #arithmeticBinary
     | left=valueExpression operator=(BITWISE_AND | BITWISE_OR | BITWISE_XOR)
         right=valueExpression                                                        #bitwiseBinary
+    | value=valueExpression operator=(LLT | BITWISE_SHIFT_RIGHT)
+        shift=valueExpression                                                        #bitwiseShift
+    | left=valueExpression jsonOperator right=valueExpression                        #jsonBinary
     | left=valueExpression CONCAT right=valueExpression                              #concatenation
     | dataType stringLiteral                                                         #fromStringLiteralCast
+    ;
+
+jsonOperator
+    : JSON_EXTRACT                                                                   # jsonExtract
+    | JSON_EXTRACT_TEXT                                                              # jsonExtractText
+    | JSON_PATH_EXTRACT                                                              # jsonPathExtract
+    | JSON_PATH_EXTRACT_TEXT                                                         # jsonPathExtractText
+    | JSONB_CONTAIN_RIGHT                                                            # jsonbContainRight
+    | JSONB_CONTAIN_LEFT                                                             # jsonbContainLeft
+    | QUESTION                                                                       # jsonbContainTopKey
+    | QUESTION BITWISE_OR                                                          # jsonbContainAnyTopKey
+    | JSONB_CONTAIN_ALL_TOP_KEY                                                      # jsonbContainAllTopKey
+    | BITWISE_OR                                                                     # jsonbConcat
+    | MINUS                                                                          # jsonbDelete
+    | JSONB_PATH_DELETE                                                              # jsonbPathDelete
+    | JSONB_PATH_CONTAIN_ANY_VALUE                                                   # jsonbPathContainAnyValue
+    | JSONB_PATH_PREDICATE_CHECK                                                     # jsonbPathPredicateCheck
     ;
 
 primaryExpression
@@ -826,5 +847,5 @@ nonReserved
     | CURRENT_SCHEMA | PROMOTE | CHARACTER | VARYING | SUBSTRING
     | DISCARD | PLANS | SEQUENCES | TEMPORARY | TEMP | METADATA
     | PUBLICATION | SUBSCRIPTION | ENABLE | DISABLE | CONNECTION | DECLARE | CURSOR | HOLD | FORWARD | BACKWARD
-    | RELATIVE | PRIOR | ASENSITIVE | INSENSITIVE | BINARY | NO | SCROLL | ABSOLUTE
+    | RELATIVE | PRIOR | ASENSITIVE | INSENSITIVE | BINARY | NO | SCROLL | ABSOLUTE | USER
     ;
