@@ -53,6 +53,11 @@ import org.finos.legend.pure.runtime.java.extension.functions.interpreted.native
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.JaroWinklerSimilarity;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.LevenshteinDistance;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.Matches;
+import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.RegexpCount;
+import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.RegexpExtract;
+import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.RegexpIndexOf;
+import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.RegexpLike;
+import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.RegexpReplace;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.tracing.TraceSpan;
 import org.finos.legend.pure.runtime.java.interpreted.extension.BaseInterpretedExtension;
 
@@ -114,6 +119,11 @@ public class FunctionExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("encodeUrl_String_1__String_1__String_1_", EncodeUrl::new),
                 Tuples.pair("decodeUrl_String_1__String_1__String_1_", DecodeUrl::new),
                 Tuples.pair("matches_String_1__String_1__Boolean_1_", Matches::new),
+                Tuples.pair("regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_", RegexpLike::new),
+                Tuples.pair("regexpCount_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_", RegexpCount::new),
+                Tuples.pair("regexpReplace_String_1__String_1__String_1__Boolean_1__RegexpParameter_$1_MANY$__String_1_", RegexpReplace::new),
+                Tuples.pair("regexpExtract_String_1__String_1__Boolean_1__Integer_1__RegexpParameter_$1_MANY$__String_MANY_", RegexpExtract::new),
+                Tuples.pair("regexpIndexOf_String_1__String_1__Integer_1__RegexpParameter_$1_MANY$__Integer_1_", RegexpIndexOf::new),
                 Tuples.pair("jaroWinklerSimilarity_String_1__String_1__Float_1_", JaroWinklerSimilarity::new),
                 Tuples.pair("levenshteinDistance_String_1__String_1__Integer_1_", LevenshteinDistance::new),
 

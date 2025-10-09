@@ -37,9 +37,6 @@ public class Test_Relational_MemSQL_UnclassifiedFunctions_PCT extends PCTReportC
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.memsqlAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            //ascii
-            one("meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_", "Unexpected token", AdapterQualifier.needsInvestigation),
-
             //base64
             one("meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_", "\"\nexpected: ['Hello, World!']\nactual:   []\"", AdapterQualifier.unsupportedFeature),
 
@@ -69,7 +66,14 @@ public class Test_Relational_MemSQL_UnclassifiedFunctions_PCT extends PCTReportC
             //toupperfirstcharacter
             one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower_Function_1__Boolean_1_", "\"\nexpected: 'XoXoXoX'\nactual:   'XXoXoXoX'\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber_Function_1__Boolean_1_", "\"\nexpected: '1isOne'\nactual:   '11isOne'\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'XxOxOxOx'\"", AdapterQualifier.needsInvestigation)
+            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'XxOxOxOx'\"", AdapterQualifier.needsInvestigation),
+
+            // regexp
+            pack("meta::pure::functions::string::tests::regexpCount", "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+            pack("meta::pure::functions::string::tests::regexpExtract", "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+            pack("meta::pure::functions::string::tests::regexpIndexOf", "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+            pack("meta::pure::functions::string::tests::regexpLike", "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+            pack("meta::pure::functions::string::tests::regexpReplace", "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation)
     );
 
     public static Test suite()

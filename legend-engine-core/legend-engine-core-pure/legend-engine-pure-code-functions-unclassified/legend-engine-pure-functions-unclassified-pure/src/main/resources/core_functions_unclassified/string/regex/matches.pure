@@ -14,7 +14,7 @@
 
 import meta::pure::test::pct::*;
 
-native function <<PCT.function>> {doc.doc = 'Checks if the given string matches the specified regular expression.'}
+native function <<PCT.function>> {doc.doc = 'Returns true or false depending on whether its pattern matches the given string. It only succeeds if its pattern matches the entire string.'}
   meta::pure::functions::string::matches(string:String[1], regexp:String[1]):Boolean[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::matches::testMatches<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

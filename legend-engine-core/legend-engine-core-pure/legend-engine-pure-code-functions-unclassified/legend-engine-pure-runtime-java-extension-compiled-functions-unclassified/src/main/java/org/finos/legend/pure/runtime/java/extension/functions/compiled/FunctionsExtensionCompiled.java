@@ -57,6 +57,11 @@ import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.s
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.JaroWinklerSimilarity;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.LevenshteinDistance;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.Matches;
+import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.RegexpCount;
+import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.RegexpExtract;
+import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.RegexpIndexOf;
+import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.RegexpLike;
+import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.RegexpReplace;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.tracing.TraceSpan;
 
 import java.util.List;
@@ -123,6 +128,11 @@ public class FunctionsExtensionCompiled extends AbstractCompiledExtension
                 new DecodeUrl(),
                 new EncodeUrl(),
                 new Matches(),
+                new RegexpLike(),
+                new RegexpCount(),
+                new RegexpReplace(),
+                new RegexpExtract(),
+                new RegexpIndexOf(),
                 new JaroWinklerSimilarity(),
                 new LevenshteinDistance(),
 

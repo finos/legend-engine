@@ -358,6 +358,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAYOFWEEK(%s) +1  >= 0 then %s  - DAYOFWEEK(%s) -1 - 7 else %s - DAYOFWEEK(%s) -1 end, %s)', transform={p:String[1..2] | $p->formatMostRecentSnowflake('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('regexpCount',            $allStates,            ^ToSql(format='regexp_count(%s)', transform={p:String[3]|$p->transformRegexpCount()})),
+    dynaFnToSql('regexpExtract',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpExtract()})),
+    dynaFnToSql('regexpIndexOf',          $allStates,            ^ToSql(format='regexp_instr(%s)', transform={p:String[4]|$p->transformRegexpIndexOf()})),
+    dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='regexp_like(%s)', transform={p:String[3]|$p->transformRegexpLike()})),
+    dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='regexp_replace(%s)', transform={p:String[5]|$p->transformRegexpReplace()})),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('startsWith',             $allStates,            ^ToSql(format='startswith(%s,%s)', transform={p:String[2]|$p})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
@@ -376,6 +381,52 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('convertTimeZone',        $allStates,            ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformRegexpCount(params:String[3]):String[1]
+{
+  $params->at(0) + ', ' + $params->at(1) + ', 1, ' + $params->at(2)->regexpParametersToPatternFlagsForSnowflake();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformRegexpLike(params:String[3]):String[1]
+{
+  $params->at(0) + ', ' + $params->at(1)->addWildCardCharacters() + ', ' + $params->at(2)->regexpParametersToPatternFlagsForSnowflake();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformRegexpReplace(params:String[5]):String[1]
+{
+  $params->at(0) + ', ' + $params->at(1) + ', ' + $params->at(2) + ', 1, ' + if ($params->at(3) == 'true', | '0', | '1') + ', ' + $params->at(4)->regexpParametersToPatternFlagsForSnowflake();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformRegexpExtract(params:String[5]):String[1]
+{
+  let transformedParams = $params->at(0) + ', ' + $params->at(1) + ', 1, 1, ' + $params->at(4)->regexpParametersToPatternFlagsForSnowflake() + ', ' + $params->at(3);
+  if ($params->at(2) == 'true', | 'regexp_substr_all(' + $transformedParams + ')', | 'regexp_substr(' + $transformedParams + ')');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformRegexpIndexOf(params:String[4]):String[1]
+{
+  $params->at(0) + ', ' + $params->at(1) + ', 1, 1, 0, ' + $params->at(3)->regexpParametersToPatternFlagsForSnowflake() + ', ' + $params->at(2);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::addWildCardCharacters(originalPattern:String[1]):String[1]
+{
+  let originalPatternWithoutQuotes = $originalPattern->removeQuotesIfExist();
+  let startAnchor = if ($originalPatternWithoutQuotes->startsWith('^'), | '\'', | '\'.*');
+  let endAnchor = if ($originalPatternWithoutQuotes->endsWith('$'), | '\'', | '.*\'');
+  $startAnchor + $originalPatternWithoutQuotes + $endAnchor;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::regexpParametersToPatternFlagsForSnowflake(regexpParametersAsString: String[1]): String[1]
+{
+  let regexpParameters = $regexpParametersAsString->removeQuotesIfExist()->split(',');
+  let regexpParametersMap = newMap([
+    pair('CASE_SENSITIVE', 'c'),
+    pair('CASE_INSENSITIVE', 'i'),
+    pair('MULTILINE', 'm'),
+    pair('NON_NEWLINE_SENSITIVE', 's')
+  ]);
+  $regexpParameters->map(p | $regexpParametersMap->get($p))->filter(f | $f != '')->joinStrings('\'', '', '\'');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::toVariantForSnowflake(params: String[*]):String[1]
@@ -589,8 +640,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     |'',
     | if ($s.pivot->isEmpty(),
       | ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions),
-      | let p = $s.pivot;
-        let from = $s.data->toOne();
+      | let from = $s.data->toOne();
         let fromStr = ' ' + $format.separator + 'from ' + $from->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions);
         $fromStr + processPivotForSnowflake($s.pivot->toOne(), $dbConfig, $format, ^$config(useUnqualifiedColumnNameInPivot = true), $extensions);
       )
