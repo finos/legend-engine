@@ -121,5 +121,6 @@ function meta::external::query::sql::reversePCT::framework::reverses():ReversesF
     ->concatenate(meta::external::query::sql::reversePCT::tests::essential::reverses())
     ->concatenate(meta::external::query::sql::reversePCT::tests::relation::reverses())
     ->concatenate(meta::external::query::sql::reversePCT::tests::standard::reverses())
+    ->concatenate(meta::external::query::sql::reversePCT::tests::unclassified::reverses())
     ->concatenate(meta::external::query::sql::reversePCT::tests::variant::reverses())
 }
