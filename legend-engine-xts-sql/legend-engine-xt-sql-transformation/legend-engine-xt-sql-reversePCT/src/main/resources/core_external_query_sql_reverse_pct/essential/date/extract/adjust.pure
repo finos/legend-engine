@@ -1,0 +1,390 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::essential::date::operation::adjust::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/date/operation/adjust.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_',
+                      [
+                        revError('|%2015->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.YEARS)',
+                            '',
+                            'Unexpected token',
+                            'postgres does not support partial dates'
+                        ),
+                        revError('|%2015->meta::pure::functions::date::adjust(12, meta::pure::functions::date::DurationUnit.YEARS)',
+                            '',
+                            'Unexpected token',
+                            'postgres does not support partial dates'
+                        ),
+                        revError('|%2015->meta::pure::functions::date::adjust(-4, meta::pure::functions::date::DurationUnit.YEARS)',
+                            '',
+                            'Unexpected token',
+                            'postgres does not support partial dates'
+                        ),
+                        rev('|%2015-02-28->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.YEARS)',
+                            'select (Date\'2015-02-28\' + (INTERVAL \'1 YEARS\' * 1))'
+                        ),
+                        rev('|%2012-02-29->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.YEARS)',
+                            'select (Date\'2012-02-29\' + (INTERVAL \'1 YEARS\' * 1))'
+                        ),
+                        rev('|%2012-02-29->meta::pure::functions::date::adjust(4, meta::pure::functions::date::DurationUnit.YEARS)',
+                            'select (Date\'2012-02-29\' + (INTERVAL \'1 YEARS\' * 4))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_->meta::pure::functions::lang::eval(%2015-02-28, 1, meta::pure::functions::date::DurationUnit.YEARS)'),
+                        noRev('|meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_->meta::pure::functions::lang::evaluate([^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=%2015-02-28), ^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=1), ^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=meta::pure::functions::date::DurationUnit.YEARS)])')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_',
+                      [
+                        revError('|%2012-03->meta::pure::functions::date::adjust(36, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            '',
+                            'Unexpected token',
+                            'postgres does not support partial dates'
+                        ),
+                        revError('|%2012-03->meta::pure::functions::date::adjust(-36, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            '',
+                            'Unexpected token',
+                            'postgres does not support partial dates'
+                        ),
+                        rev('|%2012-03-31->meta::pure::functions::date::adjust(24, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2012-03-31\' + (INTERVAL \'1 MONTHS\' * 24))'
+                        ),
+                        rev('|%2012-02-28->meta::pure::functions::date::adjust(-24, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2012-02-28\' + (INTERVAL \'1 MONTHS\' * -24))'
+                        ),
+                        rev('|%2012-02-29->meta::pure::functions::date::adjust(-24, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2012-02-29\' + (INTERVAL \'1 MONTHS\' * -24))'
+                        ),
+                        rev('|%2012-03-31->meta::pure::functions::date::adjust(25, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2012-03-31\' + (INTERVAL \'1 MONTHS\' * 25))'
+                        ),
+                        rev('|%2012-02-28->meta::pure::functions::date::adjust(-25, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2012-02-28\' + (INTERVAL \'1 MONTHS\' * -25))'
+                        ),
+                        rev('|%2012-02-29->meta::pure::functions::date::adjust(-25, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2012-02-29\' + (INTERVAL \'1 MONTHS\' * -25))'
+                        ),
+                        rev('|%2015-01-31->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2015-01-31\' + (INTERVAL \'1 MONTHS\' * 1))'
+                        ),
+                        rev('|%2015-01-31T13:55:21+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Timestamp\'2015-01-31 13:55:21\' + (INTERVAL \'1 MONTHS\' * 1))'
+                        ),
+                        rev('|%2015-01-31->meta::pure::functions::date::adjust(2, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2015-01-31\' + (INTERVAL \'1 MONTHS\' * 2))'
+                        ),
+                        rev('|%2015-01-31->meta::pure::functions::date::adjust(3, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2015-01-31\' + (INTERVAL \'1 MONTHS\' * 3))'
+                        ),
+                        rev('|%2015-01-31->meta::pure::functions::date::adjust(4, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2015-01-31\' + (INTERVAL \'1 MONTHS\' * 4))'
+                        ),
+                        rev('|%2015-02-28->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2015-02-28\' + (INTERVAL \'1 MONTHS\' * 1))'
+                        ),
+                        rev('|%2016-02-29->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2016-02-29\' + (INTERVAL \'1 MONTHS\' * 1))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_',
+                      [
+                        rev('|%2016-02-29->meta::pure::functions::date::adjust(9600000000, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2016-02-29\' + (INTERVAL \'1 MONTHS\' * 9600000000))'
+                        ),
+                        rev('|%2016-02-29->meta::pure::functions::date::adjust(-9600000000, meta::pure::functions::date::DurationUnit.MONTHS)',
+                            'select (Date\'2016-02-29\' + (INTERVAL \'1 MONTHS\' * -9600000000))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByWeeks_Function_1__Boolean_1_',
+                      [
+                        rev('|%2015-04-16->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.WEEKS)',
+                            'select (Date\'2015-04-16\' + (INTERVAL \'1 WEEKS\' * 1))'
+                        ),
+                        rev('|%2015-04-16->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.WEEKS)',
+                            'select (Date\'2015-04-16\' + (INTERVAL \'1 WEEKS\' * -1))'
+                        ),
+                        rev('|%2015-04-16->meta::pure::functions::date::adjust(2, meta::pure::functions::date::DurationUnit.WEEKS)',
+                            'select (Date\'2015-04-16\' + (INTERVAL \'1 WEEKS\' * 2))'
+                        ),
+                        rev('|%2015-04-16->meta::pure::functions::date::adjust(-2, meta::pure::functions::date::DurationUnit.WEEKS)',
+                            'select (Date\'2015-04-16\' + (INTERVAL \'1 WEEKS\' * -2))'
+                        ),
+                        rev('|%2015-04-16->meta::pure::functions::date::adjust(3, meta::pure::functions::date::DurationUnit.WEEKS)',
+                            'select (Date\'2015-04-16\' + (INTERVAL \'1 WEEKS\' * 3))'
+                        ),
+                        rev('|%2015-05-16->meta::pure::functions::date::adjust(3, meta::pure::functions::date::DurationUnit.WEEKS)',
+                            'select (Date\'2015-05-16\' + (INTERVAL \'1 WEEKS\' * 3))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_',
+                      [
+                        rev('|%2016-02-29->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.WEEKS)',
+                            'select (Date\'2016-02-29\' + (INTERVAL \'1 WEEKS\' * 12345678912))'
+                        ),
+                        rev('|%2016-02-29->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.WEEKS)',
+                            'select (Date\'2016-02-29\' + (INTERVAL \'1 WEEKS\' * -12345678912))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByDays_Function_1__Boolean_1_',
+                      [
+                        rev('|%2015-04-16->meta::pure::functions::date::adjust(4, meta::pure::functions::date::DurationUnit.DAYS)',
+                            'select (Date\'2015-04-16\' + (INTERVAL \'1 DAYS\' * 4))'
+                        ),
+                        rev('|%2015-04-16->meta::pure::functions::date::adjust(-4, meta::pure::functions::date::DurationUnit.DAYS)',
+                            'select (Date\'2015-04-16\' + (INTERVAL \'1 DAYS\' * -4))'
+                        ),
+                        rev('|%2015-04-16->meta::pure::functions::date::adjust(16, meta::pure::functions::date::DurationUnit.DAYS)',
+                            'select (Date\'2015-04-16\' + (INTERVAL \'1 DAYS\' * 16))'
+                        ),
+                        rev('|%2015-05-16->meta::pure::functions::date::adjust(16, meta::pure::functions::date::DurationUnit.DAYS)',
+                            'select (Date\'2015-05-16\' + (INTERVAL \'1 DAYS\' * 16))'
+                        ),
+                        rev('|%2015-04-16->meta::pure::functions::date::adjust(-16, meta::pure::functions::date::DurationUnit.DAYS)',
+                            'select (Date\'2015-04-16\' + (INTERVAL \'1 DAYS\' * -16))'
+                        ),
+                        rev('|%2015-04-16->meta::pure::functions::date::adjust(-17, meta::pure::functions::date::DurationUnit.DAYS)',
+                            'select (Date\'2015-04-16\' + (INTERVAL \'1 DAYS\' * -17))'
+                        ),
+                        rev('|%2014-03-30->meta::pure::functions::date::adjust(365, meta::pure::functions::date::DurationUnit.DAYS)',
+                            'select (Date\'2014-03-30\' + (INTERVAL \'1 DAYS\' * 365))'
+                        ),
+                        rev('|%2014-03-30->meta::pure::functions::date::adjust(-365, meta::pure::functions::date::DurationUnit.DAYS)',
+                            'select (Date\'2014-03-30\' + (INTERVAL \'1 DAYS\' * -365))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByDaysBigNumber_Function_1__Boolean_1_',
+                      [
+                        rev('|%2016-02-29->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.DAYS)',
+                            'select (Date\'2016-02-29\' + (INTERVAL \'1 DAYS\' * 12345678912))'
+                        ),
+                        rev('|%2016-02-29->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.DAYS)',
+                            'select (Date\'2016-02-29\' + (INTERVAL \'1 DAYS\' * -12345678912))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByHours_Function_1__Boolean_1_',
+                      [
+                        rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.HOURS)',
+                            'select (Timestamp\'2015-04-15 12:12:11\' + (INTERVAL \'1 HOURS\' * 1))'
+                        ),
+                        rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.HOURS)',
+                            'select (Timestamp\'2015-04-15 12:12:11\' + (INTERVAL \'1 HOURS\' * -1))'
+                        ),
+                        rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(24, meta::pure::functions::date::DurationUnit.HOURS)',
+                            'select (Timestamp\'2015-04-15 12:12:11\' + (INTERVAL \'1 HOURS\' * 24))'
+                        ),
+                        rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(-24, meta::pure::functions::date::DurationUnit.HOURS)',
+                            'select (Timestamp\'2015-04-15 12:12:11\' + (INTERVAL \'1 HOURS\' * -24))'
+                        ),
+                        rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(36, meta::pure::functions::date::DurationUnit.HOURS)',
+                            'select (Timestamp\'2015-04-15 12:12:11\' + (INTERVAL \'1 HOURS\' * 36))'
+                        ),
+                        rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(-36, meta::pure::functions::date::DurationUnit.HOURS)',
+                            'select (Timestamp\'2015-04-15 12:12:11\' + (INTERVAL \'1 HOURS\' * -36))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByHoursBigNumber_Function_1__Boolean_1_',
+                      [
+                        rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.HOURS)',
+                            'select (Timestamp\'2016-02-29 00:00:00\' + (INTERVAL \'1 HOURS\' * 12345678912))'
+                        ),
+                        rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.HOURS)',
+                            'select (Timestamp\'2016-02-29 00:00:00\' + (INTERVAL \'1 HOURS\' * -12345678912))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByMinutes_Function_1__Boolean_1_',
+                      [
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MINUTES)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 MINUTES\' * 1))'
+                        ),
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.MINUTES)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 MINUTES\' * -1))'
+                        ),
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(61, meta::pure::functions::date::DurationUnit.MINUTES)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 MINUTES\' * 61))'
+                        ),
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-61, meta::pure::functions::date::DurationUnit.MINUTES)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 MINUTES\' * -61))'
+                        ),
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(1441, meta::pure::functions::date::DurationUnit.MINUTES)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 MINUTES\' * 1441))'
+                        ),
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-1441, meta::pure::functions::date::DurationUnit.MINUTES)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 MINUTES\' * -1441))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByMinutesBigNumber_Function_1__Boolean_1_',
+                      [
+                        rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.MINUTES)',
+                            'select (Timestamp\'2016-02-29 00:00:00\' + (INTERVAL \'1 MINUTES\' * 12345678912))'
+                        ),
+                        rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.MINUTES)',
+                            'select (Timestamp\'2016-02-29 00:00:00\' + (INTERVAL \'1 MINUTES\' * -12345678912))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustBySeconds_Function_1__Boolean_1_',
+                      [
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.SECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 SECONDS\' * 1))'
+                        ),
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.SECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 SECONDS\' * -1))'
+                        ),
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(61, meta::pure::functions::date::DurationUnit.SECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 SECONDS\' * 61))'
+                        ),
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-61, meta::pure::functions::date::DurationUnit.SECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 SECONDS\' * -61))'
+                        ),
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(3601, meta::pure::functions::date::DurationUnit.SECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 SECONDS\' * 3601))'
+                        ),
+                        rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-3601, meta::pure::functions::date::DurationUnit.SECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11\' + (INTERVAL \'1 SECONDS\' * -3601))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustBySecondsBigNumber_Function_1__Boolean_1_',
+                      [
+                        rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.SECONDS)',
+                            'select (Timestamp\'2016-02-29 00:00:00\' + (INTERVAL \'1 SECONDS\' * 12345678912))'
+                        ),
+                        rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.SECONDS)',
+                            'select (Timestamp\'2016-02-29 00:00:00\' + (INTERVAL \'1 SECONDS\' * -12345678912))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByMicroseconds_Function_1__Boolean_1_',
+                      [
+                        rev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MICROSECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338000\' + (INTERVAL \'1 MICROSECONDS\' * 1))'
+                        ),
+                        rev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.MICROSECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338000\' + (INTERVAL \'1 MICROSECONDS\' * -1))'
+                        ),
+                        rev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(61, meta::pure::functions::date::DurationUnit.MICROSECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338000\' + (INTERVAL \'1 MICROSECONDS\' * 61))'
+                        ),
+                        rev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(-61, meta::pure::functions::date::DurationUnit.MICROSECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338000\' + (INTERVAL \'1 MICROSECONDS\' * -61))'
+                        ),
+                        rev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(3601, meta::pure::functions::date::DurationUnit.MICROSECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338000\' + (INTERVAL \'1 MICROSECONDS\' * 3601))'
+                        ),
+                        rev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(-3601, meta::pure::functions::date::DurationUnit.MICROSECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338000\' + (INTERVAL \'1 MICROSECONDS\' * -3601))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByMicrosecondsBigNumber_Function_1__Boolean_1_',
+                      [
+                        rev('|%1970-01-01T00:00:00.0000000+0000->meta::pure::functions::date::adjust(1624268257499000, meta::pure::functions::date::DurationUnit.MICROSECONDS)',
+                            'select (Timestamp\'1970-01-01 00:00:00.0000000\' + (INTERVAL \'1 MICROSECONDS\' * 1624268257499000))'
+                        ),
+                        rev('|%1970-01-01T00:00:00.0000000+0000->meta::pure::functions::date::adjust(meta::pure::functions::math::floor(1624268257499000000 / 1000), meta::pure::functions::date::DurationUnit.MICROSECONDS)',
+                            'select (Timestamp\'1970-01-01 00:00:00.0000000\' + (INTERVAL \'1 MICROSECONDS\' * cast(floor(((1.0 * 1624268257499000000) / 1000)) as INTEGER)))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByMilliseconds_Function_1__Boolean_1_',
+                      [
+                        rev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MILLISECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338\' + (INTERVAL \'1 MILLISECONDS\' * 1))'
+                        ),
+                        rev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.MILLISECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338\' + (INTERVAL \'1 MILLISECONDS\' * -1))'
+                        ),
+                        rev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(61, meta::pure::functions::date::DurationUnit.MILLISECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338\' + (INTERVAL \'1 MILLISECONDS\' * 61))'
+                        ),
+                        rev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(-61, meta::pure::functions::date::DurationUnit.MILLISECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338\' + (INTERVAL \'1 MILLISECONDS\' * -61))'
+                        ),
+                        rev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(3601, meta::pure::functions::date::DurationUnit.MILLISECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338\' + (INTERVAL \'1 MILLISECONDS\' * 3601))'
+                        ),
+                        rev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(-3601, meta::pure::functions::date::DurationUnit.MILLISECONDS)',
+                            'select (Timestamp\'2015-04-15 13:11:11.338\' + (INTERVAL \'1 MILLISECONDS\' * -3601))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testAdjustByMillisecondsBigNumber_Function_1__Boolean_1_',
+                      [
+                        rev('|%2016-02-29T00:00:00.000+0000->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.MILLISECONDS)',
+                            'select (Timestamp\'2016-02-29 00:00:00.000\' + (INTERVAL \'1 MILLISECONDS\' * 12345678912))'
+                        ),
+                        rev('|%2016-02-29T00:00:00.000+0000->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.MILLISECONDS)',
+                            'select (Timestamp\'2016-02-29 00:00:00.000\' + (INTERVAL \'1 MILLISECONDS\' * -12345678912))'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::date::operation::adjust::exec():Boolean[1]
+{
+   meta::pure::functions::date::tests::testAdjustByYears(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::date::tests::testAdjustReflectiveEvaluation(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByMonths(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByMonthsBigNumber(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByWeeks(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByWeeksBigNumber(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByDays(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByDaysBigNumber(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByHours(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByHoursBigNumber(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByMinutes(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByMinutesBigNumber(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustBySeconds(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustBySecondsBigNumber(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByMicroseconds(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByMicrosecondsBigNumber(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByMilliseconds(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testAdjustByMillisecondsBigNumber(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

@@ -1812,6 +1812,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                     )->concatenate(
                         $i.seconds->map(x | $x->toString() + ' SECONDS')
                     )->concatenate(
+                        $i.milliseconds->map(x | $x->toString() + ' MILLISECONDS')
+                    )->concatenate(
+                        $i.microseconds->map(x | $x->toString() + ' MICROSECONDS')
+                    )->concatenate(
                         if($i.ago == true, |'AGO', |[])
                     )
                 , ' ')
@@ -2370,7 +2374,7 @@ function meta::external::query::sql::transformation::queryToPure::processParseDa
 
   let value = if ($v->instanceOf(InstanceValue) && $v.multiplicity == PureOne && $v->cast(@InstanceValue).values->toOne()->instanceOf(String),
     | let string = $v->cast(@InstanceValue).values->at(0)->cast(@String);
-      if ($string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}:[0-9]{2})(\.[0-9]{1,9})?'),
+      if ($string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}(:[0-9]{2})?)(\.[0-9]{1,9})?'),
         | pair(iv($string->replace(' ', 'T')), DateTime),
         | pair($v, if ($string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}'), | StrictDate, | Date)));,
     | pair($v, Date));
@@ -2422,7 +2426,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     pair('FLOAT8', Float),
     pair('BOOLEAN', Boolean),
     pair('NUMERIC', Decimal),
-    pair('NUMERIC', Decimal),
+    pair('DECIMAL', Decimal),
     pair('TIMESTAMP', DateTime),
     pair('JSON', Variant)
   ]->getValue($name->toUpper());
@@ -2828,7 +2832,15 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('radians', toRadians_Number_1__Float_1_),
       processor('round', Number, {args, fc, ctx |
         assert(($args->size() == 1) || ($args->size() == 2), 'incorrect number of args for round');
-        let func = if ($args->size() == 1, | round_Number_1__Integer_1_, | round_Decimal_1__Integer_1__Decimal_1_);
+
+        let func = if ($args->size() == 1 || ($args->at(0).genericType.rawType == Integer
+                                              && $args->at(1)->match([i:InstanceValue[1] | $i.values == 0, v:ValueSpecification[1] | false])),
+          |
+            round_Number_1__Integer_1_,
+          | if ($args->at(0).genericType.rawType == Float,
+              | round_Float_1__Integer_1__Float_1_,
+              | round_Decimal_1__Integer_1__Decimal_1_)
+        );
 
         nullOrSfe($func, $args);
       }),
@@ -3031,13 +3043,13 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         sfe(distinct_T_MANY__T_MANY_, $genericType, $genericType, $args);
       }),
 
-      processor('array_position', Integer, {args, fc, ctx | 
+      processor('array_position', Integer, {args, fc, ctx |
         assertRelation($ctx.relation, 'array_position');
         assertEquals(2, $args->size(), 'only two arg array_position supported');
 
         sfe(indexOf_T_MANY__T_1__Integer_1_, $args);
       }),
-      processor('array_length', Integer, {args, fc, ctx | 
+      processor('array_length', Integer, {args, fc, ctx |
         $args->at(1)->match([
           i:InstanceValue[1] | assert($i.values == 1, 'only array_length with arg 1 supported')
         ]);
@@ -3062,7 +3074,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('json_extract_path', Variant, {args, fc, ctx | processJSONExtractPath($args)}),
       processor('json_extract_path_text', Variant, {args, fc, ctx |
         processVariantCast(^Cast(expression = $fc, type = ^ColumnType(name = 'TEXT')), processJSONExtractPath($args));
-      }),      
+      }),
 
       //WINDOW
       window('last_value', [], {args, fc, ctx |
@@ -3168,10 +3180,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let expression = $args->at(0);
   let type = $expression.genericType.rawType;
 
-  $args->tail()->fold({a, acc | 
+  $args->tail()->fold({a, acc |
     let func = if ($a.genericType.rawType == String, | get_Variant_$0_1$__String_1__Variant_$0_1$_, | get_Variant_$0_1$__Integer_1__Variant_$0_1$_);
     sfe($func, [$acc, $a]);
-  }, $expression);  
+  }, $expression);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::getWindowPropertyArg(args:ValueSpecification[*], func:ValueSpecification[1], name:String[1]):ValueSpecification[1]
@@ -3603,6 +3615,8 @@ Class <<access.private>> meta::external::query::sql::transformation::queryToPure
   hours: ValueSpecification[0..1];
   minutes: ValueSpecification[0..1];
   seconds: ValueSpecification[0..1];
+  milliseconds: ValueSpecification[0..1];
+  microseconds: ValueSpecification[0..1];
 }
 
 //there is no concept in pure for multiplying dates/intervals so we simplify the expression in place.
@@ -3623,7 +3637,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
               | multiplyIntervalLiteral($a.right->cast(@IntervalLiteral), $a.left, $expContext, $context),
               | ^$a(left = $a.left->simplifyDateArithmetic($expContext, $context), right = $a.right->simplifyDateArithmetic($expContext, $context)))));,
     i:IntervalLiteral[1] | ^IntervalLiteralWrapper(ago = $i.ago, years = $i.years->ivIfNotEmpty(), months = $i.months->ivIfNotEmpty(), weeks = $i.weeks->ivIfNotEmpty(), days = $i.days->ivIfNotEmpty(),
-                                                    hours = $i.hours->ivIfNotEmpty(), minutes = $i.minutes->ivIfNotEmpty(), seconds = $i.seconds->ivIfNotEmpty()),
+                                                    hours = $i.hours->ivIfNotEmpty(), minutes = $i.minutes->ivIfNotEmpty(), seconds = $i.seconds->ivIfNotEmpty(), milliseconds = $i.milliseconds->ivIfNotEmpty(), microseconds = $i.microseconds->ivIfNotEmpty()),
     e:meta::external::query::sql::metamodel::Expression[1] | $e
   ]);
 }
@@ -3634,7 +3648,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   ^IntervalLiteralWrapper(years = multiplyIntervalLiteralValue($interval.years, $multiplier), months = multiplyIntervalLiteralValue($interval.months, $multiplier), weeks = multiplyIntervalLiteralValue($interval.weeks, $multiplier),
                   days = multiplyIntervalLiteralValue($interval.days, $multiplier), hours = multiplyIntervalLiteralValue($interval.hours, $multiplier), minutes = multiplyIntervalLiteralValue($interval.minutes, $multiplier),
-                  seconds = multiplyIntervalLiteralValue($interval.seconds, $multiplier), ago = $interval.ago);
+                  seconds = multiplyIntervalLiteralValue($interval.seconds, $multiplier), milliseconds = multiplyIntervalLiteralValue($interval.milliseconds, $multiplier), microseconds = multiplyIntervalLiteralValue($interval.microseconds, $multiplier), ago = $interval.ago);
 }
 
 
@@ -3646,6 +3660,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processDateArithmeticExpression(a:ArithmeticExpression[1], leftTypeNormalized:Type[1], rightTypeNormalized:Type[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   debug(|'processDateArithmeticExpression', $context.debug);
+
 
   let simplified = simplifyDateArithmetic($a, $expContext, $context)->match([
     a:ArithmeticExpression[1] | $a,
@@ -3931,14 +3946,18 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         processIntervalLiteralValue(
           processIntervalLiteralValue(
             processIntervalLiteralValue(
-              processIntervalLiteralValue($input,
-               $i.years, DurationUnit.YEARS, $ago),
-               $i.months, DurationUnit.MONTHS, $ago),
-               $i.weeks, DurationUnit.WEEKS, $ago),
-               $i.days, DurationUnit.DAYS, $ago),
-               $i.hours, DurationUnit.HOURS, $ago),
-               $i.minutes, DurationUnit.MINUTES, $ago),
-               $i.seconds, DurationUnit.SECONDS, $ago);
+              processIntervalLiteralValue(
+                processIntervalLiteralValue(
+                  processIntervalLiteralValue($input,
+                  $i.years, DurationUnit.YEARS, $ago),
+                  $i.months, DurationUnit.MONTHS, $ago),
+                  $i.weeks, DurationUnit.WEEKS, $ago),
+                  $i.days, DurationUnit.DAYS, $ago),
+                  $i.hours, DurationUnit.HOURS, $ago),
+                  $i.minutes, DurationUnit.MINUTES, $ago),
+                  $i.seconds, DurationUnit.SECONDS, $ago),
+                  $i.milliseconds, DurationUnit.MILLISECONDS, $ago),
+                  $i.microseconds, DurationUnit.MICROSECONDS, $ago);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processIntervalLiteralValue(input:ValueSpecification[1], amount:ValueSpecification[0..1], unit:DurationUnit[1], ago:Boolean[1]):ValueSpecification[1]

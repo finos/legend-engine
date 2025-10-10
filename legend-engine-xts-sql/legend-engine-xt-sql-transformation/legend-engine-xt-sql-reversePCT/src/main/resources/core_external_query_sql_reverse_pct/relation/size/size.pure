@@ -163,17 +163,14 @@ function meta::external::query::sql::reversePCT::tests::relation::relation::func
                  revsForTest(
                       'meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_',
                       [
-                        revError('|let t = #TDS{\n'+
+                        rev('|let t = #TDS{\n'+
                             'val,str\n'+
                             '1,a\n'+
                             '3,ewe\n'+
                             '4,qw}#;\n'+
                             ' let s = $t->meta::pure::functions::relation::size();\n'+
-                            ' $s > 0;\n'+
-                            '',
-                            'WITH t AS (select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n 1,a\n 3,ewe\n 4,qw\') as "table0_0"), s AS (select count(*) as col_0 from t as "t_0") select "s_0".col_0 > 0 from s as "s_0"',
-                            'Error during dynamic reactivation',
-                            'investigation required'
+                            ' $s > 0;\n',
+                            'WITH t AS (select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n 1,a\n 3,ewe\n 4,qw\') as "table0_0"), s AS (select count(*) as col_0 from t as "t_0") select "s_0".col_0 > 0 from s as "s_0"'
                         )
                       ]
                  ),

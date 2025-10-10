@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives;
 
 import org.eclipse.collections.api.list.ListIterable;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
@@ -32,5 +33,18 @@ public class ProjectRelation extends AbstractNative implements Native
     {
         StringBuilder result = Extend.buildCode(transformedParams, s -> "Lists.mutable.withAll(" + transformedParams.get(1) + "._funcSpecs())", false);
         return result.toString();
+    }
+
+    @Override
+    public String buildBody()
+    {
+        return "new SharedPureFunction<Object>()\n" +
+                "{\n" +
+                "   @Override\n" +
+                "   public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
+                "   {\n" +
+                "       return " + Extend.buildCode(Lists.mutable.of("(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation<?>)vars.get(0)", "vars.get(1)"), s -> "Lists.mutable.withAll(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpecArray)vars.get(1))._funcSpecs())", false) + ";\n" +
+                "   }\n" +
+                "\n}";
     }
 }

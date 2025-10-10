@@ -2869,7 +2869,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'SELECT abs(Integer) AS "ABS", acos(Integer) AS "ACOS", asin(Integer) AS "ASIN", atan(Integer) AS "ATAN", atan2(Integer, 1) AS "ATAN2", ' +
     'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", cosh(Integer) AS "COSH", cot(Integer) AS "COT", degrees(Integer) AS "DEGREES", div(Integer, 1) AS "DIV", ' +
     'exp(Integer) AS "EXP", floor(Float) AS "FLOOR", log(Integer) AS "LOG", ln(Integer) AS "LN", mod(Integer, 1) AS "MOD", pi() AS "PI", power(Integer, 2) AS "POWER", ' +
-    'radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", sign(Integer) AS "SIGN", ' +
+    'radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", round(Float, 1) as "ROUND_FLOAT", sign(Integer) AS "SIGN", ' +
     'sin(Integer) AS "SIN", sinh(Integer) AS "SINH", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN", tanh(Integer) AS "TANH", trunc(Integer) AS "TRUNC" FROM service."/service/service1"',
 
     [
@@ -2901,6 +2901,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | toRadians($row.getInteger('Integer')), 'RADIANS'),
                   col(row:TDSRow[1] | round($row.getInteger('Integer')), 'ROUND'),
                   col(row:TDSRow[1] | round($row.getDecimal('Decimal'), 1), 'ROUND_DEC'),
+                  col(row:TDSRow[1] | round($row.getFloat('Float'), 1), 'ROUND_FLOAT'),
                   col(row:TDSRow[1] | sign($row.getInteger('Integer')), 'SIGN'),
                   col(row:TDSRow[1] | sin($row.getInteger('Integer')), 'SIN'),
                   col(row:TDSRow[1] | sinh($row.getInteger('Integer')), 'SINH'),
@@ -2941,6 +2942,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       //         RADIANS : x|$x.Integer->toRadians(),
       //         ROUND : x|$x.Integer->round(),
       //         ROUND_DEC : x|$x.Decimal->round(1),
+      //         ROUND_FLOAT : x|$x.Float->round(1),
       //         SIGN : x|$x.Integer->sign(),
       //         SIN : x|$x.Integer->sin(),
       //         SQRT : x|$x.Integer->sqrt(),
@@ -4220,7 +4222,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   doNameTest(^IntervalLiteral(years = 5), 'INTERVAL\'5 YEARS\'');
   doNameTest(^IntervalLiteral(years = 5, ago = true), 'INTERVAL\'5 YEARS AGO\'');
   doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS\'');
-  doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0, ago = true), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS AGO\'');
+  doNameTest(^IntervalLiteral(years = 9, months = 8, weeks = 7, days = 6, hours = 5, minutes = 4, seconds = 3, milliseconds = 2, microseconds = 1, ago = true), 'INTERVAL\'9 YEARS 8 MONTHS 7 WEEKS 6 DAYS 5 HOURS 4 MINUTES 3 SECONDS 2 MILLISECONDS 1 MICROSECONDS AGO\'');
 
   doNameTest(^PositionalParameterExpression(index = 1), '$1');
   doNameTest(^ParameterPlaceholderExpression(index = 1), '?');

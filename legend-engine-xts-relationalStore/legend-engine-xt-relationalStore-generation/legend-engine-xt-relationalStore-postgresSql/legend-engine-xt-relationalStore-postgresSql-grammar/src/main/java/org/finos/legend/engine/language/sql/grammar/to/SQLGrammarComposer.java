@@ -327,6 +327,8 @@ public class SQLGrammarComposer
                 addIntervalPart(val.hours, "HOURS", parts);
                 addIntervalPart(val.minutes, "MINUTES", parts);
                 addIntervalPart(val.seconds, "SECONDS", parts);
+                addIntervalPart(val.milliseconds, "MILLISECONDS", parts);
+                addIntervalPart(val.microseconds, "MICROSECONDS", parts);
                 return "INTERVAL '" + String.join(" ", parts) + "'";
             }
 

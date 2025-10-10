@@ -18,13 +18,23 @@ function meta::external::query::sql::reversePCT::tests::grammar::reverses():Reve
 {
   [
     meta::external::query::sql::reversePCT::tests::grammar::boolean::equality::equal::reverses(),
+
     meta::external::query::sql::reversePCT::tests::grammar::boolean::inequality::greaterThan::reverses(),
     meta::external::query::sql::reversePCT::tests::grammar::boolean::inequality::greaterThanEqual::reverses(),
     meta::external::query::sql::reversePCT::tests::grammar::boolean::inequality::lessThan::reverses(),
     meta::external::query::sql::reversePCT::tests::grammar::boolean::inequality::lessThanEqual::reverses(),
+
     meta::external::query::sql::reversePCT::tests::grammar::boolean::operation::and::reverses(),
     meta::external::query::sql::reversePCT::tests::grammar::boolean::operation::or::reverses(),
     meta::external::query::sql::reversePCT::tests::grammar::boolean::operation::not::reverses(),
-    meta::external::query::sql::reversePCT::tests::grammar::math::operation::divide::reverses()
+
+    meta::external::query::sql::reversePCT::tests::grammar::collection::size::isEmpty::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::collection::size::isNotEmpty::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::grammar::math::operation::divide::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::math::operation::minus::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::math::operation::plus::reverses(),
+    meta::external::query::sql::reversePCT::tests::grammar::math::operation::times::reverses()
+    
   ]
 }

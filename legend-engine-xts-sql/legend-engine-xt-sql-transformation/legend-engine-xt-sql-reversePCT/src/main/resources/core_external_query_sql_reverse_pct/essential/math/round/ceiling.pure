@@ -1,0 +1,105 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::essential::math::round::ceiling::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/math/round/ceiling.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::ceiling::testPositiveIntegerCeiling_Function_1__Boolean_1_',
+                      [
+                        rev('|17->meta::pure::functions::math::ceiling()',
+                            'select ceiling(17)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::ceiling::testNegativeIntegerCeiling_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::ceiling(-17)',
+                            'select ceiling(-17)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::ceiling::testPositiveFloatCeiling_Function_1__Boolean_1_',
+                      [
+                        rev('|17.9->meta::pure::functions::math::ceiling()',
+                            'select ceiling(17.9)'
+                        ),
+                        rev('|17.5->meta::pure::functions::math::ceiling()',
+                            'select ceiling(17.5)'
+                        ),
+                        rev('|17.01->meta::pure::functions::math::ceiling()',
+                            'select ceiling(17.01)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::ceiling::testPositiveFloatWithZeroDecimalCeiling_Function_1__Boolean_1_',
+                      [
+                        rev('|17.0->meta::pure::functions::math::ceiling()',
+                            'select ceiling(17.0)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::ceiling::testNegativeFloatCeiling_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::ceiling(-17.9)',
+                            'select ceiling(-17.9)'
+                        ),
+                        rev('|meta::pure::functions::math::ceiling(-17.5)',
+                            'select ceiling(-17.5)'
+                        ),
+                        rev('|meta::pure::functions::math::ceiling(-17.01)',
+                            'select ceiling(-17.01)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::ceiling::testNegativeFloatWithZeroDecimalCeiling_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::ceiling(-17.0)',
+                            'select ceiling(-17.0)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::ceiling::testDecimalCeiling_Function_1__Boolean_1_',
+                      [
+                        rev('|3.14D->meta::pure::functions::math::ceiling()',
+                            'select ceiling(3.14)'
+                        ),
+                        rev('|meta::pure::functions::math::ceiling(-3.14D)',
+                            'select ceiling(-3.14)'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::math::round::ceiling::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::ceiling::testPositiveIntegerCeiling(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::ceiling::testNegativeIntegerCeiling(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::ceiling::testPositiveFloatCeiling(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::ceiling::testPositiveFloatWithZeroDecimalCeiling(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::ceiling::testNegativeFloatCeiling(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::ceiling::testNegativeFloatWithZeroDecimalCeiling(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::ceiling::testDecimalCeiling(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

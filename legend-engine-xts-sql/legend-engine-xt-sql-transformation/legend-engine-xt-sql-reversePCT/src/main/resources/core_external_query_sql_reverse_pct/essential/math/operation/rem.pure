@@ -1,0 +1,135 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::essential::math::operation::rem::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/math/operation/rem.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::rem::testRem_Function_1__Boolean_1_',
+                      [
+                        rev('|12->meta::pure::functions::math::rem(5)',
+                            'select mod(12,5)'
+                        ),
+                        rev('|5->meta::pure::functions::math::rem(12)',
+                            'select mod(5,12)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::rem::testRemWithNegativeIntegers_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::rem(-12, 5)',
+                            'select mod(-12,5)'
+                        ),
+                        rev('|meta::pure::functions::math::rem(-5, 12)',
+                            'select mod(-5,12)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::rem::testRemWithFloats_Function_1__Boolean_1_',
+                      [
+                        rev('|5->meta::pure::functions::math::rem(1.5)',
+                            'select mod(5,1.5)'
+                        ),
+                        rev('|5.5->meta::pure::functions::math::rem(1.5)',
+                            'select mod(5.5,1.5)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::rem::testRemWithMixedIntegersAndFloats_Function_1__Boolean_1_',
+                      [
+                        rev('|5->meta::pure::functions::math::rem(2.5)',
+                            'select mod(5,2.5)'
+                        ),
+                        rev('|7.5->meta::pure::functions::math::rem(5)',
+                            'select mod(7.5,5)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::rem::testRemWithNegativeFloats_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::rem(-5, 1.5)',
+                            'select mod(-5,1.5)'
+                        ),
+                        rev('|5->meta::pure::functions::math::rem(-1.5)',
+                            'select mod(5,-1.5)'
+                        ),
+                        rev('|5.5->meta::pure::functions::math::rem(-1.5)',
+                            'select mod(5.5,-1.5)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(12, 5)'),
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(-12, 5)'),
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, 1.5)'),
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(7.5, 5)'),
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, 2.5)'),
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5.5, 1.5)'),
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, -1.5)'),
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5.5, -1.5)'),
+                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_',
+                      [
+                        rev('|3.14->meta::pure::functions::math::rem(1.5D)',
+                            'select mod(3.14,cast(1.5 as decimal))'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::math::operation::rem::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::rem::testRem(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::rem::testRemWithNegativeIntegers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::rem::testRemWithFloats(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::rem::testRemWithMixedIntegersAndFloats(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::rem::testRemWithNegativeFloats(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::math::tests::rem::testRemInEval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::math::tests::rem::testRemInEvalWithFloat(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::rem::testRemWithDecimals(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

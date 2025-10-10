@@ -38,7 +38,7 @@ Class meta::external::query::sql::reversePCT::framework::Reverse
   infoMessage : String[0..1];
 }
 
-function <<PCT.adapter>> meta::external::query::sql::reversePCT::framework::sql<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='SQL'} meta::external::query::sql::reversePCT::framework::sql<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   // Find SQL ---
   let src = $f->sourceInformation().source;
@@ -59,7 +59,7 @@ function <<PCT.adapter>> meta::external::query::sql::reversePCT::framework::sql<
   if ($rev.shouldBeSupported,
     | let sqlString = $rev.reverse->toOne();
       let func = meta::external::query::sql::transformation::queryToPure::sqlToPure($sqlString->toOne());
-      
+
       let returnType = $func->functionReturnType();
       let expectedReturnType = $f->functionReturnType();
 
@@ -121,5 +121,6 @@ function meta::external::query::sql::reversePCT::framework::reverses():ReversesF
     ->concatenate(meta::external::query::sql::reversePCT::tests::essential::reverses())
     ->concatenate(meta::external::query::sql::reversePCT::tests::relation::reverses())
     ->concatenate(meta::external::query::sql::reversePCT::tests::standard::reverses())
+    ->concatenate(meta::external::query::sql::reversePCT::tests::unclassified::reverses())
     ->concatenate(meta::external::query::sql::reversePCT::tests::variant::reverses())
 }
