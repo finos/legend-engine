@@ -35,7 +35,7 @@ import java.util.Objects;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
 
-final class DateType extends BaseTimestampType
+public final class DateType extends BaseTimestampType
 {
 
     public static final PGType INSTANCE = new DateType();

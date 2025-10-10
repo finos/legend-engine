@@ -28,7 +28,7 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
-class BooleanType extends PGType<Boolean>
+public class BooleanType extends PGType<Boolean>
 {
 
     public static final BooleanType INSTANCE = new BooleanType();

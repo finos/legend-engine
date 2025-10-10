@@ -24,7 +24,7 @@ package org.finos.legend.engine.postgres.protocol.wire.serialization.types;
 import io.netty.buffer.ByteBuf;
 import java.nio.charset.StandardCharsets;
 
-class DoubleType extends PGType<Double>
+public class DoubleType extends PGType<Double>
 {
 
     public static final DoubleType INSTANCE = new DoubleType();

@@ -24,7 +24,7 @@ package org.finos.legend.engine.postgres.protocol.wire.serialization.types;
 import io.netty.buffer.ByteBuf;
 import java.nio.charset.StandardCharsets;
 
-class RealType extends PGType<Float>
+public class RealType extends PGType<Float>
 {
 
     public static final RealType INSTANCE = new RealType();

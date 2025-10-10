@@ -26,7 +26,7 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 
 import java.nio.charset.StandardCharsets;
 
-class CharType extends PGType<Byte>
+public class CharType extends PGType<Byte>
 {
 
     public static final CharType INSTANCE = new CharType();

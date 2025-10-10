@@ -32,7 +32,7 @@ import java.util.Locale;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
-final class TimestampType extends BaseTimestampType
+public final class TimestampType extends BaseTimestampType
 {
 
     public static final PGType INSTANCE = new TimestampType();
