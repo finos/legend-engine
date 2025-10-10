@@ -3472,4 +3472,182 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  include storeTypeABC stores::SimpleDB\n" +
                 ")\n");
     }
+
+    @Test
+    public void testJoinWithIsNullCondition()
+    {
+        test("###Relational\n" +
+                "Database stores::testRelationalJoinsDB\n" +
+                "(\n" +
+                "  Schema testSchema\n" +
+                "  (\n" +
+                "    Table Firms\n" +
+                "    (\n" +
+                "      id INTEGER PRIMARY KEY,\n" +
+                "      firm_name VARCHAR(200)\n" +
+                "    )\n" +
+                "    Table People\n" +
+                "    (\n" +
+                "      id INTEGER PRIMARY KEY,\n" +
+                "      name VARCHAR(200),\n" +
+                "      firm_id INTEGER,\n" +
+                "      pet_id INTEGER\n" +
+                "    )\n" +
+                "    Table Pets\n" +
+                "    (\n" +
+                "      id INTEGER PRIMARY KEY,\n" +
+                "      pet_name VARCHAR(50),\n" +
+                "      species VARCHAR(200)\n" +
+                "    )\n" +
+                "  )\n" +
+                "  Join FirmPerson(testSchema.People.firm_id = testSchema.Firms.id)\n" +
+                "  Join PersonPetWithNull(testSchema.People.pet_id = testSchema.Pets.id and testSchema.Pets.species is null)\n" +
+                ")\n" +
+                "###Pure\n" +
+                "Enum models::PetType\n" +
+                "{\n" +
+                "  DOG,\n" +
+                "  CAT,\n" +
+                "  RABBIT,\n" +
+                "  HAMSTER\n" +
+                "}\n" +
+                "Class models::Pet\n" +
+                "{\n" +
+                "  pet_name: String[1];\n" +
+                "  species: models::PetType[1];\n" +
+                "}\n" +
+                "Class models::Firm\n" +
+                "{\n" +
+                "  firm_name: String[1];\n" +
+                "}\n" +
+                "Class models::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  firm: models::Firm[1];\n" +
+                "  pet_name: models::Pet[1];\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping mapping::RelationalMapping\n" +
+                "(\n" +
+                "  models::Person: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey([stores::testRelationalJoinsDB]testSchema.People.id)\n" +
+                "    ~mainTable [stores::testRelationalJoinsDB]testSchema.People\n" +
+                "    name: [stores::testRelationalJoinsDB]testSchema.People.name,\n" +
+                "    firm: [stores::testRelationalJoinsDB]@FirmPerson,\n" +
+                "    pet_name: [stores::testRelationalJoinsDB]@PersonPetWithNull\n" +
+                "  }\n" +
+                "  models::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey([stores::testRelationalJoinsDB]testSchema.Firms.id)\n" +
+                "    ~mainTable [stores::testRelationalJoinsDB]testSchema.Firms\n" +
+                "    firm_name: [stores::testRelationalJoinsDB]testSchema.Firms.firm_name\n" +
+                "  }\n" +
+                "  models::Pet: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey([stores::testRelationalJoinsDB]testSchema.Pets.id)\n" +
+                "    ~mainTable [stores::testRelationalJoinsDB]testSchema.Pets\n" +
+                "    pet_name: [stores::testRelationalJoinsDB]testSchema.Pets.pet_name,\n" +
+                "    species: EnumerationMapping PetTypeMapping: [stores::testRelationalJoinsDB]testSchema.Pets.species\n" +
+                "  }\n" +
+                "  models::PetType: EnumerationMapping PetTypeMapping\n" +
+                "  {\n" +
+                "    DOG: ['DOG'],\n" +
+                "    CAT: ['CAT'],\n" +
+                "    RABBIT: ['RABBIT'],\n" +
+                "    HAMSTER: ['HAMSTER']\n" +
+                "  }\n" +
+                ")");
+    }
+
+    @Test
+    public void testJoinWithSqlNullCondition()
+    {
+        test("###Relational\n" +
+                        "Database stores::testRelationalJoinsDB\n" +
+                        "(\n" +
+                        "  Schema testSchema\n" +
+                        "  (\n" +
+                        "    Table Firms\n" +
+                        "    (\n" +
+                        "      id INTEGER PRIMARY KEY,\n" +
+                        "      firm_name VARCHAR(200)\n" +
+                        "    )\n" +
+                        "    Table People\n" +
+                        "    (\n" +
+                        "      id INTEGER PRIMARY KEY,\n" +
+                        "      name VARCHAR(200),\n" +
+                        "      firm_id INTEGER,\n" +
+                        "      pet_id INTEGER\n" +
+                        "    )\n" +
+                        "    Table Pets\n" +
+                        "    (\n" +
+                        "      id INTEGER PRIMARY KEY,\n" +
+                        "      pet_name VARCHAR(50),\n" +
+                        "      species VARCHAR(200)\n" +
+                        "    )\n" +
+                        "  )\n" +
+                        "  Join FirmPerson(testSchema.People.firm_id = testSchema.Firms.id)\n" +
+                        "  Join PersonPetWithNull(testSchema.People.pet_id = testSchema.Pets.id and testSchema.Pets.species = sqlNull())\n" +
+                        ")\n" +
+                        "###Pure\n" +
+                        "Enum models::PetType\n" +
+                        "{\n" +
+                        "  DOG,\n" +
+                        "  CAT,\n" +
+                        "  RABBIT,\n" +
+                        "  HAMSTER\n" +
+                        "}\n" +
+                        "Class models::Pet\n" +
+                        "{\n" +
+                        "  pet_name: String[1];\n" +
+                        "  species: models::PetType[1];\n" +
+                        "}\n" +
+                        "Class models::Firm\n" +
+                        "{\n" +
+                        "  firm_name: String[1];\n" +
+                        "}\n" +
+                        "Class models::Person\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "  firm: models::Firm[1];\n" +
+                        "  pet_name: models::Pet[1];\n" +
+                        "}\n" +
+                        "###Mapping\n" +
+                        "Mapping mapping::RelationalMapping\n" +
+                        "(\n" +
+                        "  models::Person: Relational\n" +
+                        "  {\n" +
+                        "    ~primaryKey([stores::testRelationalJoinsDB]testSchema.People.id)\n" +
+                        "    ~mainTable [stores::testRelationalJoinsDB]testSchema.People\n" +
+                        "    name: [stores::testRelationalJoinsDB]testSchema.People.name,\n" +
+                        "    firm: [stores::testRelationalJoinsDB]@FirmPerson,\n" +
+                        "    pet_name: [stores::testRelationalJoinsDB]@PersonPetWithNull\n" +
+                        "  }\n" +
+                        "  models::Firm: Relational\n" +
+                        "  {\n" +
+                        "    ~primaryKey([stores::testRelationalJoinsDB]testSchema.Firms.id)\n" +
+                        "    ~mainTable [stores::testRelationalJoinsDB]testSchema.Firms\n" +
+                        "    firm_name: [stores::testRelationalJoinsDB]testSchema.Firms.firm_name\n" +
+                        "  }\n" +
+                        "  models::Pet: Relational\n" +
+                        "  {\n" +
+                        "    ~primaryKey([stores::testRelationalJoinsDB]testSchema.Pets.id)\n" +
+                        "    ~mainTable [stores::testRelationalJoinsDB]testSchema.Pets\n" +
+                        "    pet_name: [stores::testRelationalJoinsDB]testSchema.Pets.pet_name,\n" +
+                        "    species: EnumerationMapping PetTypeMapping: [stores::testRelationalJoinsDB]testSchema.Pets.species\n" +
+                        "  }\n" +
+                        "  models::PetType: EnumerationMapping PetTypeMapping\n" +
+                        "  {\n" +
+                        "    DOG: ['DOG'],\n" +
+                        "    CAT: ['CAT'],\n" +
+                        "    RABBIT: ['RABBIT'],\n" +
+                        "    HAMSTER: ['HAMSTER']\n" +
+                        "  }\n" +
+                        ")",
+                null,
+                Arrays.asList("COMPILATION error at [26:102-110]: Invalid use of sqlNull() in join condition. Use 'column is NULL' instead of 'column = sqlNull()' in join condition."
+                ));
+    }
 }
+
