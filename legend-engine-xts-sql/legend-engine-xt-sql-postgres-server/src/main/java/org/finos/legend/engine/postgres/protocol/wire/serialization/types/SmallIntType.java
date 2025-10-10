@@ -24,7 +24,7 @@ package org.finos.legend.engine.postgres.protocol.wire.serialization.types;
 import io.netty.buffer.ByteBuf;
 import java.nio.charset.StandardCharsets;
 
-class SmallIntType extends PGType<Short>
+public class SmallIntType extends PGType<Short>
 {
 
     public static final SmallIntType INSTANCE = new SmallIntType();

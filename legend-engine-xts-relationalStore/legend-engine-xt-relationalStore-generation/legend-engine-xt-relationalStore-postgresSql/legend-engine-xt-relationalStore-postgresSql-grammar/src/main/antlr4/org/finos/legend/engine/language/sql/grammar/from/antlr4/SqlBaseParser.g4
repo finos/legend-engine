@@ -275,7 +275,7 @@ expr
 
 booleanExpression
     : predicated                                                                     #booleanDefault
-    | OPEN_ROUND_BRACKET qnames CLOSE_ROUND_BRACKET EQ OPEN_ROUND_BRACKET qnames CLOSE_ROUND_BRACKET #multicolumns
+    | OPEN_ROUND_BRACKET left = qnames CLOSE_ROUND_BRACKET EQ OPEN_ROUND_BRACKET right = qnames CLOSE_ROUND_BRACKET #multicolumns
     | NOT booleanExpression                                                          #logicalNot
     | left=booleanExpression operator=AND right=booleanExpression                    #logicalBinary
     | left=booleanExpression operator=OR right=booleanExpression                     #logicalBinary

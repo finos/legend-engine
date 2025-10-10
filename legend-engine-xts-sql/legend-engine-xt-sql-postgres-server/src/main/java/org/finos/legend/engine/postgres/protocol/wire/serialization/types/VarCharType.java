@@ -26,7 +26,7 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 
 import java.nio.charset.StandardCharsets;
 
-class VarCharType extends PGType<Object>
+public class VarCharType extends PGType<Object>
 {
 
     static final int OID = 1043;
