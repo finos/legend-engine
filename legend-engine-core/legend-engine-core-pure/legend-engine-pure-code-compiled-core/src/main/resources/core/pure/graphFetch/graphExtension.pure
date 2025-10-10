@@ -820,7 +820,7 @@ function <<access.private>> meta::pure::graphFetch::recordQualifiedProperties(tr
                                      ergft: ExtendedRootGraphFetchTree<Any>[1] | ^$ergft(requiredQualifiedProperties=$ergft.requiredQualifiedProperties->concatenate($qp)->removeDuplicates()),
                                      epgft: ExtendedPropertyGraphFetchTree[1]  | ^$epgft(requiredQualifiedProperties=$epgft.requiredQualifiedProperties->concatenate($qp)->removeDuplicates()),
                                      rgft : RootGraphFetchTree<Any>[1]         | ^ExtendedRootGraphFetchTree<Any>(requiredQualifiedProperties=$qp, class=$rgft.class, subTrees=$rgft.subTrees),
-                                     pgft : PropertyGraphFetchTree[1]          | ^ExtendedPropertyGraphFetchTree(requiredQualifiedProperties=$qp, property=$pgft.property, subTrees=$pgft.subTrees)
+                                     pgft : PropertyGraphFetchTree[1]          | ^ExtendedPropertyGraphFetchTree(requiredQualifiedProperties=$qp, property=$pgft.property, subTrees=$pgft.subTrees, parameters=$pgft.parameters)
                                   ]);
                                },
                                | $tree;
