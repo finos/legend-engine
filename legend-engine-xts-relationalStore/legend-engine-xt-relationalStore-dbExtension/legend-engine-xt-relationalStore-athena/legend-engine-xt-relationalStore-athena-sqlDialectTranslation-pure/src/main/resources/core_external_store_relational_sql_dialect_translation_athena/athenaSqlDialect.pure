@@ -1000,7 +1000,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   let timeUnit = $processedArgs->at(2)->toLower();
   if ($timeUnit == '\'microsecond\'',
       |failWithMessage('Athena SQL Dialect does not support adding microsecond to date'),
-      |generateFunctionCallWithArgs($sqlDialect, 'date_add', [$timeUnit, $processedArgs->at(1), $processedArgs->at(0)], [], $state, $config)
+      |if ($timeUnit == '\'millisecond\'',
+          |generateFunctionCallWithArgs($sqlDialect, 'date_add', [$timeUnit, $processedArgs->at(1), generateCast($sqlDialect, $processedArgs->at(0), 'TIMESTAMP(3)', $state, $config)], [], $state, $config),
+          |generateFunctionCallWithArgs($sqlDialect, 'date_add', [$timeUnit, $processedArgs->at(1), $processedArgs->at(0)], [], $state, $config)
+          )
      ); 
 }
 
