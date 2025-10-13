@@ -3500,5 +3500,60 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  Join Person_Order([stores::DB]mySchema.Person.id = [stores::DB]mySchema.Order.id)\n" +
                 ")\n"
         );
+
+        test("###Relational\n" +
+                "Database store::relational::db1\n" +
+                "(\n" +
+                "  Schema ALLOY_FIRM_GROUP\n" +
+                "  (\n" +
+                "    Table Firm\n" +
+                "    (\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                "  Schema ALLOY_FIRM_GROUP\n" +
+                "  (\n" +
+                "    Table Firm\n" +
+                "    (\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                "  Join Firm_SELFJOIN(ALLOY_FIRM_GROUP.Firm.id = {target}.id)\n" +
+                ")"
+        );
+
+        test("###Relational\n" +
+                "Database store::relational::db1\n" +
+                "(\n" +
+                "  Schema ALLOY_FIRM_GROUP\n" +
+                "  (\n" +
+                "    Table Firm\n" +
+                "    (\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database store::relational::db2\n" +
+                "(\n" +
+                "  Schema ALLOY_FIRM_GROUP\n" +
+                "  (\n" +
+                "    Table Firm\n" +
+                "    (\n" +
+                "      id INTEGER\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database store::relational::db\n" +
+                "(\n" +
+                "  include store::relational::db1\n" +
+                "  include store::relational::db2\n" +
+                "\n" +
+                "  Join Firm_SELFJOIN(ALLOY_FIRM_GROUP.Firm.id = {target}.id)\n" +
+                ")", "COMPILATION error at [31:22-42]: The relation 'Firm' has been found 2 times in the schema 'ALLOY_FIRM_GROUP' of the database 'store::relational::db'", null);
     }
 }
