@@ -300,6 +300,7 @@ public class HelperRelationalBuilder
         MutableList<Relation> tables = Lists.mutable.empty();
         for (Database db : getAllIncludedDBs(database))
         {
+            Relation relationInCurrentDb = null; // This will hold the first matching relation found within the current 'db' object.
             RichIterable<? extends Schema> schemasToSearch = db._schemas().select(s -> schemaName.equals(s._name()));
             for (Schema schema : schemasToSearch)
             {
@@ -314,8 +315,13 @@ public class HelperRelationalBuilder
                 }
                 if (table != null)
                 {
-                    tables.add(table);
+                    relationInCurrentDb = table;
+                    break;
                 }
+            }
+            if (relationInCurrentDb != null)
+            {
+                tables.add(relationInCurrentDb);
             }
         }
         switch (tables.size())
