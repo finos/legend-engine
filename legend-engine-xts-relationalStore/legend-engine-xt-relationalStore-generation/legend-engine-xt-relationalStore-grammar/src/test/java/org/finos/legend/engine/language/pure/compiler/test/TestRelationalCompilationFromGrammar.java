@@ -3459,17 +3459,27 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     public void testDatabaseIncludeStoreType()
     {
         test("###Relational\n" +
-                "Database stores::SimpleDB\n" +
+                "Database stores::SimpleDB1\n" +
                 "(\n" +
                 "  Table People\n" +
                 "  (\n" +
-                "    id INTEGER PRIMARY KEY,\n" +
-                "    name VARCHAR(200)\n" +
                 "  )\n" +
                 ")\n" +
-                "Database stores::testDB\n" +
+                "Database stores::SimpleDB2\n" +
                 "(\n" +
-                "  include storeTypeABC stores::SimpleDB\n" +
+                "  Table Order\n" +
+                "  (\n" +
+                "  )\n" +
+                ")\n" +
+                "Database stores::testDB1\n" +
+                "(\n" +
+                "  include stores::SimpleDB1\n" +
+                "  include storeTypeABC stores::SimpleDB2\n" +
+                ")\n" +
+                "Database stores::testDB2\n" +
+                "(\n" +
+                "  include storeTypeABC stores::SimpleDB2\n" +
+                "  include stores::SimpleDB1\n" +
                 ")\n");
     }
 
