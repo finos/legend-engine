@@ -902,7 +902,8 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitLike(SqlBaseParser.LikeContext ctx)
     {
-        throw new RuntimeException("");
+        //    | NOT? (LIKE | ILIKE) pattern=valueExpression (ESCAPE escape=valueExpression)?   #like
+        return (ctx.NOT() == null ? "" : " not") + (ctx.LIKE() == null ? " ilike " : " like ") + ctx.pattern.accept(this) + (ctx.ESCAPE() == null ? "" : " escape " + ctx.escape.accept(this));
     }
 
     @Override
@@ -927,7 +928,9 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitBitwiseBinary(SqlBaseParser.BitwiseBinaryContext ctx)
     {
-        throw new RuntimeException("");
+        // left=valueExpression operator=(BITWISE_AND | BITWISE_OR | BITWISE_XOR)
+        //        right=valueExpression                                                        #bitwiseBinary
+        return ctx.left.accept(this) + " " + ctx.operator.getText() + " " + ctx.right.accept(this);
     }
 
     @Override
@@ -973,7 +976,9 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitRecordSubscript(SqlBaseParser.RecordSubscriptContext ctx)
     {
-        throw new RuntimeException("");
+        // OPEN_ROUND_BRACKET base=primaryExpression CLOSE_ROUND_BRACKET
+        //        DOT fieldName=ident                                                          #recordSubscript
+        return "(" + ctx.base.accept(this) + ")." + ctx.fieldName.accept(this);
     }
 
     @Override
@@ -1060,7 +1065,15 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitTrim(SqlBaseParser.TrimContext ctx)
     {
-        throw new RuntimeException("");
+        // TRIM OPEN_ROUND_BRACKET ((trimMode=(LEADING | TRAILING | BOTH))?
+        //                (charsToTrim=expr)? FROM)? target=expr CLOSE_ROUND_BRACKET           #trim
+        return "trim(" + Lists.mutable.with(ctx.trimMode == null ? "" : ctx.trimMode.getText(),
+                        ctx.charsToTrim == null ? "" : ctx.charsToTrim.accept(this),
+                        ctx.FROM() == null ? "" : "from",
+                        ctx.target.accept(this))
+                .select(x -> !x.isEmpty())
+                .makeString(" ") +
+                ")";
     }
 
     @Override
@@ -1080,7 +1093,8 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitSimpleCase(SqlBaseParser.SimpleCaseContext ctx)
     {
-        throw new RuntimeException("");
+//            | CASE operand=expr whenClause+ (ELSE elseExpr=expr)? END                        #simpleCase
+        return "case " + ctx.operand.accept(this) + " " + ListIterate.collect(ctx.whenClause(), w -> w.accept(this)).makeString(" ") + (ctx.elseExpr == null ? "" : " else " + ctx.elseExpr.accept(this)) + " end";
     }
 
     @Override
@@ -1179,7 +1193,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitEscapedCharsStringLiteral(SqlBaseParser.EscapedCharsStringLiteralContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.ESCAPED_STRING().getText();
     }
 
     @Override

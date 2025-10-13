@@ -442,6 +442,50 @@ public class TestRewriteQuery
         test("select a, b from ((select * from myTable) union select * from xTable union all (select * from yTable))\n");
     }
 
+    @Test
+    public void testLike()
+    {
+        test("select a, b from myTable where x like '%s'\n");
+        test("select a, b from myTable where x not like '%s'\n");
+        test("select a, b from myTable where x ilike '%s'\n");
+        test("select a, b from myTable where x ilike '%s' escape 'a'\n");
+    }
+
+    @Test
+    public void testBitwiseBinary()
+    {
+        test("select a, b from myTable where x & 3 = 3\n");
+        test("select a, b from myTable where x | 3 = 3\n");
+        test("select a, b from myTable where x ^ 3 = 3\n");
+    }
+
+    @Test
+    public void testRecordSubscript()
+    {
+        test("select a, (val.func('x')).b from myTable\n");
+    }
+
+    @Test
+    public void testTrim()
+    {
+        test("select a, trim(x.val) from myTable as x\n");
+        test("select a, trim(leading from x.val) from myTable as x\n");
+        test("select a, trim(leading '.' from x.val) from myTable as x\n");
+    }
+
+    @Test
+    public void testSimpleCase()
+    {
+        test("select case x.a = 1 when true then 'ok' when false then 'other' end from myTable as x\n");
+        test("select case x.a = 1 when true then 'ok' when false then 'other' else 'bla' end from myTable as x\n");
+    }
+
+    @Test
+    public void testSelectEscape()
+    {
+        test("select * from myTable as x where x.val = E'%'\n");
+    }
+
     public void test(String sql)
     {
         Assert.assertEquals(sql.replace("\n", ""), SQLGrammarParser.getSqlBaseParser(sql, "query").statement().accept(new SQLSerializer()));
