@@ -209,11 +209,15 @@ filter
 
 relation
     : left=relation
-      ( CROSS JOIN right=aliasedRelation (WITH ORDINALITY AS? ident aliasedColumns)?
+      ( CROSS JOIN right=relation (WITH ORDINALITY AS? ident aliasedColumns)?
       | joinType JOIN rightRelation=relation joinCriteria
-      | NATURAL joinType JOIN right=aliasedRelation
+      | NATURAL joinType JOIN right=relation
+      | operator=UNION setQuant? right=relation
+      | operator=(INTERSECT | EXCEPT) right=relation
       )                                                                              #joinRelation
     | aliasedRelation                                                                #relationDefault
+    | relationPrimary                                                                #primaryRelation
+    | query                                                                          #queryRelation
     ;
 
 joinType

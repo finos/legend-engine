@@ -279,12 +279,18 @@ public class TestSQLRoundTrip
     public void testUnionAll()
     {
         check("SELECT * FROM myTable UNION ALL SELECT * FROM myTable");
+        check("SELECT a, b FROM myTable as z where z.x = 3 union all SELECT a, b FROM myTable as z where z.x = 3");
+        check("SELECT * FROM myTable UNION ALL (SELECT * FROM myTable)");
     }
 
     @Test
     public void testUnion()
     {
         check("SELECT * FROM myTable UNION SELECT * FROM myTable");
+        check("SELECT * FROM myTable UNION (SELECT * FROM myTable)");
+        check("SELECT * FROM myTable UNION (SELECT * FROM myTable as x) UNION select * from otherTable");
+        // Should work, but doesn't because Query is not a Relation
+        //check("SELECT * FROM myTable UNION (With x as (select 1) SELECT * FROM myTable as x) UNION select * from otherTable");
     }
 
     @Test

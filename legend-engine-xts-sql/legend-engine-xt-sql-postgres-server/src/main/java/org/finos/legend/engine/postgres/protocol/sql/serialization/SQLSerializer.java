@@ -68,6 +68,18 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     }
 
     @Override
+    public String visitPrimaryRelation(SqlBaseParser.PrimaryRelationContext ctx)
+    {
+        return ctx.relationPrimary().accept(this);
+    }
+
+    @Override
+    public String visitQueryRelation(SqlBaseParser.QueryRelationContext ctx)
+    {
+        return ctx.query().accept(this);
+    }
+
+    @Override
     public String visitDefaultQuerySpec(SqlBaseParser.DefaultQuerySpecContext ctx)
     {
 //                SELECT setQuant? selectItem (COMMA selectItem)*
@@ -112,10 +124,21 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
 //                                | joinType JOIN rightRelation=relation joinCriteria
 //                                | NATURAL joinType JOIN right=aliasedRelation
 //                        )                                                                              #joinRelation
+
         return ctx.left.accept(this) + " " +
+                (ctx.operator == null ? "" : ctx.operator.getText() + (ctx.setQuant() == null ? "" : " " + ctx.setQuant().accept(this)) + " " + ctx.right.accept(this)) +
                 (ctx.CROSS() == null ? "" : ctx.CROSS().accept(this) + " join " + ctx.right.accept(this) + (ctx.WITH() == null ? "" : " with ordinality " + ctx.ident().accept(this) + ctx.aliasedColumns().accept(this))) +
                 (ctx.joinCriteria() == null ? "" : ctx.joinType().accept(this) + "join " + ctx.rightRelation.accept(this) + " " + ctx.joinCriteria().accept(this)) +
                 (ctx.NATURAL() == null ? "" : "natural " + ctx.joinType().accept(this) + "join " + ctx.right.accept(this));
+    }
+
+    @Override
+    public String visitSetOperation(SqlBaseParser.SetOperationContext ctx)
+    {
+//            | first=querySpec operator=(INTERSECT | EXCEPT) second=querySpec                 #setOperation
+//            | left=queryTerm operator=UNION setQuant? right=queryTerm                        #setOperation
+        return (ctx.first == null ? "" : ctx.first.accept(this) + " " + ctx.operator.getText() + " " + ctx.second.accept(this)) +
+                (ctx.left == null ? "" : ctx.left.accept(this) + " " + ctx.operator.getText() + (ctx.setQuant() == null ? "" : " " + ctx.setQuant().accept(this)) + " " + ctx.right.accept(this));
     }
 
     @Override
@@ -746,15 +769,6 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     }
 
     @Override
-    public String visitSetOperation(SqlBaseParser.SetOperationContext ctx)
-    {
-//            | first=querySpec operator=(INTERSECT | EXCEPT) second=querySpec                 #setOperation
-//            | left=queryTerm operator=UNION setQuant? right=queryTerm                        #setOperation
-        return (ctx.first == null ? "" : ctx.first.accept(this) + " " + ctx.operator.getText() + " " + ctx.second.accept(this)) +
-                (ctx.left == null ? "" : ctx.left.accept(this) + " " + ctx.operator.getText() + (ctx.setQuant() == null ? "" : " " + ctx.setQuant().accept(this)) + " " + ctx.right.accept(this));
-    }
-
-    @Override
     public String visitSetQuant(SqlBaseParser.SetQuantContext ctx)
     {
         return ctx.getText();
@@ -797,7 +811,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitParenthesizedRelation(SqlBaseParser.ParenthesizedRelationContext ctx)
     {
-        throw new RuntimeException("");
+        return "(" + ctx.relation().accept(this) + ")";
     }
 
     @Override

@@ -436,6 +436,12 @@ public class TestRewriteQuery
                 " limit 501");
     }
 
+    @Test
+    public void testMeta22()
+    {
+        test("select a, b from ((select * from myTable) union select * from xTable union all (select * from yTable))\n");
+    }
+
     public void test(String sql)
     {
         Assert.assertEquals(sql.replace("\n", ""), SQLGrammarParser.getSqlBaseParser(sql, "query").statement().accept(new SQLSerializer()));

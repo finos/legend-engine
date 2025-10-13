@@ -850,7 +850,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     {
         Values values = new Values();
 
-        values.rows = visitCollection(ctx.values(), ValuesList.class);;
+        values.rows = visitCollection(ctx.values(), ValuesList.class);
 
         return values;
     }
@@ -870,26 +870,6 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         sortItem.nullOrdering = getNullOrderingType(context.nullOrdering);
 
         return sortItem;
-    }
-
-    @Override
-    public Node visitSetOperation(SqlBaseParser.SetOperationContext context)
-    {
-        switch (context.operator.getType())
-        {
-            case SqlBaseLexer.UNION:
-                QueryBody left = (QueryBody) visit(context.left);
-                QueryBody right = (QueryBody) visit(context.right);
-                boolean isDistinct = context.setQuant() == null || context.setQuant().ALL() == null;
-                Union union = new Union();
-                union.left = left;
-                union.right = right;
-                union.distinct = isDistinct;
-
-                return union;
-            default:
-                throw new IllegalArgumentException("Unsupported set operation: " + context.operator.getText());
-        }
     }
 
     @Override
@@ -1006,6 +986,27 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         return logicalBinaryExpression;
     }
 
+    @Override
+    public Node visitSetOperation(SqlBaseParser.SetOperationContext context)
+    {
+        switch (context.operator.getType())
+        {
+            case SqlBaseLexer.UNION:
+                QueryBody left = (QueryBody) visit(context.left);
+                QueryBody right = (QueryBody) visit(context.right);
+                boolean isDistinct = context.setQuant() == null || context.setQuant().ALL() == null;
+                Union union = new Union();
+                union.left = left;
+                union.right = right;
+                union.distinct = isDistinct;
+
+                return union;
+            default:
+                throw new IllegalArgumentException("Unsupported set operation: " + context.operator.getText());
+        }
+    }
+
+
     // From clause
 
     @Override
@@ -1019,6 +1020,25 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
             join.right = (Relation) visit(ctx.right);
             join.type = JoinType.CROSS;
             return join;
+        }
+
+        if (ctx.operator != null)
+        {
+            switch (ctx.operator.getType())
+            {
+                case SqlBaseLexer.UNION:
+                    Node rightNode = visit(ctx.right);
+                    Relation left = (Relation) visit(ctx.left);
+                    Relation right = (rightNode instanceof Query ? ((Query) rightNode).queryBody : (Relation) rightNode);
+                    boolean isDistinct = ctx.setQuant() == null || ctx.setQuant().ALL() == null;
+                    Union union = new Union();
+                    union.left = left;
+                    union.right = right;
+                    union.distinct = isDistinct;
+                    return union;
+                default:
+                    throw new IllegalArgumentException("Unsupported set operation: " + ctx.operator.getText());
+            }
         }
 
         if (ctx.NATURAL() != null)
