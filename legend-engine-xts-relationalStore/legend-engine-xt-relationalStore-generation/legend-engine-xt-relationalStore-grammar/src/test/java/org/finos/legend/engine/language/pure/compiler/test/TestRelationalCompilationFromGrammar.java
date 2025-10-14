@@ -3744,4 +3744,3 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 ));
     }
 }
-
