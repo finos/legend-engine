@@ -206,7 +206,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('last',                   $allStates,            ^ToSql(format='last(%s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='lpad(%s,%s,%s)', transform=processPaddingParams_String_MANY__String_MANY_)),
-    dynaFnToSql('matches',                $allStates,            ^ToSql(format= 'regexp_matches(%s,%s)', transform={p:String[2]|$p})),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format='%s similar to %s', transform={p:String[2]|$p})),
     dynaFnToSql('md5',                    $allStates,            ^ToSql(format='md5(%s)')),
     dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='MAX_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='MIN_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
@@ -226,6 +226,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     // dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_add(DAY, case when %s - DAY_OF_WEEK(%s) >= 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('regexpCount',            $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpCount()})),
+    dynaFnToSql('regexpExtract',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpExtract()})),
+    dynaFnToSql('regexpIndexOf',          $allStates,            ^ToSql(format='%s', transform={p:String[4]|$p->transformRegexpIndexOf()})),
+    dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='regexp_matches(%s)', transform={p:String[3]|$p->transformRegexpLike()})),
+    dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='regexp_replace(%s)', transform={p:String[5]|$p->transformRegexpReplace()})),
     dynaFnToSql('reverseString',          $allStates,            ^ToSql(format='reverse(%s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='rpad(%s,%s,%s)', transform=processPaddingParams_String_MANY__String_MANY_)),
@@ -294,6 +299,55 @@ function <<access.private>>  meta::relational::functions::sqlQueryToString::duck
 {
   assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
   ':'+$v.name;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformRegexpCount(params:String[3]):String[1]
+{
+  let regexpExtractAll = 'regexp_extract_all(' + $params->at(0)->enableEscapeSequence() + ',' + $params->at(1) + ',0,' + $params->at(2)->regexpParametersToPatternFlagsForDuckDB() + ')';
+  'length(' + $regexpExtractAll + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformRegexpLike(params:String[3]):String[1]
+{
+  $params->at(0)->enableEscapeSequence() + ', ' + $params->at(1) + ', ' + $params->at(2)->regexpParametersToPatternFlagsForDuckDB();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformRegexpReplace(params:String[5]):String[1]
+{
+  let originalPatterns = $params->at(4)->regexpParametersToPatternFlagsForDuckDB();
+  let transformedPatterns = if ($params->at(3) == 'true', | '\'' + $originalPatterns->removeQuotesIfExist() + 'g\'', | $originalPatterns);
+  $params->at(0)->enableEscapeSequence() + ', ' + $params->at(1) + ', ' + $params->at(2) + ', ' + $transformedPatterns;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformRegexpExtract(params:String[5]):String[1]
+{
+  let transformedPatterns = $params->at(4)->regexpParametersToPatternFlagsForDuckDB();
+  let transformedParams = $params->at(0)->enableEscapeSequence() + ', ' + $params->at(1) + ', ' + $params->at(3) + ', ' + $transformedPatterns;
+  if ($params->at(2) == 'true', | 'regexp_extract_all(' + $transformedParams + ')', | 'regexp_extract(' + $transformedParams + ')');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformRegexpIndexOf(params:String[4]):String[1]
+{
+  let originalString = $params->at(0)->enableEscapeSequence();
+  let transformedPatterns = $params->at(3)->regexpParametersToPatternFlagsForDuckDB();
+  'strpos(' + $originalString + ', regexp_extract(' + $originalString + ', ' + $params->at(1) + ', ' + $params->at(2) + ', ' + $transformedPatterns + '))';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::enableEscapeSequence(originalString:String[1]):String[1]
+{
+  if ($originalString->regexpLike('\\[bnrft]'), | 'E' + $originalString, | $originalString);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::regexpParametersToPatternFlagsForDuckDB(regexpParametersAsString: String[1]): String[1]
+{
+  let regexpParameters = $regexpParametersAsString->removeQuotesIfExist()->split(',');
+  let regexpParametersMap = newMap([
+    pair('CASE_SENSITIVE', 'c'),
+    pair('CASE_INSENSITIVE', 'i'),
+    pair('MULTILINE', 'm'),
+    pair('NON_NEWLINE_SENSITIVE', 's')
+  ]);
+  $regexpParameters->map(p | $regexpParametersMap->get($p))->filter(f | $f != '')->joinStrings('\'', '', '\'');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::dayOfWeekNumberForDuckDB(dayOfWeek: String[1..2]):String[1]
