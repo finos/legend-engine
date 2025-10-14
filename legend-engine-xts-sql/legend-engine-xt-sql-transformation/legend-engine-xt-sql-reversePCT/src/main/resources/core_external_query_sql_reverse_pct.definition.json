@@ -8,6 +8,7 @@
     "core_functions_standard",
     "core_functions_relation",
     "core_external_query_sql",
+    "core_reverse_pct",
 
     "platform_dsl_store",
     "platform_dsl_tds",

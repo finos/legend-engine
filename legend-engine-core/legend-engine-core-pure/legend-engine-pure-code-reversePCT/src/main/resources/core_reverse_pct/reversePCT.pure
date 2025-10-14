@@ -1,0 +1,84 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+Class meta::pure::test::pct::reversePCT::framework::ReversesForSource
+{
+  source : String[1];
+  reverses : ReversesForTest[*];
+}
+
+Class meta::pure::test::pct::reversePCT::framework::ReversesForTest
+{
+  testFunction : String[1];
+  reverses : Reverse[*];
+}
+
+Class meta::pure::test::pct::reversePCT::framework::Reverse
+{
+  function : String[1];
+  reverse : String[0..1];
+  shouldBeSupported : Boolean[1] = true;
+  expectedError : String[0..1];
+  infoMessage : String[0..1];
+}
+
+function meta::pure::test::pct::reversePCT::framework::printSourceInformation(sourceInfo : SourceInformation[1]):String[1]
+{
+  $sourceInfo.source->toOne() + ' line:' + $sourceInfo.startLine->toOne()->toString() + ' column:' + $sourceInfo.startColumn->toOne()->toString();
+}
+
+function meta::pure::test::pct::reversePCT::framework::revsForTest(testFunction:String[1], reverses:Reverse[*]):ReversesForTest[1]
+{
+  ^ReversesForTest
+  (
+    testFunction = $testFunction,
+    reverses = $reverses
+  )
+}
+
+function meta::pure::test::pct::reversePCT::framework::rev(func:String[1], val:String[1]):Reverse[1]
+{
+  ^Reverse(function=$func, reverse=$val);
+}
+
+function meta::pure::test::pct::reversePCT::framework::revError(func:String[1], val:String[1], error:String[1], message:String[1]):Reverse[1]
+{
+  ^Reverse(function=$func, reverse=$val, expectedError=$error, infoMessage=$message);
+}
+
+function meta::pure::test::pct::reversePCT::framework::noRev(func:String[1]):Reverse[1]
+{
+  ^Reverse(function=$func, shouldBeSupported=false);
+}
+
+function meta::pure::test::pct::reversePCT::framework::findReverseForFunction(f:Function<Any>[1], reverses: ReversesForSource[*], grammarExtensions: GrammarExtension[*]):Reverse[1]
+{
+  let src = $f->sourceInformation().source;
+
+  let srcReverses = $reverses->filter(r|$r.source == $src);
+  assertSize($srcReverses, 1, |'Can\'t find any reverses for the source \''+$src->toOne()+'\'');
+  
+  let test =  $f->findPackagableElement()->elementToPath();
+  let reversesForTest = $srcReverses.reverses->filter(x|$x.testFunction == $test);
+  assertSize($reversesForTest, 1, |'Can\'t find any reverses for the test \''+$test->toOne()+'\'');
+
+  let funcAsString = $f->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^Configuration(fullPath = true, extensions = $grammarExtensions), ^GContext(space=''));
+  let reverse = $reversesForTest->toOne().reverses->filter(p|$p.function == $funcAsString->replace('\r',''));
+  assertSize($reverse, 1, |'Can\'t find any (or too many) reverses for the function \''+$funcAsString+'\' for the test '+$test->toOne());
+  
+  $reverse->toOne();
+}

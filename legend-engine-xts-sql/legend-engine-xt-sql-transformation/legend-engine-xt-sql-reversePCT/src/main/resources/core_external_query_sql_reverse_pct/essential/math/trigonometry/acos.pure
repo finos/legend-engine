@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::query::sql::reversePCT::framework::*;
+import meta::pure::test::pct::reversePCT::framework::*;
 function meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::acos::reverses():ReversesForSource[1]
 {
   ^ReversesForSource(

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::query::sql::reversePCT::framework::*;
+import meta::pure::test::pct::reversePCT::framework::*;
 
 function meta::external::query::sql::reversePCT::tests::relation::functions::transformation::distinct::reverses():ReversesForSource[1]
 {

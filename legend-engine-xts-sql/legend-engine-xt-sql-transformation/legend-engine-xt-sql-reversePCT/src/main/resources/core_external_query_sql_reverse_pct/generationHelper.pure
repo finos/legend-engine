@@ -152,7 +152,7 @@ function meta::external::query::sql::reversePCT::generator::generateTests(funcKi
     '                 )';
   );
 
-  'import meta::external::query::sql::reversePCT::framework::*;\n'+
+  'import meta::pure::test::pct::reversePCT::framework::*;\n'+
   'function meta::external::query::sql::reversePCT::tests::'+$funcKind+'::'+$filePath->substring(0, $filePath->length()-5)->replace('/','::')+'::reverses():ReversesForSource[1]\n'+
   '{\n'+
   '  ^ReversesForSource(\n'+

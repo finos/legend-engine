@@ -20,7 +20,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.code.core.CoreExternalSQLReversePCTCodeRepositoryProvider;
 import org.finos.legend.pure.code.core.CoreUnclassifiedFunctionsCodeRepositoryProvider;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_reversePCT_framework_ReversesForSource;
+import org.finos.legend.pure.generated.Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource;
 import org.finos.legend.pure.generated.core_external_query_sql_reverse_pct_unclassified_unclassified;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
@@ -36,7 +36,7 @@ public class Test_Query_SQL_UnclassifiedFunctions_Reverse_PCT extends PCTReportC
     private static final ReportScope reportScope = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
     private static final Adapter adapter = CoreExternalSQLReversePCTCodeRepositoryProvider.SQLAdapter;
     private static final String platform = "compiled";
-    private static final RichIterable<? extends Root_meta_external_query_sql_reversePCT_framework_ReversesForSource> reverseInfo = core_external_query_sql_reverse_pct_unclassified_unclassified.Root_meta_external_query_sql_reversePCT_tests_unclassified_reverses__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
+    private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_query_sql_reverse_pct_unclassified_unclassified.Root_meta_external_query_sql_reversePCT_tests_unclassified_reverses__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
     private static final MutableList<ExclusionSpecification> expectedFailures = ExpectedFailuresBuilder.build(reverseInfo);
 
     static
