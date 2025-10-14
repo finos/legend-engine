@@ -39,5 +39,6 @@
         <module>legend-engine-pure-code-core-extension</module>
         <module>legend-engine-pure-platform-modular-generation</module>
         <module>legend-engine-pure-ide</module>
+        <module>legend-engine-pure-code-reversePCT</module>
     </modules>
 </project>

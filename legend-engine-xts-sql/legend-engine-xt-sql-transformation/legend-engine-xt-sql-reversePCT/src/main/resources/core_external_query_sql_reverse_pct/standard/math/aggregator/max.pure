@@ -31,7 +31,7 @@
 //           )
 // );
 
-import meta::external::query::sql::reversePCT::framework::*;
+import meta::pure::test::pct::reversePCT::framework::*;
 
 function meta::external::query::sql::reversePCT::tests::standard::math::aggregator::max::reverses():ReversesForSource[1]
 {

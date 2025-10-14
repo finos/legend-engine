@@ -1,0 +1,8 @@
+{
+  "name": "core_reverse_pct",
+  "pattern": "(meta::pure::test::pct::reversePCT)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core"
+  ]
+}

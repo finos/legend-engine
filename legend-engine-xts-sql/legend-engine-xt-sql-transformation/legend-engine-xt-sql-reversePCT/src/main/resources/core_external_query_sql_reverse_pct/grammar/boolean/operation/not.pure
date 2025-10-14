@@ -28,7 +28,7 @@
 //         )
 // );
 
-import meta::external::query::sql::reversePCT::framework::*;
+import meta::pure::test::pct::reversePCT::framework::*;
 
 function meta::external::query::sql::reversePCT::tests::grammar::boolean::operation::not::reverses():ReversesForSource[1]
 {
