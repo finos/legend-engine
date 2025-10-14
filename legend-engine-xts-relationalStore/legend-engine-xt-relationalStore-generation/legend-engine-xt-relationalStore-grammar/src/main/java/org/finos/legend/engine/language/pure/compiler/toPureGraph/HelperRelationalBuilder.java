@@ -335,7 +335,7 @@ public class HelperRelationalBuilder
                 PackageableElement.writeUserPathForPackageableElement(message, database).append('\'');
 //              TODO: Change this back to compilation error after fixing user models
 //              throw new EngineException(message.toString(), sourceInformation, EngineErrorType.COMPILATION);
-                context.pureModel.addWarnings(Lists.mutable.with(new Warning( sourceInformation, message.toString())));
+                context.pureModel.addWarnings(Lists.mutable.with(new Warning(sourceInformation, message.toString())));
                 return tables.get(0);
             }
         }
