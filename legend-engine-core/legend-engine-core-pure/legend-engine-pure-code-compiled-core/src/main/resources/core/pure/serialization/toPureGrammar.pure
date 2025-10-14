@@ -282,8 +282,8 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
                   ($firstParam->instanceOf(FunctionExpression) && $firstParam->cast(@FunctionExpression).func.functionName->isNotEmpty()  && $special->get($firstParam->cast(@FunctionExpression).func.functionName->toOne())->isNotEmpty())
                 ))  ,
               | let element = $functionExpression.parametersValues->head()->toOne();
-                let t_element = $element->printValueSpecification($configuration, $context);
-                if ($element.genericType.rawType == LambdaFunction && !$t_element->trim()->startsWith('{'),
+                
+                if ($element.genericType.rawType == LambdaFunction && !$element->printValueSpecification($configuration, $context)->trim()->startsWith('{'),
                       |'{' + $element->printValueSpecification($configuration, $context) + '}',
                       | $element->mayWrapInParenthesis($configuration, $context)                    
                    ) + '->' + if($functionExpression.func.functionName->isEmpty(),
