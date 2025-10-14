@@ -146,7 +146,7 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                               $configuration.extensions.extraInstanceValueHandlers->concatenate([
                                     f:FunctionDefinition<Any>[1] | $f->printFunctionDefinition($configuration, ^$context(space = $context.space + '    ')),
                                     f:FunctionExpression[1]      | $f->printPropertyOrFunctionExpression($configuration, $context),
-                                    w:_Window<Any>[1] | 'over(~['+$w.partition->joinStrings(',')+']'+if($w.sortInfo->isEmpty(),|'',|','+$w.sortInfo->toOne()->printSortInfo())+')',
+                                    w:_Window<Any>[1] | 'over(~['+$w.partition->joinStrings(',')+']'+if($w.sortInfo->isEmpty(),|'',|','+$w.sortInfo->map(s | $s->printSortInfo())->joinStrings('[', ',', ']'))+')',
                                     s:SortInfo<Any>[1] | $s->printSortInfo(),
                                     cs:ColSpec<Any>[1] | '~' + $cs.name->printColName(),
                                     fsc:FuncColSpec<Any, Any>[1] | '~' + $fsc.name->printColName() + ':' + $fsc.function->cast(@FunctionDefinition<Any>)->printFunctionDefinition($configuration, ^GContext(space='')),

@@ -47,8 +47,18 @@ Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Relation
 {
 }
 
-Class <<typemodifiers.abstract>>meta::external::query::sql::metamodel::QueryBody extends meta::external::query::sql::metamodel::Relation
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::QueryBody extends meta::external::query::sql::metamodel::Relation
 {
+}
+
+Class meta::external::query::sql::metamodel::Values extends meta::external::query::sql::metamodel::QueryBody
+{
+  rows: meta::external::query::sql::metamodel::ValuesList[*];
+}
+
+Class meta::external::query::sql::metamodel::ValuesList extends meta::external::query::sql::metamodel::Node
+{
+  values: meta::external::query::sql::metamodel::Expression[*];
 }
 
 Class meta::external::query::sql::metamodel::TableSubquery extends meta::external::query::sql::metamodel::QueryBody
@@ -175,6 +185,8 @@ Class meta::external::query::sql::metamodel::IntervalLiteral extends meta::exter
   <<equality.Key>> hours: Integer[0..1];
   <<equality.Key>> minutes: Integer[0..1];
   <<equality.Key>> seconds: Integer[0..1];
+  <<equality.Key>> milliseconds: Integer[0..1];
+  <<equality.Key>> microseconds: Integer[0..1];
 }
 
 Class meta::external::query::sql::metamodel::NamedArgumentExpression extends meta::external::query::sql::metamodel::Expression
@@ -212,6 +224,13 @@ Class meta::external::query::sql::metamodel::ComparisonExpression extends meta::
   <<equality.Key>> left: meta::external::query::sql::metamodel::Expression[1];
   <<equality.Key>> right: meta::external::query::sql::metamodel::Expression[1];
   <<equality.Key>> operator: meta::external::query::sql::metamodel::ComparisonOperator[1];
+}
+
+Class meta::external::query::sql::metamodel::JSONExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> left: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> right: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> operator: meta::external::query::sql::metamodel::JSONOperator[1];
 }
 
 Class meta::external::query::sql::metamodel::LogicalBinaryExpression extends meta::external::query::sql::metamodel::Expression
@@ -335,6 +354,11 @@ Class meta::external::query::sql::metamodel::ColumnType extends meta::external::
   <<equality.Key>> parameters: Integer[*];
 }
 
+Class meta::external::query::sql::metamodel::CollectionColumnType extends meta::external::query::sql::metamodel::ColumnType
+{
+  <<equality.Key>> innerType: meta::external::query::sql::metamodel::ColumnType[1];
+}
+
 Class meta::external::query::sql::metamodel::QualifiedName
 {
   <<equality.Key>> parts: String[*];
@@ -361,6 +385,47 @@ Class meta::external::query::sql::metamodel::BetweenPredicate extends meta::exte
   <<equality.Key>> min: meta::external::query::sql::metamodel::Expression[1];
   <<equality.Key>> max: meta::external::query::sql::metamodel::Expression[1];
   <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::SubscriptExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> index: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::ArraySliceExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> from: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> to: meta::external::query::sql::metamodel::Expression[0..1];
+}
+
+
+Class meta::external::query::sql::metamodel::BitwiseBinaryExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> left: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> right: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> operator: meta::external::query::sql::metamodel::BitwiseBinaryOperator[1];
+}
+
+Class meta::external::query::sql::metamodel::BitwiseShiftExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> shift: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> direction: meta::external::query::sql::metamodel::BitwiseShiftDirection[1];
+}
+
+Enum meta::external::query::sql::metamodel::BitwiseShiftDirection
+{
+  LEFT,
+  RIGHT
+}
+
+Enum meta::external::query::sql::metamodel::BitwiseBinaryOperator
+{
+  AND,
+  OR,
+  XOR
 }
 
 Class meta::external::query::sql::metamodel::Group extends meta::external::query::sql::metamodel::Statement
@@ -438,6 +503,20 @@ Enum meta::external::query::sql::metamodel::SortItemNullOrdering
   FIRST,
   LAST,
   UNDEFINED
+}
+
+Enum meta::external::query::sql::metamodel::JSONOperator
+{
+  JSON_EXTRACT,
+  JSON_EXTRACT_TEXT,
+  JSON_PATH_EXTRACT,
+  JSON_PATH_EXTRACT_TEXT,
+  JSONB_CONTAIN_RIGHT,
+  JSONB_CONTAIN_LEFT,
+  JSONB_CONTAIN_ALL_TOP_KEY,
+  JSONB_PATH_DELETE,
+  JSONB_PATH_CONTAIN_ANY_VALUE,
+  JSONB_PATH_PREDICATE_CHECK
 }
 
 Enum meta::external::query::sql::metamodel::ComparisonOperator

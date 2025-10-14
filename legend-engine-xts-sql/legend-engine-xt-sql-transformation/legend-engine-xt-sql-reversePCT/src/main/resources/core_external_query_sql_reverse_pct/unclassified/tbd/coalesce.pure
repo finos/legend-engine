@@ -1,0 +1,171 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::unclassified::tbd::coalesce::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_unclassified/tbd/coalesce.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce_NotEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|\'hello\'->meta::pure::functions::flow::coalesce(\'world\')',
+                            'select coalesce(Text\'hello\', Text\'world\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce_NotEmpty_DefaultEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|\'hello\'->meta::pure::functions::flow::coalesce([])',
+                            'select coalesce(Text\'hello\', null)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce_FirstEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::flow::coalesce(\'world\')',
+                            'select coalesce(null, Text\'world\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce_AllEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::flow::coalesce([])',
+                            'select coalesce(null, null)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce2_FirstNotEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|\'hello\'->meta::pure::functions::flow::coalesce(\'world\', \'!\')',
+                            'select coalesce(Text\'hello\', Text\'world\', Text\'!\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce2_FirstNotEmpty_AllOthersEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|\'hello\'->meta::pure::functions::flow::coalesce([], [])',
+                            'select coalesce(Text\'hello\', null, null)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce2_SecondNotEmpty_AllOthersEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::flow::coalesce(\'world\', [])',
+                            'select coalesce(null, Text\'world\', null)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce2_SecondNotEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::flow::coalesce(\'world\', \'!\')',
+                            'select coalesce(null, Text\'world\', Text\'!\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce2_DefaultNotEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::flow::coalesce([], \'!\')',
+                            'select coalesce(null, null, Text\'!\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce2_AllEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::flow::coalesce([], [])',
+                            'select coalesce(null, null, null)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce3_FirstNotEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|\'hello\'->meta::pure::functions::flow::coalesce(\'world\', \'!\', \'bye\')',
+                            'select coalesce(Text\'hello\', Text\'world\', Text\'!\', Text\'bye\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce3_FirstNotEmpty_AllOthersEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|\'hello\'->meta::pure::functions::flow::coalesce([], [], [])',
+                            'select coalesce(Text\'hello\', null, null, null)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce3_SecondNotEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::flow::coalesce(\'world\', \'!\', \'bye\')',
+                            'select coalesce(null, Text\'world\', Text\'!\', Text\'bye\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce3_ThirdNotEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::flow::coalesce([], \'!\', \'bye\')',
+                            'select coalesce(null, null, Text\'!\', Text\'bye\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce3_DefaultNotEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::flow::coalesce([], [], \'bye\')',
+                            'select coalesce(null, null, null, Text\'bye\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::flow::test::coalesce::coalesce3_AllEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::flow::coalesce([], [], [])',
+                            'select coalesce(null, null, null, null)'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::unclassified::tbd::coalesce::exec():Boolean[1]
+{
+   meta::pure::functions::flow::test::coalesce::coalesce_NotEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce_NotEmpty_DefaultEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce_FirstEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce_AllEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce2_FirstNotEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce2_FirstNotEmpty_AllOthersEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce2_SecondNotEmpty_AllOthersEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce2_SecondNotEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce2_DefaultNotEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce2_AllEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce3_FirstNotEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce3_FirstNotEmpty_AllOthersEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce3_SecondNotEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce3_ThirdNotEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce3_DefaultNotEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::flow::test::coalesce::coalesce3_AllEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

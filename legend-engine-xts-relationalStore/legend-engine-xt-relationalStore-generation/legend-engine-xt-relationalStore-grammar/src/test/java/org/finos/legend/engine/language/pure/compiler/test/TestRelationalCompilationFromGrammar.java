@@ -3456,21 +3456,115 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     }
 
     @Test
-    public void testDatabaseIncludeStoreType()
+    public void testDatabaseIncludeStoreOrder()
     {
         test("###Relational\n" +
-                "Database stores::SimpleDB\n" +
+                "Database stores::DB1\n" +
                 "(\n" +
-                "  Table People\n" +
+                "  Table People()\n" +
+                ")\n" +
+                "Database stores::DB2\n" +
+                "(\n" +
+                "  Table Order()\n" +
+                ")\n" +
+                "Database stores::testDB1\n" +
+                "(\n" +
+                "  include stores::DB1\n" +
+                "  include storeTypeABC stores::DB2\n" +
+                ")\n" +
+                "Database stores::testDB2\n" +
+                "(\n" +
+                "  include storeTypeABC stores::DB2\n" +
+                "  include stores::DB1\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testTableReferencesWithDuplicatedSchemaNames()
+    {
+        test("###Relational\n" +
+                "Database stores::DB\n" +
+                "(\n" +
+                "  Schema mySchema\n" +
                 "  (\n" +
-                "    id INTEGER PRIMARY KEY,\n" +
-                "    name VARCHAR(200)\n" +
+                    "  Table Person\n" +
+                    "  (\n" +
+                    "    id INTEGER\n" +
+                    "  )\n" +
+                "  )\n" +
+                "  Schema mySchema\n" +
+                "  (\n" +
+                    "  Table Order\n" +
+                    "  (\n" +
+                    "    id INTEGER\n" +
+                    "  )\n" +
                 "  )\n" +
                 ")\n" +
-                "Database stores::testDB\n" +
+                "Database stores::SimpleDB\n" +
                 "(\n" +
-                "  include storeTypeABC stores::SimpleDB\n" +
-                ")\n");
+                "  include stores::DB\n" +
+                "  Join Person_Order([stores::DB]mySchema.Person.id = [stores::DB]mySchema.Order.id)\n" +
+                ")\n"
+        );
+
+        test("###Relational\n" +
+                "Database store::relational::db\n" +
+                "(\n" +
+                "  Schema mySchema\n" +
+                "  (\n" +
+                "    Table Firm\n" +
+                "    (\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "    \n" +
+                "    Table Firm1\n" +
+                "    (\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "Database store::relational::db1\n" +
+                "(\n" +
+                "  include store::relational::db\n" +
+                "  Schema mySchema\n" +
+                "  (\n" +
+                "    Table Firm\n" +
+                "    (\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "Database store::relational::db2\n" +
+                "(\n" +
+                "  include store::relational::db1\n" +
+                "\n" +
+                "  Join Firm_Person([store::relational::db1]mySchema.Firm.id = [store::relational::db1]mySchema.Firm1.id)\n" +
+                ")\n", null, Arrays.asList("COMPILATION error at [34:44-56]: The relation 'Firm' has been found 2 times in the schema 'mySchema' of the database 'store::relational::db1'")
+        );
+
+        test("###Relational\n" +
+                "Database store::relational::db\n" +
+                "(\n" +
+                "  Schema mySchema\n" +
+                "  (\n" +
+                "    Table Firm\n" +
+                "    (\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                "  Schema mySchema\n" +
+                "  (\n" +
+                "    Table Firm\n" +
+                "    (\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                "  Join Firm_SELFJOIN(mySchema.Firm.id = {target}.id)\n" +
+                ")", null, Arrays.asList("COMPILATION error at [19:22-34]: The relation 'Firm' has been found 2 times in the schema 'mySchema' of the database 'store::relational::db'")
+        );
     }
 
     @Test

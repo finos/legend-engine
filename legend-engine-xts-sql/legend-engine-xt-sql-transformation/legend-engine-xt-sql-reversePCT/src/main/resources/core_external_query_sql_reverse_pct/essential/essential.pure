@@ -12,13 +12,53 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::query::sql::reversePCT::framework::*;
+import meta::pure::test::pct::reversePCT::framework::*;
 
 function meta::external::query::sql::reversePCT::tests::essential::reverses():ReversesForSource[*]
 {
   [
+    meta::external::query::sql::reversePCT::tests::essential::collection::slice::head::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::collection::slice::init::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::collection::slice::slice::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::essential::date::creation::date::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::essential::date::operation::adjust::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::essential::date::extract::datePart::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::date::extract::dayOfMonth::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::date::extract::hour::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::date::extract::minute::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::date::extract::second::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::date::extract::year::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::essential::lang::cast::toDecimal::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::lang::cast::toFloat::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::essential::math::exponential::exp::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::exponential::log::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::exponential::log10::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::essential::math::operation::abs::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::operation::mod::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::operation::rem::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::operation::sign::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::essential::math::power::cbrt::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::power::pow::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::power::sqrt::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::essential::math::round::ceiling::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::round::floor::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::round::round::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::acos::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::asin::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::atan::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::atan2::reverses(),
     meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::cos::reverses(),
-    meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::tan::reverses(),
-    meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::sin::reverses()
+    meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::cot::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::sin::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::tan::reverses()
   ]
 }

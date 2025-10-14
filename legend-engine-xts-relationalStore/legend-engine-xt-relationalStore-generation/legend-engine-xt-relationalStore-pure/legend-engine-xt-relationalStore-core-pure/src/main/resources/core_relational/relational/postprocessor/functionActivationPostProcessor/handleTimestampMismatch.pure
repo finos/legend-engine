@@ -28,6 +28,7 @@ function meta::relational::postProcessor::HandleTimestampMismatch(query:SQLQuery
     let transformFunc = {r: RelationalOperationElement[1]|
                           $r->match([
                             l: Alias[1] | transformAlias($l),
+                            d: DynaFunction[1] | transformDynaFunction($d),
                             r: RelationalOperationElement[1] | $r;
                           ]);
                         };
@@ -47,4 +48,18 @@ function <<access.private>> meta::relational::postProcessor::transformAlias(a: A
           );,
       |$a
     );
+}
+
+function <<access.private>> meta::relational::postProcessor::transformDynaFunction(d: DynaFunction[1]): RelationalOperationElement[1]
+{   
+  if($d.name != 'cast' ,
+    | let newParams = $d.parameters->map(p | if($p->instanceOf(TableAliasColumn) && $p->cast(@TableAliasColumn).column.type->instanceOf(Timestamp),
+                                              | let t = $p->cast(@TableAliasColumn);
+                                                ^DynaFunction(name = 'cast', parameters = [$t, ^DataTypeInfo(dataType=$t.column.type)]);,
+                                              |$p;
+                                             )
+                                        );
+      ^$d(parameters = $newParams);,
+    | $d;
+  );
 }

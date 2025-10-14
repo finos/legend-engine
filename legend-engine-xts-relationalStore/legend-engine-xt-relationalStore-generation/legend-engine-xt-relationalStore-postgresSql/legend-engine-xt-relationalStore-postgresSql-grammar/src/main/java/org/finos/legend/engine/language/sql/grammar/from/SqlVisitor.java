@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
 {
-    private static final Pattern LITERAL_VALUE_PATTERN = Pattern.compile("(([\\+-]?[0-9]+)\\s([year|years|month|months|week|weeks|day|days|hour|hours|minute|minutes|second|seconds]+))+");
+    private static final Pattern LITERAL_VALUE_PATTERN = Pattern.compile("(([\\+-]?[0-9]+)\\s([year|years|month|months|week|weeks|day|days|hour|hours|minute|minutes|second|seconds|millisecond|milliseconds|microsecond|microseconds]+))+");
 
     private long positionalIndex = 1;
 
@@ -132,6 +132,8 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         intervalLiteral.hours = matches.get("hour");
         intervalLiteral.minutes = matches.get("minute");
         intervalLiteral.seconds = matches.get("second");
+        intervalLiteral.milliseconds = matches.get("millisecond");
+        intervalLiteral.microseconds = matches.get("microsecond");
 
         return intervalLiteral;
     }
@@ -357,7 +359,11 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitValues(SqlBaseParser.ValuesContext context)
     {
-        return unsupported();
+        ValuesList valuesList = new ValuesList();
+
+        valuesList.values = visitCollection(context.expr(), Expression.class);
+
+        return valuesList;
     }
 
     @Override
@@ -829,9 +835,24 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     }
 
     @Override
+    public Node visitJsonBinary(JsonBinaryContext ctx)
+    {
+        JSONExpression json = new JSONExpression();
+        json.left = (Expression) visit(ctx.left);
+        json.right = (Expression) visit(ctx.right);
+        json.operator = getJsonOperator(((TerminalNode) ctx.jsonOperator().getChild(0)).getSymbol());
+
+        return json;
+    }
+
+    @Override
     public Node visitValuesRelation(SqlBaseParser.ValuesRelationContext ctx)
     {
-        return unsupported();
+        Values values = new Values();
+
+        values.rows = visitCollection(ctx.values(), ValuesList.class);;
+
+        return values;
     }
 
     @Override
@@ -1483,7 +1504,13 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitArraySlice(SqlBaseParser.ArraySliceContext ctx)
     {
-        return unsupported();
+        ArraySliceExpression arraySliceExpression = new ArraySliceExpression();
+
+        arraySliceExpression.value = (Expression) visit(ctx.base);
+        arraySliceExpression.from = ctx.from != null ? (Expression) visit(ctx.from) : null;
+        arraySliceExpression.to = ctx.to != null ? (Expression) visit(ctx.to) : null;
+
+        return arraySliceExpression;
     }
 
     @Override
@@ -1518,7 +1545,11 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitSubscript(SqlBaseParser.SubscriptContext context)
     {
-        return unsupported();
+        SubscriptExpression subscriptExpression = new SubscriptExpression();
+        subscriptExpression.value = (Expression) visit(context.value);
+        subscriptExpression.index = (Expression) visit(context.index);
+
+        return subscriptExpression;
     }
 
     @Override
@@ -1605,6 +1636,58 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     public Node visitBitString(BitStringContext ctx)
     {
         return unsupported();
+    }
+
+    @Override
+    public Node visitBitwiseBinary(BitwiseBinaryContext ctx)
+    {
+        BitwiseBinaryExpression bitwiseBinaryExpression = new BitwiseBinaryExpression();
+
+        bitwiseBinaryExpression.left = (Expression) visit(ctx.left);
+        bitwiseBinaryExpression.right = (Expression) visit(ctx.right);
+        bitwiseBinaryExpression.operator = getBitwiseBinaryOperator(ctx.operator);
+
+        return bitwiseBinaryExpression;
+    }
+
+    @Override
+    public Node visitBitwiseShift(BitwiseShiftContext ctx)
+    {
+        BitwiseShiftExpression bitwiseShiftExpression = new BitwiseShiftExpression();
+
+        bitwiseShiftExpression.value = (Expression) visit(ctx.value);
+        bitwiseShiftExpression.shift = (Expression) visit(ctx.shift);
+        bitwiseShiftExpression.direction = getBitwiseShiftDirection(ctx.operator);
+
+        return bitwiseShiftExpression;
+    }
+
+    private BitwiseShiftDirection getBitwiseShiftDirection(Token token)
+    {
+        switch (token.getType())
+        {
+            case SqlBaseLexer.LLT:
+                return BitwiseShiftDirection.LEFT;
+            case SqlBaseLexer.BITWISE_SHIFT_RIGHT:
+                return BitwiseShiftDirection.RIGHT;
+            default:
+                throw new UnsupportedOperationException("Unsupported Bitwise operator: " + token.getText());
+        }
+    }
+
+    private BitwiseBinaryOperator getBitwiseBinaryOperator(Token token)
+    {
+        switch (token.getType())
+        {
+            case SqlBaseLexer.BITWISE_OR:
+                return BitwiseBinaryOperator.OR;
+            case SqlBaseLexer.BITWISE_AND:
+                return BitwiseBinaryOperator.AND;
+            case SqlBaseLexer.BITWISE_XOR:
+                return BitwiseBinaryOperator.XOR;
+            default:
+                throw new UnsupportedOperationException("Unsupported Bitwise operator: " + token.getText());
+        }
     }
 
     @Override
@@ -1719,7 +1802,12 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitArrayDataType(SqlBaseParser.ArrayDataTypeContext ctx)
     {
-        return unsupported();
+        CollectionColumnType collectionColumnType = new CollectionColumnType();
+        collectionColumnType.name = "ARRAY";
+        collectionColumnType.innerType = (ColumnType) visit(ctx.dataType());
+
+
+        return collectionColumnType;
     }
 
     @Override
@@ -1937,6 +2025,35 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
                 return LogicalBinaryType.OR;
             default:
                 throw new IllegalArgumentException("Unsupported operator: " + token.getText());
+        }
+    }
+
+    private static JSONOperator getJsonOperator(Token token)
+    {
+        switch (token.getType())
+        {
+            case SqlBaseLexer.JSON_EXTRACT:
+                return JSONOperator.JSON_EXTRACT;
+            case SqlBaseLexer.JSON_EXTRACT_TEXT:
+                return JSONOperator.JSON_EXTRACT_TEXT;
+            case SqlBaseLexer.JSON_PATH_EXTRACT:
+                return JSONOperator.JSON_PATH_EXTRACT;
+            case SqlBaseLexer.JSON_PATH_EXTRACT_TEXT:
+                return JSONOperator.JSON_PATH_EXTRACT_TEXT;
+            case SqlBaseLexer.JSONB_CONTAIN_RIGHT:
+                return JSONOperator.JSONB_CONTAIN_RIGHT;
+            case SqlBaseLexer.JSONB_CONTAIN_LEFT:
+                return JSONOperator.JSONB_CONTAIN_LEFT;
+            case SqlBaseLexer.JSONB_CONTAIN_ALL_TOP_KEY:
+                return JSONOperator.JSONB_CONTAIN_ALL_TOP_KEY;
+            case SqlBaseLexer.JSONB_PATH_DELETE:
+                return JSONOperator.JSONB_PATH_DELETE;
+            case SqlBaseLexer.JSONB_PATH_CONTAIN_ANY_VALUE:
+                return JSONOperator.JSONB_PATH_CONTAIN_ANY_VALUE;
+            case SqlBaseLexer.JSONB_PATH_PREDICATE_CHECK:
+                return JSONOperator.JSONB_PATH_PREDICATE_CHECK;
+            default:
+                throw new UnsupportedOperationException("Unsupported JSON operator: " + token.getText());
         }
     }
 

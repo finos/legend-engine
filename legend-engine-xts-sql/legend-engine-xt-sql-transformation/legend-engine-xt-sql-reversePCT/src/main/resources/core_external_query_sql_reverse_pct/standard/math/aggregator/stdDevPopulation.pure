@@ -1,0 +1,68 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::standard::math::aggregator::stdDevPopulation::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/math/aggregator/stdDevPopulation.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_',
+                      [
+                        rev('|[1, 2]->meta::pure::functions::math::stdDevPopulation()',
+                            'select sqrt(var_pop([1,2]))'
+                        ),
+                        rev('|[2, 4]->meta::pure::functions::math::stdDevPopulation()',
+                            'select sqrt(var_pop([2,4]))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::stdDev::testSimpleGroupByStandardDeviationPopulation_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,val\n'+
+                            '1,1\n'+
+                            '1,2\n'+
+                            '2,2\n'+
+                            '2,4}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer, val:Integer)[1]|$x.val:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation()])',
+                            'select "table0_0".id as "id", stddev_pop("table0_0".val) as "newCol" from csv(\'id,val\n1,1\n1,2\n2,2\n2,4\') as "table0_0" group by "id"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::stdDev::testSimpleWindowStandardDeviationPopulation_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,val\n'+
+                            '1,1\n'+
+                            '1,2\n'+
+                            '2,2\n'+
+                            '2,4}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, val:Integer)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, val:Integer)>[1], r: (id:Integer, val:Integer)[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation())',
+                            'select "table0_0".id as "id", "table0_0".val as "val", stddev_pop("table0_0".val) OVER (Partition By "table0_0".id) as "newCol" from csv(\'id,val\n1,1\n1,2\n2,2\n2,4\') as "table0_0"'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::math::aggregator::stdDevPopulation::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::stdDev::testSimpleGroupByStandardDeviationPopulation(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::stdDev::testSimpleWindowStandardDeviationPopulation(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

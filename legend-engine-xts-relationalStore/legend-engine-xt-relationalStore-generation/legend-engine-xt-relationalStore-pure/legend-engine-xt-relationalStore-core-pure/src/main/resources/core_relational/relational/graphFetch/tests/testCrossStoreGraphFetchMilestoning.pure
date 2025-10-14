@@ -259,3 +259,235 @@ function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::XStore::mi
    let result = meta::legend::executeLegendQuery($query,  [pair('processingDate', '2023-10-15'), pair('businessDate', '2023-10-15')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
    assertJsonStringsEqual('{"builder":{"_type":"json"},"values":{"customer($processingDate, $businessDate)":{"id":12,"address($businessDate)":{"country":"US"}}}}', $result);
 }
+
+function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::XStore::milestoning::testCrossStoreGraphFetchWithRelationalDatePropagationForMilestonedPropertyConstraint(): Boolean[1]
+{
+  let grammar = '###Relational\n' +
+                    'Database test::stores::testDB\n' +
+                    '(\n' +
+                    '  Schema TEST_SCHEMA\n' +
+                    '  (\n' +
+                    '    Table FIRM_TABLE\n' +
+                    '    (\n' +
+                    '      milestoning\n' +
+                    '      (\n' +
+                    '        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)\n' +
+                    '      )\n' +
+                    '\n' +
+                    '      ID VARCHAR(10) PRIMARY KEY,\n' +
+                    '      LEGALNAME VARCHAR(100),\n' +
+                    '      ADDRESS VARCHAR(100),\n' +
+                    '      from_z TIMESTAMP,\n' +
+                    '      thru_z TIMESTAMP PRIMARY KEY\n' +
+                    '    )\n' +
+                    '  )\n' +
+                    ')\n' +
+                    '\n' +
+                    '###ExternalFormat\n' +
+                    'Binding test::binding::FirmIdInputBinding\n' +
+                    '{\n' +
+                    '  contentType: \'application/json\';\n' +
+                    '  modelIncludes: [\n' +
+                    '    test::model::FirmIdInput\n' +
+                    '  ];\n' +
+                    '}\n' +
+                    '\n' +
+                    '\n' +
+                    '###Pure\n' +
+                    'Class test::model::FirmOutput\n' +
+                    '{\n' +
+                    '  firmId: String[1];\n' +
+                    '  firmTarget: test::model::FirmTarget[0..1];\n' +
+                    '}\n' +
+                    '\n' +
+                    'Class <<temporal.businesstemporal>> test::model::Firm\n' +
+                    '[\n' +
+                    '  firmMustHaveAddress\n' +
+                    '  (\n' +
+                    '    ~function: $this.address(%2023-10-12).name->isNotEmpty()\n' +
+                    '    ~enforcementLevel: Error\n' +
+                    '    ~message: \'Firm should have legal name\'\n' +
+                    '  )\n' +
+                    ']\n' +
+                    '{\n' +
+                    '  id: String[1];\n' +
+                    '  legalName: String[1];\n' +
+                    '  address: test::model::Address[1];\n' +
+                    '  from_z: Date[1];\n' +
+                    '  thru_z: Date[1];\n' +
+                    '}\n' +
+                    '\n' +
+                    'Class test::model::FirmIdInput\n' +
+                    '{\n' +
+                    '  firmId: String[1];\n' +
+                    '}\n' +
+                    '\n' +
+                    'Class test::model::FirmIdInputEnriched extends test::model::FirmIdInput\n' +
+                    '{\n' +
+                    '}\n' +
+                    '\n' +
+                    'Class <<temporal.businesstemporal>> test::model::Address\n' +
+                    '{\n' +
+                    '  name: String[1];\n' +
+                    '}\n' +
+                    '\n' +
+                    'Class test::model::FirmTarget\n' +
+                    '{\n' +
+                    '  legalName: String[0..1];\n' +
+                    '}\n' +
+                    '\n' +
+                    'Association test::model::FirmIdInputEnriched_Firm\n' +
+                    '{\n' +
+                    '  firm: test::model::Firm[1];\n' +
+                    '  firmIdInputEnriched: test::model::FirmIdInputEnriched[*];\n' +
+                    '}\n' +
+                    '\n' +
+                    'function test::function::getFirmXstoreFunc(collection: test::model::FirmOutput[*]): test::model::FirmOutput[*]\n' +
+                    '{\n' +
+                    '  $collection->graphFetch(\n' +
+                    '    #{\n' +
+                    '      test::model::FirmOutput{\n' +
+                    '        firmId,\n' +
+                    '        firmTarget{\n' +
+                    '          legalName\n' +
+                    '        }\n' +
+                    '      }\n' +
+                    '    }#\n' +
+                    '  )\n' +
+                    '}\n' +
+                    '\n' +
+                    'function test::function::finalQuery(var_1: String[1]): String[1]\n' +
+                    '{\n' +
+                    '  test::model::FirmOutput.all()->test::function::getFirmXstoreFunc()->from(\n' +
+                    '    test::mapping::FirmOutputMapping,\n' +
+                    '    [\n' +
+                    '      test::model::FirmIdInput->getRuntimeWithModelQueryConnection(\n' +
+                    '      test::binding::FirmIdInputBinding,\n' +
+                    '      $var_1\n' +
+                    '    ),\n' +
+                    '      test::runtimes::xstoreRuntime\n' +
+                    '    ]->mergeRuntimes()\n' +
+                    '  )->test::function::getFirmXstoreFunc_serialized()\n' +
+                    '}\n' +
+                    '\n' +
+                    'function test::function::getFirmXstoreFunc_serialized(collection: test::model::FirmOutput[*]): String[1]\n' +
+                    '{\n' +
+                    '  $collection->serialize(\n' +
+                    '    #{\n' +
+                    '      test::model::FirmOutput{\n' +
+                    '        firmId,\n' +
+                    '        firmTarget{\n' +
+                    '          legalName\n' +
+                    '        }\n' +
+                    '      }\n' +
+                    '    }#,\n' +
+                    '    ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName=\'@type\' , includeType=true , includeEnumType=false , removePropertiesWithNullValues=true , removePropertiesWithEmptySets=true , fullyQualifiedTypePath=false)\n' +
+                    '  )\n' +
+                    '}\n' +
+                    '\n' +
+                    '\n' +
+                    '###Mapping\n' +
+                    'Mapping test::mapping::firmMappingRelational\n' +
+                    '(\n' +
+                    '  *test::model::Firm[firm]: Relational\n' +
+                    '  {\n' +
+                    '    ~primaryKey\n' +
+                    '    (\n' +
+                    '      [test::stores::testDB]TEST_SCHEMA.FIRM_TABLE.ID,\n' +
+                    '      [test::stores::testDB]TEST_SCHEMA.FIRM_TABLE.thru_z\n' +
+                    '    )\n' +
+                    '    ~mainTable [test::stores::testDB]TEST_SCHEMA.FIRM_TABLE\n' +
+                    '    id: [test::stores::testDB]TEST_SCHEMA.FIRM_TABLE.ID,\n' +
+                    '    legalName: [test::stores::testDB]TEST_SCHEMA.FIRM_TABLE.LEGALNAME,\n' +
+                    '    address\n' +
+                    '    (\n' +
+                    '      name: [test::stores::testDB]TEST_SCHEMA.FIRM_TABLE.ADDRESS\n' +
+                    '    ),\n' +
+                    '    from_z: [test::stores::testDB]TEST_SCHEMA.FIRM_TABLE.from_z,\n' +
+                    '    thru_z: [test::stores::testDB]TEST_SCHEMA.FIRM_TABLE.thru_z\n' +
+                    '  }\n' +
+                    ')\n' +
+                    '\n' +
+                    'Mapping test::mapping::FirmIdInputMapping\n' +
+                    '(\n' +
+                    '  include mapping test::mapping::firmMappingRelational\n' +
+                    '\n' +
+                    '  test::model::Firm[newFirm] extends [firm]: Relational\n' +
+                    '  {\n' +
+                    '  }\n' +
+                    '  test::model::FirmIdInputEnriched[ip]: Pure\n' +
+                    '  {\n' +
+                    '    ~src test::model::FirmIdInput\n' +
+                    '    firmId: $src.firmId\n' +
+                    '  }\n' +
+                    '\n' +
+                    '  test::model::FirmIdInputEnriched_Firm: XStore\n' +
+                    '  {\n' +
+                    '    firm[ip, newFirm]: $this.firmId ==\n' +
+                    '  $that.id\n' +
+                    '  }\n' +
+                    ')\n' +
+                    '\n' +
+                    'Mapping test::mapping::FirmOutputMapping\n' +
+                    '(\n' +
+                    '  *test::model::FirmOutput: Pure\n' +
+                    '  {\n' +
+                    '    ~src test::model::FirmIdInputEnriched\n' +
+                    '    firmId: $src.firmId,\n' +
+                    '    firmTarget[firmTarget]: $src.firm(%2023-10-12)\n' +
+                    '  }\n' +
+                    '  *test::model::FirmTarget[firmTarget]: Pure\n' +
+                    '  {\n' +
+                    '    ~src test::model::Firm\n' +
+                    '    legalName: $src.legalName\n' +
+                    '  }\n' +
+                    ')\n' +
+                    '\n' +
+                    '\n' +
+                    '###Connection\n' +
+                    'RelationalDatabaseConnection test::connections::testH2Connection\n' +
+                    '{\n' +
+                    '  store: test::stores::testDB;\n' +
+                    '  type: H2;\n' +
+                    '  specification: LocalH2\n' +
+                    '  {\n' +
+                    '    testDataSetupSqls: [\n' +
+                    '      \'CREATE SCHEMA IF NOT EXISTS TEST_SCHEMA;DROP TABLE IF EXISTS TEST_SCHEMA.FIRM_TABLE;CREATE TABLE TEST_SCHEMA.FIRM_TABLE (ID VARCHAR(10), LEGALNAME VARCHAR(100), ADDRESS VARCHAR(100), from_z TIMESTAMP, thru_z TIMESTAMP);INSERT INTO TEST_SCHEMA.FIRM_TABLE (ID, LEGALNAME, ADDRESS, from_z, thru_z) VALUES (\\\'1\\\',\\\'FIRM_A\\\', \\\'Mumbai\\\', \\\'2023-10-12 00:00:00\\\',\\\'9999-12-31 00:00:00\\\');\'\n' +
+                    '      ];\n' +
+                    '  };\n' +
+                    '  auth: DefaultH2;\n' +
+                    '}\n' +
+                    '\n' +
+                    '\n' +
+                    '###Runtime\n' +
+                    'Runtime test::runtimes::xstoreRuntime\n' +
+                    '{\n' +
+                    '  mappings:\n' +
+                    '  [\n' +
+                    '    test::mapping::FirmOutputMapping\n' +
+                    '  ];\n' +
+                    '  connections:\n' +
+                    '  [\n' +
+                    '    ModelStore:\n' +
+                    '    [\n' +
+                    '      connection_1:\n' +
+                    '      #{\n' +
+                    '        ModelChainConnection\n' +
+                    '        {\n' +
+                    '          mappings: [\n' +
+                    '            test::mapping::FirmIdInputMapping\n' +
+                    '          ];\n' +
+                    '        }\n' +
+                    '      }#\n' +
+                    '    ],\n' +
+                    '    test::stores::testDB:\n' +
+                    '    [\n' +
+                    '      connection_2: test::connections::testH2Connection\n' +
+                    '    ]\n' +
+                    '  ];\n' +
+                    '}\n';
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition))->at(1)->cast(@ConcreteFunctionDefinition<{String[1]->String[1]}>);
+  let expected = '{"builder":{"_type":"json"},"values":{"@type":"FirmOutput","firmId":"1","firmTarget":{"@type":"FirmTarget","legalName":"FIRM_A"}}}';
+  assertEquals($expected,meta::legend::executeLegendQuery($function,^Pair<String, String>(first='var_1',second='{"firmId": "1"}'),meta::pure::executionPlan::platformBinding::localBinding::extractClasspathExtensions()));
+}

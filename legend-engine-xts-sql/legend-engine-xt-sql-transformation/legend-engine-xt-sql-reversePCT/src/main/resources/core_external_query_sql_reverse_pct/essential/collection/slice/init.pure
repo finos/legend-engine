@@ -1,0 +1,43 @@
+import meta::pure::test::pct::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::essential::collection::slice::init::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/collection/slice/init.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::init::testInit_Function_1__Boolean_1_',
+                      [
+                        rev('|[\'a\', \'b\', \'c\']->meta::pure::functions::collection::init()',
+                            'select (array[\'a\', \'b\', \'c\'])[1:array_length(array[\'a\', \'b\', \'c\'], 1) - 1]'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::init::testInitOneElement_Function_1__Boolean_1_',
+                      [
+                        rev('|\'a\'->meta::pure::functions::collection::init()',
+                            'select (array[\'a\'])[1:array_length(array[\'a\'], 1) - 1]'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::init::testInitOnEmptySet_Function_1__Boolean_1_',
+                      [
+                        revError('|[]->meta::pure::functions::collection::init()',
+                            '',
+                            'Unexpected token',
+                            'how to handle empty type'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::collection::slice::init::exec():Boolean[1]
+{
+   meta::pure::functions::collection::tests::init::testInit(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::init::testInitOneElement(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+  //  meta::pure::functions::collection::tests::init::testInitOnEmptySet(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

@@ -13,6 +13,8 @@
 // limitations under the License.
 
 ###Pure
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::hash::*;
 import meta::relational::extension::*;
 import meta::external::query::sql::transformation::queryToPure::*;
@@ -749,7 +751,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsNumber():Boolean[1]
 {
   test(
-    'SELECT * FROM service."/service/service1" WHERE Integer > 1 OR Integer < 1 OR Integer >= 1 OR Integer <= 1 OR Integer BETWEEN 0 AND 1',
+    'SELECT * FROM service."/service/service1" WHERE Integer > 1 OR Integer < 1 OR Integer >= 1 OR Integer <= 1',
 
     [
       c({| FlatInput.all()->project(
@@ -758,8 +760,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         ->filter(row | ($row.getInteger('Integer') > 1)
                       || ($row.getInteger('Integer') < 1)
                       || ($row.getInteger('Integer') >= 1)
-                      || ($row.getInteger('Integer') <= 1)
-                      || (($row.getInteger('Integer') >= 0) && ($row.getInteger('Integer') <= 1)))
+                      || ($row.getInteger('Integer') <= 1))
       }, true, false),
 
       c({| FlatInput.all()->project(
@@ -767,8 +768,33 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             )->filter(x | ($x.Integer > 1)
                       || ($x.Integer < 1)
                       || ($x.Integer >= 1)
-                      || ($x.Integer <= 1)
-                      || (($x.Integer >= 0) && ($x.Integer <= 1)))
+                      || ($x.Integer <= 1))
+      }, true, false)
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testBetween():Boolean[1]
+{
+  test(
+    'SELECT ' + 
+    'Integer between 0 and 1 as NUMERIC, ' + 
+    'DateTime between \'2025-01-01 00:00:00\'::timestamp and \'2025-01-03 00:00:00\'::timestamp as TIMESTAMP, ' +
+    'StrictDate between \'2025-01-01\'::date and \'2025-01-03\'::date as DATE, ' +
+    'String between \'a\' and \'b\' as STRING, ' +
+    'Boolean between true and false as BOOLEAN ' +
+    'FROM service."/service/service1"',
+
+    [
+      c({| FlatInput.all()->project(
+              ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+            )->project(~[
+              NUMERIC: x | between($x.Integer, 0, 1),
+              TIMESTAMP: x | between($x.DateTime, '2025-01-01T00:00:00'->parseDate()->cast(@DateTime), '2025-01-03T00:00:00'->parseDate()->cast(@DateTime)),
+              DATE: x | between($x.StrictDate, '2025-01-01'->parseDate()->cast(@StrictDate), '2025-01-03'->parseDate()->cast(@StrictDate)),
+              STRING: x | between($x.String, 'a', 'b'),
+              BOOLEAN: x | ($x.Boolean >= true) && ($x.Boolean <= false)
+            ])
       }, true, false)
     ]
   )
@@ -824,9 +850,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       c({| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-        ->filter(row | ($row.getStrictDate('StrictDate') > parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') < today())
-              || ($row.getStrictDate('StrictDate') >= parseDate('2023-01-02')) || ($row.getStrictDate('StrictDate') <= today())
-              || ($row.getStrictDate('StrictDate') > parseDate('2023-01-03'))
+        ->filter(row | ($row.getStrictDate('StrictDate') > parseDate('2023-01-01')->cast(@StrictDate)) || ($row.getStrictDate('StrictDate') < today())
+              || ($row.getStrictDate('StrictDate') >= parseDate('2023-01-02')->cast(@StrictDate)) || ($row.getStrictDate('StrictDate') <= today())
+              || ($row.getStrictDate('StrictDate') > parseDate('2023-01-03')->cast(@StrictDate))
               || ($row.getStrictDate('StrictDate') > firstDayOfMonth($row.getStrictDate('StrictDate'))))
         }, true, false)
 
@@ -884,6 +910,46 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       //   );
       // }, true, false)
     ])
+}
+
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testBitwiseOperations():Boolean[1]
+{
+  test(
+    'SELECT ' + 
+    'Integer & 1 as "AND", ' +
+    'Integer | 1 as "OR", ' +
+    'Integer # 1 as "XOR", ' +
+    'Integer << 1 as "LEFT", ' +
+    'Integer >> 1 as "RIGHT" ' +
+    'FROM service."/service/service1"',
+
+    [
+      c({| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->project([
+          col(row:TDSRow[1] | $row.getInteger('Integer')->bitAnd(1), 'AND'),
+          col(row:TDSRow[1] | $row.getInteger('Integer')->bitOr(1), 'OR'),
+          col(row:TDSRow[1] | $row.getInteger('Integer')->bitXor(1), 'XOR'),
+          col(row:TDSRow[1] | $row.getInteger('Integer')->bitShiftLeft(1), 'LEFT'),
+          col(row:TDSRow[1] | $row.getInteger('Integer')->bitShiftRight(1), 'RIGHT')
+        ])
+      })
+
+      //TODO 0..1 issue
+      // c({| FlatInput.all()->project(
+      //         ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+      //   ->project(~[
+      //     AND: x | $x.Integer->bitAnd(1),
+      //     OR: x | $x.Integer->bitOr(1),
+      //     XOR: x | $x.Integer->bitAXor(1),
+      //     LEFT: x | $x.Integer->bitShiftLeft(1),
+      //     RIGHT: x | $x.Integer->bitShiftRight(1)
+      //   ])
+      // })
+    ]
+  )
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinctFromOperator():Boolean[1]
@@ -1528,7 +1594,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
         )->project([
-          col(row:TDSRow[1] | parseDate('2023-01-01'), 'constant'),
+          col(row:TDSRow[1] | parseDate('2023-01-01')->cast(@StrictDate), 'constant'),
           col(row:TDSRow[1] | $row.getString('String'), 'string'),
           col(row:TDSRow[1] | $row.getString('String'), 'text'),
           col(row:TDSRow[1] | parseDate($row.getString('String')), 'date'),
@@ -1559,25 +1625,25 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     //       ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
     //       ->project(
     //           ~[
-    //             constant : x|'2023-01-01'->parseDate(), 
+    //             constant : x|'2023-01-01'->parseDate(),
     //             string : x|$x.String,
-    //             text : x|$x.String, 
-    //             date : x|$x.String->parseDate(), 
-    //             integer : x|$x.String->parseInteger(), 
-    //             bigint : x|$x.String->parseInteger(), 
-    //             smallint : x|$x.String->parseInteger(), 
-    //             boolean : x|$x.String->parseBoolean(), 
-    //             double : x|$x.String->parseFloat(), 
-    //             numeric : x|$x.String->parseDecimal(), 
-    //             timestamp : x|$x.String->parseDate(), 
-    //             integerText : x|$x.Integer->toString(), 
-    //             integerString : x|$x.Integer->toString(), 
-    //             expression : x|$x.Integer, 
-    //             stringChars : x|$x.String->substring(1, 2), 
-    //             integerStringChars : x|$x.Integer->toString()->substring(1, 2), 
-    //             floatNumeric : x|$x.Float->toDecimal(), 
-    //             decimalNumeric : x|$x.Decimal, 
-    //             numberNumeric : x|1 + 1.1->toDecimal(), 
+    //             text : x|$x.String,
+    //             date : x|$x.String->parseDate(),
+    //             integer : x|$x.String->parseInteger(),
+    //             bigint : x|$x.String->parseInteger(),
+    //             smallint : x|$x.String->parseInteger(),
+    //             boolean : x|$x.String->parseBoolean(),
+    //             double : x|$x.String->parseFloat(),
+    //             numeric : x|$x.String->parseDecimal(),
+    //             timestamp : x|$x.String->parseDate(),
+    //             integerText : x|$x.Integer->toString(),
+    //             integerString : x|$x.Integer->toString(),
+    //             expression : x|$x.Integer,
+    //             stringChars : x|$x.String->substring(1, 2),
+    //             integerStringChars : x|$x.Integer->toString()->substring(1, 2),
+    //             floatNumeric : x|$x.Float->toDecimal(),
+    //             decimalNumeric : x|$x.Decimal,
+    //             numberNumeric : x|1 + 1.1->toDecimal(),
     //             decimalDoublePrecision : x|$x.Decimal->toFloat(), 
     //             floatDoublePrecision : x|$x.Float, 
     //             numberDoublePrecision : x|1 + 1.1->toFloat(), 
@@ -1600,10 +1666,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
             [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
           )->project([
-            col(row:TDSRow[1] | parseDate('2023-01-01'), 'constantDate'),
+            col(row:TDSRow[1] | parseDate('2023-01-01')->cast(@StrictDate), 'constantDate'),
             col(row:TDSRow[1] | parseDate($row.getString('String')), 'date'),
-            col(row:TDSRow[1] | parseDate('2023-01-01T10:01:01'), 'constantTimestamp'),
-            col(row:TDSRow[1] | parseDate('2023-01-01T10:01:01.12'), 'constantTimestampMillis'),
+            col(row:TDSRow[1] | parseDate('2023-01-01T10:01:01')->cast(@DateTime), 'constantTimestamp'),
+            col(row:TDSRow[1] | parseDate('2023-01-01T10:01:01.12')->cast(@DateTime), 'constantTimestampMillis'),
             col(row:TDSRow[1] | parseDate($row.getString('String')), 'timestamp')
           ])
       }
@@ -2369,7 +2435,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | now(), 'LOCALTIMESTAMP'),
                   col(row:TDSRow[1] | %2023-01-02, 'MAKEDATE'),
                   col(row:TDSRow[1] | %2023-01-02T12:11:10.5, 'MAKETIMESTAMP'),
-                  col(row:TDSRow[1] | datePart(parseDate('2023-01-01')), 'DATE'),
+                  col(row:TDSRow[1] | datePart(parseDate('2023-01-01')->cast(@StrictDate)), 'DATE'),
                   col(row:TDSRow[1] | datePart($row.getDateTime('DateTime')), 'DATE2')
                 ])
       },
@@ -2379,7 +2445,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             LOCALTIMESTAMP : x|now(),
             MAKEDATE : x|%2023-01-02,
             MAKETIMESTAMP : x|%2023-01-02T12:11:10.5+0000,
-            DATE : x|'2023-01-01'->parseDate()->datePart(),
+            DATE : x|'2023-01-01'->parseDate()->cast(@StrictDate)->datePart(),
             DATE2 : x|$x.DateTime->datePart()
           ])
       }
@@ -2402,7 +2468,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
               ->project([
                   col(row:TDSRow[1] | firstDayOfYear($row.getStrictDate('StrictDate')), 'YEAR'),
-                  col(row:TDSRow[1] | firstDayOfQuarter(parseDate('2023-01-01')), 'QUARTER'),
+                  col(row:TDSRow[1] | firstDayOfQuarter(parseDate('2023-01-01')->cast(@StrictDate)), 'QUARTER'),
                   col(row:TDSRow[1] | firstDayOfMonth($row.getStrictDate('StrictDate')), 'MONTH'),
                   col(row:TDSRow[1] | firstDayOfWeek($row.getStrictDate('StrictDate')), 'WEEK'),
                   col(row:TDSRow[1] | firstHourOfDay($row.getStrictDate('StrictDate')), 'DAY'),
@@ -2448,7 +2514,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->project([
                 col(row:TDSRow[1] | year($row.getStrictDate('StrictDate')), 'YEAR'),
-                col(row:TDSRow[1] | quarterNumber(parseDate('2023-01-01')), 'QUARTER'),
+                col(row:TDSRow[1] | quarterNumber(parseDate('2023-01-01')->cast(@StrictDate)), 'QUARTER'),
                 col(row:TDSRow[1] | monthNumber($row.getStrictDate('StrictDate')), 'MONTH'),
                 col(row:TDSRow[1] | weekOfYear($row.getStrictDate('StrictDate')), 'WEEK'),
                 col(row:TDSRow[1] | dayOfWeekNumber($row.getStrictDate('StrictDate')), 'DOW'),
@@ -2515,13 +2581,13 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(6 * 1, DurationUnit.YEARS)->adjust(6 * 3, DurationUnit.WEEKS)->adjust(6 * 2, DurationUnit.DAYS), 'INTERVAL_TIMES'),
                   col(row:TDSRow[1] | []->cast(@StrictDate), 'INTERVAL_TIMES_NULL'),
                   col(row:TDSRow[1] | []->cast(@StrictDate), 'INTERVAL_ADD_NULL'),
-                  col(row:TDSRow[1] | parseDate('2023-01-01')->adjust(2 * 1, DurationUnit.DAYS)->adjust(3 * 2, DurationUnit.DAYS), 'INTERVAL_MIX'),
+                  col(row:TDSRow[1] | parseDate('2023-01-01')->cast(@StrictDate)->adjust(2 * 1, DurationUnit.DAYS)->adjust(3 * 2, DurationUnit.DAYS), 'INTERVAL_MIX'),
                   col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(year($row.getStrictDate('StrictDate')) * 2, DurationUnit.YEARS)->adjust(year($row.getStrictDate('StrictDate')) * 3, DurationUnit.DAYS), 'INTERVAL_MIX2'),
                   col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->firstHourOfDay()->adjust(($row.getStrictDate('StrictDate')->dayOfWeekNumber() * 1), DurationUnit.DAYS), 'INTERVAL_MIX3'),
                   col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), $row.getDateTime('DateTime'), DurationUnit.DAYS), 'DATE_SUBTRACT'),
                   col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), -1, DurationUnit.DAYS), 'INTERVAL_SUBTRACT'),
-                  col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), parseDate('2023-01-01'), DurationUnit.DAYS), 'STRING_SUBSTRACT'),
-                  col(row:TDSRow[1] | dateDiff(parseDate('2023-01-01'), $row.getStrictDate('StrictDate'), DurationUnit.DAYS), 'STRING_SUBSTRACT2')
+                  col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), parseDate('2023-01-01')->cast(@StrictDate), DurationUnit.DAYS), 'STRING_SUBSTRACT'),
+                  col(row:TDSRow[1] | dateDiff(parseDate('2023-01-01')->cast(@StrictDate), $row.getStrictDate('StrictDate'), DurationUnit.DAYS), 'STRING_SUBSTRACT2')
                 ])
         }
 
@@ -2803,7 +2869,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'SELECT abs(Integer) AS "ABS", acos(Integer) AS "ACOS", asin(Integer) AS "ASIN", atan(Integer) AS "ATAN", atan2(Integer, 1) AS "ATAN2", ' +
     'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", cosh(Integer) AS "COSH", cot(Integer) AS "COT", degrees(Integer) AS "DEGREES", div(Integer, 1) AS "DIV", ' +
     'exp(Integer) AS "EXP", floor(Float) AS "FLOOR", log(Integer) AS "LOG", ln(Integer) AS "LN", mod(Integer, 1) AS "MOD", pi() AS "PI", power(Integer, 2) AS "POWER", ' +
-    'radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", sign(Integer) AS "SIGN", ' +
+    'radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", round(Float, 1) as "ROUND_FLOAT", sign(Integer) AS "SIGN", ' +
     'sin(Integer) AS "SIN", sinh(Integer) AS "SINH", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN", tanh(Integer) AS "TANH", trunc(Integer) AS "TRUNC" FROM service."/service/service1"',
 
     [
@@ -2835,6 +2901,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | toRadians($row.getInteger('Integer')), 'RADIANS'),
                   col(row:TDSRow[1] | round($row.getInteger('Integer')), 'ROUND'),
                   col(row:TDSRow[1] | round($row.getDecimal('Decimal'), 1), 'ROUND_DEC'),
+                  col(row:TDSRow[1] | round($row.getFloat('Float'), 1), 'ROUND_FLOAT'),
                   col(row:TDSRow[1] | sign($row.getInteger('Integer')), 'SIGN'),
                   col(row:TDSRow[1] | sin($row.getInteger('Integer')), 'SIN'),
                   col(row:TDSRow[1] | sinh($row.getInteger('Integer')), 'SINH'),
@@ -2875,6 +2942,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       //         RADIANS : x|$x.Integer->toRadians(),
       //         ROUND : x|$x.Integer->round(),
       //         ROUND_DEC : x|$x.Decimal->round(1),
+      //         ROUND_FLOAT : x|$x.Float->round(1),
       //         SIGN : x|$x.Integer->sign(),
       //         SIN : x|$x.Integer->sin(),
       //         SQRT : x|$x.Integer->sqrt(),
@@ -3826,6 +3894,104 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testTableFunctionSources():Boolean[1]
+{
+  test(
+    'select avg(a) from unnest(ARRAY[5,1,2,8,3]) as a',
+
+    [
+      c({| 
+          [5, 1, 2, 8, 3]
+            ->meta::pure::functions::relation::variant::flatten(~a)
+            ->meta::pure::functions::relation::aggregate(~['avg(a)':x |$x.a:y: Integer[*]|$y->meta::pure::functions::math::average()])
+      })      
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testValuesRelation():Boolean[1]
+{
+  test(
+    'select t.number as "aliased", number as "not_aliased" from (values(1), (2), (3)) AS t (number)',
+
+    [
+      c({| 
+          [1, 2, 3]
+            ->meta::pure::functions::relation::variant::flatten(~number)
+            ->project(~[
+              aliased: x | $x.number,
+              not_aliased: x | $x.number
+            ])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testVariant():Boolean[1]
+{
+  test(
+    'select ' + 
+    'object_col::jsonb -> \'hello\' ->> \'world\' as object_nav, ' +
+    'object_col::jsonb #> \'{hello,world}\' as object_nav_path, ' +
+    'object_col::jsonb #>> \'{hello,world}\' as object_nav_path_text, ' +
+    'json_extract_path(object_col::jsonb, \'hello\', \'world\') as object_nav_extract, ' +
+    'json_extract_path_text(object_col::jsonb, \'hello\', \'world\') as object_nav_extract_text, ' +
+    'int_array::jsonb -> 1 as array_index ' +
+    'from service."/service/service7"',
+
+    [
+      c({| 
+          #TDS
+              id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col
+              1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": 1}}"
+              2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": 2}}"
+              3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}"
+            #->project(~[
+                  object_nav: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world')->to(@String),
+                  object_nav_path: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world'),
+                  object_nav_path_text: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world')->to(@String),
+                  object_nav_extract: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world'),
+                  object_nav_extract_text: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world')->to(@String),
+                  array_index: x | $x.int_array->toOne()->meta::pure::functions::variant::convert::fromJson()->get(1)
+                ])
+      }, true, false)      
+    ]
+  )
+}
+
+
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testJSON():Boolean[1]
+{
+  test(
+    'select ' + 
+    'cast(int_array as jsonb) -> 1 as "ARRAY_EXTRACT_JB", ' + 
+    'cast(int_array as json) -> 1 as "ARRAY_EXTRACT_J", ' + 
+    'cast(object_col as json) -> \'hello\' -> \'world\' -> 0 as "PATH_ARRAY_EXTRACT", ' + 
+    'cast(object_col as jsonb) #> \'{hello, world, 0}\' as "PATH_EXTRACT", ' + 
+    'cast(object_col as jsonb) #>> \'{hello, world, 0}\' as "PATH_EXTRACT_TEXT" ' +     
+    'from service."/service/service7"',
+
+    [
+      c({| 
+          #TDS
+                  id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col
+                  1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": [1]}}"
+                  2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": [2]}}"
+                  3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": [3]}}"
+                #->project(~[
+                            ARRAY_EXTRACT_JB: x | $x.int_array->toOne()->fromJson()->get(1),
+                            ARRAY_EXTRACT_J: x  | $x.int_array->toOne()->fromJson()->get(1),
+                            PATH_ARRAY_EXTRACT: x | $x.object_col->toOne()->fromJson()->get('hello')->get('world')->get(0),
+                            PATH_EXTRACT: x | $x.object_col->toOne()->fromJson()->get('hello')->get('world')->get(0),
+                            PATH_EXTRACT_TEXT: x | $x.object_col->toOne()->fromJson()->get('hello')->get('world')->get(0)->to(@String)
+                          ])
+      }, true, false)      
+    ]
+  )
+}
+
+
+
 //TODO fails to resolve enum column
 function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testEnumValuesRelation():Boolean[1]
 {
@@ -3992,6 +4158,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   doNameTest(^CurrentTime(type = CurrentTimeType.TIMESTAMP), 'CURRENT_TIMESTAMP');
   doNameTest(^CurrentTime(type = CurrentTimeType.DATE), 'CURRENT_DATE');
 
+  doNameTest(^CollectionColumnType(name = 'ARRAY', innerType = ^ColumnType(name = 'int')), 'int[]');
+
+  doNameTest(^ColumnType(name = 'int'), 'int');
+  doNameTest(^ColumnType(name = 'int', parameters = [1, 2]), 'int(1, 2)');
+
   doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.EQUAL, right = ^IntegerLiteral(value = 2)), '1 = 2');
   doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.NOT_EQUAL, right = ^IntegerLiteral(value = 2)), '1 != 2');
   doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.LESS_THAN, right = ^IntegerLiteral(value = 2)), '1 < 2');
@@ -4006,7 +4177,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.ILIKE, right = ^StringLiteral(value = 'def')), 'abc ~~* def');
   doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.NOT_LIKE, right = ^StringLiteral(value = 'def')), 'abc !~~ def');
   doNameTest(^ComparisonExpression(left = ^StringLiteral(value = 'abc'), operator = ComparisonOperator.NOT_ILIKE, right = ^StringLiteral(value = 'def')), 'abc !~~* def');
-
+  
   doNameTest(^Extract(field = ExtractField.DOW, expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'date'))), 'EXTRACT(\'dow\' FROM date)');
 
   doNameTest(^FunctionCall(name = ^QualifiedName(parts = 'myFunc'), arguments = ^IntegerLiteral(value = 1), distinct = false), 'myFunc(1)');
@@ -4051,7 +4222,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   doNameTest(^IntervalLiteral(years = 5), 'INTERVAL\'5 YEARS\'');
   doNameTest(^IntervalLiteral(years = 5, ago = true), 'INTERVAL\'5 YEARS AGO\'');
   doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS\'');
-  doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0, ago = true), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS AGO\'');
+  doNameTest(^IntervalLiteral(years = 9, months = 8, weeks = 7, days = 6, hours = 5, minutes = 4, seconds = 3, milliseconds = 2, microseconds = 1, ago = true), 'INTERVAL\'9 YEARS 8 MONTHS 7 WEEKS 6 DAYS 5 HOURS 4 MINUTES 3 SECONDS 2 MILLISECONDS 1 MICROSECONDS AGO\'');
 
   doNameTest(^PositionalParameterExpression(index = 1), '$1');
   doNameTest(^ParameterPlaceholderExpression(index = 1), '?');

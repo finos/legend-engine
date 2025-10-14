@@ -65,18 +65,18 @@ function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Funct
 
 function meta::relational::tests::pct::extractDependentFunctionsImpl(f:Any[1], visitedFuncs : Function<Any>[*]):Function<Any>[*]
 {
-  if ($f->in($visitedFuncs), 
-    | [], 
+  if ($f->in($visitedFuncs),
+    | [],
     |  $f->match([
         z:FunctionDefinition<Any>[1] |
                     if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z,|[])
                       ->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctionsImpl($visitedFuncs->concatenate($z))));,
-        x:SimpleFunctionExpression[1]| 
+        x:SimpleFunctionExpression[1]|
                     let res = $x.parametersValues->map(p|$p->extractDependentFunctionsImpl($visitedFuncs));
                     $x.func->extractDependentFunctionsImpl($visitedFuncs)->concatenate($res);,
-        i: InstanceValue[1] | $i.values->map(p|$p->extractDependentFunctionsImpl($visitedFuncs)),                                  
+        i: InstanceValue[1] | $i.values->map(p|$p->extractDependentFunctionsImpl($visitedFuncs)),
         a:Any[1] | []
-      ]);  
+      ]);
     );
 }
 
@@ -118,7 +118,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
     print(if($debug.debug,|'\nResult JSON:\n'+$x+'\n',|''));
     // ----
-    
+
     let resultType = $f->functionReturnType().rawType->toOne();
     let json = $x->meta::json::parseJSON();
     if (!$json->instanceOf(JSONObject),
@@ -146,7 +146,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                         $f->functionReturnType().typeArguments->at(0).rawType->cast(@RelationType<Any>).columns->map(x | pair($x.name->toOne(), $x->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()->elementToPath()))->newMap();
                       ,
                       |
-                        $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | pair($c.name, $t)))->newMap(); 
+                        $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | pair($c.name, $t)))->newMap();
                     );
 
                     let tdsString = $cols->map(c | $c.name + $relType->get($c.name)->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
@@ -236,7 +236,7 @@ function meta::relational::tests::pct::process::to(var: Variant[1], type: Generi
 function meta::relational::tests::pct::process::buildDate(dateStr:String[1]):Date[1]
 {
   // Need to find a better way...
-  
+
   // Manage SubSecond
   let _dot = if ($dateStr->contains('.'),
     | let subPart = $dateStr->substring($dateStr->indexOf('.') + 1, $dateStr->lastIndexOf('+'));
@@ -269,11 +269,11 @@ function meta::relational::tests::pct::process::buildDate(dateStr:String[1]):Dat
 
 
 function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], debug: DebugContext[1]):Pair<FunctionDefinition<Any>,ProcessingState>[1]
-{ 
+{
   let ext = ^meta::pure::metamodel::serialization::grammar::Configuration
             (
               fullPath = true,
-              extensions = meta::relational::grammar::serialization::relationGrammarExtension()  
+              extensions = meta::relational::grammar::serialization::relationGrammarExtension()
             );
   $f->match(
     [

@@ -36,7 +36,9 @@ public class Core_Query_SQL_ReversePCTReportProvider implements PCTReportProvide
                 "pct-reports/ADAPTER_standard_compiled_SQL.json",
                 "pct-reports/ADAPTER_essential_compiled_SQL.json",
                 "pct-reports/ADAPTER_grammar_compiled_SQL.json",
-                "pct-reports/ADAPTER_relation_compiled_SQL.json"
+                "pct-reports/ADAPTER_relation_compiled_SQL.json",
+                "pct-reports/ADAPTER_variant_compiled_SQL.json",
+                "pct-reports/ADAPTER_unclassified_compiled_SQL.json"
         );
     }
 }

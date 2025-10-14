@@ -274,7 +274,7 @@ public class HelperRelationalBuilder
     public static Relation getRelation(Database db, final String _schema, final String _table, TablePtr tableptr, CompileContext context, SourceInformation sourceInformation)
     {
         validateSchemaExists(db, _schema, tableptr, context, sourceInformation);
-        Relation table = findRelation(db, _schema, _table, sourceInformation);
+        Relation table = findRelation(db, _schema, _table, context, sourceInformation);
         if (table == null)
         {
             if (tableptr != null && context != null && context.pureModel != null && context.pureModel.tableTransformationMap != null)
@@ -282,7 +282,7 @@ public class HelperRelationalBuilder
                 TablePtr mappedTablePtr = context.pureModel.tableTransformationMap.getTableMappings().get(tableptr);
                 if (mappedTablePtr != null)
                 {
-                    table = findRelation(db, mappedTablePtr.schema, mappedTablePtr.table, sourceInformation);
+                    table = findRelation(db, mappedTablePtr.schema, mappedTablePtr.table, context, sourceInformation);
                     if (table != null)
                     {
                         return table;
@@ -295,13 +295,13 @@ public class HelperRelationalBuilder
         return table;
     }
 
-    private static Relation findRelation(Database database, final String schemaName, final String tableName, SourceInformation sourceInformation)
+    private static Relation findRelation(Database database, final String schemaName, final String tableName, CompileContext context, SourceInformation sourceInformation)
     {
         MutableList<Relation> tables = Lists.mutable.empty();
         for (Database db : getAllIncludedDBs(database))
         {
-            Schema schema = db._schemas().detect(s -> schemaName.equals(s._name()));
-            if (schema != null)
+            RichIterable<? extends Schema> schemasToSearch = db._schemas().select(s -> schemaName.equals(s._name()));
+            for (Schema schema : schemasToSearch)
             {
                 Relation table = schema._tables().detect(t -> tableName.equals(t._name()));
                 if (table == null)
@@ -333,7 +333,10 @@ public class HelperRelationalBuilder
                 StringBuilder message = new StringBuilder("The relation '").append(tableName).append("' has been found ")
                         .append(tables.size()).append(" times in the schema '").append(schemaName).append("' of the database '");
                 PackageableElement.writeUserPathForPackageableElement(message, database).append('\'');
-                throw new EngineException(message.toString(), sourceInformation, EngineErrorType.COMPILATION);
+//              TODO: Change this back to compilation error after fixing user models
+//              throw new EngineException(message.toString(), sourceInformation, EngineErrorType.COMPILATION);
+                context.pureModel.addWarnings(Lists.mutable.with(new Warning(sourceInformation, message.toString())));
+                return tables.get(0);
             }
         }
     }

@@ -1,0 +1,71 @@
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::essential::collection::slice::slice::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/collection/slice/slice.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::slice::testSliceOnEmpty_Function_1__Boolean_1_',
+                      [
+                        revError('|[]->meta::pure::functions::collection::slice(2, 3)',
+                            '',
+                            'Unexpected token',
+                            'we have no way of casting to any type select (array[]::anyarray)[3:4]'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::slice::testSlice_Function_1__Boolean_1_',
+                      [
+                        rev('|[1, 2, 3, 4, 5, 6]->meta::pure::functions::collection::slice(1, 4)',
+                            'select (array[1,2,3,4,5,6])[2:4]'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::slice::testSliceOutOfBounds_Function_1__Boolean_1_',
+                      [
+                        rev('|[2, 3, 4, 5]->meta::pure::functions::collection::slice(-1, 10)',
+                            'select (array[2,3,4,5])[0:10]'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::slice::testSliceOnBounds_Function_1__Boolean_1_',
+                      [
+                        rev('|[2, 3, 4, 5]->meta::pure::functions::collection::slice(0, 4)',
+                            'select (array[2,3,4,5])[1:4]'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::slice::testSliceEqualBounds_Function_1__Boolean_1_',
+                      [
+                        rev('|[2, 3, 4, 5]->meta::pure::functions::collection::slice(2, 2)',
+                            'select (array[2,3,4,5])[3:2]'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_',
+                      [
+                        revError('|[1, 2, 3, 4]->meta::pure::functions::collection::slice(1, 3)->meta::pure::functions::collection::list()',
+                            '',
+                            'Unexpected token',
+                            'how to convert list'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::collection::slice::slice::exec():Boolean[1]
+{
+  //  meta::pure::functions::collection::tests::slice::testSliceOnEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::slice::testSlice(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::slice::testSliceOutOfBounds(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::slice::testSliceOnBounds(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::slice::testSliceEqualBounds(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+  //  meta::pure::functions::collection::tests::slice::testSliceInList(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

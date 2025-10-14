@@ -1,0 +1,87 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::unclassified::string::split::splitPart::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_unclassified/string/split/splitPart.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_',
+                      [
+                        rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 0)',
+                            'select split_part(Text\'Hello World\', Text\' \', 1)'
+                        ),
+                        rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 1)',
+                            'select split_part(Text\'Hello World\', Text\' \', 2)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::string::splitPart(\' \', 0)',
+                            'select split_part(null, Text\' \', 1)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_',
+                      [
+                        rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\'\', 0)',
+                            'select split_part(Text\'Hello World\', Text\'\', 1)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit_Function_1__Boolean_1_',
+                      [
+                        rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\';\', 0)',
+                            'select split_part(Text\'Hello World\', Text\';\', 1)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::string::tests::splitPart::testSplitPartTypicalToken_Function_1__Boolean_1_',
+                      [
+                        rev('|\'Sunglasses, Keys, Phone, SL-card\'->meta::pure::functions::string::splitPart(\', \', 2)',
+                            'select split_part(Text\'Sunglasses, Keys, Phone, SL-card\', Text\', \', 3)'
+                        ),
+                        rev('|\'user.name\'->meta::pure::functions::string::splitPart(\'.\', 1)',
+                            'select split_part(Text\'user.name\', Text\'.\', 2)'
+                        ),
+                        rev('|\'a;b;c;d;e\'->meta::pure::functions::string::splitPart(\';\', 4)',
+                            'select split_part(Text\'a;b;c;d;e\', Text\';\', 5)'
+                        ),
+                        rev('|\'2_0_4\'->meta::pure::functions::string::splitPart(\'_\', 2)',
+                            'select split_part(Text\'2_0_4\', Text\'_\', 3)'
+                        ),
+                        rev('|\'super-duper-looper\'->meta::pure::functions::string::splitPart(\'-\', 0)',
+                            'select split_part(Text\'super-duper-looper\', Text\'-\', 1)'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::unclassified::string::split::splitPart::exec():Boolean[1]
+{
+   meta::pure::functions::string::tests::splitPart::testSplitPart(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::string::tests::splitPart::testSplitPartTypicalToken(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}
