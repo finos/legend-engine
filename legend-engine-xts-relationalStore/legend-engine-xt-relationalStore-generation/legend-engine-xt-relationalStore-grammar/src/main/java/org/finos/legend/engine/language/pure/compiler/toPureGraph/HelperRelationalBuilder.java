@@ -274,7 +274,7 @@ public class HelperRelationalBuilder
     public static Relation getRelation(Database db, final String _schema, final String _table, TablePtr tableptr, CompileContext context, SourceInformation sourceInformation)
     {
         validateSchemaExists(db, _schema, tableptr, context, sourceInformation);
-        Relation table = findRelation(db, _schema, _table, context, sourceInformation);
+        Relation table = findRelation(db, _schema, _table, sourceInformation);
         if (table == null)
         {
             if (tableptr != null && context != null && context.pureModel != null && context.pureModel.tableTransformationMap != null)
@@ -282,7 +282,7 @@ public class HelperRelationalBuilder
                 TablePtr mappedTablePtr = context.pureModel.tableTransformationMap.getTableMappings().get(tableptr);
                 if (mappedTablePtr != null)
                 {
-                    table = findRelation(db, mappedTablePtr.schema, mappedTablePtr.table, context, sourceInformation);
+                    table = findRelation(db, mappedTablePtr.schema, mappedTablePtr.table, sourceInformation);
                     if (table != null)
                     {
                         return table;
@@ -295,7 +295,7 @@ public class HelperRelationalBuilder
         return table;
     }
 
-    private static Relation findRelation(Database database, final String schemaName, final String tableName, CompileContext context, SourceInformation sourceInformation)
+    private static Relation findRelation(Database database, final String schemaName, final String tableName, SourceInformation sourceInformation)
     {
         MutableList<Relation> tables = Lists.mutable.empty();
         for (Database db : getAllIncludedDBs(database))
@@ -330,13 +330,9 @@ public class HelperRelationalBuilder
             }
             default:
             {
-                StringBuilder message = new StringBuilder("The relation '").append(tableName).append("' has been found ")
-                        .append(tables.size()).append(" times in the schema '").append(schemaName).append("' of the database '");
+                StringBuilder message = new StringBuilder("The relation '").append(tableName).append("' has been found ").append(tables.size()).append(" times in the schema '").append(schemaName).append("' of the database '");
                 PackageableElement.writeUserPathForPackageableElement(message, database).append('\'');
-//              TODO: Change this back to compilation error after fixing user models
-//              throw new EngineException(message.toString(), sourceInformation, EngineErrorType.COMPILATION);
-                context.pureModel.addWarnings(Lists.mutable.with(new Warning(sourceInformation, message.toString())));
-                return tables.get(0);
+                throw new EngineException(message.toString(), sourceInformation, EngineErrorType.COMPILATION);
             }
         }
     }

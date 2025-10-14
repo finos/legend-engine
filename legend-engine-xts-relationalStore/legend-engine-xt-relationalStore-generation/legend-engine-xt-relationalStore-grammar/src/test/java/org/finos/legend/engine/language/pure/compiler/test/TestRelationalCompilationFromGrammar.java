@@ -3504,8 +3504,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "(\n" +
                 "  include stores::DB\n" +
                 "  Join Person_Order([stores::DB]mySchema.Person.id = [stores::DB]mySchema.Order.id)\n" +
-                ")\n"
-        );
+                ")\n");
 
         test("###Relational\n" +
                 "Database store::relational::db\n" +
@@ -3541,8 +3540,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  include store::relational::db1\n" +
                 "\n" +
                 "  Join Firm_Person([store::relational::db1]mySchema.Firm.id = [store::relational::db1]mySchema.Firm1.id)\n" +
-                ")\n", null, Arrays.asList("COMPILATION error at [34:44-56]: The relation 'Firm' has been found 2 times in the schema 'mySchema' of the database 'store::relational::db1'")
-        );
+                ")\n", "COMPILATION error at [34:44-56]: The relation 'Firm' has been found 2 times in the schema 'mySchema' of the database 'store::relational::db1'", null);
 
         test("###Relational\n" +
                 "Database store::relational::db\n" +
@@ -3563,7 +3561,6 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  )\n" +
                 "\n" +
                 "  Join Firm_SELFJOIN(mySchema.Firm.id = {target}.id)\n" +
-                ")", null, Arrays.asList("COMPILATION error at [19:22-34]: The relation 'Firm' has been found 2 times in the schema 'mySchema' of the database 'store::relational::db'")
-        );
+                ")", "COMPILATION error at [19:22-34]: The relation 'Firm' has been found 2 times in the schema 'mySchema' of the database 'store::relational::db'", null);
     }
 }
