@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
@@ -42,6 +44,7 @@ public class Column
     public GenericType genericType;
     public Multiplicity multiplicity;
     public List<StereotypePtr> stereotypes = Collections.emptyList();
+    public List<TaggedValue> taggedValues = Collections.emptyList();
 
     public Column()
     {
@@ -76,6 +79,7 @@ public class Column
             }
             // Backward compatibility --------------
             result.stereotypes = processMany(node, "stereotypes", StereotypePtr.class, codec);
+            result.taggedValues = processMany(node, "taggedValues", TaggedValue.class, codec);
             return result;
         }
     }
