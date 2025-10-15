@@ -1,0 +1,171 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::essential::math::round::round::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/math/round/round.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testPositiveIntegerRound_Function_1__Boolean_1_',
+                      [
+                        rev('|17->meta::pure::functions::math::round()',
+                            'select round(17)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testNegativeIntegerRound_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::round(-17)',
+                            'select round(-17)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testPositiveFloatRoundUp_Function_1__Boolean_1_',
+                      [
+                        rev('|17.6->meta::pure::functions::math::round()',
+                            'select round(17.6)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testPositiveFloatRoundDown_Function_1__Boolean_1_',
+                      [
+                        rev('|17.4->meta::pure::functions::math::round()',
+                            'select round(17.4)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenUp_Function_1__Boolean_1_',
+                      [
+                        rev('|17.5->meta::pure::functions::math::round()',
+                            'select round(17.5)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenDown_Function_1__Boolean_1_',
+                      [
+                        rev('|16.5->meta::pure::functions::math::round()',
+                            'select round(16.5)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testPositiveFloatWithZeroDecimalRound_Function_1__Boolean_1_',
+                      [
+                        rev('|17.0->meta::pure::functions::math::round()',
+                            'select round(17.0)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testNegativeFloatRoundUp_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::round(-17.4)',
+                            'select round(-17.4)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testNegativeFloatRoundDown_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::round(-17.6)',
+                            'select round(-17.6)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::round(-16.5)',
+                            'select round(-16.5)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenDown_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::round(-17.5)',
+                            'select round(-17.5)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testNegativeFloatWithZeroDecimalRound_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::round(-17.0)',
+                            'select round(-17.0)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testDecimalRound_Function_1__Boolean_1_',
+                      [
+                        rev('|3.14159D->meta::pure::functions::math::round()',
+                            'select round((3.14159)::numeric)'
+                        ),
+                        rev('|meta::pure::functions::math::round(-3.14159D)',
+                            'select round((-3.14159)::numeric)'
+                        ),
+                        rev('|3.14159D->meta::pure::functions::math::round(2)',
+                            'select round((3.14159)::numeric, 2)'
+                        ),
+                        rev('|3.14159D->meta::pure::functions::math::round(3)',
+                            'select round((3.14159)::numeric, 3)'
+                        ),
+                        rev('|meta::pure::functions::math::round(-3.14159D, 2)',
+                            'select round((-3.14159)::numeric, 2)'
+                        ),
+                        rev('|meta::pure::functions::math::round(-3.14159D, 3)',
+                            'select round((-3.14159)::numeric, 3)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testFloatRoundWithScale_Function_1__Boolean_1_',
+                      [
+                        rev('|17.3->meta::pure::functions::math::round(0)',
+                            'select round(17.3, 0)'
+                        ),
+                        rev('|meta::pure::functions::math::round(-17.36, 1)',
+                            'select round(-17.36, 1)'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::math::round::round::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::round::testPositiveIntegerRound(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testNegativeIntegerRound(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testPositiveFloatRoundUp(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testPositiveFloatRoundDown(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenUp(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenDown(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testPositiveFloatWithZeroDecimalRound(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testNegativeFloatRoundUp(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testNegativeFloatRoundDown(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenDown(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testNegativeFloatWithZeroDecimalRound(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testDecimalRound(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testFloatRoundWithScale(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

@@ -13,53 +13,19 @@
 // limitations under the License.
 
 import meta::pure::metamodel::relation::*;
+import meta::pure::test::pct::reversePCT::framework::*;
 import meta::external::query::sql::reversePCT::framework::*;
-import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::test::pct::*;
 
-Class meta::external::query::sql::reversePCT::framework::ReversesForSource
-{
-  source : String[1];
-  reverses : ReversesForTest[*];
-}
-
-Class meta::external::query::sql::reversePCT::framework::ReversesForTest
-{
-  testFunction : String[1];
-  reverses : Reverse[*];
-}
-
-Class meta::external::query::sql::reversePCT::framework::Reverse
-{
-  function : String[1];
-  reverse : String[0..1];
-  shouldBeSupported : Boolean[1] = true;
-  expectedError : String[0..1];
-  infoMessage : String[0..1];
-}
-
-function <<PCT.adapter>> meta::external::query::sql::reversePCT::framework::sql<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='SQL'} meta::external::query::sql::reversePCT::framework::sql<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   // Find SQL ---
-  let src = $f->sourceInformation().source;
-
-  let srcReverses = reverses()->filter(r|$r.source == $src);
-  assertSize($srcReverses, 1, |'Can\'t find any reverses for the source \''+$src->toOne()+'\'');
-  
-  let test =  $f->findPackagableElement()->elementToPath();
-  let reversesForTest = $srcReverses.reverses->filter(x|$x.testFunction == $test);
-  assertSize($reversesForTest, 1, |'Can\'t find any reverses for the test \''+$test->toOne()+'\'');
-
-  let funcAsString = $f->cast(@FunctionDefinition<Any>)->printFunctionDefinition(meta::relational::grammar::serialization::relationGrammarConfiguration(), ^GContext(space=''));
-
-  let reverse = $reversesForTest->toOne().reverses->filter(p|$p.function == $funcAsString->replace('\r',''));
-  assertSize($reverse, 1, |'Can\'t find any (or too many) reverses for the function \''+$funcAsString+'\' for the test '+$test->toOne());
-  let rev = $reverse->toOne();
+  let rev = findReverseForFunction($f, reverses(), [meta::relational::grammar::serialization::relationGrammarExtension()]);
 
   if ($rev.shouldBeSupported,
     | let sqlString = $rev.reverse->toOne();
       let func = meta::external::query::sql::transformation::queryToPure::sqlToPure($sqlString->toOne());
-      
+
       let returnType = $func->functionReturnType();
       let expectedReturnType = $f->functionReturnType();
 
@@ -78,48 +44,12 @@ function <<PCT.adapter>> meta::external::query::sql::reversePCT::framework::sql<
   );
 }
 
-function meta::external::query::sql::reversePCT::framework::printSourceInformation(sourceInfo : SourceInformation[1]):String[1]
-{
-  $sourceInfo.source->toOne()+' line:'+$sourceInfo.startLine->toOne()->toString()+' column:'+$sourceInfo.startColumn->toOne()->toString();
-}
-
-function meta::external::query::sql::reversePCT::framework::revsForTest(testFunction:String[1], reverses:Reverse[*]):ReversesForTest[1]
-{
-  ^ReversesForTest
-  (
-    testFunction = $testFunction,
-    reverses = $reverses
-  )
-}
-
-function meta::external::query::sql::reversePCT::framework::rev(func:String[1], val:String[1]):Reverse[1]
-{
-  ^Reverse(function=$func, reverse=$val);
-}
-
-function meta::external::query::sql::reversePCT::framework::revError(func:String[1], val:String[1], error:String[1], message:String[1]):Reverse[1]
-{
-  ^Reverse(function=$func, reverse=$val, expectedError=$error, infoMessage=$message);
-}
-
-function meta::external::query::sql::reversePCT::framework::noRev(func:String[1]):Reverse[1]
-{
-  ^Reverse(function=$func, shouldBeSupported=false);
-}
-
-
-
-
-
-
-
-
-
 function meta::external::query::sql::reversePCT::framework::reverses():ReversesForSource[*]
 {
     meta::external::query::sql::reversePCT::tests::grammar::reverses()
     ->concatenate(meta::external::query::sql::reversePCT::tests::essential::reverses())
     ->concatenate(meta::external::query::sql::reversePCT::tests::relation::reverses())
     ->concatenate(meta::external::query::sql::reversePCT::tests::standard::reverses())
+    ->concatenate(meta::external::query::sql::reversePCT::tests::unclassified::reverses())
     ->concatenate(meta::external::query::sql::reversePCT::tests::variant::reverses())
 }

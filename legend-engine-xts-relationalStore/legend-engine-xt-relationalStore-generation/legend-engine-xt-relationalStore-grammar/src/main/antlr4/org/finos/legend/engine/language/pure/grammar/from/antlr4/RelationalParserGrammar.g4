@@ -30,8 +30,7 @@ definition:                                 (database)*
 ;
 database:                                   DATABASE stereotypes? taggedValues? qualifiedName
                                                 PAREN_OPEN
-                                                    include*
-                                                    (includeStore)*
+                                                    (include | includeStore)*
                                                     (
                                                         schema
                                                         | table

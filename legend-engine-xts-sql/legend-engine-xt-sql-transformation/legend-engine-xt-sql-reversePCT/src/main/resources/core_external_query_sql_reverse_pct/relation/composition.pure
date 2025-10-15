@@ -1,0 +1,588 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::relation::tests::composition::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_relation/relation/tests/composition.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testExtendFilter_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'val,str\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq}#->meta::pure::functions::relation::extend(~newCol:x: (val:Integer, str:String)[1]|$x.str->meta::pure::functions::multiplicity::toOne() + $x.val->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString())->meta::pure::functions::relation::filter(x: (val:Integer, str:String, newCol:String)[1]|$x.newCol == \'qw4\')',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testFilterPostProject_Function_1__Boolean_1_',
+                      [
+                        revError('|[^meta::pure::functions::relation::tests::composition::FirmTypeForCompositionTests(legalName=\'Firm X\', employees=[^meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests(firstName=\'Peter\', lastName=\'Smith\'), ^meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests(firstName=\'John\', lastName=\'Johnson\'), ^meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests(firstName=\'John\', lastName=\'Hill\'), ^meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests(firstName=\'Anthony\', lastName=\'Allen\')]), ^meta::pure::functions::relation::tests::composition::FirmTypeForCompositionTests(legalName=\'Firm A\', employees=^meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests(firstName=\'Fabrice\', lastName=\'Roberts\'))]->meta::pure::functions::relation::project(~[legalName:x: meta::pure::functions::relation::tests::composition::FirmTypeForCompositionTests[1]|$x.legalName,firstName:x: meta::pure::functions::relation::tests::composition::FirmTypeForCompositionTests[1]|$x.employees.firstName])->meta::pure::functions::relation::filter(x: (legalName:String, firstName:String)[1]|$x.legalName == \'Firm X\')',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str,str2\n'+
+                            '2,a,b\n'+
+                            '3,a,b\n'+
+                            '4,qw,b\n'+
+                            '5,qw,c\n'+
+                            '2,weq,c}#->meta::pure::functions::relation::distinct(~[val,str])->meta::pure::functions::relation::groupBy(~str, ~newCol:x: (val:Integer, str:String)[1]|$x.val:x: Integer[*]|$x->plus())',
+                            'select "table0_0"."str" as "str", sum("table0_0"."val") as "newCol" from (select distinct "table0_1".val as "val", "table0_1".str as "str" from csv(\'val,str,str2\n2,a,b\n3,a,b\n4,qw,b\n5,qw,c\n2,weq,c\') as "table0_1") as "table0_0" group by "str"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::test_Distinct_Filter_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str,str2\n'+
+                            '2,a,b\n'+
+                            '3,a,b\n'+
+                            '4,qw,b\n'+
+                            '5,qw,c\n'+
+                            '2,weq,c}#->meta::pure::functions::relation::distinct(~[val,str])->meta::pure::functions::relation::filter(x: (val:Integer, str:String)[1]|$x.val > 2)',
+                            'select distinct "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str,str2\n2,a,b\n3,a,b\n4,qw,b\n5,qw,c\n2,weq,c\') as "table0_0" where ("table0_0".val is not null and "table0_0".val > 2)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::test_GroupBy_GroupBy_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str,str2\n'+
+                            '2,a,b\n'+
+                            '3,a,b\n'+
+                            '4,qw,b\n'+
+                            '5,qw,c\n'+
+                            '2,weq,c}#->meta::pure::functions::relation::groupBy(~[str,str2], ~newCol:x: (val:Integer, str:String, str2:String)[1]|$x.val:x: Integer[*]|$x->plus())->meta::pure::functions::relation::groupBy(~[str], ~newCol2:x: (str:String, str2:String, newCol:Integer)[1]|$x.newCol:x: Integer[*]|$x->plus())',
+                            'select "table0_0"."str" as "str", sum("table0_0"."newCol") as "newCol2" from (select "table0_1".str as "str", "table0_1".str2 as "str2", sum("table0_1".val) as "newCol" from csv(\'val,str,str2\n2,a,b\n3,a,b\n4,qw,b\n5,qw,c\n2,weq,c\') as "table0_1" group by "str","str2") as "table0_0" group by "str"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str,str2\n'+
+                            '2,a,b\n'+
+                            '3,a,b\n'+
+                            '4,qw,b\n'+
+                            '5,qw,c\n'+
+                            '2,weq,c}#->meta::pure::functions::relation::groupBy(~[str,str2], ~newCol:x: (val:Integer, str:String, str2:String)[1]|$x.val:x: Integer[*]|$x->plus())->meta::pure::functions::relation::distinct(~[str])',
+                            'select distinct "table0_0"."str" as "str" from (select "table0_1".str as "str", "table0_1".str2 as "str2" from csv(\'val,str,str2\n2,a,b\n3,a,b\n4,qw,b\n5,qw,c\n2,weq,c\') as "table0_1" group by "str","str2") as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::test_GroupBy_Filter_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str\n'+
+                            '2,a\n'+
+                            '3,a\n'+
+                            '4,qw\n'+
+                            '5,qw\n'+
+                            '2,weq}#->meta::pure::functions::relation::groupBy(~str, ~newCol:x: (val:Integer, str:String)[1]|$x.val:x: Integer[*]|$x->plus())->meta::pure::functions::relation::filter(x: (str:String, newCol:Integer)[1]|$x.newCol > 4)',
+                            'select "table0_0".str as "str", sum("table0_0".val) as "newCol" from csv(\'val,str\n2,a\n3,a\n4,qw\n5,qw\n2,weq\') as "table0_0" group by "str" having sum("table0_0".val) > 4'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str,str2\n'+
+                            '2,a,b\n'+
+                            '2,a,b\n'+
+                            '4,qw,b\n'+
+                            '5,qw,c\n'+
+                            '2,weq,c}#->meta::pure::functions::relation::groupBy(~[str,str2], ~newCol:x: (val:Integer, str:String, str2:String)[1]|$x.val:x: Integer[*]|$x->plus())->meta::pure::functions::relation::distinct(~[str,newCol])->meta::pure::functions::relation::filter(x: (str:String, newCol:Integer)[1]|$x.newCol > 2)',
+                            'select distinct "table0_0"."str" as "str", "table0_0"."newCol" as "newCol" from (select "table0_1".str as "str", "table0_1".str2 as "str2", sum("table0_1".val) as "newCol" from csv(\'val,str,str2\n2,a,b\n2,a,b\n4,qw,b\n5,qw,c\n2,weq,c\') as "table0_1" group by "str","str2") as "table0_0" where "table0_0"."newCol" > 2'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val,str,str2\n'+
+                            '2,a,b\n'+
+                            '2,a,b\n'+
+                            '4,qw,b\n'+
+                            '5,qw,c\n'+
+                            '2,weq,c}#->meta::pure::functions::relation::distinct()->meta::pure::functions::relation::groupBy(~[str], ~newCol:x: (val:Integer, str:String, str2:String)[1]|$x.val:x: Integer[*]|$x->plus())->meta::pure::functions::relation::filter(x: (str:String, newCol:Integer)[1]|$x.newCol > 2)',
+                            'select "table0_0"."str" as "str", sum("table0_0"."val") as "newCol" from (select distinct "table0_1".val as "val", "table0_1".str as "str", "table0_1".str2 as "str2" from csv(\'val,str,str2\n2,a,b\n2,a,b\n4,qw,b\n5,qw,c\n2,weq,c\') as "table0_1") as "table0_0" group by "str" having sum("table0_0"."val") > 2'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testWindowFunctionsAfterProject_Function_1__Boolean_1_',
+                      [
+                        revError('|[^meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests(firstName=\'Peter\', lastName=\'Smith\'), ^meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests(firstName=\'Peter\', lastName=\'Johnson\'), ^meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests(firstName=\'Peter\', lastName=\'Hill\'), ^meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests(firstName=\'Anthony\', lastName=\'Allen\'), ^meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests(firstName=\'Anthony\', lastName=\'Roberts\')]->meta::pure::functions::relation::project(~[first:x: meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests[1]|$x.firstName,last:x: meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests[1]|$x.lastName])->meta::pure::functions::relation::extend(~first->meta::pure::functions::relation::over(~last->meta::pure::functions::relation::ascending()), ~[leadLast:{p: meta::pure::metamodel::relation::Relation<(first:String, last:String)>[1], w: meta::pure::functions::relation::_Window<(first:String, last:String)>[1], r: (first:String, last:String)[1]|$p->meta::pure::functions::relation::lead($r).last},lagLast:{p: meta::pure::metamodel::relation::Relation<(first:String, last:String)>[1], w: meta::pure::functions::relation::_Window<(first:String, last:String)>[1], r: (first:String, last:String)[1]|$p->meta::pure::functions::relation::lag($r).last}])->meta::pure::functions::relation::sort([~first->meta::pure::functions::relation::ascending(), ~last->meta::pure::functions::relation::ascending()])',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testGroupByCastBeforeAgg_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp\n'+
+                            '1,2\n'+
+                            '2,1\n'+
+                            '3,3\n'+
+                            '4,4\n'+
+                            '5,2\n'+
+                            '6,1\n'+
+                            '7,3\n'+
+                            '8,1\n'+
+                            '9,5\n'+
+                            '10,0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer)[1]|$x.id:x: Integer[*]|+($x->meta::pure::functions::lang::cast(@Integer)))',
+                            'select "table0_0".grp as "grp", sum("table0_0".id) as "newCol" from csv(\'id,grp\n                1,2\n                2,1\n                3,3\n                4,4\n                5,2\n                6,1\n                7,3\n                8,1\n                9,5\n                10,0\') as "table0_0" group by "grp"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp\n'+
+                            '1,2\n'+
+                            '2,1\n'+
+                            '3,3\n'+
+                            '4,4\n'+
+                            '5,2\n'+
+                            '6,1\n'+
+                            '7,3\n'+
+                            '8,1\n'+
+                            '9,5\n'+
+                            '10,0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer)[1]|$x.id:x: Integer[*]|meta::pure::functions::lang::cast($x->plus(), @Integer))',
+                            'select "table0_0".grp as "grp", sum("table0_0".id) as "newCol" from csv(\'id,grp\n                1,2\n                2,1\n                3,3\n                4,4\n                5,2\n                6,1\n                7,3\n                8,1\n                9,5\n                10,0\') as "table0_0" group by "grp"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testOLAPCastAggWithPartitionWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|meta::pure::functions::lang::cast($y->plus(), @Integer))',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testOLAPAggCastWithPartitionWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|+($y->meta::pure::functions::lang::cast(@Integer)))',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testOLAPCastExtractAggWithPartitionWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id->meta::pure::functions::lang::cast(@Integer)}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testOLAPCastExtractCastAggWithPartitionWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id->meta::pure::functions::lang::cast(@Integer)}:y: Integer[*]|meta::pure::functions::lang::cast($y->plus(), @Integer))',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testProjectDistinct_Function_1__Boolean_1_',
+                      [
+                        rev('|$tds->meta::pure::functions::relation::project(~[id:x: (id:Integer, name:String)[1]|$x.id,name:x: (id:Integer, name:String)[1]|$x.name->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toLower()])->meta::pure::functions::relation::distinct()',
+                            'select distinct "table0_0".id as "id", lower("table0_0".name) as "name" from csv(\'id,name\n                1,george\n                1,George\n                1,Sachin\n                2,David\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testProjectJoinWithProjectProject_Function_1__Boolean_1_',
+                      [
+                        revError('|$tds->meta::pure::functions::relation::project(~[id1:x: (id:Integer, name:String)[1]|$x.id,name1:x: (id:Integer, name:String)[1]|$x.name])->meta::pure::functions::relation::join($tds2->meta::pure::functions::relation::project(~[id2:x: (id:Integer, col:String, other:Integer)[1]|$x.id,col:x: (id:Integer, col:String, other:Integer)[1]|$x.col,other:x: (id:Integer, col:String, other:Integer)[1]|$x.other]), meta::pure::functions::relation::JoinKind.INNER, {x: (id1:Integer, name1:String)[1], y: (id2:Integer, col:String, other:Integer)[1]|$x.id1 == $y.id2})->meta::pure::functions::relation::project(~[id:x: (id1:Integer, name1:String, id2:Integer, col:String, other:Integer)[1]|$x.id1,name:x: (id1:Integer, name1:String, id2:Integer, col:String, other:Integer)[1]|$x.col])',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_',
+                      [
+                        revError('|$tds->meta::pure::functions::relation::extend(~sorted:x: (id:Integer, payload:meta::pure::metamodel::variant::Variant)[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::sort()->meta::pure::functions::variant::convert::toVariant())',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse_Function_1__Boolean_1_',
+                      [
+                        revError('|$tds->meta::pure::functions::relation::extend(~reversed:x: (id:Integer, payload:meta::pure::metamodel::variant::Variant)[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::reverse()->meta::pure::functions::variant::convert::toVariant())',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_',
+                      [
+                        revError('|$tds->meta::pure::functions::relation::extend(~atCol0:x: (id:Integer, payload:meta::pure::metamodel::variant::Variant)[1]|$x.payload->meta::pure::functions::variant::navigation::get(0)->meta::pure::functions::variant::convert::to(@Integer))->meta::pure::functions::relation::filter(x: (id:Integer, payload:meta::pure::metamodel::variant::Variant, atCol0:Integer)[1]|$x.atCol0 < 7)',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_',
+                      [
+                        revError('|$tds->meta::pure::functions::relation::filter(x: (id:Integer, payload:meta::pure::metamodel::variant::Variant)[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_filterValues())',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|$y->plus())->meta::pure::functions::relation::filter(x: (id:Integer, grp:Integer, name:String, newCol:Integer)[1]|($x.newCol > 9) && ($x.grp == 1))',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'id,grp,rank\n'+
+                            '1,A,1\n'+
+                            '2,A,1\n'+
+                            '3,B,2\n'+
+                            '4,D,3\n'+
+                            '5,B,2\n'+
+                            '6,A,1\n'+
+                            '7,C,4\n'+
+                            '8,A,2\n'+
+                            '9,C,3\n'+
+                            '10,D,1}#->meta::pure::functions::relation::groupBy(~[grp,rank], ~sumId:x: (id:Integer, grp:String, rank:Integer)[1]|$x.id:x: Integer[*]|$x->plus())->meta::pure::functions::relation::filter(x: (grp:String, rank:Integer, sumId:Integer)[1]|$x.rank <= 2)->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~sumRank:{p: meta::pure::metamodel::relation::Relation<(grp:String, rank:Integer, sumId:Integer)>[1], w: meta::pure::functions::relation::_Window<(grp:String, rank:Integer, sumId:Integer)>[1], r: (grp:String, rank:Integer, sumId:Integer)[1]|$r.rank}:y: Integer[*]|$y->plus())->meta::pure::functions::relation::filter(x: (grp:String, rank:Integer, sumId:Integer, sumRank:Integer)[1]|$x.sumRank == 3)',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameFilter_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'colOneNum,Col_two_letter,_col_3Mix\n'+
+                            '1,A,1\n'+
+                            '2,A,1\n'+
+                            '3,B,2\n'+
+                            '4,D,3\n'+
+                            '5,B,2\n'+
+                            '6,A,1\n'+
+                            '7,C,4\n'+
+                            '8,A,2\n'+
+                            '9,C,3\n'+
+                            '10,D,1}#->meta::pure::functions::relation::rename(~colOneNum, ~_col_one_num)->meta::pure::functions::relation::rename(~Col_two_letter, ~colTwoLetter)->meta::pure::functions::relation::rename(~_col_3Mix, ~Col_3mix)->meta::pure::functions::relation::filter(x: (_col_one_num:Integer, colTwoLetter:String, Col_3mix:Integer)[1]|(($x._col_one_num > 2) && ($x.colTwoLetter == \'C\')) && ($x.Col_3mix == 3))',
+                            'select "table0_0"."_col_one_num" as "_col_one_num", "table0_0"."colTwoLetter" as "colTwoLetter", "table0_0"."_col_3Mix" as "Col_3mix" from (select "table0_1"."_col_one_num" as "_col_one_num", "table0_1"."Col_two_letter" as "colTwoLetter", "table0_1"."_col_3Mix" as "_col_3Mix" from (select "table0_2"."colOneNum" as "_col_one_num", "table0_2"."Col_two_letter" as "Col_two_letter", "table0_2"."_col_3Mix" as "_col_3Mix" from (select "table0_3".colOneNum as "colOneNum", "table0_3".Col_two_letter as "Col_two_letter", "table0_3"._col_3Mix as "_col_3Mix" from csv(\'colOneNum,Col_two_letter,_col_3Mix\n1,A,1\n2,A,1\n3,B,2\n4,D,3\n5,B,2\n6,A,1\n7,C,4\n8,A,2\n9,C,3\n10,D,1\') as "table0_3" where "table0_3".colOneNum is not null and "table0_3".colOneNum > 2 and "table0_3".Col_two_letter = Text\'C\' and "table0_3"._col_3Mix = 3) as "table0_2" where "table0_2"."colOneNum" is not null and "table0_2"."colOneNum" > 2 and "table0_2"."Col_two_letter" = Text\'C\' and "table0_2"."_col_3Mix" = 3) as "table0_1" where "table0_1"."_col_one_num" is not null and "table0_1"."_col_one_num" > 2 and "table0_1"."Col_two_letter" = Text\'C\' and "table0_1"."_col_3Mix" = 3) as "table0_0" where ((("table0_0"."_col_one_num" is not null and "table0_0"."_col_one_num" > 2) and "table0_0"."colTwoLetter" = Text\'C\') and "table0_0"."_col_3Mix" = 3)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameExtend_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'colOneNum,_Col_two_letter,col_3Mix\n'+
+                            '1,A,1\n'+
+                            '2,A,1\n'+
+                            '3,B,2\n'+
+                            '4,D,3\n'+
+                            '5,B,2\n'+
+                            '6,A,1\n'+
+                            '7,C,4\n'+
+                            '8,A,2\n'+
+                            '9,C,3\n'+
+                            '10,D,1}#->meta::pure::functions::relation::rename(~colOneNum, ~col_one_num)->meta::pure::functions::relation::rename(~_Col_two_letter, ~colTwoLetter)->meta::pure::functions::relation::rename(~col_3Mix, ~_Col_3mix)->meta::pure::functions::relation::extend(~newCol:c: (col_one_num:Integer, colTwoLetter:String, _Col_3mix:Integer)[1]|$c.col_one_num->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString() + $c.colTwoLetter->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString() + $c._Col_3mix->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString())->meta::pure::functions::relation::rename(~newCol, ~_new_col)->meta::pure::functions::relation::filter(x: (col_one_num:Integer, colTwoLetter:String, _Col_3mix:Integer, _new_col:String)[1]|$x._new_col->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString()->meta::pure::functions::string::contains(\'A\'))->meta::pure::functions::relation::rename(~_new_col, ~Result)->meta::pure::functions::relation::select(~[col_one_num,colTwoLetter,Result])',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,null\n'+
+                            '3,3,C\n'+
+                            '4,4,V\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,null\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\':\'))',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", string_agg("table0_0".name, Text\':\') OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,null\n3,3,C\n4,4,V\n5,2,E\n6,1,F\n7,3,G\n8,1,null\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testGroupByOnNull_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id,grp\n'+
+                            '1,2\n'+
+                            '2,null\n'+
+                            '5,2\n'+
+                            '2,null\n'+
+                            '8,null\n'+
+                            '9,4\n'+
+                            '2,0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer)[1]|$x.id:x: Integer[*]|$x->plus())',
+                            'select "table0_0".grp as "grp", sum("table0_0".id) as "newCol" from csv(\'id,grp\n1,2\n2,null\n5,2\n2,null\n8,null\n9,4\n2,0\') as "table0_0" group by "grp"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testVariant_if_Function_1__Boolean_1_',
+                      [
+                        revError('|$tds->meta::pure::functions::relation::extend(~ifOutput:x: (id:Integer, array1:meta::pure::metamodel::variant::Variant, array2:meta::pure::metamodel::variant::Variant)[1]|meta::pure::functions::lang::if($x.id->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::math::mod(2) == 0, |$x.array1, |$x.array2))',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'id,payload:meta::pure::metamodel::variant::Variant\n'+
+                            '0,"[]"\n'+
+                            '1,"[1]"\n'+
+                            '2,"[2,3,4]"\n'+
+                            '3,"null"}#->meta::pure::functions::relation::extend(~empty:x: (id:Integer, payload:meta::pure::metamodel::variant::Variant)[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::isEmpty())',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'id,payload:meta::pure::metamodel::variant::Variant\n'+
+                            '0,"[]"\n'+
+                            '1,"[1]"\n'+
+                            '2,"[2,3,4]"\n'+
+                            '3,"null"}#->meta::pure::functions::relation::extend(~notEmpty:x: (id:Integer, payload:meta::pure::metamodel::variant::Variant)[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::isNotEmpty())',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'val,payload:meta::pure::metamodel::variant::Variant\n'+
+                            '1,"[1,2,3]"\n'+
+                            '3,"[1,2,3]"\n'+
+                            '4,"[1,2,3]"\n'+
+                            '5,"null"}#->meta::pure::functions::relation::extend(~index:x: (val:Integer, payload:meta::pure::metamodel::variant::Variant)[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::indexOf($x.val->meta::pure::functions::multiplicity::toOne()))',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testProjectOfComputedColumn_withCast_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'val,val2\n'+
+                            '1,2\n'+
+                            '3,5\n'+
+                            '4,9\n'+
+                            '5,14\n'+
+                            '6,20}#->meta::pure::functions::relation::project(~[val3:c: (val:Integer, val2:Integer)[1]|$c.val->meta::pure::functions::multiplicity::toOne() + $c.val2->meta::pure::functions::multiplicity::toOne()])->meta::pure::functions::lang::cast(@meta::pure::metamodel::relation::Relation<(val3:Integer)>)',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testVariantColumn_contains_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'id,payload:meta::pure::metamodel::variant::Variant,val\n'+
+                            '1,"[1,2,3]",1\n'+
+                            '2,"[1,2,3]",4\n'+
+                            '3,"null",0}#->meta::pure::functions::relation::extend(~contains:x: (id:Integer, payload:meta::pure::metamodel::variant::Variant, val:Integer)[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::contains($x.val->meta::pure::functions::multiplicity::toOne()))',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'id,payload:meta::pure::metamodel::variant::Variant\n'+
+                            '1,"[1,2,3]"\n'+
+                            '2,"[1,2,3,4,4,3,2,3,4,1,2]"\n'+
+                            '3,"null"}#->meta::pure::functions::relation::extend(~distinct:x: (id:Integer, payload:meta::pure::metamodel::variant::Variant)[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::distinct()->meta::pure::functions::collection::sort()->meta::pure::functions::variant::convert::toVariant())->meta::pure::functions::relation::extend(~removeDuplicates:x: (id:Integer, payload:meta::pure::metamodel::variant::Variant, distinct:meta::pure::metamodel::variant::Variant)[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::removeDuplicates()->meta::pure::functions::collection::sort()->meta::pure::functions::variant::convert::toVariant())',
+                                 '',
+                                 'Unexpected token',
+                                 'needs investigating'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::relation::tests::composition::exec():Boolean[1]
+{
+   //meta::pure::functions::relation::tests::composition::testExtendFilter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testFilterPostProject(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::test_Distinct_Filter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::test_GroupBy_GroupBy(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::test_Pivot_Filter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::test_GroupBy_Filter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testWindowFunctionsAfterProject(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::testGroupByCastBeforeAgg(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::testOLAPCastAggWithPartitionWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::testOLAPAggCastWithPartitionWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::testOLAPCastExtractAggWithPartitionWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::testOLAPCastExtractCastAggWithPartitionWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::testProjectDistinct(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testProjectJoinWithProjectProject(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testExtendWindowFilter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameFilter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameExtend(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::composition::testGroupByOnNull(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testVariant_if(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testProjectOfComputedColumn_withCast(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testVariantColumn_contains(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

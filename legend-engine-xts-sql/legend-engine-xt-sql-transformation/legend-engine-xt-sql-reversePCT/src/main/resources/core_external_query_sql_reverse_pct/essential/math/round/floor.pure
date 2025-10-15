@@ -1,0 +1,105 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::essential::math::round::floor::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/math/round/floor.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::floor::testPositiveIntegerFloor_Function_1__Boolean_1_',
+                      [
+                        rev('|17->meta::pure::functions::math::floor()',
+                            'select cast(floor(17) as INTEGER)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::floor::testNegativeIntegerFloor_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::floor(-17)',
+                            'select cast(floor(-17) as INTEGER)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::floor::testPositiveFloatFloor_Function_1__Boolean_1_',
+                      [
+                        rev('|17.9->meta::pure::functions::math::floor()',
+                            'select cast(floor(17.9) as INTEGER)'
+                        ),
+                        rev('|17.5->meta::pure::functions::math::floor()',
+                            'select cast(floor(17.5) as INTEGER)'
+                        ),
+                        rev('|17.01->meta::pure::functions::math::floor()',
+                            'select cast(floor(17.01) as INTEGER)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::floor::testPositiveFloatWithZeroDecimalFloor_Function_1__Boolean_1_',
+                      [
+                        rev('|17.0->meta::pure::functions::math::floor()',
+                            'select cast(floor(17.0) as INTEGER)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::floor::testNegativeFloatFloor_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::floor(-17.9)',
+                            'select cast(floor(-17.9) as INTEGER)'
+                        ),
+                        rev('|meta::pure::functions::math::floor(-17.5)',
+                            'select cast(floor(-17.5) as INTEGER)'
+                        ),
+                        rev('|meta::pure::functions::math::floor(-17.01)',
+                            'select cast(floor(-17.01) as INTEGER)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::floor::testNegativeFloatWithZeroDecimalFloor_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::floor(-17.0)',
+                            'select cast(floor(-17.0) as INTEGER)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::floor::testDecimalFloor_Function_1__Boolean_1_',
+                      [
+                        rev('|3.14D->meta::pure::functions::math::floor()',
+                            'select cast(floor(3.14) as INTEGER)'
+                        ),
+                        rev('|meta::pure::functions::math::floor(-3.14D)',
+                            'select cast(floor(-3.14) as INTEGER)'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::math::round::floor::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::floor::testPositiveIntegerFloor(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::floor::testNegativeIntegerFloor(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::floor::testPositiveFloatFloor(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::floor::testPositiveFloatWithZeroDecimalFloor(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::floor::testNegativeFloatFloor(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::floor::testNegativeFloatWithZeroDecimalFloor(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::floor::testDecimalFloor(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

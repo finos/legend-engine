@@ -321,7 +321,7 @@ public class TestSQLRoundTrip
     @Test
     public void testInterval()
     {
-        check("SELECT INTERVAL '1 YEAR 2 MONTHS 3 WEEKS 4 DAYS 5 HOURS 6 MINUTES 7 SECONDS' FROM myTable");
+        check("SELECT INTERVAL '1 YEAR 2 MONTHS 3 WEEKS 4 DAYS 5 HOURS 6 MINUTES 7 SECONDS 8 MILLISECONDS 9 MICROSECONDS' FROM myTable");
     }
 
     @Test

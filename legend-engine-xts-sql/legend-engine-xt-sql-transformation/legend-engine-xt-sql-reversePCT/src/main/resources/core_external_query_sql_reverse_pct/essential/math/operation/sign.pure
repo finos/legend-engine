@@ -1,0 +1,51 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::essential::math::operation::sign::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/math/operation/sign.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::sign::testSign_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::sign(-10)',
+                            'select sign(-10)'
+                        ),
+                        rev('|0->meta::pure::functions::math::sign()',
+                            'select sign(0)'
+                        ),
+                        rev('|10->meta::pure::functions::math::sign()',
+                            'select sign(10)'
+                        ),
+                        rev('|meta::pure::functions::math::sign(-10.5)',
+                            'select sign(-10.5)'
+                        ),
+                        rev('|0.5->meta::pure::functions::math::sign()',
+                            'select sign(0.5)'
+                        ),
+                        rev('|10.5->meta::pure::functions::math::sign()',
+                            'select sign(10.5)'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::math::operation::sign::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::sign::testSign(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

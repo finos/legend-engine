@@ -185,6 +185,8 @@ Class meta::external::query::sql::metamodel::IntervalLiteral extends meta::exter
   <<equality.Key>> hours: Integer[0..1];
   <<equality.Key>> minutes: Integer[0..1];
   <<equality.Key>> seconds: Integer[0..1];
+  <<equality.Key>> milliseconds: Integer[0..1];
+  <<equality.Key>> microseconds: Integer[0..1];
 }
 
 Class meta::external::query::sql::metamodel::NamedArgumentExpression extends meta::external::query::sql::metamodel::Expression

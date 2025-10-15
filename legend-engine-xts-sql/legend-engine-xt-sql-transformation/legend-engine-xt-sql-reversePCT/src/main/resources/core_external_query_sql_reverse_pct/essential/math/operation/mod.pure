@@ -1,0 +1,60 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::essential::math::operation::mod::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/math/operation/mod.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::mod::testMod_Function_1__Boolean_1_',
+                      [
+                        rev('|12->meta::pure::functions::math::mod(5)',
+                            'select mod(mod(12, 5) + 5, 5)'
+                        ),
+                        rev('|5->meta::pure::functions::math::mod(12)',
+                            'select mod(mod(5, 12) + 12, 12)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::mod(-12, 5)',
+                            'select mod(mod(-12, 5) + 5, 5)'
+                        ),
+                        rev('|meta::pure::functions::math::mod(-5, 12)',
+                            'select mod(mod(-5, 12) + 12, 12)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval(12, 5)'),
+                        noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval(-12, 5)'),
+                        noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::math::operation::mod::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::mod::testMod(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::mod::testModWithNegativeNumbers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::math::tests::mod::testModInEval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

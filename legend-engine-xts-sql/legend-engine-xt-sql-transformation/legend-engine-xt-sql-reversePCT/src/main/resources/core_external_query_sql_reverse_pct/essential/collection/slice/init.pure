@@ -1,4 +1,4 @@
-import meta::external::query::sql::reversePCT::framework::*;
+import meta::pure::test::pct::reversePCT::framework::*;
 
 function meta::external::query::sql::reversePCT::tests::essential::collection::slice::init::reverses():ReversesForSource[1]
 {

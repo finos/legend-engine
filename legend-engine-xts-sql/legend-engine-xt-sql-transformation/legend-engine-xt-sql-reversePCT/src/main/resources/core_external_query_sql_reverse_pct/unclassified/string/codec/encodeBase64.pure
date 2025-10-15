@@ -1,0 +1,45 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::unclassified::string::codec::encodeBase64::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_unclassified/string/codec/encodeBase64.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_',
+                      [
+                        rev('|\'Hello, World!\'->meta::pure::functions::string::encodeBase64()',
+                            'select encode(Text\'Hello, World!\', \'base64\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip_Function_1__Boolean_1_',
+                      [
+                        rev('|$testString->meta::pure::functions::string::decodeBase64()->meta::pure::functions::string::encodeBase64()',
+                            'select encode(decode(Text\'SGVsbG8sIFdvcmxkIQ==\', \'base64\'), \'base64\')'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::unclassified::string::codec::encodeBase64::exec():Boolean[1]
+{
+   meta::pure::functions::string::tests::base64::testEncodeBase64(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

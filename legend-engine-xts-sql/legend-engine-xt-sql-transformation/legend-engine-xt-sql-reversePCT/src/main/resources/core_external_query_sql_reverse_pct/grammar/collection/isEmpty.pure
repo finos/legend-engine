@@ -1,0 +1,60 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::grammar::collection::size::isEmpty::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/grammar/functions/collection/size/isEmpty.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::isEmpty::testIsEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|[]->meta::pure::functions::collection::isEmpty()',
+                            'select null is null'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::isEmpty::testIsEmptyFalseSingle_Function_1__Boolean_1_',
+                      [
+                        rev('|\'\'->meta::pure::functions::collection::isEmpty()',
+                            'select array_length(array[\'\'], 1) = 0'
+                        ),
+                        rev('|1->meta::pure::functions::collection::isEmpty()',
+                            'select array_length(array[1], 1) = 0'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::collection::tests::isEmpty::testIsEmptyFalseMultiple_Function_1__Boolean_1_',
+                      [
+                        rev('|[\'a\', \'b\']->meta::pure::functions::collection::isEmpty()',
+                            'select array_length(array[\'a\', \'b\'], 1) = 0'
+                        ),
+                        rev('|[1, 2, 3]->meta::pure::functions::collection::isEmpty()',
+                            'select array_length(array[1,2,3], 1) = 0'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::grammar::collection::size::isEmpty::exec():Boolean[1]
+{
+   meta::pure::functions::collection::tests::isEmpty::testIsEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::isEmpty::testIsEmptyFalseSingle(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::collection::tests::isEmpty::testIsEmptyFalseMultiple(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

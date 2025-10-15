@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-sql-transformation</artifactId>
-        <version>4.102.1-SNAPSHOT</version>
+        <version>4.103.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -76,6 +76,11 @@
                         <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -124,6 +129,11 @@
                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -137,6 +147,7 @@
                         <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_GrammarFunctions_Reverse_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_RelationFunctions_Reverse_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_StandardFunctions_Reverse_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_UnclassifiedFunctions_Reverse_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_VariantFunctions_Reverse_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
@@ -193,6 +204,11 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-sql-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -264,6 +280,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
         </dependency>
         <dependency>
@@ -283,6 +303,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-reversePCT</artifactId>
         </dependency>
 
         <!-- TEST -->

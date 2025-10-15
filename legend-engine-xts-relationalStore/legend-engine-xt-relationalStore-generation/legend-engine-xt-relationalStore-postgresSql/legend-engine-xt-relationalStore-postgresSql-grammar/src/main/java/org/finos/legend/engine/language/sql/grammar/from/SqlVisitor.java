@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
 {
-    private static final Pattern LITERAL_VALUE_PATTERN = Pattern.compile("(([\\+-]?[0-9]+)\\s([year|years|month|months|week|weeks|day|days|hour|hours|minute|minutes|second|seconds]+))+");
+    private static final Pattern LITERAL_VALUE_PATTERN = Pattern.compile("(([\\+-]?[0-9]+)\\s([year|years|month|months|week|weeks|day|days|hour|hours|minute|minutes|second|seconds|millisecond|milliseconds|microsecond|microseconds]+))+");
 
     private long positionalIndex = 1;
 
@@ -132,6 +132,8 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         intervalLiteral.hours = matches.get("hour");
         intervalLiteral.minutes = matches.get("minute");
         intervalLiteral.seconds = matches.get("second");
+        intervalLiteral.milliseconds = matches.get("millisecond");
+        intervalLiteral.microseconds = matches.get("microsecond");
 
         return intervalLiteral;
     }

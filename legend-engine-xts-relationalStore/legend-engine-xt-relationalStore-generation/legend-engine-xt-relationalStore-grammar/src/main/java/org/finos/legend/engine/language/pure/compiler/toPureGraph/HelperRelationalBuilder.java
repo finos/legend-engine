@@ -300,8 +300,8 @@ public class HelperRelationalBuilder
         MutableList<Relation> tables = Lists.mutable.empty();
         for (Database db : getAllIncludedDBs(database))
         {
-            Schema schema = db._schemas().detect(s -> schemaName.equals(s._name()));
-            if (schema != null)
+            RichIterable<? extends Schema> schemasToSearch = db._schemas().select(s -> schemaName.equals(s._name()));
+            for (Schema schema : schemasToSearch)
             {
                 Relation table = schema._tables().detect(t -> tableName.equals(t._name()));
                 if (table == null)
@@ -330,8 +330,7 @@ public class HelperRelationalBuilder
             }
             default:
             {
-                StringBuilder message = new StringBuilder("The relation '").append(tableName).append("' has been found ")
-                        .append(tables.size()).append(" times in the schema '").append(schemaName).append("' of the database '");
+                StringBuilder message = new StringBuilder("The relation '").append(tableName).append("' has been found ").append(tables.size()).append(" times in the schema '").append(schemaName).append("' of the database '");
                 PackageableElement.writeUserPathForPackageableElement(message, database).append('\'');
                 throw new EngineException(message.toString(), sourceInformation, EngineErrorType.COMPILATION);
             }

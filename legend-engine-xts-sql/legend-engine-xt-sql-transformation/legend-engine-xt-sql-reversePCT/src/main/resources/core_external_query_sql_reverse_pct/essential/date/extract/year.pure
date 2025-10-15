@@ -1,0 +1,67 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::essential::date::extract::year::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/essential/date/extract/year.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_',
+                      [
+                        revError('|%2015->meta::pure::functions::date::year()',
+                            '',
+                            'Unexpected token',
+                            'postgres does not support partial dates'
+                        ),
+                        revError('|%2015-04->meta::pure::functions::date::year()',
+                            '',
+                            'Unexpected token',
+                            'postgres does not support partial dates'
+                        ),
+                        rev('|%2015-04-15->meta::pure::functions::date::year()',
+                            'select date_part(\'year\', Date\'2015-04-15\')'
+                        ),
+                        rev('|%2015-04-15T17->meta::pure::functions::date::year()',
+                            'select date_part(\'year\', Timestamp\'2015-04-15\')'
+                        ),
+                        rev('|%2015-04-15T17:09+0000->meta::pure::functions::date::year()',
+                            'select date_part(\'year\', Timestamp\'2015-04-15\')'
+                        ),
+                        rev('|%2015-04-15T17:09:21+0000->meta::pure::functions::date::year()',
+                            'select date_part(\'year\', Timestamp\'2015-04-15 17:09:21\')'
+                        ),
+                        rev('|%2015-04-15T17:09:21.398+0000->meta::pure::functions::date::year()',
+                            'select date_part(\'year\', Timestamp\'2015-04-15 17:09:21.398\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::testYeaReflect_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::date::year_Date_1__Integer_1_->meta::pure::functions::lang::eval(%2015-04-15)',
+                            'select date_part(\'year\', Date\'2015-04-15\')'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::essential::date::extract::year::exec():Boolean[1]
+{
+   meta::pure::functions::date::tests::testYear(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::testYeaReflect(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}
