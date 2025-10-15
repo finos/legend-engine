@@ -54,12 +54,12 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
         GenericType genericType = Compiler.getLambdaReturnGenericType(lambda, pureModelPair.getTwo());
         String actualValue = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(genericType);
         JsonAssert.assertJsonEquals(
-                "{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::store::RelationStoreAccessor\"},\"typeArguments\":[{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::precisePrimitives::Int\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"id\"}]},\"typeArguments\":[],\"typeVariableValues\":[]}],\"typeVariableValues\":[]}",
+                "{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::store::RelationStoreAccessor\"},\"typeArguments\":[{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::precisePrimitives::Int\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"id\",\"stereotypes\":[],\"taggedValues\":[]}]},\"typeArguments\":[],\"typeVariableValues\":[]}],\"typeVariableValues\":[]}",
                 actualValue);
     }
 
     @Test
-    public void lambdaColumnsMultiplicityAfterSelect() throws Exception
+    public void yeplambdaColumnsMultiplicityAfterSelect() throws Exception
     {
         Pair<PureModelContextData, PureModel> pureModelPair = test(
                 "###Relational\n" +
@@ -96,7 +96,9 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "              \"lowerBound\": 0,\n" +
                         "              \"upperBound\": 1\n" +
                         "            },\n" +
-                        "            \"name\": \"id\"\n" +
+                        "            \"name\": \"id\",\n" +
+                        "            \"stereotypes\": [],\n" +
+                        "            \"taggedValues\": []\n" +
                         "          }\n" +
                         "        ]\n" +
                         "      },\n" +
@@ -138,7 +140,9 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "              \"lowerBound\": 1,\n" +
                         "              \"upperBound\": 1\n" +
                         "            },\n" +
-                        "            \"name\": \"other\"\n" +
+                        "            \"name\": \"other\",\n" +
+                        "            \"stereotypes\": [],\n" +
+                        "            \"taggedValues\": []\n" +
                         "          }\n" +
                         "        ]\n" +
                         "      },\n" +
@@ -180,7 +184,9 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "              \"lowerBound\": 0,\n" +
                         "              \"upperBound\": 1\n" +
                         "            },\n" +
-                        "            \"name\": \"id\"\n" +
+                        "            \"name\": \"id\",\n" +
+                        "            \"stereotypes\": [],\n" +
+                        "            \"taggedValues\": []\n" +
                         "          },\n" +
                         "          {\n" +
                         "            \"genericType\": {\n" +
@@ -196,7 +202,9 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "              \"lowerBound\": 1,\n" +
                         "              \"upperBound\": 1\n" +
                         "            },\n" +
-                        "            \"name\": \"other\"\n" +
+                        "            \"name\": \"other\",\n" +
+                        "            \"stereotypes\": [],\n" +
+                        "            \"taggedValues\": []\n" +
                         "          }\n" +
                         "        ]\n" +
                         "      },\n" +
