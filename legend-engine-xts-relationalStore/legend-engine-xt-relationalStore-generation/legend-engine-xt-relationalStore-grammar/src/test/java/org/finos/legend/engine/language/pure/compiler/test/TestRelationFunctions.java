@@ -59,7 +59,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     }
 
     @Test
-    public void yeplambdaColumnsMultiplicityAfterSelect() throws Exception
+    public void lambdaColumnsMultiplicityAfterSelect() throws Exception
     {
         Pair<PureModelContextData, PureModel> pureModelPair = test(
                 "###Relational\n" +
