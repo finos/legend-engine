@@ -204,8 +204,9 @@ public abstract class DataSourceSpecification
         try (Scope scope = GlobalTracer.get().buildSpan("Create Pool").startActive(true))
         {
             Properties properties = new Properties();
+            Properties typePreservingProperties = new Properties();
             String poolName = poolNameFor(identity);
-            properties.putAll(this.databaseManager.getExtraDataSourceProperties(this.authenticationStrategy, identity));
+            typePreservingProperties.putAll(this.databaseManager.getExtraDataSourceProperties(this.authenticationStrategy, identity));
             properties.putAll(this.extraDatasourceProperties);
 
             properties.put(AuthenticationStrategy.AUTHENTICATION_STRATEGY_KEY, this.authenticationStrategy.getKey().shortId());
@@ -219,10 +220,10 @@ public abstract class DataSourceSpecification
             jdbcConfig.setMinimumIdle(minPoolSize);
             jdbcConfig.setJdbcUrl(getJdbcUrl(host, port, databaseName, properties));
             jdbcConfig.setConnectionTimeout(authenticationStrategy.getConnectionTimeout());
-            jdbcConfig.addDataSourceProperty("cachePrepStmts", false);
-            jdbcConfig.addDataSourceProperty("prepStmtCacheSize", 0);
-            jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", 0);
-            jdbcConfig.addDataSourceProperty("useServerPrepStmts", false);
+            jdbcConfig.addDataSourceProperty("cachePrepStmts", "false");
+            jdbcConfig.addDataSourceProperty("prepStmtCacheSize", "0");
+            jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "0");
+            jdbcConfig.addDataSourceProperty("useServerPrepStmts", "false");
 
             if (this.databaseManager.publishMetrics())
             {
@@ -230,8 +231,12 @@ public abstract class DataSourceSpecification
             }
 
             // Properties management --------------
-            MapAdapter.adapt(properties).keyValuesView().forEach((Procedure<Pair>) p -> jdbcConfig.addDataSourceProperty(p.getOne().toString(), p.getTwo()));
+            //ToString on value is used for backwards compatability with Hikari versions from before  https://github.com/brettwooldridge/HikariCP/pull/2305
+            MapAdapter.adapt(properties).keyValuesView().forEach((Procedure<Pair>) p -> jdbcConfig.addDataSourceProperty(p.getOne().toString(), p.getTwo().toString()));
+            MapAdapter.adapt(typePreservingProperties).keyValuesView().forEach((Procedure<Pair>) p -> jdbcConfig.addDataSourceProperty(p.getOne().toString(), p.getTwo()));
             //-------------------------------------
+
+
 
             HikariDataSource ds = new HikariDataSource(jdbcConfig);
             scope.span().setTag("Pool", ds.getPoolName());
