@@ -24,3 +24,14 @@ function <<test.Test>> meta::pure::functions::collection::tests::sort::testSortB
     assertEquals([$kevin, $pierre, $bob], $people->sortBy({p | $p.fullName(true)}));
     assertEquals([$bob, $kevin, $pierre], $people->sortBy({p | $p.firstName}));
 }
+
+
+function <<test.Test>> meta::pure::functions::collection::tests::sort::testSortByReversed():Boolean[1]
+{
+    let pierre = ^Person(firstName='Pierre', lastName='Doe');
+    let bob = ^Person(firstName='Bob', lastName='Roe');
+    let kevin = ^Person(firstName='Kevin', lastName='Adams');
+    let people = [$pierre, $bob, $kevin];
+    assertEquals([$bob, $pierre, $kevin], $people->sortByReversed({p | $p.fullName(true)}));
+    assertEquals([$pierre, $kevin, $bob], $people->sortByReversed({p | $p.firstName}));
+}
