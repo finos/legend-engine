@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.m3.relation;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -43,8 +44,8 @@ public class Column
     public String name;
     public GenericType genericType;
     public Multiplicity multiplicity;
-    public List<StereotypePtr> stereotypes = Collections.emptyList();
-    public List<TaggedValue> taggedValues = Collections.emptyList();
+    public @JsonInclude(JsonInclude.Include.NON_EMPTY) List<StereotypePtr> stereotypes = Collections.emptyList();
+    public @JsonInclude(JsonInclude.Include.NON_EMPTY) List<TaggedValue> taggedValues = Collections.emptyList();
 
     public Column()
     {
