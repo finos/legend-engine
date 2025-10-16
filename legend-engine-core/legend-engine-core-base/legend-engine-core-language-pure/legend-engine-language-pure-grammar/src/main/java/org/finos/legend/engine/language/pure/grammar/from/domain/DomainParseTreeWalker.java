@@ -1590,7 +1590,7 @@ public class DomainParseTreeWalker
         return genericTypeInstance;
     }
 
-    private GenericType processGenericType(DomainParserGrammar.TypeContext ctx)
+    public GenericType processGenericType(DomainParserGrammar.TypeContext ctx)
     {
         Type type;
         if (ctx.qualifiedName() != null)
@@ -1865,7 +1865,7 @@ public class DomainParseTreeWalker
         }
     }
 
-    private Multiplicity buildMultiplicity(DomainParserGrammar.MultiplicityArgumentContext ctx)
+    public Multiplicity buildMultiplicity(DomainParserGrammar.MultiplicityArgumentContext ctx)
     {
         Multiplicity m = new Multiplicity();
         String star = "*";
