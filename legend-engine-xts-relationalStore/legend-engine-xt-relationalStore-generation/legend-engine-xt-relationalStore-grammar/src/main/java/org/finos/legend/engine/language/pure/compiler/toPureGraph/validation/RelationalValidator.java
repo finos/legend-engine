@@ -23,6 +23,7 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
@@ -185,7 +186,9 @@ public class RelationalValidator
     {
         if (pm._property()._genericType()._rawType().getClassifier() != null && pm._property()._genericType()._rawType().getClassifier().equals(pureModel.getType("meta::pure::metamodel::type::Enumeration")) && (pm.getValueForMetaPropertyToOne("transformer") == null))
         {
-            pureModel.addWarnings(Lists.mutable.with(new Warning(org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()), "Missing an EnumerationMapping for the enum property '" + pm._property()._name() + "'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.")));
+            pureModel.addWarnings(Lists.mutable.with(
+                    new Warning(SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()),
+                            "Missing an EnumerationMapping for the enum property '" + pm._property()._name() + "'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.")));
         }
         return true;
     }
@@ -228,9 +231,40 @@ public class RelationalValidator
 
     }
 
+    private static void validateNoEqualityComparisonWithSqlNull(PureModel pureModel, RelationalOperationElement element)
+    {
+        if (element == null)
+        {
+            return;
+        }
+        if (element instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction dynaFunction = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction) element;
+            String funcName = dynaFunction._name();
+
+            if ("sqlNull".equals(funcName))
+            {
+                pureModel.addWarnings(Lists.mutable.with(
+                        new Warning(
+                                SourceInformationHelper.fromM3SourceInformation(dynaFunction.getSourceInformation()),
+                                "Invalid use of sqlNull() in join condition. Use 'column is NULL' instead of 'column = sqlNull()' in join condition.")));
+            }
+
+            dynaFunction._parameters().forEach(p -> validateNoEqualityComparisonWithSqlNull(pureModel, p));
+            return;
+        }
+        if (element instanceof RelationalOperationElementWithJoin)
+        {
+            RelationalOperationElement inner =
+                    ((RelationalOperationElementWithJoin) element)._relationalOperationElement();
+            validateNoEqualityComparisonWithSqlNull(pureModel, inner);
+        }
+    }
+
     private static void validateJoinTreeNode(JoinTreeNode joinTreeNode, RelationalOperationElement sourceTable, RelationalOperationElement targetTable, PropertyMapping propertyMapping, String mappingID, PureModel pureModel, MappingValidatorContext mappingValidatorContext)
     {
         Join join = joinTreeNode._join();
+        validateNoEqualityComparisonWithSqlNull(pureModel, join._operation());
         RelationalOperationElement newSourceTable = followJoin(join, sourceTable);
         if (newSourceTable == null)
         {
