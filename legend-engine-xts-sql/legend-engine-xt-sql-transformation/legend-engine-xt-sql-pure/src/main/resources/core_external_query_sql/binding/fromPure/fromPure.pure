@@ -1652,20 +1652,24 @@ function meta::external::query::sql::transformation::queryToPure::requiresWrapWi
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithLambdaFrom(lambda:LambdaFunction<Any>[1], sources:SQLSource[*], extensions: meta::pure::extension::Extension[*]):LambdaFunction<Any>[1]
 {
   let mapping = if ($sources.mapping->isNotEmpty(), | $sources.mapping->removeDuplicates()->toOneMany()->mergeMappings(), | []);
-  let runtime = if ($sources.runtime->isNotEmpty(), | $sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(), | ^Runtime());
+  let runtime = if ($sources.runtime->isNotEmpty(), | $sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(), | []);
 
-  let params = $lambda->iv()->concatenate($mapping->iv())->concatenate($runtime->iv());
 
-  let func = [
-    pair($mapping->isEmpty() && $runtime->instanceOf(PackageableRuntime), from_FunctionDefinition_1__PackageableRuntime_1__T_m_->cast(@FunctionDefinition<Any>)),
-    pair($mapping->isEmpty() && $runtime->instanceOf(Runtime), from_FunctionDefinition_1__Runtime_1__T_m_->cast(@FunctionDefinition<Any>)),
-    pair($mapping->isNotEmpty() && $runtime->instanceOf(PackageableRuntime), from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_->cast(@FunctionDefinition<Any>)),
-    pair($mapping->isNotEmpty() && $runtime->instanceOf(Runtime), from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_->cast(@FunctionDefinition<Any>))
-  ]->getValue(true);
+  if ($mapping->isEmpty() && $runtime->isEmpty(),
+    | $lambda,
+    | let params = $lambda->iv()->concatenate($mapping->iv())->concatenate($runtime->iv());
 
-  let sfe = sfe($func, $lambda->functionReturnType(), [], PureOne, $params);
+      let func = [
+        pair($mapping->isEmpty() && $runtime->toOne()->instanceOf(PackageableRuntime), from_FunctionDefinition_1__PackageableRuntime_1__T_m_->cast(@FunctionDefinition<Any>)),
+        pair($mapping->isEmpty() && $runtime->toOne()->instanceOf(Runtime), from_FunctionDefinition_1__Runtime_1__T_m_->cast(@FunctionDefinition<Any>)),
+        pair($mapping->isNotEmpty() && $runtime->toOne()->instanceOf(PackageableRuntime), from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_->cast(@FunctionDefinition<Any>)),
+        pair($mapping->isNotEmpty() && $runtime->toOne()->instanceOf(Runtime), from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_->cast(@FunctionDefinition<Any>))
+      ]->getValue(true);
 
-  ^$lambda(expressionSequence = $sfe);
+      let sfe = sfe($func, $lambda->functionReturnType(), [], PureOne, $params);
+
+      ^$lambda(expressionSequence = $sfe);
+  );
 }
 
 //TODO we can be much smarter by understanding whether x-store is in play and not wrap if true.
@@ -2283,7 +2287,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       let castName = $c.type.name->toUpper();
 
       [
-        // pair($type == Variant, | processVariantCast($c, $expression)), //TODO this technically works, but in postgres you cannot cast a variant in many cases
+        pair($type == Variant, | processVariantCast($c, $expression)),
         pair($castName == 'VARCHAR', | processVarcharCast($c, $expression, $expContext, $context)),
         pair($castName == 'NUMERIC' || $castName == 'DECIMAL', | processNumericCast($c, $expression, $expContext, $context)),
         pair($castName->in(['DOUBLE PRECISION', 'FLOAT8']), | processDoublePrecisionCast($c, $expression, $expContext, $context)),
@@ -2891,6 +2895,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         nullOrSfe($func, $args->at(0));
       }),
+      processor('initcap', toUpperFirstCharacter_String_1__String_1_),
       processor('length', length_String_1__Integer_1_),
       processor('lower', toLower_String_1__String_1_),
       processor('lpad', String, {args, fc, ctx | processPad($args, true)}),

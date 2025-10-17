@@ -382,5 +382,5 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
         2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": 2}}"
         3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}"
       #
-  })
+  }, [], [])
 }
