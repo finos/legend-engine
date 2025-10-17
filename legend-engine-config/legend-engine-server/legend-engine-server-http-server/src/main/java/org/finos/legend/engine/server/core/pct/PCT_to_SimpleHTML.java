@@ -351,7 +351,7 @@ public class PCT_to_SimpleHTML
     private static String bottom =
             "</body>\n" +
                     "<footer style='font-size: 15px;'>\n" +
-                    String.format("PCT results as of %s using commit <a href='https://github.com/finos/legend-engine/tree/%s'>%s</a>.\n", DeploymentStateAndVersions.sdlc.commitTime, getCommitId(), getCommitId()) +
+                    String.format("PCT results as of %s using commit <a href='https://github.com/finos/legend-engine/tree/%s' target='_blank'>%s</a>.\n", DeploymentStateAndVersions.sdlc.commitTime, getCommitId(), getCommitId()) +
                     "</footer>\n" +
                     "</html>";
 
