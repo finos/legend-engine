@@ -2903,7 +2903,7 @@ function meta::relational::functions::pureToSqlQuery::processSortBy(f:FunctionEx
                       leftSideOfFilter = $merge.leftSideOfFilter,
                       filteringOperation = $merge.filteringOperation,
                       extraFilteringOperation = $merge.extraFilteringOperation,
-                      orderBy = ^OrderBy(column=$joinResult.columns->at(0)->cast(@Alias).relationalElement, direction=meta::relational::metamodel::SortDirection.ASC)
+                      orderBy = ^OrderBy(column=$joinResult.columns->at(0)->cast(@Alias).relationalElement, direction= if($f.functionName == 'sortBy', |meta::relational::metamodel::SortDirection.ASC, |meta::relational::metamodel::SortDirection.DESC))
                   )
       );,
     l: LambdaFunction<Any>[1] |
@@ -2946,7 +2946,7 @@ function meta::relational::functions::pureToSqlQuery::processSortBy(f:FunctionEx
                       leftSideOfFilter = $merge.leftSideOfFilter,
                       filteringOperation = $merge.filteringOperation,
                       extraFilteringOperation = $merge.extraFilteringOperation,
-                      orderBy = ^OrderBy(column=$rightSideModified.select.columns->toOne()->cast(@Alias).name->findAliasOrFail($merge).relationalElement, direction=meta::relational::metamodel::SortDirection.ASC)
+                      orderBy = ^OrderBy(column=$rightSideModified.select.columns->toOne()->cast(@Alias).name->findAliasOrFail($merge).relationalElement, direction=if($f.functionName == 'sortBy', |meta::relational::metamodel::SortDirection.ASC, |meta::relational::metamodel::SortDirection.DESC))
                   )
       );,
     a: Any[1] | fail('Invalid parameter type to sortBy ' + $sortByFunc->type().name->orElse('unknown')); $operation;
@@ -3013,7 +3013,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
 function meta::relational::functions::pureToSqlQuery::processPaginated(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   let preceedingFunction = $f.parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->cast(@FunctionExpression).func;
-  assert( $preceedingFunction == sortBy_T_m__Function_$0_1$__T_m_ || $preceedingFunction == sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_, 'Paginated should be called on a sort or sortBy function');
+  assert( $preceedingFunction == sortBy_T_m__Function_$0_1$__T_m_ || $preceedingFunction == sortByReversed_T_m__Function_$0_1$__T_m_|| $preceedingFunction == sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_, 'Paginated should be called on a sort or sortBy function');
 
   let mainQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
   let mainSelect = $mainQuery.select;
@@ -9720,6 +9720,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processIn_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processIn_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::sortBy_T_m__Function_$0_1$__T_m_, second=meta::relational::functions::pureToSqlQuery::processSortBy_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::sortByReversed_T_m__Function_$0_1$__T_m_, second=meta::relational::functions::pureToSqlQuery::processSortBy_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::isEmpty_Any_MANY__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processNotExists_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::count_Any_MANY__Integer_1_, second=meta::relational::functions::pureToSqlQuery::processAggregation_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::size_Any_MANY__Integer_1_,   second=meta::relational::functions::pureToSqlQuery::processRowCount_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

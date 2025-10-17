@@ -328,6 +328,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                          if($fe.func.name->in(['filter_T_MANY__Function_1__T_MANY_',
                                                                                                'removeDuplicates_T_MANY__Function_1__T_MANY_',
                                                                                                'removeDuplicatesBy_T_MANY__Function_1__T_MANY_',
+                                                                                               'sortByReversed_T_m__Function_$0_1$__T_m_',
                                                                                                'sortBy_T_m__Function_$0_1$__T_m_']),
                                                                             {|
                                                                                // Unary function, return is same as collection in
