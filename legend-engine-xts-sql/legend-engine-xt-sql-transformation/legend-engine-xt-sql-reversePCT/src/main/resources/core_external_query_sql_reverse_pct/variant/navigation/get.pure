@@ -22,10 +22,8 @@ function meta::external::query::sql::reversePCT::tests::variant::navigation::get
                  revsForTest(
                       'meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyExists_Function_1__Boolean_1_',
                       [
-                        revError('|\'{"hello":"world"}\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::navigation::get(\'hello\')->meta::pure::functions::multiplicity::toOne()',
-                            'select cast(json_extract_path(cast (Text\'{"hello":"world"}\' as JSON), Text\'hello\') as JSON)',
-                            'Error during dynamic reactivation',
-                            'investigation required'
+                        rev('|\'{"hello":"world"}\'->meta::pure::functions::variant::convert::fromJson()->meta::pure::functions::variant::navigation::get(\'hello\')->meta::pure::functions::multiplicity::toOne()',
+                            'select cast(json_extract_path(cast (Text\'{"hello":"world"}\' as JSON), Text\'hello\') as JSON)'
                         )
                       ]
                  ),
