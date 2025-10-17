@@ -136,7 +136,7 @@ function <<access.private>> meta::external::store::relational::modelJoins::trans
         operation=$operation,
         target=$targetMainTableAlias,
         database=$database,
-        aliases = [^Pair<TableAlias,TableAlias>(first=$targetMainTableAlias,second=$sourceMainTableAlias), ^Pair<TableAlias,TableAlias>(first=$sourceMainTableAlias,second=$targetMainTableAlias)]->concatenate($childJoins.aliases)
+        aliases = [^Pair<TableAlias,TableAlias>(first=$targetMainTableAlias,second=$sourceMainTableAlias), ^Pair<TableAlias,TableAlias>(first=$sourceMainTableAlias,second=$targetMainTableAlias)]
       );
   );
 

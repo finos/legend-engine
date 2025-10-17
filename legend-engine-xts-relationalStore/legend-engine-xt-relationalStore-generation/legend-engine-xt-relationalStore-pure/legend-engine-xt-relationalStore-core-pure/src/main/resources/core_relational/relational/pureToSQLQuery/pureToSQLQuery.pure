@@ -1374,8 +1374,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
 
                                                           let allNodes = $s.data->toOne()->getAllNodes()->cast(@RelationalTreeNode);
                                                           let aliasesToUse = $t.column->extractColumnAliasesInRelationalTreeNodes($t.alias.relationalElement, $allNodes, $context, $extensions);
-
-                                                          assert($aliasesToUse->size() == 1, | 'Found too many (or not enough) tables that could support the column '+$t.column.name+' in the nested SQL '+$s->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions));
+                                                          assert($aliasesToUse->size() == 1, | 'Found ' + $aliasesToUse->size()->toString() + ' relations that could support the column '+$t.column.name+' in the nested SQL '+$s->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions));
 
                                                           let newColumnName = $s->getNewColumnNameWithAlias($foundColumn, $aliasesToUse);
                                                           let newSQL = ^$s(columns+=^Alias(name=$newColumnName, relationalElement=$aliasesToUse->toOne()));
@@ -1473,24 +1472,32 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
 
 function meta::relational::functions::pureToSqlQuery::extractColumnAliasesInRelationalTreeNodes(column:Column[1], relationalElement:RelationalOperationElement[1], nodes:RelationalTreeNode[*], context:DebugContext[1], extensions:Extension[*]): TableAliasColumn[*]
 {
-   let aliasesToUse = $nodes->map(n|let res = $n.alias.relationalElement->match([
-                                                v:ViewSelectSQLQuery[1]| pair(list($v.view), $column.name),
-                                                s:SelectSQLQuery[1]|
-                                                  let foundColumn = $s->findColumn($column.name);
-                                                  if($foundColumn->isNotEmpty(),
-                                                    | let relationsSupportingProjectedColumn = $foundColumn->extractTableAliasColumns().alias.relation;
-                                                      print(if(!$context.debug, |'', | $context.space+'Found depth-2 nested select while processing column - ' +  $column.name + '. Adding inner relations from depth-2 subselect for handling class mapping filter with inner join : ' + $relationsSupportingProjectedColumn->map(rel | $rel->buildUniqueName(false, $extensions))->joinStrings('[', ' , ', ']')));
-                                                      pair(list($relationsSupportingProjectedColumn->concatenate($s)), $foundColumn->toOne()->extractColumnName());,
-                                                    | []->cast(@Pair<List<Any>, String>)
-                                                  );,
-                                                a:Any[1]| pair(list($a), $column.name)
-                                              ]);
-
-                                    if($res.first.values->contains($relationalElement),
-                                      | ^TableAliasColumn(alias=$n.alias, columnName=$res.second->toOne(), column=^$column(name=$res.second->toOne()));,
-                                      | [];
-                                    );
-                                  );
+  let aliasesToUse = $nodes->map(n |
+    $n.alias.relationalElement->match(
+      [
+        v:ViewSelectSQLQuery[1]|if($v.view == $relationalElement,
+                                  | ^TableAliasColumn(alias = $n.alias, columnName = $column.name, column = ^$column(name = $column.name)),
+                                  | [];
+                                );,
+        s:SelectSQLQuery[1]|
+          let foundColumn = $s->findColumn($column.name);
+          if($foundColumn->isNotEmpty(),
+            | let relationsSupportingProjectedColumn = $foundColumn->extractTableAliasColumns().alias.relation;
+              print(if(!$context.debug, |'', | $context.space+'Found depth-2 nested select while processing column - ' +  $column.name + '. Adding inner relations from depth-2 subselect for handling class mapping filter with inner join : ' + $relationsSupportingProjectedColumn->map(rel | $rel->buildUniqueName(false, $extensions))->joinStrings('[', ' , ', ']')));
+              let columnName = $foundColumn->toOne()->extractColumnName();
+              if($relationsSupportingProjectedColumn->concatenate($s)->contains($relationalElement) || $relationalElement->instanceOf(RelationFunction), 
+                | ^TableAliasColumn(alias = $n.alias, columnName = $columnName, column = ^$column(name = $columnName)),
+                | []
+              );,
+            | []
+          );,
+        r:RelationalOperationElement[1]|if($r == $relationalElement,
+                                          | ^TableAliasColumn(alias = $n.alias, columnName = $column.name, column = ^$column(name = $column.name));,
+                                          | [];
+                                        );
+      ]
+    )
+  );
 }
 
 function meta::relational::functions::pureToSqlQuery::processProperty(property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], currentPropertyMapping:PropertyMapping[*], propertyMappingFromRouter:PropertyMapping[*], srcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1],

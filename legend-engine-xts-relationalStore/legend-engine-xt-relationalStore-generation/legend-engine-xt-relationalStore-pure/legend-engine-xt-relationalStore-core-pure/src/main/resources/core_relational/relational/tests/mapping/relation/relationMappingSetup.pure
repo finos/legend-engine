@@ -192,6 +192,7 @@ Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::
 {
   firstName: String[1];
   age: Integer[1];
+  firmId: Integer[1];
 }
 
 Class <<temporal.bitemporal>> meta::relational::tests::mapping::relation::BiTemporalPerson
@@ -392,6 +393,33 @@ Mapping meta::relational::tests::mapping::relation::SnapshotMilestonedMapping
   {
     biztEmployees[biztFirm, biztPerson]: $this.id == $that.firmId,
     biztFirm[biztPerson, biztFirm]: $this.firmId == $that.id
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::MixedTemporalMilestonedMapping
+(
+  *BusinessTemporalPerson[biztPerson]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::mapping::relation::MilestonedDB]PERSON_TABLE_BUSINESS_TEMPORAL.ID
+    )
+    ~mainTable [meta::relational::tests::mapping::relation::MilestonedDB]PERSON_TABLE_BUSINESS_TEMPORAL
+    firstName: [meta::relational::tests::mapping::relation::MilestonedDB]PERSON_TABLE_BUSINESS_TEMPORAL.FIRSTNAME,
+    firmId: [meta::relational::tests::mapping::relation::MilestonedDB]PERSON_TABLE_BUSINESS_TEMPORAL.FIRMID
+  }
+
+  *BusinessTemporalFirm[biztFirm]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::firmFunctionWithBusinessTemporalMilestoning():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  BusinessTemporalPerson_BusinessTemporalFirm: XStore
+  {
+    biztEmployees[biztFirm, biztPerson]: ($this.id == $that.firmId) && ($this.id < 2),
+    biztFirm[biztPerson, biztFirm]: ($this.firmId == $that.id) && ($that.id < 2)
   }
 )
 
