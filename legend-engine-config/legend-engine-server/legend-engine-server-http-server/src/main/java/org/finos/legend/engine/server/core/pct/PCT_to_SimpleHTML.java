@@ -242,7 +242,7 @@ public class PCT_to_SimpleHTML
         FunctionDefinition f = functionDocumentation.functionDefinition;
         String color = isPlatformOnly(f) ? "color:#DDDDDD;" : f.name == null ? "color:#79d6db" : "color:#000000;";
         String character = getGrammarCharacter(f);
-        return (character != null ? "<span style='color:#34eb92'>" + character + "&nbsp;&nbsp;</span>" : "") + "<a href='" + moduleURLs.get(module) + f.sourceId + "' style='" + color + "'>" + (f.name == null ? "composition-tests" : f.name) + "</a>";
+        return (character != null ? "<span style='color:#34eb92'>" + character + "&nbsp;&nbsp;</span>" : "") + "<a href='" + moduleURLs.get(module) + f.sourceId + "' style='" + color + "' target='_blank'>" + (f.name == null ? "composition-tests" : f.name) + "</a>";
     }
 
     private static String printFuncSignatures(FunctionDocumentation functionDocumentation)
@@ -351,7 +351,7 @@ public class PCT_to_SimpleHTML
     private static String bottom =
             "</body>\n" +
                     "<footer style='font-size: 15px;'>\n" +
-                    String.format("PCT results as of %s using commit <a href='https://github.com/finos/legend-engine/tree/%s'>%s</a>.\n", DeploymentStateAndVersions.sdlc.commitTime, getCommitId(), getCommitId()) +
+                    String.format("PCT results as of %s using commit <a href='https://github.com/finos/legend-engine/tree/%s' target='_blank'>%s</a>.\n", DeploymentStateAndVersions.sdlc.commitTime, getCommitId(), getCommitId()) +
                     "</footer>\n" +
                     "</html>";
 
