@@ -14,20 +14,36 @@
 
 import meta::relational::mapping::*;
 
-function <<test.Test>> meta::external::query::sql::expression::tests::testExpression():Boolean[1]
+function <<test.Test>> meta::external::query::sql::expression::tests::testSimpleFilter():Boolean[1]
 {
   let res = meta::legend::compile(readFile('/core_external_query_sql_expression_tests/tests/query.legend')->toOne());
   let plan = meta::pure::executionPlan::executionPlan(
-    $res->filter(p|$p.name == 'f__Any_MANY_')->toOne()->cast(@FunctionDefinition<Any>),
+    $res->filter(p|$p.name == 'simpleFilter__Any_MANY_')->toOne()->cast(@FunctionDefinition<Any>),
     meta::pure::extension::runtime::getExtensions(),
     noDebug()
   );
   assertEquals('select "mytab_0".name as "name" from myTab as "mytab_0" where "mytab_0".name = \'www\'', $plan.rootExecutionNode->cast(@RelationalTdsInstantiationExecutionNode).executionNodes->cast(@SQLExecutionNode).sqlQuery);
+}
 
-  let plan2 = meta::pure::executionPlan::executionPlan(
-    $res->filter(p|$p.name == 'f2__Any_MANY_')->toOne()->cast(@FunctionDefinition<Any>),
+function <<test.Test>> meta::external::query::sql::expression::tests::testMixedFilter():Boolean[1]
+{
+  let res = meta::legend::compile(readFile('/core_external_query_sql_expression_tests/tests/query.legend')->toOne());
+  let plan = meta::pure::executionPlan::executionPlan(
+    $res->filter(p|$p.name == 'mixedExpression__Any_MANY_')->toOne()->cast(@FunctionDefinition<Any>),
     meta::pure::extension::runtime::getExtensions(),
     noDebug()
   );
-  assertEquals('select "mytab_0".name as "name" from myTab as "mytab_0" where "mytab_0".name = \'www2\'', $plan2.rootExecutionNode->cast(@RelationalTdsInstantiationExecutionNode).executionNodes->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('select "mytab_0".name as "name" from myTab as "mytab_0" where "mytab_0".name = \'www2\'', $plan.rootExecutionNode->cast(@RelationalTdsInstantiationExecutionNode).executionNodes->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::external::query::sql::expression::tests::testMultiLineExpression():Boolean[1]
+{
+   let res = meta::legend::compile(readFile('/core_external_query_sql_expression_tests/tests/query.legend')->toOne());
+   let plan = meta::pure::executionPlan::executionPlan(
+    $res->filter(p|$p.name == 'fmultiExpressions__Any_MANY_')->toOne()->cast(@FunctionDefinition<Any>),
+    meta::pure::extension::runtime::getExtensions(),
+    noDebug()
+  );
+  assertEquals('with q as (select "mytab_0".name as "name" from myTab as "mytab_0") select "q_0"."name" from q as "q_0" where "q_0"."name" = \'www\'', $plan.rootExecutionNode->cast(@RelationalTdsInstantiationExecutionNode).executionNodes->cast(@SQLExecutionNode).sqlQuery);
+
 }

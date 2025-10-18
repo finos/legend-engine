@@ -1948,7 +1948,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::rowExpressionContext(context:SqlTransformContext[1]):SqlTransformExpressionContext[1]
 {
   if ($context.relation->isTrue(),
-    | expressionContext(^VariableExpression(genericType = ^InferredGenericType(), name = 'x', multiplicity = PureOne), ^Map<String, VariableExpression>(), $context.relation->isTrue()),
+    | expressionContext(^VariableExpression(genericType = ^InferredGenericType(), name = 'x', multiplicity = PureOne)->evaluateAndDeactivate(), ^Map<String, VariableExpression>(), $context.relation->isTrue()),
     | expressionContext(^VariableExpression(genericType = ^GenericType(rawType = TDSRow),name = 'row', multiplicity = PureOne), ^Map<String, VariableExpression>(), $context.relation->isTrue()))
 
 }
@@ -2572,7 +2572,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         multiplicity = $column.multiplicity->orElse(ZeroOne),
         parametersValues = $var,
         genericType = ^GenericType(rawType = $column.type)
-      ),
+      )->evaluateAndDeactivate(),
     | createTdsGetColumn($column, $var, $expContext, $context));
 }
 
