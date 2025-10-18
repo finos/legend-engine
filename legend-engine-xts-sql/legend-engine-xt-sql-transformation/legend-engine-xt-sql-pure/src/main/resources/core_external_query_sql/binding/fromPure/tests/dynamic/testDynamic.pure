@@ -34,6 +34,13 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               transform('select n from tb(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb\')',[]));
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicTableUsingCTE():Boolean[1]
+{
+  assertEquals('|let tab = #>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->meta::pure::functions::relation::select(~[n]);\n'+
+               ' $tab->meta::pure::functions::relation::filter(x: (n:meta::pure::precisePrimitives::Varchar(200))[1]|$x.n == \'a\');\n',
+              transform('with tab as (select n from tb(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb\')) select n from tab where n = \'a\'',[]));
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicTableInjectedSpec():Boolean[1]
 {
   assertEquals('|#>{legend::db.myTb}#->meta::pure::functions::relation::select(~[a])',
