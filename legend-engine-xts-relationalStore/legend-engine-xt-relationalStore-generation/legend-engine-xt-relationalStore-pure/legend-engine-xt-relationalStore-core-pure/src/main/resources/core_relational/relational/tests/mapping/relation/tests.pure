@@ -13,6 +13,8 @@
 // limitations under the License.
 
 ###Pure
+import meta::pure::executionPlan::toString::*;
+import meta::pure::executionPlan::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::*;
 import meta::pure::router::*;
@@ -20,11 +22,11 @@ import meta::pure::mapping::*;
 import meta::pure::metamodel::relation::*;
 import meta::relational::tests::mapping::relation::*;
 
-function <<access.private>> meta::relational::tests::mapping::relation::testTds(func: FunctionDefinition<{->TabularDataSet[1]}>[1], mapping: Mapping[1], expectedRows:String[*]):Boolean[1]
+function <<access.private>> meta::relational::tests::mapping::relation::testTds(func: FunctionDefinition<{->TabularDataSet[1]}>[1], mapping: Mapping[1], db:Database[1], expectedRows:String[*]):Boolean[1]
 {
   let result = execute($func, 
                       $mapping, 
-                      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB), 
+                      meta::external::store::relational::tests::testRuntime($db), 
                       meta::relational::extension::relationalExtensions()
                     ).values->at(0);
   assertSameElements($expectedRows, $result.rows->map(r|$r.values->makeString(' | ')));
@@ -33,7 +35,8 @@ function <<access.private>> meta::relational::tests::mapping::relation::testTds(
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testSimpleMappingQuery():Boolean[1]
 {
   testTds(|Person.all()->project(~[name:x|$x.firstName, age:x|$x.age])->cast(@TabularDataSet), 
-          meta::relational::tests::mapping::relation::SimpleMapping, 
+          meta::relational::tests::mapping::relation::SimpleMapping,
+          meta::relational::tests::mapping::relation::testDB,
           ['David | 52', 'Fabrice | 45', 'John | 30', 'Oliver | 26']
         );
 }
@@ -42,6 +45,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName])->cast(@TabularDataSet),
           meta::relational::tests::mapping::relation::SimpleMapping, 
+          meta::relational::tests::mapping::relation::testDB,
           ['David | Firm D', 'Fabrice | Firm C', 'John | Firm X', 'Oliver | Firm C']
         );
 }
@@ -50,6 +54,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|Firm.all()->filter(x|$x.legalName != 'Firm X')->project(~[firmName:x|$x.legalName, name:x|$x.employees.firstName])->cast(@TabularDataSet), 
           meta::relational::tests::mapping::relation::SimpleMapping, 
+          meta::relational::tests::mapping::relation::testDB,        
           ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | Fabrice', 'Firm C | Oliver', 'Firm D | David']
         );
 }
@@ -58,6 +63,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|Person.all()->project(~[name1:x|$x.firstName, name2:x|$x.firm.employees->filter(e|$e.age < 35).firstName])->cast(@TabularDataSet), 
           meta::relational::tests::mapping::relation::SimpleMapping, 
+          meta::relational::tests::mapping::relation::testDB,        
           ['David | TDSNull', 'Fabrice | TDSNull', 'John | John', 'Oliver | Fabrice', 'Oliver | Oliver']
         );
 }
@@ -67,6 +73,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
   testTds(|Person.all()->groupBy([p|$p.firm.legalName], [agg(p|$p.age, y | $y->average())], ['name', 'averageAge'])
                       ->project([col(r:TDSRow[1]|$r.getString('name'), 'name'), col(r:TDSRow[1]|$r.getString('averageAge'), 'averageAge')]),
           meta::relational::tests::mapping::relation::SimpleMapping,
+          meta::relational::tests::mapping::relation::testDB,        
           ['Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 30.0']
         );
 }
@@ -75,6 +82,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|Person.all()->project(~[name:x|$x.firstName, age:x|$x.age])->cast(@TabularDataSet), 
             meta::relational::tests::mapping::relation::MixedMapping, 
+            meta::relational::tests::mapping::relation::testDB,        
             ['David | 52', 'Fabrice | 45', 'John | 30', 'Oliver | 26']
         );
 }
@@ -82,7 +90,8 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMixedMappingWithAssociation():Boolean[1]
 {
   testTds(|Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName])->cast(@TabularDataSet), 
-          meta::relational::tests::mapping::relation::MixedMapping, 
+          meta::relational::tests::mapping::relation::MixedMapping,
+          meta::relational::tests::mapping::relation::testDB,        
           ['David | Firm D', 'Fabrice | Firm C', 'John | Firm X', 'Oliver | Firm C']
         );
 }
@@ -91,6 +100,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|Firm.all()->filter(x|$x.legalName != 'Firm X')->project(~[name1:x|$x.legalName, name2:x|$x.employees.firstName])->cast(@TabularDataSet), 
           meta::relational::tests::mapping::relation::MixedMapping, 
+          meta::relational::tests::mapping::relation::testDB,        
           ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | Fabrice', 'Firm C | Oliver', 'Firm D | David']
         );
 }
@@ -100,6 +110,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix>> m
 {
   testTds(|Person.all()->project(~[name1:x|$x.firstName, name2:x|$x.firm.employees->filter(e|$e.age < 35).firstName])->cast(@TabularDataSet), 
           meta::relational::tests::mapping::relation::MixedMapping, 
+          meta::relational::tests::mapping::relation::testDB,        
           ['David | TDSNull', 'Fabrice | TDSNull', 'John | John', 'Oliver | Fabrice', 'Oliver | Oliver']
         );
 }
@@ -109,6 +120,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
   testTds(|Person.all()->groupBy([p|$p.firm.legalName], [agg(p|$p.age, y | $y->average())], ['name', 'averageAge'])
                       ->project([col(r:TDSRow[1]|$r.getString('name'), 'name'), col(r:TDSRow[1]|$r.getString('averageAge'), 'averageAge')]),
           meta::relational::tests::mapping::relation::MixedMapping,
+          meta::relational::tests::mapping::relation::testDB,        
           ['Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 30.0']
         );
 }
@@ -116,7 +128,8 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithWindowColumn():Boolean[1]
 {
   testTds(|ExtendedPerson.all()->filter(x|$x.age > 25)->project(~[name:x|$x.firstName, groupName:x|$x.groupName, rank:x|$x.rank])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::WindowColumnMapping, 
+          meta::relational::tests::mapping::relation::WindowColumnMapping,
+          meta::relational::tests::mapping::relation::testDB,        
           ['David | Group D | 1', 'Fabrice | Group C | 1', 'John | Group A | 2', 'Oliver | Group C | 2']
         );
 }
@@ -125,6 +138,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|GroupByClass.all(%2020-01-01)->project(~[firmId:x|$x.firmId, sum:x|$x.sum])->cast(@TabularDataSet),
           meta::relational::tests::mapping::relation::GroupByMapping, 
+          meta::relational::tests::mapping::relation::testDB,        
           ['1 | 53', '2 | 23', '3 | 19', '4 | 71', '5 | 52']
         );
 }
@@ -133,6 +147,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|ProcessingTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
           meta::relational::tests::mapping::relation::SnapshotMilestonedMapping, 
+          meta::relational::tests::mapping::relation::MilestonedDB,        
           ['Anthony | Firm B', 'David | TDSNull', 'Peter | TDSNull']
         );
 }
@@ -141,6 +156,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|ProcessingTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
         meta::relational::tests::mapping::relation::SnapshotMilestonedMapping, 
+        meta::relational::tests::mapping::relation::MilestonedDB,        
         ['Anthony | Firm B', 'David | TDSNull', 'Jane | Firm A', 'John | TDSNull', 'Oliver | TDSNull', 'Peter | TDSNull']
       );
 }
@@ -149,6 +165,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|BusinessTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
           meta::relational::tests::mapping::relation::SnapshotMilestonedMapping, 
+          meta::relational::tests::mapping::relation::MilestonedDB,        
           ['Anthony | Firm B', 'David | TDSNull', 'Peter | TDSNull']
         );
 }
@@ -157,6 +174,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|BusinessTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
           meta::relational::tests::mapping::relation::SnapshotMilestonedMapping, 
+          meta::relational::tests::mapping::relation::MilestonedDB,        
           ['Anthony | Firm B', 'David | TDSNull', 'Jane | Firm A', 'John | TDSNull', 'Oliver | TDSNull', 'Peter | TDSNull']
         );
 }
@@ -165,6 +183,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|ProcessingTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
           meta::relational::tests::mapping::relation::TemporalMilestonedMapping, 
+          meta::relational::tests::mapping::relation::MilestonedDB,        
           ['Anthony | Firm B', 'Jane | TDSNull', 'Peter | Firm X']
         );
 }
@@ -173,6 +192,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|ProcessingTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
         meta::relational::tests::mapping::relation::TemporalMilestonedMapping, 
+        meta::relational::tests::mapping::relation::MilestonedDB,        
         ['Anthony | Firm B', 'Fabrice | Firm C', 'Jane | TDSNull', 'Oliver | Firm C', 'Peter | Firm X']
       );
 }
@@ -181,6 +201,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|BusinessTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
           meta::relational::tests::mapping::relation::TemporalMilestonedMapping, 
+          meta::relational::tests::mapping::relation::MilestonedDB,        
           ['Anthony | Firm B', 'Jane | TDSNull', 'Peter | Firm X']
         );
 }
@@ -189,6 +210,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|BusinessTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
           meta::relational::tests::mapping::relation::TemporalMilestonedMapping, 
+          meta::relational::tests::mapping::relation::MilestonedDB,        
           ['Anthony | Firm B', 'Fabrice | Firm C', 'Jane | TDSNull', 'Oliver | Firm C', 'Peter | Firm X']
         );
 }
@@ -197,6 +219,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|BiTemporalPerson.all(%2025-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.btFirm(%2024-11-01, %2024-11-01).legalName])->cast(@TabularDataSet),
           meta::relational::tests::mapping::relation::TemporalMilestonedMapping, 
+          meta::relational::tests::mapping::relation::MilestonedDB,        
           ['Anthony | Firm B', 'Jane | TDSNull', 'Peter | Firm X']
         );
 }
@@ -205,6 +228,35 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 {
   testTds(|ProcessingTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName])->cast(@TabularDataSet),
           meta::relational::tests::mapping::relation::MultipleMilestonedTablesMapping, 
+          meta::relational::tests::mapping::relation::MilestonedDB,        
           ['Peter']
+        );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMixedTemporalMapping():Boolean[1]
+{
+  testTds(|BusinessTemporalPerson.all(%2025-01-01)->project(~[name:x|$x.firstName, legalName:x|$x.biztFirm(%2025-01-01).legalName])->cast(@TabularDataSet),
+          meta::relational::tests::mapping::relation::MixedTemporalMilestonedMapping, 
+          meta::relational::tests::mapping::relation::MilestonedDB,        
+          ['Anthony | TDSNull', 'Jane | TDSNull', 'Peter | Firm X']
+        );
+}
+
+// Generates incorrect SQL due to incorrect milestoning filter in self join condition added due to isolation
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::testMixedTemporalMappingWithAllVersionsInRange1():Boolean[1]
+{
+  testTds(|BusinessTemporalPerson.all(%2025-01-01)->project(~[name:x|$x.firstName, legalName:x|$x.biztFirmAllVersionsInRange(%2024-01-01, %2025-01-01).legalName])->cast(@TabularDataSet),
+          meta::relational::tests::mapping::relation::MixedTemporalMilestonedMapping, 
+          meta::relational::tests::mapping::relation::MilestonedDB,        
+          ['Anthony | TDSNull', 'Jane | TDSNull', 'Peter | Firm X']
+        );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMixedTemporalMappingWithAllVersionsInRange2():Boolean[1]
+{
+  testTds(|BusinessTemporalFirm.all(%2025-01-01)->project(~[legalName:x|$x.legalName, employeeName:x|$x.biztEmployeesAllVersionsInRange(%2024-01-01, %2025-01-01).firstName])->cast(@TabularDataSet),
+          meta::relational::tests::mapping::relation::MixedTemporalMilestonedMapping, 
+          meta::relational::tests::mapping::relation::MilestonedDB,        
+          ['Firm X | Peter']
         );
 }
