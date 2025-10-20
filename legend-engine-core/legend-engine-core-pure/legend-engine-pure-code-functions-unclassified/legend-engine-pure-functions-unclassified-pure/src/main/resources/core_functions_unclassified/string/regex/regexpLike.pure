@@ -14,13 +14,13 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> {doc.doc = 'Returns true or false depending on whether its pattern matches the given string. Unlike the function, meta::pure::functions::string::matches, it does not require the entire string to match. It succeeds if the string merely contains the pattern, unless the special tokens ^ and $ are used to anchor the regular expression to the start and end of the string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters.'}
+function <<PCT.function>> {doc.doc = 'Returns true or false depending on whether its pattern matches the given string. Unlike the function, meta::pure::functions::string::matches, it does not require the entire string to match. It succeeds if the string merely contains the pattern, unless the special tokens ^ and $ are used to anchor the regular expression to the start and end of the string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
   meta::pure::functions::string::regexpLike(string:String[1], regexp:String[1]):Boolean[1]
 {
   $string->regexpLike($regexp, [RegexpParameter.CASE_SENSITIVE]);
 }
 
-native function <<PCT.function>> {doc.doc = 'Returns true or false depending on whether its pattern matches the given string. Unlike the function, meta::pure::functions::string::matches, it does not require the entire string to match. It succeeds if the string merely contains the pattern, unless the special tokens ^ and $ are used to anchor the regular expression to the start and end of the string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters.'}
+native function <<PCT.function>> {doc.doc = 'Returns true or false depending on whether its pattern matches the given string. Unlike the function, meta::pure::functions::string::matches, it does not require the entire string to match. It succeeds if the string merely contains the pattern, unless the special tokens ^ and $ are used to anchor the regular expression to the start and end of the string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
   meta::pure::functions::string::regexpLike(string:String[1], regexp:String[1], regexpParameters:RegexpParameter[1..*]):Boolean[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::regexpLike::testRegexpLike<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

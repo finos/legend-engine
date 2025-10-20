@@ -14,25 +14,25 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters.'}
+function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
   meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1]):Integer[1]
 {
   $string->regexpIndexOf($regexp, 0, [RegexpParameter.CASE_SENSITIVE]);
 }
 
-function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters.'}
+function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
   meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1], groupNumber:Integer[1]):Integer[1]
 {
   $string->regexpIndexOf($regexp, $groupNumber, [RegexpParameter.CASE_SENSITIVE]);
 }
 
-function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters.'}
+function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
   meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1], regexpParameters:RegexpParameter[1..*]):Integer[1]
 {
   $string->regexpIndexOf($regexp, 0, $regexpParameters);
 }
 
-native function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters.'}
+native function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
   meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1], groupNumber:Integer[1], regexpParameters:RegexpParameter[1..*]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
