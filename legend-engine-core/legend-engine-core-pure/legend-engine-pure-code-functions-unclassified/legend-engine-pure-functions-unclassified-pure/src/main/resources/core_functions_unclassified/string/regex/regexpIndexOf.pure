@@ -1,0 +1,47 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+  meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1]):Integer[1]
+{
+  $string->regexpIndexOf($regexp, 0, [RegexpParameter.CASE_SENSITIVE]);
+}
+
+function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+  meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1], groupNumber:Integer[1]):Integer[1]
+{
+  $string->regexpIndexOf($regexp, $groupNumber, [RegexpParameter.CASE_SENSITIVE]);
+}
+
+function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+  meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1], regexpParameters:RegexpParameter[1..*]):Integer[1]
+{
+  $string->regexpIndexOf($regexp, 0, $regexpParameters);
+}
+
+native function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+  meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1], groupNumber:Integer[1], regexpParameters:RegexpParameter[1..*]):Integer[1];
+
+function <<PCT.test>> meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(3, $f->eval(|'It was the best of times, it was the worst of times'->regexpIndexOf('was')));
+  assertEquals(0, $f->eval(|'abc123def'->regexpIndexOf('([a-z]+)([0-9]+)')));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals(3, $f->eval(|'abc123def'->regexpIndexOf('([a-z]+)([0-9]+)', 2)));
+}

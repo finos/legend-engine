@@ -1,0 +1,76 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> {doc.doc = 'Returns true or false depending on whether its pattern matches the given string. Unlike the function, meta::pure::functions::string::matches, it does not require the entire string to match. It succeeds if the string merely contains the pattern, unless the special tokens ^ and $ are used to anchor the regular expression to the start and end of the string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+  meta::pure::functions::string::regexpLike(string:String[1], regexp:String[1]):Boolean[1]
+{
+  $string->regexpLike($regexp, [RegexpParameter.CASE_SENSITIVE]);
+}
+
+native function <<PCT.function>> {doc.doc = 'Returns true or false depending on whether its pattern matches the given string. Unlike the function, meta::pure::functions::string::matches, it does not require the entire string to match. It succeeds if the string merely contains the pattern, unless the special tokens ^ and $ are used to anchor the regular expression to the start and end of the string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+  meta::pure::functions::string::regexpLike(string:String[1], regexp:String[1], regexpParameters:RegexpParameter[1..*]):Boolean[1];
+
+function <<PCT.test>> meta::pure::functions::string::tests::regexpLike::testRegexpLike<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assert($f->eval(|'hello'->regexpLike('hello')));
+  assert($f->eval(|'abcd'->regexpLike('[a-z][a-z][a-z]')));
+  assert($f->eval(|'abc'->regexpLike('^abc$')));
+  assert($f->eval(|'abc'->regexpLike('a')));
+  assert($f->eval(|'abc'->regexpLike('.*(b|d).*')));
+  assert($f->eval(|'abc'->regexpLike('(b|c).*')));
+  assertFalse($f->eval(|'abc'->regexpLike('^a$')));
+  assertFalse($f->eval(|'abc'->regexpLike('^(b|c).*')));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assert($f->eval(|'aBcd'->regexpLike('[A-Z][a-z][a-z]', [RegexpParameter.CASE_SENSITIVE])));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assert($f->eval(|'abc'->regexpLike('A', [RegexpParameter.CASE_INSENSITIVE])));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assert($f->eval(|'abc\ndef'->regexpLike('^def', [RegexpParameter.MULTILINE])));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::regexpLike::testRegexpLike_NonNewlineSensitive<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assert($f->eval(|'abc\ndef'->regexpLike('abc.def', [RegexpParameter.NON_NEWLINE_SENSITIVE])));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assert($f->eval(|'Hello\nworld'->regexpLike('^WORLD', [RegexpParameter.CASE_INSENSITIVE, RegexpParameter.MULTILINE])));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_NonNewlineSensitive<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assert($f->eval(|'foo\nbar'->regexpLike('FOO.BAR', [RegexpParameter.CASE_INSENSITIVE, RegexpParameter.NON_NEWLINE_SENSITIVE])));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assert($f->eval(|'start\nend'->regexpLike('^end', [RegexpParameter.MULTILINE, RegexpParameter.NON_NEWLINE_SENSITIVE])));
+}
+
+function <<PCT.test>> meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assert($f->eval(|'Foo\nBar'->regexpLike('^BAR', [RegexpParameter.CASE_INSENSITIVE, RegexpParameter.MULTILINE, RegexpParameter.NON_NEWLINE_SENSITIVE])));
+}

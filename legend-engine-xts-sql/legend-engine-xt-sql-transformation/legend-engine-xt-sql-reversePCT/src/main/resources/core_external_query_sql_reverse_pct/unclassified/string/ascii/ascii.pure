@@ -62,7 +62,7 @@ function meta::external::query::sql::reversePCT::tests::unclassified::string::as
                  revsForTest(
                       'meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_',
                       [
-                        revError('|\'\n'+
+                        revError('|\'\\n'+
                             '\'->meta::pure::functions::string::ascii()',
                                  '',
                                  'Unexpected token',
