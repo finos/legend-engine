@@ -19,6 +19,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 
 /**
  * A class to encapsulate compilation-related mappings for tables and schemas.
@@ -26,6 +28,8 @@ import java.util.Map;
 public class TableTransformationMap
 {
     private final Map<TablePtr, TablePtr> tableMappings;
+
+    public final Map<TablePtrCacheKey, TablePtr> tablePtrResolutionCache = new ConcurrentHashMap<>();
 
     public TableTransformationMap()
     {
@@ -40,5 +44,38 @@ public class TableTransformationMap
     public Map<TablePtr, TablePtr> getTableMappings()
     {
         return Collections.unmodifiableMap(tableMappings);
+    }
+
+    static class TablePtrCacheKey
+    {
+        private final String databasePath;
+        private final TablePtr inputTablePtr;
+
+        public TablePtrCacheKey(String databasePath, TablePtr tableptr)
+        {
+            this.databasePath = databasePath;
+            this.inputTablePtr = tableptr;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+            {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass())
+            {
+                return false;
+            }
+            TablePtrCacheKey tablePtrKey = (TablePtrCacheKey) o;
+            return Objects.equals(databasePath, tablePtrKey.databasePath) && Objects.equals(inputTablePtr, tablePtrKey.inputTablePtr);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(databasePath, inputTablePtr);
+        }
     }
 }

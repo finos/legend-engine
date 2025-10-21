@@ -279,7 +279,7 @@ public class HelperRelationalBuilder
         {
             if (tableptr != null && context != null && context.pureModel != null && context.pureModel.tableTransformationMap != null)
             {
-                TablePtr mappedTablePtr = context.pureModel.tableTransformationMap.getTableMappings().get(tableptr);
+                TablePtr mappedTablePtr = getTablePtrForGeneratedTable(db, tableptr, context, sourceInformation);
                 if (mappedTablePtr != null)
                 {
                     table = findRelation(db, mappedTablePtr.schema, mappedTablePtr.table, sourceInformation);
@@ -293,6 +293,35 @@ public class HelperRelationalBuilder
             throw new EngineException("Can't find table '" + _table + "' in schema '" + _schema + "' and database '" + db.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
         return table;
+    }
+
+    public static TablePtr getTablePtrForGeneratedTable(Database db, TablePtr tableptr, CompileContext context, SourceInformation sourceInformation)
+    {
+        String databasePath = PackageableElement.getUserPathForPackageableElement(db);
+        TableTransformationMap.TablePtrCacheKey cacheKey = new TableTransformationMap.TablePtrCacheKey(databasePath, tableptr);
+
+        return context.pureModel.tableTransformationMap.tablePtrResolutionCache.computeIfAbsent(cacheKey, key ->
+        {
+            TablePtr mappedTablePtr = context.pureModel.tableTransformationMap.getTableMappings().get(tableptr);
+            if (mappedTablePtr == null)
+            {
+                for (Database includedDB : getAllIncludedDBs(db))
+                {
+                    TablePtr newPtr = new TablePtr();
+                    newPtr._type = "Table";
+                    newPtr.database = PackageableElement.getUserPathForPackageableElement(includedDB);
+                    newPtr.schema = tableptr.schema;
+                    newPtr.table = tableptr.table;
+
+                    mappedTablePtr = context.pureModel.tableTransformationMap.getTableMappings().get(newPtr);
+                    if (mappedTablePtr != null)
+                    {
+                        break;
+                    }
+                }
+            }
+            return mappedTablePtr;
+        });
     }
 
     private static Relation findRelation(Database database, final String schemaName, final String tableName, SourceInformation sourceInformation)
