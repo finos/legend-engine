@@ -196,6 +196,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     joinProcessor_default(),
     asOfJoinProcessorForDuckDB(),
     querySpecificationProcessor_default(),
+    queryWithScopeProcessor_default(),
     unionProcessor_default(),
     tableSubqueryProcessor_default(),
     tablePlaceholderProcessor_default(),

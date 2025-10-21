@@ -36,7 +36,7 @@ singleExpression
     ;
 
 statement
-    : query                                                                          #default
+    : queryStatement                                                                 #default
     | BEGIN (WORK | TRANSACTION)? (transactionMode (COMMA? transactionMode)*)?       #begin
     | START TRANSACTION (transactionMode (COMMA? transactionMode)*)?                 #startTransaction
     | COMMIT (WORK | TRANSACTION)?                                                   #commit
@@ -93,7 +93,7 @@ statement
     | ANALYZE                                                                        #analyze
     | DISCARD (ALL | PLANS | SEQUENCES | TEMPORARY | TEMP)                           #discard
     | DECLARE ident declareCursorParams
-        CURSOR ((WITH | WITHOUT) HOLD)? FOR queryNoWith                              #declare
+        CURSOR ((WITH | WITHOUT) HOLD)? FOR querySpec                                #declare
     | FETCH (direction)? (IN | FROM)? ident                                          #fetch
     | CLOSE (ident | ALL)                                                            #close
     ;
@@ -140,19 +140,40 @@ alterStmt
 
 
 queryOptParens
-    : OPEN_ROUND_BRACKET query CLOSE_ROUND_BRACKET
-    | query
+    : OPEN_ROUND_BRACKET queryStatement CLOSE_ROUND_BRACKET
+    | queryStatement
     | OPEN_ROUND_BRACKET queryOptParens CLOSE_ROUND_BRACKET
     ;
 
-query
-    : with? queryNoWith
+queryStatement
+    : querySpecWithScope
     ;
 
-queryNoWith
-    : queryTerm
-      (ORDER BY sortItem (COMMA sortItem)*)?
-      (limitClause? offsetClause? | offsetClause? limitClause?)
+querySpecWithScope
+    : with? querySpec
+    ;
+
+querySpec
+    : ((OPEN_ROUND_BRACKET selectQuery CLOSE_ROUND_BRACKET) | selectQuery) queryTermExtension*  #defaultQuerySpec
+    | VALUES values (COMMA values)*                                                             #valuesRelation
+    ;
+
+queryTermExtension
+    : (queryTermIntersectExtension | queryTermUnionExtension)
+    ;
+
+queryTermIntersectExtension
+    : operator=(INTERSECT | EXCEPT) second=querySpecOptParens
+    ;
+
+queryTermUnionExtension
+    : operator=UNION setQuant? right=querySpecOptParens
+    ;
+
+querySpecOptParens
+    : OPEN_ROUND_BRACKET querySpecWithScope CLOSE_ROUND_BRACKET
+    | querySpecWithScope
+    | OPEN_ROUND_BRACKET querySpecOptParens CLOSE_ROUND_BRACKET
     ;
 
 limitClause
@@ -164,12 +185,6 @@ offsetClause
     : OFFSET offset=parameterOrInteger (ROW | ROWS)?
     ;
 
-queryTerm
-    : querySpec                                                                      #queryTermDefault
-    | first=querySpec operator=(INTERSECT | EXCEPT) second=querySpec                 #setOperation
-    | left=queryTerm operator=UNION setQuant? right=queryTerm                        #setOperation
-    ;
-
 setQuant
     : DISTINCT
     | ALL
@@ -179,14 +194,16 @@ sortItem
     : expr ordering=(ASC | DESC)? (NULLS nullOrdering=(FIRST | LAST))?
     ;
 
-querySpec
-    : SELECT setQuant? selectItem (COMMA selectItem)*
-      (FROM relation (COMMA relation)*)?
-      where?
-      (GROUP BY expr (COMMA expr)*)?
-      (HAVING having=booleanExpression)?
-      (WINDOW windows+=namedWindow (COMMA windows+=namedWindow)*)?                   #defaultQuerySpec
-    | VALUES values (COMMA values)*                                                  #valuesRelation
+selectQuery
+    :
+    SELECT setQuant? selectItem (COMMA selectItem)*
+          (FROM relation (COMMA relation)*)?
+          where?
+          (GROUP BY expr (COMMA expr)*)?
+          (HAVING having=booleanExpression)?
+          (WINDOW windows+=namedWindow (COMMA windows+=namedWindow)*)?
+          (ORDER BY sortItem (COMMA sortItem)*)?
+          (limitClause? offsetClause? | offsetClause? limitClause?)
     ;
 
 selectItem
@@ -209,15 +226,11 @@ filter
 
 relation
     : left=relation
-      ( CROSS JOIN right=relation (WITH ORDINALITY AS? ident aliasedColumns)?
+      ( CROSS JOIN right=aliasedRelation (WITH ORDINALITY AS? ident aliasedColumns)?
       | joinType JOIN rightRelation=relation joinCriteria
-      | NATURAL joinType JOIN right=relation
-      | operator=UNION setQuant? right=relation
-      | operator=(INTERSECT | EXCEPT) right=relation
+      | NATURAL joinType JOIN right=aliasedRelation
       )                                                                              #joinRelation
     | aliasedRelation                                                                #relationDefault
-    | relationPrimary                                                                #primaryRelation
-    | query                                                                          #queryRelation
     ;
 
 joinType
@@ -238,7 +251,7 @@ aliasedRelation
 
 relationPrimary
     : table                                                                          #tableRelation
-    | OPEN_ROUND_BRACKET query CLOSE_ROUND_BRACKET                                   #subqueryRelation
+    | OPEN_ROUND_BRACKET queryStatement CLOSE_ROUND_BRACKET                          #subqueryRelation
     | OPEN_ROUND_BRACKET relation CLOSE_ROUND_BRACKET                                #parenthesizedRelation
     ;
 
@@ -270,7 +283,7 @@ with
     ;
 
 namedQuery
-    : name=ident (aliasedColumns)? AS OPEN_ROUND_BRACKET query CLOSE_ROUND_BRACKET
+    : name=ident (aliasedColumns)? AS OPEN_ROUND_BRACKET queryStatement CLOSE_ROUND_BRACKET
     ;
 
 expr
@@ -350,7 +363,7 @@ primaryExpression
         DOT fieldName=ident                                                          #recordSubscript
     | OPEN_ROUND_BRACKET expr CLOSE_ROUND_BRACKET                                    #nestedExpression
     // This is an extension to ANSI SQL, which considers EXISTS to be a <boolean expression>
-    | EXISTS OPEN_ROUND_BRACKET query CLOSE_ROUND_BRACKET                            #exists
+    | EXISTS OPEN_ROUND_BRACKET queryStatement CLOSE_ROUND_BRACKET                            #exists
     | value=primaryExpression
         OPEN_SQUARE_BRACKET index=valueExpression CLOSE_SQUARE_BRACKET               #subscript
     | base=primaryExpression
@@ -388,7 +401,7 @@ explicitFunction
     ;
 
 subqueryExpression
-    : OPEN_ROUND_BRACKET query CLOSE_ROUND_BRACKET
+    : OPEN_ROUND_BRACKET queryStatement CLOSE_ROUND_BRACKET
     ;
 
 parameterOrLiteral
@@ -575,8 +588,8 @@ objectKeyValue
     ;
 
 insertSource
-   : query
-   | OPEN_ROUND_BRACKET query CLOSE_ROUND_BRACKET
+   : queryStatement
+   | OPEN_ROUND_BRACKET queryStatement CLOSE_ROUND_BRACKET
    ;
 
 onConflict

@@ -37,28 +37,13 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitDefault(SqlBaseParser.DefaultContext ctx)
     {
-        return ctx.query().accept(this);
+        return ctx.queryStatement().accept(this);
     }
 
     @Override
-    public String visitQuery(SqlBaseParser.QueryContext ctx)
+    public String visitQueryStatement(SqlBaseParser.QueryStatementContext ctx)
     {
-        return (ctx.with() == null ? "" : ctx.with().accept(this) + " ") + ctx.queryNoWith().accept(this);
-    }
-
-    @Override
-    public String visitQueryNoWith(SqlBaseParser.QueryNoWithContext ctx)
-    {
-        MutableList<String> str = ListIterate.collect(ctx.sortItem(), x -> x.accept(this));
-        return ctx.queryTerm().accept(this) + (str.isEmpty() ? "" : " order by " + str.makeString(", ")) +
-                (ctx.limitClause() == null ? "" : ctx.limitClause().accept(this)) +
-                (ctx.offsetClause() == null ? "" : ctx.offsetClause().accept(this));
-    }
-
-    @Override
-    public String visitQueryTermDefault(SqlBaseParser.QueryTermDefaultContext ctx)
-    {
-        return ctx.querySpec().accept(this);
+        return ctx.querySpecWithScope().accept(this);
     }
 
     @Override
@@ -68,15 +53,33 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     }
 
     @Override
-    public String visitPrimaryRelation(SqlBaseParser.PrimaryRelationContext ctx)
+    public String visitQuerySpecOptParens(SqlBaseParser.QuerySpecOptParensContext ctx)
     {
-        return ctx.relationPrimary().accept(this);
+        return ctx.OPEN_ROUND_BRACKET() != null ? "(" + ctx.querySpecWithScope().accept(this) + ")" :
+                ctx.querySpecOptParens() != null ? ctx.querySpecOptParens().accept(this) :
+                        ctx.querySpecWithScope().accept(this);
     }
 
     @Override
-    public String visitQueryRelation(SqlBaseParser.QueryRelationContext ctx)
+    public String visitQuerySpecWithScope(SqlBaseParser.QuerySpecWithScopeContext ctx)
     {
-        return ctx.query().accept(this);
+        return (ctx.with() == null ? "" : ctx.with().accept(this) + " ") + ctx.querySpec().accept(this);
+    }
+
+    @Override
+    public String visitSelectQuery(SqlBaseParser.SelectQueryContext ctx)
+    {
+        MutableList<String> str = ListIterate.collect(ctx.sortItem(), x -> x.accept(this));
+
+        return "select " + (ctx.setQuant() == null ? "" : ctx.setQuant().getText() + " ") + ListIterate.collect(ctx.selectItem(), x -> x.accept(this)).makeString(", ") +
+                (ctx.FROM() == null ? "" : " from " + ListIterate.collect(ctx.relation(), x -> x.accept(this)).makeString(", ")) +
+                (ctx.where() == null ? "" : ctx.where().accept(this)) +
+                (ctx.GROUP() == null ? "" : " group by " + ListIterate.collect(ctx.expr(), c -> c.accept(this)).makeString(", ")) +
+                (ctx.having == null ? "" : " having " + ctx.having.accept(this)) +
+                (str.isEmpty() ? "" : " order by " + str.makeString(", ")) +
+                (ctx.limitClause() == null ? "" : ctx.limitClause().accept(this)) +
+                (ctx.offsetClause() == null ? "" : ctx.offsetClause().accept(this));
+
     }
 
     @Override
@@ -89,12 +92,10 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
 //                (HAVING having=booleanExpression)?
 //                (WINDOW windows+=namedWindow (COMMA windows+=namedWindow)*)?
 
-
-        return "select " + (ctx.setQuant() == null ? "" : ctx.setQuant().getText() + " ") + ListIterate.collect(ctx.selectItem(), x -> x.accept(this)).makeString(", ") +
-                (ctx.FROM() == null ? "" : " from " + ListIterate.collect(ctx.relation(), x -> x.accept(this)).makeString(", ")) +
-                (ctx.where() == null ? "" : ctx.where().accept(this)) +
-                (ctx.GROUP() == null ? "" : " group by " + ListIterate.collect(ctx.expr(), c -> c.accept(this)).makeString(", ")) +
-                (ctx.having == null ? "" : " having " + ctx.having.accept(this));
+        return (
+                ctx.OPEN_ROUND_BRACKET() != null ? "(" + ctx.selectQuery().accept(this) + ")" :
+                ctx.selectQuery().accept(this)
+                ) + ListIterate.collect(ctx.queryTermExtension(), x -> x.accept(this)).makeString("");
         //+ ListIterate.collect(ctx.windows, c -> c.name.getText() + " as " + c.windowDefinition().accept(this)).makeString(", ");
     }
 
@@ -126,19 +127,28 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
 //                        )                                                                              #joinRelation
 
         return ctx.left.accept(this) + " " +
-                (ctx.operator == null ? "" : ctx.operator.getText() + (ctx.setQuant() == null ? "" : " " + ctx.setQuant().accept(this)) + " " + ctx.right.accept(this)) +
                 (ctx.CROSS() == null ? "" : ctx.CROSS().accept(this) + " join " + ctx.right.accept(this) + (ctx.WITH() == null ? "" : " with ordinality " + ctx.ident().accept(this) + ctx.aliasedColumns().accept(this))) +
                 (ctx.joinCriteria() == null ? "" : ctx.joinType().accept(this) + "join " + ctx.rightRelation.accept(this) + " " + ctx.joinCriteria().accept(this)) +
                 (ctx.NATURAL() == null ? "" : "natural " + ctx.joinType().accept(this) + "join " + ctx.right.accept(this));
     }
 
     @Override
-    public String visitSetOperation(SqlBaseParser.SetOperationContext ctx)
+    public String visitQueryTermExtension(SqlBaseParser.QueryTermExtensionContext ctx)
     {
-//            | first=querySpec operator=(INTERSECT | EXCEPT) second=querySpec                 #setOperation
-//            | left=queryTerm operator=UNION setQuant? right=queryTerm                        #setOperation
-        return (ctx.first == null ? "" : ctx.first.accept(this) + " " + ctx.operator.getText() + " " + ctx.second.accept(this)) +
-                (ctx.left == null ? "" : ctx.left.accept(this) + " " + ctx.operator.getText() + (ctx.setQuant() == null ? "" : " " + ctx.setQuant().accept(this)) + " " + ctx.right.accept(this));
+        return (ctx.queryTermIntersectExtension() == null ? "" : ctx.queryTermIntersectExtension().accept(this)) +
+                (ctx.queryTermUnionExtension() == null ? "" : ctx.queryTermUnionExtension().accept(this));
+    }
+
+    @Override
+    public String visitQueryTermIntersectExtension(SqlBaseParser.QueryTermIntersectExtensionContext ctx)
+    {
+        throw new RuntimeException("Not implemented yet");
+    }
+
+    @Override
+    public String visitQueryTermUnionExtension(SqlBaseParser.QueryTermUnionExtensionContext ctx)
+    {
+        return " " + ctx.operator.getText() + (ctx.setQuant() == null ? "" : " " + ctx.setQuant().accept(this)) + " " + ctx.right.accept(this);
     }
 
     @Override
@@ -259,7 +269,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitNamedQuery(SqlBaseParser.NamedQueryContext ctx)
     {
-        return ctx.name.getText() + " as (" + ctx.query().accept(this) + ")";
+        return ctx.name.getText() + " as (" + ctx.queryStatement().accept(this) + ")";
     }
 
     @Override
@@ -805,7 +815,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     public String visitSubqueryRelation(SqlBaseParser.SubqueryRelationContext ctx)
     {
         //     | OPEN_ROUND_BRACKET query CLOSE_ROUND_BRACKET                                   #subqueryRelation
-        return "(" + ctx.query().accept(this) + ")";
+        return "(" + ctx.queryStatement().accept(this) + ")";
     }
 
     @Override
@@ -1011,7 +1021,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     public String visitExists(SqlBaseParser.ExistsContext ctx)
     {
         //     | EXISTS OPEN_ROUND_BRACKET query CLOSE_ROUND_BRACKET                            #exists
-        return "exists (" + ctx.query().accept(this) + ")";
+        return "exists (" + ctx.queryStatement().accept(this) + ")";
     }
 
     @Override
@@ -1123,7 +1133,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
 //        subqueryExpression
 //        : OPEN_ROUND_BRACKET query CLOSE_ROUND_BRACKET
 //        ;
-        return "(" + ctx.query().accept(this) + ")";
+        return "(" + ctx.queryStatement().accept(this) + ")";
     }
 
     @Override

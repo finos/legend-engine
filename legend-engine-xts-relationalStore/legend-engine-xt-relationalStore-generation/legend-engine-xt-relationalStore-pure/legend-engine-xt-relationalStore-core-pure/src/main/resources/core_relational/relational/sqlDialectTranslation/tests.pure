@@ -462,20 +462,22 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
   );
 
   let expected = ^Query(
-    with = ^With(
-      withQueries = ^meta::external::query::sql::metamodel::WithQuery(
-        name = 'cte',
-        query = ^Query(
-          queryBody = ^ExtendedQuerySpecification(
-            select = ^Select(selectItems = ^SingleColumn(alias = 'ID', expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
-            from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'firmTable')))
-          )   
+    queryBody = ^QueryWithScope(
+      with = ^With(
+        withQueries = ^meta::external::query::sql::metamodel::WithQuery(
+          name = 'cte',
+          query = ^Query(
+            queryBody = ^ExtendedQuerySpecification(
+              select = ^Select(selectItems = ^SingleColumn(alias = 'ID', expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
+              from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'firmTable')))
+            )
+          )
         )
+      ),
+      queryBody = ^ExtendedQuerySpecification(
+          select = ^Select(selectItems = ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
+          from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'cte')))
       )
-    ),
-    queryBody = ^ExtendedQuerySpecification(
-      select = ^Select(selectItems = ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
-      from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'cte')))
     )
   );
   assertEquals($expected, convertSelectSqlQuery($query, newState()));

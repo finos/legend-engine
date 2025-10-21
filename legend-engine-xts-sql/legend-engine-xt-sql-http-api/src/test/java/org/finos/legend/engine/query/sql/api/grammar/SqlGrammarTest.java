@@ -63,8 +63,8 @@ public class SqlGrammarTest
     public void jsonToGrammar()
     {
         String query = resources.target("sql/v1/grammar/jsonToGrammar").request()
-                .post(Entity.json("{\"_type\":\"query\",\"orderBy\":[],\"queryBody\":{\"_type\":\"querySpecification\",\"from\":[{\"_type\":\"table\",\"name\":{\"parts\":[\"service\",\"/personService\"]}}],\"groupBy\":[],\"orderBy\":[],\"select\":{\"_type\":\"select\",\"distinct\":false,\"selectItems\":[{\"_type\":\"allColumns\"}]}}}")).readEntity(String.class);
-        assertEquals("select * from service./personService", query);
+                .post(Entity.json("{\"_type\":\"query\",\"queryBody\":{\"_type\":\"querySpecification\",\"from\":[{\"_type\":\"table\",\"name\":{\"parts\":[\"service\",\"/personService\"]}}],\"groupBy\":[],\"orderBy\":[],\"select\":{\"_type\":\"select\",\"distinct\":false,\"selectItems\":[{\"_type\":\"allColumns\"}]}}}")).readEntity(String.class);
+        assertEquals("select * from service.\"/personService\"", query);
 
     }
 }
