@@ -277,7 +277,7 @@ public class HelperRelationalBuilder
         Relation table = findRelation(db, _schema, _table, sourceInformation);
         if (table == null)
         {
-            if (tableptr != null && context != null && context.pureModel != null && context.pureModel.tableTransformationMap != null)
+            if (tableptr != null && context != null && context.pureModel != null && RelationalCompileState.of(context.pureModel) != null)
             {
                 TablePtr mappedTablePtr = getTablePtrForGeneratedTable(db, tableptr, context, sourceInformation);
                 if (mappedTablePtr != null)
@@ -298,11 +298,11 @@ public class HelperRelationalBuilder
     public static TablePtr getTablePtrForGeneratedTable(Database db, TablePtr tableptr, CompileContext context, SourceInformation sourceInformation)
     {
         String databasePath = PackageableElement.getUserPathForPackageableElement(db);
-        TableTransformationMap.TablePtrCacheKey cacheKey = new TableTransformationMap.TablePtrCacheKey(databasePath, tableptr);
+        RelationalCompileState.TablePtrCacheKey cacheKey = new RelationalCompileState.TablePtrCacheKey(databasePath, tableptr);
 
-        return context.pureModel.tableTransformationMap.tablePtrResolutionCache.computeIfAbsent(cacheKey, key ->
+        return RelationalCompileState.of(context.pureModel).tablePtrResolutionCache.computeIfAbsent(cacheKey, key ->
         {
-            TablePtr mappedTablePtr = context.pureModel.tableTransformationMap.getTableMappings().get(tableptr);
+            TablePtr mappedTablePtr = RelationalCompileState.of(context.pureModel).getTableMapping(tableptr);
             if (mappedTablePtr == null)
             {
                 for (Database includedDB : getAllIncludedDBs(db))
@@ -313,7 +313,7 @@ public class HelperRelationalBuilder
                     newPtr.schema = tableptr.schema;
                     newPtr.table = tableptr.table;
 
-                    mappedTablePtr = context.pureModel.tableTransformationMap.getTableMappings().get(newPtr);
+                    mappedTablePtr = RelationalCompileState.of(context.pureModel).getTableMapping(newPtr);
                     if (mappedTablePtr != null)
                     {
                         break;
@@ -389,9 +389,9 @@ public class HelperRelationalBuilder
             return;
         }
         String schemaToReportInError = _schema;
-        if (tableptr != null && context != null && context.pureModel != null && context.pureModel.tableTransformationMap != null)
+        if (tableptr != null && context != null && context.pureModel != null && RelationalCompileState.of(context.pureModel) != null)
         {
-            TablePtr ptr = context.pureModel.tableTransformationMap.getTableMappings().get(tableptr);
+            TablePtr ptr = RelationalCompileState.of(context.pureModel).getTableMapping(tableptr);
             if (ptr != null && ptr.schema != null)
             {
                 String generatedSchemaName = ptr.schema;

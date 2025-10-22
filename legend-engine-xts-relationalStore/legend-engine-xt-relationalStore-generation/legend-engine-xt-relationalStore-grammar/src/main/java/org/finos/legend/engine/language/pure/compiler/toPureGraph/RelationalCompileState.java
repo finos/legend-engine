@@ -16,24 +16,30 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.TablePtr;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 
-/**
+/*
  * A class to encapsulate compilation-related mappings for tables and schemas.
  */
-public class TableTransformationMap
+public final class RelationalCompileState
 {
-    private final Map<TablePtr, TablePtr> tableMappings;
-
+    private static final Map<PureModel, RelationalCompileState> BY_MODEL = new WeakHashMap<>();
+    private final ConcurrentHashMap<TablePtr, TablePtr> tableMappings = new ConcurrentHashMap<>();
     public final Map<TablePtrCacheKey, TablePtr> tablePtrResolutionCache = new ConcurrentHashMap<>();
 
-    public TableTransformationMap()
+    public static RelationalCompileState of(PureModel pureModel)
     {
-        this.tableMappings = new HashMap<>();
+        synchronized (BY_MODEL)
+        {
+            return BY_MODEL.computeIfAbsent(pureModel, k -> new RelationalCompileState());
+        }
+    }
+
+    private RelationalCompileState()
+    {
     }
 
     public void addTableMapping(TablePtr oldPtr, TablePtr newPtr)
@@ -41,9 +47,9 @@ public class TableTransformationMap
         this.tableMappings.put(oldPtr, newPtr);
     }
 
-    public Map<TablePtr, TablePtr> getTableMappings()
+    public TablePtr getTableMapping(TablePtr oldPtr)
     {
-        return Collections.unmodifiableMap(tableMappings);
+        return this.tableMappings.get(oldPtr);
     }
 
     static class TablePtrCacheKey
