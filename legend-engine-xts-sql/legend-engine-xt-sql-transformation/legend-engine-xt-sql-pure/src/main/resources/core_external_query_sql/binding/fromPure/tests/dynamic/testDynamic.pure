@@ -28,10 +28,34 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 transform('select a from csv(\'a,b\n1,2\n2,3\')',[]));
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicVar():Boolean[1]
+{
+  let rel = #TDS
+              a,b
+              1,2
+              2,3
+            #;
+
+  let value = 2;
+
+  assertEquals('|$rel->meta::pure::functions::relation::filter(x: (a:Integer, b:Integer)[1]|$x.b == $value)',
+                transform('select * from var(\'rel\') where b = var(\'value\')',[], newMap([
+                  pair('rel', $rel->deactivate()),
+                  pair('value', $value->deactivate())
+                ])));
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicTable():Boolean[1]
 {
   assertEquals('|#>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->meta::pure::functions::relation::select(~[n])',
               transform('select n from tb(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb\')',[]));
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicTableUsingCTE():Boolean[1]
+{
+  assertEquals('|let tab = #>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->meta::pure::functions::relation::select(~[n]);\n'+
+               ' $tab->meta::pure::functions::relation::filter(x: (n:meta::pure::precisePrimitives::Varchar(200))[1]|$x.n == \'a\');\n',
+              transform('with tab as (select n from tb(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb\')) select n from tab where n = \'a\'',[]));
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicTableInjectedSpec():Boolean[1]
@@ -48,5 +72,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function meta::external::query::sql::transformation::queryToPure::tests::dynamic::transform(sql:String[1], extraPacks:PackageableElement[*]):String[1]
 {
-  meta::external::query::sql::transformation::queryToPure::sqlToPure($sql, $extraPacks)->cast(@FunctionDefinition<Any>)->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''))
+  transform($sql, $extraPacks, ^Map<String, ValueSpecification>());
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::dynamic::transform(sql:String[1], extraPacks:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1]):String[1]
+{
+  meta::external::query::sql::transformation::queryToPure::sqlToPure($sql, $extraPacks, $scopeVariables)->cast(@FunctionDefinition<Any>)->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''))
 }

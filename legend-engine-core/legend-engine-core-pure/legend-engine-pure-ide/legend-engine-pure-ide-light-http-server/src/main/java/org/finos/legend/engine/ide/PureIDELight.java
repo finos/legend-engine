@@ -31,7 +31,7 @@ public class PureIDELight extends PureIDEServer
 {
     public static void main(String[] args) throws Exception
     {
-        System.setProperty("legend.test.h2.port", "1975");
+        System.setProperty("legend.test.h2.port", "1976");
         System.setProperty("user.timezone", "GMT");
 
         // Uncomment to be able to run   AlloyOny test cases
@@ -135,6 +135,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-transformation/legend-engine-xt-sql-pure", "external-query-sql"))
                 .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-transformation/legend-engine-xt-sql-reversePCT", "external-query-sql-reverse-pct"))
                 .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-expression/legend-engine-xt-sql-expression-tests-pure", "external_query_sql_expression_tests"))
+                .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-expression/legend-engine-xt-sql-expression-pure", "external_query_sql_expression"))
                 .with(this.buildCore("legend-engine-xts-deephaven/legend-engine-xt-deephaven-executionPlan-test", "deephaven_execution_test"))
                 .with(this.buildCore("legend-engine-xts-deephaven/legend-engine-xt-deephaven-pure", "deephaven_pure"))
                 .with(this.buildCore("legend-engine-xts-deephaven/legend-engine-xt-deephaven-javaPlatformBinding-pure", "deephaven-java-platform-binding"))

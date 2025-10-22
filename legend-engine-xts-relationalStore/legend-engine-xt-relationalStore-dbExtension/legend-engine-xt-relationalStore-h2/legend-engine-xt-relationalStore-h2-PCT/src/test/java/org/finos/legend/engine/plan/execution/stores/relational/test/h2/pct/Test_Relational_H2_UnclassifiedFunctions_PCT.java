@@ -39,7 +39,6 @@ public class Test_Relational_H2_UnclassifiedFunctions_PCT extends PCTReportConfi
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             //ascii
             one("meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_", "\"\nexpected: [0]\nactual:   []\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_", "Unexpected token", AdapterQualifier.needsInvestigation),
 
             //tolowerfirstcharacter
             one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower_Function_1__Boolean_1_", "\"\nexpected: 'xOxOxOx'\nactual:   'xxOxOxOx'\"", AdapterQualifier.needsInvestigation),
@@ -52,7 +51,14 @@ public class Test_Relational_H2_UnclassifiedFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'XxOxOxOx'\"", AdapterQualifier.needsInvestigation),
 
             //currentUserId
-            one("meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for currentUserId().\"")
+            one("meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for currentUserId().\""),
+
+            // regexp
+            pack("meta::pure::functions::string::tests::regexpCount", "\"Couldn't find DynaFunction to Postgres model translation for regexpCount().\"", AdapterQualifier.needsImplementation),
+            pack("meta::pure::functions::string::tests::regexpExtract", "\"Couldn't find DynaFunction to Postgres model translation for regexpExtract().\"", AdapterQualifier.needsImplementation),
+            pack("meta::pure::functions::string::tests::regexpIndexOf", "\"Couldn't find DynaFunction to Postgres model translation for regexpIndexOf().\"", AdapterQualifier.needsImplementation),
+            pack("meta::pure::functions::string::tests::regexpLike", "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\"", AdapterQualifier.needsImplementation),
+            pack("meta::pure::functions::string::tests::regexpReplace", "\"Couldn't find DynaFunction to Postgres model translation for regexpReplace().\"", AdapterQualifier.needsImplementation)
     );
 
     public static Test suite()

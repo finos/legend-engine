@@ -44,7 +44,14 @@ public class Test_JAVA_UnclassifiedFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::flow::test::coalesce::coalesce3_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)", AdapterQualifier.needsInvestigation),
 
             //repeatString
-            one("meta::pure::functions::string::tests::repeatstring::testRepeatStringNoString_Function_1__Boolean_1_", "error: incompatible types: no instance(s) of type variable(s) T exist so that java.util.List<T> conforms to java.lang.String", AdapterQualifier.needsInvestigation)
+            one("meta::pure::functions::string::tests::repeatstring::testRepeatStringNoString_Function_1__Boolean_1_", "error: incompatible types: no instance(s) of type variable(s) T exist so that java.util.List<T> conforms to java.lang.String", AdapterQualifier.needsInvestigation),
+
+            // regexp
+            pack("meta::pure::functions::string::tests::regexpCount", "\"meta::pure::functions::string::regexpCount_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
+            pack("meta::pure::functions::string::tests::regexpExtract", "\"meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__Integer_1__RegexpParameter_$1_MANY$__String_MANY_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
+            pack("meta::pure::functions::string::tests::regexpIndexOf", "\"meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1__RegexpParameter_$1_MANY$__Integer_1_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
+            pack("meta::pure::functions::string::tests::regexpLike", "\"meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
+            pack("meta::pure::functions::string::tests::regexpReplace", "\"meta::pure::functions::string::regexpReplace_String_1__String_1__String_1__Boolean_1__RegexpParameter_$1_MANY$__String_1_ is not supported yet!\"", AdapterQualifier.unsupportedFeature)
         );
 
     public static Test suite()

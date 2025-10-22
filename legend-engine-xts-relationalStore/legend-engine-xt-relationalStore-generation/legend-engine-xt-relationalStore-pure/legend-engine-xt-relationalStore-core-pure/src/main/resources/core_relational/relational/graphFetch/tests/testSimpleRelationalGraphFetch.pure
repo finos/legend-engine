@@ -271,6 +271,17 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0
       '{"lastName":"Hill","address":{"name":"New York"},"manager":{"lastName":"Johnson","address":{"name":"New York"}}}]',
       $result2
    );
+
+   let query3 = {|Person.all()->filter(x | $x.age <= 22)->sortByReversed(x|$x.lastName)->graphFetch($tree)->serialize($tree)};
+
+   let result3 = execute($query2, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertEquals(
+      '{"lastName":"Hill","address":{"name":"New York"},"manager":{"lastName":"Johnson","address":{"name":"New York"}}}]'+
+      '{"lastName":"Johnson","address":{"name":"New York"},"manager":{"lastName":"Allen","address":{"name":"New York"}}},'+
+      '[{"lastName":"Allen","address":{"name":"New York"},"manager":null},',
+      $result3
+   );
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testToManyComplexProperty(): Boolean[1]

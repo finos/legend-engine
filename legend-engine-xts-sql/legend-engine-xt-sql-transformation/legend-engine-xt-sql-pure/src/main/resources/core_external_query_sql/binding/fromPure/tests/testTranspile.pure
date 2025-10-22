@@ -2622,7 +2622,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   test(
         'SELECT ascii(String) AS "ASCII", chr(Integer) AS "CHR", concat(String, \'abc\') AS "CONCAT", String || \'abc\' AS "CONCAT2", regexp_like(String, \'^test$\') AS "MATCH", ' +
         'char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", ltrim(String, \' \') AS "LTRIM2", md5(String) AS "MD5", upper(String) AS "UPPER", ' +
-        'lower(String) AS "LOWER", repeat(String, 2) AS "REPEAT", replace(String, \'A\', \'a\') AS "REPLACE", starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS",' +
+        'lower(String) AS "LOWER", initcap(String) as "UPPER_FIRST", repeat(String, 2) AS "REPEAT", replace(String, \'A\', \'a\') AS "REPLACE", starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS",' +
         'reverse(String) AS "REVERSE", rtrim(String) AS "RTRIM", rtrim(String, \' \') AS "RTRIM2", sha256(String) AS "SHA256", split_part(String, \',\', 1) AS "SPLITPART", ' +
         'split_part(String, \',\', Integer) AS "SPLITPART2", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2",' +
         'lpad(String, 2) AS "LPAD", lpad(String, 2, \'a\') AS "LPAD2", rpad(String, 2) AS "RPAD", rpad(String, 2, \'a\') AS "RPAD2", left(String, 1) AS "LEFT", right(String, 1) AS "RIGHT", ' +
@@ -2650,6 +2650,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | hash($row.getString('String'), HashType.MD5), 'MD5'),
                   col(row:TDSRow[1] | toUpper($row.getString('String')), 'UPPER'),
                   col(row:TDSRow[1] | toLower($row.getString('String')), 'LOWER'),
+                  col(row:TDSRow[1] | toUpperFirstCharacter($row.getString('String')), 'UPPER_FIRST'),
                   col(row:TDSRow[1] | repeatString($row.getString('String'), 2), 'REPEAT'),
                   col(row:TDSRow[1] | replace($row.getString('String'), 'A', 'a'), 'REPLACE'),
                   col(row:TDSRow[1] | startsWith($row.getString('String'), 'a'), 'STARTSWITH'),
@@ -3748,6 +3749,25 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSimpleWithQueryFromScopingNoMappingRuntime():Boolean[1]
+{
+
+  let runtime = dummyRuntime();
+
+  test(
+    'WITH myCTE AS (SELECT * FROM service."/service/service7") select id from myCTE',
+
+    [
+      c({|let myCTE = #TDS
+              id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col
+              1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": 1}}"
+              2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": 2}}"
+              3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}"
+            #;
+            $myCTE->select(~[id]);}, true, false, serviceToSource(Service7Relation()))    
+    ], true
+  );
+}
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSimpleWithQueryFromScoping():Boolean[1]
 {
@@ -3932,6 +3952,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   test(
     'select ' + 
     'object_col::jsonb -> \'hello\' ->> \'world\' as object_nav, ' +
+    '(object_col::jsonb -> \'hello\' -> \'world\')::integer as object_nav_cast, ' +
     'object_col::jsonb #> \'{hello,world}\' as object_nav_path, ' +
     'object_col::jsonb #>> \'{hello,world}\' as object_nav_path_text, ' +
     'json_extract_path(object_col::jsonb, \'hello\', \'world\') as object_nav_extract, ' +
@@ -3948,6 +3969,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}"
             #->project(~[
                   object_nav: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world')->to(@String),
+                  object_nav_cast: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world')->to(@Integer),
                   object_nav_path: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world'),
                   object_nav_path_text: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world')->to(@String),
                   object_nav_extract: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world'),

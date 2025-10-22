@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.103.4-SNAPSHOT</version>
+    <version>4.105.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -111,7 +111,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.62.0</legend.pure.version>
+        <legend.pure.version>5.63.0</legend.pure.version>
         <legend.shared.version>0.29.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -138,13 +138,13 @@
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
         <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
-        <project.build.outputTimestamp>1760479730</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1760810114</project.build.outputTimestamp>
         <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1 -Duser.timezone=GMT</surefire.vm.params>
         <surefire.reports.directory />
         <publish.server.id>central</publish.server.id>
         <!-- Databases -->
         <databricks.version>2.6.27</databricks.version>
-        <hikaricp.version>4.0.3</hikaricp.version>
+        <hikaricp.version>7.0.2</hikaricp.version>
         <h2.version>2.1.214</h2.version>
         <mariadb.version>3.0.6</mariadb.version>
         <postgres.version>42.7.4</postgres.version>

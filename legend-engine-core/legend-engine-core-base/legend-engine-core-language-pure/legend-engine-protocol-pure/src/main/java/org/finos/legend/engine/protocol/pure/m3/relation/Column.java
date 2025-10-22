@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.m3.relation;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -21,13 +22,19 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
+import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processMany;
 import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processOne;
 
 @JsonDeserialize(using = Column.ColumnDeserializer.class)
@@ -37,6 +44,8 @@ public class Column
     public String name;
     public GenericType genericType;
     public Multiplicity multiplicity;
+    public @JsonInclude(JsonInclude.Include.NON_EMPTY) List<StereotypePtr> stereotypes = Collections.emptyList();
+    public @JsonInclude(JsonInclude.Include.NON_EMPTY) List<TaggedValue> taggedValues = Collections.emptyList();
 
     public Column()
     {
@@ -70,6 +79,8 @@ public class Column
                 result.genericType = new GenericType(new PackageableType(fullPath));
             }
             // Backward compatibility --------------
+            result.stereotypes = processMany(node, "stereotypes", StereotypePtr.class, codec);
+            result.taggedValues = processMany(node, "taggedValues", TaggedValue.class, codec);
             return result;
         }
     }

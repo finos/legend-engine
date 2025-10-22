@@ -370,17 +370,34 @@ function meta::relational::tests::pct::process::addWith(func: FunctionDefinition
       ^$func(expressionSequence = $withWith);
     ,
     multi: ValueSpecification[1..*] |
-      let withWith = ^SimpleFunctionExpression
+      // todo maybe merge this with prev match so everything goes thru eval (ie make code simpler)
+      let eval = ^SimpleFunctionExpression
       (
         importGroup=system::imports::coreImport,
-        func = if($mapping->isEmpty(), |from_FunctionDefinition_1__Runtime_1__T_m_, |from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_),
-        functionName = 'with',
+        func = eval_Function_1__V_m_,
+        functionName = 'eval',
         genericType = $returnGenericType,
         multiplicity = $returnMultiplicity,
         parametersValues =    ^InstanceValue(
                                               genericType = $func->genericType()->toOne(),
                                               multiplicity = PureOne,
                                               values = $func
+                                            ),
+        resolvedMultiplicityParameters = $returnMultiplicity,
+        resolvedTypeParameters = $returnGenericType
+      );
+
+      let from = ^SimpleFunctionExpression
+      (
+        importGroup=system::imports::coreImport,
+        func = if($mapping->isEmpty(), |from_T_m__Runtime_1__T_m_, |from_T_m__Mapping_1__Runtime_1__T_m_),
+        functionName = 'from',
+        genericType = $returnGenericType,
+        multiplicity = $returnMultiplicity,
+        parametersValues =    ^InstanceValue(
+                                              genericType = $func->genericType()->toOne(),
+                                              multiplicity = PureOne,
+                                              values = $eval
                                             )
                               ->concatenate(if ($mapping->isEmpty(),
                                             |[],
@@ -403,7 +420,7 @@ function meta::relational::tests::pct::process::addWith(func: FunctionDefinition
         resolvedTypeParameters = $returnGenericType
       );
 
-      ^$func(expressionSequence = $withWith);,
+      ^$func(expressionSequence = $from);,
       a: Any[*] | fail('not supported: ' + $a->type()->elementToPath() + ': ' + $a->size()->toString()); $func;
   ]);
 }

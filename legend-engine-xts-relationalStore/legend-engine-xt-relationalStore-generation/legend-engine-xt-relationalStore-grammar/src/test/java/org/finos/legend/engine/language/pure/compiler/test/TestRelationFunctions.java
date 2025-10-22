@@ -1147,9 +1147,9 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                 "  )\n" +
                 "}\n" +
                 "###Mapping\n" +
-                        "Mapping mapping::myMapping\n" +
-                        "(\n" +
-                        ")\n" +
+                "Mapping mapping::myMapping\n" +
+                "(\n" +
+                ")\n" +
                 "###Runtime\n" +
                 "Runtime execution::Runtime\n" +
                 "{\n" +

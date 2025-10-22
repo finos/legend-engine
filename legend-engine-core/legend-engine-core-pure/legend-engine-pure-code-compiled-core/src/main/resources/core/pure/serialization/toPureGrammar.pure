@@ -170,7 +170,7 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                                               $s.mapFn->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^GContext(space='')),
                                               $s.aggregateFn->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^GContext(space=''))
                                               ]);, 
-                                    a:Any[1] | $a->toRepresentation()
+                                    a:Any[1] | $a->toRepresentation()->replace('\n','\\n')
                                   ])->toOneMany()
                             )
                     )->match([

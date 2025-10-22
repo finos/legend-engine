@@ -185,6 +185,11 @@ function meta::pure::functions::collection::sortBy<T,U|m>(col:T[m], key:Function
     sort($col, $key, [])
 }
 
+function meta::pure::functions::collection::sortByReversed<T,U|m>(col:T[m], key:Function<{T[1]->U[1]}>[0..1]):T[m]
+{
+    sort($col, $key, {x, y | $y->compare($x)})
+}
+
 function meta::pure::functions::collection::containsAll(collection:Any[*], values:Any[*]):Boolean[1]
 {
     $values->forAll(v | $collection->contains($v))
