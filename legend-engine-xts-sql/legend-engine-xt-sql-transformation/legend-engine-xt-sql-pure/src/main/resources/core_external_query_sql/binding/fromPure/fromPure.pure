@@ -2735,7 +2735,7 @@ function meta::external::query::sql::transformation::queryToPure::tableFunctionP
 
       assert($relation.genericType.rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::Relation), | 'var table expression must be a relation');
 
-      $relation->evaluateAndDeactivate();      
+      $relation->evaluateAndDeactivate();
     })
   ]
 }
@@ -3206,7 +3206,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       v:ValueSpecification[*] | false
     ]), | 'variable reference must be string literal');
 
-    $context.scopeVariable($args->at(0)->cast(@InstanceValue).values->toOne()->cast(@String));  
+    $context.scopeVariable($args->at(0)->cast(@InstanceValue).values->toOne()->cast(@String));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processJSONExtractPath(args:ValueSpecification[*]):ValueSpecification[1]
@@ -4405,13 +4405,18 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
       | $lambda
     );
 
-
     let scopedVariables = $this.scopeVariables->keys();
-    let cgt = $compiled.classifierGenericType->toOne();
-    let typeArguments = $cgt.typeArguments->toOne();
-    let functionType = $typeArguments.rawType->cast(@FunctionType)->toOne();
 
-    let descoped = ^$compiled(classifierGenericType = ^$cgt(typeArguments = ^$typeArguments(rawType = ^$functionType(parameters = $functionType.parameters->filter(p | !$p.name->in($scopedVariables))))));
+    //in the case where we have scope variables we do not want them in the resultant lambda as they are in the scope of the lambda, not part of it
+    //we do however need them in the compile phase otherwise compilation will fail.
+    let descoped = if ($scopedVariables->isEmpty(),
+                        | $compiled,
+                        | let cgt = $compiled.classifierGenericType->toOne();
+                          let typeArguments = $cgt.typeArguments->toOne();
+                          let functionType = $typeArguments.rawType->cast(@FunctionType)->toOne();
+
+                          ^$compiled(classifierGenericType = ^$cgt(typeArguments = ^$typeArguments(rawType = ^$functionType(parameters = $functionType.parameters->filter(p | !$p.name->in($scopedVariables))))));
+    );
 
     if ($this.withQueries->isNotEmpty() && $wrapWithFromIfRequired,
       | wrapWithLambdaFrom($descoped, $this.sources, $this.extensions),
