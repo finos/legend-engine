@@ -24,7 +24,7 @@ function <<sql.Extension>> meta::external::query::sql::coreExtension():SQLExtens
     udfs = ^UserDefinedFunctions(
       prefix = 'core',
       processors = [
-        processor('date_diff', Integer, {args, fc, ctx | 
+        processor('date_diff', Integer, {args, fc, expCtx, ctx | 
             assertEquals(3, $args->size(), 'incorrect number of args for core_date_diff');
 
             let part = $args->at(0)->reactivate()->toOne()->cast(@String);
@@ -33,7 +33,7 @@ function <<sql.Extension>> meta::external::query::sql::coreExtension():SQLExtens
 
             nullOrSfe(dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_, [$args->at(1), $args->at(2), processExtractEnumValue($enum)])  ;       
         }),
-        processor('most_recent_day_of_week', Date, {args, fc, ctx |
+        processor('most_recent_day_of_week', Date, {args, fc, expCtx, ctx |
             assertEquals(2, $args->size(), 'incorrect number of args for core_most_recent_day_of_week');
 
             let part = $args->at(0)->reactivate()->toOne()->cast(@String);
@@ -42,7 +42,7 @@ function <<sql.Extension>> meta::external::query::sql::coreExtension():SQLExtens
 
             nullOrSfe(mostRecentDayOfWeek_Date_1__DayOfWeek_1__Date_1_, [$args->at(1), processExtractEnumValue($enum)])  ;
         }),        
-        processor('previous_day_of_week', Date, {args, fc, ctx |
+        processor('previous_day_of_week', Date, {args, fc, expCtx, ctx |
             assertEquals(2, $args->size(), 'incorrect number of args for core_previous_day_of_week');
 
             let part = $args->at(0)->reactivate()->toOne()->cast(@String);
@@ -51,7 +51,7 @@ function <<sql.Extension>> meta::external::query::sql::coreExtension():SQLExtens
 
             nullOrSfe(previousDayOfWeek_Date_1__DayOfWeek_1__Date_1_, [$args->at(1), processExtractEnumValue($enum)])  ;
         }),        
-        aggregate('unique_value_only', Any, {args, fc, ctx | 
+        aggregate('unique_value_only', Any, {args, fc, expCtx, ctx | 
             sfe(uniqueValueOnly_T_MANY__T_$0_1$_, $args->at(0).genericType, $args->at(0).genericType, $args->at(0))
         })
       ]
