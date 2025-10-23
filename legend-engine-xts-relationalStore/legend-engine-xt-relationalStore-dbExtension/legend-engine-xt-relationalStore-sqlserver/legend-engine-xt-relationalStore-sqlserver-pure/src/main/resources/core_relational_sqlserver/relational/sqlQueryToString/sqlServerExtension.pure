@@ -169,9 +169,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::translateCreateSchemaStatementForSqlServer(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
 {
-   if ($createSchemaSQL.schema.name == 'default', 
-    | [], 
-    | 'Create Schema ' + $createSchemaSQL.schema.name + ';';);
+   if ($createSchemaSQL.schema.name == 'default',
+    | [],
+    | 'IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = \''  + $createSchemaSQL.schema.name + '\'' + ') BEGIN EXEC(\'Create Schema ' + $createSchemaSQL.schema.name + '\'); END';);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::translateDropSchemaStatementForSqlServer(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
