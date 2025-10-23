@@ -89,7 +89,7 @@ jobs:
 
       - name: Set profiles
         id: setProfiles
-        run: echo PROFILES='-P python-test' >> $GITHUB_OUTPUT
+        run: echo PROFILES='-P python-test,sqlserver-docker-test' >> $GITHUB_OUTPUT
 
       - name: Set profiles that required github secrets
         id: requiredSecrets
@@ -115,7 +115,7 @@ jobs:
         # as the latter binds to generate-sources which runs before compile phase
         # and can cause problem with some code generators
         # See https://github.com/finos/legend-engine/pull/924
-        run: mvn -B -e -DskipTests=true install -P docker-snapshot,pct-cloud-test,python-test
+        run: mvn -B -e -DskipTests=true install -P docker-snapshot,pct-cloud-test,python-test,sqlserver-docker-test
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4
