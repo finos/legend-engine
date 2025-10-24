@@ -477,46 +477,38 @@ function <<access.private>> meta::pure::lineage::scanProperties::processLambdaFu
 function <<access.private>> meta::pure::lineage::scanProperties::processFunction(fn:Function<Any>[0..1], paramPaths:ScanPropertiesState[*], vars:Map<String,List<PropertyPathNode>>[1], processed:Function<Any>[*], config:ScanConfig[1], visitedFunctions:Map<String,ScanPropertiesState>[1], debug:DebugContext[1] , addFunctionParamClasses : Boolean[1]):ScanPropertiesState[1]
 {
   print(if($debug.debug,|$debug.space+'  - func '+ if($fn->isEmpty(), |'not found or excuded', |if($fn.name->isEmpty(), |$fn->toOne()->type().name->toOne(), |$fn.name->toOne()))+'\n',|''));
-  
-  let fromParams = makeScanPropertiesState(emptyPath(), $paramPaths.result, $visitedFunctions);
-      $fn->match([
-          {f0:Function<Any>[0] | $fromParams},
-          {p:Path<Nil,Any|*>[1]| makeScanPropertiesState(emptyPath(), $p->scanPath(emptyPath(), $processed, $vars, $config, $visitedFunctions, $debug), $visitedFunctions)},
-          {f:Function<Any>[1] |
-
-               if($f.name->isEmpty() || !isPackageOk($f),
-                |
-                  processLambdaFunction($f, $paramPaths, $vars, $processed, $config, $visitedFunctions, $debug, $addFunctionParamClasses);,
-                |
-                  let funcParamNodes =  if($addFunctionParamClasses,
-                                          |  let funcParamClasses = $f->functionType().parameters.genericType.rawType ->cast(@Class<Any>);
-                                              list($funcParamClasses -> map(c|$c->dummyNodeForClass()));,
-                                          | [] 
-                                        );
-
-                  if($visitedFunctions->get($f->meta::pure::functions::meta::elementToPath())->isNotEmpty(),
-                  |
-                    let acutalBodyResult = resolveDummyNodes($visitedFunctions->get($f->meta::pure::functions::meta::elementToPath())->toOne(), $paramPaths);
-                    makeScanPropertiesState($acutalBodyResult.current, $paramPaths.result->concatenate($acutalBodyResult.result)->concatenate($funcParamNodes), $visitedFunctions);,
-                  |
-                    let dummyPaths = range($paramPaths->size())->map(ind | list(^DummyPropertyPathNode(id = $ind, class = meta::pure::lineage::scanProperties::DummyClass, property = getDummyProperty())->cast(@PropertyPathNode)));
-
-                    let newVars     = if($f->instanceOf(Column),
-                                          | $f.classifierGenericType->toOne().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns.name->zip($dummyPaths)->newMap(),
-                                          | $f->functionType().parameters.name->zip($dummyPaths)->newMap()
-                                        );
-                    let allVars     = $vars->putAll($newVars)->cast(@Map<String, List<PropertyPathNode>>);
-                    let expressions = $f->match([l:FunctionDefinition<Any>[1]| $l.expressionSequence, n:NativeFunction<Any>[1]| []]);
+  $fn->match([
+    f0:Function<Any>[0]   | makeScanPropertiesState(emptyPath(), $paramPaths.result, $visitedFunctions);,
+    p:Path<Nil,Any|*>[1]  | makeScanPropertiesState(emptyPath(), $p->scanPath(emptyPath(), $processed, $vars, $config, $visitedFunctions, $debug), $visitedFunctions),
+    f:Function<Any>[1]    | if($f.name->isEmpty() || !isPackageOk($f),
+                              | processLambdaFunction($f, $paramPaths, $vars, $processed, $config, $visitedFunctions, $debug, $addFunctionParamClasses);,
+                              | let funcParamNodes = if($addFunctionParamClasses,
+                                  |  let funcParamClasses = $f->functionType().parameters.genericType.rawType ->cast(@Class<Any>);
+                                     list($funcParamClasses -> map(c|$c->dummyNodeForClass()));,
+                                  | [] 
+                                );
+                                //println('check read: ' + $f->meta::pure::functions::meta::elementToPath());
+                                if($visitedFunctions->get($f->meta::pure::functions::meta::elementToPath())->isNotEmpty(),
+                                  | //println('cache hit: ' + $f->meta::pure::functions::meta::elementToPath());
+                                    let acutalBodyResult = resolveDummyNodes($visitedFunctions->get($f->meta::pure::functions::meta::elementToPath())->toOne(), $paramPaths);
+                                    makeScanPropertiesState($acutalBodyResult.current, $paramPaths.result->concatenate($acutalBodyResult.result)->concatenate($funcParamNodes), $visitedFunctions);,
+                                  | //println('cache write: ' + $f->meta::pure::functions::meta::elementToPath());
+                                    let dummyPaths = range($paramPaths->size())->map(ind | list(^DummyPropertyPathNode(id = $ind, class = meta::pure::lineage::scanProperties::DummyClass, property = getDummyProperty())->cast(@PropertyPathNode)));
+                                    let newVars = if($f->instanceOf(Column),
+                                      | $f.classifierGenericType->toOne().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns.name->zip($dummyPaths)->newMap(),
+                                      | $f->functionType().parameters.name->zip($dummyPaths)->newMap()
+                                    );
+                                    let allVars     = $vars->putAll($newVars)->cast(@Map<String, List<PropertyPathNode>>);
+                                    let expressions = $f->match([l:FunctionDefinition<Any>[1]| $l.expressionSequence, n:NativeFunction<Any>[1]| []]);
 
                     let body = $expressions->processExpressionSequence($allVars, $processed->concatenate($f), $config, $visitedFunctions, $debug);
-                    let updatedMap = $visitedFunctions->put($f->meta::pure::functions::meta::elementToPath(), ^$body(visitedFunctions = ^Map<String,ScanPropertiesState>()));
+                    let updatedMap = $body.visitedFunctions->put($f->meta::pure::functions::meta::elementToPath(), ^$body(visitedFunctions = ^Map<String,ScanPropertiesState>()));
 
                     let acutalResult = resolveDummyNodes($body, $paramPaths);
                                       
                     makeScanPropertiesState($acutalResult.current, $paramPaths.result->concatenate($acutalResult.result)->concatenate($funcParamNodes), $updatedMap);
                   );
-               ); 
-          }
+               );
       ]);
 
 }
