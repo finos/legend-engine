@@ -153,6 +153,11 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlS
   $sqlString->sqlToPure(getSources(), $extraPackages, $scopeVariables);
 }
 
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1], extraPackages:PackageableElement[*]):Function<Any>[1]
+{
+  $sqlString->sqlToPure(getSources(), $extraPackages, ^Map<String, ValueSpecification>());
+}
+
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1], sources:DynamicSQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1]):Function<Any>[1]
 {
   parseSqlStatement($sqlString->toOne())->cast(@Query)->sqlToPure($sources, $extraPackages, $scopeVariables);
