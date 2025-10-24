@@ -510,31 +510,37 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                   |
                     let exCtx = $state.executionContext;
 
-                    let funcToRoute = $fe.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@FunctionDefinition<Any>);
+                    let funcInstance = $fe.parametersValues->at(0)->evaluateAndDeactivate()->match([
+                                          v:VariableExpression[1] | let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue)->toOne(),
+                                          i:InstanceValue[1]      | $i
+                                      ]);
+                                                                                                        
+                    let funcToRoute = $funcInstance.values->cast(@FunctionDefinition<Any>)->toOne();
 
                     let preEvalFuncToRoute = meta::pure::router::preeval::preval($funcToRoute, $extensions, $debug->indent());
 
-                    let routedFunc = routeFunction($preEvalFuncToRoute, $state.routingStrategy, $exCtx, [], $extensions, $debug->indent());
+                    let routedFunc = routeFunction($preEvalFuncToRoute, false, $state.routingStrategy, $exCtx, $inScopeVars->putAll($f->openVariableValues()), [], $extensions, $debug->indent());
 
-                    let clusters = $routedFunc.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
-                    let uniqueClusters = $clusters->removeDuplicates({x, y | meta::pure::router::clustering::areClustersCompatible($x, $y, $extensions)});
-                    assert($uniqueClusters->size() == 1, |'Function definition on ->eval(..) accesses multiple stores and runtimes, and this is not supported:\n' + $uniqueClusters->map(c | $c->asString())->joinStrings(',\n'));
+                    let routedVs = ^$funcInstance(values = $routedFunc);
 
-                    let unclusteredRoutedFunc = ^$routedFunc(expressionSequence = $clusters.val);
+                    let wrapped = $routedFunc.expressionSequence->evaluateAndDeactivate()->match([
+                      s: StoreMappingRoutedValueSpecification[1..*] |
+                        let r = $s->tail()->fold({x, y | 
+                          assertEquals($x.mapping, $y.mapping);
+                          assertEquals($x.store, $y.store);
+                          assertEquals($x.runtime, $y.runtime);
+                          ^$x(processedChainSets += $y.processedChainSets, sets += $y.sets, propertyMapping += $y.propertyMapping);                          
+                        }, $s->at(0));
+                        ^$r(value = $routedVs, id = 'eval_function_wrapper');
+                      ,                      
+                      vs: ValueSpecification[1..*] | 
+                        $state.routingStrategy.wrapValueSpec($routedVs, 'eval_function_wrapper', $exCtx, $extensions, $debug);
+                    ]);
 
-                    let routedVs = ^SimpleFunctionExpression(
-                          func = $unclusteredRoutedFunc,
-                          genericType = $funcToRoute->functionReturnType(),
-                          multiplicity = $funcToRoute->functionReturnMultiplicity(),
-                          importGroup=system::imports::coreImport
-                        )->evaluateAndDeactivate();
-
-                    let wrapped = $state.routingStrategy.wrapValueSpec($routedVs, 'eval_wrapper', $exCtx, $extensions, $debug);
-                    ^$state(value = $wrapped);
+                    ^$state(value = ^$fe(parametersValues = $wrapped));
                   ,
                   |
-                    fail('Not supported eval outside of Store');
-                    $state;
+                    $f->routeFunctionExpressionFunctionDefinition($fe, $state, $executionContext, $vars, $inScopeVars->putAll($f->openVariableValues()), $extensions, $debug);
                 );
         }
     ),

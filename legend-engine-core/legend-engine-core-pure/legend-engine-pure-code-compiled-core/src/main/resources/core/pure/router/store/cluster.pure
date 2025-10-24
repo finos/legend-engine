@@ -237,6 +237,32 @@ function meta::pure::router::clustering::specializedFunctionExpressionClustering
         {f:FunctionExpression[1], mapping:Mapping[1], openVariables:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1],  debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*] |
           ^ClusterResponse(cluster=$f)
         }
+    ),
+    pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::functions::lang::eval_Function_1__V_m_]),
+       {f:FunctionExpression[1], mapping:Mapping[1], openVariables:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1],  debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*] |
+    
+         let func = $f.parametersValues->at(0);
+
+         let clusterResponse = $func->match([
+            s: StoreMappingRoutedValueSpecification[1] |         
+              if($s.sets->isEmpty(),
+                |
+                  ^ClusterResponse(cluster = $s->buildCluster($s, $openVariables, $extensions))
+                , 
+                |
+                  ^ClusterResponse(cluster = $s->meta::pure::router::clustering::getClusterVSFromSets($s.sets->toOneMany(), $openVariables, $s.mapping, $extensions))
+              )              
+            ,
+            s: StoreRoutedValueSpecification[1] | 
+              ^ClusterResponse(cluster = $s->buildCluster($s.value, $openVariables, $extensions));
+            ,
+            vs: ValueSpecification[1] | 
+              $vs->cluster($mapping, $openVariables, $exeCtx, 'eval_lambda',  $debug, $analyticsDecision, $extensions);
+         ]);
+
+         let cluster = $clusterResponse.cluster->cast(@ClusteredValueSpecification);
+         ^$clusterResponse(cluster = ^$cluster(val = $f));
+       }
     )
   ]
 }
@@ -468,25 +494,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                       let processed = $s.value->cluster([], $openVariables, $s.executionContext, ^$debug(space = $debug.space+'   '), $analyticsDecision, $extensions);
                       if ($processed.cluster->instanceOf(StoreClusteredValueSpecification),
                         |$processed,
-                        | 
-                          let store = if ($s.store->isEmpty(), //|| ($s.runtime.connectionStores.element->cast(@Store)->toOne() != $s.store->toOne()) ,
-                            |//Store is currently not specified for use cases like cos(2)->from($runtime)
-                             $s.runtime.connectionStores.element->cast(@Store)->toOne(),
-                            |$s.store->toOne()
-                          );
-                          ^ClusterResponse( cluster = 
-                                                ^StoreClusteredValueSpecification(
-                                                      genericType  = $s.genericType,
-                                                      multiplicity = $s.multiplicity,
-                                                      s = meta::pure::extension::storeContractFromStore($extensions, $store),
-                                                      store = $store,
-                                                      runtime = $s.runtime,
-                                                      openVars = $openVariables,
-                                                      val = $processed.cluster,
-                                                      exeCtx = $s.executionContext,
-                                                      executable = true
-                                                  )
-                         );
+                        |^ClusterResponse(cluster = $s->buildCluster($processed.cluster, $openVariables, $extensions));
                       );
                ,
                e:ExtendedRoutedValueSpecification[1] | ^ClusterResponse(cluster=$e->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, $debug)->toOne())
@@ -521,6 +529,28 @@ function meta::pure::router::clustering::storeContractForSetImplementation(setIm
          pair($storeContract, $mapping->resolveStore($store));
   ]);
 }
+
+function <<access.private>> meta::pure::router::clustering::buildCluster(s:StoreRoutedValueSpecification[1], clustered: ValueSpecification[1], openVariables:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]):StoreClusteredValueSpecification[1]
+{
+  let store = if ($s.store->isEmpty(), //|| ($s.runtime.connectionStores.element->cast(@Store)->toOne() != $s.store->toOne()) ,
+    |//Store is currently not specified for use cases like cos(2)->from($runtime)
+      $s.runtime.connectionStores.element->cast(@Store)->toOne(),
+    |$s.store->toOne()
+  );
+  
+  ^StoreClusteredValueSpecification(
+        genericType  = $s.genericType,
+        multiplicity = $s.multiplicity,
+        s = meta::pure::extension::storeContractFromStore($extensions, $store),
+        store = $store,
+        runtime = $s.runtime,
+        openVars = $openVariables,
+        val = $clustered,
+        exeCtx = $s.executionContext,
+        executable = true
+    );
+}
+
 
 function <<access.private>> meta::pure::router::clustering::buildCluster(r:StoreMappingRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1], storeContract : StoreContract[1], store : Store[1], extensions:meta::pure::extension::Extension[*]):StoreMappingClusteredValueSpecification[1]
 {
