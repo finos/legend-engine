@@ -1032,19 +1032,21 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
     ],
     teardownStatements = ^DropTestTable(tableName = 'testTable', isTempTable = true),
     testQuery = ^Query(
-      with = ^With(
-        withQueries = ^meta::external::query::sql::metamodel::WithQuery(
-          name = 'cteTest',
-          query = ^Query(
-            queryBody = ^QuerySpecification(
-              select = ^Select(selectItems = ^SingleColumn(expression = literal('John'), alias = 'name'))
-            )   
+      queryBody = ^QueryWithScope(
+        with = ^With(
+          withQueries = ^meta::external::query::sql::metamodel::WithQuery(
+            name = 'cteTest',
+            query = ^Query(
+              queryBody = ^QuerySpecification(
+                select = ^Select(selectItems = ^SingleColumn(expression = literal('John'), alias = 'name'))
+              )
+            )
           )
+        ),
+        queryBody = ^QuerySpecification(
+            select = ^Select(selectItems = ^SingleColumn(alias = 'emp_name', expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['name'])))),
+            from = ^Table(name = ^QualifiedName(parts = 'cteTest'))
         )
-      ),
-      queryBody = ^QuerySpecification(
-        select = ^Select(selectItems = ^SingleColumn(alias = 'emp_name', expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['name'])))),
-        from = ^Table(name = ^QualifiedName(parts = 'cteTest'))
       )   
     ),
     expectedResult = ^TestResult(columnNames = ['emp_name'], rows = [^TestResultRow(values = 'John')])

@@ -26,7 +26,7 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 
 import java.nio.charset.StandardCharsets;
 
-class IntegerType extends PGType<Integer>
+public class IntegerType extends PGType<Integer>
 {
 
     static final int OID = 23;

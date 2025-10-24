@@ -62,6 +62,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.QualifiedNameReference;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryBody;
 import org.finos.legend.engine.protocol.sql.metamodel.QuerySpecification;
+import org.finos.legend.engine.protocol.sql.metamodel.QueryWithScope;
 import org.finos.legend.engine.protocol.sql.metamodel.Relation;
 import org.finos.legend.engine.protocol.sql.metamodel.SearchedCaseExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Select;
@@ -410,15 +411,20 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     public Node visit(Query val)
     {
         val.queryBody = (QueryBody) val.queryBody.accept(this);
-        val.limit = _visit(val.limit);
-        val.offset = _visit(val.offset);
-
         return val;
     }
 
     @Override
     public Node visit(QueryBody val)
     {
+        return val;
+    }
+
+    @Override
+    public Node visit(QueryWithScope val)
+    {
+        val.with = _visit(val.with);
+        val.queryBody = (QueryBody) val.queryBody.accept(this);
         return val;
     }
 

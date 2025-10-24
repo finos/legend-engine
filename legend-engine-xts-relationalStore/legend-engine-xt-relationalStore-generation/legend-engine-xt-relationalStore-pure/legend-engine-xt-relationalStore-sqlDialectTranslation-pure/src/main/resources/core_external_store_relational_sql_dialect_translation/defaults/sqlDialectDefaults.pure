@@ -711,6 +711,24 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::ren
   );
 }
 
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::queryWithScopeProcessor_default(sqlDialect:SqlDialect[1], queryWithScope:QueryWithScope[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let sep0 = $state.separator(0, $config);
+  // With
+ $queryWithScope.with.withQueries->executeIfNotEmptyElseReturnEmptyString({|
+   $sqlDialect->keyword('with', $state, $config) + ' ' + $queryWithScope.with.withQueries->map(c|$sqlDialect->executeNodeProcessor($c, $state, $config))->joinStrings(',' + $sep0) +
+   $sep0
+ }) + $sqlDialect->executeNodeProcessor($queryWithScope.queryBody, $state, $config);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::queryWithScopeProcessor_default(): NodeProcessor<QueryWithScope>[1]
+{
+  nodeProcessor(
+    QueryWithScope,
+    {sqlDialect, queryWithScope, state, config | queryWithScopeProcessor_default($sqlDialect, $queryWithScope, $state, $config);}
+  )
+}
+
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::querySpecificationProcessorHelper_default(sqlDialect:SqlDialect[1], querySpec:QuerySpecification[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let sep0 = $state.separator(0, $config);
@@ -798,15 +816,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::que
     Query,
     {sqlDialect, query, state, config |
       let sep0 = $state.separator(0, $config);
-
-      if ($query.limit->isEmpty() && $query.orderBy->isEmpty() && $query.offset->isEmpty(),
-        | if($query.with.withQueries->isNotEmpty(),
-            | $sqlDialect->keyword('with', $state, $config) + ' ' + $query.with.withQueries->map(c|$sqlDialect->executeNodeProcessor($c, $state, $config))->joinStrings(',' + $sep0) + $sep0
-              + $sqlDialect->executeNodeProcessor($query.queryBody, $state, $config),
-            | $sqlDialect->executeNodeProcessor($query.queryBody, $state, $config)
-          ),
-        | failWithMessage('Unexpected limit, orderBy or offset at Query level')
-      );
+      $sqlDialect->executeNodeProcessor($query.queryBody, $state, $config);
     }
   )
 }

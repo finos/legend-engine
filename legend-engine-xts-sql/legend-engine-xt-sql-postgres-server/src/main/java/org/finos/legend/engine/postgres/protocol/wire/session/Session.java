@@ -30,6 +30,7 @@ import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -52,21 +53,28 @@ import org.slf4j.LoggerFactory;
 
 public class Session implements AutoCloseable
 {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
     public static final String FAILED_TO_EXECUTE = "Failed to execute";
     private final Map<String, Prepared> parsed = new ConcurrentHashMap<>();
     private final Map<String, Portal> portals = new ConcurrentHashMap<>();
     private final ExecutorService executorService;
     private final Identity identity;
+    private final Properties properties;
 
-    public Session(ExecutorService executorService, Identity identity)
+    public Session(ExecutorService executorService, Identity identity, Properties properties)
     {
         this.executorService = executorService;
         this.identity = identity;
+        this.properties = properties;
         OpenTelemetryUtil.ACTIVE_SESSIONS.add(1);
         OpenTelemetryUtil.TOTAL_SESSIONS.add(1);
     }
+
+    public String getDatabase()
+    {
+        return this.properties.get("database").toString();
+    }
+
 
     public Identity getIdentity()
     {

@@ -23,7 +23,7 @@ package org.finos.legend.engine.postgres.protocol.wire.serialization.types;
 
 import io.netty.buffer.ByteBuf;
 
-class JsonType extends PGType<Object>
+public class JsonType extends PGType<Object>
 {
 
     public static final JsonType INSTANCE = new JsonType();

@@ -26,7 +26,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.nio.charset.StandardCharsets;
 
-class NumericType extends PGType<BigDecimal>
+public class NumericType extends PGType<BigDecimal>
 {
 
     static final int OID = 1700;
