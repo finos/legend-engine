@@ -208,6 +208,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     querySpecificationProcessor_default(),
     asOfJoinProcessorForSnowflake(),
     unionProcessor_default(),
+    queryWithScopeProcessor_default(),
     tableSubqueryProcessor_default(),
     extendedQuerySpecificationProcessor_default()
   ]

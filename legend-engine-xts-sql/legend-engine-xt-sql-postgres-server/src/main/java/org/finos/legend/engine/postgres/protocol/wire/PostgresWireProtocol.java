@@ -598,7 +598,7 @@ public class PostgresWireProtocol
     private void handleAuthSuccess(Channel channel, Identity authenticatedUser) throws Exception
     {
 //        String database = properties.getProperty("database");
-        this.session = new Session(Executors.newCachedThreadPool(), authenticatedUser);
+        this.session = new Session(Executors.newCachedThreadPool(), authenticatedUser, properties);
         MDC.put("user", authenticatedUser.getName());
         messages.sendAuthenticationOK(channel)
                 .addListener(f -> sendParams(channel))
@@ -683,7 +683,7 @@ public class PostgresWireProtocol
         }
         this.addTaskToQueue(() ->
         {
-            session.parse(statementName, query, paramTypes, this.sqlManager.buildPreparedStatement(query, session.getIdentity()));
+            session.parse(statementName, query, paramTypes, this.sqlManager.buildPreparedStatement(query, session));
             messages.sendParseComplete(channel);
         });
     }
@@ -1049,7 +1049,7 @@ public class PostgresWireProtocol
             }
             try
             {
-                return session.executeSimple(this.sqlManager.buildStatement(query, session.getIdentity()), query, () -> new ResultSetReceiver(query, channel, true, null, messages));
+                return session.executeSimple(this.sqlManager.buildStatement(query, session), query, () -> new ResultSetReceiver(query, channel, true, null, messages));
             }
             catch (Throwable t)
             {

@@ -120,7 +120,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(AliasedRelation val)
             {
-                String columns = val.columnNames.isEmpty() ? "" : FastList.newList(val.columnNames).makeString(" (", ", ",  ")");
+                String columns = val.columnNames.isEmpty() ? "" : FastList.newList(val.columnNames).makeString(" (", ", ", ")");
 
                 return visit(val.relation) + " AS " + quoteIfNeeded(val.alias) + columns;
             }
@@ -155,7 +155,7 @@ public class SQLGrammarComposer
             {
                 String operand = val.operand.accept(this);
                 String when = visit(val.whenClauses, " ");
-                String def = val.defaultValue == null ? "" :  " ELSE " + val.defaultValue.accept(this);
+                String def = val.defaultValue == null ? "" : " ELSE " + val.defaultValue.accept(this);
 
                 return "CASE " + operand + when + def + " END";
             }
@@ -164,7 +164,7 @@ public class SQLGrammarComposer
             public String visit(SearchedCaseExpression val)
             {
                 String when = visit(val.whenClauses, " ");
-                String def = val.defaultValue == null ? "" :  " ELSE " + val.defaultValue.accept(this);
+                String def = val.defaultValue == null ? "" : " ELSE " + val.defaultValue.accept(this);
                 return "CASE " + when + def + " END";
             }
 
@@ -457,7 +457,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(WithQuery val)
             {
-                String columns = val.columns.isEmpty() ? "" : FastList.newList(val.columns).makeString(" (", ", ",  ")");
+                String columns = val.columns.isEmpty() ? "" : FastList.newList(val.columns).makeString(" (", ", ", ")");
                 return val.name + columns + " AS (" + visit(val.query) + ")";
             }
 
@@ -489,7 +489,7 @@ public class SQLGrammarComposer
                 String min = val.min.accept(this);
                 String max = val.max.accept(this);
 
-                return value + " BETWEEN " + min + " AND " +  max;
+                return value + " BETWEEN " + min + " AND " + max;
             }
 
             @Override
@@ -514,10 +514,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(Query val)
             {
-                return (val.with != null ? visit(val.with) : "") + val.queryBody.accept(this)
-                        + (val.orderBy.isEmpty() ? "" : " order by " + visit(val.orderBy, ", "))
-                        + (val.limit == null ? "" : " limit " + val.limit.accept(this))
-                        + (val.offset == null ? "" : " offset " + val.offset.accept(this));
+                return val.queryBody.accept(this);
             }
 
             @Override
@@ -526,11 +523,16 @@ public class SQLGrammarComposer
                 return val.accept(this);
             }
 
+            public String visit(QueryWithScope val)
+            {
+                return (val.with != null ? visit(val.with) : "") + val.queryBody.accept(this);
+            }
+
             @Override
             public String visit(QuerySpecification val)
             {
                 return val.select.accept(this)
-                        + (val.from == null ? "" : " from " + visit(val.from, ""))
+                        + (val.from.isEmpty() ? "" : " from " + visit(val.from, ""))
                         + (val.where == null ? "" : " where " + val.where.accept(this))
                         + (val.groupBy == null || val.groupBy.isEmpty() ? "" : " group by " + visit(val.groupBy, ", "))
                         + (val.having == null ? "" : " having " + visit(val.having))
@@ -622,7 +624,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(Table val)
             {
-                return String.join(".", val.name.parts);
+                return String.join(".", ListIterate.collect(val.name.parts, x -> x.contains("/") ? "\"" + x + "\"" : x));
             }
 
             @Override

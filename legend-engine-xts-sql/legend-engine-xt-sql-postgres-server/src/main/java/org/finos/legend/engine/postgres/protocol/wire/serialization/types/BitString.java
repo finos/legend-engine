@@ -25,7 +25,7 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 
 import java.util.BitSet;
 
-class BitString
+public class BitString
 {
 
     public static BitString ofBitString(String bitString)

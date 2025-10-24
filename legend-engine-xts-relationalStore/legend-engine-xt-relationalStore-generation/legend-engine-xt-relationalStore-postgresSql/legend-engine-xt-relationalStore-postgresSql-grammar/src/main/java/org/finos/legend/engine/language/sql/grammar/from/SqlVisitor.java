@@ -536,7 +536,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     {
         WithQuery cte = new WithQuery();
         cte.name = ctx.name.getText();
-        cte.query = (Query) visit(ctx.query());
+        cte.query = (Query) visit(ctx.queryStatement());
         if (ctx.aliasedColumns() != null)
         {
             cte.columns = ListIterate.collect(ctx.aliasedColumns().ident(), this::getIdentText);
@@ -758,48 +758,9 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
 
 
     @Override
-    public Node visitQuery(SqlBaseParser.QueryContext context)
+    public Node visitQueryStatement(SqlBaseParser.QueryStatementContext context)
     {
-        Query query = (Query) visit(context.queryNoWith());
-        if (context.with() != null)
-        {
-            query.with = (With) visit(context.with());
-        }
-        return query;
-    }
-
-    @Override
-    public Node visitQueryNoWith(SqlBaseParser.QueryNoWithContext context)
-    {
-        QueryBody term = (QueryBody) visit(context.queryTerm());
-
-        Query query = new Query();
-        query.queryBody = term;
-
-        List<SortItem> orderBy = visitCollection(context.sortItem(), SortItem.class);
-        Optional<Expression> limit = visitIfPresent(context.limitClause(), Expression.class);
-        Optional<Expression> offset = visitIfPresent(context.offsetClause(), Expression.class);
-
-        if (term instanceof QuerySpecification)
-        {
-            QuerySpecification body = (QuerySpecification) term;
-            // When we have a simple query specification
-            // followed by order by limit, fold the order by and limit
-            // clauses into the query specification (analyzer/planner
-            // expects this structure to resolve references with respect
-            // to columns defined in the query specification)
-            body.orderBy = orderBy;
-            body.limit = limit.orElse(null);
-            body.offset = offset.orElse(null);
-
-            return query;
-        }
-
-        query.orderBy = orderBy;
-        query.limit = limit.orElse(null);
-        query.offset = offset.orElse(null);
-
-        return query;
+        return new Query()._queryBody((QueryBody) visit(context.querySpecWithScope()));
     }
 
     @Override
@@ -815,7 +776,22 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     }
 
     @Override
-    public Node visitDefaultQuerySpec(SqlBaseParser.DefaultQuerySpecContext context)
+    public Node visitQuerySpecWithScope(SqlBaseParser.QuerySpecWithScopeContext context)
+    {
+        With with = visitIfPresent(context.with(), With.class).orElse(null);
+        QueryBody queryBody = (QueryBody) visit(context.querySpec());
+        if (with != null)
+        {
+            QueryWithScope specification = new QueryWithScope();
+            specification.with = with;
+            specification.queryBody = queryBody;
+            return specification;
+        }
+        return queryBody;
+    }
+
+    @Override
+    public Node visitSelectQuery(SqlBaseParser.SelectQueryContext context)
     {
         List<SelectItem> selectItems = visitCollection(context.selectItem(), SelectItem.class);
         Select select = new Select();
@@ -830,6 +806,9 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         specification.groupBy = visitCollection(context.expr(), Expression.class);
         specification.where = visitIfPresent(context.where(), Expression.class).orElse(null);
         specification.having = visitIfPresent(context.having, Expression.class).orElse(null);
+        specification.orderBy = visitCollection(context.sortItem(), SortItem.class);
+        specification.limit = visitIfPresent(context.limitClause(), Expression.class).orElse(null);
+        specification.offset = visitIfPresent(context.offsetClause(), Expression.class).orElse(null);
 
         return specification;
     }
@@ -850,7 +829,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     {
         Values values = new Values();
 
-        values.rows = visitCollection(ctx.values(), ValuesList.class);;
+        values.rows = visitCollection(ctx.values(), ValuesList.class);
 
         return values;
     }
@@ -870,26 +849,6 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         sortItem.nullOrdering = getNullOrderingType(context.nullOrdering);
 
         return sortItem;
-    }
-
-    @Override
-    public Node visitSetOperation(SqlBaseParser.SetOperationContext context)
-    {
-        switch (context.operator.getType())
-        {
-            case SqlBaseLexer.UNION:
-                QueryBody left = (QueryBody) visit(context.left);
-                QueryBody right = (QueryBody) visit(context.right);
-                boolean isDistinct = context.setQuant() == null || context.setQuant().ALL() == null;
-                Union union = new Union();
-                union.left = left;
-                union.right = right;
-                union.distinct = isDistinct;
-
-                return union;
-            default:
-                throw new IllegalArgumentException("Unsupported set operation: " + context.operator.getText());
-        }
     }
 
     @Override
@@ -1002,9 +961,56 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         logicalBinaryExpression.type = getLogicalBinaryOperator(context.operator);
         logicalBinaryExpression.left = (Expression) visit(context.left);
         logicalBinaryExpression.right = (Expression) visit(context.right);
-
         return logicalBinaryExpression;
     }
+
+    @Override
+    public Node visitQueryOptParens(QueryOptParensContext ctx)
+    {
+        return ctx.queryOptParens() == null ? ctx.queryStatement().accept(this) : ctx.queryOptParens().accept(this);
+    }
+
+    @Override
+    public Node visitQuerySpecOptParens(QuerySpecOptParensContext ctx)
+    {
+        return ctx.OPEN_ROUND_BRACKET() != null ? new TableSubquery()._query(new Query()._queryBody((QueryBody) ctx.querySpecWithScope().accept(this))) :
+                ctx.querySpecOptParens() != null ? ctx.querySpecOptParens().accept(this) :
+                        ctx.querySpecWithScope().accept(this);
+    }
+
+    @Override
+    public Node visitDefaultQuerySpec(SqlBaseParser.DefaultQuerySpecContext context)
+    {
+        Relation left = (Relation) visit(context.selectQuery());
+        Relation result = context.OPEN_ROUND_BRACKET() != null ? new TableSubquery()._query(new Query()._queryBody((QueryBody)left)) : left;
+        for (QueryTermExtensionContext extension : context.queryTermExtension())
+        {
+            if (extension.queryTermIntersectExtension() != null)
+            {
+                throw new RuntimeException("Not supported yet");
+            }
+            else
+            {
+                QueryTermUnionExtensionContext ctx = extension.queryTermUnionExtension();
+                switch (ctx.operator.getType())
+                {
+                    case SqlBaseLexer.UNION:
+                        Relation right = (Relation) visit(ctx.right);
+                        boolean isDistinct = ctx.setQuant() == null || ctx.setQuant().ALL() == null;
+                        Union union = new Union();
+                        union.left = result;
+                        union.right = right;
+                        union.distinct = isDistinct;
+                        result = union;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unsupported set operation: " + ctx.operator.getText());
+                }
+            }
+        }
+        return result;
+    }
+
 
     // From clause
 
@@ -1020,6 +1026,25 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
             join.type = JoinType.CROSS;
             return join;
         }
+
+//        if (ctx.operator != null)
+//        {
+//            switch (ctx.operator.getType())
+//            {
+//                case SqlBaseLexer.UNION:
+//                    Node rightNode = visit(ctx.right);
+//                    Relation left = (Relation) visit(ctx.left);
+//                    Relation right = (rightNode instanceof Query ? ((Query) rightNode).queryBody : (Relation) rightNode);
+//                    boolean isDistinct = ctx.setQuant() == null || ctx.setQuant().ALL() == null;
+//                    Union union = new Union();
+//                    union.left = left;
+//                    union.right = right;
+//                    union.distinct = isDistinct;
+//                    return union;
+//                default:
+//                    throw new IllegalArgumentException("Unsupported set operation: " + ctx.operator.getText());
+//            }
+//        }
 
         if (ctx.NATURAL() != null)
         {
@@ -1094,7 +1119,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     public Node visitSubqueryRelation(SqlBaseParser.SubqueryRelationContext context)
     {
         TableSubquery tableSubquery = new TableSubquery();
-        tableSubquery.query = (Query) visit(context.query());
+        tableSubquery.query = (Query) visit(context.queryStatement());
 
         return tableSubquery;
     }
