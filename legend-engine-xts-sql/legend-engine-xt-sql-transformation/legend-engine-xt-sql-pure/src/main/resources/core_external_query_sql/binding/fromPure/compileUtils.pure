@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::query::sql::transformation::queryToPure::*;
+import meta::relational::metamodel::*;
 import meta::pure::extension::*;
 import meta::external::query::sql::transformation::utils::*;
 import meta::external::query::sql::transformation::compile::utils::*;
@@ -193,7 +195,10 @@ function meta::external::query::sql::transformation::compile::utils::compileViaG
 {
   let config = meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration();
   let functionStr = if ($removeFrom, | $lambda->removeFrom(), | $lambda)->printFunctionDefinition($config, ^GContext(space=''));
-  let dependenciesAsStr = $lambda->meta::external::query::sql::transformation::queryToPure::_extractDependencies()->map(x|$x->printPackageableElements($config))->joinStrings('\n');
+  let dependenciesAsStr = $lambda
+                          ->meta::external::query::sql::transformation::compile::utils::_extractDependencies()
+                          ->scanDependencies([], meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraScanDependenciesType)
+                          ->map(x|$x->printPackageableElements($config))->joinStrings('\n');
 
   let code =  $dependenciesAsStr+
               '\n###Pure\n'+
@@ -223,20 +228,20 @@ function meta::external::query::sql::transformation::compile::utils::removeFrom(
 }
 
 
-function meta::external::query::sql::transformation::compile::utils::compileViaProtocol(l:LambdaFunction<Any>[1], removeFunctions:String[*], extensions:Extension[*]):LambdaFunction<Any>[1]
-{
-  meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($l, $extensions)->removeLambdaTDSFunction($removeFunctions)->compileViaProtocol($extensions);
-}
+// function meta::external::query::sql::transformation::compile::utils::compileViaProtocol(l:LambdaFunction<Any>[1], removeFunctions:String[*], extensions:Extension[*]):LambdaFunction<Any>[1]
+// {
+//   meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($l, $extensions)->removeLambdaTDSFunction($removeFunctions)->compileViaProtocol($extensions);
+// }
 
-function meta::external::query::sql::transformation::compile::utils::compileViaProtocol(l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1], extensions:Extension[*]):LambdaFunction<Any>[1]
-{
-  $l->meta::alloy::metadataServer::alloyToJSON()
-    ->meta::external::query::sql::legendCompileVSProtocol([])
-    ->match([
-      l:LambdaFunction<Any>[1] | $l,
-      i:InstanceValue[1] | $i.values->at(0)->cast(@LambdaFunction<Any>)
-    ]);
-}
+// function meta::external::query::sql::transformation::compile::utils::compileViaProtocol(l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1], extensions:Extension[*]):LambdaFunction<Any>[1]
+// {
+//   $l->meta::alloy::metadataServer::alloyToJSON()
+//     ->meta::external::query::sql::legendCompileVSProtocol([])
+//     ->match([
+//       l:LambdaFunction<Any>[1] | $l,
+//       i:InstanceValue[1] | $i.values->at(0)->cast(@LambdaFunction<Any>)
+//     ]);
+// }
 
 function <<access.private>> meta::external::query::sql::transformation::compile::utils::removeLambdaTDSFunction(l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1], functions:String[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
 {
@@ -254,4 +259,38 @@ function <<access.private>> meta::external::query::sql::transformation::compile:
         | ^$f(parameters = $f.parameters->map(p | $p->removeTDSFunction($functions))));,
     v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1] | $v;
   ]);
+}
+
+
+function meta::external::query::sql::transformation::compile::utils::_extractDependencies(v:Any[1]):PackageableElement[*]
+{
+  $v->match([
+    z:FunctionDefinition<Any>[1] |if($z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z->cast(@PackageableElement),|[])->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->_extractDependencies()));,
+    x:SimpleFunctionExpression[1]|let res = $x.parametersValues->evaluateAndDeactivate()->map(p|$p->_extractDependencies());
+                                  $res->concatenate($x.func->_extractDependencies());,
+    i: InstanceValue[1] | $i.values->evaluateAndDeactivate()->map(p|$p->_extractDependencies()),
+    x: meta::pure::metamodel::relation::RelationElementAccessor<Any>[1] | $x.sourceElementContainer,
+    s: meta::external::query::sql::expression::SQLExpression<Any>[1]|$s.pureFunction->_extractDependencies(),
+    a:Any[1] | []
+  ]);
+}
+
+function meta::external::query::sql::transformation::compile::utils::scanDependencies(v:PackageableElement[*], alreadyFound:PackageableElement[*], extraScanDependenciesType: Function<{Nil[0..1]->PackageableElement[*]}>[*]):PackageableElement[*]
+{
+  let found = $v->fold(
+                        {p,a|$a->concatenate(
+                                $p->match(
+                                      $extraScanDependenciesType->concatenate(
+                                        [
+                                        x:Database[1]|$x.includes,
+                                        x:Any[1]|[]
+                                        ]
+                                      )->toOneMany()
+                                )
+                            )
+                        },
+                        []
+                      )->removeDuplicates();
+  let newOnes = $found->removeAll($alreadyFound);
+  $v->concatenate($found->concatenate(if($newOnes->isEmpty(),|[],|$newOnes->scanDependencies($alreadyFound->concatenate($newOnes), $extraScanDependenciesType))))->removeDuplicates();
 }
