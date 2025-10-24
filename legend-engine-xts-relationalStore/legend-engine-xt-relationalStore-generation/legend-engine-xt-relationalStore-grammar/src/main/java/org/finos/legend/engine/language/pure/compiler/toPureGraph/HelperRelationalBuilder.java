@@ -263,65 +263,13 @@ public class HelperRelationalBuilder
 
     public static Relation getRelation(Database db, final String _schema, final String _table, SourceInformation sourceInformation)
     {
-        return getRelation(db, _schema, _table, null, null, sourceInformation);
-    }
-
-    public static Relation getRelation(TablePtr tableptr, CompileContext context)
-    {
-        return getRelation(resolveDatabase(tableptr.database, tableptr.sourceInformation, context), tableptr.schema, tableptr.table, tableptr, context, SourceInformation.getUnknownSourceInformation());
-    }
-
-    public static Relation getRelation(Database db, final String _schema, final String _table, TablePtr tableptr, CompileContext context, SourceInformation sourceInformation)
-    {
-        validateSchemaExists(db, _schema, tableptr, context, sourceInformation);
+        validateSchemaExists(db, _schema, sourceInformation);
         Relation table = findRelation(db, _schema, _table, sourceInformation);
         if (table == null)
         {
-            if (tableptr != null && context != null && context.pureModel != null && RelationalCompileState.of(context.pureModel) != null)
-            {
-                TablePtr mappedTablePtr = getTablePtrForGeneratedTable(db, tableptr, context, sourceInformation);
-                if (mappedTablePtr != null)
-                {
-                    table = findRelation(db, mappedTablePtr.schema, mappedTablePtr.table, sourceInformation);
-                    if (table != null)
-                    {
-                        return table;
-                    }
-                    throw new EngineException("Can't find table '" + mappedTablePtr.table + "' in schema '" + mappedTablePtr.schema + "' and database '" + db.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
-                }
-            }
             throw new EngineException("Can't find table '" + _table + "' in schema '" + _schema + "' and database '" + db.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
         return table;
-    }
-
-    public static TablePtr getTablePtrForGeneratedTable(Database db, TablePtr tableptr, CompileContext context, SourceInformation sourceInformation)
-    {
-        String databasePath = PackageableElement.getUserPathForPackageableElement(db);
-        RelationalCompileState.TablePtrCacheKey cacheKey = new RelationalCompileState.TablePtrCacheKey(databasePath, tableptr);
-
-        return RelationalCompileState.of(context.pureModel).tablePtrResolutionCache.computeIfAbsent(cacheKey, key ->
-        {
-            TablePtr mappedTablePtr = RelationalCompileState.of(context.pureModel).getTableMapping(tableptr);
-            if (mappedTablePtr == null)
-            {
-                for (Database includedDB : getAllIncludedDBs(db))
-                {
-                    TablePtr newPtr = new TablePtr();
-                    newPtr._type = "Table";
-                    newPtr.database = PackageableElement.getUserPathForPackageableElement(includedDB);
-                    newPtr.schema = tableptr.schema;
-                    newPtr.table = tableptr.table;
-
-                    mappedTablePtr = RelationalCompileState.of(context.pureModel).getTableMapping(newPtr);
-                    if (mappedTablePtr != null)
-                    {
-                        break;
-                    }
-                }
-            }
-            return mappedTablePtr;
-        });
     }
 
     private static Relation findRelation(Database database, final String schemaName, final String tableName, SourceInformation sourceInformation)
@@ -379,30 +327,10 @@ public class HelperRelationalBuilder
 
     private static void validateSchemaExists(Database db, String _schema, SourceInformation sourceInformation)
     {
-        validateSchemaExists(db, _schema, null, null, sourceInformation);
-    }
-
-    private static void validateSchemaExists(Database db, String _schema, TablePtr tableptr, CompileContext context, SourceInformation sourceInformation)
-    {
-        if (schemaExists(db, _schema))
+        if (!schemaExists(db, _schema))
         {
-            return;
+            throw new EngineException("Can't find schema '" + _schema + "' in database '" + db + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
-        String schemaToReportInError = _schema;
-        if (tableptr != null && context != null && context.pureModel != null && RelationalCompileState.of(context.pureModel) != null)
-        {
-            TablePtr ptr = RelationalCompileState.of(context.pureModel).getTableMapping(tableptr);
-            if (ptr != null && ptr.schema != null)
-            {
-                String generatedSchemaName = ptr.schema;
-                if (schemaExists(db, generatedSchemaName))
-                {
-                    return;
-                }
-                schemaToReportInError = generatedSchemaName;
-            }
-        }
-        throw new EngineException("Can't find schema '" + schemaToReportInError + "' in database '" + db + "'", sourceInformation, EngineErrorType.COMPILATION);
     }
 
     private static SetIterable<Table> getAllTables(Database db, Predicate<Schema> schemaPredicate)
@@ -882,7 +810,7 @@ public class HelperRelationalBuilder
                 selfJoinTargets.add(selfJoin);
                 return selfJoin;
             }
-            Relation relation = getRelation((Database) context.resolveStore(tableAliasColumn.table.database, tableAliasColumn.table.sourceInformation), tableAliasColumn.table.schema, tableAliasColumn.table.table, tableAliasColumn.table, context, tableAliasColumn.table.sourceInformation);
+            Relation relation = getRelation((Database) context.resolveStore(tableAliasColumn.table.database, tableAliasColumn.table.sourceInformation), tableAliasColumn.table.schema, tableAliasColumn.table.table, tableAliasColumn.table.sourceInformation);
             Column col = getColumn(relation, tableAliasColumn.column, tableAliasColumn.sourceInformation);
             TableAlias alias = aliasMap.getIfAbsentPut(tableAliasColumn.table.schema + "." + tableAliasColumn.tableAlias, () -> new Root_meta_relational_metamodel_TableAlias_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::TableAlias"))
                     ._name(tableAliasColumn.tableAlias)
@@ -1284,6 +1212,11 @@ public class HelperRelationalBuilder
             });
             rootRelationalInstanceSetImplementation._primaryKey(primaryKey);
         }
+    }
+
+    public static Relation getRelation(TablePtr tableptr, CompileContext context)
+    {
+        return getRelation(resolveDatabase(tableptr.database, tableptr.sourceInformation, context), tableptr.schema, tableptr.table);
     }
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getPropertyOwnerForRelationalPropertyMapping(CompileContext context, RelationalPropertyMapping propertyMapping, PropertyMappingsImplementation immediateParent)
