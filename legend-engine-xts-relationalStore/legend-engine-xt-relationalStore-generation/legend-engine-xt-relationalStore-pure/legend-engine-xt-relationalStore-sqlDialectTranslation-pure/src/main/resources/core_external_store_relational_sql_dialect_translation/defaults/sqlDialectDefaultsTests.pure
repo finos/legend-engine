@@ -1199,12 +1199,14 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   );
 
   ^Query(
-    with = ^With(
-      withQueries = [$cte1, $cte2]
-    ),
-    queryBody = ^QuerySpecification(
-      select = ^Select(selectItems = [^AllColumns(prefix = 'root')]),
-      from = ^Table(name = ^QualifiedName(parts = ['cte2']))
+    queryBody = ^QueryWithScope(
+      with = ^With(
+        withQueries = [$cte1, $cte2]
+      ),
+      queryBody = ^QuerySpecification(
+          select = ^Select(selectItems = [^AllColumns(prefix = 'root')]),
+          from = ^Table(name = ^QualifiedName(parts = ['cte2']))
+      )
     )
   );
 }

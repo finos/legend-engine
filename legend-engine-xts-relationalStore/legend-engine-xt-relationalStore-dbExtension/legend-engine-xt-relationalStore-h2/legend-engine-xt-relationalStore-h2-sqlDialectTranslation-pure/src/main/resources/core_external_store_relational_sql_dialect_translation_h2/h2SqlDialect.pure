@@ -186,6 +186,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     lateralJoinProcessorForH2(),
     asOfJoinProcessorForH2(),
     querySpecificationProcessorForH2(),
+    queryWithScopeProcessor_default(),
     extendedQuerySpecificationProcessorForH2(),
     semiStructuredArrayFlattenProcessorForH2()
   ]

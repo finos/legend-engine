@@ -83,7 +83,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDatabricks()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateTimeDatabricks()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as STRING)')),
-    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[2..3] | $p->dateDiffDatabricks()})),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='timediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForDatabricks(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='to_date(%s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='dayofmonth(%s)')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='dayofweek(%s)')),
@@ -273,35 +273,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    $schemaName->replace('$', '.');
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateDiffDatabricks(p:String[2..3]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processDateDiffDurationUnitForDatabricks(durationUnit:String[1]):String[1]
 {
-    // dateDiff(d1: Date[1], d2: Date[1], du: DurationUnit[1]): Integer[1]
-    // This returns an integer, hence a need to round results to int
-    let interval = if($p->size() == 2, |'DAY', |$p->at(2)->replace('\'', '')->mapToDBUnitType());
-    let cmd = if ($interval == 'YEAR',
-        | 'year('+ $p->at(1) +') - year('+ $p->at(0) +')',
-        | if ($interval == 'MONTH',
-             | 'cast(round(months_between('+ $p->at(1) +', '+ $p->at(0) +')) AS INT)',
-             | if ($interval == 'DAY',
-                  | 'datediff('+ $p->at(1) +', '+ $p->at(0) +')',
-                  | if ($interval == 'HOUR',
-                       | 'cast(round((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 3600) AS INT)',
-                       | if ($interval == 'MINUTE',
-                            | 'cast(round((unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) / 60) AS INT)',
-                            | if ($interval == 'SECOND',
-                                 | 'unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')',
-                                 | if ($interval == 'MILLISECOND',
-                                      | '(unix_timestamp('+ $p->at(1) +') - unix_timestamp('+ $p->at(0) +')) * 1000',
-                                      | ''
-                                 )
-                            )
-                       )
-                  )
-             )
-        )
-    );
-    if ($cmd == '',|fail('The DurationUnit \''+$p->at(2)+'\' is not supported yet for date_diff'),|'');
-    [$cmd];
+   let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+   let durationDbNames = ['YEAR', 'MONTH', 'WEEK', 'DAY', 'HOUR', 'MINUTE', 'SECOND', 'MILLISECOND'];
+   $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::arrayJoinDatabricks(p:String[1..2]):String[1]

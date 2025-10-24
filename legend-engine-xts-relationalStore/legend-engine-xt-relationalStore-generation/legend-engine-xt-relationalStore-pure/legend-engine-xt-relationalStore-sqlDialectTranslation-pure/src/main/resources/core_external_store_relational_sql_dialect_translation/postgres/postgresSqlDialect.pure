@@ -227,6 +227,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     tableProcessor_default(),
     aliasedRelationProcessor_default(),
     joinProcessor_default(),
+    queryWithScopeProcessor_default(),
     querySpecificationProcessor_default(),
     unionProcessor_default(),
     asOfJoinProcessorForPostgres(),

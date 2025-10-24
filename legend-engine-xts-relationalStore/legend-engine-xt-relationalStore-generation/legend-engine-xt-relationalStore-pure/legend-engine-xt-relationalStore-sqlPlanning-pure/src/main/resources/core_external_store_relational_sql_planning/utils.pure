@@ -124,7 +124,10 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::util
 
 function meta::external::store::relational::sqlPlanning::utils::isQueryPlainQuerySpecification(query: Query[1]): Boolean[1]
 {
-  $query.limit->isEmpty() && $query.orderBy->isEmpty() && $query.offset->isEmpty() && $query.queryBody->instanceOf(QuerySpecification)
+  $query.queryBody->instanceOf(QuerySpecification) &&
+  $query.queryBody->cast(@QuerySpecification).limit->isEmpty() &&
+  $query.queryBody->cast(@QuerySpecification).orderBy->isEmpty() &&
+  $query.queryBody->cast(@QuerySpecification).offset->isEmpty()
 }
 
 function meta::external::store::relational::sqlPlanning::utils::addClauseIfNotExisting(expr: meta::external::query::sql::metamodel::Expression[1], toAdd: meta::external::query::sql::metamodel::Expression[1]): NodeTransformationWithChangeTracking[1]

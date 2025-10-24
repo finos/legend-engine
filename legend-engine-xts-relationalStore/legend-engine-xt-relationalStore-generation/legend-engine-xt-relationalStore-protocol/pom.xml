@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-generation</artifactId>
-        <version>4.105.1-SNAPSHOT</version>
+        <version>4.106.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -64,6 +64,13 @@
             <artifactId>eclipse-collections</artifactId>
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
+
+        <!-- ANNOTATIONS -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>bson</artifactId>
+        </dependency>
+        <!-- ANNOTATIONS -->
 
         <!-- TEST -->
         <dependency>

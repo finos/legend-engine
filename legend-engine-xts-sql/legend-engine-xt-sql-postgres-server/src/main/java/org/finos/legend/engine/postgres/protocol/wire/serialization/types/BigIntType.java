@@ -24,7 +24,7 @@ package org.finos.legend.engine.postgres.protocol.wire.serialization.types;
 import io.netty.buffer.ByteBuf;
 import java.nio.charset.StandardCharsets;
 
-class BigIntType extends PGType<Long>
+public class BigIntType extends PGType<Long>
 {
 
     public static final BigIntType INSTANCE = new BigIntType();
