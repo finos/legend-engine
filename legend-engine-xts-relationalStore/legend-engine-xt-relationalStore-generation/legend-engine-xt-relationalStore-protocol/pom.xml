@@ -65,6 +65,13 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
+        <!-- ANNOTATIONS -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>bson</artifactId>
+        </dependency>
+        <!-- ANNOTATIONS -->
+
         <!-- TEST -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
