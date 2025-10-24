@@ -75,10 +75,11 @@ function meta::pure::router::execution::executeExpression(clusters:ClusteredValu
           |  executeExpression($tail, $newVars, $allActivities, $exeCtx, $extensions, ^$debug(space = $debug.space));
         );,
       |
-    if($current->instanceOf(StoreMappingClusteredValueSpecification),
-      | let storeCluster  = $current->cast(@StoreMappingClusteredValueSpecification);
+    if($current->instanceOf(StoreClusteredValueSpecification),
+      | let storeCluster  = $current->cast(@StoreClusteredValueSpecification);
+        let mapping = if($storeCluster->instanceOf(StoreMappingClusteredValueSpecification), | $storeCluster->cast(@StoreMappingClusteredValueSpecification).mapping, | ^Mapping(package=meta::pure::executionPlan, name='dummy'));
         let storeQuery    = getStoreQuery($storeCluster.store, $fe, $inScopeVars);
-        let result        = $storeCluster.s.executeStoreQuery->toOne()->eval($storeQuery, $storeCluster.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $storeCluster.mapping, $storeCluster.runtime, $exeCtx, $extensions, ^$debug(space = $debug.space+' '));
+        let result        = $storeCluster.s.executeStoreQuery->toOne()->eval($storeQuery, $storeCluster.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $mapping, $storeCluster.runtime, $exeCtx, $extensions, ^$debug(space = $debug.space+' '));
         let allActivities = $activities->concatenate($result.activities);
         let tail          = $clusters->tail();
         if($tail->isEmpty(),

@@ -127,6 +127,11 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], graphFetchFlow:Boolean[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
 {
+   routeFunction($f, true, $routingStrategy, $exeCtx, $inScopeVars, $graphFetchFlow, $extensions, $debug);
+}
+
+function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], cluster: Boolean[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], graphFetchFlow:Boolean[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
+{
    let fOpenVariables      = $f->openVariableValues();
    let openVariables       = if($inScopeVars->isNotEmpty(),
                                 | assert($fOpenVariables->keys()->intersection($inScopeVars)->isEmpty(),'Routing : unable to determine open variables for FunctionDefinition, suplied inScopeVars and FunctionDefinitionOpenVariables intersect');
@@ -143,12 +148,18 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
    print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with strategy based info (mapping / binding / platform):\n',|''));
    let enrichedExpressionsAfterStrategyBasedEnrichment = $enrichedExpressions->map(exp | $exp->enrichExpressionWithStrategyBasedEnrichment($exeCtx, $extensions, $debug));
 
-   // Clustering Function Expressions into clusters
-   print(if($debug.debug,|'\n'+$debug.space+'Clustering Function Expressions:',|''));
-   let clusters = $enrichedExpressionsAfterStrategyBasedEnrichment->map(exp| $exp->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space + '  ')));
+   let processedExpressions = if($cluster, 
+    | 
+      // Clustering Function Expressions into clusters
+      print(if($debug.debug,|'\n'+$debug.space+'Clustering Function Expressions:',|''));
+      let clusters = $enrichedExpressionsAfterStrategyBasedEnrichment->map(exp| $exp->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space + '  ')));,
+    |
+      print(if($debug.debug,|'\n'+$debug.space+'Clustering skipped',|''));   
+      $enrichedExpressionsAfterStrategyBasedEnrichment;
+   );
 
    // Wrapping Clustered Function Expressions into original function structure
-   let result   = ^$f(expressionSequence = $clusters->toOneMany());
+   let result   = ^$f(expressionSequence = $processedExpressions->toOneMany());
    print(if($debug.debug,|$result->asString()+'\n',|''));
 
    $result;
