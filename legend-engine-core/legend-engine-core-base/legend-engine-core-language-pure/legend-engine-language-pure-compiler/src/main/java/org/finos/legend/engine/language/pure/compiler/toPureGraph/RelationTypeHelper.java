@@ -44,14 +44,19 @@ public class RelationTypeHelper
         ProcessorSupport processorSupport = ctx.pureModel.getExecutionSupport().getProcessorSupport();
         return _RelationType.build(
                 ListIterate.collect(src.columns, c ->
-                        _Column.getColumnInstance(
-                                c.name,
-                                false,
-                                ctx.newGenericType(c.genericType),
-                                ctx.pureModel.getMultiplicity(c.multiplicity),
-                                SourceInformationHelper.toM3SourceInformation(c.sourceInformation),
-                                processorSupport
-                        )
+                        {
+                            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?,?> col = _Column.getColumnInstance(
+                                    c.name,
+                                    false,
+                                    ctx.newGenericType(c.genericType),
+                                    ctx.pureModel.getMultiplicity(c.multiplicity),
+                                    SourceInformationHelper.toM3SourceInformation(c.sourceInformation),
+                                    processorSupport
+                            );
+                            col._stereotypes(ListIterate.collect(c.stereotypes, ctx::resolveStereotype));
+                            col._taggedValues(ListIterate.collect(c.taggedValues, ctx::newTaggedValue));
+                            return col;
+                        }
                 ),
                 SourceInformationHelper.toM3SourceInformation(src.sourceInformation),
                 processorSupport
