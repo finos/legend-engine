@@ -58,6 +58,14 @@ function <<PCT.adapter>> {PCT.adapterName='MemSQL'} meta::relational::tests::pct
   )
 }
 
+function <<PCT.adapter>> {PCT.adapterName='SqlServer'} meta::relational::tests::pct::testAdapterForRelationalWithSqlServerExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+{
+  meta::relational::tests::pct::testAdapterForRelationalExecution(
+      $f,
+      meta::pure::testConnection::getTestConnection(DatabaseType.SqlServer)
+  )
+}
+
 function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
 {
   $f->extractDependentFunctionsImpl([]);
