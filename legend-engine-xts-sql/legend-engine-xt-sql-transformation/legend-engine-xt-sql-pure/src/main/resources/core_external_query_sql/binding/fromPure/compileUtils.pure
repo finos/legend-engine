@@ -198,6 +198,7 @@ function meta::external::query::sql::transformation::compile::utils::compileViaG
   let dependenciesAsStr = $lambda
                           ->meta::external::query::sql::transformation::compile::utils::_extractDependencies()
                           ->scanDependencies([], meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraScanDependenciesType)
+                          ->removeDuplicates({a,b|$a->elementToPath() == $b->elementToPath()})
                           ->map(x|$x->printPackageableElements($config))->joinStrings('\n');
 
   let code =  $dependenciesAsStr+
