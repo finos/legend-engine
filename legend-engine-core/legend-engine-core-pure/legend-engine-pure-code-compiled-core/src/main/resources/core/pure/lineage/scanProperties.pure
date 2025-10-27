@@ -487,12 +487,13 @@ function <<access.private>> meta::pure::lineage::scanProperties::processFunction
                                      list($funcParamClasses -> map(c|$c->dummyNodeForClass()));,
                                   | [] 
                                 );
-                                //println('check read: ' + $f->meta::pure::functions::meta::elementToPath());
-                                if($visitedFunctions->get($f->meta::pure::functions::meta::elementToPath())->isNotEmpty(),
-                                  | //println('cache hit: ' + $f->meta::pure::functions::meta::elementToPath());
-                                    let acutalBodyResult = resolveDummyNodes($visitedFunctions->get($f->meta::pure::functions::meta::elementToPath())->toOne(), $paramPaths);
-                                    makeScanPropertiesState($acutalBodyResult.current, $paramPaths.result->concatenate($acutalBodyResult.result)->concatenate($funcParamNodes), $visitedFunctions);,
-                                  | //println('cache write: ' + $f->meta::pure::functions::meta::elementToPath());
+                                println('check read: ' + $f->meta::pure::functions::meta::elementToPath());
+                                let cachedFunction = $visitedFunctions->get($f->meta::pure::functions::meta::elementToPath());
+                                if($cachedFunction->isNotEmpty(),
+                                  | println('cache hit: ' + $f->meta::pure::functions::meta::elementToPath());
+                                    let actualBodyResult = resolveDummyNodes($cachedFunction->toOne(), $paramPaths);
+                                    makeScanPropertiesState($actualBodyResult.current, $paramPaths.result->concatenate($actualBodyResult.result)->concatenate($funcParamNodes), $visitedFunctions);,
+                                  | println('cache write: ' + $f->meta::pure::functions::meta::elementToPath());
                                     let dummyPaths = range($paramPaths->size())->map(ind | list(^DummyPropertyPathNode(id = $ind, class = meta::pure::lineage::scanProperties::DummyClass, property = getDummyProperty())->cast(@PropertyPathNode)));
                                     let newVars = if($f->instanceOf(Column),
                                       | $f.classifierGenericType->toOne().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns.name->zip($dummyPaths)->newMap(),

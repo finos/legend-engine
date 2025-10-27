@@ -397,12 +397,9 @@ function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any
 {
    let replaced = $tree->replaceQualifiedPropertiesWithRequiredProperties();
 
-   let rootSetImplementation = $tree->match([r:RoutedRootGraphFetchTree<Any>[1]|$r.sets->toOne(),
-                                             r:RootGraphFetchTree<Any>[1]|$mapping->rootClassMappingByClass($replaced.class)]);
+   let rootSetImplementation = $replaced->getRootSetImlementation($mapping);
 
-   assert($rootSetImplementation->isNotEmpty(), |'Mapping ' + $mapping->elementToPath() + ' does not map class from tree: ' + $replaced.class->elementToPath());
-
-   $rootSetImplementation->toOne()->match($extensions.graphExtension_calculateSourceTree->map(ext | $ext->eval($replaced))->concatenate([
+   $rootSetImplementation->match($extensions.graphExtension_calculateSourceTree->map(ext | $ext->eval($replaced))->concatenate([
       {pisi: PureInstanceSetImplementation[1]  |
          assert($pisi.srcClass->isNotEmpty() && $pisi.srcClass->toOne()->instanceOf(Class), 'Pure mapping does not have a class as ~src for root of tree');
          let srcClass     = $pisi.srcClass->toOne()->cast(@Class<Any>);
@@ -421,6 +418,18 @@ function meta::pure::graphFetch::mergeSubTreesRecur(subTrees:PropertyGraphFetchT
 {
    let subTreesGroupedByProperty = $subTrees->groupBy(c|$c->cast(@PropertyGraphFetchTree).property);
    let updatedSubTrees = $subTreesGroupedByProperty->keyValues()->map(p|mergePropertiesFromBaseSubTreeToSubTypedSubTree($p.second.values->cast(@PropertyGraphFetchTree)));
+}
+
+function meta::pure::graphFetch::getRootSetImlementation(tree:RootGraphFetchTree<Any>[1], mapping: Mapping[1]): SetImplementation[1]
+{
+  let rootSetImplementation = $tree->match(
+                                    [ 
+                                      r:RoutedRootGraphFetchTree<Any>[1]  |$r.sets->toOne(),
+                                      r:RootGraphFetchTree<Any>[1]        |$mapping->rootClassMappingByClass($tree.class)
+                                    ]);
+
+  assert($rootSetImplementation->isNotEmpty(), |'Mapping ' + $mapping->elementToPath() + ' does not map class from tree: ' + $tree.class->elementToPath());
+  $rootSetImplementation->toOne();
 }
 
 function <<access.private>> meta::pure::graphFetch::mergePropertiesFromBaseSubTreeToSubTypedSubTree(subTrees:PropertyGraphFetchTree[*]): PropertyGraphFetchTree[*]
@@ -621,7 +630,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                                                  ->fold({path, gt| $gt->recordQualifiedProperties($path)}, $withFoundProperties);
 }
 
-function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNode(srcNode:GraphFetchTree[1], mapping:Mapping[1], setImplementation: PureInstanceSetImplementation[1], tgtNode:GraphFetchTree[1], extensions:meta::pure::extension::Extension[*], visitedFunctions:Map<String,ScanPropertiesState>[1]): Pair<GraphFetchTree, Map<String, ScanPropertiesState>>[1]
+function meta::pure::graphFetch::enrichSourceTreeNode(srcNode:GraphFetchTree[1], mapping:Mapping[1], setImplementation: PureInstanceSetImplementation[1], tgtNode:GraphFetchTree[1], extensions:meta::pure::extension::Extension[*], visitedFunctions:Map<String,ScanPropertiesState>[1]): Pair<GraphFetchTree, Map<String, ScanPropertiesState>>[1]
 {
    let setContainsExplodeProperty = $setImplementation.propertyMappings->filter(pm|if($pm->instanceOf(PurePropertyMapping),| $pm->cast(@PurePropertyMapping).explodeProperty->isTrue(), |false))->isNotEmpty();
    let subTreeProperties          = $tgtNode.subTrees->cast(@PropertyGraphFetchTree).property.name;

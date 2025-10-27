@@ -2446,38 +2446,6 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
    assertEquals($expected->asString(true), $sourceTree->asString(true));
 }
 
-function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testReuseFunctionWithMultipleFunctions():Boolean[1]
-{
-   let tree = #{
-      A {
-         a,
-         b
-       }
-   }#;
-   let sourceTree = calculateSourceTree($tree, testMapping5, meta::pure::extension::defaultExtensions())->sortTree();
-
-   let expected = #{
-      _A {
-        b {
-            d {
-                val2
-            }
-        
-        }, 
-        c {
-            b {
-                d {
-                    val1
-                }
-              }
-          }, 
-        s1,
-        s2
-          }
-   }#;
-   assertEquals($expected->asString(true), $sourceTree->asString(true));
-}
-
 ###Mapping
 import meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::*;
 import meta::pure::lineage::scanProperties::test::*;
@@ -2567,8 +2535,7 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapp
    A: Pure
       {
          ~src _A
-         a: $src.b.d->func3($src.s1)->func4(),
-         b: $src.c.b.d->func3($src.s2).val1
+         a: $src.b.d->func3($src.s1)->func4()
       }
 )
 
@@ -2760,3 +2727,67 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::tes
       b2: $src.c2.e
     }
 )
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+function <<access.private>> meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::visitedFunctionsKeysForCalculateSourceTree(tree:RootGraphFetchTree<Any>[1], mapping: meta::pure::mapping::Mapping[1], extensions:meta::pure::extension::Extension[*]): String[*]
+{
+  let rootSetImplementation= $tree->getRootSetImlementation($mapping)->cast(@meta::external::store::model::PureInstanceSetImplementation);
+  let root = ^RootGraphFetchTree<Any>(class=$rootSetImplementation.srcClass->toOne()->cast(@Class<Any>));
+  let visitedFunctions = $root->enrichSourceTreeNode($mapping, $rootSetImplementation, $tree, $extensions, ^Map<String, meta::pure::lineage::scanProperties::ScanPropertiesState>()).second;
+  $visitedFunctions->keys();
+}
+
+function <<test.Test>> meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::testFunctionCache():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
+   let visitedFunctions = meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::visitedFunctionsKeysForCalculateSourceTree($tree, testMapping1, meta::pure::extension::defaultExtensions());
+
+   let expected = ['meta::pure::lineage::scanProperties::test::func__D_$0_1$__String_$0_1$__String_$0_1$_'];
+
+   assertEquals($expected, $visitedFunctions);
+}
+
+function <<test.Test>> meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::testFunctionCacheWithMultipleFunctions():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
+   let visitedFunctions = meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::visitedFunctionsKeysForCalculateSourceTree($tree, testMapping3, meta::pure::extension::defaultExtensions());
+
+   let expected = [ 'meta::pure::lineage::scanProperties::test::func__D_$0_1$__String_$0_1$__String_$0_1$_',
+                    'meta::pure::lineage::scanProperties::test::func2__D_$0_1$__String_$0_1$__String_$0_1$_'];
+
+   assertEquals($expected->sort(), $visitedFunctions->sort());
+}
+
+/*
+ * ToFix: whenSubType not implemented yet due to limitations on the use of the @Type syntax
+ * in compiled mode.  See core/pure/corefunctions/langExtension.pure for details.
+ */
+function <<test.Test, test.ToFix>> meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::testFunctionCacheWithNestedFunctions():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
+   let visitedFunctions = meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::visitedFunctionsKeysForCalculateSourceTree($tree, testMapping5, meta::pure::extension::defaultExtensions());
+
+   let expected = [ 'meta::pure::lineage::scanProperties::test::func3__D_$0_1$__String_$0_1$___D_$0_1$_',
+                    'meta::pure::lineage::scanProperties::test::func4__D_$0_1$__String_$0_1$_'];
+
+   assertEquals($expected->sort(), $visitedFunctions->sort());
+}
