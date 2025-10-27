@@ -38,7 +38,6 @@ public class Test_Relational_SqlServer_UnclassifiedFunctions_PCT extends PCTRepo
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             //ascii
-            one("meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_", "Unexpected token", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_", "\"\nexpected: [0]\nactual:   []\""),
 
             //base64
@@ -73,6 +72,25 @@ public class Test_Relational_SqlServer_UnclassifiedFunctions_PCT extends PCTRepo
             // rpad
             one("meta::pure::functions::string::tests::rpad::testRpadMultiChar_Function_1__Boolean_1_", "\"\nexpected: 'ppxox'\nactual:   'ppxoxoxo'\""),
             one("meta::pure::functions::string::tests::rpad::testRpadStringLongerThanLength_Function_1__Boolean_1_", "\"\nexpected: ['abc']\nactual:   []\""),
+
+            // regexp
+            one("meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpCount::testRegexpCount_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpExtract::testRegexpExtractAll_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpExtract::testRegexpExtract_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_NonNewlineSensitive_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpLike::testRegexpLike_NonNewlineSensitive_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpReplace::testregexpReplaceAll_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::regexpReplace::testregexpReplace_Function_1__Boolean_1_", "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""),
 
             //splitpart
             one("meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Procedure or function string_split has too many arguments specified."),
