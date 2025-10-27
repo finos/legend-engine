@@ -57,7 +57,6 @@ Class <<access.protected>> meta::external::format::json::schema::JSONSchemaConfi
    generateMilestoneProperties:Boolean[1];  //defaults false - If true - the auto-gen milestoned properties will be included on generated schemas
    anyOfMember:Boolean[1];  //Indicates if we are generating an object inside an anyOf
    includeStereotypes:Boolean[1]; //defaults false, if true include stereotypes in generation
-
 }
 
 Class meta::external::format::json::schema::generation::JSONSchemaOutput extends GenerationOutput
@@ -671,9 +670,7 @@ meta::external::format::json::schema::allNonPrimitivePropertiesOfClass($class,[]
 }
 function <<access.private>> meta::external::format::json::schema::allNonPrimitivePropertiesOfClass( class:Class<Any>[1],visited:PackageableElement[*],config:JSONSchemaConfigInternal[1] ) : PackageableElement[*]
 {
-
-
-   let generalizationsProperties = $class.generalizations->map(g |
+  let generalizationsProperties = $class.generalizations->map(g |
       if($g.general.rawType->isEmpty() ||$class->in($visited)  || $class->instanceOf((MappingClass)),
        | [],
        | let extended = $g.general.rawType->cast(@Class<Any>)->toOne();
@@ -761,14 +758,12 @@ function <<access.private>> meta::external::format::json::schema::allReferencedE
                                                       )
                                                       -> concatenate( $allNonPrimitivePropertiesOfClass );
 
-                           let result = $myPropertyElements->map( p | if($p->isClass(),
-                                                                | $p->cast(@Class<Any>)->allReferencedElements( $bag->concatenate($class)->concatenate($allReferencedElements),$config,$includeSubTypes),
+                          let result = $myPropertyElements->fold( { p, acc | let accResult = if($p->isClass(),
+                                                                | $p->cast(@Class<Any>)->allReferencedElements( $acc->concatenate($allReferencedElements),$config,$includeSubTypes),
                                                                 | $p
-                                                             )
-                                                   )
-                                              ->concatenate($allReferencedElements)
-                                              ->concatenate($bag)
-                                              ->concatenate($class);
+                                                                );
+                                                             $acc->concatenate($accResult);
+                                                   }, $bag->concatenate($class)->concatenate($allReferencedElements));
 
                           meta::pure::functions::collection::removeDuplicates( $result )->concatenate($constraints)->cast(@PackageableElement);
                      );,
