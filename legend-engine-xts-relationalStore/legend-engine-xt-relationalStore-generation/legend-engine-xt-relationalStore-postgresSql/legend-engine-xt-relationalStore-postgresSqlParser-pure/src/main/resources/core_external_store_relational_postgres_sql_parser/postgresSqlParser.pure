@@ -44,9 +44,9 @@ function <<test.Test>> meta::external::store::relational::postgresSql::parser::t
 {
   let statement = parseSqlStatement('SELECT 1 + 2 as result');
   assert($statement->instanceOf(Query));
-  assert($statement->cast(@Query).queryBody->instanceOf(QuerySpecification));
-  assert($statement->cast(@Query).queryBody->cast(@QuerySpecification).select.selectItems->size() == 1);
-  assert($statement->cast(@Query).queryBody->cast(@QuerySpecification).select.selectItems->toOne()->instanceOf(SingleColumn));
-  assert($statement->cast(@Query).queryBody->cast(@QuerySpecification).select.selectItems->toOne()->cast(@SingleColumn).alias == 'result');
-  assert($statement->cast(@Query).queryBody->cast(@QuerySpecification).select.selectItems->toOne()->cast(@SingleColumn).expression->instanceOf(ArithmeticExpression));
+  assert($statement->cast(@Query).queryBody->toOne()->instanceOf(QuerySpecification));
+  assert($statement->cast(@Query).queryBody->toOne()->cast(@QuerySpecification).select.selectItems->size() == 1);
+  assert($statement->cast(@Query).queryBody->toOne()->cast(@QuerySpecification).select.selectItems->toOne()->instanceOf(SingleColumn));
+  assert($statement->cast(@Query).queryBody->toOne()->cast(@QuerySpecification).select.selectItems->toOne()->cast(@SingleColumn).alias == 'result');
+  assert($statement->cast(@Query).queryBody->toOne()->cast(@QuerySpecification).select.selectItems->toOne()->cast(@SingleColumn).expression->instanceOf(ArithmeticExpression));
 }

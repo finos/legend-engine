@@ -30,6 +30,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.Cast;
 import org.finos.legend.engine.protocol.sql.metamodel.CollectionColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.ColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.JSONExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.QueryWithScope;
 import org.finos.legend.engine.protocol.sql.metamodel.SubscriptExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Values;
 import org.finos.legend.engine.protocol.sql.metamodel.ValuesList;
@@ -387,18 +388,19 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     @Override
     public T visit(Query val)
     {
-        T offset = collect(val.offset);
-        T body = collect(val.queryBody);
-        T limit = collect(val.limit);
-        T order = collect(val.orderBy);
-
-        return collate(offset, body, limit, order);
+        return collect(val.queryBody);
     }
 
     @Override
     public T visit(QueryBody val)
     {
         return collect(val);
+    }
+
+    @Override
+    public T visit(QueryWithScope val)
+    {
+        return collate(collect(val.with), collect(val.queryBody));
     }
 
     @Override

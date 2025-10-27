@@ -24,11 +24,7 @@ Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Statemen
 
 Class meta::external::query::sql::metamodel::Query extends meta::external::query::sql::metamodel::Statement
 {
-  <<equality.Key>> with: meta::external::query::sql::metamodel::With[0..1];
   <<equality.Key>> queryBody: meta::external::query::sql::metamodel::QueryBody[1];
-  <<equality.Key>> limit: meta::external::query::sql::metamodel::Expression[0..1];
-  <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
-  <<equality.Key>> offset: meta::external::query::sql::metamodel::Expression[0..1];
 }
 
 Class meta::external::query::sql::metamodel::WithQuery extends meta::external::query::sql::metamodel::Node
@@ -69,6 +65,12 @@ Class meta::external::query::sql::metamodel::TableSubquery extends meta::externa
 Class meta::external::query::sql::metamodel::SubqueryExpression extends meta::external::query::sql::metamodel::Expression
 {
   <<equality.Key>> query: meta::external::query::sql::metamodel::Query[1];
+}
+
+Class meta::external::query::sql::metamodel::QueryWithScope extends meta::external::query::sql::metamodel::QueryBody
+{
+  <<equality.Key>> with: meta::external::query::sql::metamodel::With[0..1];
+  <<equality.Key>> queryBody: meta::external::query::sql::metamodel::QueryBody[1];
 }
 
 Class meta::external::query::sql::metamodel::QuerySpecification extends meta::external::query::sql::metamodel::QueryBody

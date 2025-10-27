@@ -153,6 +153,11 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlS
   $sqlString->sqlToPure(getSources(), $extraPackages, $scopeVariables);
 }
 
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1], extraPackages:PackageableElement[*]):Function<Any>[1]
+{
+  $sqlString->sqlToPure(getSources(), $extraPackages, ^Map<String, ValueSpecification>());
+}
+
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1], sources:DynamicSQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1]):Function<Any>[1]
 {
   parseSqlStatement($sqlString->toOne())->cast(@Query)->sqlToPure($sources, $extraPackages, $scopeVariables);
@@ -357,21 +362,8 @@ function meta::external::query::sql::transformation::queryToPure::processRootQue
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processQuery', $_context.debug);
-
   let context = ^$_context(debug = $_context.debug->indent());
-
-  let withQueries = $query.with->processWith($_context);
-
-  let scopedContext = ^$_context(
-    withQueries = $_context.withQueries->concatenate($withQueries),
-    scopeWithFrom = if ($_context.scopeWithFrom->isFalse(), | false, | $query.with.withQueries->isEmpty())
-  );
-
-  let mainQueryResult = $query.queryBody->processQueryBody($scopedContext);
-//  println($mainQueryResult.expression->evaluateAndDeactivate()->map(x|$x->meta::pure::metamodel::serialization::grammar::printValueSpecification(^GContext(space=''))));
-  let withOrderBy = $query.orderBy->processOrderBy([], $mainQueryResult);
-//  println($withOrderBy.expression->evaluateAndDeactivate()->map(x|$x->meta::pure::metamodel::serialization::grammar::printValueSpecification(^GContext(space=''))));
-  $query.limit->processLimitOffset($query.offset, $withOrderBy);
+  $query.queryBody->processQueryBody($context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processWith(with: With[0..1], context: SqlTransformContext[1]): WithQueryContext[*]
@@ -417,6 +409,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     tf:TableFunction[1]               | $tf->processTableFunction([], $newContext),
     tsq: TableSubquery[1]             | $tsq->processTableSubquery($newContext),
     querySpec: QuerySpecification[1]  | $querySpec->processQuerySpec($newContext),
+    queryWithScope:QueryWithScope[1]  | $queryWithScope->processQueryWithScope($newContext),
     set:SetOperation[1]               | $set->processSetOperation($newContext),
     v:Values[1]                       | $v->processValues($newContext),
     qb: QueryBody[1]                  | $newContext
@@ -436,6 +429,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
 
   debug(|'processUnion', $context.debug);
+
   let left = wrapWithFrom(processRelation($union.left, ^$context(root = false, id = $context.id + 1)));
 
   let right = wrapWithFrom(processRelation($union.right, ^$context(root = false, id = $context.id + 3)));
@@ -447,6 +441,18 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   clone(^$context(expression = $newExp, contexts = [$left, $right], aliases = $aliases), $context);
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQueryWithScope(queryWithScope: QueryWithScope[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  let withQueries = $queryWithScope.with->processWith($_context);
+
+  let context = ^$_context(
+      withQueries = $_context.withQueries->concatenate($withQueries),
+      scopeWithFrom = if ($_context.scopeWithFrom->isFalse(), | false, | $queryWithScope.with.withQueries->isEmpty())
+  );
+
+  meta::external::query::sql::transformation::queryToPure::processQueryBody($queryWithScope.queryBody, $context);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuerySpec(querySpec: QuerySpecification[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processQuerySpec', $_context.debug);
@@ -456,7 +462,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   if ($querySpec.from->isEmpty(),
     | let func = $querySpec.select.selectItems->processSelectItems($context, false)->at(0).first;
 //      println('Generated Pure Function for column: '+$func->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
-      ^$_context(expression=$func.expressionSequence->evaluateAndDeactivate()->toOne());,
+      ^$context(expression=$func.expressionSequence->evaluateAndDeactivate()->toOne());,
     |
       let from = $querySpec.from->processFrom($context);
 
@@ -466,13 +472,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
       let projection = $querySpec.select->processProjection($querySpec.groupBy, $querySpec.having, $querySpec.orderBy.sortKey, $withWhere);
 
-      let query = $querySpec.limit->processLimitOffset($querySpec.offset,
-        $querySpec.orderBy->processOrderBy($projection.second.selectItems,
-          $querySpec.having->processHaving($projection.second,
-            $projection.first
-          )
-        )
-      );
+      let query = $querySpec.having->processHaving($projection.second, $projection.first);
 
       //pair(sql specified name, sql column alias object)
       let expectedWithRealias = $querySpec.select.selectItems->map(si |
@@ -517,7 +517,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
       let aliases = $final.columns.name->map(c | ^SQLColumnAlias(name = $c));
 
-      ^$final(aliases = $aliases);
+      let mainQueryResult = ^$final(aliases = $aliases);
+
+      let withOrderBy = $querySpec.orderBy->processOrderBy($projection.second.selectItems, $mainQueryResult);
+
+      $querySpec.limit->processLimitOffset($querySpec.offset, $withOrderBy);
   );
 }
 
@@ -4040,21 +4044,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       ]);
       $l->concatenate($r)->concatenate($c);,
     q:Query[1] |
-      let b = walk($q.queryBody, $accumulator, $extras);
-      let o = walk($q.offset, $accumulator, $extras);
-      let l = walk($q.limit, $accumulator, $extras);
-      $b->concatenate($o)->concatenate($l);,
+      walk($q.queryBody, $accumulator, $extras),
     q:QuerySpecification[1] |
-
         let from = walk($q.from, $accumulator, $extras);
         let where = walk($q.where, $accumulator, $extras);
-
         let groupBy = walk($q.groupBy, $accumulator, $extras);
         let having = walk($q.having, $accumulator, $extras);
         let select = walk($q.select, $accumulator, $extras);
         let limit = walk($q.limit, $accumulator, $extras);
         let offset = walk($q.offset, $accumulator, $extras);
-
         $from->concatenate($where)->concatenate($groupBy)->concatenate($having)->concatenate($select)->concatenate($limit)->concatenate($offset);,
     s:Select[1] | walk($s.selectItems, $accumulator, $extras);,
     s:SingleColumn[1] |  walk($s.expression, $accumulator, $extras),
