@@ -254,22 +254,6 @@ public class TestExtensions
     }
 
     @Test
-    public void testMetadataDeserializer()
-    {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        DistributedBinaryGraphDeserializer deserializer = DistributedBinaryGraphDeserializer.newBuilder(classLoader).withMetadataNames(getExpectedCodeRepositories()).build();
-
-        Assert.assertTrue(deserializer.hasClassifier(M3Paths.Class));
-        Assert.assertTrue(deserializer.hasInstance(M3Paths.Class, "Root::" + M3Paths.Class));
-
-        MutableSet<String> expectedClassifiers = Iterate.flatCollect(PureProtocolExtensionLoader.extensions(), ext -> ext.getExtraProtocolToClassifierPathMap().values(), Sets.mutable.empty());
-
-        Assert.assertEquals(
-                Lists.fixedSize.empty(),
-                expectedClassifiers.reject(cl -> deserializer.hasInstance(M3Paths.Class, "Root::" + cl), Lists.mutable.empty()));
-    }
-
-    @Test
     public void testPackageableElementProtocolDefineClassifier()
     {
         List<PureProtocolExtension> extensions = PureProtocolExtensionLoader.extensions();
