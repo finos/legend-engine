@@ -95,24 +95,28 @@ public class SQLManager
             dockerClient.pullImageCmd(imageName).start().awaitCompletion();
 
             CreateContainerResponse container = dockerClient.createContainerCmd(imageName)
-                    .withHostConfig(HostConfig.newHostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(1975), ExposedPort.tcp(5432))))
+                    .withHostConfig(HostConfig.newHostConfig().withPortBindings(new PortBinding(Ports.Binding.empty(), ExposedPort.tcp(5432))))
                     .withName("postgres-metadata-server")
                     .exec();
 
             dockerClient.startContainerCmd(container.getId()).exec();
 
+            int port = Integer.parseInt(dockerClient.inspectContainerCmd(container.getId()).exec()
+                    .getNetworkSettings()
+                    .getPorts().getBindings().values().iterator().next()[0].getHostPortSpec());
+
             String host = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
             String used_host = host == null ? "localhost" : host;
             logger.info("Connecting using host: {}", used_host);
-            JDBCSessionHandler metadataJDBCSessionHandler = new JDBCSessionHandler("jdbc:postgresql://" + used_host + ":1975/postgres", "postgres", "");
+            JDBCSessionHandler metadataJDBCSessionHandler = new JDBCSessionHandler("jdbc:postgresql://" + used_host + ":" + port + "/postgres", "postgres", "");
 
             logger.info("Waiting for initialization");
             waitInitialization(metadataJDBCSessionHandler);
-            logger.info("Postgres initialized on port 1975");
+            logger.info("Postgres initialized on port " + port);
 
             metadataJDBCSessionHandler.prepareStatement("CREATE DATABASE legend_m;").execute();
 
-            this.legendSessionHandler = new JDBCSessionHandler("jdbc:postgresql://localhost:1975/legend_m", "postgres", "");
+            this.legendSessionHandler = new JDBCSessionHandler("jdbc:postgresql://localhost:" + port + "/legend_m", "postgres", "");
 
 
             this.catalogManager = new CatalogManager(legendSessionHandler);
