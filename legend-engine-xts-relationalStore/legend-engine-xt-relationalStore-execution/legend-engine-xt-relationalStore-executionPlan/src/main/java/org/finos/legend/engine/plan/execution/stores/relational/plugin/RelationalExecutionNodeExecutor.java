@@ -2181,7 +2181,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                         List<Method> getters = parentCrossKeyGettersOrderedPerTargetProperties;
                         parentToChildMap.forEach((p, cs) ->
                         {
-                            crossCache.put(
+                            relationalGraphObjectsBatch.addNewXStorePropertyCacheEntry(
+                                    node.nodeIndex,
                                     new RelationalGraphFetchUtils.RelationalCrossObjectGraphFetchCacheKey(p, getters),
                                     cs
                             );

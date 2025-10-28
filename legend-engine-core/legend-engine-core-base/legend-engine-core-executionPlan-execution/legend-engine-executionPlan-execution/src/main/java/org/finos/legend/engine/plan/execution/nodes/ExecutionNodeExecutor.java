@@ -509,6 +509,8 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                     this.executionState.adaptiveGraphBatchStats.previousBatchMemoryUtilization = batch.getTotalObjectMemoryUtilization();
                 }
 
+                batch.addEntriesToxStoreCaches();
+
                 if (nonEmptyObjectList)
                 {
                     long currentObjectCount = objectCount.addAndGet(parentObjects.size());

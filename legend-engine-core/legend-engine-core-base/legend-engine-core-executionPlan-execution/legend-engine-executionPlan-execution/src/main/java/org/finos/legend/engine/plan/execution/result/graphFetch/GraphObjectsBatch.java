@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.plan.execution.result.graphFetch;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheStats;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -94,6 +97,7 @@ public class GraphObjectsBatch
     protected final long batchIndex;
     protected ConcurrentMap<Integer, List<?>> nodeObjects;
     protected ConcurrentMap<Integer, ExecutionCache<GraphFetchCacheKey, List<Object>>> xStorePropertyCaches;
+    protected ConcurrentMap<Integer, List<Pair<GraphFetchCacheKey, List<Object>>>> newXStorePropertyCacheEntries;
     protected AtomicLong totalObjectMemoryUtilization;
     protected AtomicLong rowCount;
 
@@ -103,6 +107,7 @@ public class GraphObjectsBatch
         this.batchIndex = batchIndex;
         this.nodeObjects = new ConcurrentHashMap<>();
         this.xStorePropertyCaches = new ConcurrentHashMap<>();
+        this.newXStorePropertyCacheEntries = new ConcurrentHashMap<>();
         this.totalObjectMemoryUtilization = new AtomicLong(0);
         this.rowCount = new AtomicLong(0);
     }
@@ -113,6 +118,7 @@ public class GraphObjectsBatch
         this.batchIndex = other.batchIndex;
         this.nodeObjects = other.nodeObjects;
         this.xStorePropertyCaches = other.xStorePropertyCaches;
+        this.newXStorePropertyCacheEntries = other.newXStorePropertyCacheEntries;
         this.totalObjectMemoryUtilization = other.totalObjectMemoryUtilization;
         this.rowCount = other.rowCount;
     }
@@ -175,5 +181,33 @@ public class GraphObjectsBatch
     public long getTotalObjectMemoryUtilization()
     {
         return this.totalObjectMemoryUtilization.get();
+    }
+
+    public void addNewXStorePropertyCacheEntry(int nodeIndex, GraphFetchCacheKey key, List<Object> children)
+    {
+        this.newXStorePropertyCacheEntries.computeIfAbsent(nodeIndex, k -> new ArrayList<>()).add(Tuples.pair(key, children));
+    }
+
+    public void addEntriesToxStoreCaches()
+    {
+        for (ConcurrentMap.Entry<Integer, List<Pair<GraphFetchCacheKey, List<Object>>>> newXStorePropertyCacheEntry: this.newXStorePropertyCacheEntries.entrySet())
+        {
+            int key = newXStorePropertyCacheEntry.getKey();
+            List<Pair<GraphFetchCacheKey, List<Object>>> pairList = newXStorePropertyCacheEntry.getValue();
+
+            if (pairList == null || pairList.isEmpty())
+            {
+                continue;
+            }
+
+            ExecutionCache<GraphFetchCacheKey, List<Object>> cache = this.xStorePropertyCaches.computeIfAbsent(key, k -> nullCache);
+
+            for (Pair<GraphFetchCacheKey, List<Object>> pair: pairList)
+            {
+                cache.put(pair.getOne(), pair.getTwo());
+            }
+        }
+
+        this.newXStorePropertyCacheEntries.clear();
     }
 }
