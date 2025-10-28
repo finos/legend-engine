@@ -2735,7 +2735,7 @@ import meta::pure::graphFetch::routing::*;
 
 function <<access.private>> meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::visitedFunctionsKeysForCalculateSourceTree(tree:RootGraphFetchTree<Any>[1], mapping: meta::pure::mapping::Mapping[1], extensions:meta::pure::extension::Extension[*]): String[*]
 {
-  let rootSetImplementation= $tree->getRootSetImlementation($mapping)->cast(@meta::external::store::model::PureInstanceSetImplementation);
+  let rootSetImplementation= $tree->getRootSetImplementation($mapping)->cast(@meta::external::store::model::PureInstanceSetImplementation);
   let root = ^RootGraphFetchTree<Any>(class=$rootSetImplementation.srcClass->toOne()->cast(@Class<Any>));
   let visitedFunctions = $root->enrichSourceTreeNode($mapping, $rootSetImplementation, $tree, $extensions, ^Map<String, meta::pure::lineage::scanProperties::ScanPropertiesState>()).second;
   $visitedFunctions->keys();

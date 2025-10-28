@@ -397,7 +397,7 @@ function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any
 {
    let replaced = $tree->replaceQualifiedPropertiesWithRequiredProperties();
 
-   let rootSetImplementation = $replaced->getRootSetImlementation($mapping);
+   let rootSetImplementation = $replaced->getRootSetImplementation($mapping);
 
    $rootSetImplementation->match($extensions.graphExtension_calculateSourceTree->map(ext | $ext->eval($replaced))->concatenate([
       {pisi: PureInstanceSetImplementation[1]  |
@@ -421,7 +421,7 @@ function meta::pure::graphFetch::mergeSubTreesRecur(subTrees:PropertyGraphFetchT
    let updatedSubTrees = $subTreesGroupedByProperty->keyValues()->map(p|mergePropertiesFromBaseSubTreeToSubTypedSubTree($p.second.values->cast(@PropertyGraphFetchTree)));
 }
 
-function meta::pure::graphFetch::getRootSetImlementation(tree:RootGraphFetchTree<Any>[1], mapping: Mapping[1]): SetImplementation[1]
+function meta::pure::graphFetch::getRootSetImplementation(tree:RootGraphFetchTree<Any>[1], mapping: Mapping[1]): SetImplementation[1]
 {
   let rootSetImplementation = $tree->match(
                                     [ 
