@@ -409,6 +409,7 @@ function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any
    ])->toOneMany());
 }
 
+
 function meta::pure::graphFetch::mergeSubTrees(tree:GraphFetchTree[1]): GraphFetchTree[1]
 {
    ^$tree(subTrees = $tree.subTrees->cast(@PropertyGraphFetchTree)->mergeSubTreesRecur());
@@ -516,12 +517,10 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          ]);
 
          // get visitedFunctions map from last element in ScanPropertiesState
-         let visitedFunctions1 = if($propertyPaths->isNotEmpty(),
-                                  | $propertyPaths->last()->getVisitedFunctions(),
-                                  | $visitedFunctions
-         );
-         
-         assert($visitedFunctions1->keys()->size() >= $visitedFunctions->keys()->size());
+         let visitedFunctionsFromScanProperties = if($propertyPaths->isNotEmpty(),
+                                                    | $propertyPaths->last()->getVisitedFunctions(),
+                                                    | $visitedFunctions
+                                                  );
 
          let inlinedPropertyTree = $propertyPaths.result->buildPropertyTree()->inlineQualifiedPropertyNodes();
 
@@ -571,11 +570,10 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                                                                                     $res)
                                                           );
                                                         },
-                                                        pair($withRootSubTypes, $visitedFunctions1)
+                                                        pair($withRootSubTypes, $visitedFunctionsFromScanProperties)
                                                       );
 
-         let visitedFunctions2 = $withNextSetImpl.second;
-         assert($visitedFunctions2->keys()->size() >= $visitedFunctions1->keys()->size());
+         let visitedFunctionsFromEnrichedPaths = $withNextSetImpl.second;
 
          let withPassThruSubTrees = if($childSetImpls->isEmpty() && $returnType->instanceOf(Class) && $requiredProperty->toOne()->isPropertyAutoMapped($setImplementation),
                                       | let appendAtPaths = $propertyPaths.current->filter(path| $path.values->isNotEmpty());
@@ -592,8 +590,8 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
 
          
          if($isPropertyTemporalMilestoned,
-            | pair(^$withQPsRecorded(subTrees=$withQPsRecorded.subTrees->map(st| $st->switchToMilestoneProperties($tgtPgft.parameters->evaluateAndDeactivate()))), $visitedFunctions2),
-            | pair($withQPsRecorded, $visitedFunctions2);
+            | pair(^$withQPsRecorded(subTrees=$withQPsRecorded.subTrees->map(st| $st->switchToMilestoneProperties($tgtPgft.parameters->evaluateAndDeactivate()))), $visitedFunctionsFromEnrichedPaths),
+            | pair($withQPsRecorded, $visitedFunctionsFromEnrichedPaths);
          );
       },
       | pair($srcNode, $visitedFunctions)
@@ -664,7 +662,8 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeAtPath(s
       zero : PropertyPathNode[0]  | // If path is empty then we are enriching the source node rather than the subTrees
                                     $srcNode->enrichSourceTreeNode($mapping, $setImplementation, $tgtPgft, $extensions, $visitedFunctions);,
 
-      one : PropertyPathNode[1]   | let head = $one->at(0);
+      one : PropertyPathNode[1]   | // If path just has one node, enrich required subTrees
+                                    let head = $one->at(0);
                                     let requiredSubTrees = $srcNode.subTrees->cast(@PropertyGraphFetchTree)->filter(st |$st.property == $head.property);
                                     $requiredSubTrees->fold({st, res
                                                             | let enrichedSubTree = $st->enrichSourceTreeNode($mapping, $setImplementation, $tgtPgft, $extensions, $res.second);
@@ -674,7 +673,8 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeAtPath(s
                                                             pair($srcNode, $visitedFunctions)
                                                             );,
 
-      many :  PropertyPathNode[*] | let head = $many->at(0);
+      many :  PropertyPathNode[*] | // If path contains multiple nodes, recurse into required subTrees and enrich subTrees that match with tail path
+                                    let head = $many->at(0);
                                     let tail = $many->tail();
                                     let requiredSubTrees = $srcNode.subTrees->cast(@PropertyGraphFetchTree)->filter(st |$st.property == $head.property);
                                     $requiredSubTrees->fold({st, res

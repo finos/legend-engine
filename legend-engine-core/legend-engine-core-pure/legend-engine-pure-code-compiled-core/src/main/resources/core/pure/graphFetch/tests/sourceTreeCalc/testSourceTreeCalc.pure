@@ -2773,8 +2773,8 @@ function <<test.Test>> meta::pure::graphFetch::enrichSourceTeeNode::tests::funct
 }
 
 /*
- * ToFix: whenSubType not implemented yet due to limitations on the use of the @Type syntax
- * in compiled mode.  See core/pure/corefunctions/langExtension.pure for details.
+ * ToFix: We currently lose the function cache state for nested functions.
+ * We expect to have func3 & func4 in the function cache but only see func4 at the moment
  */
 function <<test.Test, test.ToFix>> meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::testFunctionCacheWithNestedFunctions():Boolean[1]
 {
