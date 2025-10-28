@@ -30,7 +30,7 @@ import java.time.ZoneOffset;
 import java.util.Locale;
 import java.time.format.DateTimeFormatter;
 
-final class TimestampZType extends BaseTimestampType
+public final class TimestampZType extends BaseTimestampType
 {
 
     public static final PGType INSTANCE = new TimestampZType();

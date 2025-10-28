@@ -33,13 +33,15 @@ import org.finos.legend.engine.postgres.protocol.sql.dispatcher.StatementDispatc
 import org.finos.legend.engine.postgres.protocol.sql.handler.empty.EmptyPreparedStatement;
 import org.finos.legend.engine.postgres.protocol.sql.handler.empty.EmptyStatement;
 import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.JDBCSessionHandler;
+import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.CatalogManager;
+import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.SQLRewrite;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendExecutionService;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendSessionHandler;
 import org.finos.legend.engine.postgres.protocol.sql.handler.txn.TxnIsolationPreparedStatement;
 import org.finos.legend.engine.postgres.protocol.sql.handler.txn.TxnIsolationStatement;
+import org.finos.legend.engine.postgres.protocol.wire.session.Session;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepared.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.PostgresStatement;
-import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,8 +55,9 @@ public class SQLManager
 {
     private static final Logger logger = LoggerFactory.getLogger(SQLManager.class);
 
-    JDBCSessionHandler metadataJDBCSessionHandler;
+    JDBCSessionHandler legendSessionHandler;
     LegendExecutionService client;
+    CatalogManager catalogManager;
 
     public SQLManager(LegendExecutionService client)
     {
@@ -92,20 +95,31 @@ public class SQLManager
             dockerClient.pullImageCmd(imageName).start().awaitCompletion();
 
             CreateContainerResponse container = dockerClient.createContainerCmd(imageName)
-                    .withHostConfig(HostConfig.newHostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(1975), ExposedPort.tcp(5432))))
+                    .withHostConfig(HostConfig.newHostConfig().withPortBindings(new PortBinding(Ports.Binding.empty(), ExposedPort.tcp(5432))))
                     .withName("postgres-metadata-server")
                     .exec();
 
             dockerClient.startContainerCmd(container.getId()).exec();
 
+            int port = Integer.parseInt(dockerClient.inspectContainerCmd(container.getId()).exec()
+                    .getNetworkSettings()
+                    .getPorts().getBindings().values().iterator().next()[0].getHostPortSpec());
+
             String host = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
             String used_host = host == null ? "localhost" : host;
             logger.info("Connecting using host: {}", used_host);
-            this.metadataJDBCSessionHandler = new JDBCSessionHandler("jdbc:postgresql://" + used_host + ":1975/postgres", "postgres", "");
+            JDBCSessionHandler metadataJDBCSessionHandler = new JDBCSessionHandler("jdbc:postgresql://" + used_host + ":" + port + "/postgres", "postgres", "");
 
             logger.info("Waiting for initialization");
-            waitInitialization(this.metadataJDBCSessionHandler);
-            logger.info("Postgres initialized on port 1975");
+            waitInitialization(metadataJDBCSessionHandler);
+            logger.info("Postgres initialized on port " + port);
+
+            metadataJDBCSessionHandler.prepareStatement("CREATE DATABASE legend_m;").execute();
+
+            this.legendSessionHandler = new JDBCSessionHandler("jdbc:postgresql://localhost:" + port + "/legend_m", "postgres", "");
+
+
+            this.catalogManager = new CatalogManager(legendSessionHandler);
         }
         catch (Exception e)
         {
@@ -129,7 +143,7 @@ public class SQLManager
         this.client = client;
     }
 
-    public PostgresPreparedStatement buildPreparedStatement(String query, Identity identity)
+    public PostgresPreparedStatement buildPreparedStatement(String query, Session session)
     {
         try
         {
@@ -140,9 +154,11 @@ public class SQLManager
                     case Empty:
                         return new EmptyPreparedStatement();
                     case Legend:
-                        return new LegendSessionHandler(client, identity).prepareStatement(query);
+                        return new LegendSessionHandler(client, session.getIdentity()).prepareStatement(query);
                     case Metadata:
-                        return metadataJDBCSessionHandler.prepareStatement(query);
+                        String reprocessedQuery = SQLGrammarParser.getSqlBaseParser(query, "query").statement().accept(new SQLRewrite(session));
+                        logger.info("Executing reprocessed query: {}", reprocessedQuery);
+                        return legendSessionHandler.prepareStatement(reprocessedQuery);
                     case TX:
                         return new TxnIsolationPreparedStatement();
                 }
@@ -155,28 +171,21 @@ public class SQLManager
         return null;
     }
 
-    public PostgresStatement buildStatement(String query, Identity identity)
+    public PostgresStatement buildStatement(String query, Session session)
     {
-        try
+        if (query != null)
         {
-            if (query != null)
+            switch (getType(query))
             {
-                switch (getType(query))
-                {
-                    case Empty:
-                        return new EmptyStatement();
-                    case Legend:
-                        return new LegendSessionHandler(client, identity).createStatement();
-                    case Metadata:
-                        return metadataJDBCSessionHandler.createStatement();
-                    case TX:
-                        return new TxnIsolationStatement();
-                }
+                case Empty:
+                    return new EmptyStatement();
+                case Legend:
+                    return new LegendSessionHandler(client, session.getIdentity()).createStatement();
+                case Metadata:
+                    throw new RuntimeException("Not supported yet");
+                case TX:
+                    return new TxnIsolationStatement();
             }
-        }
-        catch (SQLException e)
-        {
-            throw new PostgresServerException(e);
         }
         return null;
     }

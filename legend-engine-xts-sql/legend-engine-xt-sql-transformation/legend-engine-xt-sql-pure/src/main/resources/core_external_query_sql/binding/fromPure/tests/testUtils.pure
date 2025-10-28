@@ -131,5 +131,5 @@ function meta::external::query::sql::transformation::queryToPure::tests::process
   let extensions = relationalExtensions();
   let context = rootContext($sources, $extensions);
 
-  $query->processRootQuery(^$context(scopeWithFrom = $scopeWithFrom, withSupported = true));
+  $query->processRootQuery(^$context(scopeWithFrom = $scopeWithFrom, withSupported = true, debug=noDebug()));
 }
