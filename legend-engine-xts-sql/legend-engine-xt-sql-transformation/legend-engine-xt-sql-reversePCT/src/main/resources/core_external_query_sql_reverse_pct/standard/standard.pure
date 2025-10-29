@@ -27,6 +27,10 @@ function meta::external::query::sql::reversePCT::tests::standard::reverses():Rev
     meta::external::query::sql::reversePCT::tests::standard::math::aggregator::variancePopulation::reverses(),
     meta::external::query::sql::reversePCT::tests::standard::math::aggregator::varianceSample::reverses(),
 
+    meta::external::query::sql::reversePCT::tests::standard::math::trigonometry::cosh::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::math::trigonometry::sinh::reverses(),
+    meta::external::query::sql::reversePCT::tests::standard::math::trigonometry::tanh::reverses(),
+
     meta::external::query::sql::reversePCT::tests::standard::tbd::bitAnd::reverses(),
     meta::external::query::sql::reversePCT::tests::standard::tbd::bitOr::reverses(),
     meta::external::query::sql::reversePCT::tests::standard::tbd::bitShiftLeft::reverses(),
