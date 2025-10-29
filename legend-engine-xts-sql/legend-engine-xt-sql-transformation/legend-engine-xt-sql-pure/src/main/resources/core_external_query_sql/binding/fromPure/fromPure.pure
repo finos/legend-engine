@@ -3588,14 +3588,15 @@ function meta::external::query::sql::transformation::queryToPure::preciseToPrimi
 function meta::external::query::sql::transformation::queryToPure::preciseToPrimitive(type:Type[1]):Type[1]
 {
   if ([
-    pair(|$type->subTypeOfExNil(Integer),  | Integer),
-    pair(|$type->subTypeOfExNil(Decimal),  | Decimal),
-    pair(|$type->subTypeOfExNil(Float),    | Float),
-    pair(|$type->subTypeOfExNil(DateTime), | DateTime),
-    pair(|$type->subTypeOfExNil(String),   | String),
-    pair(|$type->subTypeOfExNil(Boolean),  | Boolean),
-    pair(|$type->subTypeOfExNil(Number),   | Number),
-    pair(|$type->subTypeOfExNil(Date),     | Date)
+    pair(|$type->subTypeOfExNil(Integer),    | Integer),
+    pair(|$type->subTypeOfExNil(Decimal),    | Decimal),
+    pair(|$type->subTypeOfExNil(Float),      | Float),
+    pair(|$type->subTypeOfExNil(Number),     | Number),
+    pair(|$type->subTypeOfExNil(DateTime),   | DateTime),
+    pair(|$type->subTypeOfExNil(StrictDate), | StrictDate),
+    pair(|$type->subTypeOfExNil(Date),       | Date),
+    pair(|$type->subTypeOfExNil(String),     | String),
+    pair(|$type->subTypeOfExNil(Boolean),    | Boolean)
   ], | $type);
 }
 
