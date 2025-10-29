@@ -240,28 +240,8 @@ function meta::pure::router::clustering::specializedFunctionExpressionClustering
     ),
     pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::functions::lang::eval_Function_1__V_m_]),
        {f:FunctionExpression[1], mapping:Mapping[1], openVariables:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1],  debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*] |
-    
          let func = $f.parametersValues->at(0);
-
-         let clusterResponse = $func->match([
-            s: StoreMappingRoutedValueSpecification[1] |         
-              let sets = if($s.sets->isEmpty(),
-                |
-                  $s.routingStrategy->cast(@StoreMappingRoutingStrategy).sets.sets;
-                , 
-                |
-                  $s.sets;
-              );
-
-              ^ClusterResponse(cluster = $s->meta::pure::router::clustering::getClusterVSFromSets($sets, $openVariables, $s.mapping, $extensions));      
-            ,
-            s: StoreRoutedValueSpecification[1] | 
-              ^ClusterResponse(cluster = $s->buildCluster($s.value, $openVariables, $extensions));
-            ,
-            vs: ValueSpecification[1] | 
-              $vs->cluster($mapping, $openVariables, $exeCtx, 'eval_lambda',  $debug, $analyticsDecision, $extensions);
-         ]);
-
+         let clusterResponse = $func->cluster($mapping, $openVariables, $exeCtx, 'eval_lambda', $debug, $analyticsDecision, $extensions->concatenate(withClusterFeature(ClusterFeature.PUSH_LET_TO_STORE)));
          let cluster = $clusterResponse.cluster->cast(@ClusteredValueSpecification);
          ^$clusterResponse(cluster = ^$cluster(val = $f));
        }
@@ -269,6 +249,31 @@ function meta::pure::router::clustering::specializedFunctionExpressionClustering
   ]
 }
 
+Enum meta::pure::router::clustering::ClusterFeature
+{
+  PUSH_LET_TO_STORE
+}
+
+Class <<access.private>> meta::pure::router::clustering::ClusterModule extends meta::pure::extension::ModuleExtension
+[
+  $this.module == 'clustering'
+]
+{  
+  features: ClusterFeature[*];
+}
+
+function <<access.private>> meta::pure::router::clustering::withClusterFeature(features: ClusterFeature[*]): meta::pure::extension::Extension[1]
+{
+  ^meta::pure::extension::Extension(
+    type = 'clustering',
+    moduleExtensions = ^ClusterModule(module = 'clustering', features = $features)
+  );
+}
+
+function <<access.private>> meta::pure::router::clustering::isFeaturePresent(feature: ClusterFeature[1], extensions:meta::pure::extension::Extension[*]): Boolean[1]
+{
+  $extensions.moduleExtension('clustering')->cast(@ClusterModule).features->contains($feature);
+}
 
 function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mapping:Mapping[0..1], openVariables:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1],  debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*]):ClusterResponse[1]
 {
@@ -305,7 +310,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                          let childExecutables = $childClustersResponse.executableSetOperations;
 
                                          let unique = getDistinctClusterVSByStore($params, $extensions);
-                                         if ($unique->size() == 1 && $unique->toOne()->instanceOf(StoreClusteredValueSpecification) && ($f.func->instanceOf(Property) || $f.func->instanceOf(QualifiedProperty) || $unique->at(0)->cast(@StoreClusteredValueSpecification).s.supports->toOne()->eval($f->evaluateAndDeactivate())),
+                                         if ($unique->size() == 1 && $unique->toOne()->instanceOf(StoreClusteredValueSpecification) && ($f.func->instanceOf(Property) || $f.func->instanceOf(QualifiedProperty) || $unique->at(0)->cast(@StoreClusteredValueSpecification).s.supports->toOne()->eval($f->evaluateAndDeactivate()) || ($f->isLetFunction() && isFeaturePresent(ClusterFeature.PUSH_LET_TO_STORE, $extensions))),
                                           | let one = $unique->toOne();
                                             print(if($debug.debug,|$f->evaluateAndDeactivate()->asString()->debug($debug.space+'Func Expression(merge): '),|''));
                                             let res =^$one(
@@ -393,7 +398,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                               let pre_y = $result->match([
                                                                            c: ClusteredValueSpecification[1]|^$c(val = ^$r(value = $c.val)),
                                                                            a: Any[1]| if($r.sets->isEmpty(),                                           // This check is needed for expressions (like : let x = 1->from($mapping, $runtime)) where there are no sets found
-                                                                                         | $clusterResponse.cluster,
+                                                                                         | $clusterResponse.cluster;,
                                                                                          | $r->meta::pure::router::clustering::getClusterVSFromSets($r.sets, $openVariables, $mapping->toOne(), $extensions));
                                                                          ]
                                                                     );
