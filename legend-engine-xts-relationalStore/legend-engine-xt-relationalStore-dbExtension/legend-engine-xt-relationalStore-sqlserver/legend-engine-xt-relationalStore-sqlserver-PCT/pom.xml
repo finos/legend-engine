@@ -31,47 +31,107 @@
         <plugins>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-maven-generation-pct</artifactId>
+                <artifactId>legend-pure-maven-generation-par</artifactId>
                 <configuration>
-                    <mode>Compiled</mode>
-                    <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
-                    <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_StandardFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_EssentialFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_GrammarFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_RelationFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_UnclassifiedFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_VariantFunctions_PCT</PCTTestSuite>
-                    </PCTTestSuites>
+                    <sourceDirectory>${project.basedir}/src/main/resources</sourceDirectory>
+                    <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
+                    <repositories>
+                        <repository>core_relational_sqlserver_pct</repository>
+                    </repositories>
+                    <extraRepositories>
+                        <extraRepository>${project.basedir}/src/main/resources/core_relational_sqlserver_pct.definition.json</extraRepository>
+                    </extraRepositories>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>PCT-Generation</id>
-                        <phase>process-test-classes</phase>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate-pct-report</goal>
+                            <goal>build-pure-jar</goal>
                         </goals>
                     </execution>
                 </executions>
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-platform-java</artifactId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-java</artifactId>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>build-pure-compiled-jar</goal>
+                        </goals>
+                        <configuration>
+                            <generateSources>true</generateSources>
+                            <preventJavaCompilation>true</preventJavaCompilation>
+                            <generationType>modular</generationType>
+                            <useSingleDir>true</useSingleDir>
+                            <repositories>
+                                <repository>core_relational_sqlserver_pct</repository>
+                            </repositories>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-platform-dsl-tds-java</artifactId>
+                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -81,8 +141,94 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>pct-cloud-test</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-maven-generation-pct</artifactId>
+                        <configuration>
+                            <mode>Compiled</mode>
+                            <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
+                            <PCTTestSuites>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_StandardFunctions_PCT
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_EssentialFunctions_PCT
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_GrammarFunctions_PCT
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_RelationFunctions_PCT
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_UnclassifiedFunctions_PCT
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_VariantFunctions_PCT
+                                </PCTTestSuite>
+                            </PCTTestSuites>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>PCT-Generation</id>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>generate-pct-report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.finos.legend.engine</groupId>
+                                <artifactId>legend-engine-pure-platform-java</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.finos.legend.engine</groupId>
+                                <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.finos.legend.engine</groupId>
+                                <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.finos.legend.engine</groupId>
+                                <artifactId>legend-engine-pure-platform-dsl-tds-java</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.finos.legend.engine</groupId>
+                                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.finos.legend.engine</groupId>
+                                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <dependencies>
         <dependency>
@@ -108,50 +254,26 @@
             <artifactId>legend-engine-test-framework</artifactId>
         </dependency>
 
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
-<!--            <scope>runtime</scope>-->
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-vault-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-sqlserver-pure</artifactId>
-            <scope>test</scope>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
         </dependency>
 
-        <!-- TEST -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -160,11 +282,40 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-sqlserver-execution</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-tds-java</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -198,14 +349,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -213,17 +358,18 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>jdbc</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication</artifactId>            
+            <artifactId>legend-engine-external-format-grammar</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-sqlserver-execution</artifactId>
+            <artifactId>legend-engine-external-format-compiler</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-model</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
