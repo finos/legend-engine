@@ -46,6 +46,7 @@
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-path-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-store-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-tds-grammar</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-tds-pure</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-json-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure</dependency>
