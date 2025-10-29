@@ -521,23 +521,8 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
 
                     let routedFunc = routeFunction($preEvalFuncToRoute, false, $state.routingStrategy, $exCtx, $inScopeVars->putAll($f->openVariableValues()), [], $extensions, $debug->indent());
 
-                    let routedVs = ^$funcInstance(values = $routedFunc);
-
-                    let wrapped = $routedFunc.expressionSequence->evaluateAndDeactivate()->match([
-                      s: StoreMappingRoutedValueSpecification[1..*] |
-                        let r = $s->tail()->fold({x, y | 
-                          assertEquals($x.mapping, $y.mapping);
-                          assertEquals($x.store, $y.store);
-                          assertEquals($x.runtime, $y.runtime);
-                          ^$x(processedChainSets += $y.processedChainSets, sets += $y.sets, propertyMapping += $y.propertyMapping);                          
-                        }, $s->at(0));
-
-                        ^$r(value = $routedVs, id = 'eval_function_wrapper');
-                      ,                      
-                      vs: ValueSpecification[1..*] | 
-                        $state.routingStrategy.wrapValueSpec($routedVs, 'eval_function_wrapper', $exCtx, $extensions, $debug);
-                    ]);
-
+                    let wrapped = ^$funcInstance(values = $routedFunc);
+                    
                     ^$state(value = ^$fe(parametersValues = $wrapped));
                   ,
                   |
