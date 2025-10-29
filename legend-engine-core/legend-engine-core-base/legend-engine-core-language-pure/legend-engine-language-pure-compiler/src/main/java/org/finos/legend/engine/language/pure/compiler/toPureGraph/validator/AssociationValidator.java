@@ -45,7 +45,7 @@ public class AssociationValidator
         {
             // TODO: check for derived properties as well?
             MutableMultimap<String, Property> prop = Iterate.groupBy(el.properties, p -> p.name);
-            pureModel.addWarnings(prop.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(a.getFirst().sourceInformation, "Found duplicated property '" + a.getFirst().name + "' in association '" + pureModel.buildPackageString(el._package, el.name) + "'")) : Lists.mutable.empty()));
+            pureModel.addDefects(prop.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(a.getFirst().sourceInformation, "Found duplicated property '" + a.getFirst().name + "' in association '" + pureModel.buildPackageString(el._package, el.name) + "'")) : Lists.mutable.empty()));
         });
     }
 }

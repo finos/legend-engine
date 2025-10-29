@@ -22,7 +22,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
@@ -1581,7 +1581,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  }\n" +
                 ")\n", null, Arrays.asList("COMPILATION error at [30:12-43]: Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc"));
 
-        MutableList<Warning> warnings = res.getTwo().getWarnings();
+        MutableList<? extends Defect> warnings = res.getTwo().getDefects();
         Assert.assertEquals(1, warnings.size());
         Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":30,\"startColumn\":12,\"endLine\":30,\"endColumn\":43},\"message\":\"Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
     }

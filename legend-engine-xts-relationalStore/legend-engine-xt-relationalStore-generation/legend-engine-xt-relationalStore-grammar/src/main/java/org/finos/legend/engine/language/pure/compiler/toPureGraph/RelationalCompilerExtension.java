@@ -582,7 +582,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         }
                         if (!flowKeys.contains(DatabaseAuthenticationFlowKey.newKey(relationalDatabaseConnection.databaseType, relationalDatabaseConnection.datasourceSpecification.getClass(), relationalDatabaseConnection.authenticationStrategy.getClass())))
                         {
-                            context.pureModel.addWarnings(Lists.mutable.with(new Warning(connectionValue.sourceInformation, "Unsupported Database Authentication Flow with Database Type: " + relationalDatabaseConnection.databaseType.name() + ", Datasource: " + relationalDatabaseConnection.datasourceSpecification.getClass().getSimpleName() + ", Authentication: " + relationalDatabaseConnection.authenticationStrategy.getClass().getSimpleName())));
+                            context.pureModel.addDefects(Lists.mutable.with(new Warning(connectionValue.sourceInformation, "Unsupported Database Authentication Flow with Database Type: " + relationalDatabaseConnection.databaseType.name() + ", Datasource: " + relationalDatabaseConnection.datasourceSpecification.getClass().getSimpleName() + ", Authentication: " + relationalDatabaseConnection.authenticationStrategy.getClass().getSimpleName())));
                         }
 
                         //we currently need to add both as __queryPosNDattProcessorsWithParameter is used for plan generation
@@ -1110,7 +1110,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
             });
         }
 
-        context.pureModel.addWarnings(warnings);
+        context.pureModel.addDefects(warnings);
     }
 
     private void checkForDuplicateFilters(Database srcDatabase, CompileContext context)
@@ -1129,7 +1129,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
             });
         }
 
-        context.pureModel.addWarnings(warnings);
+        context.pureModel.addDefects(warnings);
     }
 
     private static <T> void checkForDuplicates(List<T> list)

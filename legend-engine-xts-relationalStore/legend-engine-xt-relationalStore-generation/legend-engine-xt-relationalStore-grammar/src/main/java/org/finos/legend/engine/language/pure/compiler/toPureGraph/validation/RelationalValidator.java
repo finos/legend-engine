@@ -98,7 +98,7 @@ public class RelationalValidator
     {
         if (useWarning)
         {
-            pureModel.addWarnings(Lists.mutable.with(new Warning(sourceInformation, message)));
+            pureModel.addDefects(Lists.mutable.with(new Warning(sourceInformation, message)));
         }
         else
         {
@@ -186,7 +186,7 @@ public class RelationalValidator
     {
         if (pm._property()._genericType()._rawType().getClassifier() != null && pm._property()._genericType()._rawType().getClassifier().equals(pureModel.getType("meta::pure::metamodel::type::Enumeration")) && (pm.getValueForMetaPropertyToOne("transformer") == null))
         {
-            pureModel.addWarnings(Lists.mutable.with(
+            pureModel.addDefects(Lists.mutable.with(
                     new Warning(SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()),
                             "Missing an EnumerationMapping for the enum property '" + pm._property()._name() + "'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.")));
         }
@@ -244,7 +244,7 @@ public class RelationalValidator
 
             if ("sqlNull".equals(funcName))
             {
-                pureModel.addWarnings(Lists.mutable.with(
+                pureModel.addDefects(Lists.mutable.with(
                         new Warning(
                                 SourceInformationHelper.fromM3SourceInformation(dynaFunction.getSourceInformation()),
                                 "Invalid use of sqlNull() in join condition. Use 'column is NULL' instead of 'column = sqlNull()' in join condition.")));

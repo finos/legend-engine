@@ -222,7 +222,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
             }
             if (sourceSet._root() || targetSet._root())
             {
-                context.pureModel.addWarnings(Lists.mutable.with(new Warning(propertyMapping.sourceInformation, "XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")));
+                context.pureModel.addDefects(Lists.mutable.with(new Warning(propertyMapping.sourceInformation, "XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")));
             }
         }
 

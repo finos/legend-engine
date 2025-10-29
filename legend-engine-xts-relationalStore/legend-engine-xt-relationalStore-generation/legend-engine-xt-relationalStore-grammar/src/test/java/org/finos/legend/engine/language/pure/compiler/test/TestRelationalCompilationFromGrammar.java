@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RootRelationalInstanceSetImplementation;
@@ -2361,7 +2362,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  }\n" +
                 ")\n", null, Arrays.asList("COMPILATION error at [30:12-43]: Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc"));
 
-        MutableList<Warning> warnings = res.getTwo().getWarnings();
+        MutableList<? extends Defect> warnings = res.getTwo().getDefects();
         Assert.assertEquals(1, warnings.size());
         Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":30,\"startColumn\":12,\"endLine\":30,\"endColumn\":43},\"message\":\"Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
     }
@@ -3139,7 +3140,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "  }\n" +
                         ")", null, Arrays.asList("COMPILATION error at [24:9-33]: Missing an EnumerationMapping for the enum property 'type'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum."));
 
-        MutableList<Warning> warnings = res.getTwo().getWarnings();
+        MutableList<? extends Defect> warnings = res.getTwo().getDefects();
         Assert.assertEquals(1, warnings.size());
         Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":24,\"startColumn\":9,\"endLine\":24,\"endColumn\":33},\"message\":\"Missing an EnumerationMapping for the enum property 'type'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
     }

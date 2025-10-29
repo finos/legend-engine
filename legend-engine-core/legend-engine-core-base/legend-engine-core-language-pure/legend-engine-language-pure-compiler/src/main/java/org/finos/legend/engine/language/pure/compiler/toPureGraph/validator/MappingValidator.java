@@ -264,7 +264,7 @@ public class MappingValidator
     private void validatePropertyMappings(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> mappingByClassMappingId)
     {
         Set<String> ids = mappingByClassMappingId.keySet();
-        pureModel.addWarnings(mapping._classMappings().flatCollect(cm ->
+        pureModel.addDefects(mapping._classMappings().flatCollect(cm ->
         {
             if (cm instanceof PropertyMappingsImplementation && !(cm instanceof EmbeddedSetImplementation))
             {

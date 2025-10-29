@@ -141,7 +141,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                             }
                             if (service.testSuites != null && service.test != null)
                             {
-                                context.pureModel.addWarnings(Collections.singletonList(new Warning(service.sourceInformation, "Service uses both legacy and strategic test flow. please shift to strategic test flow using test suites.")));
+                                context.pureModel.addDefects(Collections.singletonList(new Warning(service.sourceInformation, "Service uses both legacy and strategic test flow. please shift to strategic test flow using test suites.")));
                             }
                             //post validation
                             if (service.postValidations != null)
