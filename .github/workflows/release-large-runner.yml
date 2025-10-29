@@ -65,6 +65,10 @@ jobs:
         shell: bash
         run: python3 --version
 
+      - name: Install pylegend
+        shell: bash
+        run: pip3 install pylegend
+
       - name: Compute next development version
         run: |
           releaseVersion=${{ github.event.inputs.releaseVersion }}

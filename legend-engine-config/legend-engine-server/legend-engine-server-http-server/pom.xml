@@ -1205,6 +1205,11 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-python-reversePCT-legendQL</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- PCT -->
 
         <dependency>
