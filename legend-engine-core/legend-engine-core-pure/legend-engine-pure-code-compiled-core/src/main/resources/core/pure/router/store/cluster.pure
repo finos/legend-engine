@@ -398,7 +398,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                               let pre_y = $result->match([
                                                                            c: ClusteredValueSpecification[1]|^$c(val = ^$r(value = $c.val)),
                                                                            a: Any[1]| if($r.sets->isEmpty(),                                           // This check is needed for expressions (like : let x = 1->from($mapping, $runtime)) where there are no sets found
-                                                                                         | $clusterResponse.cluster;,
+                                                                                         | $clusterResponse.cluster,
                                                                                          | $r->meta::pure::router::clustering::getClusterVSFromSets($r.sets, $openVariables, $mapping->toOne(), $extensions));
                                                                          ]
                                                                     );
@@ -512,8 +512,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
 
 function meta::pure::router::clustering::getClusterVSFromSets(r:StoreMappingRoutedValueSpecification[1], setImpl:SetImplementation[*], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):StoreMappingClusteredValueSpecification[1]
 {
-  let storeContracts = $setImpl->map(s | $s->storeContractForSetImplementation($mapping, $extensions))->distinct();
-  let res = $storeContracts->toOne('Found more than one store contract for the given set implementations: ' + $storeContracts->size()->toString());
+  let res = $setImpl->toOne()->storeContractForSetImplementation($mapping, $extensions);
   buildCluster($r, $openVariables, $mapping, $res.first, $res.second, $extensions);
 }
 
