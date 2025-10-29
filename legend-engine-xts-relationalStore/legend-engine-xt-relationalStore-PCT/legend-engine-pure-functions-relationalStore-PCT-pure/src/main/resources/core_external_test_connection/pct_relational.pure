@@ -835,7 +835,7 @@ function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1]
   let map = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
   let properties = $class.properties->filter(p|$p->isPrimitiveValueProperty());                
   let cols = $properties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=$map->get($p->functionReturnType().rawType->toOne())->toOne())));
-  let idCol = ^Column(name='_pureId', type=^meta::relational::metamodel::datatype::Integer());
+  let idCol = ^Column(name='pureId__', type=^meta::relational::metamodel::datatype::Integer());
   let table = ^Table(name=$tableName, schema=$schema, primaryKey=$idCol, columns=$idCol->concatenate($cols.column));
   let tableAlias = ^TableAlias(database=$db, name=$class.name->toOne(), relationalElement = $table);
 
@@ -895,8 +895,8 @@ function meta::relational::tests::pct::process::buildJoins(class:Class<Any>[1], 
                 ->map(p|
                         let targetType = $p->functionReturnType().rawType->toOne();
                         let target = $classTableMappings->filter(ctm|$ctm.class == $targetType)->toOne();
-                        let srcColumn = $src.table.columns->cast(@Column)->filter(c|$c.name == '_pureId')->toOne();
-                        let fkColumn = ^Column(name='_'+$class.name->toOne()+'_'+$p.name->toOne(), type=^meta::relational::metamodel::datatype::Integer());
+                        let srcColumn = $src.table.columns->cast(@Column)->filter(c|$c.name == 'pureId__')->toOne();
+                        let fkColumn = ^Column(name=$class.name->toOne()+'_'+$p.name->toOne() + '__', type=^meta::relational::metamodel::datatype::Integer());
                         let targetTable = $target.table;                        
                         $targetTable->mutateAdd('columns', $fkColumn);
                         let srcAlias = ^TableAlias(database=$db, name='src', relationalElement=$src.table);
@@ -1010,7 +1010,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
   assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
   assertEquals( 'leSchema\n'+
                 'SimpleClass\n'+
-                '_pureId,value\n'+
+                'pureId__,value\n'+
                 '10,myValue\n'+
                 '11,myValue2', $newState.second.csvs);
 }
@@ -1024,7 +1024,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
   assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
   assertEquals( 'leSchema\n'+
                 'SimpleClass\n'+
-                '_pureId,value\n'+
+                'pureId__,value\n'+
                 '10,myValue\n'+
                 '11,myValue2', $newState.second.csvs);
 }
