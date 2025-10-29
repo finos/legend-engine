@@ -529,6 +529,99 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
     }
 
     @Test
+    public void testCrossPropertyCachingWithSerializableCacheParallelMultiThreaded() throws Exception
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): String[1]\n" +
+                "{\n" +
+                "  test::Person.all()\n" +
+                "    ->graphFetch(#{\n" +
+                "      test::Person {\n" +
+                "        fullName,\n" +
+                "        firm {\n" +
+                "          name,\n" +
+                "          estDate,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#, 1)\n" +
+                "    ->serialize(#{\n" +
+                "      test::Person {\n" +
+                "        fullName,\n" +
+                "        firm {\n" +
+                "          name,\n" +
+                "          estDate,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+        String expectedRes = "[" +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"estDate\":\"2020-01-01\",\"address\":{\"name\":\"A4\"}}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"estDate\":null,\"address\":{\"name\":\"A3\"}}}," +
+                "{\"fullName\":\"P3\",\"firm\":null}," +
+                "{\"fullName\":\"P4\",\"firm\":null}," +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"estDate\":\"2020-01-01\",\"address\":{\"name\":\"A4\"}}}" +
+                "]";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
+        EngineJavaCompiler compiler = JavaHelper.compilePlan(plan, Identity.getAnonymousIdentity());
+        GraphFetchCrossAssociationKeys graphFetchCrossAssociationKeys =
+                GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan)
+                        .stream()
+                        .filter(x -> x.getName().equals("<default, root.firm@test_Firm>"))
+                        .findFirst()
+                        .orElse(null);
+
+        int runs = 100;
+        int threadCount = 5;
+
+        for (int run = 0; run < runs; run++)
+        {
+            Map<GraphFetchCacheKey, List<Object>> concurrentBacking =
+                    new java.util.concurrent.ConcurrentHashMap<>();
+
+            GraphFetchCacheByTargetCrossKeys sharedCache =
+                    ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromExecutionCache(
+                            buildExecutionCacheFromMap(concurrentBacking),
+                            graphFetchCrossAssociationKeys
+                    );
+
+            java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(threadCount);
+            java.util.List<java.util.concurrent.Future<String>> futures = new java.util.ArrayList<>();
+
+            try (JavaHelper.ThreadContextClassLoaderScope ignored =
+                         JavaHelper.withCurrentThreadContextClassLoader(compiler.getClassLoader()))
+            {
+                for (int i = 0; i < threadCount; i++)
+                {
+                    futures.add(pool.submit(() ->
+                    {
+                        return executePlan(plan, new PlanExecutionContext(sharedCache));
+                    }));
+                }
+
+                for (java.util.concurrent.Future<String> f : futures)
+                {
+                    String r = f.get(60, java.util.concurrent.TimeUnit.SECONDS);
+                    Assert.assertEquals(expectedRes, r);
+                }
+            }
+            finally
+            {
+                pool.shutdownNow();
+            }
+
+            Assert.assertTrue("Cache should not be empty", !concurrentBacking.isEmpty());
+
+        }
+    }
+
+    @Test
     public void testCacheKeyIdentifiers() throws JavaCompileException
     {
         String fetchFunction = "###Pure\n" +
