@@ -14,21 +14,19 @@
 
 package org.finos.legend.engine.language.pure.compiler.api;
 
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class CompileResult
 {
     public String message;
-    public List<? extends Defect> warnings;
+    public List<? extends Defect> defects;
 
-    public CompileResult(String message, List<? extends Defect> warnings)
+    public CompileResult(String message, List<? extends Defect> defects)
     {
         this.message = message;
-        this.warnings = warnings;
+        this.defects = defects;
 
     }
 }
