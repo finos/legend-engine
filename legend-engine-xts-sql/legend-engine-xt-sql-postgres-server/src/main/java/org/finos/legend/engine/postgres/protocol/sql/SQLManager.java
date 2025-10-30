@@ -116,7 +116,7 @@ public class SQLManager
 
             metadataJDBCSessionHandler.prepareStatement("CREATE DATABASE legend_m;").execute();
 
-            this.legendSessionHandler = new JDBCSessionHandler("jdbc:postgresql://localhost:" + port + "/legend_m", "postgres", "");
+            this.legendSessionHandler = new JDBCSessionHandler("jdbc:postgresql://" + used_host + ":" + port + "/legend_m", "postgres", "");
 
 
             this.catalogManager = new CatalogManager(legendSessionHandler);
