@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.language.pure.compiler.api;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
 
 import java.util.List;
 
+@JsonPropertyOrder({"message", "defects"})
 public class CompileResult
 {
     public String message;

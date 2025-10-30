@@ -90,7 +90,7 @@ public class TestCompileApi
             }
             else
             {
-                assertEquals("{\"message\":\"OK\",\"warnings\":[]}", actual);
+                assertEquals("{\"message\":\"OK\",\"defects\":[]}", actual);
             }
         }
         catch (Exception e)
