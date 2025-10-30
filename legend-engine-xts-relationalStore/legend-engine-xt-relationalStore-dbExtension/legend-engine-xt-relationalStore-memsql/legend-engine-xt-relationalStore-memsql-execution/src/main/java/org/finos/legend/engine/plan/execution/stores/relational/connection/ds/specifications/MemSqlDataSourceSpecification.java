@@ -35,7 +35,7 @@ public class MemSqlDataSourceSpecification extends DataSourceSpecification
 
     public MemSqlDataSourceSpecification(MemSqlDatasourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {
-        super(key, databaseManager, authenticationStrategy, extraUserProperties);
+        super(key, databaseManager, authenticationStrategy, extraUserProperties, Integer.parseInt(System.getProperty("legend.relational.memsql.maxPoolSize", String.valueOf(HIKARICP_DEFAULT_MAX_POOL_SIZE))), HIKARICP_DEFAULT_MIN_IDLE);
         this.key = key;
         this.extraDatasourceProperties.putAll(getProperties());
     }
