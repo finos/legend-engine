@@ -2196,7 +2196,7 @@ function meta::pure::lineage::scanProperties::test::test::func4(d: _D[0..1], s:S
   $d.val2;
 }
 
-function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testsourceTree1():Boolean[1]
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testReuseSimpleFunction():Boolean[1]
 {
    let tree = #{
       A {
@@ -2206,6 +2206,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
    }#;
 
    let sourceTree1 = calculateSourceTree($tree, testMapping1, meta::pure::extension::defaultExtensions())->sortTree();
+
    let expected1 = #{
                         _A {
                           b {
@@ -2227,8 +2228,19 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
                     }#;
 
    assertEquals($expected1->asString(true), $sourceTree1->asString(true));
+}
+   
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testReuseSimpleFunctionWithEmptyValueInFirstCall():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
 
    let sourceTree2 = calculateSourceTree($tree, testMapping1WithEmptyValueInFirstCall, meta::pure::extension::defaultExtensions())->sortTree();
+   
    let expected2 = #{_A {
                           c {
                               b {
@@ -2242,6 +2254,16 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
                       }}#;
 
    assertEquals($expected2->asString(true), $sourceTree2->asString(true));
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testReuseSimpleFunctionWithEmptyValueInSecondCall():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
 
    let sourceTree3 = calculateSourceTree($tree, testMapping1WithEmptyValueInSecondCall, meta::pure::extension::defaultExtensions())->sortTree();
    let expected3 = #{_A {
@@ -2257,7 +2279,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
    assertEquals($expected3->asString(true), $sourceTree3->asString(true));
 }
 
-function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testsourceTree2():Boolean[1]
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testReuseComplexFunction():Boolean[1]
 {
    let tree = #{
       A {
@@ -2267,6 +2289,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
    }#;
 
    let sourceTree = calculateSourceTree($tree, testMapping2, meta::pure::extension::defaultExtensions())->sortTree();
+
    let expected = #{
       _A {
         b {
@@ -2291,7 +2314,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
 }
 
 
-function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testsourceTree3():Boolean[1]
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testNoReuseDifferentFunctionNames():Boolean[1]
 {
    let tree = #{
       A {
@@ -2301,6 +2324,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
    }#;
 
    let sourceTree1 = calculateSourceTree($tree, testMapping3, meta::pure::extension::defaultExtensions())->sortTree();
+
    let expected1 = #{
       _A {
         b {
@@ -2323,6 +2347,16 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
    }#;
 
    assertEquals($expected1->asString(true), $sourceTree1->asString(true));
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testNoReuseSameFunctionNameDifferentPackage():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
 
    let sourceTree2 = calculateSourceTree($tree, testMapping3WithFunctionsHavingSameNameButDifferentPackage, meta::pure::extension::defaultExtensions())->sortTree();
    let expected2 = #{
@@ -2345,6 +2379,16 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
           }
    }#;
    assertEquals($expected2->asString(true), $sourceTree2->asString(true));
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testNoReuseSameFunctionNameWithOverloading():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
 
    let sourceTree3 = calculateSourceTree($tree, testMapping3WithFunctionsOverloading, meta::pure::extension::defaultExtensions())->sortTree();
    let expected3 = #{
@@ -2370,7 +2414,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
    
 }
 
-function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testsourceTree4():Boolean[1]
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testReuseFunctionWithClassReturnType():Boolean[1]
 {
    let tree = #{
       A {
@@ -2401,7 +2445,6 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::functionCa
    }#;
    assertEquals($expected->asString(true), $sourceTree->asString(true));
 }
-
 
 ###Mapping
 import meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::*;
@@ -2484,6 +2527,15 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapp
          ~src _A
          a: $src.b.d->func3($src.s1).val1,
          b: $src.c.b.d->func3($src.s2).val2
+      }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapping5
+(
+   A: Pure
+      {
+         ~src _A
+         a: $src.b.d->func3($src.s1)->func4()
       }
 )
 
@@ -2675,3 +2727,67 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::tes
       b2: $src.c2.e
     }
 )
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+function <<access.private>> meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::visitedFunctionsKeysForCalculateSourceTree(tree:RootGraphFetchTree<Any>[1], mapping: meta::pure::mapping::Mapping[1], extensions:meta::pure::extension::Extension[*]): String[*]
+{
+  let rootSetImplementation= $tree->getRootSetImplementation($mapping)->cast(@meta::external::store::model::PureInstanceSetImplementation);
+  let root = ^RootGraphFetchTree<Any>(class=$rootSetImplementation.srcClass->toOne()->cast(@Class<Any>));
+  let visitedFunctions = $root->enrichSourceTreeNode($mapping, $rootSetImplementation, $tree, $extensions, ^Map<String, meta::pure::lineage::scanProperties::ScanPropertiesState>()).second;
+  $visitedFunctions->keys();
+}
+
+function <<test.Test>> meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::testFunctionCache():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
+   let visitedFunctions = meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::visitedFunctionsKeysForCalculateSourceTree($tree, testMapping1, meta::pure::extension::defaultExtensions());
+
+   let expected = ['meta::pure::lineage::scanProperties::test::func__D_$0_1$__String_$0_1$__String_$0_1$_'];
+
+   assertEquals($expected, $visitedFunctions);
+}
+
+function <<test.Test>> meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::testFunctionCacheWithMultipleFunctions():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
+   let visitedFunctions = meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::visitedFunctionsKeysForCalculateSourceTree($tree, testMapping3, meta::pure::extension::defaultExtensions());
+
+   let expected = [ 'meta::pure::lineage::scanProperties::test::func__D_$0_1$__String_$0_1$__String_$0_1$_',
+                    'meta::pure::lineage::scanProperties::test::func2__D_$0_1$__String_$0_1$__String_$0_1$_'];
+
+   assertEquals($expected->sort(), $visitedFunctions->sort());
+}
+
+/*
+ * ToFix: We currently lose the function cache state for nested functions.
+ * We expect to have func3 & func4 in the function cache but only see func4 at the moment
+ */
+function <<test.Test, test.ToFix>> meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::testFunctionCacheWithNestedFunctions():Boolean[1]
+{
+   let tree = #{
+      A {
+         a,
+         b
+       }
+   }#;
+   let visitedFunctions = meta::pure::graphFetch::enrichSourceTeeNode::tests::functionCaching::visitedFunctionsKeysForCalculateSourceTree($tree, testMapping5, meta::pure::extension::defaultExtensions());
+
+   let expected = [ 'meta::pure::lineage::scanProperties::test::func3__D_$0_1$__String_$0_1$___D_$0_1$_',
+                    'meta::pure::lineage::scanProperties::test::func4__D_$0_1$__String_$0_1$_'];
+
+   assertEquals($expected->sort(), $visitedFunctions->sort());
+}
