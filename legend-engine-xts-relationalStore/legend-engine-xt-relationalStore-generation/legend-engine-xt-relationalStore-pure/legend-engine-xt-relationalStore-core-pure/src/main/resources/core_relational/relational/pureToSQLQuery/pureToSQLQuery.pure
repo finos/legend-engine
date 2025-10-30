@@ -2213,13 +2213,13 @@ function meta::relational::functions::pureToSqlQuery::processFunctionDefinition(
 
         let sqlQuery = $varValue->match([
                 sc:StoreMappingClusteredValueSpecification[1] |
-                  $sc.val->processQuery(defaultState($sc.mapping, $sc.openVars, $sc.exeCtx, $extensions)->withFunctionParamScope($scopes), $context->shift(), $extensions);,
+                  $sc.val->processQuery(^$state(mapping = $sc.mapping, inScopeVars = $state.inScopeVars->putAll($sc.openVars), idToClassMapping = $sc.mapping->map(map | buildClassMappingsById($map)))->withFunctionParamScope($scopes), $context->shift(), $extensions);,
                 sc:StoreClusteredValueSpecification[1] |
-                  $sc.val->processQuery(defaultState([],  $sc.openVars, $sc.exeCtx, $extensions)->withFunctionParamScope($scopes), $context->shift(), $extensions);,
-                s:StoreRoutedValueSpecification[1] |
-                  $s->processQuery(defaultState([],  newMap([])->cast(@Map<String, List<Any>>))->withFunctionParamScope($scopes), $context->shift(), $extensions);,
-                fe: FunctionExpression[1] |
-                  $fe->processQuery(defaultState([],  newMap([])->cast(@Map<String, List<Any>>))->withFunctionParamScope($scopes), $context->shift(), $extensions);,
+                  $sc.val->processQuery(^$state(inScopeVars = $state.inScopeVars->putAll($sc.openVars))->withFunctionParamScope($scopes), $context->shift(), $extensions);,
+                s:StoreMappingRoutedValueSpecification[1] |
+                  $s->processQuery(^$state(mapping = $s.mapping, idToClassMapping = $s.mapping->map(map | buildClassMappingsById($map)))->withFunctionParamScope($scopes), $context->shift(), $extensions);,                  
+                vs: ValueSpecification[1] |
+                  $vs->processQuery($state->withFunctionParamScope($scopes), $context->shift(), $extensions);,
                 a: Any[1] |
                   fail($a->type()->elementToPath() + ' not supported on multi expression')->cast(@SelectWithCursor)->toOne();
         ]);

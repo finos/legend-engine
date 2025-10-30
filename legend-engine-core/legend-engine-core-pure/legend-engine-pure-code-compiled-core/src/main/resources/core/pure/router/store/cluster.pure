@@ -242,8 +242,13 @@ function meta::pure::router::clustering::specializedFunctionExpressionClustering
        {f:FunctionExpression[1], mapping:Mapping[0..1], openVariables:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1],  debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*] |
          let func = $f.parametersValues->at(0);
          let clusterResponse = $func->cluster($mapping, $openVariables, $exeCtx, 'eval_lambda', $debug, $analyticsDecision, $extensions->concatenate(withClusterFeature(ClusterFeature.PUSH_LET_TO_STORE)));
-         let cluster = $clusterResponse.cluster->cast(@ClusteredValueSpecification);
-         ^$clusterResponse(cluster = ^$cluster(val = $f));
+         $clusterResponse.cluster->match([
+            cvs: ClusteredValueSpecification[1] | 
+              ^$clusterResponse(cluster = ^$cvs(val = ^$f(parametersValues = $cvs.val)));
+            ,
+            vs: ValueSpecification[1] | 
+              ^$clusterResponse(cluster = ^$f(parametersValues = $vs));
+         ]);
        }
     )
   ]
