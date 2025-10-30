@@ -180,6 +180,7 @@ jobs:
       - build
 
     strategy:
+      fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.testMatrix)}}
 
     steps:
