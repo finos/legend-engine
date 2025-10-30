@@ -51,23 +51,33 @@ import meta::relational::functions::toPostgresModel::*;
 
 function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1], extensions:Extension[*]):ExecutionNode[1]
 {
-   generateExecutionNodeForPostProcessedResult($postProcessorResult, $sq, $store, $ext, $m, $runtime, $exeCtx, $debug, true, $extensions)
+  generateExecutionNodeForPostProcessedResult($postProcessorResult, $sq, $store, $ext, $m, $runtime, $exeCtx, $debug, true, $extensions)
 }
 
 function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1], wrapInInstantiationNode: Boolean[1], extensions:Extension[*]):ExecutionNode[1]
 {
-   let sqlNode = generateSQLExecutionNode($postProcessorResult.query, $runtime->toOne()->connectionByElement($store)->cast(@meta::external::store::relational::runtime::DatabaseConnection), addEnumMapSupportFunctions($sq, $m), $extensions);
-   
-   print(if($debug.debug, |'Generated SQL Node with query: ' + $sqlNode.sqlQuery + '\n', |''));
-   
-   let relationalNode =  if($wrapInInstantiationNode, | generateInstantiationExecutionNode($sq, $ext, $postProcessorResult.query, $sqlNode, $m,$exeCtx), | $sqlNode);
-   let nodes = $postProcessorResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessorResult.postExecutionNodes);
-   if($nodes->size()>1,
-      | if($nodes->map(node | $node->allNodes($extensions))->exists(node | $node->instanceOf(CreateAndPopulateTempTableExecutionNode)) || $postProcessorResult.finallyExecutionNodes->isNotEmpty(),
-           |^RelationalBlockExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange, finallyExecutionNodes=$postProcessorResult.finallyExecutionNodes),
-           |^SequenceExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange)),
-      | $relationalNode
-   );
+  let connection = $runtime->toOne()->connectionByElement($store)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+  let enumSupportFunctions = addEnumMapSupportFunctions($sq, $m);
+  let sqlNode = $exeCtx->match(
+    $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_plan_sqlNodeGenerator)->map(f | $f->eval($postProcessorResult.query, $connection, $enumSupportFunctions, $extensions))->concatenate(
+      [
+        e:meta::pure::runtime::ExecutionContext[1] | generateSQLExecutionNode($postProcessorResult.query, $connection, $enumSupportFunctions, $extensions);
+      ]
+    )->toOneMany()
+  );
+
+  print(if($debug.debug, |'Generated SQL Node with query: ' + $sqlNode.sqlQuery + '\n', |''));
+
+  let relationalNode = if($wrapInInstantiationNode, | generateInstantiationExecutionNode($sq, $ext, $postProcessorResult.query, $sqlNode, $m,$exeCtx), | $sqlNode);
+  let nodes = $postProcessorResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessorResult.postExecutionNodes);
+
+  if($nodes->size() > 1,
+    | if($nodes->map(node | $node->allNodes($extensions))->exists(node | $node->instanceOf(CreateAndPopulateTempTableExecutionNode)) || $postProcessorResult.finallyExecutionNodes->isNotEmpty(),
+        | ^RelationalBlockExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange, finallyExecutionNodes=$postProcessorResult.finallyExecutionNodes),
+        | ^SequenceExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange)
+      ),
+    | $relationalNode
+  );
 }
 
 function meta::relational::mapping::TDSSelectQueryToTDSResultType(class:Type[1], query:TdsSelectSqlQuery[1],  exeCtx:meta::pure::runtime::ExecutionContext[1]):TDSResultType[1]
