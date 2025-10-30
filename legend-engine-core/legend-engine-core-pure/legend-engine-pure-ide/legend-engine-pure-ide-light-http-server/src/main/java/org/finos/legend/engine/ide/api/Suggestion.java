@@ -29,9 +29,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Packag
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValueInstance;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionInstance;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
@@ -494,22 +494,22 @@ public class Suggestion
             for (CoreInstance fn : functionsOrLambdas)
             {
                 // scan for the let expressions then follows by the parameters
-                RichIterable<InstanceValueInstance> letVars = fn.getValueForMetaPropertyToMany(M3Properties.expressionSequence)
+                RichIterable<InstanceValue> letVars = fn.getValueForMetaPropertyToMany(M3Properties.expressionSequence)
                         .select(expression -> expression instanceof SimpleFunctionExpression && "letFunction".equals(((SimpleFunctionExpression) expression)._functionName()))
                         .collect(expression -> ((SimpleFunctionExpression) expression)._parametersValues().toList().getFirst())
                         // NOTE: make sure to only consider let statements prior to the call
                         .select(letVar -> letVar.getSourceInformation().getEndLine() < input.line || (letVar.getSourceInformation().getEndLine() == input.line && letVar.getSourceInformation().getEndColumn() < input.column))
-                        .selectInstancesOf(InstanceValueInstance.class);
-                for (InstanceValueInstance var : letVars)
+                        .selectInstancesOf(InstanceValue.class);
+                for (InstanceValue var : letVars)
                 {
                     varNames.add(var.getValueForMetaPropertyToOne(M3Properties.values).getName());
                 }
-                RichIterable<VariableExpressionInstance> params = fn.getValueForMetaPropertyToOne(M3Properties.classifierGenericType)
+                RichIterable<VariableExpression> params = fn.getValueForMetaPropertyToOne(M3Properties.classifierGenericType)
                         .getValueForMetaPropertyToOne(M3Properties.typeArguments)
                         .getValueForMetaPropertyToOne(M3Properties.rawType)
                         .getValueForMetaPropertyToMany(M3Properties.parameters)
-                        .selectInstancesOf(VariableExpressionInstance.class);
-                for (VariableExpressionInstance var : params)
+                        .selectInstancesOf(VariableExpression.class);
+                for (VariableExpression var : params)
                 {
                     varNames.add(var._name());
                 }
