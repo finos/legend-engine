@@ -3242,6 +3242,11 @@
                 <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-compiled</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-python-reversePCT-legendQL</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- LEGEND SHARED -->
             <dependency>

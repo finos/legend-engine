@@ -1,0 +1,170 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::external::python::reversePCT::legendQL::*;
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEssentialDate(): ReversesForSource[*]
+{
+  [
+    // Creation ---------------------------------------------------------
+    [ // date
+      meta::pure::functions::date::tests::testDateFromYear_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1973->meta::pure::functions::date::date()'),
+          noRev('|2015->meta::pure::functions::date::date()')
+        ]
+      ),
+      meta::pure::functions::date::tests::testDateFromMonth_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1973->meta::pure::functions::date::date(11)'),
+          noRev('|2015->meta::pure::functions::date::date(4)')
+        ]
+      ),
+      meta::pure::functions::date::tests::testDateFromDay_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1973->meta::pure::functions::date::date(11, 13)', 'c(date(1973, 11, 13))'),
+          rev('|2015->meta::pure::functions::date::date(4, 16)', 'c(date(2015, 4, 16))')
+        ]
+      ),
+      meta::pure::functions::date::tests::testDateFromHour_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1973->meta::pure::functions::date::date(11, 13, 23)'),
+          noRev('|2015->meta::pure::functions::date::date(4, 16, 14)')
+        ]
+      ),
+      meta::pure::functions::date::tests::testDateFromMinute_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1973->meta::pure::functions::date::date(11, 13, 23, 9)'),
+          noRev('|2015->meta::pure::functions::date::date(4, 16, 14, 51)')
+        ]
+      ),
+      meta::pure::functions::date::tests::testDateFromSecond_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1973->meta::pure::functions::date::date(11, 13, 23, 9, 11)', 'c(datetime(1973, 11, 13, 23, 9, 11))'),
+          rev('|2015->meta::pure::functions::date::date(4, 16, 14, 51, 59)', 'c(datetime(2015, 4, 16, 14, 51, 59))')
+        ]
+      ),
+      meta::pure::functions::date::tests::testDateFromSubSecond_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1973->meta::pure::functions::date::date(11, 13, 23, 9, 11.0)'),
+          noRev('|2015->meta::pure::functions::date::date(4, 16, 14, 51, 59.999)'),
+          noRev('|2015->meta::pure::functions::date::date(4, 16, 14, 51, 59.999D)')
+        ]
+      )
+    ]->combine(),
+    // ------------------------------------------------------------------
+
+    // Extract ----------------------------------------------------------
+    [ // datePart
+      meta::pure::functions::date::tests::testDatePart_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%1973-11-05T13:01:25+0000->meta::pure::functions::date::datePart()', 'c(datetime(1973, 11, 5, 13, 1, 25)).date_part()'),
+          rev('|%2015-08-29T22:22:22.9914234+0000->meta::pure::functions::date::datePart()', 'c(datetime(2015, 8, 29, 22, 22, 22, 991423)).date_part()')
+        ]
+      ),
+      meta::pure::functions::date::tests::testDatePartTrivial_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%1973-11-05->meta::pure::functions::date::datePart()', 'c(date(1973, 11, 5)).date_part()'),
+          rev('|%2015-08-29->meta::pure::functions::date::datePart()', 'c(date(2015, 8, 29)).date_part()')
+        ]
+      ),
+      meta::pure::functions::date::tests::testDatePartYearMonthOnly_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%1973-11->meta::pure::functions::date::datePart()'),
+          noRev('|%2015-08->meta::pure::functions::date::datePart()')
+        ]
+      ),
+      meta::pure::functions::date::tests::testDatePartYearOnly_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%1973->meta::pure::functions::date::datePart()'),
+          noRev('|%2015->meta::pure::functions::date::datePart()')
+        ]
+      )
+    ]->combine(),
+    // dayOfMonth
+    meta::pure::functions::date::tests::testDayOfMonth_Function_1__Boolean_1_->testRev(
+      [
+        rev('|%2015-04-15->meta::pure::functions::date::dayOfMonth()', 'c(date(2015, 4, 15)).day()'),
+        noRev('|%2015-04-15T17->meta::pure::functions::date::dayOfMonth()'),
+        noRev('|%2015-04-15T17:09+0000->meta::pure::functions::date::dayOfMonth()'),
+        rev('|%2015-04-15T17:09:21+0000->meta::pure::functions::date::dayOfMonth()', 'c(datetime(2015, 4, 15, 17, 9, 21)).day()'),
+        noRev('|%2015-04-15T17:09:21.398+0000->meta::pure::functions::date::dayOfMonth()')
+      ]
+    ),
+    // hour
+    meta::pure::functions::date::tests::testHour_Function_1__Boolean_1_->testRev(
+      [
+        noRev('|%2015-04-15T17->meta::pure::functions::date::hour()'),
+        noRev('|%2015-04-15T17:09+0000->meta::pure::functions::date::hour()'),
+        rev('|%2015-04-15T17:09:21+0000->meta::pure::functions::date::hour()', 'c(datetime(2015, 4, 15, 17, 9, 21)).hour()'),
+        noRev('|%2015-04-15T17:09:21.398+0000->meta::pure::functions::date::hour()')
+      ]
+    ),
+    // minute
+    meta::pure::functions::date::tests::testMinute_Function_1__Boolean_1_->testRev(
+      [
+        noRev('|%2015-04-15T17:09+0000->meta::pure::functions::date::minute()'),
+        rev('|%2015-04-15T17:09:21+0000->meta::pure::functions::date::minute()', 'c(datetime(2015, 4, 15, 17, 9, 21)).minute()'),
+        noRev('|%2015-04-15T17:09:21.398+0000->meta::pure::functions::date::minute()')
+      ]
+    ),
+    // monthNumber
+    meta::pure::functions::date::tests::testMonthNumber_Function_1__Boolean_1_->testRev(
+      [
+        noRev('|%2015-04->meta::pure::functions::date::monthNumber()'),
+        rev('|%2015-04-15->meta::pure::functions::date::monthNumber()', 'c(date(2015, 4, 15)).month()'),
+        noRev('|%2015-04-15T17->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-04-15T17:09+0000->meta::pure::functions::date::monthNumber()'),
+        rev('|%2015-04-15T17:09:21+0000->meta::pure::functions::date::monthNumber()', 'c(datetime(2015, 4, 15, 17, 9, 21)).month()'),
+        noRev('|%2015-04-15T17:09:21.398+0000->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-01->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-02->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-03->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-05->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-06->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-07->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-08->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-09->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-10->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-11->meta::pure::functions::date::monthNumber()'),
+        noRev('|%2015-12->meta::pure::functions::date::monthNumber()')
+      ]
+    ),
+    // second
+    meta::pure::functions::date::tests::testSecond_Function_1__Boolean_1_->testRev(
+      [
+        rev('|%2015-04-15T17:09:21+0000->meta::pure::functions::date::second()', 'c(datetime(2015, 4, 15, 17, 9, 21)).second()'),
+        noRev('|%2015-04-15T17:09:21.398+0000->meta::pure::functions::date::second()')
+      ]
+    ),
+    [ // year
+      meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%2015->meta::pure::functions::date::year()'),
+          noRev('|%2015-04->meta::pure::functions::date::year()'),
+          rev('|%2015-04-15->meta::pure::functions::date::year()', 'c(date(2015, 4, 15)).year()'),
+          noRev('|%2015-04-15T17->meta::pure::functions::date::year()'),
+          noRev('|%2015-04-15T17:09+0000->meta::pure::functions::date::year()'),
+          rev('|%2015-04-15T17:09:21+0000->meta::pure::functions::date::year()', 'c(datetime(2015, 4, 15, 17, 9, 21)).year()'),
+          noRev('|%2015-04-15T17:09:21.398+0000->meta::pure::functions::date::year()')
+        ]
+      ),
+      meta::pure::functions::date::tests::testYeaReflect_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::date::year_Date_1__Integer_1_->meta::pure::functions::lang::eval(%2015-04-15)')
+      )
+    ]->combine()
+    // ------------------------------------------------------------------
+  ]
+}
