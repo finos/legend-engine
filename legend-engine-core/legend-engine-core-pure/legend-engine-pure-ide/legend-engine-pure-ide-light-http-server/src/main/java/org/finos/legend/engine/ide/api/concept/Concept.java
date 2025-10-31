@@ -16,7 +16,7 @@ package org.finos.legend.engine.ide.api.concept;
 
 import io.swagger.annotations.Api;
 import org.finos.legend.engine.ide.session.PureSession;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedPropertyInstance;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
@@ -84,7 +84,7 @@ public class Concept
                         String path = PackageableElement.getUserPathForPackageableElement(found);
                         CoreInstance owner = Instance.getValueForMetaPropertyToOneResolved(found, M3Properties.owner, session.getPureRuntime().getProcessorSupport());
                         String ownerPath = PackageableElement.getUserPathForPackageableElement(owner);
-                        outputStream.write(("{\"path\":\"" + path + "\",\"pureName\":\"" + found.getValueForMetaPropertyToOne(M3Properties.name).getName() + "\",\"owner\":\"" + ownerPath + "\",\"pureType\":\"" + (found instanceof QualifiedPropertyInstance ? "QualifiedProperty" : "Property") + "\",\"doc\":" + (doc != null ? ("\"" + doc + "\"") : null) + "}").getBytes());
+                        outputStream.write(("{\"path\":\"" + path + "\",\"pureName\":\"" + found.getValueForMetaPropertyToOne(M3Properties.name).getName() + "\",\"owner\":\"" + ownerPath + "\",\"pureType\":\"" + (found instanceof QualifiedProperty ? "QualifiedProperty" : "Property") + "\",\"doc\":" + (doc != null ? ("\"" + doc + "\"") : null) + "}").getBytes());
                     }
                     else if (Instance.instanceOf(found, M3Paths.Enum, session.getPureRuntime().getProcessorSupport()))
                     {

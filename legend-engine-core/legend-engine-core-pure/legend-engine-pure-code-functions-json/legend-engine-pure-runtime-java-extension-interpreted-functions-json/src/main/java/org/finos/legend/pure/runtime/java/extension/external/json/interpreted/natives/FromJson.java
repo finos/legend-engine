@@ -24,7 +24,7 @@ import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.ConstraintsOverride;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.EnumInstance;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.Instance;
@@ -178,7 +178,7 @@ public class FromJson extends NativeFunction
             }
             return (CoreInstance) asInstanceValue._values().getFirst();
         }
-        if (value instanceof EnumInstance)
+        if (value instanceof Enum)
         {
             return (CoreInstance) value;
         }
