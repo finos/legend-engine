@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendColumn;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendTdsResultParser;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.shared.LegendTdsResultParser;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

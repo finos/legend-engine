@@ -12,14 +12,18 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+package org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result;
 
-package org.finos.legend.engine.postgres.protocol.sql.handler.legend;
-
-import java.io.InputStream;
-
-public interface LegendClient
+public class LegendDataType
 {
-    InputStream executeQueryApi(String query);
+    public static final String STRICT_DATE = "StrictDate";
+    public static final String DATE = "Date";
+    public static final String DATE_TIME = "DateTime";
+    public static final String INTEGER = "Integer";
+    public static final String FLOAT = "Float";
+    public static final String NUMBER = "Number";
+    public static final String DECIMAL = "Decimal";
+    public static final String BOOLEAN = "Boolean";
 
-    InputStream executeSchemaApi(String query);
+    public static final String STRING = "String";
 }

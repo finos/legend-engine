@@ -12,12 +12,15 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.postgres.protocol.sql.handler.legend;
+package org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement;
 
 import java.security.PrivilegedAction;
 import java.sql.ParameterMetaData;
 import javax.security.auth.Subject;
 
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecution;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendResultSet;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendResultSetMetaData;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepared.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
@@ -27,17 +30,19 @@ import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCre
 public class LegendPreparedStatement implements PostgresPreparedStatement
 {
     private final String query;
-    private final LegendExecutionService client;
+    private final LegendExecution client;
     private final Identity identity;
     private boolean isExecuted;
     private int maxRows;
     private LegendResultSet legendResultSet;
+    private String database;
 
-    public LegendPreparedStatement(String query, LegendExecutionService client, Identity identity)
+    public LegendPreparedStatement(String query, LegendExecution client, String database, Identity identity)
     {
         this.query = query;
         this.client = client;
         this.identity = identity;
+        this.database = database;
     }
 
     @Override
@@ -50,15 +55,14 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     public PostgresResultSetMetaData getMetaData() throws Exception
     {
         if (identity.getFirstCredential() instanceof LegendKerberosCredential)
-
         {
             LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
             return Subject.doAs(credential.getSubject(), (PrivilegedAction<LegendResultSetMetaData>) () ->
-                    new LegendResultSetMetaData(client.getSchema(query)));
+                    new LegendResultSetMetaData(client.getSchema(query, database)));
         }
         else
         {
-            return new LegendResultSetMetaData(client.getSchema(query));
+            return new LegendResultSetMetaData(client.getSchema(query, database));
         }
     }
 
@@ -113,7 +117,7 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
 
     private boolean executePrivate()
     {
-        legendResultSet = new LegendResultSet(client.executeQuery(query));
+        legendResultSet = new LegendResultSet(client.executeQuery(query, database));
         return true;
     }
 

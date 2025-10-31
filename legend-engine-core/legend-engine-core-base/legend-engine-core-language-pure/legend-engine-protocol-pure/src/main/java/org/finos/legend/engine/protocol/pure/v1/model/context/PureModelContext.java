@@ -21,7 +21,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = PureModelContextData.class, name = "data"),
         @JsonSubTypes.Type(value = PureModelContextText.class, name = "text"),
-        @JsonSubTypes.Type(value = PureModelContextPointer.class, name = "pointer")
+        @JsonSubTypes.Type(value = PureModelContextPointer.class, name = "pointer"),
+        @JsonSubTypes.Type(value = PureModelContextCombination.class, name = "combination")
 })
 public abstract class PureModelContext
 {

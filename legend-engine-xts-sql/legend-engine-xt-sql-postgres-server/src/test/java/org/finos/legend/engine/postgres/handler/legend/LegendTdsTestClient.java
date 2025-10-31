@@ -16,7 +16,7 @@
 package org.finos.legend.engine.postgres.handler.legend;
 
 import io.dropwizard.testing.junit.ResourceTestRule;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendHttpClient;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendHttpClient;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;

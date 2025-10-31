@@ -922,13 +922,14 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 {
                     throw new EngineException("Error in the accessor definition. Please provide a table.", accessor.sourceInformation, EngineErrorType.COMPILATION);
                 }
-                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database ds = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) store;
 
                 String schemaName = (accessor.path.size() == 3) ? accessor.path.get(1) : "default";
                 String tableName = (accessor.path.size() == 3) ? accessor.path.get(2) : accessor.path.get(1);
 
-                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema = HelperRelationalBuilder.getSchema(ds, schemaName, accessor.sourceInformation);
-                Table table = (Table) HelperRelationalBuilder.getRelation(schema, tableName, accessor.sourceInformation);
+                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database ds = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) store;
+
+                Table table = HelperRelationalBuilder.findTable(ds, schemaName, tableName, accessor.sourceInformation);
+
                 ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
 
                 org.finos.legend.pure.m4.coreinstance.SourceInformation sourceInformation = null;

@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.test;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 
 public class H2TestServerResource implements TestServerResource
 {
@@ -37,6 +36,11 @@ public class H2TestServerResource implements TestServerResource
         // Pure client configuration
         System.setProperty("alloy.test.h2.port", String.valueOf(relationalDBPort));
         System.setProperty("legend.test.h2.port", String.valueOf(relationalDBPort));
+    }
+
+    public int getPort()
+    {
+        return this.h2Server.getPort();
     }
 
     @Override

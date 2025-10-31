@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.context;
 
-import org.finos.legend.engine.protocol.Protocol;
-
-public class PureModelContextText extends PureModelContextConcrete
+public class PureModelContextConcrete extends PureModelContext
 {
-    public Protocol serializer;
-    public String code;
 }

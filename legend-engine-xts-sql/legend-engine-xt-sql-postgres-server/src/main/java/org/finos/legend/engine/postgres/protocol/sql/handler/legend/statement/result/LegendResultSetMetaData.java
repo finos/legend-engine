@@ -12,12 +12,14 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.postgres.protocol.sql.handler.legend;
+package org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result;
 
 import java.sql.Types;
 import java.util.List;
+
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
-import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendDataType.*;
+import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendDataType.*;
 
 public class LegendResultSetMetaData implements PostgresResultSetMetaData
 {

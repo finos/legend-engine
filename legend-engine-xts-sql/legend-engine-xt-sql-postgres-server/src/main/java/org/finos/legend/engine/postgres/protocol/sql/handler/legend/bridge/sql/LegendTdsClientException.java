@@ -13,17 +13,19 @@
 // limitations under the License.
 //
 
-package org.finos.legend.engine.postgres.protocol.sql.handler.legend;
+package org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql;
 
-import java.util.List;
+import org.finos.legend.engine.postgres.PostgresServerException;
 
-public interface LegendExecutionResult
+public class LegendTdsClientException extends PostgresServerException
 {
-    List<LegendColumn> getLegendColumns();
+    public LegendTdsClientException(String message)
+    {
+        super(message);
+    }
 
-    boolean hasNext();
-
-    List<Object> next();
-
-    void close();
+    public LegendTdsClientException(String message, Throwable cause)
+    {
+        super(message, cause);
+    }
 }

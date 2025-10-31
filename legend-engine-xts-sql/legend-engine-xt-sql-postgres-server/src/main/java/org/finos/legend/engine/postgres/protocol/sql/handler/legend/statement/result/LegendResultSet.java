@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.postgres.protocol.sql.handler.legend;
+package org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result;
 
 import com.google.common.base.Function;
 import java.time.Instant;
@@ -26,10 +26,12 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.List;
 import org.finos.legend.engine.postgres.PostgresServerException;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecutionResult;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
 
-import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendDataType.*;
+import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendDataType.*;
 
 public class LegendResultSet implements PostgresResultSet
 {

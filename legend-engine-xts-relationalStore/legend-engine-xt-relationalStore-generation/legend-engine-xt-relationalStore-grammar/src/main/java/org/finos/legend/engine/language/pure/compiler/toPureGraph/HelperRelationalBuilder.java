@@ -159,7 +159,7 @@ public class HelperRelationalBuilder
 
     public static Column getColumn(Relation tb, final String _column, SourceInformation sourceInformation)
     {
-        Column column = (Column) tb._columns().detect(col -> _column.equals(((Column)col)._name()));
+        Column column = (Column) tb._columns().detect(col -> _column.equals(((Column) col)._name()));
         Assert.assertTrue(column != null, () -> "Can't find column '" + _column + "'", sourceInformation, EngineErrorType.COMPILATION);
         return column;
     }
@@ -247,13 +247,33 @@ public class HelperRelationalBuilder
 
     public static Relation getRelation(Schema s, final String _table, SourceInformation sourceInformation)
     {
+        Relation res = getRelationSilent(s, _table, sourceInformation);
+        Assert.assertTrue(res != null, () -> "Can't find table '" + _table + "' in schema '" + s._name() + "' and database '" + s._database()._name() + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return res;
+    }
+
+    public static Relation getRelationSilent(Schema s, final String _table, SourceInformation sourceInformation)
+    {
         Relation res = s._tables().detect(table -> _table.equals(table.getName()));
         if (res == null)
         {
             res = s._views().detect(view -> _table.equals(view.getName()));
-            Assert.assertTrue(res != null, () -> "Can't find table '" + _table + "' in schema '" + s._name() + "' and database '" + s._database()._name() + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
         return res;
+    }
+
+    public static Table findTable(Database ds, String schemaName, String tableName, SourceInformation sourceInformation)
+    {
+        for (Database db : HelperRelationalBuilder.getAllDatabases(ds))
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema = HelperRelationalBuilder.getSchema(db, schemaName, sourceInformation);
+            Table table = (Table) HelperRelationalBuilder.getRelationSilent(schema, tableName, sourceInformation);
+            if (table != null)
+            {
+                return table;
+            }
+        }
+        throw new EngineException("Can't find table '" + tableName + "' in schema '" + schemaName + "' and database '" + ds._name() + "'", sourceInformation, EngineErrorType.COMPILATION);
     }
 
     public static Relation getRelation(Database db, final String _schema, final String _table)
@@ -678,19 +698,19 @@ public class HelperRelationalBuilder
             }
         }
         GenericType gt = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass(M3Paths.GenericType))
-                                ._rawType(context.pureModel.getType(M3Paths.Pair))
-                                ._typeArguments(Lists.mutable.with(context.pureModel.getGenericType(M2RelationalPaths.TableAlias),context.pureModel.getGenericType(M2RelationalPaths.TableAlias)));
+                ._rawType(context.pureModel.getType(M3Paths.Pair))
+                ._typeArguments(Lists.mutable.with(context.pureModel.getGenericType(M2RelationalPaths.TableAlias), context.pureModel.getGenericType(M2RelationalPaths.TableAlias)));
         join._aliases(Lists.fixedSize.of(
-                    new Root_meta_pure_functions_collection_Pair_Impl<TableAlias, TableAlias>("", null, context.pureModel.getClass(M3Paths.Pair))
+                        new Root_meta_pure_functions_collection_Pair_Impl<TableAlias, TableAlias>("", null, context.pureModel.getClass(M3Paths.Pair))
                                 ._classifierGenericType(gt)
                                 ._first(aliases.get(0))
                                 ._second(aliases.get(1)),
-                    new Root_meta_pure_functions_collection_Pair_Impl<TableAlias, TableAlias>("", null, context.pureModel.getClass(M3Paths.Pair))
+                        new Root_meta_pure_functions_collection_Pair_Impl<TableAlias, TableAlias>("", null, context.pureModel.getClass(M3Paths.Pair))
                                 ._classifierGenericType(gt)
                                 ._first(aliases.get(1))
                                 ._second(aliases.get(0))
-                      )
-                )._operation(op);
+                )
+        )._operation(op);
     }
 
     public static Filter processDatabaseFilterFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Filter srcFilter, CompileContext context, Database database)
@@ -899,6 +919,11 @@ public class HelperRelationalBuilder
                 ._join(j);
         res = joins.getFirst().joinType == null ? res : res._joinType(joins.getFirst().joinType);
         return joins.size() == 1 ? res : res._childrenData(Lists.fixedSize.of(processElementWithJoinsJoins(joins.subList(1, joins.size()), context)));
+    }
+
+    public static MutableList<Database> getAllDatabases(Database ds)
+    {
+        return Lists.mutable.with(ds).withAll(ds._includes().selectInstancesOf(Database.class).flatCollect(x -> getAllDatabases(x)));
     }
 
     private static class JoinWithJoinType
@@ -1561,7 +1586,7 @@ public class HelperRelationalBuilder
         Pair<? extends TableAlias, ? extends TableAlias> tableAliasPair = join._aliases().detect(aliasPair -> aliasPair._first() != null && startTable == aliasPair._first()._relationalElement());
         if (tableAliasPair == null)
         {
-            throw new EngineException("Mapping error: the join " + join._name() + " does not contain the source table " + ((Table)startTable)._name(), sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Mapping error: the join " + join._name() + " does not contain the source table " + ((Table) startTable)._name(), sourceInformation, EngineErrorType.COMPILATION);
         }
         return tableAliasPair._second();
     }

@@ -12,10 +12,13 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.postgres.protocol.sql.handler.legend;
+package org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement;
 
 import java.security.PrivilegedAction;
 import javax.security.auth.Subject;
+
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecution;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendResultSet;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.PostgresStatement;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -24,11 +27,11 @@ import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCre
 public class LegendStatement implements PostgresStatement
 {
 
-    private LegendExecutionService client;
+    private LegendExecution client;
     private LegendResultSet legendResultSet;
     private Identity identity;
 
-    public LegendStatement(LegendExecutionService client, Identity identity)
+    public LegendStatement(LegendExecution client, Identity identity)
     {
         this.client = client;
         this.identity = identity;
@@ -54,7 +57,7 @@ public class LegendStatement implements PostgresStatement
 
     private boolean executePrivate(String query)
     {
-        legendResultSet = new LegendResultSet(client.executeQuery(query));
+        legendResultSet = new LegendResultSet(client.executeQuery(query, null));
         return true;
     }
 

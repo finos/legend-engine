@@ -1,5 +1,11 @@
 ###Relational
 Database legend::db
 (
+  include legend::includeForTest
   Table myTb(a Varchar(200), b INT)
+)
+
+Database legend::includeForTest
+(
+  Table otherTb(a Varchar(200), b INT)
 )
