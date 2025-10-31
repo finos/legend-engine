@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PureModelContextData extends PureModelContext
+public class PureModelContextData extends PureModelContextConcrete
 {
     public final Protocol serializer;
     public final PureModelContextPointer origin;

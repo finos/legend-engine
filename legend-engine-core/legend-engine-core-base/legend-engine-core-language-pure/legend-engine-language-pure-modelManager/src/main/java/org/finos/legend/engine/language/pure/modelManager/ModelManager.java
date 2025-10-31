@@ -20,9 +20,12 @@ import com.google.common.cache.CacheBuilder;
 import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
+
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
@@ -33,7 +36,10 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCombination;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextConcrete;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -56,6 +62,7 @@ public class ModelManager
     //-------------------------------------------------------------------------------------------------
     public static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     public final Cache<PureModelContext, PureModel> pureModelCache = CacheBuilder.newBuilder().recordStats().softValues().expireAfterAccess(30, TimeUnit.MINUTES).build();
+    public final Cache<PureModelContext, PureModelContextData> pureModelContextCache = CacheBuilder.newBuilder().recordStats().softValues().expireAfterAccess(30, TimeUnit.MINUTES).build();
     private final DeploymentMode deploymentMode;
     private final MutableList<ModelLoader> modelLoaders;
     private final Tracer tracer;
@@ -85,23 +92,40 @@ public class ModelManager
     {
         PureModelProcessParameter modelProcessParameter = PureModelProcessParameter.newBuilder().withPackagePrefix(packageOffset).withForkJoinPool(this.forkJoinPool).build();
 
-        if (!(context instanceof PureModelContextData) && !(context instanceof PureModelContextText))
+        if (context instanceof PureModelContextPointer)
         {
-            ModelLoader loader = this.modelLoaderForContext(context);
-            if (loader.shouldCache(context))
-            {
-                PureModelContext cacheKey = loader.cacheKey(context, identity);
-                try
-                {
-                    return this.pureModelCache.get(cacheKey, () -> Compiler.compile(this.loadData(cacheKey, clientVersion, identity), this.deploymentMode, identity.getName(), null, modelProcessParameter));
-                }
-                catch (ExecutionException e)
-                {
-                    throw new EngineException("Engine was not able to cache", e);
-                }
-            }
+            return manage((PureModelContextPointer) context, identity, pureModelCache, cacheKey -> Compiler.compile(this.loadData(cacheKey, clientVersion, identity), this.deploymentMode, identity.getName(), null, modelProcessParameter));
         }
-        return Compiler.compile(this.loadData(context, clientVersion, identity), this.deploymentMode, identity.getName(), null, modelProcessParameter);
+        else if (context instanceof PureModelContextCombination)
+        {
+            Pair<MutableList<PureModelContextData>, MutableList<PureModelContextPointer>> concreteVsPointer = discriminate((PureModelContextCombination) context);
+            MutableList<PureModelContextData> concretes = concreteVsPointer.getOne();
+            MutableList<PureModelContextPointer> pointers = concreteVsPointer.getTwo();
+            PureModelContextData globalContext;
+            if (!pointers.isEmpty())
+            {
+                PureModelContextData initial = manage(pointers.get(0), identity, pureModelContextCache, cacheKey -> loadData(cacheKey, clientVersion, identity));
+                PureModelContextData aggregated = pointers.subList(1, pointers.size()).injectInto(initial, (a, b) -> a.combine(manage(b, identity, pureModelContextCache, cacheKey -> loadData(cacheKey, clientVersion, identity))));
+                globalContext = concretes.injectInto(aggregated, (a, b) -> a.combine(b));
+            }
+            else if (!concretes.isEmpty())
+            {
+                globalContext = concretes.subList(1, concretes.size()).injectInto(concretes.get(0), (a, b) -> a.combine(b));
+            }
+            else
+            {
+                throw new RuntimeException("No content to process");
+            }
+            return Compiler.compile(globalContext, this.deploymentMode, identity.getName(), null, modelProcessParameter);
+        }
+        else if (context instanceof PureModelContextConcrete)
+        {
+            return Compiler.compile(this.loadData(context, clientVersion, identity), this.deploymentMode, identity.getName(), null, modelProcessParameter);
+        }
+        else
+        {
+            throw new EngineException(context.getClass().getSimpleName() + " is not supported yet");
+        }
     }
 
     // Remove clientVersion
@@ -124,13 +148,9 @@ public class ModelManager
         try (Scope scope = tracer.buildSpan("Load Model").startActive(true))
         {
             scope.span().setTag("context", context.getClass().getSimpleName());
-            if (context instanceof PureModelContextData)
+            if (context instanceof PureModelContextConcrete)
             {
-                return (PureModelContextData) context;
-            }
-            else if (context instanceof PureModelContextText)
-            {
-                return PureGrammarParser.newInstance().parseModel(((PureModelContextText) context).code);
+                return resolve((PureModelContextConcrete) context);
             }
             else
             {
@@ -140,11 +160,73 @@ public class ModelManager
         }
     }
 
+    public PureModelContextData resolve(PureModelContextConcrete context)
+    {
+        if (context instanceof PureModelContextData)
+        {
+            return (PureModelContextData) context;
+        }
+        else if (context instanceof PureModelContextText)
+        {
+            return PureGrammarParser.newInstance().parseModel(((PureModelContextText) context).code);
+        }
+        else
+        {
+            throw new EngineException(context.getClass().getSimpleName() + " is not supported yet");
+        }
+    }
+
     public ModelLoader modelLoaderForContext(PureModelContext context)
     {
         MutableList<ModelLoader> loaders = modelLoaders.select(loader -> loader.supports(context));
         Assert.assertTrue(loaders.size() == 1, () -> "Didn't find a model loader for " + context.getClass().getSimpleName());
         return loaders.get(0);
+    }
+
+    private Pair<MutableList<PureModelContextData>, MutableList<PureModelContextPointer>> discriminate(PureModelContextCombination context)
+    {
+        MutableList<PureModelContextData> concrete = Lists.mutable.empty();
+        MutableList<PureModelContextPointer> pointers = Lists.mutable.empty();
+        context.contexts.forEach(x ->
+        {
+            if (x instanceof PureModelContextConcrete)
+            {
+                concrete.add(resolve((PureModelContextConcrete) x));
+            }
+            else if (x instanceof PureModelContextPointer)
+            {
+                pointers.add((PureModelContextPointer) x);
+            }
+            else if (x instanceof PureModelContextCombination)
+            {
+                Pair<MutableList<PureModelContextData>, MutableList<PureModelContextPointer>> res = discriminate((PureModelContextCombination) x);
+                concrete.addAll(res.getOne());
+                pointers.addAll(res.getTwo());
+            }
+            else
+            {
+                throw new EngineException(x.getClass().getSimpleName() + " is not supported yet");
+            }
+        });
+        return Tuples.pair(concrete, pointers);
+    }
+
+    private <T> T manage(PureModelContextPointer context, Identity identity, Cache<PureModelContext, T> cache, Function<PureModelContext, T> resolver)
+    {
+        ModelLoader loader = this.modelLoaderForContext(context);
+        if (loader.shouldCache(context))
+        {
+            PureModelContext cacheKey = loader.cacheKey(context, identity);
+            try
+            {
+                return cache.get(cacheKey, () -> resolver.apply(context));
+            }
+            catch (ExecutionException e)
+            {
+                throw new EngineException("Engine was not able to cache", e);
+            }
+        }
+        return resolver.apply(context);
     }
 
 }

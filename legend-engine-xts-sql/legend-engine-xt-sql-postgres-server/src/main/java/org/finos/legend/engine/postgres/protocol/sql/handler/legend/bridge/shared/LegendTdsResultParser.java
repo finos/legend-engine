@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package org.finos.legend.engine.postgres.protocol.sql.handler.legend;
+package org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.shared;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -30,6 +30,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.stream.Collectors;
 import org.finos.legend.engine.postgres.PostgresServerException;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

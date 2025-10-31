@@ -322,8 +322,8 @@ function meta::external::query::sql::transformation::compile::utils::scanDepende
                                 $p->match(
                                       $extraScanDependenciesType->concatenate(
                                         [
-                                        x:Database[1]|$x.includes,
-                                        x:Any[1]|[]
+                                            x:Database[1]|$x.includes,
+                                            x:Any[1]|[]
                                         ]
                                       )->toOneMany()
                                 )

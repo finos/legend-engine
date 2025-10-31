@@ -25,6 +25,9 @@ function meta::relational::grammar::serialization::printDatabase(d:Database[1]):
 {
   'Database ' + $d->elementToPath() + '\n' +
   '('+
+   if ($d.includes->isEmpty(), |'', |'\n') +
+   $d.includes->map(x|'  include ' + $x->elementToPath())->joinStrings('\n') +
+   if ($d.includes->isEmpty(), |'', |'\n') +
    $d.schemas->map(
       s | '\n  Schema '+$s.name + '\n  ('+ $s.tables->map(x|
               '\n    Table '+$x.name+' ('+

@@ -127,7 +127,11 @@ function meta::external::query::sql::transformation::queryToPure::getSources():D
                 ]
               )->cast(@meta::relational::metamodel::Database);
 
-              let databaseStr = $store->printPackageableElements(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration());
+              let databaseStr = $store
+                                ->scanDependencies([], meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraScanDependenciesType)
+                                ->removeDuplicates({a,b|$a->elementToPath() == $b->elementToPath()})
+                                ->map(x|$x->printPackageableElements(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration()))
+                                ->joinStrings('\n');
 
               let code =  $databaseStr+
                           '\n###Pure\n'+

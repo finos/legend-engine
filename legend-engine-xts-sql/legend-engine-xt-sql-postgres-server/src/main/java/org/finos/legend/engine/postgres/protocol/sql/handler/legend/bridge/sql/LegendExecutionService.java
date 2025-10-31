@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.postgres.protocol.sql.handler.legend;
+package org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +22,11 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecution;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecutionResult;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.shared.LegendExecutionResultFromTds;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.shared.LegendTdsResultParser;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
@@ -31,7 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class LegendExecutionService
+public class LegendExecutionService implements LegendExecution
 {
     public static final String TDS_COLUMNS = "columns";
     private final LegendClient executionClient;
@@ -43,7 +48,7 @@ public class LegendExecutionService
         this.executionClient = executionClient;
     }
 
-    public List<LegendColumn> getSchema(String query)
+    public List<LegendColumn> getSchema(String query, String database)
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Legend ExecutionService Get Schema").startSpan();
@@ -68,10 +73,9 @@ public class LegendExecutionService
         {
             span.end();
         }
-
     }
 
-    public LegendExecutionResult executeQuery(String query)
+    public LegendExecutionResult executeQuery(String query, String database)
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("LegendExecutionService ExecuteQuery").startSpan();
@@ -82,51 +86,7 @@ public class LegendExecutionService
             span.addEvent("receivedResponse");
             LegendTdsResultParser parser = new LegendTdsResultParser(inputStream);
 
-            return new LegendExecutionResult()
-            {
-                @Override
-                public List<LegendColumn> getLegendColumns()
-                {
-                    return parser.getLegendColumns();
-                }
-
-                @Override
-                public void close()
-                {
-                    try
-                    {
-                        parser.close();
-                    }
-                    catch (IOException e)
-                    {
-                        throw new LegendTdsClientException("Error while closing parser", e);
-                    }
-                }
-
-                @Override
-                public boolean hasNext()
-                {
-
-                    try
-                    {
-                        return parser.hasNext();
-                    }
-                    catch (IOException e)
-                    {
-                        throw new LegendTdsClientException("Error while retrieving a row", e);
-                    }
-                }
-
-                @Override
-                public List<Object> next()
-                {
-                    return parser.next();
-                }
-
-
-            };
-
-
+            return new LegendExecutionResultFromTds(parser);
         }
         catch (IOException e)
         {
@@ -136,5 +96,11 @@ public class LegendExecutionService
         {
             span.end();
         }
+    }
+
+    @Override
+    public boolean supports(String database)
+    {
+        return !database.startsWith("projects|");
     }
 }
