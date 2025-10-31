@@ -362,6 +362,22 @@ function <<test.Test>> meta::relational::tests::query::routing::testSimpleEval()
   assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::query::routing::testEvalFunctionOutputFromFunctionCall():Boolean[1]
+{
+  let result = executeInternal({|
+    evalWrapper()->eval()->size();
+  });
+
+  assertSize($result.values, 1);
+  assertEquals(11, $result.values->at(0));
+  assertEquals('select count("persontable_0".FIRSTNAME) from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+}
+
+function meta::relational::tests::query::routing::evalWrapper():Function<{->TabularDataSet[1]}>[1]
+{
+    {|firmProjected()};
+}
+
 function <<test.Test>> meta::relational::tests::query::routing::testEvalFunctionAsVariable():Boolean[1]
 {
   let func = {|firmProjected()};

@@ -507,8 +507,13 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
         {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
 
                 let funcInstance = $fe.parametersValues->at(0)->evaluateAndDeactivate()->match([
-                                      v:VariableExpression[1] | let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue)->toOne(),
-                                      i:InstanceValue[1]      | $i
+                                      iv:InstanceValue[1]        | 
+                                        $iv,
+                                      ve:VariableExpression[1]   | 
+                                        $ve->resolve($vars, $inScopeVars)->cast(@InstanceValue)->toOne(),
+                                      fe: FunctionExpression[1]  | 
+                                        let func = $fe->reactivate($inScopeVars);
+                                        ^InstanceValue(genericType = $fe.genericType, multiplicity = $fe.multiplicity, values = $func)->evaluateAndDeactivate();
                                   ]);
 
                 let funcToRoute = $funcInstance.values->cast(@FunctionDefinition<Any>)->toOne();
