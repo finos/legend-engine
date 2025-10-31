@@ -3208,6 +3208,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-sqlserver-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xts-deployment-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -3892,7 +3897,7 @@
             <dependency>
                 <groupId>com.microsoft.sqlserver</groupId>
                 <artifactId>mssql-jdbc</artifactId>
-                <version>6.2.1.jre7</version>
+                <version>9.4.1.jre8</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>

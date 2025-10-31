@@ -15,13 +15,14 @@
               <option value="install" />
               <option value="--fail-at-end" />
               <option value="-pl" />
-              <option value=":legend-engine-xt-relationalStore-h2-PCT,:legend-engine-xt-relationalStore-duckdb-PCT,:legend-engine-xt-relationalStore-memsql-PCT,:legend-engine-xt-relationalStore-spanner-PCT,:legend-engine-xt-relationalStore-postgres-PCT,:legend-engine-xt-relationalStore-snowflake-PCT" />
+              <option value=":legend-engine-xt-relationalStore-h2-PCT,:legend-engine-xt-relationalStore-duckdb-PCT,:legend-engine-xt-relationalStore-memsql-PCT,:legend-engine-xt-relationalStore-spanner-PCT,:legend-engine-xt-relationalStore-postgres-PCT,:legend-engine-xt-relationalStore-snowflake-PCT,:legend-engine-xt-relationalStore-sqlserver-PCT" />
             </list>
           </option>
           <option name="multimoduleDir" />
           <option name="pomFileName" />
           <option name="profilesMap">
             <map>
+              <entry key="sqlserver-docker-test" value="true" />
               <entry key="pct-cloud-test" value="true" />
             </map>
           </option>
