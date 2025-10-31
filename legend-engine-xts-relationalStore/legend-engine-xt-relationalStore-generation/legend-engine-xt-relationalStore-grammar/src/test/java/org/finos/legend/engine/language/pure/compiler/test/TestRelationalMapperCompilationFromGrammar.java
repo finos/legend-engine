@@ -82,7 +82,7 @@ public class TestRelationalMapperCompilationFromGrammar extends TestCompilationF
                         "    }\n" +
                         "  ];\n" +
                         "}\n",
-                "COMPILATION error at [37:1-52:1]: Error in 'test::MapperConnection': Found duplicated relational mapper(s) [test::testMapper]"
+                "COMPILATION warning at [37:1-52:1]: Error in 'test::MapperConnection': Found duplicated relational mapper(s) [test::testMapper]"
         );
     }
 
@@ -101,7 +101,7 @@ public class TestRelationalMapperCompilationFromGrammar extends TestCompilationF
                         "      [test::OrganizationsDB.Product] -> 'SnowflakeProduct2'\n" +
                         "   ];\n" +
                         ")",
-                "COMPILATION error at [20:1-29:1]: Error in 'test::testMapper': Found duplicated mappers for [test::OrganizationsDB.Org, test::OrganizationsDB.Product]"
+                "COMPILATION warning at [20:1-29:1]: Error in 'test::testMapper': Found duplicated mappers for [test::OrganizationsDB.Org, test::OrganizationsDB.Product]"
         );
     }
 
@@ -117,7 +117,7 @@ public class TestRelationalMapperCompilationFromGrammar extends TestCompilationF
                         "      [test::OrgDB.Product] -> 'SnowflakeDB'\n" +
                         "   ];\n" +
                         ")",
-                "COMPILATION error at [24:8-26]: Can't find database 'test::OrgDB'"
+                "COMPILATION warning at [24:8-26]: Can't find database 'test::OrgDB'"
         );
     }
 
@@ -135,7 +135,7 @@ public class TestRelationalMapperCompilationFromGrammar extends TestCompilationF
                         "      test::OrganizationsDB.Product -> 'ProductSchema'\n" +
                         "   ];\n" +
                         ")",
-                "COMPILATION error at [20:1-28:1]: Error in 'test::testMapper': Found duplicated mappers for [test::OrganizationsDB.Org]"
+                "COMPILATION warning at [20:1-28:1]: Error in 'test::testMapper': Found duplicated mappers for [test::OrganizationsDB.Org]"
         );
     }
 
@@ -151,7 +151,7 @@ public class TestRelationalMapperCompilationFromGrammar extends TestCompilationF
                         "      test::OrganizationsDB.Productt -> 'ProductSchema'\n" +
                         "   ];\n" +
                         ")",
-                "COMPILATION error at [20:1-26:1]: Error in 'test::testMapper': Can't find schema 'Productt' in database 'OrganizationsDB'"
+                "COMPILATION warning at [20:1-26:1]: Error in 'test::testMapper': Can't find schema 'Productt' in database 'OrganizationsDB'"
         );
     }
 
@@ -168,7 +168,7 @@ public class TestRelationalMapperCompilationFromGrammar extends TestCompilationF
                         "      test::OrganizationsDB.Product.Product -> 'ProductTableNew'\n" +
                         "   ];\n" +
                         ")",
-                "COMPILATION error at [20:1-27:1]: Error in 'test::testMapper': Found duplicated mappers for [test::OrganizationsDB.Product.Product]"
+                "COMPILATION warning at [20:1-27:1]: Error in 'test::testMapper': Found duplicated mappers for [test::OrganizationsDB.Product.Product]"
         );
     }
 
@@ -203,6 +203,6 @@ public class TestRelationalMapperCompilationFromGrammar extends TestCompilationF
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 }

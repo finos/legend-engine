@@ -40,7 +40,7 @@ public class TestRelationalFunctionHandler
                 "Class test::B" +
                 "{" +
                 "   z(){test::A.all()->project([col(a|$a.name, 'Account_No')])->join(test::A.all()->project(col(a|$a.name, 'Equity_Account_No')), meta::relational::metamodel::join::JoinType.INNER, { p, e | $p.getStriXng('Account_No') == $e.getString('Equity_Account_No') })}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:242-251]: Can't find property 'getStriXng' in class 'meta::pure::tds::TDSRow'");
+                "}", "COMPILATION warning at [1:242-251]: Can't find property 'getStriXng' in class 'meta::pure::tds::TDSRow'");
     }
 
     @Test

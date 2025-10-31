@@ -687,7 +687,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [74:12-27]: Service Parameter : 'invalid' is not valid");
+                ")\n", "COMPILATION warning at [74:12-27]: Service Parameter : 'invalid' is not valid");
 
         //Multiple Parameter Mappings
         test(FLATDATA_BINDING +
@@ -723,7 +723,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [68:5-78:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [serializationFormat].");
+                ")\n", "COMPILATION warning at [68:5-78:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [serializationFormat].");
 
         //Multiple Parameter Mappings
         test(FLATDATA_BINDING +
@@ -759,7 +759,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [68:5-78:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [serializationFormat].");
+                ")\n", "COMPILATION warning at [68:5-78:5]: Multiple Mappings for same parameter not allowed. Multiple mappings found for parameters : [serializationFormat].");
 
         // Missing mapping for required parameter
         test("###Pure\n" +
@@ -833,7 +833,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    (\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [68:5-70:5]: All required service parameters should be mapped. Required Service Parameters : [serializationFormat]. Mapped Parameters : [].");
+                ")\n", "COMPILATION warning at [68:5-70:5]: All required service parameters should be mapped. Required Service Parameters : [serializationFormat]. Mapped Parameters : [].");
 
         // Missing mapping for path parameter
         test("###Pure\n" +
@@ -907,7 +907,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    (\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [68:5-70:5]: All required service parameters should be mapped. Required Service Parameters : [serializationFormat]. Mapped Parameters : [].");
+                ")\n", "COMPILATION warning at [68:5-70:5]: All required service parameters should be mapped. Required Service Parameters : [serializationFormat]. Mapped Parameters : [].");
 
         //        typo in property name in request body mapping (TODO: fix this)
         //        test(FLATDATA_BINDING +
@@ -940,7 +940,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
         //                "      )\n" +
         //                "    )\n" +
         //                "  }\n" +
-        //                ")\n", "COMPILATION error at [72:9-20]: Property 'alha' not found in class 'test::model::B'");
+        //                ")\n", "COMPILATION warning at [72:9-20]: Property 'alha' not found in class 'test::model::B'");
 
         //        missing request body property mapping for mandatory property (TODO:fix this)
         //        test(FLATDATA_BINDING +
@@ -973,7 +973,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
         //                "      )\n" +
         //                "    )\n" +
         //                "  }\n" +
-        //                ")\n", "COMPILATION error at [72:9-20]: Property 'alha' not found in class 'test::model::B'");
+        //                ")\n", "COMPILATION warning at [72:9-20]: Property 'alha' not found in class 'test::model::B'");
     }
 
     @Test
@@ -1018,7 +1018,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [80:12-38]: Mapping enum service parameter is not yet supported !!");
+                ")\n", "COMPILATION warning at [80:12-38]: Mapping enum service parameter is not yet supported !!");
     }
 
     @Test
@@ -1068,7 +1068,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    }\n" +
                 ")\n\n",
                 null,
-                Lists.mutable.with("COMPILATION error at [119:9-71]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                Lists.mutable.with("COMPILATION warning at [119:9-71]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
                 );
 
         test(JSON_BINDING +
@@ -1079,7 +1079,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    {\n" +
                 "        ~service [meta::external::store::service::showcase::store::EmployeesServiceStore] EmployeesService\n" +
                 "    }\n" +
-                ")\n\n", "COMPILATION error at [85:9-106]: Response type of source service should match mapping class. Found response type : meta::external::store::service::showcase::domain::ApiResponse does not match mapping class : meta::external::store::service::showcase::domain::Person");
+                ")\n\n", "COMPILATION warning at [85:9-106]: Response type of source service should match mapping class. Found response type : meta::external::store::service::showcase::domain::ApiResponse does not match mapping class : meta::external::store::service::showcase::domain::Person");
 
         test(JSON_BINDING +
                 "###Mapping\n" +
@@ -1092,7 +1092,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "            ~path $service.response.firms\n" +
                 "        )\n" +
                 "    }\n" +
-                ")\n\n", "COMPILATION error at [85:9-88:9]: Response type of source service should match mapping class. Found response type : meta::external::store::service::showcase::domain::Firm does not match mapping class : meta::external::store::service::showcase::domain::Person");
+                ")\n\n", "COMPILATION warning at [85:9-88:9]: Response type of source service should match mapping class. Found response type : meta::external::store::service::showcase::domain::Firm does not match mapping class : meta::external::store::service::showcase::domain::Person");
     }
 
     @Test
@@ -1338,7 +1338,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    }\n" +
                 ")\n\n";
 
-        test(grammar, "COMPILATION error at [35:5-38:5]: Non serializable model mapped with Service Store Mapping");
+        test(grammar, "COMPILATION warning at [35:5-38:5]: Non serializable model mapped with Service Store Mapping");
 
         String grammar1 = "###Pure\n" +
                 "import meta::external::store::service::showcase::domain::*;\n" +
@@ -1393,6 +1393,6 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    }\n" +
                 ")\n\n";
 
-        test(grammar1, "COMPILATION error at [47:5-50:5]: Non serializable model mapped with Service Store Mapping");
+        test(grammar1, "COMPILATION warning at [47:5-50:5]: Non serializable model mapped with Service Store Mapping");
     }
 }

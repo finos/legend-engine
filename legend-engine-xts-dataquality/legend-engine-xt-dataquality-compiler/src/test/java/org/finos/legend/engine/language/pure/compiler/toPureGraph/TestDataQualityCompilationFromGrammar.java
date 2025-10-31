@@ -39,7 +39,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [104:1-113:1]: Duplicated element 'meta::dataquality::Person'";
+        return "COMPILATION warning at [104:1-113:1]: Duplicated element 'meta::dataquality::Person'";
     }
 
     @Test
@@ -261,7 +261,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         assertion: rel|$rel->assertRelationNotEmpty();\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [106:13-161]: Multiline lambda is not supported.");
+                "}", "COMPILATION warning at [106:13-161]: Multiline lambda is not supported.");
     }
 
     @Test
@@ -279,7 +279,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         assertion: {rel|let isEmpty = $rel->assertRelationNotEmpty(); isEmpty;};\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [106:13-161]: Multiline lambda is not supported.");
+                "}", "COMPILATION warning at [106:13-161]: Multiline lambda is not supported.");
     }
 
     @Test
@@ -312,7 +312,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         assertion: {firstName, rel| $rel->assertRelationNotEmpty()};\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [111:36-67]: Invalid parameter specified on assertion - firstName. Please validate that it is exactly the same as query parameters(name/type/multiplicity)");
+                "}", "COMPILATION warning at [111:36-67]: Invalid parameter specified on assertion - firstName. Please validate that it is exactly the same as query parameters(name/type/multiplicity)");
 
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
@@ -326,7 +326,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         assertion: {lastName:String[1], rel| $rel->assertRelationNotEmpty()};\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [111:22-39]: Invalid parameter specified on assertion - lastName. Please validate that it is exactly the same as query parameters(name/type/multiplicity)");
+                "}", "COMPILATION warning at [111:22-39]: Invalid parameter specified on assertion - lastName. Please validate that it is exactly the same as query parameters(name/type/multiplicity)");
 
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
@@ -340,7 +340,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         assertion: {firstName:String[1] | $rel->assertRelationNotEmpty()};\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [111:42-73]: Assertion param 'rel' is missing!");
+                "}", "COMPILATION warning at [111:42-73]: Assertion param 'rel' is missing!");
     }
 
     @Test
@@ -359,7 +359,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         type: ROW_LEVEL;\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [111:24-57]: Assertion should return Boolean");
+                "}", "COMPILATION warning at [111:24-57]: Assertion should return Boolean");
 
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
@@ -373,7 +373,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         assertion: rel|$rel->filter(r|$r.FIRSTNAME->isNotEmpty());\n" +
                 "      }\n" +
                 "    ];\n" +
-                "}", "COMPILATION error at [111:24-66]: Assertion should end in either assertRelationEmpty or assertRelationNotEmpty functions");
+                "}", "COMPILATION warning at [111:24-66]: Assertion should end in either assertRelationEmpty or assertRelationNotEmpty functions");
     }
 
     @Test
@@ -390,7 +390,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                         "{\n" +
                         "   #>{a::A.tb}#->rowsWithNegativeValue(~ied)\n" +
                         "}",
-                "COMPILATION error at [7:41-43]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
+                "COMPILATION warning at [7:41-43]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
         );
     }
 
@@ -408,7 +408,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                         "{\n" +
                         "   #>{a::A.tb}#->rowsWithNegativeValue(~other)\n" +
                         "}",
-                "COMPILATION error at [7:41-45]: The column 'other' must be of type Number, found: Varchar"
+                "COMPILATION warning at [7:41-45]: The column 'other' must be of type Number, found: Varchar"
         );
     }
 
@@ -443,7 +443,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                         "{\n" +
                         "   #>{a::A.tb}#->rowsWithColumnLongerThan(~id, 40)\n" +
                         "}",
-                "COMPILATION error at [7:44-45]: The column 'id' must be of type String, found: Int"
+                "COMPILATION warning at [7:44-45]: The column 'id' must be of type String, found: Int"
         );
     }
 

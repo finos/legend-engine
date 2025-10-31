@@ -124,7 +124,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
                 "  #>{my::Store.SchemaMissing.myTable}#->filter(\n" +
                 "    c|$c.name == 'ok'\n" +
                 "  )\n" +
-                "}\n", "COMPILATION error at [19:3-38]: Can't find schema 'SchemaMissing' in database 'Store'");
+                "}\n", "COMPILATION warning at [19:3-38]: Can't find schema 'SchemaMissing' in database 'Store'");
     }
 
     @Test
@@ -144,7 +144,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
                 "{" +
                 "   #>{my::Store.myTabe}#->filter(c|$c.name == 'ok');" +
                 "}",
-                "COMPILATION error at [4:31-51]: Can't find table 'myTabe' in schema 'default' and database 'Store'");
+                "COMPILATION warning at [4:31-51]: Can't find table 'myTabe' in schema 'default' and database 'Store'");
     }
 
     @Test
@@ -170,7 +170,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
         }
         catch (EngineException e)
         {
-            Assert.assertEquals("COMPILATION error at [4:67-71]: The column 'naeme' can't be found in the relation (id:Int, name:Varchar(200))", e.toPretty());
+            Assert.assertEquals("COMPILATION warning at [4:67-71]: The column 'naeme' can't be found in the relation (id:Int, name:Varchar(200))", e.toPretty());
         }
     }
 
@@ -192,7 +192,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
                 "{" +
                 "   #>{my::Store}#->filter(c|$c.naeme == 'ok');" +
                 "}",
-                "COMPILATION error at [4:31-44]: Error in the accessor definition. Please provide a table."
+                "COMPILATION warning at [4:31-44]: Error in the accessor definition. Please provide a table."
         );
     }
 
@@ -211,6 +211,6 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 }

@@ -38,7 +38,7 @@ public class TestFunctionJarCompilationFromGrammar extends TestCompilationFromGr
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:58]: Duplicated element 'anything::Name'";
+        return "COMPILATION warning at [5:1-7:58]: Duplicated element 'anything::Name'";
     }
 
     @Test

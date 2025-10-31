@@ -57,7 +57,7 @@ public class TestExternalFormatCompilation
                         "    { id: s1; location: 'e2.schema'; content: 'example2'; }\n" +
                         "  ];\n" +
                         "}\n",
-                "COMPILATION error at [7:5-59]: Schema id 's1' is duplicated");
+                "COMPILATION warning at [7:5-59]: Schema id 's1' is duplicated");
     }
 
     @Test
@@ -72,7 +72,7 @@ public class TestExternalFormatCompilation
                         "    { id: s2; location: 'e1.schema'; content: 'example2'; }\n" +
                         "  ];\n" +
                         "}\n",
-                "COMPILATION error at [7:5-59]: Schema location 'e1.schema' is duplicated");
+                "COMPILATION warning at [7:5-59]: Schema location 'e1.schema' is duplicated");
     }
 
     @Test
@@ -165,7 +165,7 @@ public class TestExternalFormatCompilation
                         "    meta::firm::Person\n" +
                         "  ];\n" +
                         "}\n",
-                "COMPILATION error at [8:1-15:1]: Can't find SchemaSet 'meta::firm::Unknown'"
+                "COMPILATION warning at [8:1-15:1]: Can't find SchemaSet 'meta::firm::Unknown'"
         );
     }
 
@@ -186,7 +186,7 @@ public class TestExternalFormatCompilation
                         "    meta::firm::Person\n" +
                         "  ];\n" +
                         "}\n",
-                "COMPILATION error at [8:1-14:1]: Unknown contentType 'text/unknown'"
+                "COMPILATION warning at [8:1-14:1]: Unknown contentType 'text/unknown'"
         );
     }
 
@@ -216,7 +216,7 @@ public class TestExternalFormatCompilation
                         "  contentType: 'text/example';\n" +
                         "  modelIncludes: [ meta::firm::Person ];\n" +
                         "}\n",
-                "COMPILATION error at [17:1-23:1]: ID 'unknown' does not exist in SchemaSet 'meta::firm::SchemaSet'"
+                "COMPILATION warning at [17:1-23:1]: ID 'unknown' does not exist in SchemaSet 'meta::firm::SchemaSet'"
         );
     }
 
@@ -246,7 +246,7 @@ public class TestExternalFormatCompilation
                         "  contentType: 'text/example';\n" +
                         "  modelIncludes: [ meta::firm::Unknown ];\n" +
                         "}\n",
-                "COMPILATION error at [17:1-23:1]: Can't find the packageable element 'meta::firm::Unknown'"
+                "COMPILATION warning at [17:1-23:1]: Can't find the packageable element 'meta::firm::Unknown'"
         );
     }
 
@@ -277,7 +277,7 @@ public class TestExternalFormatCompilation
                         "  modelIncludes: [ meta::firm ];\n" +
                         "  modelExcludes: [ meta::firm::Unknown ];\n" +
                         "}\n",
-                "COMPILATION error at [17:1-24:1]: Can't find the packageable element 'meta::firm::Unknown'"
+                "COMPILATION warning at [17:1-24:1]: Can't find the packageable element 'meta::firm::Unknown'"
         );
     }
 

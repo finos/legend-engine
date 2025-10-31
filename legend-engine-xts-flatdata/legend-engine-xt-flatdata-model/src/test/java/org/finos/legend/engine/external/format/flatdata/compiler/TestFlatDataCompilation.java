@@ -86,14 +86,14 @@ public class TestFlatDataCompilation extends ExternalSchemaCompilationTest
                              "    A {1}: STRING;\n" +
                              "  }\n" +
                              "}",
-                     "COMPILATION error at [5:16-159]: Error in schema content [7:3-10:3]: Only one Record is permitted in a section");
+                     "COMPILATION warning at [5:16-159]: Error in schema content [7:3-10:3]: Only one Record is permitted in a section");
     }
 
     @Test
     public void testNoSections()
     {
         testFlatData("",
-                     "COMPILATION error at [5:16-27]: Error in schema content [1:1]: Must specify at least one section");
+                     "COMPILATION warning at [5:16-27]: Error in schema content [1:1]: Must specify at least one section");
     }
 
     @Test
@@ -117,7 +117,7 @@ public class TestFlatDataCompilation extends ExternalSchemaCompilationTest
                              "      HEADING1: STRING;\n" +
                              "  }\n" +
                              "}",
-                     "COMPILATION error at [5:16-273]: Error in schema content [10:9]: Duplicated section name 'sameSectionName'");
+                     "COMPILATION warning at [5:16-273]: Error in schema content [10:9]: Duplicated section name 'sameSectionName'");
     }
 
     @Test
@@ -132,7 +132,7 @@ public class TestFlatDataCompilation extends ExternalSchemaCompilationTest
                              "    HEADING1: BOOLEAN(trueString='Y', trueString='true');\n" +
                              "  }\n" +
                              "}",
-                     "COMPILATION error at [5:16-179]: Error in schema content [7:39]: Attribute 'trueString' duplicated for record type property"
+                     "COMPILATION warning at [5:16-179]: Error in schema content [7:39]: Attribute 'trueString' duplicated for record type property"
         );
     }
 
@@ -148,7 +148,7 @@ public class TestFlatDataCompilation extends ExternalSchemaCompilationTest
                              "    HEADING1: BOOLEAN(optional, optional);\n" +
                              "  }\n" +
                              "}",
-                     "COMPILATION error at [5:16-160]: Error in schema content [7:33]: Attribute 'optional' duplicated for record type property"
+                     "COMPILATION warning at [5:16-160]: Error in schema content [7:33]: Attribute 'optional' duplicated for record type property"
         );
     }
 
@@ -164,7 +164,7 @@ public class TestFlatDataCompilation extends ExternalSchemaCompilationTest
                              "    HEADING1: BOOLEAN(yesString='Y', noString='N');\n" +
                              "  }\n" +
                              "}",
-                     "COMPILATION error at [5:16-173]: Error in schema content [7:23]: Unexpected token: yesString"
+                     "COMPILATION warning at [5:16-173]: Error in schema content [7:23]: Unexpected token: yesString"
         );
     }
 
@@ -180,7 +180,7 @@ public class TestFlatDataCompilation extends ExternalSchemaCompilationTest
                              "    HEADING1: BLAH;\n" +
                              "  }\n" +
                              "}",
-                     "COMPILATION error at [5:16-137]: Error in schema content [7:15]: Unexpected token: BLAH"
+                     "COMPILATION warning at [5:16-137]: Error in schema content [7:15]: Unexpected token: BLAH"
         );
     }
 
@@ -194,7 +194,7 @@ public class TestFlatDataCompilation extends ExternalSchemaCompilationTest
                         "    HEADING1: STRING;\n" +
                         "  }\n" +
                         "}",
-                "COMPILATION error at [5:16-118]: Error in schema content: scope not specified in section 'sectionName', delimiter not specified in section 'sectionName'"
+                "COMPILATION warning at [5:16-118]: Error in schema content: scope not specified in section 'sectionName', delimiter not specified in section 'sectionName'"
         );
     }
 

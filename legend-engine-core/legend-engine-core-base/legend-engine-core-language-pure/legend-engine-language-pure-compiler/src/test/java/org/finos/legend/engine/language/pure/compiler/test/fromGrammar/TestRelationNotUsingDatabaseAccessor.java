@@ -44,7 +44,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 
     // More advanced tests can be found in the Relational Section
@@ -93,7 +93,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.nme])\n" +
-                        "}", "COMPILATION error at [4:45-47]: Can't find property 'nme' in class 'test::Person'"
+                        "}", "COMPILATION warning at [4:45-47]: Can't find property 'nme' in class 'test::Person'"
         );
     }
 
@@ -119,7 +119,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.name, co:x|$x.vals])\n" +
-                        "}", "COMPILATION error at [4:59-62]: Can't find property 'vals' in class 'test::Person'"
+                        "}", "COMPILATION warning at [4:59-62]: Can't find property 'vals' in class 'test::Person'"
         );
     }
 
@@ -145,7 +145,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.name, co:x|$x.val])->filter(x|$x.ceo > 2)\n" +
-                        "}", "COMPILATION error at [4:78-80]: The column 'ceo' can't be found in the relation (mycol:String[1], co:Integer[1])"
+                        "}", "COMPILATION warning at [4:78-80]: The column 'ceo' can't be found in the relation (mycol:String[1], co:Integer[1])"
         );
     }
 
@@ -157,7 +157,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "function test::f(x:meta::pure::metamodel::relation::Relation<(x:Integer(2))>[1]):Any[*]\n" +
                         "{\n" +
                         "   []" +
-                        "}", "COMPILATION error at [2:65-74]: Wrong type variables count (1) for type: Integer"
+                        "}", "COMPILATION warning at [2:65-74]: Wrong type variables count (1) for type: Integer"
         );
     }
 
@@ -201,7 +201,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.name])->extend(over(~mycol,[~mycol]->descending()), ~newCol:x|$x.mycol:y|$y->count())\n" +
-                        "}", "COMPILATION error at [4:82-91]: Can't infer the type of the function parameter within over"
+                        "}", "COMPILATION warning at [4:82-91]: Can't infer the type of the function parameter within over"
         );
     }
 
@@ -214,7 +214,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.name])->extend(over(~mycol, ~mycol->desceeending()), ~newCol:x|$x.mycol:y|$y->count())\n" +
-                        "}", "COMPILATION error at [4:81-92]: Function does not exist 'desceeending(ColSpec<(mycol:String[1])>[1])'"
+                        "}", "COMPILATION warning at [4:81-92]: Function does not exist 'desceeending(ColSpec<(mycol:String[1])>[1])'"
         );
     }
 
@@ -228,7 +228,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.name])->extend(over('www'), ~newCol:x|$x.mycol:y|$y->count())\n" +
                         "}",
-                "COMPILATION error at [4:60-63]: Can't find a match for function 'over(String[1])'"
+                "COMPILATION warning at [4:60-63]: Can't find a match for function 'over(String[1])'"
         );
     }
 }

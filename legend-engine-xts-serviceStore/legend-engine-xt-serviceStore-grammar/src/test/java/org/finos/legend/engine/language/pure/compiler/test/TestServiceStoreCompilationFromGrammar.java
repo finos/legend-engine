@@ -35,7 +35,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 
     @Test
@@ -388,7 +388,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    response : [ test::Person <- test::TestBinding1 ];\n" +
                 "    security : [];\n" +
                 "  )\n" +
-                ")\n", "COMPILATION error at [34:1-47:1]: Error in 'test::testServiceStoreCompilationWithSingleService': Can't find (external format) Binding 'test::TestBinding1'");
+                ")\n", "COMPILATION warning at [34:1-47:1]: Error in 'test::testServiceStoreCompilationWithSingleService': Can't find (external format) Binding 'test::TestBinding1'");
 
         // Invalid model from binding
         test(TEST_BINDING + "###ServiceStore\n" +
@@ -405,7 +405,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    response : [ test::Trade <- test::TestBinding ];\n" +
                 "    security : [];\n" +
                 "  )\n" +
-                ")\n", "COMPILATION error at [34:1-47:1]: Error in 'test::testServiceStoreCompilationWithSingleService': Can't find class 'test::Trade'");
+                ")\n", "COMPILATION warning at [34:1-47:1]: Error in 'test::testServiceStoreCompilationWithSingleService': Can't find class 'test::Trade'");
 
         // Header params can't have reserved names - Accept, Content-Type and Authorization
         test(TEST_BINDING + "###ServiceStore\n" +
@@ -422,7 +422,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    response : [ test::Person <- test::TestBinding ];\n" +
                 "    security : [];\n" +
                 "  )\n" +
-                ")\n", "COMPILATION error at [42:7-43]: Header parameters cannot have following names : [Accept,Content-Type,Authorization]");
+                ")\n", "COMPILATION warning at [42:7-43]: Header parameters cannot have following names : [Accept,Content-Type,Authorization]");
 
         test(TEST_BINDING + "###ServiceStore\n" +
                 "ServiceStore test::testServiceStoreCompilationWithSingleService\n" +
@@ -438,7 +438,7 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    response : [ test::Person <- test::TestBinding ];\n" +
                 "    security : [];\n" +
                 "  )\n" +
-                ")\n", "COMPILATION error at [42:7-51]: Header parameters cannot have following names : [Accept,Content-Type,Authorization]");
+                ")\n", "COMPILATION warning at [42:7-51]: Header parameters cannot have following names : [Accept,Content-Type,Authorization]");
 
         test(TEST_BINDING + "###ServiceStore\n" +
                 "ServiceStore test::testServiceStoreCompilationWithSingleService\n" +
@@ -454,6 +454,6 @@ public class TestServiceStoreCompilationFromGrammar extends TestCompilationFromG
                 "    response : [ test::Person <- test::TestBinding ];\n" +
                 "    security : [];\n" +
                 "  )\n" +
-                ")\n", "COMPILATION error at [42:7-50]: Header parameters cannot have following names : [Accept,Content-Type,Authorization]");
+                ")\n", "COMPILATION warning at [42:7-50]: Header parameters cannot have following names : [Accept,Content-Type,Authorization]");
     }
 }

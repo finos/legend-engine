@@ -67,7 +67,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-8:1]: Duplicated element 'anything::class'";
+        return "COMPILATION warning at [5:1-8:1]: Duplicated element 'anything::class'";
     }
 
     @Test
@@ -96,7 +96,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "  [\n" +
                 "    test::mapping2\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [19:5-18]: Can't find mapping 'test::mapping2'");
+                "}\n", "COMPILATION warning at [19:5-18]: Can't find mapping 'test::mapping2'");
         // Runtime does not cover any mapping
         test(resource +
                 "###Runtime\n" +
@@ -105,7 +105,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "  mappings:\n" +
                 "  [\n" +
                 "  ];\n" +
-                "}\n", null, Lists.mutable.with("COMPILATION error at [15:1-20:1]: Runtime must cover at least one mapping"));
+                "}\n", null, Lists.mutable.with("COMPILATION warning at [15:1-20:1]: Runtime must cover at least one mapping"));
         // Unknown connection pointer
         test(resource +
                 "###Runtime\n" +
@@ -119,7 +119,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "      [\n" +
                 "        ModelStore: [id1: test::connection2]\n" +
                 "      ];\n" +
-                "}\n", "COMPILATION error at [23:27-43]: Can't find connection 'test::connection2'");
+                "}\n", "COMPILATION warning at [23:27-43]: Can't find connection 'test::connection2'");
         // check compilation for an embedded connection
         test(resource +
                 "###Runtime\n" +
@@ -138,7 +138,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "        }\n" +
                 "      }#]\n" +
                 "   ];\n" +
-                "}\n", "COMPILATION error at [25:18-29]: Can't find class 'test::class2'");
+                "}\n", "COMPILATION warning at [25:18-29]: Can't find class 'test::class2'");
         // check walker source information processing for embedded connection
         test(resource +
                 "###Runtime\n" +
@@ -152,7 +152,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 // intentionally put the embedded connection in one line to check walker source information processing for island grammar
                 "      ModelStore: [id1: #{ JsonModelConnection { class:                   test::class2; url: 'my_url'; }}#]\n" +
                 "   ];\n" +
-                "}\n", "COMPILATION error at [22:75-86]: Can't find class 'test::class2'");
+                "}\n", "COMPILATION warning at [22:75-86]: Can't find class 'test::class2'");
         // cannot find store used for indexing
         test(resource +
                 "###Runtime\n" +
@@ -171,7 +171,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "        }\n" +
                 "      }#]\n" +
                 "   ];\n" +
-                "}\n", "COMPILATION error at [22:7-17]: Can't find the packageable element 'ModelStore2'");
+                "}\n", "COMPILATION warning at [22:7-17]: Can't find the packageable element 'ModelStore2'");
     }
 
     @Test
@@ -345,7 +345,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "      connection_2: humanResourceModel::M2MModelChainConnection2\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}",null, Collections.singletonList("COMPILATION error at [73:1-87:1]: Multiple ModelChainConnections are Not Supported for the same Runtime."));
+                "}",null, Collections.singletonList("COMPILATION warning at [73:1-87:1]: Multiple ModelChainConnections are Not Supported for the same Runtime."));
     }
 
     @Test
@@ -425,6 +425,6 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "      connection_3: modelToModel::test::XmlConnection\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}",null,Collections.singletonList("COMPILATION error at [60:1-75:1]: Multiple Connections available for Source Class - __Firm"));
+                "}",null,Collections.singletonList("COMPILATION warning at [60:1-75:1]: Multiple Connections available for Source Class - __Firm"));
     }
 }

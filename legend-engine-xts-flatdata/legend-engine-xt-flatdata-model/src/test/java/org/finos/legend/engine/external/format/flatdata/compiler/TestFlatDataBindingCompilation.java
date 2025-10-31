@@ -254,7 +254,7 @@ public class TestFlatDataBindingCompilation extends ExternalSchemaCompilationTes
                      "  contentType: 'application/x.flatdata';\n" +
                      "  modelIncludes: [ test::model::Y, test::model::Z ];\n" +
                      "}\n",
-             "COMPILATION error at [33:1-38:1]: Model and schema are mismatched:\n" +
+             "COMPILATION warning at [33:1-38:1]: Model and schema are mismatched:\n" +
                      "Section 'A': Ambiguous matches against classes in the model: (Y,Z)"
         );
     }
@@ -287,7 +287,7 @@ public class TestFlatDataBindingCompilation extends ExternalSchemaCompilationTes
                      "  contentType: 'application/x.flatdata';\n" +
                      "  modelIncludes: [ test::model::A ];\n" +
                      "}\n",
-             "COMPILATION error at [14:1-19:1]: Model and schema are mismatched:\n" +
+             "COMPILATION warning at [14:1-19:1]: Model and schema are mismatched:\n" +
                      "Section 'A': Could only partially match fields to class A matched fields: (beta[beta]) unmatched fields: (alpha[alpha wrong multiplicity])"
         );
     }
@@ -320,7 +320,7 @@ public class TestFlatDataBindingCompilation extends ExternalSchemaCompilationTes
                      "  contentType: 'application/x.flatdata';\n" +
                      "  modelIncludes: [ test::model::A ];\n" +
                      "}\n",
-             "COMPILATION error at [14:1-19:1]: Model and schema are mismatched:\n" +
+             "COMPILATION warning at [14:1-19:1]: Model and schema are mismatched:\n" +
                      "Section 'A': Could only partially match fields to class A matched fields: (beta[beta]) unmatched fields: (alpha[alpha wrong type])"
         );
     }
@@ -352,7 +352,7 @@ public class TestFlatDataBindingCompilation extends ExternalSchemaCompilationTes
                      "  contentType: 'application/x.flatdata';\n" +
                      "  modelIncludes: [ test::model::A ];\n" +
                      "}\n",
-             "COMPILATION error at [14:1-19:1]: Model and schema are mismatched:\n" +
+             "COMPILATION warning at [14:1-19:1]: Model and schema are mismatched:\n" +
                      "Section 'A': Could only partially match fields to class A matched fields: () unmatched fields: (ALPHA BETA GAMMA[ambiguous for properties: alphaBetaGamma:|alphaBetaGamma;])"
         );
     }
@@ -385,7 +385,7 @@ public class TestFlatDataBindingCompilation extends ExternalSchemaCompilationTes
                      "  contentType: 'application/x.flatdata';\n" +
                      "  modelIncludes: [ test::model::A ];\n" +
                      "}\n",
-             "COMPILATION error at [14:1-19:1]: Model and schema are mismatched:\n" +
+             "COMPILATION warning at [14:1-19:1]: Model and schema are mismatched:\n" +
                      "Section 'A': Could only partially match fields to class A matched fields: (alpha beta gamma[alphaBetaGamma]) unmatched fields: (ALPHA BETA GAMMA[No matching properties])"
         );
     }
@@ -439,7 +439,7 @@ public class TestFlatDataBindingCompilation extends ExternalSchemaCompilationTes
                      "  contentType: 'application/x.flatdata';\n" +
                      "  modelIncludes: [ test::model::A, test::model::Z ];\n" +
                      "}\n",
-             "COMPILATION error at [28:1-33:1]: Model and schema are mismatched:\n" +
+             "COMPILATION warning at [28:1-33:1]: Model and schema are mismatched:\n" +
                      "Section 'A': Could only partially match fields to class A matched fields: (alpha[alpha],eta[eta],theta[theta],iota[iota]) unmatched fields: (beta[beta wrong multiplicity],gamma[gamma wrong type wrong multiplicity],delta[No matching properties],epsilon[epsilon wrong type],zeta[No matching properties])\n" +
                      "Section 'A': Could only partially match fields to class Z matched fields: (alpha[alpha],epsilon[epsilon],eta[eta],theta[theta],iota[iota]) unmatched fields: (beta[No matching properties],gamma[No matching properties],delta[No matching properties],zeta[zeta wrong type])"
         );
@@ -664,7 +664,7 @@ public class TestFlatDataBindingCompilation extends ExternalSchemaCompilationTes
                      "  contentType: 'application/x.flatdata';\n" +
                      "  modelIncludes: [ test::WholeLoanPriceFile, test::WholeLoanPriceFile2, test::Header, test::PriceRow, test::File_Header, test::File_PriceRow ];\n" +
                      "}\n",
-             "COMPILATION error at [46:1-52:1]: Model and schema are mismatched:\n" +
+             "COMPILATION warning at [46:1-52:1]: Model and schema are mismatched:\n" +
                      "Ambiguous matches for schema sections against classes in the model: (WholeLoanPriceFile,WholeLoanPriceFile2)"
         );
     }
@@ -748,7 +748,7 @@ public class TestFlatDataBindingCompilation extends ExternalSchemaCompilationTes
                      "  contentType: 'application/x.flatdata';\n" +
                      "  modelIncludes: [ test::WholeLoanPriceFile, test::Header, test::PriceRow, test::PriceRow2, test::File_Header, test::File_PriceRow ];\n" +
                      "}\n",
-             "COMPILATION error at [45:1-51:1]: Model and schema are mismatched:\n" +
+             "COMPILATION warning at [45:1-51:1]: Model and schema are mismatched:\n" +
                      "Section 'dataRows': Section found for schema for class test::PriceRow2 but in details for class test::PriceRow"
         );
     }

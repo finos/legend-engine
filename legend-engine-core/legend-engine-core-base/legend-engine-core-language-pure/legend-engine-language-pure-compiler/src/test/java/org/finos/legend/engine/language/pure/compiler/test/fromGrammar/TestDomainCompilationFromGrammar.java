@@ -54,7 +54,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 
     @Test
@@ -66,7 +66,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "###Pure\n" +
                 "Class anything::somethingelse\n" +
                 "{\n" +
-                "}\n", Lists.fixedSize.with("COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'"));
+                "}\n", Lists.fixedSize.with("COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::somethingelse'"));
     }
 
     @Test
@@ -85,14 +85,14 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "###Pure\n" +
                 "Class anything::somethingelse\n" +
                 "{\n" +
-                "}\n", "COMPILATION error at [10:1-12:1]: Duplicated element 'anything::somethingelse'"
+                "}\n", "COMPILATION warning at [10:1-12:1]: Duplicated element 'anything::somethingelse'"
         );
         // Profile
         test(initialGraph +
                 "###Pure\n" +
                 "Profile anything::somethingelse\n" +
                 "{\n" +
-                "}\n", "COMPILATION error at [10:1-12:1]: Duplicated element 'anything::somethingelse'"
+                "}\n", "COMPILATION warning at [10:1-12:1]: Duplicated element 'anything::somethingelse'"
         );
         // Enumeration
         test(initialGraph +
@@ -100,7 +100,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Enum anything::somethingelse\n" +
                 "{\n" +
                 " A\n" +
-                "}\n", "COMPILATION error at [10:1-13:1]: Duplicated element 'anything::somethingelse'"
+                "}\n", "COMPILATION warning at [10:1-13:1]: Duplicated element 'anything::somethingelse'"
         );
         // Association
         test(initialGraph +
@@ -113,7 +113,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "  b1 : anything::class[1];\n" +
                 "  b2 : test::B[1];\n" +
-                "}\n", "COMPILATION error at [14:1-18:1]: Duplicated element 'anything::somethingelse'"
+                "}\n", "COMPILATION warning at [14:1-18:1]: Duplicated element 'anything::somethingelse'"
         );
         // Function
         test(initialGraph +
@@ -130,7 +130,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   *UnitOne: x -> $x;\n" +
                 "   UnitTwo: x -> $x * 1000;\n" +
                 "   UnitThree: x -> $x * 400;\n" +
-                "}", "COMPILATION error at [10:1-15:1]: Duplicated element 'anything::somethingelse'"
+                "}", "COMPILATION warning at [10:1-15:1]: Duplicated element 'anything::somethingelse'"
         );
     }
 
@@ -235,7 +235,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "{\n" +
                         "   [1,2]->max();\n" +
                         "}\n";
-        test(code, "COMPILATION error at [5:1-8:1]: Duplicated element 'example::testMaxInteger_Integer_1__Any_$0_1$_'");
+        test(code, "COMPILATION warning at [5:1-8:1]: Duplicated element 'example::testMaxInteger_Integer_1__Any_$0_1$_'");
     }
 
     @Test
@@ -244,7 +244,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         test("Class test::A extends test::A\n" +
                 "{\n" +
                 "   ok : Integer[0..1];\n" +
-                "}\n", "COMPILATION error at [1:1-4:1]: Cycle detected in class supertype hierarchy: test::A -> test::A"
+                "}\n", "COMPILATION warning at [1:1-4:1]: Cycle detected in class supertype hierarchy: test::A -> test::A"
         );
         test("Class test::A extends test::B\n" +
                 "{\n" +
@@ -253,7 +253,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B extends test::A\n" +
                 "{\n" +
                 "   ok : Integer[0..1];\n" +
-                "}\n", "COMPILATION error at [1:1-4:1]: Cycle detected in class supertype hierarchy: test::A -> test::B -> test::A"
+                "}\n", "COMPILATION warning at [1:1-4:1]: Cycle detected in class supertype hierarchy: test::A -> test::B -> test::A"
         );
         test("Class test::A extends test::B\n" +
                 "{\n" +
@@ -266,7 +266,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::C extends test::A\n" +
                 "{\n" +
                 "   ok : Integer[0..1];\n" +
-                "}\n", "COMPILATION error at [1:1-4:1]: Cycle detected in class supertype hierarchy: test::A -> test::B -> test::C -> test::A"
+                "}\n", "COMPILATION warning at [1:1-4:1]: Cycle detected in class supertype hierarchy: test::A -> test::B -> test::C -> test::A"
         );
     }
 
@@ -277,7 +277,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   tags : [doc, doc];\n" +
                 "   stereotypes : [modifier, modifier, accessorType, accessorType];\n" +
-                "}\n", null, Lists.fixedSize.with("COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'accessorType' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'modifier' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated tag 'doc' in profile 'test::A'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION warning at [1:1-5:1]: Found duplicated stereotype 'accessorType' in profile 'test::A'", "COMPILATION warning at [1:1-5:1]: Found duplicated stereotype 'modifier' in profile 'test::A'", "COMPILATION warning at [1:1-5:1]: Found duplicated tag 'doc' in profile 'test::A'"));
     }
 
     @Test
@@ -286,7 +286,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         test("Enum test::A\n" +
                 "{\n" +
                 "   TEA,COFFEE,TEA,TEA,COFFEE\n" +
-                "}\n", null, Lists.fixedSize.with("COMPILATION error at [3:4-6]: Found duplicated value 'TEA' in enumeration 'test::A'", "COMPILATION error at [3:8-13]: Found duplicated value 'COFFEE' in enumeration 'test::A'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION warning at [3:4-6]: Found duplicated value 'TEA' in enumeration 'test::A'", "COMPILATION warning at [3:8-13]: Found duplicated value 'COFFEE' in enumeration 'test::A'"));
     }
 
     @Test
@@ -298,7 +298,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   property1: test::A[0..1];\n" +
                 "   property1: test::B[1];\n" +
-                "}\n", null, Lists.fixedSize.with("COMPILATION error at [5:4-28]: Found duplicated property 'property1' in association 'test::C'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION warning at [5:4-28]: Found duplicated property 'property1' in association 'test::C'"));
     }
 
     @Test
@@ -311,7 +311,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   other : String[1];\n" +
                 "   ok : String[1];\n" +
                 "   other: String[1];\n" +
-                "}\n", null, Lists.fixedSize.with("COMPILATION error at [3:4-28]: Found duplicated property 'property' in class 'test::A'", "COMPILATION error at [5:4-21]: Found duplicated property 'other' in class 'test::A'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION warning at [3:4-28]: Found duplicated property 'property' in class 'test::A'", "COMPILATION warning at [5:4-21]: Found duplicated property 'other' in class 'test::A'"));
     }
 
     @Test
@@ -331,7 +331,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   other : String[1];\n" +
                 "   ok : String[1];\n" +
                 "   other: String[1];\n" +
-                "}\n", null, Lists.fixedSize.with("COMPILATION error at [5:4-28]: Found duplicated property 'property1' in association 'test::C'", "COMPILATION error at [10:4-28]: Found duplicated property 'property' in class 'test::D'", "COMPILATION error at [12:4-21]: Found duplicated property 'other' in class 'test::D'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION warning at [5:4-28]: Found duplicated property 'property1' in association 'test::C'", "COMPILATION warning at [10:4-28]: Found duplicated property 'property' in class 'test::D'", "COMPILATION warning at [12:4-21]: Found duplicated property 'other' in class 'test::D'"));
     }
 
     @Test
@@ -344,7 +344,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B extends test::A, test::A\n" +
                 "{\n" +
                 "   ok : Integer[0..1];\n" +
-                "}\n", "COMPILATION error at [5:1-8:1]: Duplicated super type 'test::A' in class 'test::B'"
+                "}\n", "COMPILATION warning at [5:1-8:1]: Duplicated super type 'test::A' in class 'test::B'"
         );
     }
 
@@ -382,7 +382,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     {
         test("Class A\n" +
                 "{\n" +
-                "}\n", "COMPILATION error at [1:1-3:1]: Element package is required"
+                "}\n", "COMPILATION warning at [1:1-3:1]: Element package is required"
         );
     }
 
@@ -455,7 +455,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   UnitTwo: x -> $x * 1000;\n" +
                 "   UnitThree: x -> $x * 400;\n" +
                 "}";
-        String expectedErrorMessage = "COMPILATION error at [8:15-39]: Can't find type 'test::NewMeasure~UnitFour'";
+        String expectedErrorMessage = "COMPILATION warning at [8:15-39]: Can't find type 'test::NewMeasure~UnitFour'";
         test(newMeasure +
                 "Class test::A\n" +
                 "{\n" +
@@ -470,7 +470,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         test("Class <<NoProfile.NoKey>> test::A\n" +
                 "{\n" +
                 "   ok : Integer[0..1];\n" +
-                "}\n", "COMPILATION error at [1:9-17]: Can't find the profile 'NoProfile'");
+                "}\n", "COMPILATION warning at [1:9-17]: Can't find the profile 'NoProfile'");
     }
 
     @Test
@@ -484,7 +484,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::A\n" +
                 "{\n" +
                 "<<meta::pure::profiles::doc.imMissing>> ok: Integer[0..1];\n" +
-                "}\n", "COMPILATION error at [8:3-37]: Can't find stereotype 'imMissing' in profile 'meta::pure::profiles::doc'");
+                "}\n", "COMPILATION warning at [8:3-37]: Can't find stereotype 'imMissing' in profile 'meta::pure::profiles::doc'");
     }
 
     @Test
@@ -498,7 +498,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class {meta::pure::profiles::doc.imMissing = 'imMissing'} test::A\n" +
                 "{\n" +
                 "ok: Integer[0..1];\n" +
-                "}\n", "COMPILATION error at [6:34-42]: Can't find tag 'imMissing' in profile 'meta::pure::profiles::doc'");
+                "}\n", "COMPILATION warning at [6:34-42]: Can't find tag 'imMissing' in profile 'meta::pure::profiles::doc'");
     }
 
     @Test
@@ -511,7 +511,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "\n" +
                 "Class test::B extends NotHere\n" +
                 "{\n" +
-                "}\n", "COMPILATION error at [6:23-29]: Can't find type 'NotHere'"
+                "}\n", "COMPILATION warning at [6:23-29]: Can't find type 'NotHere'"
         );
     }
 
@@ -525,7 +525,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "\n" +
                 "Class test::B extends test::A\n" +
                 "{\n" +
-                "}\n", "COMPILATION error at [6:1-8:1]: Invalid supertype: 'B' cannot extend 'test::A' as it is not a class."
+                "}\n", "COMPILATION warning at [6:1-8:1]: Invalid supertype: 'B' cannot extend 'test::A' as it is not a class."
         );
     }
 
@@ -536,7 +536,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   good: String[0..1];\n" +
                 "   notGood : MissingProp[1];\n" +
-                "}\n", "COMPILATION error at [4:14-24]: Can't find type 'MissingProp'"
+                "}\n", "COMPILATION warning at [4:14-24]: Can't find type 'MissingProp'"
         );
     }
 
@@ -547,14 +547,14 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   a : String[1];\n" +
                 "}\n" +
-                "\n", "COMPILATION error at [1:1-4:1]: Expected 2 properties for an association 'test::FaultyAssociation'"
+                "\n", "COMPILATION warning at [1:1-4:1]: Expected 2 properties for an association 'test::FaultyAssociation'"
         );
         test("Association test::FaultyAssociation\n" +
                 "{\n" +
                 "   a : String[1];\n" +
                 "   b : String[1];\n" +
                 "   c : String[1];\n" +
-                "}\n", "COMPILATION error at [1:1-6:1]: Expected 2 properties for an association 'test::FaultyAssociation'"
+                "}\n", "COMPILATION warning at [1:1-6:1]: Expected 2 properties for an association 'test::FaultyAssociation'"
         );
     }
 
@@ -652,14 +652,14 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "   name : String[*];\n" +
                         "   xza(z:String[1]){ok}:String[1];\n" +
                         "}\n",
-                "COMPILATION error at [4:21-22]: Can't find the packageable element 'ok'");
+                "COMPILATION warning at [4:21-22]: Can't find the packageable element 'ok'");
         test("Class test::A\n" +
                 "[\n" +
                 "   ok\n" +
                 "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [3:4-5]: Can't find the packageable element 'ok'");
+                "}", "COMPILATION warning at [3:4-5]: Can't find the packageable element 'ok'");
         test("Class test::b\n" +
                 "{\n" +
                 "   names : String[*];\n" +
@@ -670,7 +670,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [7:4-10]: Can't find the packageable element 'test::a'");
+                "}", "COMPILATION warning at [7:4-10]: Can't find the packageable element 'test::a'");
         test("Class test::b\n" +
                 "{\n" +
                 "   names : String[*];\n" +
@@ -681,7 +681,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [7:4-10]: Constraint must be of type 'Boolean'");
+                "}", "COMPILATION warning at [7:4-10]: Constraint must be of type 'Boolean'");
     }
 
     @Test
@@ -691,7 +691,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   name : String[*];\n" +
                 "   xza(z:String[1]){ok.a}:String[1];\n" +
-                "}\n", "COMPILATION error at [4:21-22]: Can't find the packageable element 'ok'");
+                "}\n", "COMPILATION warning at [4:21-22]: Can't find the packageable element 'ok'");
         test("Enum test::b\n" +
                 "{\n" +
                 "   names\n" +
@@ -702,7 +702,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [7:12]: Can't find enum value 'c' in enumeration 'test::b'");
+                "}", "COMPILATION warning at [7:12]: Can't find enum value 'c' in enumeration 'test::b'");
         test("Class test::b\n" +
                 "{\n" +
                 "   names : String[*];\n" +
@@ -713,7 +713,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [7:12]: Can't find property 'c' in class 'meta::pure::metamodel::type::Class'");
+                "}", "COMPILATION warning at [7:12]: Can't find property 'c' in class 'meta::pure::metamodel::type::Class'");
     }
 
     @Test
@@ -726,7 +726,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   a : test::A[1];\n" +
                 "   b : someClass[1];\n" +
-                "}\n", "COMPILATION error at [7:4-20]: Can't find class 'someClass'");
+                "}\n", "COMPILATION warning at [7:4-20]: Can't find class 'someClass'");
     }
 
     @Test
@@ -736,7 +736,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   name : String[*];\n" +
                 "   xza(s:z::k::B[1]){$s + 'ok'}:String[1];\n" +
-                "}\n", "COMPILATION error at [4:10-16]: Can't find type 'z::k::B'");
+                "}\n", "COMPILATION warning at [4:10-16]: Can't find type 'z::k::B'");
     }
 
     @Test
@@ -749,7 +749,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   xza(s: test::A[1]){$s.x + 'ok'}:String[1];\n" +
-                "}\n", "COMPILATION error at [7:26]: Can't find property 'x' in class 'test::A'");
+                "}\n", "COMPILATION warning at [7:26]: Can't find property 'x' in class 'test::A'");
     }
 
     @Test
@@ -771,7 +771,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "  priceExpression: test::PriceExpressionEnum[1];\n" +
                 "  currency: String[*];\n" +
-                "}", "COMPILATION error at [12:58-77]: Can't find enum value 'PercetateOfNotionall' in enumeration 'test::PriceExpressionEnum'");
+                "}", "COMPILATION warning at [12:58-77]: Can't find enum value 'PercetateOfNotionall' in enumeration 'test::PriceExpressionEnum'");
     }
 
     @Test
@@ -794,7 +794,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "    test::PriceExpressionEnum.PercetateOfNotionall;\n" +
                 "    'sad';\n" +
                 "  }: String[*];\n" +
-                "}", "COMPILATION error at [15:31-50]: Can't find enum value 'PercetateOfNotionall' in enumeration 'test::PriceExpressionEnum'");
+                "}", "COMPILATION warning at [15:31-50]: Can't find enum value 'PercetateOfNotionall' in enumeration 'test::PriceExpressionEnum'");
     }
 
     @Test
@@ -811,7 +811,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::C\n" +
                 "{\n" +
                 "   xza(s: test::B[1]){$s.pet.dogMissing + 'ok'}:String[1];\n" +
-                "}\n", "COMPILATION error at [11:30-39]: Can't find property 'dogMissing' in class 'test::Dog'");
+                "}\n", "COMPILATION warning at [11:30-39]: Can't find property 'dogMissing' in class 'test::Dog'");
     }
 
     @Test
@@ -862,7 +862,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::C\n" +
                 "{\n" +
                 "   test(s: test::B[1], d: test::Dog[1]){$s.funcB($d) + '!'}:String[1];\n" +
-                "}\n", "COMPILATION error at [7:31-43]: Can't find property 'WhoopsfuncDog' in class 'test::Dog'");
+                "}\n", "COMPILATION warning at [7:31-43]: Can't find property 'WhoopsfuncDog' in class 'test::Dog'");
     }
 
     @Test
@@ -875,7 +875,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   xza(s: String[1]){$src}:String[1];\n" +
-                "}\n", "COMPILATION error at [7:22-25]: Can't find variable class for variable 'src' in the graph");
+                "}\n", "COMPILATION warning at [7:22-25]: Can't find variable class for variable 'src' in the graph");
     }
 
     @Test
@@ -900,7 +900,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::D\n" +
                 "{\n" +
                 "   xza(s: String[1]){$src}:String[1];\n" +
-                "}\n", Lists.fixedSize.with("COMPILATION error at [7:31-43]: Can't find property 'WhoopsfuncDog' in class 'test::Dog'", "COMPILATION error at [19:22-25]: Can't find variable class for variable 'src' in the graph"));
+                "}\n", Lists.fixedSize.with("COMPILATION warning at [7:31-43]: Can't find property 'WhoopsfuncDog' in class 'test::Dog'", "COMPILATION warning at [19:22-25]: Can't find variable class for variable 'src' in the graph"));
     }
 
     @Test
@@ -914,7 +914,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         test("Class test::A\n" +
                 "{\n" +
                 "   p(){[1,2]->map(a|$a+'1')}:String[1];\n" +
-                "}", "COMPILATION error at [3:23-26]: Can't find a match for function 'plus(Any[2])'");
+                "}", "COMPILATION warning at [3:23-26]: Can't find a match for function 'plus(Any[2])'");
     }
 
     @Test
@@ -947,7 +947,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->map(a|$a.nam)}:String[*];\n" +
-                "}", "COMPILATION error at [8:32-34]: Can't find property 'nam' in class 'test::A'");
+                "}", "COMPILATION warning at [8:32-34]: Can't find property 'nam' in class 'test::A'");
     }
 
     @Test
@@ -956,7 +956,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         test("Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->map(a|$a.nam)}:String[*];\n" +
-                "}", "COMPILATION error at [3:8-14]: Can't find the packageable element 'test::A'");
+                "}", "COMPILATION warning at [3:8-14]: Can't find the packageable element 'test::A'");
     }
 
     @Test
@@ -974,7 +974,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "###Mapping\n" +
                 "Mapping test::MyMapping\n" +
                 "(\n" +
-                ")\n", "COMPILATION error at [8:23-28]: Can't find a match for function 'getAll(Mapping[1])'");
+                ")\n", "COMPILATION warning at [8:23-28]: Can't find a match for function 'getAll(Mapping[1])'");
     }
 
     @Test
@@ -997,7 +997,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->sortBy(a|$a.nam)}:test::A[*];\n" +
-                "}", "COMPILATION error at [8:35-37]: Can't find property 'nam' in class 'test::A'");
+                "}", "COMPILATION warning at [8:35-37]: Can't find property 'nam' in class 'test::A'");
     }
 
     @Test
@@ -1024,7 +1024,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "###Mapping\n" +
                 "Mapping test::MyMapping\n" +
                 "(\n" +
-                ")\n", Lists.fixedSize.with("COMPILATION error at [8:23-28]: Can't find a match for function 'getAll(Mapping[1])'", "COMPILATION error at [17:35-37]: Can't find property 'nam' in class 'test::C'"));
+                ")\n", Lists.fixedSize.with("COMPILATION warning at [8:23-28]: Can't find a match for function 'getAll(Mapping[1])'", "COMPILATION warning at [17:35-37]: Can't find property 'nam' in class 'test::C'"));
     }
 
     @Test
@@ -1047,7 +1047,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->filter(a|$a.nam == 'ohoh')}:test::A[*];\n" +
-                "}", "COMPILATION error at [8:35-37]: Can't find property 'nam' in class 'test::A'");
+                "}", "COMPILATION warning at [8:35-37]: Can't find property 'nam' in class 'test::A'");
     }
 
     @Test
@@ -1079,7 +1079,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->groupBy(a|$a.nae, agg(x|$x.name, z|$z->count()), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:36-38]: Can't find property 'nae' in class 'test::A'");
+                "}", "COMPILATION warning at [8:36-38]: Can't find property 'nae' in class 'test::A'");
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[1];\n" +
@@ -1088,7 +1088,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->groupBy(a|$a.name, agg(x|$x.nae, z|$z->count()), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:51-53]: Can't find property 'nae' in class 'test::A'");
+                "}", "COMPILATION warning at [8:51-53]: Can't find property 'nae' in class 'test::A'");
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[1];\n" +
@@ -1097,7 +1097,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->groupBy(a|$a.name, agg(x|$x.name, z|$z->map(k|$k+1)), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:71-72]: Can't find a match for function 'plus(Any[2])'");
+                "}", "COMPILATION warning at [8:71-72]: Can't find a match for function 'plus(Any[2])'");
     }
 
     @Test
@@ -1120,7 +1120,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->groupByWithWindowSubset(a|$a.name, agg(x|$x.namex, z|$z->count()), ['a', 'b'], ['a'], ['b'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:67-71]: Can't find property 'namex' in class 'test::A'");
+                "}", "COMPILATION warning at [8:67-71]: Can't find property 'namex' in class 'test::A'");
     }
 
     @Test
@@ -1144,7 +1144,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->project([a|$a.name.name], ['a'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:42-45]: The property 'name' can't be accessed on primitive types. Inferred primitive type is String");
+                "}", "COMPILATION warning at [8:42-45]: The property 'name' can't be accessed on primitive types. Inferred primitive type is String");
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[1];\n" +
@@ -1153,7 +1153,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->project([a|$a.nawme], ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:37-41]: Can't find property 'nawme' in class 'test::A'");
+                "}", "COMPILATION warning at [8:37-41]: Can't find property 'nawme' in class 'test::A'");
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[1];\n" +
@@ -1162,7 +1162,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->project(a|$a.nawme, ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:36-40]: Can't find property 'nawme' in class 'test::A'");
+                "}", "COMPILATION warning at [8:36-40]: Can't find property 'nawme' in class 'test::A'");
     }
 
     @Test
@@ -1186,7 +1186,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->project([col(a|$a.naxme, 'a')])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:41-45]: Can't find property 'naxme' in class 'test::A'");
+                "}", "COMPILATION warning at [8:41-45]: Can't find property 'naxme' in class 'test::A'");
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[1];\n" +
@@ -1195,7 +1195,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->project(col(a|$a.naxme, 'a'))}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:40-44]: Can't find property 'naxme' in class 'test::A'");
+                "}", "COMPILATION warning at [8:40-44]: Can't find property 'naxme' in class 'test::A'");
     }
 
     @Test
@@ -1222,7 +1222,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->projectWithColumnSubset([col(a|$a.xname, 'a')], ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:57-61]: Can't find property 'xname' in class 'test::A'");
+                "}", "COMPILATION warning at [8:57-61]: Can't find property 'xname' in class 'test::A'");
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[1];\n" +
@@ -1231,7 +1231,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   y(){test::A.all()->projectWithColumnSubset(col(a|$a.xname, 'a'), ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:56-60]: Can't find property 'xname' in class 'test::A'");
+                "}", "COMPILATION warning at [8:56-60]: Can't find property 'xname' in class 'test::A'");
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[1];\n" +
@@ -1240,7 +1240,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   h(){test::A.all()->projectWithColumnSubset([a|$a.xname], 'a', ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:53-57]: Can't find property 'xname' in class 'test::A'");
+                "}", "COMPILATION warning at [8:53-57]: Can't find property 'xname' in class 'test::A'");
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[1];\n" +
@@ -1249,7 +1249,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   j(){test::A.all()->projectWithColumnSubset(a|$a.xname, 'a' , ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:52-56]: Can't find property 'xname' in class 'test::A'");
+                "}", "COMPILATION warning at [8:52-56]: Can't find property 'xname' in class 'test::A'");
     }
 
     @Test
@@ -1283,7 +1283,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->projectWithColumnSubset([col(a|$a.xname, 'a')], ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", Lists.fixedSize.with("COMPILATION error at [8:41-45]: Can't find property 'naxme' in class 'test::C'", "COMPILATION error at [17:57-61]: Can't find property 'xname' in class 'test::A'"));
+                "}", Lists.fixedSize.with("COMPILATION warning at [8:41-45]: Can't find property 'naxme' in class 'test::C'", "COMPILATION warning at [17:57-61]: Can't find property 'xname' in class 'test::A'"));
 
         partialCompilationTest("Class test::A\n" +
                 "{\n" +
@@ -1293,7 +1293,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->project(col(a|$a.naxme, 'a'))}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", Lists.fixedSize.with("COMPILATION error at [8:40-44]: Can't find property 'naxme' in class 'test::A'"));
+                "}", Lists.fixedSize.with("COMPILATION warning at [8:40-44]: Can't find property 'naxme' in class 'test::A'"));
     }
 
     @Test
@@ -1316,7 +1316,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->exists(a|$a.nam == 'ohoh')}:test::A[*];\n" +
-                "}", "COMPILATION error at [8:35-37]: Can't find property 'nam' in class 'test::A'");
+                "}", "COMPILATION warning at [8:35-37]: Can't find property 'nam' in class 'test::A'");
     }
 
     @Test
@@ -1340,7 +1340,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->filter(a|$a->tdsContains([p|$p.xname], test::A.all()->project(col(a|$a.name, 'ww'))))}:test::A[*];\n" +
-                "}", "COMPILATION error at [8:54-58]: Can't find property 'xname' in class 'test::A'");
+                "}", "COMPILATION warning at [8:54-58]: Can't find property 'xname' in class 'test::A'");
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[1];\n" +
@@ -1349,7 +1349,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   k(){test::A.all()->filter(a|$a->tdsContains(p|$p.xname, test::A.all()->project(col(a|$a.name, 'ww'))))}:test::A[*];\n" +
-                "}", "COMPILATION error at [8:53-57]: Can't find property 'xname' in class 'test::A'");
+                "}", "COMPILATION warning at [8:53-57]: Can't find property 'xname' in class 'test::A'");
     }
 
     @Test
@@ -1373,7 +1373,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->filter(v|$v->tdsContains([p|$p.name], ['a'], test::A.all()->project(col(a|$a.ncame, 'ww')), {a,b | $a.isNotXNull('name') && $b.isNotNull('Addr_Name')}))}:test::A[*];\n" +
-                "}", "COMPILATION error at [8:100-104]: Can't find property 'ncame' in class 'test::A'");
+                "}", "COMPILATION warning at [8:100-104]: Can't find property 'ncame' in class 'test::A'");
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[1];\n" +
@@ -1382,7 +1382,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->filter(v|$v->tdsContains([p|$p.name], ['a'], test::A.all()->project(col(a|$a.name, 'ww')), {a,b | $a.isNotXNull('name') && $b.isNotNull('Addr_Name')}))}:test::A[*];\n" +
-                "}", "COMPILATION error at [8:124-133]: Can't find property 'isNotXNull' in class 'meta::pure::tds::TDSRow'");
+                "}", "COMPILATION warning at [8:124-133]: Can't find property 'isNotXNull' in class 'meta::pure::tds::TDSRow'");
     }
 
     @Test
@@ -1405,7 +1405,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){test::A.all()->project([col(a|$a.name, 'Account_No')])->groupBy('prodName', agg('sum', x|$x.getwFloat('quantity')*$x.getInteger('quantity'), y| $y->sum()))}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [8:100-108]: Can't find property 'getwFloat' in class 'meta::pure::tds::TDSRow'");
+                "}", "COMPILATION warning at [8:100-108]: Can't find property 'getwFloat' in class 'meta::pure::tds::TDSRow'");
     }
 
     @Test
@@ -1546,12 +1546,12 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   names : String[*];\n" +
                 "   prop() {$this.names + 'ok'} : String[1];\n" +
-                "}", "COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[*]");
+                "}", "COMPILATION warning at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[*]");
         test("Class test::A\n" +
                 "{\n" +
                 "   names : String[0..1];\n" +
                 "   prop() {$this.names + 'ok'} : String[1];\n" +
-                "}", "COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]");
+                "}", "COMPILATION warning at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]");
     }
 
     @Test
@@ -1570,7 +1570,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [3:17-18]: Constraint must be of type 'Boolean'");
+                "}", "COMPILATION warning at [3:17-18]: Constraint must be of type 'Boolean'");
     }
 
     @Test
@@ -1586,7 +1586,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   names : String[*];\n" +
                 "   prop() {$this.names + 'ok'} : String[1];\n" +
-                "}", Lists.fixedSize.with("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[*]"));
+                "}", Lists.fixedSize.with("COMPILATION warning at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[*]"));
 
         partialCompilationTest("Class test::A\n" +
                 "{\n" +
@@ -1599,7 +1599,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", Lists.fixedSize.with("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]", "COMPILATION error at [8:17-18]: Constraint must be of type 'Boolean'"));
+                "}", Lists.fixedSize.with("COMPILATION warning at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]", "COMPILATION warning at [8:17-18]: Constraint must be of type 'Boolean'"));
     }
 
     @Test
@@ -1614,7 +1614,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   names : String[*];\n" +
                 "   prop() {1} : String[1];\n" +
-                "}", "COMPILATION error at [4:12]: Error in derived property 'A.prop' - Type error: 'Integer' is not a subtype of 'String'");
+                "}", "COMPILATION warning at [4:12]: Error in derived property 'A.prop' - Type error: 'Integer' is not a subtype of 'String'");
     }
 
     @Test
@@ -1629,7 +1629,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   names : String[*];\n" +
                 "   prop() {$this.names} : String[1];\n" +
-                "}", "COMPILATION error at [4:18-22]: Error in derived property 'A.prop' - Multiplicity error: [1] doesn't subsume [*]");
+                "}", "COMPILATION warning at [4:18-22]: Error in derived property 'A.prop' - Multiplicity error: [1] doesn't subsume [*]");
     }
 
     @Test
@@ -1652,7 +1652,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){ {a|$a+'1'}->eval(1);}:Integer[1];\n" +
-                "}", "COMPILATION error at [8:14-17]: Can't find a match for function 'plus(Any[2])'");
+                "}", "COMPILATION warning at [8:14-17]: Can't find a match for function 'plus(Any[2])'");
     }
 
     @Test
@@ -1675,7 +1675,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::B\n" +
                 "{\n" +
                 "   z(){ {a,b|$a+$b}->eval(1,'a');}:Integer[1];\n" +
-                "}", "COMPILATION error at [8:16-18]: Can't find a match for function 'plus(Any[2])'");
+                "}", "COMPILATION warning at [8:16-18]: Can't find a match for function 'plus(Any[2])'");
     }
 
 
@@ -1698,7 +1698,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     public void testUnknownFunction()
     {
         test("Class test::Person[$this.lastName->ranDoMFuncTion()]{lastName:String[1];}",
-                "COMPILATION error at [1:36-49]: Function does not exist 'ranDoMFuncTion(String[1])'");
+                "COMPILATION warning at [1:36-49]: Function does not exist 'ranDoMFuncTion(String[1])'");
     }
 
     @Test
@@ -1771,7 +1771,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "{\n" +
                         "   $a.s;\n" +
                         "}",
-                "COMPILATION error at [7:4-10]: Can't find a match for function 'test::f(String[1])'"
+                "COMPILATION warning at [7:4-10]: Can't find a match for function 'test::f(String[1])'"
         );
     }
 
@@ -1817,7 +1817,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "function test::f(a:test::A[1]):String[1]\n" +
                 "{\n" +
                 "   $a.s;\n" +
-                "}", "COMPILATION error at [11:4-10]: Can't find a match for function 'test::f(B[1])'"
+                "}", "COMPILATION warning at [11:4-10]: Can't find a match for function 'test::f(B[1])'"
         );
     }
 
@@ -1853,7 +1853,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "function test::f(a:test::A[1]):String[1]\n" +
                 "{\n" +
                 "   'yo';\n" +
-                "}", "COMPILATION error at [6:4-10]: Can't find a match for function 'test::f(A[*])'"
+                "}", "COMPILATION warning at [6:4-10]: Can't find a match for function 'test::f(A[*])'"
         );
     }
 
@@ -1868,7 +1868,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "function test::f(a:test::A[1]):String[1]\n" +
                 "{\n" +
                 "   $a;\n" +
-                "}", "COMPILATION error at [8:4-5]: Error in function 'test::f_A_1__String_1_' - Type error: 'test::A' is not a subtype of 'String'"
+                "}", "COMPILATION warning at [8:4-5]: Error in function 'test::f_A_1__String_1_' - Type error: 'test::A' is not a subtype of 'String'"
         );
     }
 
@@ -1922,7 +1922,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   x(){test::Person.all()->graphFetch(#{\n" +
                 "       test::Person{\n" +
                 "                first}}#);true;}:Boolean[1];\n" +
-                "}\n", "COMPILATION error at [14:17-21]: Can't find property 'first' in [Person, Any]");
+                "}\n", "COMPILATION warning at [14:17-21]: Can't find property 'first' in [Person, Any]");
     }
 
     @Test
@@ -1959,7 +1959,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   x(){test::Person.all()->graphFetch(#{\n" +
                 "       test::Person{\n" +
                 "                first}}#);true;}:Boolean[1];\n" +
-                "}\n", Lists.fixedSize.with("COMPILATION error at [10:37-41]: Can't find property 'name2' in class 'test::trial'", "COMPILATION error at [30:17-21]: Can't find property 'first' in [Person, Any]"));
+                "}\n", Lists.fixedSize.with("COMPILATION warning at [10:37-41]: Can't find property 'name2' in class 'test::trial'", "COMPILATION warning at [30:17-21]: Can't find property 'first' in [Person, Any]"));
     }
 
     @Test
@@ -1977,7 +1977,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::Test\n" +
                 "{\n" +
                 "   x(){test::Person.all()->graphFetch(#{test::Peron{first}}#);true;}:Boolean[1];\n" +
-                "}\n", "COMPILATION error at [12:41-51]: Can't find class 'test::Peron'");
+                "}\n", "COMPILATION warning at [12:41-51]: Can't find class 'test::Peron'");
     }
 
     @Test
@@ -2053,7 +2053,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "\n" +
                 "Class test::mewo {\n" +
                 "   prop1: doc[1];\n" +
-                "}", "COMPILATION error at [8:11-13]: Can't resolve element with path 'doc' - multiple matches found [test::doc, test2::doc]");
+                "}", "COMPILATION warning at [8:11-13]: Can't resolve element with path 'doc' - multiple matches found [test::doc, test2::doc]");
         test("import test2::*;\n" +
                 "import test::*;\n" +
                 "\n" +
@@ -2061,7 +2061,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Profile test2::doc {}\n" +
                 "\n" +
                 "Class <<doc.doc>> test::mewo {\n" +
-                "}", "COMPILATION error at [7:9-11]: Can't resolve element with path 'doc' - multiple matches found [meta::pure::profiles::doc, test::doc, test2::doc]");
+                "}", "COMPILATION warning at [7:9-11]: Can't resolve element with path 'doc' - multiple matches found [meta::pure::profiles::doc, test::doc, test2::doc]");
         // NOTE: since we disallow specifying having elements without a package
         // we can't test that primitive types and special types have precedence over
         // user defined elements at root package
@@ -2095,7 +2095,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "\n" +
                 "Enum anything::ritual {\n" +
                 "   theGoodOne   \n" +
-                "}", "COMPILATION error at [4:23-27]: Can't find property 'name2' in class 'test::trial'");
+                "}", "COMPILATION warning at [4:23-27]: Can't find property 'name2' in class 'test::trial'");
         test("import anything::*;\n" +
                 "import test::*;\n" +
                 "Class test::trial {\n" +
@@ -2111,7 +2111,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "\n" +
                 "Enum anything::ritual {\n" +
                 "   theGoodOne   \n" +
-                "}", "COMPILATION error at [10:37-41]: Can't find property 'name2' in class 'test::trial'");
+                "}", "COMPILATION warning at [10:37-41]: Can't find property 'name2' in class 'test::trial'");
     }
 
     @Test
@@ -2126,7 +2126,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "\n" +
                 "Enum anything::ritual {\n" +
                 "   theGoodOne   \n" +
-                "}", "COMPILATION error at [4:24-34]: Can't find enum value 'theGoodOne1' in enumeration 'ritual'");
+                "}", "COMPILATION warning at [4:24-34]: Can't find enum value 'theGoodOne1' in enumeration 'ritual'");
     }
 
     @Test
@@ -2142,7 +2142,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "  stereotypes: [test];\n" +
                 "  tags: [doc, todo];\n" +
                 "}" +
-                "\n", "COMPILATION error at [2:9-29]: Can't find stereotype 'businesstemporal' in profile 'goes'");
+                "\n", "COMPILATION warning at [2:9-29]: Can't find stereotype 'businesstemporal' in profile 'goes'");
     }
 
     @Test
@@ -2158,7 +2158,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "  stereotypes: [test];\n" +
                 "  tags: [doc, todo];\n" +
                 "}" +
-                "\n", "COMPILATION error at [2:27-31]: Can't find tag 'todo2' in profile 'goes'");
+                "\n", "COMPILATION warning at [2:27-31]: Can't find tag 'todo2' in profile 'goes'");
     }
 
     @Test
@@ -2235,7 +2235,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "  <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} a: String[1];\n" +
                 "  <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} b: goes2[1];\n" +
                 "}\n" +
-                "\n", "COMPILATION error at [12:3-69]: Can't find class 'String'");
+                "\n", "COMPILATION warning at [12:3-69]: Can't find class 'String'");
         test("import anything::*;\n" +
                 "Class anything::goes2\n" +
                 "{\n" +
@@ -2286,7 +2286,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "    toAny:Any[1];\n" +
                 "    toClass:my::Class[1];\n" +
-                "}", "COMPILATION error at [5:1-9:1]: Associations to Any are not allowed. Found in 'my::association'");
+                "}", "COMPILATION warning at [5:1-9:1]: Associations to Any are not allowed. Found in 'my::association'");
 
     }
 
@@ -2387,7 +2387,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   names : String[*];\n" +
                 "   prop() {%20:20:20} : Date[1];\n" +
-                "}", "COMPILATION error at [4:12-20]: Error in derived property 'A.prop' - Type error: 'StrictTime' is not a subtype of 'Date'");
+                "}", "COMPILATION warning at [4:12-20]: Error in derived property 'A.prop' - Type error: 'StrictTime' is not a subtype of 'Date'");
     }
 
     @Test
@@ -2702,9 +2702,9 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "  biTemporalAddress : test::BiTemporalAddress[1];\n" +
                 "}";
         PureModel pm = test(grammar, null, Lists.mutable.with(
-                "COMPILATION error at [2:1-5:1]: Class test::ProcessingTemporalAddress has temporal specification: [processingtemporal] properties: [processingDate] are reserved and should not be explicit in the Model",
-                "COMPILATION error at [7:1-10:1]: Class test::BusinessTemporalAddress has temporal specification: [businesstemporal] properties: [businessDate] are reserved and should not be explicit in the Model",
-                "COMPILATION error at [12:1-16:1]: Class test::BiTemporalAddress has temporal specification: [bitemporal] properties: [processingDate, businessDate] are reserved and should not be explicit in the Model"
+                "COMPILATION warning at [2:1-5:1]: Class test::ProcessingTemporalAddress has temporal specification: [processingtemporal] properties: [processingDate] are reserved and should not be explicit in the Model",
+                "COMPILATION warning at [7:1-10:1]: Class test::BusinessTemporalAddress has temporal specification: [businesstemporal] properties: [businessDate] are reserved and should not be explicit in the Model",
+                "COMPILATION warning at [12:1-16:1]: Class test::BiTemporalAddress has temporal specification: [bitemporal] properties: [processingDate, businessDate] are reserved and should not be explicit in the Model"
 
         )).getTwo();
 
@@ -2957,7 +2957,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [16:18-29]: The type Street is not a subtype of Address"
+                "}\n", "COMPILATION warning at [16:18-29]: The type Street is not a subtype of Address"
         );
 
         test("Class test::Address\n" +
@@ -3014,7 +3014,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [19:18-29]: There are multiple subTypeTrees having subType test::Street, Only one is allowed"
+                "}\n", "COMPILATION warning at [19:18-29]: There are multiple subTypeTrees having subType test::Street, Only one is allowed"
         );
 
         test("Class test::Address\n" +
@@ -3047,7 +3047,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [26:18-27]: Property \"name\" is present at root level hence should not be specified at subType level"
+                "}\n", "COMPILATION warning at [26:18-27]: Property \"name\" is present at root level hence should not be specified at subType level"
         );
 
         test("Class test::Address\n" +
@@ -3080,7 +3080,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [26:18-27]: Property \"alias\" is present at root level hence should not be specified at subType level"
+                "}\n", "COMPILATION warning at [26:18-27]: Property \"alias\" is present at root level hence should not be specified at subType level"
         );
 
         test("Class test::Address\n" +
@@ -3135,7 +3135,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "      }\n" +
                 "    }\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [16:10-21]: Can't find property 'fakeProperty' in [City, Address, Any]"
+                "}\n", "COMPILATION warning at [16:10-21]: Can't find property 'fakeProperty' in [City, Address, Any]"
         );
     }
 
@@ -3189,7 +3189,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "    between($val, %2020-01-01, %2021-01-01);\n" +
                 "}",
-        "COMPILATION error at [3:5-11]: Can't find a match for function 'between(Integer[1],StrictDate[1],StrictDate[1])'.\n" +
+        "COMPILATION warning at [3:5-11]: Can't find a match for function 'between(Integer[1],StrictDate[1],StrictDate[1])'.\n" +
                 "Functions that can match if parameter types or multiplicities are changed:\n" +
                 "\t\tbetween(StrictDate[0..1],StrictDate[0..1],StrictDate[0..1]):Boolean[1]\n" +
                 "\t\tbetween(DateTime[0..1],DateTime[0..1],DateTime[0..1]):Boolean[1]\n" +
@@ -3204,7 +3204,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "{\n" +
                         "    between(1, 2);\n" +
                         "}",
-                "COMPILATION error at [3:5-11]: Can't find a match for function 'between(Integer[1],Integer[1])'.\n" +
+                "COMPILATION warning at [3:5-11]: Can't find a match for function 'between(Integer[1],Integer[1])'.\n" +
                         "Functions that can match if number of parameters are changed:\n" +
                         "\t\tbetween(StrictDate[0..1],StrictDate[0..1],StrictDate[0..1]):Boolean[1]\n" +
                         "\t\tbetween(DateTime[0..1],DateTime[0..1],DateTime[0..1]):Boolean[1]\n" +
@@ -3219,7 +3219,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "{\n" +
                         "    abs($val);\n" +
                         "}",
-                "COMPILATION error at [3:5-7]: Can't find a match for function 'abs(Integer[0..1])'.\n" +
+                "COMPILATION warning at [3:5-7]: Can't find a match for function 'abs(Integer[0..1])'.\n" +
                         "Functions that can match if parameter types or multiplicities are changed:\n" +
                         "\t\tabs(Float[1]):Float[1]\n" +
                         "\t\tabs(Integer[1]):Integer[1]\n" +

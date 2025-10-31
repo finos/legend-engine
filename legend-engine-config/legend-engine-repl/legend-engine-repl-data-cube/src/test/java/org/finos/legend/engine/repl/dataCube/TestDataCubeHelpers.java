@@ -333,7 +333,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeWithCompilationError()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME2])";
-        testExtractRelationReturnTypeFailure("COMPILATION error at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:Varchar(200), LASTNAME:Varchar(200))", lambda, pureModelContextData);
+        testExtractRelationReturnTypeFailure("COMPILATION warning at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:Varchar(200), LASTNAME:Varchar(200))", lambda, pureModelContextData);
 
         // with dummy source
         PureModelContextData pmcd = legendInterface.parse(
@@ -347,7 +347,7 @@ public class TestDataCubeHelpers
                         "     )\n" +
                         ")"
         );
-        testExtractRelationReturnTypeFailure("COMPILATION error at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:Varchar(200), LASTNAME:Varchar(200))", lambda, pmcd);
+        testExtractRelationReturnTypeFailure("COMPILATION warning at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:Varchar(200), LASTNAME:Varchar(200))", lambda, pmcd);
     }
 
     private void testExtractRelationReturnTypeFailure(String errorMessage, String code, PureModelContextData data)

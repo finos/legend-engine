@@ -46,7 +46,7 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [3:1-7:5]: Duplicated element 'model::element'";
+        return "COMPILATION warning at [3:1-7:5]: Duplicated element 'model::element'";
     }
 
     @Test
@@ -60,7 +60,7 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
                         "    meta::data::MyData\n" +
                         "  }#\n" +
                         "}\n",
-                "COMPILATION error at [4:3-7:4]: Cannot use Data element reference in a Data element"
+                "COMPILATION warning at [4:3-7:4]: Cannot use Data element reference in a Data element"
         );
     }
 
@@ -155,7 +155,7 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
                 "    default.PersonTable:\n" +
                 "      id,firstName,lastName;\n" +
                 "  }#\n" +
-                "}", "COMPILATION error at [11:5-12:28]: Duplicated relation element path: 'default.PersonTable'"
+                "}", "COMPILATION warning at [11:5-12:28]: Duplicated relation element path: 'default.PersonTable'"
         );
     }
 
@@ -414,7 +414,7 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
                         "    ]\n" +
                         "  }#\n" +
                         "}\n",
-                "COMPILATION error at [29:1-54:1]: Error in 'meta::data::MyData': Instance types does not align with associated type 'my::Person'"
+                "COMPILATION warning at [29:1-54:1]: Error in 'meta::data::MyData': Instance types does not align with associated type 'my::Person'"
         );
 
         test("###Pure\n" +
@@ -483,7 +483,7 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
                         "    ]\n" +
                         "  }#\n" +
                         "}\n",
-                "COMPILATION error at [29:1-66:1]: Error in 'meta::data::MyData': Instance types does not align with associated type 'my::Address'"
+                "COMPILATION warning at [29:1-66:1]: Error in 'meta::data::MyData': Instance types does not align with associated type 'my::Address'"
         );
 
 
@@ -498,7 +498,7 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
                 "          data: '{}';\n" +
                 "        }#\n" +
                 "  }#\n" +
-                "}\n", "COMPILATION error at [5:5-10:10]: Can't find class 'my::PersonMissing'");
+                "}\n", "COMPILATION warning at [5:5-10:10]: Can't find class 'my::PersonMissing'");
 
 
     }

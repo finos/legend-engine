@@ -385,7 +385,7 @@ public class TestCompilationFromGrammar
                 "   simple::Another extends [id]: Pure\n" +
                 "   {      \n" +
                 "   }   \n" +
-                ")", "COMPILATION error at [39:4-41:4]: Duplicated class mappings found with ID 'id' in mapping 'simple::merged'; parent mapping for duplicated: 'simple::gen1::map', 'simple::gen2::map'");
+                ")", "COMPILATION warning at [39:4-41:4]: Duplicated class mappings found with ID 'id' in mapping 'simple::merged'; parent mapping for duplicated: 'simple::gen1::map', 'simple::gen2::map'");
     }
 
 
@@ -1196,7 +1196,7 @@ public class TestCompilationFromGrammar
                         "function x::func(param1: Date[1], param2:Date[1]):Any[*]" +
                         "{" +
                         "   max([$param1, $param2])->toString()" +
-                        "}","COMPILATION error at [2:86-93]: Can't find a match for function 'toString(Date[0..1])'"
+                        "}","COMPILATION warning at [2:86-93]: Can't find a match for function 'toString(Date[0..1])'"
         );
     }
 
@@ -1221,7 +1221,7 @@ public class TestCompilationFromGrammar
                         "{" +
                         "   country : meta::pure::precisePrimitives::Varchar(200,1)[1];" +
                         "}",
-                "COMPILATION error at [2:33-77]: Wrong type variables count (2) for type: Varchar(x:Integer)"
+                "COMPILATION warning at [2:33-77]: Wrong type variables count (2) for type: Varchar(x:Integer)"
         );
     }
 
@@ -1234,7 +1234,7 @@ public class TestCompilationFromGrammar
                         "{" +
                         "   country : meta::pure::precisePrimitives::Varchar('200')[1];" +
                         "}",
-                "COMPILATION error at [2:33-77]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
+                "COMPILATION warning at [2:33-77]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
         );
     }
 
@@ -1247,7 +1247,7 @@ public class TestCompilationFromGrammar
                         "{" +
                         "   'x';" +
                         "}",
-                "COMPILATION error at [2:17-61]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
+                "COMPILATION warning at [2:17-61]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
         );
     }
 
@@ -1260,7 +1260,7 @@ public class TestCompilationFromGrammar
                         "{" +
                         "   []->cast(@meta::pure::metamodel::relation::Relation<(x:meta::pure::precisePrimitives::Varchar('200'))>);" +
                         "}",
-                "COMPILATION error at [2:169-213]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
+                "COMPILATION warning at [2:169-213]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
         );
     }
 
@@ -1293,7 +1293,7 @@ public class TestCompilationFromGrammar
                         "{" +
                         "   x::a('www'->cast(@meta::pure::precisePrimitives::Varchar(250)));" +
                         "}",
-                "COMPILATION error at [2:118-121]: Can't find a match for function 'x::a(Varchar(250)[1])"
+                "COMPILATION warning at [2:118-121]: Can't find a match for function 'x::a(Varchar(250)[1])"
         );
     }
 
@@ -1317,7 +1317,7 @@ public class TestCompilationFromGrammar
                         "function x::call():Integer[1]" +
                         "{" +
                         "   1->cast(@meta::pure::precisePrimitives::TinyInt) + '1';" +
-                        "}", "COMPILATION error at [2:83-87]: Can't find a match for function 'plus(Any[2])'"
+                        "}", "COMPILATION warning at [2:83-87]: Can't find a match for function 'plus(Any[2])'"
         );
     }
 }

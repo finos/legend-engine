@@ -33,7 +33,7 @@ public class TestDiagramCompilationFromGrammar extends TestCompilationFromGramma
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::class'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::class'";
     }
 
     @Test
@@ -49,7 +49,7 @@ public class TestDiagramCompilationFromGrammar extends TestCompilationFromGramma
                 "    rectangle: (123.123,23.23);\n" +
                 "    hideProperties: true;\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [6:12-25]: Can't find class 'anything::goes'"
+                "}\n", "COMPILATION warning at [6:12-25]: Can't find class 'anything::goes'"
         );
     }
 
@@ -84,7 +84,7 @@ public class TestDiagramCompilationFromGrammar extends TestCompilationFromGramma
                 "    target: otis;\n" +
                 "    points: [(123.123,23.23),(123.123,23.23)];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [24:15-28]: Can't find property 'milk' in class 'anything::goes'"
+                "}\n", "COMPILATION warning at [24:15-28]: Can't find property 'milk' in class 'anything::goes'"
         );
     }
 
@@ -118,7 +118,7 @@ public class TestDiagramCompilationFromGrammar extends TestCompilationFromGramma
                 "    target: otis;\n" +
                 "    points: [(123.123,23.23),(123.123,23.23)];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [24:13-48]: Can't find source class view '86a8a6a1-5353-48f1-b058-199ddd7cbe5a'"
+                "}\n", "COMPILATION warning at [24:13-48]: Can't find source class view '86a8a6a1-5353-48f1-b058-199ddd7cbe5a'"
         );
     }
 
@@ -152,7 +152,7 @@ public class TestDiagramCompilationFromGrammar extends TestCompilationFromGramma
                 "    target: otiss;\n" +
                 "    points: [(.123,23.23),(123.123,23.23)];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [25:13-17]: Can't find target class view 'otiss'"
+                "}\n", "COMPILATION warning at [25:13-17]: Can't find target class view 'otiss'"
         );
     }
 

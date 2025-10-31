@@ -56,7 +56,7 @@ public class TestMilestonedPropertyUsageInGraphFetch extends TestCompilationFrom
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 
     @Test

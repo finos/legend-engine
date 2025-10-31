@@ -41,7 +41,7 @@ public class TestCompilerFromGrammar
                 "{\n" +
                 "   #SQL{select a from csv('a,b\n1,2\n3,4')}#->filter(x|$x.ba == 1);" +
                 "   true;" +
-                "}","COMPILATION error at [5:22-23]: The column 'ba' can't be found in the relation (a:Integer)");
+                "}","COMPILATION warning at [5:22-23]: The column 'ba' can't be found in the relation (a:Integer)");
     }
 
     @Test

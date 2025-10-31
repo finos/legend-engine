@@ -107,7 +107,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [4:1-36:1]: Duplicated element 'test::MyPersistence'";
+        return "COMPILATION warning at [4:1-36:1]: Duplicated element 'test::MyPersistence'";
     }
 
     @Test
@@ -146,7 +146,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
             "    {\n" +
             "    }\n" +
             "  ];" +
-            "}\n", "COMPILATION error at [6:3-25]: Can't find the packageable element 'test::Service'");
+            "}\n", "COMPILATION warning at [6:3-25]: Can't find the packageable element 'test::Service'");
     }
 
     @Test

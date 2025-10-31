@@ -122,7 +122,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [4:1-39:1]: Duplicated element 'test::MyPersistence'";
+        return "COMPILATION warning at [4:1-39:1]: Duplicated element 'test::MyPersistence'";
     }
 
     @Test
@@ -235,7 +235,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
             "      isTestDataFromServiceOutput: false;\n" +
             "    }\n" +
             "  ]\n" +
-            "}\n", "COMPILATION error at [64:7-31]: Can't find the packageable element 'test::Database'");
+            "}\n", "COMPILATION warning at [64:7-31]: Can't find the packageable element 'test::Database'");
     }
 
     @Test
@@ -358,7 +358,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
             "      isTestDataFromServiceOutput: false;\n" +
             "    }\n" +
             "  ]\n" +
-            "}\n", "COMPILATION error at [72:7-78:7]: Schema 'personSchema' is not defined");
+            "}\n", "COMPILATION warning at [72:7-78:7]: Schema 'personSchema' is not defined");
     }
 
     @Test
@@ -493,7 +493,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
             "      isTestDataFromServiceOutput: false;\n" +
             "    }\n" +
             "  ]\n" +
-            "}\n", "COMPILATION error at [84:7-90:7]: Table 'personTable' is not defined");
+            "}\n", "COMPILATION warning at [84:7-90:7]: Table 'personTable' is not defined");
     }
 
     @Test
@@ -611,7 +611,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
             "      isTestDataFromServiceOutput: false;\n" +
             "    }\n" +
             "  ]\n" +
-            "}\n", "COMPILATION error at [67:7-73:7]: Table 'personTable' is not defined");
+            "}\n", "COMPILATION warning at [67:7-73:7]: Table 'personTable' is not defined");
     }
 
     @Test
@@ -739,7 +739,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
             "      isTestDataFromServiceOutput: false;\n" +
             "    }\n" +
             "  ]\n" +
-            "}\n", "COMPILATION error at [76:30-80:9]: Column 'time_in' is not defined");
+            "}\n", "COMPILATION warning at [76:30-80:9]: Column 'time_in' is not defined");
     }
 
     @Test

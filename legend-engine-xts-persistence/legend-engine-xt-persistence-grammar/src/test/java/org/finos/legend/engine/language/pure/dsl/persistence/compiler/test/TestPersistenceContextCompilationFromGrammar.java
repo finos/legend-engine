@@ -47,7 +47,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-8:1]: Duplicated element 'test::TestPersistenceContext'";
+        return "COMPILATION warning at [5:1-8:1]: Duplicated element 'test::TestPersistenceContext'";
     }
 
     @Test
@@ -58,7 +58,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
-                "}\n", "COMPILATION error at [5:3-37]: Can't find the packageable element 'test::TestPersistence'");
+                "}\n", "COMPILATION warning at [5:3-37]: Can't find the packageable element 'test::TestPersistence'");
     }
 
     @Test
@@ -152,7 +152,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "      modelClass: test::ServiceResult;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [54:9-28]: Can't find connection 'test::TestConnection'");
+                "}\n", "COMPILATION warning at [54:9-28]: Can't find connection 'test::TestConnection'");
     }
 
     @Test
@@ -243,7 +243,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "      modelClass: test::ServiceResult;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [52:19-38]: Can't find connection 'test::TestConnection'");
+                "}\n", "COMPILATION warning at [52:19-38]: Can't find connection 'test::TestConnection'");
     }
 
     @Test
@@ -387,7 +387,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "      modelClass: test::ServiceResult;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", null, Collections.singletonList("COMPILATION error at [103:1-132:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
+                "}\n", null, Collections.singletonList("COMPILATION warning at [103:1-132:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 
@@ -589,7 +589,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "      modelClass: test::ServiceResult;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", null, Collections.singletonList("COMPILATION error at [104:1-133:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
+                "}\n", null, Collections.singletonList("COMPILATION warning at [104:1-133:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 

@@ -39,7 +39,7 @@ public class TestSnowflakeM2MUdfCompilationFromGrammar extends TestCompilationFr
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-10:1]: Duplicated element 'anything::Name'";
+        return "COMPILATION warning at [5:1-10:1]: Duplicated element 'anything::Name'";
     }
 
     @Test

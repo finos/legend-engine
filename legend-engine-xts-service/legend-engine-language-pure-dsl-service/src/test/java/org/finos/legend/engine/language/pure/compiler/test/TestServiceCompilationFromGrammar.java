@@ -54,7 +54,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-27:1]: Duplicated element 'anything::class'";
+        return "COMPILATION warning at [5:1-27:1]: Duplicated element 'anything::class'";
     }
 
     @Test
@@ -86,7 +86,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
+                "}\n", "COMPILATION warning at [4:11-19]: Can't find the profile 'NoProfile'");
         // Faulty tagged value
 
         test("###Mapping\n" +
@@ -114,7 +114,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [4:11-19]: Can't find the profile 'NoProfile'");
+                "}\n", "COMPILATION warning at [4:11-19]: Can't find the profile 'NoProfile'");
     }
 
     @Test
@@ -155,7 +155,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      mapping: test::mapping;\n" +
                 "      runtime: test::runtime;\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [20:1-33:1]: Cannot use both ownership model and explicit owners list.");
+                "}\n", "COMPILATION warning at [20:1-33:1]: Cannot use both ownership model and explicit owners list.");
         // test multiple ownership: userList
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -171,7 +171,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      mapping: test::mapping;\n" +
                 "      runtime: test::runtime;\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [20:1-33:1]: Cannot use both ownership model and explicit owners list.");
+                "}\n", "COMPILATION warning at [20:1-33:1]: Cannot use both ownership model and explicit owners list.");
     }
 
     @Test
@@ -213,7 +213,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  test: Multi\n" +
                 "  {\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [32:9-34:3]: Test does not match execution type");
+                "}\n", "COMPILATION warning at [32:9-34:3]: Test does not match execution type");
         // test service execution query lambda
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -236,7 +236,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [28:20-31]: Can't find type 'test::class2'");
+                "}\n", "COMPILATION warning at [28:20-31]: Can't find type 'test::class2'");
         // test service execution mapping
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -258,7 +258,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [29:14-27]: Can't find mapping 'test::mapping2'");
+                "}\n", "COMPILATION warning at [29:14-27]: Can't find mapping 'test::mapping2'");
         // test service execution runtime pointer
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -280,7 +280,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [30:14-27]: Can't find runtime 'test::runtime2'");
+                "}\n", "COMPILATION warning at [30:14-27]: Can't find runtime 'test::runtime2'");
         // test service test assert lambda
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -304,7 +304,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      { [], res:   Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [37:20-32]: Can't find type 'Result'");
+                "}\n", "COMPILATION warning at [37:20-32]: Can't find type 'Result'");
         // check service execution embedded runtime
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -343,7 +343,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [36:16-32]: Can't find connection 'test::connection2'");
+                "}\n", "COMPILATION warning at [36:16-32]: Can't find connection 'test::connection2'");
         // check source information processing for embedded runtime
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -371,7 +371,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  {\n" +
                 "    data: 'moreThanData';\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [30:57-73]: Can't find connection 'test::connection2'");
+                "}\n", "COMPILATION warning at [30:57-73]: Can't find connection 'test::connection2'");
         // test service execution embedded runtime connection
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -409,7 +409,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [40:22-33]: Can't find class 'test::class2'");
+                "}\n", "COMPILATION warning at [40:22-33]: Can't find class 'test::class2'");
     }
 
     @Test
@@ -462,7 +462,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  {\n" +
                 "    data: 'testData';\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [41:9-44:3]: Test does not match execution type");
+                "}\n", "COMPILATION warning at [41:9-44:3]: Test does not match execution type");
         // check empty multi execution
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -479,7 +479,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  test: Multi\n" +
                 "  {\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [26:14-30:3]: Service multi execution must not be empty");
+                "}\n", "COMPILATION warning at [26:14-30:3]: Service multi execution must not be empty");
         // check empty multi test
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -501,7 +501,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  test: Multi\n" +
                 "  {\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [36:9-38:3]: Service multi execution test must not be empty");
+                "}\n", "COMPILATION warning at [36:9-38:3]: Service multi execution test must not be empty");
         // check duplicated execution parameter key values
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -536,7 +536,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      data: 'testData';\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [35:5-39:5]: Execution parameter with key 'PROD' already existed");
+                "}\n", "COMPILATION warning at [35:5-39:5]: Execution parameter with key 'PROD' already existed");
         // check duplicated test key values
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -572,7 +572,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      data: 'testData';\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [47:5-50:5]: Service test with key 'QA' already existed");
+                "}\n", "COMPILATION warning at [47:5-50:5]: Service test with key 'QA' already existed");
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
                 "{\n" +
@@ -605,7 +605,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      data: 'testData';\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [36:9-50:3]: Test(s) with key 'PROD', 'INT' do not have a corresponding execution");
+                "}\n", "COMPILATION warning at [36:9-50:3]: Test(s) with key 'PROD', 'INT' do not have a corresponding execution");
         // check service execution query lambda
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -641,7 +641,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      data: 'testData';\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [28:20-31]: Can't find type 'test::class2'");
+                "}\n", "COMPILATION warning at [28:20-31]: Can't find type 'test::class2'");
         // check service execution mapping
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -677,7 +677,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      data: 'testData';\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [32:16-29]: Can't find mapping 'test::mapping2'");
+                "}\n", "COMPILATION warning at [32:16-29]: Can't find mapping 'test::mapping2'");
         // check service execution runtime
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -713,7 +713,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      data: 'testData';\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [33:16-29]: Can't find runtime 'test::runtime2'");
+                "}\n", "COMPILATION warning at [33:16-29]: Can't find runtime 'test::runtime2'");
         // check service test assertion lambda
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -750,7 +750,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      asserts: [{ [], res:   Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [50:30-42]: Can't find type 'Result'");
+                "}\n", "COMPILATION warning at [50:30-42]: Can't find type 'Result'");
 
         test(resource + "###Service\n" +
                 "Service meta::pure::myServiceMulti\n" +
@@ -803,7 +803,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "          runtime: test::runtime;\n" +
                 "        }\n" +
                 "      ];\n" +
-                "}\n", "COMPILATION error at [29:14-32:3]: Service multi execution must not be empty");
+                "}\n", "COMPILATION warning at [29:14-32:3]: Service multi execution must not be empty");
     }
 
     @Test
@@ -848,7 +848,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [28:68-71]: Can't find a match for function 'from(class[*],Mapping[1],Mapping[1])'");
+                "}\n", "COMPILATION warning at [28:68-71]: Can't find a match for function 'from(class[*],Mapping[1],Mapping[1])'");
 
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -869,7 +869,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [28:68-71]: Can't find a match for function 'from(class[*],PackageableRuntime[1],Mapping[1])'");
+                "}\n", "COMPILATION warning at [28:68-71]: Can't find a match for function 'from(class[*],PackageableRuntime[1],Mapping[1])'");
 
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -1171,7 +1171,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      {['parameter1', Enum.reference],1+280+1}\n" + //test expression
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [37:23-36]: Can't find enumeration 'Enum'");
+                "}\n", "COMPILATION warning at [37:23-36]: Can't find enumeration 'Enum'");
 
 
         // check for multiple test asserts
@@ -2305,7 +2305,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [106:5-123:5]: Service TestSuites should have at least 1 test"
+                "COMPILATION warning at [106:5-123:5]: Service TestSuites should have at least 1 test"
         );
 
         //Test Single TestSuite without asserts
@@ -2354,7 +2354,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-127:9]: Service Tests should have at least 1 assert"
+                "COMPILATION warning at [122:9-127:9]: Service Tests should have at least 1 assert"
         );
 
         //Multiple TestSuites with same ids
@@ -2423,7 +2423,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [88:1-151:1]: Multiple testSuites found with ids : 'testSuite1'"
+                "COMPILATION warning at [88:1-151:1]: Multiple testSuites found with ids : 'testSuite1'"
         );
 
         //Multiple Tests with same ids
@@ -2486,7 +2486,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [106:5-143:5]: Multiple tests found with ids : 'test1'"
+                "COMPILATION warning at [106:5-143:5]: Multiple tests found with ids : 'test1'"
         );
 
         //Multiple Asserts with same ids
@@ -2543,7 +2543,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [110:9-135:9]: Multiple assertions found with ids : 'assert1'"
+                "COMPILATION warning at [110:9-135:9]: Multiple assertions found with ids : 'assert1'"
         );
 
         //Should no longer throw errors. Correctly aggregates under listed connection
@@ -2670,7 +2670,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
+                "COMPILATION warning at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
         );
 
         test(resource + "###Service\n" +
@@ -2731,7 +2731,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value required for parameter: 'param'"
+                "COMPILATION warning at [122:9-140:9]: Parameter value required for parameter: 'param'"
         );
 
         test(resource + "###Service\n" +
@@ -2793,7 +2793,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Multiplicity error: [1] doesn't subsume [2]"
+                "COMPILATION warning at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Multiplicity error: [1] doesn't subsume [2]"
         );
 
         test(resource + "###Service\n" +
@@ -2855,7 +2855,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Multiplicity error: [0..1] doesn't subsume [2]"
+                "COMPILATION warning at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Multiplicity error: [0..1] doesn't subsume [2]"
         );
 
         test(resource + "###Service\n" +
@@ -2917,7 +2917,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
+                "COMPILATION warning at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
         );
 
         test(resource + "###Service\n" +
@@ -2979,7 +2979,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
+                "COMPILATION warning at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
         );
 
         //TODO: Test data with wrong connection id
@@ -3291,7 +3291,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      ]\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}\n", "COMPILATION error at [87:9-106:9]: Parameter value type does not match with parameter type for parameter: 'data' - Type error: 'String' is not a subtype of 'Byte'");
+                "}\n", "COMPILATION warning at [87:9-106:9]: Parameter value type does not match with parameter type for parameter: 'data' - Type error: 'String' is not a subtype of 'Byte'");
     }
 
     @Test
@@ -3368,7 +3368,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      ];\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}", "COMPILATION error at [20:1-44:1]: Multiple post validation assertions found with ids : 'testAssert'");
+                "}", "COMPILATION warning at [20:1-44:1]: Multiple post validation assertions found with ids : 'testAssert'");
 
         // check matching query and assertion types
         test(resource + "###Service \n" +
@@ -3475,7 +3475,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      runtime: test::myRuntime2;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [8:16-31]: Can't find mapping 'test::myMapping1'");
+                "}\n", "COMPILATION warning at [8:16-31]: Can't find mapping 'test::myMapping1'");
 
         String resource = "Class test::class\n" +
                 "{\n" +
@@ -3513,7 +3513,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      runtime: test::runtime;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [27:16-31]: Can't find runtime 'test::myRuntime1'");
+                "}\n", "COMPILATION warning at [27:16-31]: Can't find runtime 'test::myRuntime1'");
 
         test(resource + "###Service\n" +
                 "ExecutionEnvironment test::executionEnvironment\n" +
@@ -3541,7 +3541,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "       }\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n","COMPILATION error at [20:1-45:1]: Error in 'test::executionEnvironment': Cannot resolve binding. Error: Execution error at (resource:/platform/pure/essential/meta/graph/pathToElement.pure line:20 column:12), \"'test::bind' is not a valid PackageableElement: could not find 'test' in Root\"");
+                "}\n","COMPILATION warning at [20:1-45:1]: Error in 'test::executionEnvironment': Cannot resolve binding. Error: Execution error at (resource:/platform/pure/essential/meta/graph/pathToElement.pure line:20 column:12), \"'test::bind' is not a valid PackageableElement: could not find 'test' in Root\"");
 
         String binding = "###ExternalFormat\n" +
                 "Binding test::bind\n" +
@@ -3607,7 +3607,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "       }\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [32:5-42:5]: Cannot use both runtime and runtime components");
+                "}\n", "COMPILATION warning at [32:5-42:5]: Cannot use both runtime and runtime components");
 
     }
 
@@ -3648,7 +3648,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      runtime: test::runtime;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", null, FastList.newListWith("COMPILATION error at [30:16-28]: Execution Environment 'test::executionEnvironment', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
+                "}\n", null, FastList.newListWith("COMPILATION warning at [30:16-28]: Execution Environment 'test::executionEnvironment', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
 
         test(resource + "###Service \n" +
                 "Service test::Service \n" +
@@ -3663,7 +3663,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    mapping: test::mapping2; \n" +
                 "    runtime: test::runtime; \n" +
                 "  }\n" +
-                "}", null, FastList.newListWith("COMPILATION error at [33:14-26]: Service 'test::Service' Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
+                "}", null, FastList.newListWith("COMPILATION warning at [33:14-26]: Service 'test::Service' Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
 
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -3688,8 +3688,8 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    }\n" +
                 "  }\n" +
                 "}\n", null, FastList.newListWith(
-                        "COMPILATION error at [36:16-28]: Service 'test::Service', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'",
-                "COMPILATION error at [41:16-28]: Service 'test::Service', key: 'QA', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
+                        "COMPILATION warning at [36:16-28]: Service 'test::Service', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'",
+                "COMPILATION warning at [41:16-28]: Service 'test::Service', key: 'QA', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
 
         String binding = "###ExternalFormat\n" +
                 "Binding test::bind\n" +
@@ -3716,7 +3716,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    }\n" +
                 "  ];\n" +
                 "}\n", null, FastList.newListWith(
-                        "COMPILATION error at [40:12-34]: Execution Environment 'test::executionEnvironment', key: 'UAT', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"
+                        "COMPILATION warning at [40:12-34]: Execution Environment 'test::executionEnvironment', key: 'UAT', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"
         ));
     }
 }

@@ -46,7 +46,7 @@ public class TestMongoDBConnectionCompiler extends TestCompilationFromGrammar.Te
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [15:1-17:1]: Duplicated element 'test::mongodb::connection'";
+        return "COMPILATION warning at [15:1-17:1]: Duplicated element 'test::mongodb::connection'";
     }
 
     @Test

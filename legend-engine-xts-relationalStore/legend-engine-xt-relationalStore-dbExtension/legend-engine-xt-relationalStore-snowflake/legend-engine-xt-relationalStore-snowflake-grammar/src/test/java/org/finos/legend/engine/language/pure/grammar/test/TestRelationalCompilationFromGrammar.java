@@ -268,16 +268,16 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 
     @Test
     public void testRelationalDatabaseFail()
     {
         MutableList<String> warnings = Lists.mutable.empty();
-        warnings.add("COMPILATION error at [4:5-212]: Duplicate column definitions [FIRSTNAME, LASTNAME] in table: personTable");
-        warnings.add("COMPILATION error at [7:5-152]: Duplicate column definitions [ADDRESSID, LEGALNAME] in table: firmTable");
-        warnings.add("COMPILATION error at [9:5-107]: Duplicate column definitions [LEGALNAME] in table: otherFirmTable");
+        warnings.add("COMPILATION warning at [4:5-212]: Duplicate column definitions [FIRSTNAME, LASTNAME] in table: personTable");
+        warnings.add("COMPILATION warning at [7:5-152]: Duplicate column definitions [ADDRESSID, LEGALNAME] in table: firmTable");
+        warnings.add("COMPILATION warning at [9:5-107]: Duplicate column definitions [LEGALNAME] in table: otherFirmTable");
         PureModel dbIncModel = test(DB_DUP_INC, null, warnings).getTwo();
 
     }
@@ -356,7 +356,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "       ID INT PRIMARY KEY, MANAGERID INT, dummyOut TIMESTAMP\n" +
                         "    )\n" +
                         ")",
-                "COMPILATION error at [4:47-108]: Milestone column 'dummyIn' not found on table definition"
+                "COMPILATION warning at [4:47-108]: Milestone column 'dummyIn' not found on table definition"
         );
 
         // PROCESSING_OUT missing
@@ -369,7 +369,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "       ID INT PRIMARY KEY, MANAGERID INT, dummyIn TIMESTAMP\n" +
                         "    )\n" +
                         ")",
-                "COMPILATION error at [4:47-108]: Milestone column 'dummyOut' not found on table definition"
+                "COMPILATION warning at [4:47-108]: Milestone column 'dummyOut' not found on table definition"
         );
 
         // BUS_FROM missing
@@ -382,7 +382,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "       ID INT PRIMARY KEY, MANAGERID INT, dummyOut DATE\n" +
                         "    )\n" +
                         ")",
-                "COMPILATION error at [4:56-94]: Milestone column 'dummyIn' not found on table definition"
+                "COMPILATION warning at [4:56-94]: Milestone column 'dummyIn' not found on table definition"
         );
 
         // BUS_THRU missing
@@ -395,7 +395,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "       ID INT PRIMARY KEY, MANAGERID INT, dummyIn DATE\n" +
                         "    )\n" +
                         ")",
-                "COMPILATION error at [4:56-94]: Milestone column 'dummyOut' not found on table definition"
+                "COMPILATION warning at [4:56-94]: Milestone column 'dummyOut' not found on table definition"
         );
 
         // BUS_SNAPSHOT_DATE missing
@@ -408,7 +408,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "       ID INT PRIMARY KEY, MANAGERID INT\n" +
                         "    )\n" +
                         ")",
-                "COMPILATION error at [4:56-80]: Milestone column 'dummy' not found on table definition"
+                "COMPILATION warning at [4:56-80]: Milestone column 'dummy' not found on table definition"
         );
     }
 
@@ -425,7 +425,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "       trade_id : @MissingJoin | tradeEventTable.trade_id,\n" +
                 "       maxTradeEventDate : max(tradeEventTable.eventDate)\n" +
                 "    )\n" +
-                ")", "COMPILATION error at [8:19-30]: Can't find join 'MissingJoin' in database 'dbInc'");
+                ")", "COMPILATION warning at [8:19-30]: Can't find join 'MissingJoin' in database 'dbInc'");
     }
 
     @Test
@@ -437,7 +437,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    include model::relational::tests::dbInc\n" +
                         "    Table personTable (ID INT PRIMARY KEY, MANAGERID INT)\n" +
                         ")",
-                "COMPILATION error at [4:5-43]: Can't find database 'model::relational::tests::dbInc'"
+                "COMPILATION warning at [4:5-43]: Can't find database 'model::relational::tests::dbInc'"
         );
 
         test("###Relational\n" +
@@ -448,7 +448,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    Join Firm_Person(missingSchema.firmTable.ID = personTable.FIRMID)\n" +
                         "\n" +
                         ")",
-                "COMPILATION error at [6:22-44]: Can't find schema 'missingSchema' in database 'dbInc'");
+                "COMPILATION warning at [6:22-44]: Can't find schema 'missingSchema' in database 'dbInc'");
 
         test("###Relational\n" +
                         "Database model::relational::tests::dbInc\n" +
@@ -458,7 +458,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    Join Firm_Person(missingTable.ID = personTable.FIRMID)\n" +
                         "\n" +
                         ")",
-                "COMPILATION error at [6:22-33]: Can't find table 'missingTable' in schema 'default' and database 'dbInc'");
+                "COMPILATION warning at [6:22-33]: Can't find table 'missingTable' in schema 'default' and database 'dbInc'");
 
         test("###Relational\n" +
                         "Database model::relational::tests::dbInc\n" +
@@ -468,7 +468,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    Join Firm_Person(firmTable.ID = personTable.FIRMID_MISSING)\n" +
                         "\n" +
                         ")",
-                "COMPILATION error at [6:37-62]: Can't find column 'FIRMID_MISSING'");
+                "COMPILATION warning at [6:37-62]: Can't find column 'FIRMID_MISSING'");
     }
 
 
@@ -879,7 +879,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   {\n" +
                 "      name : [model::store::db]myTable.name\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [10:32-38]: The store 'model::store::db' can't be found."
+                ")", "COMPILATION warning at [10:32-38]: The store 'model::store::db' can't be found."
         );
 
         test(MODEL + DB_INC +
@@ -892,7 +892,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    name : [model::relational::tests::dbInc]firmTable.LEGALNAME,\n" +
                 "    propertyMissing : [model::relational::tests::dbInc]firmTable.ADDRESSID\n" +
                 "  }\n" +
-                ")", "COMPILATION error at [92:21-74]: Can't find property 'propertyMissing' in [Firm, LegalEntity, Any]"
+                ")", "COMPILATION warning at [92:21-74]: Can't find property 'propertyMissing' in [Firm, LegalEntity, Any]"
         );
 
         // missing association
@@ -907,7 +907,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "      placeOfInterest: [dbInc]@location_PlaceOfInterest\n" +
                 "    )\n" +
                 "  }\n\n" +
-                ")", "COMPILATION error at [4:3-20]: Can't find association 'MissingAssociation'"
+                ")", "COMPILATION warning at [4:3-20]: Can't find association 'MissingAssociation'"
         );
 
         // missing association property
@@ -938,7 +938,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", "COMPILATION error at [107:10-35]: Can't find property 'missingAssociationProperty' in association 'model::Employment'"
+                ")", "COMPILATION warning at [107:10-35]: Can't find property 'missingAssociationProperty' in association 'model::Employment'"
         );
 
         // Property Mapping join does not have mainTable
@@ -978,7 +978,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "                firm:[model::db]@myJoin > @otherJoin,\n" +
                 "                name:[model::db]personTb.name\n" +
                 "            }\n" +
-                ")\n", "COMPILATION error at [34:21-52]: Mapping error: the join myJoin does not contain the source table personTb");
+                ")\n", "COMPILATION warning at [34:21-52]: Mapping error: the join myJoin does not contain the source table personTb");
 
         // Invalid join chain
         test("Class model::Person\n" +
@@ -1017,7 +1017,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "                firm:[model::db]@myJoin > @otherJoin,\n" +
                 "                name:[model::db]personTb.name\n" +
                 "            }\n" +
-                ")\n", "COMPILATION error at [34:21-52]: Mapping error: the join otherJoin does not contain the source table otherTb");
+                ")\n", "COMPILATION warning at [34:21-52]: Mapping error: the join otherJoin does not contain the source table otherTb");
 
         // Invalid join chain (with self join)
         test("Class model::Person\n" +
@@ -1057,7 +1057,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "                firm:[model::db]@myJoin > @selfJoin > @otherJoin,\n" +
                 "                name:[model::db]personTb.name\n" +
                 "            }\n" +
-                ")\n", "COMPILATION error at [35:21-64]: Mapping error: the join otherJoin does not contain the source table otherTb");
+                ")\n", "COMPILATION warning at [35:21-64]: Mapping error: the join otherJoin does not contain the source table otherTb");
 
         // embedded Relational Mapping
         test(MODEL + DB_INC +
@@ -1071,7 +1071,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "       missingEmbeddedProperty: [model::relational::tests::dbInc]@Firm_Person| personTable.FIRSTNAME\n" +
                 "    )\n" +
                 "  }\n" +
-                ")", "COMPILATION error at [92:31-100]: Can't find property 'missingEmbeddedProperty' in [Person, Any]"
+                ")", "COMPILATION warning at [92:31-100]: Can't find property 'missingEmbeddedProperty' in [Person, Any]"
         );
 
         // Incorrect filter
@@ -1084,7 +1084,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    ~filter [model::relational::tests::dbInc]MissingFilter\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", "COMPILATION error at [90:5-58]: Can't find filter 'MissingFilter' in database 'dbInc'"
+                ")", "COMPILATION warning at [90:5-58]: Can't find filter 'MissingFilter' in database 'dbInc'"
         );
     }
 
@@ -1103,7 +1103,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  {\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", "COMPILATION error at [92:3-95:3]: Can't find extends class mapping 'entity1' in mapping 'model::myRelationalMapping'"
+                ")", "COMPILATION warning at [92:3-95:3]: Can't find extends class mapping 'entity1' in mapping 'model::myRelationalMapping'"
         );
 
         test(MODEL + DB_INC +
@@ -1171,7 +1171,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "      assert: '[ {\\n  \"values\" : [ \"Doe;\" ]\\n}, {\\n  \"values\" : [ \"Wrong\" ]\\n} ]';\n" +
                 "    )\n" +
                 "  ]\n" +
-                ")", "COMPILATION error at [99:9-242]: The store 'test::DB' can't be found."
+                ")", "COMPILATION warning at [99:9-242]: The store 'test::DB' can't be found."
         );
     }
 
@@ -1335,7 +1335,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    employees: [simple::dbInc] (INNER) @Firm_Person > (INNER) [simple::dbInc] @Firm_Person\n" +
                 "  }\n" +
                 "\n" +
-                ")", "COMPILATION error at [55:14-90]: Do not support specifying join type for the first join in the classMapping.");
+                ")", "COMPILATION warning at [55:14-90]: Do not support specifying join type for the first join in the classMapping.");
     }
 
     @Test
@@ -1408,7 +1408,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    lastName: [simple::dbInc]personTable.LASTNAME,\n" +
                 "    age: Binding simple::TestBinding: [simple::dbInc]personTable.AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [46:8-68]: Binding transformer can be used with complex properties only. Property 'age' return type is 'Integer'");
+                ")\n", "COMPILATION warning at [46:8-68]: Binding transformer can be used with complex properties only. Property 'age' return type is 'Integer'");
 
         test(model +
                 "###Mapping\n" +
@@ -1422,7 +1422,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    age: [simple::dbInc]personTable.AGE,\n" +
                 "    manager: Binding simple::TestBinding: [simple::dbInc]personTable.FIRM\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [47:12-73]: Class: simple::Person should be included in modelUnit for binding: simple::TestBinding");
+                ")\n", "COMPILATION warning at [47:12-73]: Class: simple::Person should be included in modelUnit for binding: simple::TestBinding");
 
         test(model +
                 "###Mapping\n" +
@@ -1579,7 +1579,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    lastName: [simple::dbInc]personTable.LASTNAME, \n" +
                 "    firm[x]: [simple::dbInc]@personSelfJoin\n" +
                 "  }\n" +
-                ")\n", null, Arrays.asList("COMPILATION error at [30:12-43]: Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc"));
+                ")\n", null, Arrays.asList("COMPILATION warning at [30:12-43]: Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc"));
 
         MutableList<? extends Defect> warnings = res.getTwo().getDefects();
         Assert.assertEquals(1, warnings.size());
@@ -1735,7 +1735,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   simple::Another extends [id]: Relational\n" +
                 "   {      \n" +
                 "   }   \n" +
-                ")", "COMPILATION error at [47:4-49:4]: Duplicated class mappings found with ID 'id' in mapping 'simple::merged'; parent mapping for duplicated: 'simple::gen1::map', 'simple::gen2::map'");
+                ")", "COMPILATION warning at [47:4-49:4]: Duplicated class mappings found with ID 'id' in mapping 'simple::merged'; parent mapping for duplicated: 'simple::gen1::map', 'simple::gen2::map'");
     }
 
 
@@ -1771,7 +1771,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:20-69]: Mapping error: model::myRelationalMapping the join Address_Person does not contain the source table [dbInc]firmTable"));
+                ")", null, Arrays.asList("COMPILATION warning at [107:20-69]: Mapping error: model::myRelationalMapping the join Address_Person does not contain the source table [dbInc]firmTable"));
 
         test(MODEL +
                 "Association model::Employment\n" +
@@ -1799,7 +1799,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         employees : [model::relational::tests::dbInc]@OtherFirm_PersonFirm >@Firm_Person\n" + //Join chain doesn't start on correct Table
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:20-89]: Mapping error: model::myRelationalMapping the join OtherFirm_PersonFirm does not contain the source table [dbInc]firmTable"));
+                ")", null, Arrays.asList("COMPILATION warning at [107:20-89]: Mapping error: model::myRelationalMapping the join OtherFirm_PersonFirm does not contain the source table [dbInc]firmTable"));
 
         test(MODEL +
                 "Association model::Employment\n" +
@@ -1828,7 +1828,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 //  "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:20-94]: Mapping error: model::myRelationalMapping the join OtherFirm_PersonFirm does not connect from the source table [dbInc]PersonToFirm to the target table [dbInc]personTable; instead it connects to [dbInc]otherFirmTable"));
+                ")", null, Arrays.asList("COMPILATION warning at [107:20-94]: Mapping error: model::myRelationalMapping the join OtherFirm_PersonFirm does not connect from the source table [dbInc]PersonToFirm to the target table [dbInc]personTable; instead it connects to [dbInc]otherFirmTable"));
 
 
         test(MODEL +
@@ -1869,7 +1869,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm[OtherFirm] : [model::relational::tests::dbInc]@Firm_Person\n" + //id exists but it's the wrong  type (Join is correct)
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [119:26-72]: Mapping Error: on model::myRelationalMapping The setImplementationId 'OtherFirm' is implementing the class 'OtherFirm' which is not a subType of 'Firm' return type of the mapped property 'firm'"));
+                ")", null, Arrays.asList("COMPILATION warning at [119:26-72]: Mapping Error: on model::myRelationalMapping The setImplementationId 'OtherFirm' is implementing the class 'OtherFirm' which is not a subType of 'Firm' return type of the mapped property 'firm'"));
 
 
         test(MODEL +
@@ -1899,7 +1899,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm[person, firm] : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:37-83]: Unable to find source class mapping (id:wrongID) for property 'employees' in Association mapping 'model::Employment'. Make sure that you have specified a valid Class mapping id as the source id and target id, using the syntax 'property[sourceId, targetId]'."));
+                ")", null, Arrays.asList("COMPILATION warning at [107:37-83]: Unable to find source class mapping (id:wrongID) for property 'employees' in Association mapping 'model::Employment'. Make sure that you have specified a valid Class mapping id as the source id and target id, using the syntax 'property[sourceId, targetId]'."));
 
 
         test(MODEL +
@@ -1929,7 +1929,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm[person, firm] : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:34-80]: Unable to find target class mapping (id:wrongID) for property 'employees' in Association mapping 'model::Employment'. Make sure that you have specified a valid Class mapping id as the source id and target id, using the syntax 'property[sourceId, targetId]'."));
+                ")", null, Arrays.asList("COMPILATION warning at [107:34-80]: Unable to find target class mapping (id:wrongID) for property 'employees' in Association mapping 'model::Employment'. Make sure that you have specified a valid Class mapping id as the source id and target id, using the syntax 'property[sourceId, targetId]'."));
 
 
         test(MODEL +
@@ -1959,7 +1959,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:20-73]: Mapping Error! on model::myRelationalMapping Expected a Join"));
+                ")", null, Arrays.asList("COMPILATION warning at [107:20-73]: Mapping Error! on model::myRelationalMapping Expected a Join"));
 
 
         test(MODEL +
@@ -1978,7 +1978,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    age: [model::relational::tests::dbInc]personTable.AGE,\n" +
                 "    firmID: [model::relational::tests::dbInc]@Firm_PersonFirm | firmTable.ID\n" + //Wrong table used in join on LHS
                 "  }\n" +
-                ")", "COMPILATION error at [97:11-76]: Mapping error: the join Firm_PersonFirm does not contain the source table personTable");
+                ")", "COMPILATION warning at [97:11-76]: Mapping error: the join Firm_PersonFirm does not contain the source table personTable");
 
 
         test(MODEL +
@@ -2000,7 +2000,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  {\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [97:8-54]: Mapping error on mapping model::myRelationalMapping. The property 'age' returns a data type. However it's mapped to a Join."));
+                ")", null, Arrays.asList("COMPILATION warning at [97:8-54]: Mapping error on mapping model::myRelationalMapping. The property 'age' returns a data type. However it's mapped to a Join."));
 
         test(MODEL +
                 "Class model::OtherFirm extends model::LegalEntity \n" +
@@ -2033,7 +2033,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  {\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [105:20-71]: Mapping Error: on model::myRelationalMapping The setImplementationId 'OtherFirm' is implementing the class 'OtherFirm' which is not a subType of 'Firm' return type of the mapped property 'firm'"));
+                ")", null, Arrays.asList("COMPILATION warning at [105:20-71]: Mapping Error: on model::myRelationalMapping The setImplementationId 'OtherFirm' is implementing the class 'OtherFirm' which is not a subType of 'Firm' return type of the mapped property 'firm'"));
 
 
         test(MODEL +
@@ -2057,7 +2057,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  {\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [93:3-99:3]: Mapping Error: on model::myRelationalMapping The property 'firm' doesn't return a data type. However it's mapped to a column or a function."));
+                ")", null, Arrays.asList("COMPILATION warning at [93:3-99:3]: Mapping Error: on model::myRelationalMapping The property 'firm' doesn't return a data type. However it's mapped to a column or a function."));
 
 
         test(MODEL +
@@ -2081,7 +2081,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  {\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [93:3-99:3]: Mapping Error: on model::myRelationalMapping The target type:'Firm' on property firm is not a data type and a join is expected"));
+                ")", null, Arrays.asList("COMPILATION warning at [93:3-99:3]: Mapping Error: on model::myRelationalMapping The target type:'Firm' on property firm is not a data type and a join is expected"));
 
         test(MODEL +
                 "Association model::Employment\n" +
@@ -2100,7 +2100,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    age: [model::relational::tests::dbInc]personTable.AGE,\n" +
                 "    firm:[model::relational::tests::dbInc]@Firm_Person \n" +  //Missing firm mapping  (Warning on properties)
                 "  }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [98:9-54]: Error 'model_Firm' can't be found in the mapping model::myRelationalMapping"));
+                ")", null, Arrays.asList("COMPILATION warning at [98:9-54]: Error 'model_Firm' can't be found in the mapping model::myRelationalMapping"));
 
     }
 
@@ -2210,6 +2210,6 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "      connection_1: relational::graphFetch::OneMappingConnection\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [86:1-104:1]: Found 2 connections against store [dbInc] under a single runtime.");
+                "}\n", "COMPILATION warning at [86:1-104:1]: Found 2 connections against store [dbInc] under a single runtime.");
     }
 }

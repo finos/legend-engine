@@ -41,7 +41,7 @@ public class TestMongoDBMappingCompiler extends TestCompilationFromGrammar.TestC
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [11:1-13:1]: Duplicated element 'mongo::test::mapping::MongoDBMapping'";
+        return "COMPILATION warning at [11:1-13:1]: Duplicated element 'mongo::test::mapping::MongoDBMapping'";
     }
 
     @Test

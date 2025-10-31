@@ -41,7 +41,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::class'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::class'";
     }
 
     @Test
@@ -150,7 +150,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
                 ")\n" +
-                "\n", "COMPILATION error at [23:1-30:1]: Duplicated mapping include 'test::M1' in mapping " +
+                "\n", "COMPILATION warning at [23:1-30:1]: Duplicated mapping include 'test::M1' in mapping " +
                 "'test::M2'"
         );
     }
@@ -179,7 +179,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "Mapping test::MyMapping (\n" +
                 "   include test::MissingMapping\n" +
                 ")\n" +
-                "\n", "COMPILATION error at [3:4-31]: Can't find mapping 'test::MissingMapping'");
+                "\n", "COMPILATION warning at [3:4-31]: Can't find mapping 'test::MissingMapping'");
     }
 
     @Test
@@ -215,7 +215,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    ~src test::Firm_milestoned\n" +
                 "    id: $src.legalOwner.employer.id\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [24:1-31:1]: Error in 'reporting::mapping::referenceDataMapping': The property 'employer' is milestoned with stereotypes: [ businesstemporal ] and requires date parameters: [ businessDate ]");
+                ")\n", "COMPILATION warning at [24:1-31:1]: Error in 'reporting::mapping::referenceDataMapping': The property 'employer' is milestoned with stereotypes: [ businesstemporal ] and requires date parameters: [ businessDate ]");
     }
 
     @Test
@@ -287,7 +287,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
+                ")", "COMPILATION warning at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
         test(models + "Mapping test::M3 (\n" +
                 "   include test::M1\n" +
                 "   include test::M2\n" +
@@ -299,7 +299,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 2 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
+                ")", "COMPILATION warning at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 2 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
         test(models + "Mapping test::M3 (\n" +
                 "   include test::M1\n" +
                 "   include test::M2\n" +
@@ -360,7 +360,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
+                ")", "COMPILATION warning at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
         // duplicated IDs within the included mappings
         test(models +
                 "###Mapping\n" +
@@ -388,7 +388,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
+                ")", "COMPILATION warning at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
         // duplicated IDs in the included mappings and mapping
         test(models +
                 "###Mapping\n" +
@@ -416,7 +416,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
+                ")", "COMPILATION warning at [23:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
         // duplicated IDs in nested included mappings
         test(models +
                 "###Mapping\n" +
@@ -444,7 +444,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [24:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
+                ")", "COMPILATION warning at [24:1-34:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
         // duplicated IDs with a mapping included multiple times included mapping
         test(models +
                 "###Mapping\n" +
@@ -473,7 +473,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [24:1-35:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
+                ")", "COMPILATION warning at [24:1-35:1]: Class 'test::A' is mapped by 2 set implementations and has 0 roots. There should be exactly one root set implementation for the class, and it should be marked with a '*'");
     }
 
     @Test
@@ -508,7 +508,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      a : ['a'],\n" +
                 "      b : ['b']\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [18:1-29:1]: Duplicated enumeration mappings found with ID 'test_B' in mapping 'test::M3'");
+                ")", "COMPILATION warning at [18:1-29:1]: Duplicated enumeration mappings found with ID 'test_B' in mapping 'test::M3'");
         // duplicated IDs within the included mappings
         test(models + "###Mapping\n" +
                 "Mapping test::M1 (\n" +
@@ -535,7 +535,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      a : ['a'],\n" +
                 "      b : ['b']\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [18:1-29:1]: Duplicated enumeration mappings found with ID 'test_B' in mapping 'test::M3'");
+                ")", "COMPILATION warning at [18:1-29:1]: Duplicated enumeration mappings found with ID 'test_B' in mapping 'test::M3'");
         // duplicated IDs in the included mappings and mapping
         test(models + "###Mapping\n" +
                 "Mapping test::M1 (\n" +
@@ -562,7 +562,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      a : ['a'],\n" +
                 "      b : ['b']\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [18:1-29:1]: Duplicated enumeration mappings found with ID '2' in mapping 'test::M3'");
+                ")", "COMPILATION warning at [18:1-29:1]: Duplicated enumeration mappings found with ID '2' in mapping 'test::M3'");
         // duplicated IDs in nested included mappings
         test(models + "###Mapping\n" +
                 "Mapping test::M1 (\n" +
@@ -589,7 +589,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      a : ['a'],\n" +
                 "      b : ['b']\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [19:1-29:1]: Duplicated enumeration mappings found with ID '1' in mapping 'test::M3'");
+                ")", "COMPILATION warning at [19:1-29:1]: Duplicated enumeration mappings found with ID '1' in mapping 'test::M3'");
         // duplicated IDs with a mapping included multiple times included mapping
         test(models + "###Mapping\n" +
                 "Mapping test::M1 (\n" +
@@ -617,7 +617,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      a : ['a'],\n" +
                 "      b : ['b']\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [19:1-30:1]: Duplicated enumeration mappings found with ID '1' in mapping 'test::M3'");
+                ")", "COMPILATION warning at [19:1-30:1]: Duplicated enumeration mappings found with ID '1' in mapping 'test::M3'");
     }
 
     @Test
@@ -683,7 +683,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    type: EnumerationMapping model_IncType2: $src._type\n" +
                 "  }\n" +
                 ")\n" +
-                "\n", "COMPILATION error at [46:5-55]: Can't find enumeration mapping 'model_IncType2'");
+                "\n", "COMPILATION warning at [46:5-55]: Can't find enumeration mapping 'model_IncType2'");
         test(shared + "###Mapping\n" +
                 "Mapping model::mapping1\n" +
                 "(\n" +
@@ -693,7 +693,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    employees[model_Person_1]: $src.em\n" +
                 "  }\n" +
                 ")\n" +
-                "\n", "COMPILATION error at [46:5-38]: Can't find class mapping 'model_Person_1'");
+                "\n", "COMPILATION warning at [46:5-38]: Can't find class mapping 'model_Person_1'");
     }
 
     @Test
@@ -716,7 +716,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      )\n" +
                 "   ]" +
                 "\n" +
-                ")\n", "COMPILATION error at [9:18-38]: Can't find the packageable element 'model::domain::Target'");
+                ")\n", "COMPILATION warning at [9:18-38]: Can't find the packageable element 'model::domain::Target'");
     }
 
     @Test
@@ -746,7 +746,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 2\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 2\"},\"source\":{\"number\":1,\"record\":\"{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}\"}}}';\n" +
                 "      )\n" +
                 "   ]\n" +
-                ")\n", "COMPILATION error at [15:81-92]: Can't find class 'ClassNotHere'");
+                ")\n", "COMPILATION warning at [15:81-92]: Can't find class 'ClassNotHere'");
         // check faulty graph fetch (on multiple lines - check column offset processing)
         test("Class model::domain::Source {}" +
                 "Class model::domain::Target\n" +
@@ -772,7 +772,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 2\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 2\"},\"source\":{\"number\":1,\"record\":\"{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}\"}}}';\n" +
                 "      )\n" +
                 "   ]\n" +
-                ")\n", "COMPILATION error at [16:66-77]: Can't find class 'ClassNotHere'");
+                ")\n", "COMPILATION warning at [16:66-77]: Can't find class 'ClassNotHere'");
     }
 
     @Test
@@ -834,7 +834,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "         assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 2\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 2\"},\"source\":{\"number\":1,\"record\":\"{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}\"}}}';\n" +
                 "      )\n" +
                 "   ]\n" +
-                ")\n", "COMPILATION error at [13:10-73]: Can't find class 'model::domain::Source'");
+                ")\n", "COMPILATION warning at [13:10-73]: Can't find class 'model::domain::Source'");
     }
 
     @Test
@@ -851,7 +851,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "     date: $src.anotherDate,\n" +
                 "     number: $src.oneNumber\n" +
                 "    }\n" +
-                ")\n", "COMPILATION error at [4:4-10:5]: Can't find class 'model::domain::Target'");
+                ")\n", "COMPILATION warning at [4:4-10:5]: Can't find class 'model::domain::Target'");
         // check source class
         test("Class ui::Person\n" +
                 "{\n" +
@@ -865,7 +865,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    ~src ui::Person2\n" +
                 "    name: 'aa'\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [10:10-20]: Can't find type 'ui::Person2'");
+                ")\n", "COMPILATION warning at [10:10-20]: Can't find type 'ui::Person2'");
         // check set implementation root resolution
         test("Class ui::Person\n" +
                         "{\n" +
@@ -889,7 +889,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "    dog: $src.name\n" +
                         "  }\n" +
                         ")\n",
-                "COMPILATION error at [20:5-18]: Can't find class mapping 'ui_Dog'");
+                "COMPILATION warning at [20:5-18]: Can't find class mapping 'ui_Dog'");
     }
 
     @Test
@@ -922,7 +922,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "    breed: 'dogBreed'\n" +
                         "  }\n" +
                         ")\n",
-                "COMPILATION error at [19:5-28]: Can't find class mapping 'imMissing'"
+                "COMPILATION warning at [19:5-28]: Can't find class mapping 'imMissing'"
         );
     }
 
@@ -939,7 +939,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 // intentionally mess up spacing to check walker source information processing
                 "       lastName :          1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [7:28]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
+                ")", "COMPILATION warning at [7:28]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
         test("Class test::Person{lastName:String[1];}\n" +
                 "###Mapping\n" +
                 "Mapping a::mapping\n" +
@@ -950,7 +950,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       lastName :          \n" +
                 "                       1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [8:24]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
+                ")", "COMPILATION warning at [8:24]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
         // check walker source information processing for mapping element
         test("Class test::Person{lastName:String[1];}\n" +
                 "###Mapping\n" +
@@ -959,7 +959,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   test::Person : Pure\n" +
                 // intentionally mess up spacing to check walker source information processing for mapping element
                 "              {    lastName :              1 }\n" +
-                ")", "COMPILATION error at [6:44]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
+                ")", "COMPILATION warning at [6:44]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
     }
 
     @Test
@@ -1044,7 +1044,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   {\n" +
                 "       lastName : [1, 2]\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [7:19-24]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
+                ")", "COMPILATION warning at [7:19-24]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
     }
 
     @Test
@@ -1058,7 +1058,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   {\n" +
                 "       lastName : ['1', '2']\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [7:19-28]: Error in class mapping 'a::mapping' for property 'lastName' - Multiplicity error: [1] doesn't subsume [2]");
+                ")", "COMPILATION warning at [7:19-28]: Error in class mapping 'a::mapping' for property 'lastName' - Multiplicity error: [1] doesn't subsume [2]");
     }
 
     @Test
@@ -1098,7 +1098,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       ~src test::OtherPerson\n" +
                 "       lastName : '1'\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [8:25-28]: Error in class mapping 'a::mapping' for property 'employees' - Type error: 'test::SrcPerson' is not in the class hierarchy of 'test::OtherPerson'");
+                ")", "COMPILATION warning at [8:25-28]: Error in class mapping 'a::mapping' for property 'employees' - Type error: 'test::SrcPerson' is not in the class hierarchy of 'test::OtherPerson'");
     }
 
     @Test
@@ -1136,7 +1136,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       CORP : [1],\n" +
                 "       LLC : [2]\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [7:41-43]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'String' is not in the class hierarchy of 'Integer'");
+                ")", "COMPILATION warning at [7:41-43]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'String' is not in the class hierarchy of 'Integer'");
     }
 
     @Test
@@ -1174,7 +1174,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       CORP : [test::Other.bla],\n" +
                 "       LLC : [test::Other.bla]\n" +
                 "   }\n" +
-                ")\n", "COMPILATION error at [7:41-43]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'String' is not in the class hierarchy of 'test::Other'");
+                ")\n", "COMPILATION warning at [7:41-43]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'String' is not in the class hierarchy of 'test::Other'");
     }
 
     @Test
@@ -1193,7 +1193,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       CORP : [test::Other.bla],\n" +
                 "       LLC : [test::Other.bla]\n" +
                 "   }\n" +
-                ")\n", "COMPILATION error at [7:55-58]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'test::IncType' is not in the class hierarchy of 'test::Other'");
+                ")\n", "COMPILATION warning at [7:55-58]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'test::IncType' is not in the class hierarchy of 'test::Other'");
     }
 
     @Test
@@ -1228,7 +1228,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       LLC : [test::Other.bla],\n" +
                 "       LLC2 : ['asd']\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [5:4-10:4]: Only one type of source value (integer, string or an enum) is allowed for enumeration mapping");
+                ")", "COMPILATION warning at [5:4-10:4]: Only one type of source value (integer, string or an enum) is allowed for enumeration mapping");
 
         test("Class test::Firm{incType:test::IncType[1];} Enum test::IncType{CORP, LLC, LLC2} Enum test::Other{bla}\n" +
                 "###Mapping\n" +
@@ -1240,7 +1240,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       LLC : ['4', 4],\n" +
                 "       LLC2 : ['123']\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [5:4-10:4]: Only one type of source value (integer, string or an enum) is allowed for enumeration mapping");
+                ")", "COMPILATION warning at [5:4-10:4]: Only one type of source value (integer, string or an enum) is allowed for enumeration mapping");
 
         test("Class test::Firm{incType:test::IncType[1];} Enum test::IncType{CORP, LLC, LLC2} Enum test::Other{bla}\n" +
                 "###Mapping\n" +
@@ -1252,7 +1252,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       LLC : [7,7,7,7,7,test::Other.bla],\n" +
                 "       LLC2 : [3]\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [5:4-10:4]: Only one type of source value (integer, string or an enum) is allowed for enumeration mapping");
+                ")", "COMPILATION warning at [5:4-10:4]: Only one type of source value (integer, string or an enum) is allowed for enumeration mapping");
     }
 
     @Test
@@ -1272,7 +1272,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  {\n" +
                 "    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1,p2)\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [12:3-15:3]: Can't find class mapping 'p1' in mapping 'anything::A'");
+                ")\n", "COMPILATION warning at [12:3-15:3]: Can't find class mapping 'p1' in mapping 'anything::A'");
     }
 
     @Test
@@ -1549,7 +1549,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "   test::Firm_Person: XStore {\n" +
                                 "      employer[p1, f]: $this.firmId + $that.id\n" +
                                 "   }"),
-                "COMPILATION error at [36:7-46]: Can't find class mapping 'p1' in mapping 'test::crossPropertyMappingWithLocalProperties'"
+                "COMPILATION warning at [36:7-46]: Can't find class mapping 'p1' in mapping 'test::crossPropertyMappingWithLocalProperties'"
         );
 
         test(
@@ -1558,7 +1558,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "   test::Firm_Person: XStore {\n" +
                                 "      employer[p, f1]: $this.firmId + $that.id\n" +
                                 "   }"),
-                "COMPILATION error at [36:7-46]: Can't find class mapping 'f1' in mapping 'test::crossPropertyMappingWithLocalProperties'"
+                "COMPILATION warning at [36:7-46]: Can't find class mapping 'f1' in mapping 'test::crossPropertyMappingWithLocalProperties'"
         );
 
         test(
@@ -1567,7 +1567,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "   test::Firm_Person: XStore {\n" +
                                 "      employer[p, f]: $this.firmId + $that.id\n" +
                                 "   }"),
-                "COMPILATION error at [36:36-45]: XStore property mapping function should return 'Boolean[1]'"
+                "COMPILATION warning at [36:36-45]: XStore property mapping function should return 'Boolean[1]'"
         );
 
         test(
@@ -1576,7 +1576,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "   test::Firm_Person: XStore {\n" +
                                 "      employer[p, f]: [true, true]\n" +
                                 "   }"),
-                "COMPILATION error at [36:23-34]: XStore property mapping function should return 'Boolean[1]'"
+                "COMPILATION warning at [36:23-34]: XStore property mapping function should return 'Boolean[1]'"
         );
 
         test(
@@ -1586,7 +1586,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "      employer[p, f]: $this.firmId == $that.id\n" +
                                 "   }"),
                 null,
-                Lists.mutable.with("COMPILATION error at [36:7-46]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                Lists.mutable.with("COMPILATION warning at [36:7-46]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
         );
 
         test(
@@ -1598,8 +1598,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "   }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [36:7-46]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [37:7-47]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [36:7-46]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [37:7-47]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                         )
         );
 
@@ -1671,7 +1671,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "    employer[p, f]: $this.firmId == $that.id\n" +
                                 "  }"),
                 null,
-                Lists.mutable.with("COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                Lists.mutable.with("COMPILATION warning at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
         );
         test(
                 String.format(
@@ -1685,8 +1685,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "  }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                         )
         );
         test(
@@ -1722,8 +1722,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "  }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                 )
         );
         test(
@@ -1749,8 +1749,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "  }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                         )
         );
         test(
@@ -1807,7 +1807,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "      employer[p, f]: $this.firmName == $that.name\n" +
                                 "   }"),
                 null,
-                Lists.mutable.with("COMPILATION error at [95:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                Lists.mutable.with("COMPILATION warning at [95:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
         );
         test(
                 String.format(
@@ -1818,8 +1818,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "   }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [95:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [96:7-51]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [95:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [96:7-51]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                         )
         );
 
@@ -1892,7 +1892,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "      employer[p, f]: $this.firmName == $that.name\n" +
                                     "   }\n)"),
                     null,
-                    Lists.mutable.with("COMPILATION error at [97:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                    Lists.mutable.with("COMPILATION warning at [97:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
             );
             test(
                     String.format(
@@ -1903,8 +1903,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "   }\n)"),
                     null,
                     Lists.mutable.with(
-                            "COMPILATION error at [97:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                            "COMPILATION error at [98:7-51]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                            "COMPILATION warning at [97:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION warning at [98:7-51]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                     )
             );
             test(
@@ -1965,7 +1965,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "      street[a, s]: $this.streetName == $that.streetId\n" +
                                 "   }"),
                 null,
-                Lists.mutable.with("COMPILATION error at [94:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                Lists.mutable.with("COMPILATION warning at [94:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
         );
         test(
                 String.format(
@@ -1976,8 +1976,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "   }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [94:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [94:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                 )
         );
         test(
@@ -2004,8 +2004,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "   }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [94:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [95:7-57]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [94:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [95:7-57]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                         )
         );
         test(
@@ -2077,7 +2077,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "      address[p, a]: $this.addressName == $that.name\n" +
                                     "   }"),
                     null,
-                    Lists.mutable.with("COMPILATION error at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                    Lists.mutable.with("COMPILATION warning at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
             );
             test(
                     String.format(
@@ -2088,8 +2088,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "   }"),
                     null,
                     Lists.mutable.with(
-                            "COMPILATION error at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                            "COMPILATION error at [96:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                            "COMPILATION warning at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION warning at [96:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                             )
             );
             test(
@@ -2241,7 +2241,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                             "      address[p, a]: $this.addressName == $that.name\n" +
                             "   }\n)\n",
                     null,
-                    Lists.mutable.with("COMPILATION error at [82:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                    Lists.mutable.with("COMPILATION warning at [82:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
             );
             test(grammar_milestoned +
                             "   test::Person_Address: XStore {\n" +
@@ -2250,8 +2250,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "   }\n)\n",
                     null,
                     Lists.mutable.with(
-                            "COMPILATION error at [82:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                            "COMPILATION error at [83:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                            "COMPILATION warning at [82:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION warning at [83:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                             )
             );
             test(grammar_milestoned +
@@ -2272,8 +2272,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "   }\n)\n",
                     null,
                     Lists.mutable.with(
-                            "COMPILATION error at [82:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                            "COMPILATION error at [83:7-57]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                            "COMPILATION warning at [82:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION warning at [83:7-57]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                             )
             );
             test(grammar_milestoned +
@@ -2421,7 +2421,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "   }\n" +
                 "\n" +
-                ")\n", "COMPILATION error at [53:50-64]: Error in class mapping 'example::UnionOnSubTypeinclude' for property 'employees' - Type error: 'example::_S_Person' is not in the class hierarchy of 'example::_S_Cat'");
+                ")\n", "COMPILATION warning at [53:50-64]: Error in class mapping 'example::UnionOnSubTypeinclude' for property 'employees' - Type error: 'example::_S_Person' is not in the class hierarchy of 'example::_S_Cat'");
 
         test(model +
 
@@ -2461,7 +2461,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "   }\n" +
                 "\n" +
-                ")\n", "COMPILATION error at [53:50-64]: Error in class mapping 'example::UnionOnSubType' for property 'employees' - Type error: 'example::_S_Person' is not in the class hierarchy of 'example::_S_Cat'");
+                ")\n", "COMPILATION warning at [53:50-64]: Error in class mapping 'example::UnionOnSubType' for property 'employees' - Type error: 'example::_S_Person' is not in the class hierarchy of 'example::_S_Cat'");
 
 
         test(model + "\n###Mapping\n" +
@@ -2583,7 +2583,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "   }\n" +
                 "\n" +
-                ")\n", "COMPILATION error at [56:50-64]: Error in class mapping 'example::UnionOnSubTypeinclude' for property 'employees' - Type error: 'example::_S_Person' is not in the class hierarchy of 'example::_S_Cat'");
+                ")\n", "COMPILATION warning at [56:50-64]: Error in class mapping 'example::UnionOnSubTypeinclude' for property 'employees' - Type error: 'example::_S_Person' is not in the class hierarchy of 'example::_S_Cat'");
     }
 
     @Test
@@ -2752,7 +2752,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
                 "    firm: $src.firm\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [26:16-19]: Error in class mapping 'test::Mapping' for property 'firm' - Multiplicity error: [1] doesn't subsume [*]");
+                ")\n", "COMPILATION warning at [26:16-19]: Error in class mapping 'test::Mapping' for property 'firm' - Multiplicity error: [1] doesn't subsume [*]");
 
         test("###Pure\n" +
                 "Class test::dest::Person\n" +
@@ -2921,7 +2921,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  ]\n" +
                 ")\n" +
                 "\n",
-                "COMPILATION error at [30:5-35:5]: TestSuites should have at least 1 test");
+                "COMPILATION warning at [30:5-35:5]: TestSuites should have at least 1 test");
         test("###Pure\n" +
                 "Class test::model\n" +
                 "{\n" +
@@ -2997,7 +2997,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    }\n" +
                 "  ]\n" +
                 ")\n" +
-                "\n", "COMPILATION error at [35:9-71:9]: Mapping Tests can only have one assertion");
+                "\n", "COMPILATION warning at [35:9-71:9]: Mapping Tests can only have one assertion");
 
     }
 
@@ -3231,7 +3231,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [34:3-39:3]: Can't find the packageable element 'my::someRelationFunction__Relation_1_'");
+                ")\n", "COMPILATION warning at [34:3-39:3]: Can't find the packageable element 'my::someRelationFunction__Relation_1_'");
     }
 
     @Test
@@ -3251,7 +3251,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [32:1-35:1]: Relation mapping function should return a Relation! Found a Integer instead.");
+                ")\n", "COMPILATION warning at [32:1-35:1]: Relation mapping function should return a Relation! Found a Integer instead.");
 
         testRelationMapping("###Pure\n" +
                 "function my::relationFunction(): Any[1]\n" +
@@ -3267,7 +3267,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [32:1-35:1]: Relation mapping function should return a Relation! Found a Any instead.");
+                ")\n", "COMPILATION warning at [32:1-35:1]: Relation mapping function should return a Relation! Found a Any instead.");
     }
 
     @Test
@@ -3282,7 +3282,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    firstName: FOO,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [37:5-18]: The system can't find the column FOO in the Relation (FIRSTNAME:String, AGE:Integer, FIRMID:Integer, CITY:String)");
+                ")\n", "COMPILATION warning at [37:5-18]: The system can't find the column FOO in the Relation (FIRSTNAME:String, AGE:Integer, FIRMID:Integer, CITY:String)");
     }
 
     @Test
@@ -3297,7 +3297,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    firstName: AGE,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [37:5-18]: Mismatching property and relation column types. Property type is String, but relation column it is mapped to has type Integer.");
+                ")\n", "COMPILATION warning at [37:5-18]: Mismatching property and relation column types. Property type is String, but relation column it is mapped to has type Integer.");
     }
 
     @Test
@@ -3319,7 +3319,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    name: NAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [44:5-14]: Properties in relation mappings can only have multiplicity 1 or 0..1, but the property 'name' has multiplicity [*].");
+                ")\n", "COMPILATION warning at [44:5-14]: Properties in relation mappings can only have multiplicity 1 or 0..1, but the property 'name' has multiplicity [*].");
     }
     
     @Test
@@ -3339,7 +3339,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [32:1-35:1]: Relation mapping function expecting arguments is not supported!");
+                ")\n", "COMPILATION warning at [32:1-35:1]: Relation mapping function expecting arguments is not supported!");
     }
     
 }

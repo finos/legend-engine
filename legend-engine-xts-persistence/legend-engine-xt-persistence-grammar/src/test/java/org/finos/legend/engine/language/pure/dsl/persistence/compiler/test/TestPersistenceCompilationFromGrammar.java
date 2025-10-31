@@ -110,7 +110,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [7:1-29:1]: Duplicated element 'test::TestPersistence'";
+        return "COMPILATION warning at [7:1-29:1]: Duplicated element 'test::TestPersistence'";
     }
 
     @Test
@@ -142,7 +142,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [9:3-25]: Can't find the packageable element 'test::Service'");
+                "}\n", "COMPILATION warning at [9:3-25]: Can't find the packageable element 'test::Service'");
     }
 
     @Test
@@ -203,7 +203,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [43:7-29]: Can't find the packageable element 'test::Binding'");
+                "}\n", "COMPILATION warning at [43:7-29]: Can't find the packageable element 'test::Binding'");
     }
 
     @Test
@@ -264,7 +264,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [43:7-31]: Can't find the packageable element 'test::Database'");
+                "}\n", "COMPILATION warning at [43:7-31]: Can't find the packageable element 'test::Database'");
     }
 
     @Test
@@ -334,7 +334,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [42:1-63:1]: Error in 'test::TestPersistence': Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION warning at [42:1-63:1]: Error in 'test::TestPersistence': Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -408,7 +408,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [40:1-69:1]: Error in 'test::TestPersistence': Can't find class 'test::ServiceResult'");
+                "}\n", "COMPILATION warning at [40:1-69:1]: Error in 'test::TestPersistence': Can't find class 'test::ServiceResult'");
     }
 
     @Test
@@ -487,7 +487,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [44:1-72:1]: Error in 'test::TestPersistence': Can't find property 'property1' in class 'test::ServiceResult'");
+                "}\n", "COMPILATION warning at [44:1-72:1]: Error in 'test::TestPersistence': Can't find property 'property1' in class 'test::ServiceResult'");
     }
 
     @Test
@@ -569,7 +569,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [63:9-66:9]: Target shape modelProperty 'property1' must refer to a class.");
+                "}\n", "COMPILATION warning at [63:9-66:9]: Target shape modelProperty 'property1' must refer to a class.");
     }
 
     @Test
@@ -651,7 +651,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      filterDuplicates: false;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [8:14-19]: Can't find type 'Animal'");
+                "}\n", "COMPILATION warning at [8:14-19]: Can't find type 'Animal'");
     }
 
     @Test
@@ -724,7 +724,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      modelClass: test::ServiceResult;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [42:1-68:1]: Error in 'test::TestPersistence': Property 'deleted' must exist in class 'test::ServiceResult'");
+                "}\n", "COMPILATION warning at [42:1-68:1]: Error in 'test::TestPersistence': Property 'deleted' must exist in class 'test::ServiceResult'");
     }
 
     @Test
@@ -858,7 +858,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      }\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}", "COMPILATION error at [62:1-129:1]: Error in 'org::dxl::ZooPersistence': Property 'deleted' must exist in class 'org::dxl::Person'");
+                "}", "COMPILATION warning at [62:1-129:1]: Error in 'org::dxl::ZooPersistence': Property 'deleted' must exist in class 'org::dxl::Person'");
     }
 
     @Test
@@ -1445,7 +1445,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      isTestDataFromServiceOutput: false;\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}\n", null, Collections.singletonList("COMPILATION error at [48:1-114:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
+                "}\n", null, Collections.singletonList("COMPILATION warning at [48:1-114:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 
@@ -1691,7 +1691,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                         "      }\n" +
                         "    ];\n" +
                         "  }\n" +
-                        "}", null, Collections.singletonList("COMPILATION error at [68:1-149:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
+                        "}", null, Collections.singletonList("COMPILATION warning at [68:1-149:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 

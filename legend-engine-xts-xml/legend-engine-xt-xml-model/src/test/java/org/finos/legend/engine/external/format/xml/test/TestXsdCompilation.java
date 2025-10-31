@@ -82,7 +82,7 @@ public class TestXsdCompilation extends ExternalSchemaCompilationTest
                         "</xs:schema>", true) + "; }" +
                         "  ];\n" +
                         "}\n",
-                "COMPILATION error at [6:7-374]: Error in schema content: Location must be specified for XSD schemas"
+                "COMPILATION warning at [6:7-374]: Error in schema content: Location must be specified for XSD schemas"
         );
     }
 
@@ -109,7 +109,7 @@ public class TestXsdCompilation extends ExternalSchemaCompilationTest
                         "    }\n" +
                         "  ];\n" +
                         "}\n",
-                "COMPILATION error at [8:9-354]: Error in schema content [8:7]: The element type \"xs:sequence\" must be terminated by the matching end-tag \"</xs:sequence>\"."
+                "COMPILATION warning at [8:9-354]: Error in schema content [8:7]: The element type \"xs:sequence\" must be terminated by the matching end-tag \"</xs:sequence>\"."
         );
     }
 }

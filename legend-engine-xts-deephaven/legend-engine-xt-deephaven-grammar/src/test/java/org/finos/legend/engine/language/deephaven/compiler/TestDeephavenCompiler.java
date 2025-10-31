@@ -70,7 +70,7 @@ public class TestDeephavenCompiler extends TestCompilationFromGrammar.TestCompil
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [17:1-27:1]: Duplicated element 'test::Store::foo'";
+        return "COMPILATION warning at [17:1-27:1]: Duplicated element 'test::Store::foo'";
     }
 
     @Test

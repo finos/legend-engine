@@ -37,7 +37,7 @@ public class TestSnowflakeAppCompilationFromGrammar extends TestCompilationFromG
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-8:1]: Duplicated element 'anything::Name'";
+        return "COMPILATION warning at [5:1-8:1]: Duplicated element 'anything::Name'";
     }
 
     @Test

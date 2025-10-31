@@ -102,7 +102,7 @@ public class TestElasticsearchCompiler extends TestCompilationFromGrammar.TestCo
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [48:1-90:1]: Duplicated element 'abc::abc::Store'";
+        return "COMPILATION warning at [48:1-90:1]: Duplicated element 'abc::abc::Store'";
     }
 
     @Test

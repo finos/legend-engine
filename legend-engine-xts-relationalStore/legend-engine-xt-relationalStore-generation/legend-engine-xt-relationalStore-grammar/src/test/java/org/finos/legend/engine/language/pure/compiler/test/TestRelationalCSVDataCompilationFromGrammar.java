@@ -97,7 +97,7 @@ public class TestRelationalCSVDataCompilationFromGrammar
                             "          '2,Jack\\n';\n" +
                             "  }#\n" +
                             "}\n",
-                        "COMPILATION error at [12:5-15:21]: Duplicated table name: 'mySchema.MyTable'"
+                        "COMPILATION warning at [12:5-15:21]: Duplicated table name: 'mySchema.MyTable'"
                 );
     }
 

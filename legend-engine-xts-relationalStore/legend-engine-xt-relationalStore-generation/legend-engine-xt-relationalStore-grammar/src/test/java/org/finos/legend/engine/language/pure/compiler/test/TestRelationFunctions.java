@@ -220,7 +220,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   #>{a::A.tb}#->filter(i|$i.ide == 'ok')\n" +
-                        "}", "COMPILATION error at [7:30-32]: The column 'ide' can't be found in the relation (id:Int)"
+                        "}", "COMPILATION warning at [7:30-32]: The column 'ide' can't be found in the relation (id:Int)"
         );
     }
 
@@ -251,7 +251,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   #>{a::A.tb}#->concatenate(#>{a::B.tb}#)\n" +
-                        "}", "COMPILATION error at [8:18-28]: The two relations are incompatible and can't be concatenated (id:Int) and (otherCol:Int)"
+                        "}", "COMPILATION warning at [8:18-28]: The two relations are incompatible and can't be concatenated (id:Int) and (otherCol:Int)"
         );
     }
 
@@ -281,7 +281,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   #>{a::A.tb}#->rename(~idw,~id2)\n" +
-                        "}", "COMPILATION error at [7:26-28]: The column 'idw' can't be found in the relation (id:Int)"
+                        "}", "COMPILATION warning at [7:26-28]: The column 'idw' can't be found in the relation (id:Int)"
         );
     }
 
@@ -312,7 +312,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->rename(~id, ~newId)->filter(i|$i.id == 'ok')\n" +
                         "}",
-                "COMPILATION error at [7:51-52]: The column 'id' can't be found in the relation (newId:Int)"
+                "COMPILATION warning at [7:51-52]: The column 'id' can't be found in the relation (newId:Int)"
         );
     }
 
@@ -343,7 +343,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->extend(~id:x|$x.id->toOne() + 1)\n" +
                         "}",
-                "COMPILATION error at [7:18-23]: The relation contains duplicates: [id]"
+                "COMPILATION warning at [7:18-23]: The relation contains duplicates: [id]"
         );
     }
 
@@ -359,7 +359,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->extend(~id:x|$x.ide->toOne() + 1)\n" +
                         "}",
-                "COMPILATION error at [7:34-36]: The column 'ide' can't be found in the relation (id:Int)"
+                "COMPILATION warning at [7:34-36]: The column 'ide' can't be found in the relation (id:Int)"
         );
     }
 
@@ -390,7 +390,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne() + 1)->filter(i|$i.neid == 'ok')\n" +
                         "}",
-                "COMPILATION error at [7:65-68]: The column 'neid' can't be found in the relation (id:Int, nid:Integer[1])"
+                "COMPILATION warning at [7:65-68]: The column 'neid' can't be found in the relation (id:Int, nid:Integer[1])"
         );
     }
 
@@ -436,7 +436,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne()+1:y|$y->joinStrings(','))\n" +
                         "}",
-                "COMPILATION error at [7:55-65]: Can't find a match for function 'joinStrings(Integer[*],String[1])'"
+                "COMPILATION warning at [7:55-65]: Can't find a match for function 'joinStrings(Integer[*],String[1])'"
         );
     }
 
@@ -466,7 +466,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   #>{a::A.tb}#->extend(over(~ide), ~nid:{p,w,r|$r.id}:y|$y->sum())\n" +
-                        "}", "COMPILATION error at [7:31-33]: The column 'ide' can't be found in the relation (id:Int)"
+                        "}", "COMPILATION warning at [7:31-33]: The column 'ide' can't be found in the relation (id:Int)"
         );
     }
 
@@ -497,7 +497,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->extend(over(~ids->ascending()), ~nid:{p,w,r|$r.id}:y|$y->sum())\n" +
                         "}",
-                "COMPILATION error at [7:31-33]: The column 'ids' can't be found in the relation (id:Int)"
+                "COMPILATION warning at [7:31-33]: The column 'ids' can't be found in the relation (id:Int)"
         );
     }
 
@@ -514,7 +514,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->extend(over(~id), ~nid:{p,w,r|$r.ide}:y|$y->sum())\n" +
                         "}",
-                "COMPILATION error at [7:51-53]: The column 'ide' can't be found in the relation (id:Int)");
+                "COMPILATION warning at [7:51-53]: The column 'ide' can't be found in the relation (id:Int)");
     }
 
 
@@ -699,7 +699,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->sort(ascending(~id2))\n" +
                         "}",
-                "COMPILATION error at [7:34-36]: The column 'id2' can't be found in the relation (id:Int)"
+                "COMPILATION warning at [7:34-36]: The column 'id2' can't be found in the relation (id:Int)"
         );
     }
 
@@ -715,7 +715,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->sort(~id2)\n" +
                         "}",
-                "COMPILATION error at [7:18-21]: Can't find a match for function 'sort(RelationStoreAccessor<(id:Int)>[1],ColSpec<(id2:NULL[NULL])>[1])'"
+                "COMPILATION warning at [7:18-21]: Can't find a match for function 'sort(RelationStoreAccessor<(id:Int)>[1],ColSpec<(id2:NULL[NULL])>[1])'"
         );
     }
 
@@ -731,7 +731,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->sort(~id->desc())\n" +
                         "}",
-                "COMPILATION error at [7:28-31]: Can't find a match for function 'desc(ColSpec<(id:Int)>[1])'"
+                "COMPILATION warning at [7:28-31]: Can't find a match for function 'desc(ColSpec<(id:Int)>[1])'"
         );
     }
 
@@ -784,7 +784,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::pure::functions::relation::JoinKind.INNER, {a,b|$a.xid == $b.id2})\n" +
                         "}",
-                "COMPILATION error at [7:95-97]: The column 'xid' can't be found in the relation (id:Int, other:Varchar(200))"
+                "COMPILATION warning at [7:95-97]: The column 'xid' can't be found in the relation (id:Int, other:Varchar(200))"
         );
     }
 
@@ -803,7 +803,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::pure::functions::relation::JoinKind.INNER, {a,b|$a.id == $b.eid2})\n" +
                         "}",
-                "COMPILATION error at [7:104-107]: The column 'eid2' can't be found in the relation (id2:Int, errr:Varchar(200))"
+                "COMPILATION warning at [7:104-107]: The column 'eid2' can't be found in the relation (id2:Int, errr:Varchar(200))"
         );
     }
 
@@ -855,7 +855,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->groupBy(~[oteher], ~new : x|$x.id : y|$y->sum())\n" +
                         "}",
-                "COMPILATION error at [7:28-33]: The column 'oteher' can't be found in the relation (id:Int, other:Varchar(200))"
+                "COMPILATION warning at [7:28-33]: The column 'oteher' can't be found in the relation (id:Int, other:Varchar(200))"
         );
     }
 
@@ -873,7 +873,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->groupBy(~[other], ~new : x|$x.ied : y|$y->sum())\n" +
                         "}",
-                "COMPILATION error at [7:48-50]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
+                "COMPILATION warning at [7:48-50]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
         );
     }
 
@@ -891,7 +891,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->groupBy(~[other], ~new : x|$x.other : y|$y->sum())\n" +
                         "}",
-                "COMPILATION error at [7:62-64]: Can't find a match for function 'sum(Varchar(200)[*])"
+                "COMPILATION warning at [7:62-64]: Can't find a match for function 'sum(Varchar(200)[*])"
         );
     }
 
@@ -926,7 +926,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->groupBy(~[other], ~new : x|$x.id : y|$y->sum())->filter(x|$x.newE > 1)\n" +
                         "}",
-                "COMPILATION error at [7:79-82]: The column 'newE' can't be found in the relation (other:Varchar(200), new:Integer[1])"
+                "COMPILATION warning at [7:79-82]: The column 'newE' can't be found in the relation (other:Varchar(200), new:Integer[1])"
         );
     }
 
@@ -978,7 +978,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.id : y|$y->sum())->select(~many)\n" +
                         "}",
-                "COMPILATION error at [7:73-76]: The column 'many' can't be found in the relation ()"
+                "COMPILATION warning at [7:73-76]: The column 'many' can't be found in the relation ()"
         );
     }
 
@@ -996,7 +996,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->pivot(~[oteher], ~new : x|$x.id : y|$y->sum())\n" +
                         "}",
-                "COMPILATION error at [7:26-31]: The column 'oteher' can't be found in the relation (id:Int, other:Varchar(200))"
+                "COMPILATION warning at [7:26-31]: The column 'oteher' can't be found in the relation (id:Int, other:Varchar(200))"
         );
     }
 
@@ -1014,7 +1014,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.ied : y|$y->sum())\n" +
                         "}",
-                "COMPILATION error at [7:46-48]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
+                "COMPILATION warning at [7:46-48]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
         );
     }
 
@@ -1032,7 +1032,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->pivot(~[other], ~new : x|$x.other : y|$y->sum())\n" +
                         "}",
-                "COMPILATION error at [7:60-62]: Can't find a match for function 'sum(Varchar(200)[*])"
+                "COMPILATION warning at [7:60-62]: Can't find a match for function 'sum(Varchar(200)[*])"
         );
     }
 
@@ -1050,7 +1050,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->select(~[ied,id])\n" +
                         "}",
-                "COMPILATION error at [7:27-29]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
+                "COMPILATION warning at [7:27-29]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
         );
     }
 
@@ -1085,7 +1085,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->filter(row | eval(~ied, $row)->isEmpty())\n" +
                         "}",
-                "COMPILATION error at [7:37-39]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
+                "COMPILATION warning at [7:37-39]: The column 'ied' can't be found in the relation (id:Int, other:Varchar(200))"
         );
     }
 
@@ -1256,7 +1256,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                 "{\n" +
                 "  mappings: [mapping::myMapping];\n" +
                 "  connections:[];\n" +
-                "}\n", "COMPILATION error at [28:5-34:9]: Each RelationElement for a database accessor must be of the form schema.table");
+                "}\n", "COMPILATION warning at [28:5-34:9]: Each RelationElement for a database accessor must be of the form schema.table");
     }
 
     @Override
@@ -1274,6 +1274,6 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 }

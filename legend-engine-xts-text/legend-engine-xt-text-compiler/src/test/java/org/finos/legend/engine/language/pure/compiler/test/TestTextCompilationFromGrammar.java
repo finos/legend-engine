@@ -33,6 +33,6 @@ public class TestTextCompilationFromGrammar extends TestCompilationFromGrammar.T
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-9:1]: Duplicated element 'anything::class'";
+        return "COMPILATION warning at [5:1-9:1]: Duplicated element 'anything::class'";
     }
 }

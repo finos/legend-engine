@@ -16,7 +16,13 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.defect;
 
 public enum DefectSeverityLevel
 {
-    LOG,
-    WARN,
-    ERROR
+    INFO("information"),
+    WARN("warning"),
+    ERROR("error");
+
+    public final String level;
+    DefectSeverityLevel(String level)
+    {
+        this.level = level;
+    }
 }

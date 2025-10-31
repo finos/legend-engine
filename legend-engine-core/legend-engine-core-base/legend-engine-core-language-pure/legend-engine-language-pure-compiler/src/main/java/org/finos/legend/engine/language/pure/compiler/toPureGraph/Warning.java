@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.DefectAutoFixPossible;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.DefectSeverityLevel;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
@@ -23,15 +22,6 @@ public class Warning extends Defect
 {
     public Warning(SourceInformation sourceInformation, String message)
     {
-        super(DefectSeverityLevel.WARN, DefectAutoFixPossible.FALSE, sourceInformation, message);
-    }
-
-    /**
-     * This method is deprectated. Please use the 'buildPrettyDefectMessage' method instead.
-     */
-    @Deprecated
-    public String buildPrettyWarningMessage()
-    {
-        return ("COMPILATION error" + (sourceInformation == SourceInformation.getUnknownSourceInformation() || sourceInformation == null ? "" : " at " + sourceInformation.getMessage() + "") + (message == null ? "" : ": " + message));
+        super(DefectSeverityLevel.WARN, sourceInformation, message, "PureWarning");
     }
 }

@@ -45,7 +45,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 
     @Test
@@ -149,7 +149,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): String[*]\n" +
                 "{\n" +
                 "   main::Person.all(%2022-12-12, %2022-12-12).firm.name\n" +
-                "}\n", "COMPILATION error at [13:1-16:1]: Error in 'main::walkTree': No-Arg milestoned property: 'firm' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at [13:1-16:1]: Error in 'main::walkTree': No-Arg milestoned property: 'firm' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -498,7 +498,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Product.all(%2022-05-02).classification.exchange.name}\n" +
-                "}\n", "COMPILATION error at [11:1-14:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at [11:1-14:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -518,7 +518,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Product.all(%2022-11-12).classification.exchange.name}\n" +
-                "}\n", "COMPILATION error at [11:1-14:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [processingDate] parameters");
+                "}\n", "COMPILATION warning at [11:1-14:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [processingDate] parameters");
     }
 
     @Test
@@ -578,7 +578,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Product.all(%2022-11-12).classificationAllVersions->map(t|$t.exchange.exchangeName)}\n" +
-                "}\n", "COMPILATION error at [15:73-80]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at [15:73-80]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -601,7 +601,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Product.all(%2022-11-12).myClassification(%2022-11-12)->map(t|$t.exchange.exchangeName)}\n" +
-                "}\n", "COMPILATION error at [16:77-84]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at [16:77-84]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -624,7 +624,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Product.all(%2022-11-12).classification->map(c|^test::Classification(businessDate=%2022-11-12))->filter(t|$t.exchange.exchangeName == '')}\n" +
-                "}\n", "COMPILATION error at [16:121-128]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at [16:121-128]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     public void testMilestoningContextAllowedToPropagateFromNoArgQualifiedPropertyThroughFilterToNoArgMilestonedPropertyInLambda(boolean extraFilter)
@@ -674,7 +674,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Product.all(%2022-11-12).classificationAllVersions" + (extraFilter ? "->filter(t|$t.name == '')" : "") + "->filter(t2|$t2.exchange.exchangeName == '')}\n" +
-                "}\n", "COMPILATION error at " + errorNo + ": No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at " + errorNo + ": No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -704,7 +704,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Product.all(%2022-11-12).myClassification(%2022-11-12)" + (extraFilter ? "->filter(t|$t.name == '')" : "") + "->filter(t|$t.exchange.exchangeName == '')}\n" +
-                "}\n", "COMPILATION error at " + errorNo + ": No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at " + errorNo + ": No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -756,7 +756,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Product.all(%2022-11-12)->filter(p|$p.classificationAllVersions->exists(c|$c.exchange.exchangeName == ''))}\n" +
-                "}\n", "COMPILATION error at [15:89-96]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at [15:89-96]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -779,7 +779,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Product.all(%2022-12-12)->filter(p|$p.myClassification(%2022-11-12)->exists(c|$c.exchange.exchangeName == ''))}\n" +
-                "}\n", "COMPILATION error at [16:93-100]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at [16:93-100]: No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -841,7 +841,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "{\n" +
                 "   {|test::Product.all(%2022-11-15)->test::outOfScopeFunction(p: test::Product[1]|$p.classification.classificationType == '')}\n" +
                 "}" +
-                "function test::outOfScopeFunction(value:test::Product[*], func:Function[1]):test::Product[*]{$value}\n", "COMPILATION error at [10:86-99]: No-Arg milestoned property: 'classification' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "function test::outOfScopeFunction(value:test::Product[*], func:Function[1]):test::Product[*]{$value}\n", "COMPILATION warning at [10:86-99]: No-Arg milestoned property: 'classification' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -898,7 +898,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Product.all(%2022-11-12).myClassification(%2022-11-12).exchange.exchangeName}\n" +
-                "}\n", "COMPILATION error at [12:1-15:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at [12:1-15:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -918,7 +918,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Product.all(%2022-11-13).classificationAllVersions.exchange.exchangeName}\n" +
-                "}\n", "COMPILATION error at [11:1-14:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at [11:1-14:1]: Error in 'main::walkTree': No-Arg milestoned property: 'exchange' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -935,7 +935,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                 "function main::walkTree(): Any[*]\n" +
                 "{\n" +
                 "   {|test::Order.all().product.name}\n" +
-                "}\n", "COMPILATION error at [8:1-11:1]: Error in 'main::walkTree': No-Arg milestoned property: 'product' must be either called in a milestoning context or supplied with [businessDate] parameters");
+                "}\n", "COMPILATION warning at [8:1-11:1]: Error in 'main::walkTree': No-Arg milestoned property: 'product' must be either called in a milestoning context or supplied with [businessDate] parameters");
     }
 
     @Test
@@ -1000,7 +1000,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
         test("###Pure\n" +
                 "Class test::Order { createdLocation : test::Location[0..1]; }\n" +
                 "Class <<temporal.bitemporal>> test::Location{ place : String[1];}\n" +
-                "function main::walkTree(): Any[*] { {|test::Order.all().createdLocation.place} }\n", "COMPILATION error at [4:1-80]: Error in 'main::walkTree': No-Arg milestoned property: 'createdLocation' must be either called in a milestoning context or supplied with [processingDate, businessDate] parameters");
+                "function main::walkTree(): Any[*] { {|test::Order.all().createdLocation.place} }\n", "COMPILATION warning at [4:1-80]: Error in 'main::walkTree': No-Arg milestoned property: 'createdLocation' must be either called in a milestoning context or supplied with [processingDate, businessDate] parameters");
     }
 
     @Test
@@ -1039,7 +1039,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
         test("###Pure\n" +
                 "Class <<temporal.businesstemporal>> test::Order { createdLocation : test::Location[0..1]; }\n" +
                 "Class <<temporal.bitemporal>> test::Location{ place : String[1];}\n" +
-                "function main::walkTree(): Any[*] { {|test::Order.all(%2022-11-12).createdLocation.place} }\n", "COMPILATION error at [4:1-91]: Error in 'main::walkTree': No-Arg milestoned property: 'createdLocation' must be either called in a milestoning context or supplied with [processingDate, businessDate] parameters");
+                "function main::walkTree(): Any[*] { {|test::Order.all(%2022-11-12).createdLocation.place} }\n", "COMPILATION warning at [4:1-91]: Error in 'main::walkTree': No-Arg milestoned property: 'createdLocation' must be either called in a milestoning context or supplied with [processingDate, businessDate] parameters");
     }
 
     @Test

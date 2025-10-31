@@ -52,7 +52,7 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-12:1]: Duplicated element 'test::TestPersistenceContext'";
+        return "COMPILATION warning at [5:1-12:1]: Duplicated element 'test::TestPersistenceContext'";
     }
 
     @Test
@@ -181,7 +181,7 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
                 "      modelClass: test::ServiceResult;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", null, Collections.singletonList("COMPILATION error at [88:1-117:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
+                "}\n", null, Collections.singletonList("COMPILATION warning at [88:1-117:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 
@@ -326,6 +326,6 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
                 "      modelClass: test::ServiceResult;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [78:1-86:1]: AWS Glue platform validation error(s) for persistence context [test::TestPersistenceContext]: [Data processing units value must be at least 2]");
+                "}\n", "COMPILATION warning at [78:1-86:1]: AWS Glue platform validation error(s) for persistence context [test::TestPersistenceContext]: [Data processing units value must be at least 2]");
     }
 }

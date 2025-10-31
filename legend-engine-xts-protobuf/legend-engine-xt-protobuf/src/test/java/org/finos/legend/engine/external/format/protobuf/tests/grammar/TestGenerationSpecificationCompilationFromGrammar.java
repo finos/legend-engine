@@ -34,7 +34,7 @@ public class TestGenerationSpecificationCompilationFromGrammar extends TestCompi
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
     }
 
     @Test
@@ -51,14 +51,14 @@ public class TestGenerationSpecificationCompilationFromGrammar extends TestCompi
                 "GenerationSpecification model::MyGenerationSpecification\n" +
                 "{\n" +
                 "  fileGenerations: [_meta::myAvro, _meta::myAvro];\n" +
-                "}\n", "COMPILATION error at [10:36-48]: Duplicate file generation '_meta::myAvro'");
+                "}\n", "COMPILATION warning at [10:36-48]: Duplicate file generation '_meta::myAvro'");
         // file gen not found
         test(fileGen +
                 "###GenerationSpecification\n" +
                 "GenerationSpecification model::MyGenerationSpecification\n" +
                 "{\n" +
                 "  fileGenerations: [_meta::myAvroMisSpelled];\n" +
-                "}\n", "COMPILATION error at [10:21-43]: Can't find file generation '_meta::myAvroMisSpelled'");
+                "}\n", "COMPILATION warning at [10:21-43]: Can't find file generation '_meta::myAvroMisSpelled'");
         test("###GenerationSpecification\n" +
                 "GenerationSpecification _meta::MyGenerationSpecification\n" +
                 "{\n" +
@@ -67,7 +67,7 @@ public class TestGenerationSpecificationCompilationFromGrammar extends TestCompi
                 "      generationElement: model::MissingElement;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [5:5-7:5]: Can't find generation element 'model::MissingElement'");
+                "}\n", "COMPILATION warning at [5:5-7:5]: Can't find generation element 'model::MissingElement'");
     }
 
     @Test

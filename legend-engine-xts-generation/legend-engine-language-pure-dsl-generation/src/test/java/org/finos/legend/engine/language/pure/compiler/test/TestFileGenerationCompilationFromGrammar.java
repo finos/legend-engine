@@ -32,6 +32,6 @@ public class TestFileGenerationCompilationFromGrammar extends TestCompilationFro
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-8:1]: Duplicated element 'anything::somethingelse'";
+        return "COMPILATION warning at [5:1-8:1]: Duplicated element 'anything::somethingelse'";
     }
 }

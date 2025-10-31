@@ -36,7 +36,7 @@ public class TestBigQueryFunctionCompilationFromGrammar extends TestCompilationF
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:32]: Duplicated element 'anything::Name'";
+        return "COMPILATION warning at [5:1-7:32]: Duplicated element 'anything::Name'";
     }
 
     @Test

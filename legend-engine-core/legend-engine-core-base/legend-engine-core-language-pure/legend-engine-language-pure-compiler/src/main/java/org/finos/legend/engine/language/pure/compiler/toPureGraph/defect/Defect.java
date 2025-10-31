@@ -19,16 +19,16 @@ import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 public class Defect
 {
     public DefectSeverityLevel defectSeverityLevel;
-    public DefectAutoFixPossible defectAutoFixPossible;
     public SourceInformation sourceInformation;
     public String message;
+    public String defectTypeId;
 
-    public Defect(DefectSeverityLevel defectSeverityLevel, DefectAutoFixPossible defectAutoFixPossible, SourceInformation sourceInformation, String message)
+    public Defect(DefectSeverityLevel defectSeverityLevel, SourceInformation sourceInformation, String message, String defectTypeId)
     {
         this.defectSeverityLevel = defectSeverityLevel;
-        this.defectAutoFixPossible = defectAutoFixPossible;
         this.sourceInformation = sourceInformation;
         this.message = message;
+        this.defectTypeId = defectTypeId;
     }
 
     /**
@@ -36,6 +36,6 @@ public class Defect
      */
     public String buildPrettyDefectMessage()
     {
-        return ("COMPILATION error" + (sourceInformation == SourceInformation.getUnknownSourceInformation() || sourceInformation == null ? "" : " at " + sourceInformation.getMessage() + "") + (message == null ? "" : ": " + message));
+        return ("COMPILATION " + defectSeverityLevel.level + (sourceInformation == SourceInformation.getUnknownSourceInformation() || sourceInformation == null ? "" : " at " + sourceInformation.getMessage() + "") + (message == null ? "" : ": " + message));
     }
 }

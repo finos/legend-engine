@@ -40,7 +40,7 @@ public class TestHostedServiceCompilationFromGrammar extends TestCompilationFrom
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:108]: Duplicated element 'anything::Name'";
+        return "COMPILATION warning at [5:1-7:108]: Duplicated element 'anything::Name'";
     }
 
     @Test

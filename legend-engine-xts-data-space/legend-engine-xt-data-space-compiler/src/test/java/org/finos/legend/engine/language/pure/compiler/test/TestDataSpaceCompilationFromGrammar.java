@@ -70,7 +70,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "{\n" +
                 "  class: test::B;\n" +
                 "  url: 'executor:default';\n" +
-                "}\n", "COMPILATION error at [38:12-50]: Dataspace model::nonExistantDataspace cannot be found.");
+                "}\n", "COMPILATION warning at [38:12-50]: Dataspace model::nonExistantDataspace cannot be found.");
     }
 
     @Test
@@ -336,7 +336,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [76:9-79:10]: Dataspace model::dataSpace does not have test data in its default execution context.");
+                "}\n", "COMPILATION warning at [76:9-79:10]: Dataspace model::dataSpace does not have test data in its default execution context.");
     }
 
     @Test
@@ -413,7 +413,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [63:9-66:10]: Dataspace model::nonexistantDataspace cannot be found.");
+                "}\n", "COMPILATION warning at [63:9-66:10]: Dataspace model::nonexistantDataspace cannot be found.");
     }
 
     @Test
@@ -472,7 +472,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [20:1-26:1]: Duplicated mapping include " +
+                "}\n", "COMPILATION warning at [20:1-26:1]: Duplicated mapping include " +
                 "'model::mapping::dummyMapping' in mapping 'test::M1'");
     }
 
@@ -499,7 +499,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [3:1-14:1]: Duplicated element 'model::element'";
+        return "COMPILATION warning at [3:1-14:1]: Duplicated element 'model::element'";
     }
 
     @Test
@@ -519,7 +519,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [2:13-21]: Can't find the profile 'NoProfile'");
+                "}\n", "COMPILATION warning at [2:13-21]: Can't find the profile 'NoProfile'");
 
         // Faulty tagged value
         test("###DataSpace\n" +
@@ -535,7 +535,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [2:13-21]: Can't find the profile 'NoProfile'");
+                "}\n", "COMPILATION warning at [2:13-21]: Can't find the profile 'NoProfile'");
     }
 
 
@@ -550,7 +550,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  [\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [2:1-7:1]: Data space must have at least one execution context");
+                "}\n", "COMPILATION warning at [2:1-7:1]: Data space must have at least one execution context");
 
         // Duplicated execution contexts
         test("###Mapping\n" +
@@ -588,7 +588,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [27:5-32:5]: Data space execution context, Context 1, is not unique");
+                "}\n", "COMPILATION warning at [27:5-32:5]: Data space execution context, Context 1, is not unique");
 
 
         // Unknown default execution context
@@ -621,7 +621,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 2';\n" +
-                "}\n", "COMPILATION error at [18:1-29:1]: Default execution context 'Context 2' does not match any existing execution contexts");
+                "}\n", "COMPILATION warning at [18:1-29:1]: Default execution context 'Context 2' does not match any existing execution contexts");
 
         // reference resolution
         test("###DataSpace\n" +
@@ -653,7 +653,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "###Mapping\n" +
                 "Mapping model::dummyMapping2\n" +
                 "(\n" +
-                ")\n", "COMPILATION error at [8:7-35]: Can't find mapping 'model::dummyMapping'");
+                ")\n", "COMPILATION warning at [8:7-35]: Can't find mapping 'model::dummyMapping'");
 
         test("###Mapping\n" +
                 "Mapping model::dummyMapping\n" +
@@ -674,7 +674,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [15:7-42]: Can't find packageable runtime 'model::dummyRuntime'");
+                "}\n", "COMPILATION warning at [15:7-42]: Can't find packageable runtime 'model::dummyRuntime'");
 
         // Default runtime is not compatible with execution context mapping
         test("###Mapping\n" +
@@ -710,7 +710,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [22:1-33:1]: Execution context 'Context 1' default runtime is not compatible with mapping");
+                "}\n", "COMPILATION warning at [22:1-33:1]: Execution context 'Context 1' default runtime is not compatible with mapping");
     }
 
     @Test
@@ -888,7 +888,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      query: src: model::sub::element[1]|$srssc;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [43:42-47]: Can't find variable class for variable 'srssc' in the graph");
+                "}\n", "COMPILATION warning at [43:42-47]: Can't find variable class for variable 'srssc' in the graph");
 
         test("Class model::element {}\n" +
                 "Class model::sub::element {}\n" +
@@ -936,7 +936,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      query: src: model::sub::element[1]|$srssc;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [20:1-46:1]: Data space executable id, 1, is not unique");
+                "}\n", "COMPILATION warning at [20:1-46:1]: Data space executable id, 1, is not unique");
 
         test("Class model::element {}\n" +
                 "Class model::sub::element {}\n" +
@@ -984,7 +984,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      query: src: model::sub::element[1]|$srssc;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [20:1-46:1]: Data space template executable's executionContextKey, random 1, is not valid. Please specify one from [Context 1]");
+                "}\n", "COMPILATION warning at [20:1-46:1]: Data space template executable's executionContextKey, random 1, is not valid. Please specify one from [Context 1]");
     }
 
     @Test
@@ -1100,7 +1100,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      executable: model::templateFunc():TabularDataSet[1];\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n","COMPILATION error at [44:1-70:1]: Data space executable id, 1, is not unique");
+                "}\n","COMPILATION warning at [44:1-70:1]: Data space executable id, 1, is not unique");
 
         test(model +
                 "###DataSpace\n" +
@@ -1189,7 +1189,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
                 "  elements: [model::element, model::dummyMapping];\n" +
-                "}\n", "COMPILATION error at [30:30-48]: Included element is not of supported types (only packages, classes, enumerations, and associations are supported)");
+                "}\n", "COMPILATION warning at [30:30-48]: Included element is not of supported types (only packages, classes, enumerations, and associations are supported)");
     }
 
     @Test
@@ -1258,7 +1258,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
                 "  featuredDiagrams: [model::SomeDiagram];\n" +
-                "}\n", "COMPILATION error at [29:22-39]: Can't find diagram 'model::SomeDiagram'");
+                "}\n", "COMPILATION warning at [29:22-39]: Can't find diagram 'model::SomeDiagram'");
 
         test("###Mapping\n" +
                 "Mapping model::dummyMapping\n" +
@@ -1290,7 +1290,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
                 "  diagrams: [{ title: 'MyDiag'; diagram: model::SomeDiagram; }];\n" +
-                "}\n", "COMPILATION error at [29:33-60]: Can't find diagram 'model::SomeDiagram'");
+                "}\n", "COMPILATION warning at [29:33-60]: Can't find diagram 'model::SomeDiagram'");
     }
 
     @Test
@@ -1407,6 +1407,6 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
                 "  executables: [{ title: 'MyExec'; executable: model::MyService; }, { title: 'MyExec1'; executable: model::Mine; }];\n" +
-                "}\n", "COMPILATION error at [42:1-54:1]: Error in 'model::dataSpace': Can't find the packageable element 'model::Mine'");
+                "}\n", "COMPILATION warning at [42:1-54:1]: Error in 'model::dataSpace': Can't find the packageable element 'model::Mine'");
     }
 }

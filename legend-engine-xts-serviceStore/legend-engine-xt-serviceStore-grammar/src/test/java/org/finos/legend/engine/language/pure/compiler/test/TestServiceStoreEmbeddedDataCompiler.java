@@ -518,7 +518,7 @@ public class TestServiceStoreEmbeddedDataCompiler
                         "    ]\n" +
                         "  }#\n" +
                         "}\n",
-                "COMPILATION error at [8:9-19:10]: Request Body pattern should not be provided for GET requests"
+                "COMPILATION warning at [8:9-19:10]: Request Body pattern should not be provided for GET requests"
         );
     }
 
@@ -560,7 +560,7 @@ public class TestServiceStoreEmbeddedDataCompiler
                         "    ]\n" +
                         "  }#\n" +
                         "}\n",
-                "COMPILATION error at [8:9-11:10]: Either url or urlPath must be provided with each request"
+                "COMPILATION warning at [8:9-11:10]: Either url or urlPath must be provided with each request"
         );
 
         test("###Data\n" +
@@ -600,7 +600,7 @@ public class TestServiceStoreEmbeddedDataCompiler
                         "    ]\n" +
                         "  }#\n" +
                         "}\n",
-                "COMPILATION error at [8:9-13:10]: Both url and urlPath must not be provided with any request"
+                "COMPILATION warning at [8:9-13:10]: Both url and urlPath must not be provided with any request"
         );
 
         test("###Data\n" +
@@ -647,7 +647,7 @@ public class TestServiceStoreEmbeddedDataCompiler
                         "    ]\n" +
                         "  }#\n" +
                         "}\n",
-                "COMPILATION error at [8:9-20:10]: urlPath (in place of url) should be used with query parameters"
+                "COMPILATION warning at [8:9-20:10]: urlPath (in place of url) should be used with query parameters"
         );
     }
 }
