@@ -42,7 +42,7 @@ function meta::external::function::activator::snowflakeApp::generation::generate
       | let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
     );
   let generatedQueryNode = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(node|$node.sqlQuery->toLower()->startsWith('select'))->last()->toOne('candidate query not found');
-  let usedTables =  $generatedQueryNode.metadata->filter(m| $m->instanceOf(TableInfo))->cast(@TableInfo)->toOne('No table info found').info->map(i|$i.schema+'.'+$i.table);
+  let usedTables =  $generatedQueryNode.metadata->filter(m|$m->instanceOf(TableMetadata))->cast(@TableMetadata)->toOne('No table info found').tables->map(i|$i.schema.name + '.' + $i.name);
   if($variables->isEmpty(),
     |
       let query = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.' + $deploymentSchema + '.' +$s.applicationName->toUpper() +'('+ $inputParamsStub + ') RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS $$ '+ $generatedQueryNode.sqlQuery +' $$;';

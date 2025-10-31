@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::relation::*;
 import meta::pure::executionPlan::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
@@ -47,18 +48,11 @@ Class meta::relational::mapping::TempTableColumnMetaData
 
 Class meta::relational::mapping::QueryMetadata
 {
-
 }
 
-Class meta::relational::mapping::TableInfo extends QueryMetadata
+Class meta::relational::mapping::TableMetadata extends QueryMetadata
 {
-  info: TableIdentifier[*];
-}
-
-Class  meta::relational::mapping::TableIdentifier
-{
-  schema: String[1];
-  table: String[1];
+  tables: Table[*];
 }
 
 Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
