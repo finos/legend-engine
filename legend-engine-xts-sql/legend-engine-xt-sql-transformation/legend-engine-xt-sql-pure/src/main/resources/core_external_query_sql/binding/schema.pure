@@ -28,7 +28,7 @@ function meta::external::query::sql::schema::typeToPrimitiveType(dt : Type[1]) :
          pair(Integer, meta::external::query::sql::schema::metamodel::PrimitiveType.Integer),
          pair(Decimal, meta::external::query::sql::schema::metamodel::PrimitiveType.Decimal)
       ]
-   )->get($dt);
+   )->get($dt->meta::external::query::sql::transformation::queryToPure::preciseToPrimitive());
    if($type->isEmpty(), |fail('Unknown primitive type: ' + $dt.name->toOne()), |[]);
    $type->toOne();
 }

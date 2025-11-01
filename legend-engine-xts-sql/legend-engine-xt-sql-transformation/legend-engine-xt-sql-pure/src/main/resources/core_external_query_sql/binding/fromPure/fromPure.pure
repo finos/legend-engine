@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::precisePrimitives::*;
 import meta::pure::functions::variant::navigation::*;
 import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
@@ -175,12 +176,6 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
 //  println('Transfomed: '+$pureFunc->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
   // SQL to Pure ---
   $pureFunc;
-}
-
-
-function meta::external::query::sql::transformation::queryToPure::emptyMapping():Mapping[1]
-{
-  ^Mapping(package = meta::external::query::sql::transformation::queryToPure, name = 'sqlDummy')
 }
 
 function meta::external::query::sql::transformation::queryToPure::getPlanResultFromSQL(
@@ -1318,7 +1313,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let newExp = ^TDSBuilder().sort($context.expression->toOne(), $sortInformation, $context.relation->isTrue());
 
-  clone(^$context(expression = $newExp), $context);
+  //no need to clone as sort does not alter schema
+  ^$context(expression = $newExp);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createSortItemFunction(si:SortItem[1], context: SqlTransformContext[1]):ValueSpecification[1]
@@ -1361,7 +1357,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let limitValue = processExpression($limit, $expContext, $context);
   let newExp = ^TDSBuilder().limit($context.expression->toOne(), $limitValue, $context.relation->isTrue());
 
-  clone(^$context(expression = $newExp), $context);
+  //no need to clone as limit does not alter schema
+  ^$context(expression = $newExp);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createOffset(offset: meta::external::query::sql::metamodel::Expression[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1375,7 +1372,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let offsetValue = processExpression($offset, $expContext, $context);
   let newExp = ^TDSBuilder().drop($context.expression->toOne(), $offsetValue, $context.relation->isTrue());
 
-  clone(^$context(expression = $newExp), $context);
+  //no need to clone as offset does not alter schema
+  ^$context(expression = $newExp);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createLimitOffset(limit: meta::external::query::sql::metamodel::Expression[1], offset: meta::external::query::sql::metamodel::Expression[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1395,7 +1393,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let newExp = ^TDSBuilder().slice($context.expression->toOne(), $offSetValue, $limitAdjusted, $context.relation->isTrue());
 
-  clone(^$context(expression = $newExp), $context);
+  //no need to clone as slice does not alter schema
+  ^$context(expression = $newExp);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTableSubquery(tsq: TableSubquery[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1709,25 +1708,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         ]->getValue(true, | $expression)->eval()
       );
 
-    clone(^$context(expression = $scopedExpression), $context);
+    //no need to clone as from does not alter schema
+    ^$context(expression = $scopedExpression);
   );
 }
-
-//TODO add with?
-function meta::external::query::sql::transformation::queryToPure::fromFunctions():ConcreteFunctionDefinition<Any>[*]
-{
-  [
-    meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
-    meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
-    meta::pure::mapping::from_T_m__Runtime_1__T_m_,
-    meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
-    //  meta::pure::mapping::from_T_m__DataSpace_1__T_m_,
-    //  meta::pure::mapping::from_T_m__DataSpaceExecutionContext_1__T_m_,
-    meta::pure::mapping::from_T_m__SingleExecutionParameters_1__T_m_,
-    meta::pure::mapping::from_T_m__ExecutionEnvironmentInstance_1__T_m_
-  ]
-}
-
 
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelectItems(selectItems: SelectItem[*], context: SqlTransformContext[1], useContextForNameResolve:Boolean[1]): Pair<LambdaFunction<Any>, String>[*]
@@ -1754,7 +1738,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         //set doCastNonPrimitiveColumnAccessor to ensure correct column type for enums
         //we handle the Null expression here as we have to treat differently in the context of "select null" to explicitly type
         let expression = $s.expression->match([
-          n:NullLiteral[1] | createCast(iv([]), String)->evaluateAndDeactivate(),
+          n:NullLiteral[1] | createNormalizedCast(iv([]), String)->evaluateAndDeactivate(),
           e:meta::external::query::sql::metamodel::Expression[1] |
             let vs = $e->processExpression(^$expContext(doCastNonPrimitiveColumnAccessor = true), $context)->toOne();
 
@@ -1977,9 +1961,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let newExp = ^TDSBuilder().filter($context.expression->toOne(), $lambda, $context.relation->isTrue());
 
-  clone(^$context(expression = $newExp), $context);
-
-
+  //no need to clone as filter does not alter schema
+  ^$context(expression = $newExp);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processExpressions(expressions: meta::external::query::sql::metamodel::Expression[*], expContext:SqlTransformExpressionContext[1], context: SqlTransformContext[1]):ValueSpecification[*]
@@ -2033,7 +2016,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let left = $b.left->processExpression($expContext, $context);
   let right = $b.right->processExpression($expContext, $context);
 
-  assert($left.genericType.rawType == Integer, 'only integer values currently supported for bitwise operations');
+  assert($left.genericType.rawType->preciseToPrimitive() == Integer, 'only integer values currently supported for bitwise operations');
 
   let func = [
     pair(BitwiseBinaryOperator.AND, bitAnd_Integer_1__Integer_1__Integer_1_),
@@ -2051,7 +2034,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let value = $b.value->processExpression($expContext, $context);
   let shift = $b.shift->processExpression($expContext, $context);
 
-  assert($value.genericType.rawType == Integer, 'only integer values currently supported for bitwise operations');
+  assert($value.genericType.rawType->preciseToPrimitive() == Integer, 'only integer values currently supported for bitwise operations');
 
   let func = [
     pair(BitwiseShiftDirection.LEFT, bitShiftLeft_Integer_1__Integer_1__Integer_1_),
@@ -2117,7 +2100,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     pair(String, between_String_$0_1$__String_$0_1$__String_$0_1$__Boolean_1_),
     pair(StrictDate, between_StrictDate_$0_1$__StrictDate_$0_1$__StrictDate_$0_1$__Boolean_1_),
     pair(DateTime, between_DateTime_$0_1$__DateTime_$0_1$__DateTime_$0_1$__Boolean_1_)
-  ]->filter(p | $p.first == $types->first()).second->first();
+  ]->filter(p | $p.first == $types->first()->preciseToPrimitive()).second->first();
 
   if ($func->isNotEmpty(),
     | sfe($func->toOne(), [$value, $min, $max]);,
@@ -2295,7 +2278,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         pair($castName == 'VARCHAR', | processVarcharCast($c, $expression, $expContext, $context)),
         pair($castName == 'NUMERIC' || $castName == 'DECIMAL', | processNumericCast($c, $expression, $expContext, $context)),
         pair($castName->in(['DOUBLE PRECISION', 'FLOAT8']), | processDoublePrecisionCast($c, $expression, $expContext, $context)),
-        pair($type == String || $castName->in(['TEXT', 'JSON', 'JSONB']), | processCastAsParse($c, $expression, $expContext, $context)),
+        pair($type->preciseToPrimitive() == String || $castName->in(['TEXT', 'JSON', 'JSONB']), | processCastAsParse($c, $expression, $expContext, $context)),
         pair(true, | processCastAsCast($c, $expression, $expContext, $context))
       ]->getValues(true)->first()->toOne()->eval()->evaluateAndDeactivate();
     );
@@ -2324,13 +2307,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   let type = $v->evaluateAndDeactivate().genericType.rawType->toOne();
 
-  let decimal = [
-    pair(String, | processCastAsParse(^$c(type = ^ColumnType(name = 'NUMERIC')), $v, $expContext, $context)),
-    pair(Decimal, | $v),
-    pair(Float, | sfe(toDecimal_Number_1__Decimal_1_, $v)),
-    pair(Integer, | sfe(toDecimal_Number_1__Decimal_1_, $v)),
-    pair(Number, | sfe(toDecimal_Number_1__Decimal_1_, $v))
-  ]->getValue($type)->eval();
+  let decimal = if([
+                  pair(|$type->subTypeOfExNil(String), | processCastAsParse(^$c(type = ^ColumnType(name = 'NUMERIC')), $v, $expContext, $context)),
+                  pair(|$type->subTypeOfExNil(Decimal), | $v),
+                  pair(|$type->subTypeOfExNil(Number), | sfe(toDecimal_Number_1__Decimal_1_, $v))
+                ],
+                | fail('no decimal conversion for type "' + $type.name ->toOne() + '"'); iv(1);
+  );
 
   let scale = if ($c.type.parameters->size() == 2, | $c.type.parameters->at(1), | []);
 
@@ -2366,13 +2349,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   let type = $v->evaluateAndDeactivate().genericType.rawType;
 
-  if ($type == String, | processParseDate($v), | $v);
+  if ($type->preciseToPrimitive() == String, | processParseDate($v), | $v);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::possiblyProcessToString(v:ValueSpecification[1]):ValueSpecification[1]
 {
   let type = $v->evaluateAndDeactivate().genericType.rawType;
-  if ($type == String, | $v, | sfe(toString_Any_1__String_1_, $v));
+  if ($type->preciseToPrimitive() == String, | $v, | sfe(toString_Any_1__String_1_, $v));
 }
 
 //TODO revisit to fully push down
@@ -2403,22 +2386,32 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let type = getCastType($c.type.name);
   let genericType = ^GenericType(rawType = $type);
 
-  createCast($v, $type);
+  createNormalizedCast($v, $type);
 }
 
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::createCast(expression:ValueSpecification[1], type:Type[1]):ValueSpecification[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createNormalizedCast(expression:ValueSpecification[1], type:Type[1]):ValueSpecification[1]
+{
+  createNormalizedCast($expression, $type, [])
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createNormalizedCast(expression:ValueSpecification[1], type:Type[1], typeVars:InstanceValue[*]):ValueSpecification[1]
 {
   let expressionType = $expression->evaluateAndDeactivate().genericType.rawType->toOne();
 
   if (normalizeType($expressionType) == normalizeType($type),
     | $expression,
-    | doCreateCast($expression, $type));
+    | doCreateCast($expression, $type, $typeVars));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::doCreateCast(expression:ValueSpecification[1], type:Type[1]):ValueSpecification[1]
 {
-  sfe(cast_Any_m__T_1__T_m_, ^GenericType(rawType = $type), [], $expression->evaluateAndDeactivate().multiplicity, [$expression, ^InstanceValue(genericType = ^GenericType(rawType = $type), multiplicity = PureOne)])
+  doCreateCast($expression, $type, []);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::doCreateCast(expression:ValueSpecification[1], type:Type[1], typeVars:InstanceValue[*]):ValueSpecification[1]
+{
+  sfe(cast_Any_m__T_1__T_m_, ^GenericType(rawType = $type), [], $expression->evaluateAndDeactivate().multiplicity, [$expression, ^InstanceValue(genericType = ^GenericType(rawType = $type, typeVariableValues = $typeVars), multiplicity = PureOne)])
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::getCastType(name:String[1]):Type[1]
@@ -2582,42 +2575,41 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createTdsGetColumn(column:QueryColumn[1], var:VariableExpression[1], expContext:SqlTransformExpressionContext[1], context: SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
-   let properties = newMap([
-      pair(String, {x:TDSRow[1] | $x.getString('')}),
-      pair(Integer, {x:TDSRow[1] | $x.getInteger('')}),
-      pair(Float, {x:TDSRow[1] | $x.getFloat('')}),
-      pair(Decimal, {x:TDSRow[1] | $x.getDecimal('')}),
-      pair(Number, {x:TDSRow[1] | $x.getFloat('')}),
-      pair(Date, {x:TDSRow[1] | $x.getDate('')}),
-      pair(DateTime, {x:TDSRow[1] | $x.getDateTime('')}),
-      pair(StrictDate, {x:TDSRow[1] | $x.getStrictDate('')}),
-      pair(Boolean, {x:TDSRow[1] | $x.getBoolean('')}),
-      pair(Enum, {x:TDSRow[1] | $x.getEnum('')}),
-      pair(Any, {x:TDSRow[1] | $x.get('')})
-   ]->map(p | pair($p.first, $p.second.expressionSequence->evaluateAndDeactivate()->at(0)->cast(@SimpleFunctionExpression).func->cast(@AbstractProperty<Any>))));
+  let properties = newMap([
+    pair(String, {x:TDSRow[1] | $x.getString('')}),
+    pair(Integer, {x:TDSRow[1] | $x.getInteger('')}),
+    pair(Float, {x:TDSRow[1] | $x.getFloat('')}),
+    pair(Decimal, {x:TDSRow[1] | $x.getDecimal('')}),
+    pair(Number, {x:TDSRow[1] | $x.getFloat('')}),
+    pair(Date, {x:TDSRow[1] | $x.getDate('')}),
+    pair(DateTime, {x:TDSRow[1] | $x.getDateTime('')}),
+    pair(StrictDate, {x:TDSRow[1] | $x.getStrictDate('')}),
+    pair(Boolean, {x:TDSRow[1] | $x.getBoolean('')}),
+    pair(Enum, {x:TDSRow[1] | $x.getEnum('')}),
+    pair(Any, {x:TDSRow[1] | $x.get('')})
+  ]->map(p | pair($p.first, $p.second.expressionSequence->evaluateAndDeactivate()->at(0)->cast(@SimpleFunctionExpression).func->cast(@AbstractProperty<Any>))));
 
+  let type = $column.type->toOne();
 
-   let type = $column.type->toOne();
-
-   let property = $properties->get($type->match([
-      c:Class<Any>[1] | Any,
-      e:Enumeration<Any>[1] | Enum,
-      p:PrimitiveType[1] | $p
-   ]));
-
-   assertEquals(1, $property->size(), | 'no properties found for type ' + $type->toString());
+  let property = $properties->get($type->match([
+    c:Class<Any>[1] | Any,
+    e:Enumeration<Any>[1] | Enum,
+    p:PrimitiveType[1] | $p
+  ])->preciseToPrimitive()); 
+  
+  assertEquals(1, $property->size(), | 'no properties found for type ' + $type->toString());
 
   let propertySfe = sfe($property->toOne(), [$var, $column.name->iv()]);
 
   $type->match([
       c:Class<Any>[1] |
         let sfe = ^$propertySfe(genericType = ^GenericType(rawType = $type));
-        if ($expContext.doCastNonPrimitiveColumnAccessor, | createCast($sfe, $c)->cast(@SimpleFunctionExpression), | $sfe);,
+        if ($expContext.doCastNonPrimitiveColumnAccessor, | createNormalizedCast($sfe, $c)->cast(@SimpleFunctionExpression), | $sfe);,
       e:Enumeration<Any>[1] |
         //TODO: this is a little non-standard, we are setting the "correct" generic type of the getEnum which is not what compiler does
         //this is being done as pure2sql cannot handle many cases with enum so we need to enfore type so we create a working lambda/schema
         let sfe = ^$propertySfe(genericType = ^GenericType(rawType = $type));
-        if ($expContext.doCastNonPrimitiveColumnAccessor, | createCast($sfe, $e)->cast(@SimpleFunctionExpression), | $sfe);,
+        if ($expContext.doCastNonPrimitiveColumnAccessor, | createNormalizedCast($sfe, $e)->cast(@SimpleFunctionExpression), | $sfe);,
       p:PrimitiveType[1] | $propertySfe
   ])->evaluateAndDeactivate();
 }
@@ -2750,7 +2742,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       aggregate('bool_or', or_Boolean_MANY__Boolean_1_),
       aggregate('every', and_Boolean_MANY__Boolean_1_),
       aggregate('min', [], {args, fc, expCtx, ctx |
-        let type = getAggregationArgumentType($args);
+        let type = getAggregationArgumentType($args)->preciseToPrimitive();
 
         [
           pair(Number, |sfe(min_Number_MANY__Number_$0_1$_, $args)),
@@ -2763,7 +2755,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         ]->getValue($type, | sfe(min_X_MANY__X_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $args))->eval();
       }),
       aggregate('max', [], {args, fc, expCtx, ctx |
-        let type = getAggregationArgumentType($args);
+        let type = getAggregationArgumentType($args)->preciseToPrimitive();
         [
           pair(Number, |sfe(max_Number_MANY__Number_$0_1$_, $args)),
           pair(Float, |sfe(max_Float_MANY__Float_$0_1$_, $args)),
@@ -2784,7 +2776,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       }),
 
       aggregate('avg', Float, {args, fc, expCtx, ctx |
-        let type = getAggregationArgumentType($args);
+        let type = getAggregationArgumentType($args)->preciseToPrimitive();
 
         let func = [
           pair(Integer, average_Integer_MANY__Float_1_),
@@ -2803,7 +2795,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       aggregate('stddev_samp', stdDevSample_Number_MANY__Number_1_),
       aggregate('stddev', stdDevSample_Number_MANY__Number_1_),
       aggregate('sum', Number, {args, fc, expCtx, ctx |
-        let type = getAggregationArgumentType($args);
+        let type = getAggregationArgumentType($args)->preciseToPrimitive();
 
         let func = [
           pair(Integer, sum_Integer_MANY__Integer_1_),
@@ -2820,7 +2812,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       //MATH
       processor('abs', Number, {args, fc, expCtx, ctx |
         assert($args->size() == 1, 'incorrect number of args for abs');
-        let type = $args->at(0).genericType.rawType->toOne();
+        let type = $args->at(0).genericType.rawType->toOne()->preciseToPrimitive();
 
         let func = [
           pair(Integer, abs_Integer_1__Integer_1_),
@@ -3579,12 +3571,33 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::normalizeType(t:Type[1]):Type[1]
 {
+  let type = preciseToPrimitive($t);
   [
     pair(StrictDate, Date),
     pair(DateTime, Date),
     pair(Integer, Number),
     pair(Float, Number)
-  ]->getValue($t, $t);
+  ]->getValue($type, $t);
+}
+
+function meta::external::query::sql::transformation::queryToPure::preciseToPrimitive(type:Type[0..1]):Type[0..1]
+{
+  if($type->isEmpty(), | $type, | $type->toOne()->preciseToPrimitive());
+}
+
+function meta::external::query::sql::transformation::queryToPure::preciseToPrimitive(type:Type[1]):Type[1]
+{
+  if ([
+    pair(|$type->subTypeOfExNil(Integer),    | Integer),
+    pair(|$type->subTypeOfExNil(Decimal),    | Decimal),
+    pair(|$type->subTypeOfExNil(Float),      | Float),
+    pair(|$type->subTypeOfExNil(Number),     | Number),
+    pair(|$type->subTypeOfExNil(DateTime),   | DateTime),
+    pair(|$type->subTypeOfExNil(StrictDate), | StrictDate),
+    pair(|$type->subTypeOfExNil(Date),       | Date),
+    pair(|$type->subTypeOfExNil(String),     | String),
+    pair(|$type->subTypeOfExNil(Boolean),    | Boolean)
+  ], | $type);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNumericArithmeticExpression(a:ArithmeticExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -3618,7 +3631,7 @@ function meta::external::query::sql::transformation::queryToPure::createMinus(ty
       pair(Integer, minus_Integer_MANY__Integer_1_),
       pair(Float, minus_Float_MANY__Float_1_),
       pair(Decimal, minus_Decimal_MANY__Decimal_1_)
-    ], minus_Number_MANY__Number_1_, $type, $null, iv($args));
+    ], minus_Number_MANY__Number_1_, $type->preciseToPrimitive(), $null, iv($args));
 }
 
 function meta::external::query::sql::transformation::queryToPure::createPlus(type:Type[0..1], null:Boolean[1], args:ValueSpecification[*]):ValueSpecification[1]
@@ -3636,7 +3649,7 @@ function meta::external::query::sql::transformation::queryToPure::createTimes(ty
       pair(Integer, times_Integer_MANY__Integer_1_),
       pair(Float, times_Float_MANY__Float_1_),
       pair(Decimal, times_Decimal_MANY__Decimal_1_)
-    ], times_Number_MANY__Number_1_, $type, $null, iv($args));
+    ], times_Number_MANY__Number_1_, $type->preciseToPrimitive(), $null, iv($args));
 }
 
 //purely internal class to ensure we can handle expressions in the interval calculation logic
@@ -3905,7 +3918,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
             pair(!$leftOne && $rightOne, greaterThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_),
             pair(!$leftOne && !$rightOne, greaterThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)
         ]->getValue(true))
-    ]->getValue($type, greaterThanEqual_Number_1__Number_1__Boolean_1_))
+    ]->getValue($type->preciseToPrimitive(), greaterThanEqual_Number_1__Number_1__Boolean_1_))
   ]->getValue($c.operator);
 
   let sfe = sfe($func, [$left, $right]);
