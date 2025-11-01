@@ -351,6 +351,70 @@ function <<test.Test>> meta::relational::tests::query::routing::testCompositionI
   assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::query::routing::testSimpleEval():Boolean[1]
+{
+  let result = executeInternal({|
+    {|firmProjected()}->eval();
+  });
+
+  assertSize($result.values, 1);
+  assertEquals(['Peter', 'John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
+  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testEvalFunctionOutputFromFunctionCall():Boolean[1]
+{
+  let result = executeInternal({|
+    evalWrapper()->eval()->size();
+  });
+
+  assertSize($result.values, 1);
+  assertEquals(11, $result.values->at(0));
+  assertEquals('select count("persontable_0".FIRSTNAME) from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+}
+
+function meta::relational::tests::query::routing::evalWrapper():Function<{->TabularDataSet[1]}>[1]
+{
+    {|firmProjected()};
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testEvalFunctionAsVariable():Boolean[1]
+{
+  let func = {|firmProjected()};
+
+  let result = executeInternal({|
+    $func->eval();
+  });
+
+  assertSize($result.values, 1);
+  assertEquals(['Peter', 'John', 'John', 'Anthony', 'New', 'Don', 'Fabrice', 'Oliver', 'Elena', 'David', 'No address', ^TDSNull()], $result.values->at(0).rows.values);
+  assertEquals('select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testEvalWithMultipleExpressions():Boolean[1]
+{  
+  let result = executeInternal({|
+    {|let t = firmProjected(); $t->size();}->eval();
+  });
+  
+  assertSize($result.values, 1);
+  assertEquals(11, $result.values->at(0));
+  assertEquals('with t as (select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)) select count("t_0"."firstName") from t as "t_0"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::routing::testEvalWithMultipleExpressionsWithFunctionAsVariable():Boolean[1]
+{  
+  let func = {|let t = firmProjected(); $t->size();};
+
+  let result = executeInternal({|
+    $func->eval();
+  });
+  
+  assertSize($result.values, 1);
+  assertEquals(11, $result.values->at(0));
+  assertEquals('with t as (select "persontable_0".FIRSTNAME as "firstName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)) select count("t_0"."firstName") from t as "t_0"', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test>> meta::relational::tests::query::routing::testCompositionInGetAll():Boolean[1]
 {
   let result = executeInternal(|firmGetAll()->project([x|$x.employees.name], ['name']));
