@@ -36,13 +36,15 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     private int maxRows;
     private LegendResultSet legendResultSet;
     private String database;
+    private String options;
 
-    public LegendPreparedStatement(String query, LegendExecution client, String database, Identity identity)
+    public LegendPreparedStatement(String query, LegendExecution client, String database, String options, Identity identity)
     {
         this.query = query;
         this.client = client;
         this.identity = identity;
         this.database = database;
+        this.options = options;
     }
 
     @Override
@@ -117,7 +119,7 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
 
     private boolean executePrivate()
     {
-        legendResultSet = new LegendResultSet(client.executeQuery(query, database));
+        legendResultSet = new LegendResultSet(client.executeQuery(query, database, options));
         return true;
     }
 

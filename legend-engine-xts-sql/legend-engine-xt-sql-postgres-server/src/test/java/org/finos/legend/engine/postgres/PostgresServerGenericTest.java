@@ -60,7 +60,7 @@ public class PostgresServerGenericTest
     {
         loader.setData(Maps.mutable.with(
                 buildPointer("t_group", "t_name", "t_version"),
-                buildModelWithRuntime("###Relational\n" +
+                PureGrammarParser.newInstance().parseModel("###Relational\n" +
                         "Database pack::DB\n" +
                         "(\n" +
                         "    Table myTab(name VARCHAR(200))\n" +
@@ -82,14 +82,14 @@ public class PostgresServerGenericTest
     {
         loader.setData(Maps.mutable.with(
                 buildPointer("t_group", "t_name", "t_version"),
-                buildModelWithRuntime("###Relational\n" +
+                PureGrammarParser.newInstance().parseModel("###Relational\n" +
                         "Database pack::DB\n" +
                         "(\n" +
                         "    include pack::otherDB\n" +
                         "    Table myTab(id INT, name VARCHAR(200))\n" +
                         ")\n"),
                 buildPointer("t_group", "t_name2", "t_version"),
-                buildModelWithRuntime("###Relational\n" +
+                PureGrammarParser.newInstance().parseModel("###Relational\n" +
                         "Database pack::otherDB\n" +
                         "(\n" +
                         "    Table otherTab(fid INT, oName VARCHAR(200))\n" +
@@ -197,7 +197,7 @@ public class PostgresServerGenericTest
     public static String execute(String query, String database) throws Exception
     {
         try (
-                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/" + database, new Properties());
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/" + database + "?options='--compute=test'", new Properties());
                 PreparedStatement statement = connection.prepareStatement(query);
                 ResultSet resultSet = statement.executeQuery()
         )
@@ -219,30 +219,6 @@ public class PostgresServerGenericTest
                 "      \"packageableElementPointers\": []\n" +
                 "     }\n" +
                 "}", PureModelContextPointer.class);
-    }
-
-    private static PureModelContextData buildModelWithRuntime(String model)
-    {
-        return PureGrammarParser.newInstance().parseModel(
-                model +
-                        "###Runtime\n" +
-                        "Runtime test::test\n" +
-                        "{\n" +
-                        "    mappings : [];\n" +
-                        "    connections:\n" +
-                        "    [\n" +
-                        "        pack::DB : [connection: test::testConnection]\n" +
-                        "    ];\n" +
-                        "}\n" +
-                        "\n" +
-                        "###Connection\n" +
-                        "RelationalDatabaseConnection test::testConnection\n" +
-                        "{\n" +
-                        "    store: pack::DB;\n" +
-                        "    specification: LocalH2{};\n" +
-                        "    type: H2;\n" +
-                        "    auth: DefaultH2;\n" +
-                        "}");
     }
 
     public static String convertResultSetToCsvString(ResultSet resultSet) throws SQLException

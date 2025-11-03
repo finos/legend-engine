@@ -20,7 +20,7 @@ public interface LegendExecution
 {
     List<LegendColumn> getSchema(String query, String database);
 
-    LegendExecutionResult executeQuery(String query, String database);
+    LegendExecutionResult executeQuery(String query, String database, String options);
 
     boolean supports(String database);
 }

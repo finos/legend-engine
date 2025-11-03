@@ -15,11 +15,13 @@
 package org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.generic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.util.EntityUtils;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -35,11 +37,14 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.Pack
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCombination;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
+import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 
+import java.io.IOException;
 import java.util.List;
 
 public class GenericLegendExecution implements LegendExecution
@@ -62,25 +67,29 @@ public class GenericLegendExecution implements LegendExecution
     {
         try
         {
+            // Input --------------------------------
             HttpPost request = new HttpPost(protocol + "://" + host + ":" + port + "/api/pure/v1/compilation/lambdaRelationType");
             LambdaReturnTypeInput input = new LambdaReturnTypeInput();
             input.model = buildPointer(database);
-            input.lambda = PureGrammarParser.newInstance().parseLambda("#SQL{" + query + "}#->from(test::test)");
+            input.lambda = PureGrammarParser.newInstance().parseLambda("#SQL{" + query + "}#");
             StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(input));
             bodyEntity.setContentType("application/json");
             request.setEntity(bodyEntity);
+            // Input --------------------------------
 
-            try (CloseableHttpClient httpClient = HttpClients.createDefault())
+            try
             {
-                try (CloseableHttpResponse response = httpClient.execute(request))
-                {
-                    RelationType type = MAPPER.readValue(response.getEntity().getContent(), RelationType.class);
-                    return ListIterate.collect(type.columns, c -> new LegendColumn(c.name, ((PackageableType) c.genericType.rawType).fullPath));
-                }
+                HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
+                HttpResponse response = httpClient.execute(request);
+                RelationType type = MAPPER.readValue(response.getEntity().getContent(), RelationType.class);
+                return ListIterate.collect(type.columns, c -> new LegendColumn(c.name, ((PackageableType) c.genericType.rawType).fullPath));
             }
-            catch (Exception ex)
+            catch (IOException e)
             {
-                throw new RuntimeException(ex);
+                HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
+                HttpResponse response = httpClient.execute(request);
+                String content = EntityUtils.toString(response.getEntity());
+                throw new RuntimeException("Error parsing: " + content, e);
             }
         }
         catch (Exception e)
@@ -90,7 +99,7 @@ public class GenericLegendExecution implements LegendExecution
     }
 
     @Override
-    public LegendExecutionResult executeQuery(String query, String database)
+    public LegendExecutionResult executeQuery(String query, String database, String options)
     {
         try
         {
@@ -98,29 +107,31 @@ public class GenericLegendExecution implements LegendExecution
 
             // Input --------------------------------
             ExecuteInput input = new ExecuteInput();
-            input.model = buildPointer(database);
+            input.model = buildComposite(Lists.mutable.with(buildPointer(database), buildRuntimeModel(options)));
             input.context = new BaseExecutionContext();
-            input.function = PureGrammarParser.newInstance().parseLambda("#SQL{" + query + "}#->from(test::test)");
+            input.function = PureGrammarParser.newInstance().parseLambda("#SQL{" + query + "}#->from(sqlServer::dynamically::added::runtime::Runtime)");
             StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(input));
             bodyEntity.setContentType("application/json");
             request.setEntity(bodyEntity);
             // Input --------------------------------
 
-            try (CloseableHttpClient httpClient = HttpClients.createDefault())
+            try
             {
-                try (CloseableHttpResponse response = httpClient.execute(request))
-                {
-                    return new LegendExecutionResultFromTds(new LegendTdsResultParser(response.getEntity().getContent()));
-                }
+                HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
+                HttpResponse response = httpClient.execute(request);
+                return new LegendExecutionResultFromTds(new LegendTdsResultParser(response.getEntity().getContent()));
             }
             catch (Exception ex)
             {
-                throw new RuntimeException(ex);
+                HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
+                HttpResponse response = httpClient.execute(request);
+                String content = EntityUtils.toString(response.getEntity());
+                throw new RuntimeException("Error parsing: " + content, ex);
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException(ex);
         }
     }
 
@@ -130,28 +141,94 @@ public class GenericLegendExecution implements LegendExecution
         return database.startsWith("projects|");
     }
 
-    private PureModelContext buildPointer(String database)
+    private PureModelContextCombination buildComposite(MutableList<PureModelContext> contexts)
     {
+        PureModelContextCombination combination = new PureModelContextCombination();
+        combination.contexts = contexts;
+        return combination;
+    }
+
+    private PureModelContextData buildRuntimeModel(String options)
+    {
+        options = options.trim();
+        if (options.startsWith("'") && options.endsWith("'"))
+        {
+            options = options.substring(1, options.length() - 1);
+        }
+        // Split by space, knowing space can be escaped by \ and \ by \\
+        String[] parameters = options.split("(?<!\\\\)(?:\\\\\\\\)* ");
+
+        ComputeState computeState = new ComputeState();
+        for (int i = 0; i < parameters.length; i++)
+        {
+            process(parameters[i], computeState);
+        }
+
+        if (computeState.compute == Compute.TEST)
+        {
+            return PureGrammarParser.newInstance().parseModel(
+                    "###Runtime\n" +
+                            "Runtime sqlServer::dynamically::added::runtime::Runtime\n" +
+                            "{\n" +
+                            "    mappings : [];\n" +
+                            "    connections:\n" +
+                            "    [\n" +
+                            "        sqlServer::dynamically::added::database::DummyDB : [connection: sqlServer::dynamically::added::connection::Connection]\n" +
+                            "    ];\n" +
+                            "}\n" +
+                            "\n" +
+                            "###Connection\n" +
+                            "RelationalDatabaseConnection sqlServer::dynamically::added::connection::Connection\n" +
+                            "{\n" +
+                            "    store: sqlServer::dynamically::added::database::DummyDB;\n" +
+                            "    specification: LocalH2{};\n" +
+                            "    type: H2;\n" +
+                            "    auth: DefaultH2;\n" +
+                            "}\n" +
+                            "###Relational\n" +
+                            "Database sqlServer::dynamically::added::database::DummyDB" +
+                            "(" +
+                            ")");
+        }
+        else if (computeState.compute == Compute.SNOWFLAKE)
+        {
+            return PureGrammarParser.newInstance().parseModel(
+                    "###LakehouseRuntime\n" +
+                            "LakehouseRuntime sqlServer::dynamically::added::runtime::Runtime\n" +
+                            "{\n" +
+                            "    environment : '" + computeState.environment + "';\n" +
+                            "    warehouse: '" + computeState.warehouse + " ';\n" +
+                            "}\n");
+        }
+        else
+        {
+            throw new RuntimeException(String.format("Unknown platform: %s", computeState.compute));
+        }
+    }
+
+    private PureModelContext buildPointer(String _database)
+    {
+        String database = _database.trim();
         if (!database.startsWith("projects|"))
         {
             throw new RuntimeException("database must start with 'projects|'");
         }
-        String projectInfo = database.substring("projects|".length());
+        String projectInfo = database.substring("projects|".length()).trim();
         String[] projects = projectInfo.split(",");
         MutableList<PureModelContextPointer> pointers = ArrayIterate.collect(projects, project ->
         {
-            String[] proj = project.split(":");
+            String[] proj = project.trim().split(":");
             if (proj.length != 3)
             {
-                throw new RuntimeException("projects must be of the form group:artifact:version. Provided info:\"" + project + "\"");
+                throw new RuntimeException("projects must be of the form group:artifact:version,group:artifact:version,... Provided info:\"" + project + "\"");
             }
             PureModelContextPointer pointer = new PureModelContextPointer();
             AlloySDLC alloySDLC = new AlloySDLC();
             pointer.sdlcInfo = alloySDLC;
             alloySDLC.baseVersion = "latest";
-            alloySDLC.groupId = proj[0];
-            alloySDLC.artifactId = proj[1];
-            alloySDLC.version = proj[2];
+            alloySDLC.groupId = proj[0].trim();
+            alloySDLC.artifactId = proj[1].trim();
+            alloySDLC.version = proj[2].trim();
             return pointer;
         });
 
@@ -164,6 +241,30 @@ public class GenericLegendExecution implements LegendExecution
             PureModelContextCombination combination = new PureModelContextCombination();
             combination.contexts = pointers;
             return combination;
+        }
+    }
+
+    private static void process(String parameter, ComputeState state)
+    {
+        if (parameter.startsWith("--compute="))
+        {
+            state.compute = Compute.valueOf(parameter.substring("--compute=".length()).toUpperCase());
+        }
+        else if (parameter.startsWith("--environment="))
+        {
+            state.environment = parameter.substring("--environment=".length());
+        }
+        else if (parameter.startsWith("--warehouse="))
+        {
+            state.warehouse = parameter.substring("--warehouse=".length());
+        }
+        else if (parameter.startsWith("--workspace="))
+        {
+            state.workspace = parameter.substring("--workspace=".length());
+        }
+        else
+        {
+            throw new RuntimeException(String.format("Unknown parameter: %s", parameter));
         }
     }
 }

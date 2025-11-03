@@ -75,7 +75,7 @@ public class LegendExecutionService implements LegendExecution
         }
     }
 
-    public LegendExecutionResult executeQuery(String query, String database)
+    public LegendExecutionResult executeQuery(String query, String database, String options)
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("LegendExecutionService ExecuteQuery").startSpan();

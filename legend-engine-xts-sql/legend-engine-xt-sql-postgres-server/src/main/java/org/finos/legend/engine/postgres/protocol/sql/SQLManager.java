@@ -155,7 +155,7 @@ public class SQLManager
                     case Empty:
                         return new EmptyPreparedStatement();
                     case Legend:
-                        return new LegendPreparedStatement(query, findClient(clients, session.getDatabase()), session.getDatabase(), session.getIdentity());
+                        return new LegendPreparedStatement(query, findClient(clients, session.getDatabase(), session.getOptions()), session.getDatabase(), session.getOptions(), session.getIdentity());
                     case Metadata:
                         String reprocessedQuery = SQLGrammarParser.getSqlBaseParser(query, "query").statement().accept(new SQLRewrite(session));
                         logger.info("Executing reprocessed query: {}", reprocessedQuery);
@@ -181,7 +181,7 @@ public class SQLManager
                 case Empty:
                     return new EmptyStatement();
                 case Legend:
-                    return new LegendStatement(findClient(clients, session.getDatabase()), session.getIdentity());
+                    return new LegendStatement(findClient(clients, session.getDatabase(), session.getOptions()), session.getIdentity());
                 case Metadata:
                     throw new RuntimeException("Not supported yet");
                 case TX:
@@ -191,7 +191,7 @@ public class SQLManager
         return null;
     }
 
-    private LegendExecution findClient(MutableList<LegendExecution> clients, String database)
+    private LegendExecution findClient(MutableList<LegendExecution> clients, String database, String options)
     {
         return clients.select(x -> x.supports(database)).getFirst();
     }

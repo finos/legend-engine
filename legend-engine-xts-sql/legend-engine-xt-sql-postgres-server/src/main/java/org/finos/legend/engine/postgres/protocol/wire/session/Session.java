@@ -71,7 +71,12 @@ public class Session implements AutoCloseable
 
     public String getDatabase()
     {
-        return this.properties.get("database").toString();
+        return this.properties.getProperty("database", "");
+    }
+
+    public String getOptions()
+    {
+        return this.properties.getProperty("options", "");
     }
 
     public Identity getIdentity()

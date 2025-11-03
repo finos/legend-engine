@@ -176,7 +176,7 @@ public class PostgresServerLauncher
 
     public static void main(String[] args) throws IOException
     {
-        String configPath = args[0];
+        String configPath = args.length == 0 ? Thread.currentThread().getContextClassLoader().getResource("defaultLegendConfig.json").getFile() : args[0];
         new PostgresServerLauncher(configPath).launch();
     }
 }

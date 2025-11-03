@@ -597,7 +597,6 @@ public class PostgresWireProtocol
 
     private void handleAuthSuccess(Channel channel, Identity authenticatedUser) throws Exception
     {
-//        String database = properties.getProperty("database");
         this.session = new Session(Executors.newCachedThreadPool(), authenticatedUser, properties);
         MDC.put("user", authenticatedUser.getName());
         messages.sendAuthenticationOK(channel)

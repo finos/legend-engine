@@ -57,7 +57,7 @@ public class LegendStatement implements PostgresStatement
 
     private boolean executePrivate(String query)
     {
-        legendResultSet = new LegendResultSet(client.executeQuery(query, null));
+        legendResultSet = new LegendResultSet(client.executeQuery(query, null, null));
         return true;
     }
 
