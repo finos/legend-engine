@@ -761,14 +761,13 @@ function <<access.private>> meta::external::format::json::schema::allReferencedE
                                                       )
                                                       -> concatenate( $allNonPrimitivePropertiesOfClass );
 
-                           let result = $myPropertyElements->map( p | if($p->isClass(),
-                                                                | $p->cast(@Class<Any>)->allReferencedElements( $bag->concatenate($class)->concatenate($allReferencedElements),$config,$includeSubTypes),
-                                                                | $p
-                                                             )
-                                                   )
-                                              ->concatenate($allReferencedElements)
-                                              ->concatenate($bag)
-                                              ->concatenate($class);
+                           let result = $myPropertyElements->fold( { p, acc | let accResult = if($p->isClass(),
+                                                                                           | $p->cast(@Class<Any>)->allReferencedElements( $acc,$config,$includeSubTypes),
+                                                                                           | $p
+                                                                                           );
+                                                                                        $acc->concatenate($accResult);
+                                                                              }, $bag->concatenate($class)->concatenate($allReferencedElements));
+
 
                           meta::pure::functions::collection::removeDuplicates( $result )->concatenate($constraints)->cast(@PackageableElement);
                      );,
