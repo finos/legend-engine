@@ -114,7 +114,8 @@
         "legend-engine-xt-python-functions-execution-pure",
         "legend-engine-xt-python-functions-execution-runtime-java-extension-shared",
         "legend-engine-xt-python-functions-execution-runtime-java-extension-interpreted",
-        "legend-engine-xt-python-functions-execution-runtime-java-extension-compiled"
+        "legend-engine-xt-python-functions-execution-runtime-java-extension-compiled",
+        "legend-engine-xt-python-reversePCT-legendQL"
       ]
     }
   ]
