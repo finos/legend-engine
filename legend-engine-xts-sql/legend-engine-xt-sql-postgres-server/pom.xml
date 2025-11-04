@@ -107,8 +107,12 @@
         </profile>
     </profiles>
 
-
     <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-expression-grammar</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
