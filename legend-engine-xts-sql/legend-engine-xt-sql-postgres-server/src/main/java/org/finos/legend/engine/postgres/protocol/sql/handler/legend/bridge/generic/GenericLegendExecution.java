@@ -21,17 +21,18 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.util.EntityUtils;
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.api.LambdaReturnTypeInput;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecution;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecutionResult;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.shared.LegendExecutionResultFromTds;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.shared.LegendTdsResultParser;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
@@ -45,6 +46,7 @@ import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 public class GenericLegendExecution implements LegendExecution
@@ -68,29 +70,15 @@ public class GenericLegendExecution implements LegendExecution
         try
         {
             // Input --------------------------------
-            HttpPost request = new HttpPost(protocol + "://" + host + ":" + port + "/api/pure/v1/compilation/lambdaRelationType");
             LambdaReturnTypeInput input = new LambdaReturnTypeInput();
             input.model = buildPointer(database);
-            input.lambda = PureGrammarParser.newInstance().parseLambda("#SQL{" + query + "}#");
+            input.lambda = parseLambda("#SQL{" + query + "}#");
             StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(input));
             bodyEntity.setContentType("application/json");
-            request.setEntity(bodyEntity);
             // Input --------------------------------
 
-            try
-            {
-                HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
-                HttpResponse response = httpClient.execute(request);
-                RelationType type = MAPPER.readValue(response.getEntity().getContent(), RelationType.class);
-                return ListIterate.collect(type.columns, c -> new LegendColumn(c.name, ((PackageableType) c.genericType.rawType).fullPath));
-            }
-            catch (IOException e)
-            {
-                HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
-                HttpResponse response = httpClient.execute(request);
-                String content = EntityUtils.toString(response.getEntity());
-                throw new RuntimeException("Error parsing: " + content, e);
-            }
+            RelationType type = callServer(bodyEntity, "pure/v1/compilation/lambdaRelationType", RelationType.class);
+            return ListIterate.collect(type.columns, c -> new LegendColumn(c.name, ((PackageableType) c.genericType.rawType).fullPath));
         }
         catch (Exception e)
         {
@@ -103,31 +91,26 @@ public class GenericLegendExecution implements LegendExecution
     {
         try
         {
-            HttpPost request = new HttpPost(protocol + "://" + host + ":" + port + "/api/pure/v1/execution/execute");
-
             // Input --------------------------------
             ExecuteInput input = new ExecuteInput();
             input.model = buildComposite(Lists.mutable.with(buildPointer(database), buildRuntimeModel(options)));
             input.context = new BaseExecutionContext();
-            input.function = PureGrammarParser.newInstance().parseLambda("#SQL{" + query + "}#->from(sqlServer::dynamically::added::runtime::Runtime)");
+            input.function = parseLambda("#SQL{" + query + "}#->from(sqlServer::dynamically::added::runtime::Runtime)");
             StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(input));
             bodyEntity.setContentType("application/json");
-            request.setEntity(bodyEntity);
             // Input --------------------------------
 
-            try
+            return callServer(bodyEntity, "pure/v1/execution/execute", x ->
             {
-                HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
-                HttpResponse response = httpClient.execute(request);
-                return new LegendExecutionResultFromTds(new LegendTdsResultParser(response.getEntity().getContent()));
-            }
-            catch (Exception ex)
-            {
-                HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
-                HttpResponse response = httpClient.execute(request);
-                String content = EntityUtils.toString(response.getEntity());
-                throw new RuntimeException("Error parsing: " + content, ex);
-            }
+                try
+                {
+                    return new LegendExecutionResultFromTds(new LegendTdsResultParser(x));
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            });
         }
         catch (Exception ex)
         {
@@ -148,7 +131,7 @@ public class GenericLegendExecution implements LegendExecution
         return combination;
     }
 
-    private PureModelContextData buildRuntimeModel(String options)
+    private PureModelContextData buildRuntimeModel(String options) throws Exception
     {
         options = options.trim();
         if (options.startsWith("'") && options.endsWith("'"))
@@ -166,7 +149,7 @@ public class GenericLegendExecution implements LegendExecution
 
         if (computeState.compute == Compute.TEST)
         {
-            return PureGrammarParser.newInstance().parseModel(
+            return parseModel(
                     "###Runtime\n" +
                             "Runtime sqlServer::dynamically::added::runtime::Runtime\n" +
                             "{\n" +
@@ -192,7 +175,7 @@ public class GenericLegendExecution implements LegendExecution
         }
         else if (computeState.compute == Compute.SNOWFLAKE)
         {
-            return PureGrammarParser.newInstance().parseModel(
+            return parseModel(
                     "###LakehouseRuntime\n" +
                             "LakehouseRuntime sqlServer::dynamically::added::runtime::Runtime\n" +
                             "{\n" +
@@ -267,4 +250,49 @@ public class GenericLegendExecution implements LegendExecution
             throw new RuntimeException(String.format("Unknown parameter: %s", parameter));
         }
     }
+
+    private LambdaFunction parseLambda(String lambda) throws Exception
+    {
+        return callServer(new StringEntity(lambda), "pure/v1/grammar/grammarToJson/lambda", LambdaFunction.class);
+    }
+
+    private PureModelContextData parseModel(String model) throws Exception
+    {
+        return callServer(new StringEntity(model), "pure/v1/grammar/grammarToJson/model", PureModelContextData.class);
+    }
+
+    private <T> T callServer(StringEntity bodyEntity, String url, Class<T> c) throws Exception
+    {
+        return callServer(bodyEntity, url, x ->
+        {
+            try
+            {
+                return MAPPER.readValue(x, c);
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private <T> T callServer(StringEntity bodyEntity, String url, Function<InputStream, T> transformer) throws Exception
+    {
+        HttpPost request = new HttpPost(protocol + "://" + host + ":" + port + "/api/" + url);
+        request.setEntity(bodyEntity);
+        try
+        {
+            HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
+            HttpResponse response = httpClient.execute(request);
+            return transformer.apply(response.getEntity().getContent());
+        }
+        catch (IOException e)
+        {
+            HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
+            HttpResponse response = httpClient.execute(request);
+            String content = EntityUtils.toString(response.getEntity());
+            throw new RuntimeException("Error parsing: " + content, e);
+        }
+    }
+
 }
