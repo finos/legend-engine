@@ -269,7 +269,7 @@ public class GenericLegendExecution implements LegendExecution
             {
                 return MAPPER.readValue(x, c);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
                 throw new RuntimeException(e);
             }
@@ -286,7 +286,7 @@ public class GenericLegendExecution implements LegendExecution
             HttpResponse response = httpClient.execute(request);
             return transformer.apply(response.getEntity().getContent());
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
             HttpResponse response = httpClient.execute(request);
