@@ -180,7 +180,7 @@ public class GenericLegendExecution implements LegendExecution
                             "LakehouseRuntime sqlServer::dynamically::added::runtime::Runtime\n" +
                             "{\n" +
                             "    environment : '" + computeState.environment + "';\n" +
-                            "    warehouse: '" + computeState.warehouse + " ';\n" +
+                            "    warehouse: '" + computeState.warehouse + "';\n" +
                             "}\n");
         }
         else
