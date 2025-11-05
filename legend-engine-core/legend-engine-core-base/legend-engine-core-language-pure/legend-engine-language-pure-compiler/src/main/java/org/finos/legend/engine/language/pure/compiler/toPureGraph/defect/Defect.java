@@ -36,6 +36,11 @@ public class Defect
         return null;
     }
 
+    public String quickFixAsGrammar()
+    {
+        return null;
+    }
+
     /**
      * Only used for testing, the backend should return just the error message.
      */
