@@ -31,16 +31,6 @@ public class Defect
         this.defectTypeId = defectTypeId;
     }
 
-    public Object applyQuickFix()
-    {
-        return null;
-    }
-
-    public String quickFixAsGrammar()
-    {
-        return null;
-    }
-
     /**
      * Only used for testing, the backend should return just the error message.
      */
