@@ -1,0 +1,132 @@
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::standard::math::trigonometry::tanh::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/math/trigonometry/tanh.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Identities_Function_1__Boolean_1_',
+                      [
+                        rev('|0->meta::pure::functions::math::tanh()',
+                            'select tanh(0)'
+                        ),
+                        rev('|meta::pure::functions::math::tanh(-5)',
+                            'select tanh(-5)'
+                        ),
+                        rev('|-5->meta::pure::functions::math::tanh()',
+                            'select -tanh(5)'
+                        ),
+                        rev('|meta::pure::functions::math::tanh(-100)',
+                            'select tanh(-100)'
+                        ),
+                        rev('|-100->meta::pure::functions::math::tanh()',
+                            'select -tanh(100)'
+                        ),
+                        rev('|14->meta::pure::functions::math::tanh()',
+                            'select tanh(14)'
+                        ),
+                        rev('|(2 * 7->meta::pure::functions::math::tanh()) / (1 + 7->meta::pure::functions::math::tanh()->meta::pure::functions::math::pow(2))',
+                            'select ((1.0 * (2 * tanh(7))) / (1 + power(tanh(7), 2)))'
+                        ),
+                        rev('|meta::pure::functions::math::tanh(3 + 6)',
+                            'select tanh((3 + 6))'
+                        ),
+                        rev('|(3->meta::pure::functions::math::tanh() + 6->meta::pure::functions::math::tanh()) / (1 + (3->meta::pure::functions::math::tanh() * 6->meta::pure::functions::math::tanh()))',
+                            'select ((1.0 * (tanh(3) + tanh(6))) / (1 + (tanh(3) * tanh(6))))'
+                        ),
+                        rev('|meta::pure::functions::math::tanh(3 - 6)',
+                            'select tanh((3 - 6))'
+                        ),
+                        rev('|(3->meta::pure::functions::math::tanh() - 6->meta::pure::functions::math::tanh()) / (1 - (3->meta::pure::functions::math::tanh() * 6->meta::pure::functions::math::tanh()))',
+                            'select ((1.0 * (tanh(3) - tanh(6))) / (1 - (tanh(3) * tanh(6))))'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Integers_Function_1__Boolean_1_',
+                      [
+                        rev('|3->meta::pure::functions::math::tanh()',
+                            'select tanh(3)'
+                        ),
+                        rev('|meta::pure::functions::math::tanh(-2)',
+                            'select tanh(-2)'
+                        ),
+                        rev('|6->meta::pure::functions::math::tanh()',
+                            'select tanh(6)'
+                        ),
+                        rev('|meta::pure::functions::math::tanh(-6)',
+                            'select tanh(-6)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Floats_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::tanh(-3.14)',
+                            'select tanh(-3.14)'
+                        ),
+                        rev('|3.14->meta::pure::functions::math::tanh()',
+                            'select tanh(3.14)'
+                        ),
+                        rev('|meta::pure::functions::math::tanh(-0.7654321)',
+                            'select tanh(-0.7654321)'
+                        ),
+                        rev('|0.7654321->meta::pure::functions::math::tanh()',
+                            'select tanh(0.7654321)'
+                        ),
+                        rev('|11.573574828312076->meta::pure::functions::math::tanh()',
+                            'select tanh(11.573574828312076)'
+                        ),
+                        rev('|meta::pure::functions::math::tanh(-11.573574828312076)',
+                            'select tanh(-11.573574828312076)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::tanh(-3.14)',
+                            'select tanh(-3.14)'
+                        ),
+                        rev('|3.14->meta::pure::functions::math::tanh()',
+                            'select tanh(3.14)'
+                        ),
+                        rev('|meta::pure::functions::math::tanh(-0.7654321)',
+                            'select tanh(-0.7654321)'
+                        ),
+                        rev('|0.7654321->meta::pure::functions::math::tanh()',
+                            'select tanh(0.7654321)'
+                        ),
+                        rev('|11.573574828312076->meta::pure::functions::math::tanh()',
+                            'select tanh(11.573574828312076)'
+                        ),
+                        rev('|meta::pure::functions::math::tanh(-11.573574828312076)',
+                            'select tanh(-11.573574828312076)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::math::tanh_Number_1__Float_1_->meta::pure::functions::lang::eval(0)'),
+                        noRev('|meta::pure::functions::math::tanh_Number_1__Float_1_->meta::pure::functions::lang::eval(2)'),
+                        noRev('|meta::pure::functions::math::tanh_Number_1__Float_1_->meta::pure::functions::lang::eval(1.5)'),
+                        noRev('|meta::pure::functions::math::tanh_Number_1__Float_1_->meta::pure::functions::lang::eval(0.5)'),
+                        noRev('|meta::pure::functions::math::tanh_Number_1__Float_1_->meta::pure::functions::lang::eval(3.14)'),
+                        noRev('|meta::pure::functions::math::tanh_Number_1__Float_1_->meta::pure::functions::lang::eval(-3.14)'),
+                        noRev('|meta::pure::functions::math::tanh_Number_1__Float_1_->meta::pure::functions::lang::eval(11.573574828312076)'),
+                        noRev('|meta::pure::functions::math::tanh_Number_1__Float_1_->meta::pure::functions::lang::eval(-11.573574828312076)')
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::math::trigonometry::tanh::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Identities(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Integers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Floats(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}
