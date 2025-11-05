@@ -176,6 +176,12 @@ public class LegendResultSet implements PostgresResultSet
         );
 
         registerProcessor(
+                Lists.mutable.with(INT),
+                (column, value) -> extractValue(value, column, Number.class, "INT", f -> ((Number) value).intValue()),
+                processors
+        );
+
+        registerProcessor(
                 Lists.mutable.with(INTEGER),
                 (column, value) -> extractValue(value, column, Number.class, "INTEGER", f -> ((Number) value).longValue()),
                 processors

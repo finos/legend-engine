@@ -58,7 +58,6 @@ public class TypeConversion
         registerDBType(DATE_TIME, Types.TIMESTAMP, typeConversions);
         registerDBType(DATE, Types.TIMESTAMP, typeConversions);
         registerDBType(STRICT_DATE, Types.DATE, typeConversions);
-        registerDBType(FLOAT, Types.DOUBLE, typeConversions);
 
         registerDBType(DECIMAL, Types.DECIMAL, typeConversions);
         registerDBType(BIG_INT, Types.BIGINT, typeConversions);
