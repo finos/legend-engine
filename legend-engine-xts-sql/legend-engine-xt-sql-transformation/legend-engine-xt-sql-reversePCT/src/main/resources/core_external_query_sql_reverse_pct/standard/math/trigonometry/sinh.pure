@@ -1,0 +1,114 @@
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::standard::math::trigonometry::sinh::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/math/trigonometry/sinh.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Identities_Function_1__Boolean_1_',
+                      [
+                        rev('|0->meta::pure::functions::math::sinh()',
+                            'select sinh(0)'
+                        ),
+                        rev('|meta::pure::functions::math::sinh(-5)',
+                            'select sinh(-5)'
+                        ),
+                        rev('|meta::pure::functions::math::sinh(-100)',
+                            'select sinh(-100)'
+                        ),
+                        rev('|meta::pure::functions::math::sinh(7 / 2)->meta::pure::functions::math::pow(2)',
+                            'select power(sinh(((1.0 * 7) / 2)), 2)'
+                        ),
+                        rev('|(7->meta::pure::functions::math::cosh() - 1) / 2',
+                            'select ((1.0 * (cosh(7) - 1)) / 2)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Integers_Function_1__Boolean_1_',
+                      [
+                        rev('|3->meta::pure::functions::math::sinh()',
+                            'select sinh(3)'
+                        ),
+                        rev('|meta::pure::functions::math::sinh(-2)',
+                            'select sinh(-2)'
+                        ),
+                        rev('|6->meta::pure::functions::math::sinh()',
+                            'select sinh(6)'
+                        ),
+                        rev('|meta::pure::functions::math::sinh(-6)',
+                            'select sinh(-6)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Floats_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::sinh(-3.14)',
+                            'select sinh(-3.14)'
+                        ),
+                        rev('|3.14->meta::pure::functions::math::sinh()',
+                            'select sinh(3.14)'
+                        ),
+                        rev('|meta::pure::functions::math::sinh(-0.7654321)',
+                            'select sinh(-0.7654321)'
+                        ),
+                        rev('|0.7654321->meta::pure::functions::math::sinh()',
+                            'select sinh(0.7654321)'
+                        ),
+                        rev('|11.573574828312076->meta::pure::functions::math::sinh()',
+                            'select sinh(11.573574828312076)'
+                        ),
+                        rev('|meta::pure::functions::math::sinh(-11.573574828312076)',
+                            'select sinh(-11.573574828312076)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::sinh(-3.14)',
+                            'select sinh(-3.14)'
+                        ),
+                        rev('|3.14->meta::pure::functions::math::sinh()',
+                            'select sinh(3.14)'
+                        ),
+                        rev('|meta::pure::functions::math::sinh(-0.7654321)',
+                            'select sinh(-0.7654321)'
+                        ),
+                        rev('|0.7654321->meta::pure::functions::math::sinh()',
+                            'select sinh(0.7654321)'
+                        ),
+                        rev('|11.573574828312076->meta::pure::functions::math::sinh()',
+                            'select sinh(11.573574828312076)'
+                        ),
+                        rev('|meta::pure::functions::math::sinh(-11.573574828312076)',
+                            'select sinh(-11.573574828312076)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::math::sinh_Number_1__Float_1_->meta::pure::functions::lang::eval(0)'),
+                        noRev('|meta::pure::functions::math::sinh_Number_1__Float_1_->meta::pure::functions::lang::eval(2)'),
+                        noRev('|meta::pure::functions::math::sinh_Number_1__Float_1_->meta::pure::functions::lang::eval(1.5)'),
+                        noRev('|meta::pure::functions::math::sinh_Number_1__Float_1_->meta::pure::functions::lang::eval(0.5)'),
+                        noRev('|meta::pure::functions::math::sinh_Number_1__Float_1_->meta::pure::functions::lang::eval(3.14)'),
+                        noRev('|meta::pure::functions::math::sinh_Number_1__Float_1_->meta::pure::functions::lang::eval(-3.14)'),
+                        noRev('|meta::pure::functions::math::sinh_Number_1__Float_1_->meta::pure::functions::lang::eval(11.573574828312076)'),
+                        noRev('|meta::pure::functions::math::sinh_Number_1__Float_1_->meta::pure::functions::lang::eval(-11.573574828312076)')
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::math::trigonometry::sinh::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Identities(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Integers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Floats(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}
