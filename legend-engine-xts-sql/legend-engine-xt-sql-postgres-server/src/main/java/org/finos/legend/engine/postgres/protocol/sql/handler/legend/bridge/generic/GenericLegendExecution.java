@@ -25,7 +25,10 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.api.C3LinearizationInput;
+import org.finos.legend.engine.language.pure.compiler.api.C3LinearizationReturn;
 import org.finos.legend.engine.language.pure.compiler.api.LambdaReturnTypeInput;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecution;
@@ -69,16 +72,21 @@ public class GenericLegendExecution implements LegendExecution
     {
         try
         {
-            // Input --------------------------------
+            // Relation --------------------------------
             LambdaReturnTypeInput input = new LambdaReturnTypeInput();
             input.model = buildPointer(database);
             input.lambda = parseLambda("#SQL{" + query + "}#");
             StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(input));
             bodyEntity.setContentType("application/json");
-            // Input --------------------------------
-
             RelationType type = callServer(bodyEntity, "pure/v1/compilation/lambdaRelationType", RelationType.class);
-            return ListIterate.collect(type.columns, c -> new LegendColumn(c.name, ((PackageableType) c.genericType.rawType).fullPath));
+            // Relation --------------------------------
+
+            C3LinearizationReturn c3Linearizations = getC3LinearizationReturn(ListIterate.collect(type.columns, c -> ((PackageableType) c.genericType.rawType).fullPath));
+
+            return LazyIterate
+                    .zip(type.columns, c3Linearizations.typeInheritances)
+                    .collect(c -> new LegendColumn(c.getOne().name, c.getTwo().type, c.getTwo().linearizedInheritance))
+                    .toList();
         }
         catch (Exception e)
         {
@@ -91,20 +99,26 @@ public class GenericLegendExecution implements LegendExecution
     {
         try
         {
-            // Input --------------------------------
+            // Execute Input --------------------------
             ExecuteInput input = new ExecuteInput();
             input.model = buildComposite(Lists.mutable.with(buildPointer(database), buildRuntimeModel(options)));
             input.context = new BaseExecutionContext();
             input.function = parseLambda("#SQL{" + query + "}#->from(sqlServer::dynamically::added::runtime::Runtime)");
             StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(input));
             bodyEntity.setContentType("application/json");
-            // Input --------------------------------
+            // Execute Input --------------------------
 
             return callServer(bodyEntity, "pure/v1/execution/execute", x ->
             {
                 try
                 {
-                    return new LegendExecutionResultFromTds(new LegendTdsResultParser(x));
+                    LegendExecutionResultFromTds res = new LegendExecutionResultFromTds(new LegendTdsResultParser(x));
+                    // Fill linearization for columns returned in the resultset
+                    C3LinearizationReturn c3Linearizations = getC3LinearizationReturn(ListIterate.collect(res.getLegendColumns(), LegendColumn::getType));
+                    LazyIterate
+                            .zip(res.getLegendColumns(), c3Linearizations.typeInheritances)
+                            .forEach(c -> c.getOne().setLinearizedInheritances(c.getTwo().linearizedInheritance));
+                    return res;
                 }
                 catch (IOException e)
                 {
@@ -122,6 +136,25 @@ public class GenericLegendExecution implements LegendExecution
     public boolean supports(String database)
     {
         return database.startsWith("projects|");
+    }
+
+    private C3LinearizationReturn getC3LinearizationReturn(MutableList<String> types)
+    {
+        try
+        {
+            // C3Linearization--------------------------
+            C3LinearizationInput c3Input = new C3LinearizationInput();
+            c3Input.fullPathTypes = types;
+            c3Input.model = PureModelContextData.newPureModelContextData();
+            StringEntity c3BodyEntity = new StringEntity(MAPPER.writeValueAsString(c3Input));
+            c3BodyEntity.setContentType("application/json");
+            return callServer(c3BodyEntity, "pure/v1/compilation/c3Linearization", C3LinearizationReturn.class);
+            // C3Linearization--------------------------
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private PureModelContextCombination buildComposite(MutableList<PureModelContext> contexts)

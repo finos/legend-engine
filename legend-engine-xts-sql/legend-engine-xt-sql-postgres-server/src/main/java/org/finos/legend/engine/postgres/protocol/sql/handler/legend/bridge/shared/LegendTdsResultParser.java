@@ -29,6 +29,8 @@ import java.util.Objects;
 import static java.util.Objects.requireNonNull;
 
 import java.util.stream.Collectors;
+
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.postgres.PostgresServerException;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
 import org.slf4j.Logger;
@@ -109,7 +111,7 @@ public class LegendTdsResultParser
             String columnName = parseNextTextField(NAME);
             String type = parseNextTextField(TYPE);
             skipUntilToken(JsonToken.END_OBJECT);
-            legendColumns.add(new LegendColumn(columnName, type));
+            legendColumns.add(new LegendColumn(columnName, type, Lists.mutable.empty()));
         }
         acceptNextToken(JsonToken.END_OBJECT);
     }

@@ -21,6 +21,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecution;
@@ -59,7 +60,7 @@ public class LegendExecutionService implements LegendExecution
             if (jsonNode.get(TDS_COLUMNS) != null)
             {
                 ArrayNode columns = (ArrayNode) jsonNode.get(TDS_COLUMNS);
-                List<LegendColumn> legendColumns = Collections.unmodifiableList(IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").textValue(), c.get("type").textValue())));
+                List<LegendColumn> legendColumns = Collections.unmodifiableList(IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").textValue(), c.get("type").textValue(), Lists.mutable.empty())));
                 span.setAttribute(AttributeKey.stringArrayKey(TDS_COLUMNS), legendColumns.stream().map(LegendColumn::toString).collect(Collectors.toList()));
                 return legendColumns;
             }

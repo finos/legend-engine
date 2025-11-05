@@ -17,17 +17,28 @@ package org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.r
 import java.sql.Types;
 import java.util.List;
 
+import com.google.common.base.Function;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.TypeConversion;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
-import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendDataType.*;
 
 public class LegendResultSetMetaData implements PostgresResultSetMetaData
 {
     private List<LegendColumn> legendColumns;
+    private List<Integer> columnTypes;
 
     public LegendResultSetMetaData(List<LegendColumn> legendColumns)
     {
         this.legendColumns = legendColumns;
+        this.columnTypes = ListIterate.collect(legendColumns, c ->
+        {
+            Function<Integer, Integer> ifNullReturnsVarchar = (v -> v == null ? Types.VARCHAR : v);
+            return ifNullReturnsVarchar.apply(c.getLinearizedInheritances().isEmpty() ?
+                    TypeConversion._typeConversions.get(c.getType()) :
+                    TypeConversion._typeConversions.get(ListIterate.detect(c.getLinearizedInheritances(), v -> TypeConversion._typeConversions.get(v) != null))
+            );
+        });
     }
 
     @Override
@@ -50,26 +61,7 @@ public class LegendResultSetMetaData implements PostgresResultSetMetaData
     @Override
     public int getColumnType(int i) throws Exception
     {
-        String legendType = getColumnPrivate(i).getType();
-        switch (legendType)
-        {
-            case STRICT_DATE:
-                return Types.DATE;
-            case DATE:
-            case DATE_TIME:
-                return Types.TIMESTAMP;
-            case INTEGER:
-                return Types.BIGINT;
-            case FLOAT:
-            case NUMBER:
-            case DECIMAL:
-                return Types.DOUBLE;
-            case BOOLEAN:
-                return Types.BOOLEAN;
-            default:
-                return Types.VARCHAR;
-        }
-
+        return  columnTypes.get(i - 1);
     }
 
     @Override

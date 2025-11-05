@@ -14,17 +14,20 @@
 
 package org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge;
 
+import java.util.List;
 import java.util.Objects;
 
 public class LegendColumn
 {
     private String name;
     private String type;
+    private List<String> linearizedInheritances;
 
-    public LegendColumn(String name, String type)
+    public LegendColumn(String name, String type, List<String> linearizedInheritance)
     {
         this.name = name;
         this.type = type;
+        this.linearizedInheritances = linearizedInheritance;
     }
 
     public String getName()
@@ -32,20 +35,21 @@ public class LegendColumn
         return name;
     }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-
     public String getType()
     {
         return type;
     }
 
-    public void setType(String type)
+    public List<String> getLinearizedInheritances()
     {
-        this.type = type;
+        return linearizedInheritances;
     }
+
+    public List<String> setLinearizedInheritances(List<String> linearizedInheritances)
+    {
+        return this.linearizedInheritances = linearizedInheritances;
+    }
+
 
     @Override
     public boolean equals(Object o)

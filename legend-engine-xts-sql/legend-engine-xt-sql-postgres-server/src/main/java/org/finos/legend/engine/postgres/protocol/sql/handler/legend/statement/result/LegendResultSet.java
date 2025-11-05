@@ -15,6 +15,7 @@
 package org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result;
 
 import com.google.common.base.Function;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -25,6 +26,13 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.List;
+
+import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.factory.Maps;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.postgres.PostgresServerException;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecutionResult;
@@ -35,6 +43,7 @@ import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.state
 
 public class LegendResultSet implements PostgresResultSet
 {
+    private static MutableMap<String, Function2<LegendColumn, Object, Object>> _processors = registerProcessors();
 
     public static final DateTimeFormatter TIMESTAMP_FORMATTER =
             new DateTimeFormatterBuilder()
@@ -49,11 +58,23 @@ public class LegendResultSet implements PostgresResultSet
 
 
     private LegendExecutionResult legendExecutionResult;
+
+    private List<Function2<LegendColumn, Object, Object>> processors = Lists.mutable.empty();
+
     private List<Object> currentRow;
+
 
     public LegendResultSet(LegendExecutionResult legendExecutionResult)
     {
         this.legendExecutionResult = legendExecutionResult;
+        this.processors = ListIterate.collect(legendExecutionResult.getLegendColumns(), c ->
+        {
+            Function<Function2<LegendColumn, Object, Object>, Function2<LegendColumn, Object, Object>> ifNullReturnsIdentity = (f -> f == null ? (col, o) -> o : f);
+            return ifNullReturnsIdentity.apply(c.getLinearizedInheritances().isEmpty() ?
+                    _processors.get(c.getType()) :
+                    _processors.get(ListIterate.detect(c.getLinearizedInheritances(), v -> _processors.get(v) != null))
+            );
+        });
     }
 
     @Override
@@ -65,68 +86,10 @@ public class LegendResultSet implements PostgresResultSet
     @Override
     public Object getObject(int i) throws Exception
     {
-        LegendColumn legendColumn = legendExecutionResult.getLegendColumns().get(i - 1);
-        Object value = currentRow.get(i - 1);
-        switch (legendColumn.getType())
-        {
-
-            //2020-06-07T04:15:27.000000000+0000
-            case STRICT_DATE:
-                return extractValue(value, legendColumn, String.class, "Date (YYYY-MM-DD)",
-                        f ->
-                        {
-                            LocalDate localDate = DATE_FORMAT.parse((String) value, LocalDate::from);
-                            long toEpochMilli = localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
-                            return toEpochMilli;
-                        });
-            case DATE:
-            case DATE_TIME:
-                return extractValue(value, legendColumn, String.class, "Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)",
-                        f ->
-                        {
-                            TemporalAccessor temporalAccessor = TIMESTAMP_FORMATTER.parseBest((String) value, Instant::from, LocalDate::from);
-                            if (temporalAccessor instanceof Instant)
-                            {    //if date is a valid time stamp
-                                return ((Instant) temporalAccessor).toEpochMilli();
-                            }
-                            else
-                            {
-                                //if date is a date parse as date and convert to time tamp
-                                return ((LocalDate) temporalAccessor).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
-                            }
-                        });
-            case INTEGER:
-                return extractValue(value, legendColumn, Number.class, "INTEGER",
-                        f ->
-                        {
-                            return ((Number) value).longValue();
-                        });
-            case FLOAT:
-            case NUMBER:
-            case DECIMAL:
-                return extractValue(value, legendColumn, Number.class, "DECIMAL (FLOAT/DOUBLE)",
-                        f ->
-                        {
-                            return ((Number) value).doubleValue();
-                        });
-            case BOOLEAN:
-                return extractValue(value, legendColumn, Boolean.class, "BOOLEAN",
-                        f ->
-                        {
-                            return (Boolean) value;
-                        });
-            case STRING:
-                return extractValue(value, legendColumn, String.class, "STRING",
-                        f ->
-                        {
-                            return (String) value;
-                        });
-            default:
-                return value;
-        }
+        return this.processors.get(i - 1).apply(legendExecutionResult.getLegendColumns().get(i - 1), currentRow.get(i - 1));
     }
 
-    private Object extractValue(Object value, LegendColumn column, Class expectedClassType, String expectedFormat, Function<Object, Object> function)
+    private static Object extractValue(Object value, LegendColumn column, Class expectedClassType, String expectedFormat, Function<Object, Object> function)
     {
         if (value == null)
         {
@@ -150,7 +113,7 @@ public class LegendResultSet implements PostgresResultSet
         }
     }
 
-    private String obfuscateValue(Object value)
+    private static String obfuscateValue(Object value)
     {
         if (value == null)
         {
@@ -184,4 +147,69 @@ public class LegendResultSet implements PostgresResultSet
             legendExecutionResult.close();
         }
     }
+
+
+    private static MutableMap<String, Function2<LegendColumn, Object, Object>> registerProcessors()
+    {
+        MutableMap<String, Function2<LegendColumn, Object, Object>> processors = Maps.mutable.empty();
+        registerProcessor(
+                STRICT_DATE,
+                (column, value) ->
+                        extractValue(value, column, String.class, "Date (YYYY-MM-DD)",
+                                f -> DATE_FORMAT.parse((String) value, LocalDate::from).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+                        ),
+                processors
+        );
+
+        registerProcessor(
+                Lists.mutable.with(DATE, DATE_TIME),
+                (column, value) ->
+                        extractValue(value, column, String.class, "Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)",
+                                f ->
+                                {
+                                    TemporalAccessor temporalAccessor = TIMESTAMP_FORMATTER.parseBest((String) value, Instant::from, LocalDate::from);
+                                    return (temporalAccessor instanceof Instant) ?
+                                            ((Instant) temporalAccessor).toEpochMilli()
+                                            : ((LocalDate) temporalAccessor).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+                                }),
+                processors
+        );
+
+        registerProcessor(
+                Lists.mutable.with(INTEGER),
+                (column, value) -> extractValue(value, column, Number.class, "INTEGER", f -> ((Number) value).longValue()),
+                processors
+        );
+
+        registerProcessor(
+                Lists.mutable.with(FLOAT, DECIMAL, NUMBER),
+                (column, value) -> extractValue(value, column, Number.class, "DECIMAL (FLOAT/DOUBLE)", f -> ((Number) value).doubleValue()),
+                processors
+        );
+
+        registerProcessor(
+                Lists.mutable.with(BOOLEAN),
+                (column, value) -> extractValue(value, column, Boolean.class, "BOOLEAN", f -> value),
+                processors
+        );
+
+        registerProcessor(
+                Lists.mutable.with(STRING),
+                (column, value) -> extractValue(value, column, String.class, "STRING", f -> value),
+                processors
+        );
+
+        return processors;
+    }
+
+    private static void registerProcessor(MutableList<String> types, Function2<LegendColumn, Object, Object> processor, MutableMap<String, Function2<LegendColumn, Object, Object>> processors)
+    {
+        types.forEach(t -> processors.put(t, processor));
+    }
+
+    private static void registerProcessor(String type, Function2<LegendColumn, Object, Object> processor, MutableMap<String, Function2<LegendColumn, Object, Object>> processors)
+    {
+        processors.put(type, processor);
+    }
+
 }
