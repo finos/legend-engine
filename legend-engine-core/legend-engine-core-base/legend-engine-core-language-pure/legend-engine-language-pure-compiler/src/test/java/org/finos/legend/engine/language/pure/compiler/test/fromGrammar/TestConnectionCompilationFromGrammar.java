@@ -36,7 +36,7 @@ public class TestConnectionCompilationFromGrammar extends TestCompilationFromGra
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION warning at [5:1-9:1]: Duplicated element 'anything::class'";
+        return "COMPILATION error at [5:1-9:1]: Duplicated element 'anything::class'";
     }
 
     @Test
@@ -47,7 +47,7 @@ public class TestConnectionCompilationFromGrammar extends TestCompilationFromGra
                 "{\n" +
                 "  class : test::someClass;" +
                 "  url : 'asd';\n" +
-                "}\n", "COMPILATION warning at [4:11-25]: Can't find class 'test::someClass'"
+                "}\n", "COMPILATION error at [4:11-25]: Can't find class 'test::someClass'"
         );
     }
 
@@ -59,7 +59,7 @@ public class TestConnectionCompilationFromGrammar extends TestCompilationFromGra
                 "{\n" +
                 "  class : test::someClass;" +
                 "  url : 'asd';\n" +
-                "}\n", "COMPILATION warning at [4:11-25]: Can't find class 'test::someClass'"
+                "}\n", "COMPILATION error at [4:11-25]: Can't find class 'test::someClass'"
         );
     }
 
@@ -70,7 +70,7 @@ public class TestConnectionCompilationFromGrammar extends TestCompilationFromGra
                 "ModelChainConnection test::connection\n" +
                 "{\n" +
                 "  mappings: [test::someMapping];\n" +
-                "}\n", "COMPILATION warning at [4:3-32]: Can't find mapping 'test::someMapping'"
+                "}\n", "COMPILATION error at [4:3-32]: Can't find mapping 'test::someMapping'"
         );
     }
 

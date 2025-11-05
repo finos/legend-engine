@@ -797,6 +797,6 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION warning at [5:1-7:1]: Duplicated element 'anything::class'";
+        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::class'";
     }
 }

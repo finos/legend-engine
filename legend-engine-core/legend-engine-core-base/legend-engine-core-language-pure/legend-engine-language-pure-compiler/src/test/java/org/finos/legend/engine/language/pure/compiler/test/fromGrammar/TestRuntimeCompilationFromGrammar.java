@@ -67,7 +67,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION warning at [5:1-8:1]: Duplicated element 'anything::class'";
+        return "COMPILATION error at [5:1-8:1]: Duplicated element 'anything::class'";
     }
 
     @Test
@@ -96,7 +96,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "  [\n" +
                 "    test::mapping2\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION warning at [19:5-18]: Can't find mapping 'test::mapping2'");
+                "}\n", "COMPILATION error at [19:5-18]: Can't find mapping 'test::mapping2'");
         // Runtime does not cover any mapping
         test(resource +
                 "###Runtime\n" +
@@ -119,7 +119,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "      [\n" +
                 "        ModelStore: [id1: test::connection2]\n" +
                 "      ];\n" +
-                "}\n", "COMPILATION warning at [23:27-43]: Can't find connection 'test::connection2'");
+                "}\n", "COMPILATION error at [23:27-43]: Can't find connection 'test::connection2'");
         // check compilation for an embedded connection
         test(resource +
                 "###Runtime\n" +
@@ -138,7 +138,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "        }\n" +
                 "      }#]\n" +
                 "   ];\n" +
-                "}\n", "COMPILATION warning at [25:18-29]: Can't find class 'test::class2'");
+                "}\n", "COMPILATION error at [25:18-29]: Can't find class 'test::class2'");
         // check walker source information processing for embedded connection
         test(resource +
                 "###Runtime\n" +
@@ -152,7 +152,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 // intentionally put the embedded connection in one line to check walker source information processing for island grammar
                 "      ModelStore: [id1: #{ JsonModelConnection { class:                   test::class2; url: 'my_url'; }}#]\n" +
                 "   ];\n" +
-                "}\n", "COMPILATION warning at [22:75-86]: Can't find class 'test::class2'");
+                "}\n", "COMPILATION error at [22:75-86]: Can't find class 'test::class2'");
         // cannot find store used for indexing
         test(resource +
                 "###Runtime\n" +
@@ -171,7 +171,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "        }\n" +
                 "      }#]\n" +
                 "   ];\n" +
-                "}\n", "COMPILATION warning at [22:7-17]: Can't find the packageable element 'ModelStore2'");
+                "}\n", "COMPILATION error at [22:7-17]: Can't find the packageable element 'ModelStore2'");
     }
 
     @Test

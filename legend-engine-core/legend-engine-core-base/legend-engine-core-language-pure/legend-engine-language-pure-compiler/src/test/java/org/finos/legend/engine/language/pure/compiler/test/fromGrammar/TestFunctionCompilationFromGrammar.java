@@ -48,7 +48,7 @@ public class TestFunctionCompilationFromGrammar
                 "      testDuplicate | MyFunc() => (JSON) '[]';\n" +
                 "      testDuplicate | MyFunc() => (JSON) '[]';\n" +
                 "  )\n" +
-                "}\n", "COMPILATION warning at [6:3-10:3]: Multiple tests found with ids : 'testDuplicate'");
+                "}\n", "COMPILATION error at [6:3-10:3]: Multiple tests found with ids : 'testDuplicate'");
         test("function model::MyFunc(): String[1]\n" +
                 "{\n" +
                 "  ''\n" +
@@ -62,7 +62,7 @@ public class TestFunctionCompilationFromGrammar
                 "  (\n" +
                 "      testDuplicate | MyFunc() => (JSON) '[]';\n" +
                 "  )\n" +
-                "}\n", "COMPILATION warning at [1:1-14:1]: Multiple testSuites found with ids : 'duplicateSuite'");
+                "}\n", "COMPILATION error at [1:1-14:1]: Multiple testSuites found with ids : 'duplicateSuite'");
 
         test("function model::MyFunc(firstName: String[1]): String[1]\n" +
                 "{\n" +
@@ -78,7 +78,7 @@ public class TestFunctionCompilationFromGrammar
                 "}\n" +
                 "{\n" +
                 "  testDuplicate | MyFunc() => (JSON) '[]';\n" +
-                "}\n", "COMPILATION warning at [6:3-42]: Parameter value required for parameter: 'firstName'");
+                "}\n", "COMPILATION error at [6:3-42]: Parameter value required for parameter: 'firstName'");
 
         test("function model::MyFunc(firstName: String[1], test: Integer[1], whoops: String[1]): String[1]\n" +
                 "{\n" +
@@ -86,7 +86,7 @@ public class TestFunctionCompilationFromGrammar
                 "}\n" +
                 "{\n" +
                 "  testDuplicate | MyFunc('John', 1) => (JSON) '[]';\n" +
-                "}\n", "COMPILATION warning at [6:3-51]: Parameter value required for parameter: 'whoops'");
+                "}\n", "COMPILATION error at [6:3-51]: Parameter value required for parameter: 'whoops'");
 
         test("function model::MyFunc(): String[1]\n" +
                 "{\n" +
@@ -94,7 +94,7 @@ public class TestFunctionCompilationFromGrammar
                 "}\n" +
                 "{\n" +
                 "  testDuplicate | MyFunc('John') => (JSON) '[]';\n" +
-                "}\n", "COMPILATION warning at [6:26-31]: No associated parameter found for value.");
+                "}\n", "COMPILATION error at [6:26-31]: No associated parameter found for value.");
 
         test("function model::Hello(name: String[1]): String[1]\n" +
                 "{\n" +
