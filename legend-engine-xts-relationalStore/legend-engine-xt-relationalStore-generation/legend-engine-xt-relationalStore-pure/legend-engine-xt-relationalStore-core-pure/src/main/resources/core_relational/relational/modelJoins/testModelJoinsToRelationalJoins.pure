@@ -58,6 +58,19 @@ function meta::external::store::relational::modelJoins::test::getSingleConnectio
   );
 }
 
+function meta::external::store::relational::modelJoins::test::getNoStoreRuntime():Runtime[1]
+{
+  ^EngineRuntime(
+                  connectionStores=[^ConnectionStore(element='Mock', connection=getConnection())],
+                  preprocessFunction = preprocessQueryDummy_FunctionDefinition_1__Runtime_1__FunctionDefinition_1_
+                );
+}
+
+function meta::external::store::relational::modelJoins::test::preprocessQueryDummy(f:FunctionDefinition<Any>[1], runtime:meta::core::runtime::Runtime[1]):FunctionDefinition<Any>[1]
+{
+  $f;
+}
+
 function <<test.Test>> meta::external::store::relational::modelJoins::test::testPersonToFirmUsingProject():Boolean[1]
 {
   let query = {|Trade.all()->filter(v|$v.client.trades->exists(c|$c.value=='joe'))->project([x|$x.value,x|$x.client.name],['Value','Client/Name'])->from(XStoreTradesMapping, getXStoreRuntime());};
@@ -100,6 +113,14 @@ function <<test.Test>> meta::external::store::relational::modelJoins::test::test
   let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
   let xstoreResult = executionPlan($query, XStoreTradesMapping_withInequalities, getXStoreRuntime(),meta::relational::extension::relationalExtensions());
   assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".value >= "legalentity_view_0".value and "root".value > "legalentity_view_0".value and "root".value <= "legalentity_view_0".value and "root".value < "legalentity_view_0".value)',
+               $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::external::store::relational::modelJoins::test::testModelJoinForNonRelationalConcepts():Boolean[1] 
+{
+  let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
+  let xstoreResult = executionPlan($query, XStoreTradesMapping_withConstantDouble, getNoStoreRuntime(),meta::relational::extension::relationalExtensions());
+  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".ENTITY_ID_FK = "legalentity_view_0".ENTITY_ID and "root".value = 1 and (2 <> "root".value or "root".value is null) and 1 = 1)', 
                $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
@@ -379,3 +400,4 @@ Mapping meta::external::store::relational::modelJoins::test::XStoreTradesMapping
     trades[legal_entity, trade]: ($that.value >= $this.value) && ($that.value > $this.value) && ($that.value <= $this.value) && ($that.value < $this.value)
   }
 )
+
