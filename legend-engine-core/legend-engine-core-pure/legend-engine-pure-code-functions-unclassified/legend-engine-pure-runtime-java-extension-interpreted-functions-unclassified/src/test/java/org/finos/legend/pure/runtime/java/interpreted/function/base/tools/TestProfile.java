@@ -93,8 +93,7 @@ public class TestProfile extends AbstractPureTestWithCoreCompiled
                 "            name(Property):\n" +
                 "                [>1] K instance String\n" +
                 "            package(Property):\n" +
-                "                [>1] C instance Package\n" +
-                "    typeVariables(Property):", functionExecution.getConsole().getLine(1));
+                "                [>1] C instance Package", functionExecution.getConsole().getLine(1));
     }
 
     protected static FunctionExecution getFunctionExecution()
