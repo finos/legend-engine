@@ -189,6 +189,11 @@ public class ConnectionStateManager implements Closeable
         this.clock = clock;
     }
 
+    public void clearAllConnections()
+    {
+        connectionPools.keySet().forEach(this::evictPool);
+    }
+
     // Synchronizes using concurrent map's locks
     public IdentityState getIdentityStateUsing(Properties properties)
     {

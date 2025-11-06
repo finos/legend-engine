@@ -17,12 +17,15 @@ package org.finos.legend.engine.server.test.pureClient.stores;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.test.H2TestServerResource;
 import org.finos.legend.engine.server.test.shared.MetadataTestServerResource;
 import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.engine.server.test.shared.ServerTestServerResource;
+import org.finos.legend.engine.test.shared.framework.PureTestHelperFramework;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import org.finos.legend.pure.runtime.java.extension.store.relational.shared.connectionManager.ConnectionManager;
 
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.*;
 
@@ -30,8 +33,13 @@ public class Test_RelationalGraphFetchParallel_UsingPureClientTestSuite extends 
 {
     public static Test suite() throws Exception
     {
-        return wrapSuite(
-                () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
+        return PureTestHelperFramework.wrapSuite(
+                () ->
+                {
+                    ConnectionManager.clearTestConnections();
+                    ConnectionStateManager.getInstance().clearAllConnections();
+                    return PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X");
+                },
                 () ->
                 {
                     CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
