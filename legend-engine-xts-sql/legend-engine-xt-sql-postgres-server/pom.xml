@@ -377,6 +377,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-shared-store-relational</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-sql-http-api</artifactId>
             <type>test-jar</type>

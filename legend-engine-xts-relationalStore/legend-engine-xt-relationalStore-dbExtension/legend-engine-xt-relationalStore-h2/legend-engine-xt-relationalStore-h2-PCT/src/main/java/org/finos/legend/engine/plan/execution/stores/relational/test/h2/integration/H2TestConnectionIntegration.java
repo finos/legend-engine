@@ -21,7 +21,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
 
 public class H2TestConnectionIntegration implements TestConnectionIntegration, TestServerResource

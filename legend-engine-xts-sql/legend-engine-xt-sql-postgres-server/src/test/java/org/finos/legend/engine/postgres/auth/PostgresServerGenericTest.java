@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.postgres;
+package org.finos.legend.engine.postgres.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Span;
@@ -25,6 +25,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.stores.relational.test.H2TestServerResource;
+import org.finos.legend.engine.postgres.TestPostgresServer;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.generic.GenericLegendExecution;
@@ -39,6 +40,7 @@ import org.finos.legend.engine.server.ServerConfiguration;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
+import org.finos.legend.pure.runtime.java.extension.store.relational.shared.connectionManager.ConnectionManager;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -115,6 +117,8 @@ public class PostgresServerGenericTest
 
     private static H2TestServerResource h2TestServer;
 
+    private static Server<?> server;
+
     private static int engineServerPort;
 
     private static TestModelLoader loader;
@@ -131,9 +135,10 @@ public class PostgresServerGenericTest
     public static void tearDown() throws Exception
     {
         h2TestServer.shutDown();
-        System.clearProperty("io.netty.eventLoopThreads");
+        server.shutDown();
         testPostgresServer.stopListening();
         testPostgresServer.shutDown();
+        ConnectionManager.clearTestConnections();
     }
 
 
@@ -271,7 +276,7 @@ public class PostgresServerGenericTest
         // Engine
         engineServerPort = DynamicPortGenerator.generatePort();
         loader = new TestModelLoader();
-        Server<?> server = new Server()
+        server = new Server()
         {
             @Override
             protected ModelLoader[] getModelLoaders(ServerConfiguration serverConfiguration)

@@ -41,6 +41,7 @@ import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
 import org.finos.legend.engine.query.sql.api.TestSQLSourceProvider;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.glassfish.jersey.test.TestProperties;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -52,6 +53,11 @@ import java.util.ServiceLoader;
 
 public class SqlExecuteTest
 {
+    static
+    {
+        System.setProperty(TestProperties.CONTAINER_PORT, "0");
+    }
+
     @ClassRule
     public static final ResourceTestRule resources = getResourceTestRule();
     private static final ObjectMapper OM = new ObjectMapper();
@@ -67,7 +73,6 @@ public class SqlExecuteTest
         TestSQLSourceProvider testSQLSourceProvider = new TestSQLSourceProvider();
         SqlExecute sqlExecute = new SqlExecute(modelManager, executor, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), FastList.newListWith(testSQLSourceProvider), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
 
-        //PureModel pureModel = modelManager.loadModel(testSQLSourceProvider.getPureModelContextData(), PureClientVersions.production, Identity.getAnonymousIdentity(), "");
         ResourceTestRule resources = ResourceTestRule.builder()
                 .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
                 .addResource(sqlExecute)

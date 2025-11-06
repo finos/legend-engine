@@ -48,5 +48,10 @@ public class H2TestServerResource implements TestServerResource
     {
         this.h2Server.shutdown();
         this.h2Server.stop();
+        System.clearProperty("dw.temporarytestdb.port");
+        System.clearProperty("dw.relationalexecution.temporarytestdb.port");
+        System.clearProperty("alloy.test.h2.port");
+        System.clearProperty("legend.test.h2.port");
+        System.clearProperty("H2_ALLOWED_CLASSES_PROPERTY");
     }
 }
