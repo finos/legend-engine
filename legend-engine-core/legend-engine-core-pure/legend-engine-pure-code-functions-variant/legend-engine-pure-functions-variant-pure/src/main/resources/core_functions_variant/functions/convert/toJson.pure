@@ -1,0 +1,31 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::variant::*;
+import meta::pure::functions::variant::convert::*;
+
+native function
+    <<PCT.function>>
+    {
+        doc.doc='Returns the json representation of the given variant.'
+    }
+meta::pure::functions::variant::convert::toJson(variant: Variant[1]): String[1];
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::toJson::testObjectToJson<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('{"Hello":null}', $f->eval(|fromJson('{ "Hello" : null }')->toJson()));
+    assertEquals('{"Hello":"World"}', $f->eval(|fromJson('{ "Hello" : "World" }')->toJson()));
+    assertEquals('{"Hello":["World","!"]}', $f->eval(|fromJson('{ "Hello" : [ "World", "!" ] }')->toJson()));
+}

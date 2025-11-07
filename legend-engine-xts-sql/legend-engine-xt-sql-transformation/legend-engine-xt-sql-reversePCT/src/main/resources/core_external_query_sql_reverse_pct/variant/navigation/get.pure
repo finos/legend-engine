@@ -17,7 +17,7 @@ import meta::pure::test::pct::reversePCT::framework::*;
 function meta::external::query::sql::reversePCT::tests::variant::navigation::get::reverses():ReversesForSource[1]
 {
   ^ReversesForSource(
-    source = '/platform/pure/variant/navigation/get.pure',
+    source = '/core_functions_variant/functions/navigation/get.pure',
     reverses = [
                  revsForTest(
                       'meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyExists_Function_1__Boolean_1_',

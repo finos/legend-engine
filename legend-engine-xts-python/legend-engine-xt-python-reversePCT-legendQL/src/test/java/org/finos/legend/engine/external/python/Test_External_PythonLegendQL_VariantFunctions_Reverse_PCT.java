@@ -17,9 +17,9 @@ package org.finos.legend.engine.external.python;
 import junit.framework.Test;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.pure.code.core.VariantCodeRepositoryProvider;
 import org.finos.legend.pure.generated.Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource;
 import org.finos.legend.pure.generated.core_external_python_reverse_pct_legend_ql_pythonReversePCTLegendQLApi;
-import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
@@ -30,7 +30,7 @@ import static org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBui
 
 public class Test_External_PythonLegendQL_VariantFunctions_Reverse_PCT extends PCTReportConfiguration
 {
-    private static final ReportScope reportScope = PlatformCodeRepositoryProvider.variantFunctions;
+    private static final ReportScope reportScope = VariantCodeRepositoryProvider.variantFunctions;
     private static final Adapter adapter = Core_External_PythonLegendQL_ReversePCTReportProvider.LegendQLAdapter;
     private static final String platform = "compiled";
     private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_python_reverse_pct_legend_ql_pythonReversePCTLegendQLApi.Root_meta_external_python_reversePCT_legendQL_pythonLegendQLReversesVariant__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));

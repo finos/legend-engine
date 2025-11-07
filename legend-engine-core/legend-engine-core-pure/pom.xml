@@ -30,6 +30,7 @@
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-code-functions-standard</module>
         <module>legend-engine-pure-code-functions-json</module>
+        <module>legend-engine-pure-code-functions-variant</module>
         <module>legend-engine-pure-code-functions-relation</module>
         <module>legend-engine-pure-code-functions-unclassified</module>
         <module>legend-engine-pure-code-functions-legendCompiler</module>
