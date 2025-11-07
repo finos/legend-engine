@@ -16,7 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.context;
 
 import org.finos.legend.engine.protocol.Protocol;
 
-public class PureModelContextText extends PureModelContext
+public class PureModelContextText extends PureModelContextConcrete
 {
     public Protocol serializer;
     public String code;

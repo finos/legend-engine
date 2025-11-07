@@ -50,7 +50,6 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class Session implements AutoCloseable
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
@@ -72,9 +71,13 @@ public class Session implements AutoCloseable
 
     public String getDatabase()
     {
-        return this.properties.get("database").toString();
+        return this.properties.getProperty("database", "");
     }
 
+    public String getOptions()
+    {
+        return this.properties.getProperty("options", "");
+    }
 
     public Identity getIdentity()
     {

@@ -79,6 +79,7 @@ import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElem
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.RelationalOperationElementJsonToGrammar;
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.TransformRelationalOperationElementGrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.TransformRelationalOperationElementJsonToGrammar;
+import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
@@ -276,8 +277,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         this.environment = environment;
         DeploymentStateAndVersions.DEPLOYMENT_MODE = serverConfiguration.deployment.mode;
 
-        SDLCLoader sdlcLoader = new SDLCLoader(serverConfiguration.metadataserver, null);
-        ModelManager modelManager = new ModelManager(serverConfiguration.deployment.mode, sdlcLoader);
+        ModelManager modelManager = new ModelManager(serverConfiguration.deployment.mode, getModelLoaders(serverConfiguration));
 
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
@@ -445,6 +445,12 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new TestDataGenerationAPI(modelManager, planExecutor));
         environment.jersey().register(new MFT());
         enableCors(environment, serverConfiguration);
+    }
+
+    protected ModelLoader[] getModelLoaders(ServerConfiguration serverConfiguration)
+    {
+        SDLCLoader sdlcLoader = new SDLCLoader(serverConfiguration.metadataserver, null);
+        return new ModelLoader[]{sdlcLoader};
     }
 
     private void loadVaults(List<VaultConfiguration> vaultConfigurations)

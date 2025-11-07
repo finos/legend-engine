@@ -26,9 +26,13 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.semconv.ResourceAttributes;
+
 import java.io.File;
 import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.generic.GenericLegendExecution;
 import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethod;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.GSSAuthenticationMethod;
@@ -41,8 +45,8 @@ import org.finos.legend.engine.postgres.config.LegendHandlerConfig;
 import org.finos.legend.engine.postgres.config.OpenTelemetryConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendExecutionService;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendHttpClient;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendExecutionService;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendHttpClient;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.finos.legend.engine.postgres.utils.ErrorMessageFormatter;
 import org.finos.legend.engine.postgres.utils.ErrorMessageFormatterImpl;
@@ -93,8 +97,12 @@ public class PostgresServerLauncher
         ErrorMessageFormatter errorMessageFormatter = buildErrorMessageFormatter(serverConfig);
         logger.info("Starting server in port: {}", serverConfig.getPort());
 
-        LegendHandlerConfig config = (LegendHandlerConfig)serverConfig.getHandler();
-        SQLManager sqlManager = new SQLManager(new LegendExecutionService(new LegendHttpClient(config.getProtocol(), config.getHost(), config.getPort())));
+        LegendHandlerConfig config = (LegendHandlerConfig) serverConfig.getHandler();
+        SQLManager sqlManager = new SQLManager(Lists.mutable.with(
+                                                    new GenericLegendExecution(config.getProtocol(), config.getHost(), config.getPort()),
+                                                    new LegendExecutionService(new LegendHttpClient(config.getProtocol(), config.getHost(), config.getPort()))
+                                               )
+                                    );
 
         new PostgresServer(serverConfig, sqlManager, (user, connectionProperties) -> authenticationMethod, new Messages(errorMessageFormatter)).run();
     }
@@ -168,7 +176,7 @@ public class PostgresServerLauncher
 
     public static void main(String[] args) throws IOException
     {
-        String configPath = args[0];
+        String configPath = args.length == 0 ? Thread.currentThread().getContextClassLoader().getResource("defaultLegendConfig.json").getFile() : args[0];
         new PostgresServerLauncher(configPath).launch();
     }
 }

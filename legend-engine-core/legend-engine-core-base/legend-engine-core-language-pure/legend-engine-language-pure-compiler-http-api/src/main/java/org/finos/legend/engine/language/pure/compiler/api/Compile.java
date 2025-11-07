@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -37,10 +38,12 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.Exception
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -50,8 +53,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
+import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 @Api(tags = "Pure - Compiler")
 @Path("pure/v1/compilation")
@@ -142,6 +148,39 @@ public class Compile
             PureModel pureModel = this.modelManager.loadModel(model, PureClientVersions.production, identity, null);
             RelationType relationType = org.finos.legend.engine.language.pure.compiler.Compiler.getLambdaRelationType(lambda, pureModel);
             return Response.ok(relationType, MediaType.APPLICATION_JSON_TYPE).build();
+        }
+        catch (Exception ex)
+        {
+            MetricsHandler.observeError(LoggingEventType.LAMBDA_RETURN_TYPE_ERROR, ex, null);
+            return handleException(uriInfo, identity, start, ex);
+        }
+    }
+
+    @POST
+    @Path("c3Linearization")
+    @ApiOperation(value = "Given a model and a list of types. Returns the list of inheritance lines (according to C3Linearization algorithm).")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Prometheus(name = "lambda relation type")
+    public Response c3Linearization(C3LinearizationInput c3LinerizationInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        try
+        {
+            PureModelContext model = c3LinerizationInput.model;
+            List<String> types = c3LinerizationInput.fullPathTypes;
+            PureModel pureModel = this.modelManager.loadModel(model, PureClientVersions.production, identity, null);
+            return Response.ok(
+                    new C3LinearizationReturn(
+                            org.finos.legend.engine.language.pure.compiler.Compiler.getC3Linearizations(
+                                    ListIterate.collect(types, pureModel::getType), pureModel).collect(v ->
+                                        new C3LinearizationUnitReturn(
+                                                Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((PackageableElement) v.getOne(), pureModel.getExecutionSupport()),
+                                                ListIterate.collect(v.getTwo(), t -> Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((PackageableElement) t, pureModel.getExecutionSupport()))
+                                        )
+                            )
+                    ), MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {

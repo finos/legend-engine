@@ -15,6 +15,12 @@
 package org.finos.legend.engine.language.pure.compiler;
 
 import java.io.IOException;
+import java.util.List;
+
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
@@ -34,6 +40,7 @@ import org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_metam
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.navigation.linearization.C3Linearization;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 
 public class Compiler
@@ -96,5 +103,10 @@ public class Compiler
         {
             throw new UnsupportedOperationException(e);
         }
+    }
+
+    public static MutableList<Pair<Type, List<Type>>> getC3Linearizations(List<Type> types, PureModel pureModel)
+    {
+        return ListIterate.collect(types, t -> Tuples.pair(t, C3Linearization.getTypeGeneralizationLinearization(t, pureModel.getExecutionSupport().getProcessorSupport()).collect(x -> (Type)x).toList()));
     }
 }
