@@ -58,7 +58,7 @@ import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
-import org.finos.legend.pure.runtime.java.shared.variant.VariantInstanceImpl;
+import org.finos.legend.pure.runtime.java.extension.external.variant.VariantInstanceImpl;
 
 public abstract class TestTDS
 {

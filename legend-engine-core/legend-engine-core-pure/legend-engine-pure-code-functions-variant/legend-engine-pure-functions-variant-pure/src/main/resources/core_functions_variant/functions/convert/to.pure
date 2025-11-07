@@ -1,0 +1,179 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::variant::*;
+import meta::pure::functions::variant::convert::*;
+
+native function
+    <<PCT.function>>
+    {
+        doc.doc='Converts the $variant to the given $type.\n' +
+                 'This allows to extract the variant actual value, like primitives.\n' +
+                 'This will fail if value cannot be coerced.'
+    }
+meta::pure::functions::variant::convert::to<T>(variant: Variant[0..1], type: T[0..1]): T[0..1];
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToNull<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals([], $f->eval(|fromJson('null')->to(@Integer)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToInteger<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(1, $f->eval(|fromJson('1')->to(@Integer)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToIntegerFromString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(1, $f->eval(|fromJson('"1"')->to(@Integer)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertError(|$f->eval(|fromJson('1.25')->to(@Integer)), 'Variant of type \'NUMBER\' cannot be converted to Integer');
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertError(|$f->eval(|fromJson('"1.25"')->to(@Integer)), 'For input string: "1.25"');
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(1.25, $f->eval(|fromJson('1.25')->to(@Float)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToFloatFromInteger<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(1.0, $f->eval(|fromJson('1')->to(@Float)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToFloatFromString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(1.25, $f->eval(|fromJson('"1.25"')->to(@Float)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToBooleanTrue<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(true, $f->eval(|fromJson('true')->to(@Boolean)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToBooleanFalse<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(false, $f->eval(|fromJson('false')->to(@Boolean)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToBooleanFromString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(false, $f->eval(|fromJson('"false"')->to(@Boolean)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertError(|$f->eval(|fromJson('"hello"')->to(@Boolean)), 'Invalid Pure Boolean: \'hello\'');
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToStrictDate<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(%2020-01-01, $f->eval(|fromJson('"2020-01-01"')->to(@StrictDate)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertError(|$f->eval(|fromJson('"2020"')->to(@StrictDate)), 'StrictDate must be a calendar day, got: 2020');
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToDateTime<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(%2020-01-01T01:01:00.000, $f->eval(|fromJson('"2020-01-01T01:01:00.000"')->to(@DateTime)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToDateTimeFromWrongString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertError(|$f->eval(|fromJson('"2020-01-01"')->to(@DateTime)), 'DateTime must include time information, got: 2020-01-01');
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('Hello', $f->eval(|fromJson('"Hello"')->to(@String)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToStringFromNumber<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('1', $f->eval(|fromJson('1')->to(@String)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToStringFromBoolean<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('true', $f->eval(|fromJson('true')->to(@String)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(1, $f->eval(|fromJson('{"hello":1}')->to(@Map<String, Variant>)->toOne()->get('hello')->toOne()->to(@Integer)));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToMapWithIntegerValue<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(1, $f->eval(|fromJson('{"hello":1}')->to(@Map<String, Integer>)->toOne()->get('hello')->toOne()));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertError(|$f->eval(|fromJson('"not an object"')->to(@Map<String, Variant>)), 'Variant of type \'STRING\' cannot be converted to Map<String, Variant>');
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToMapWithNonStringKeys<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertError(|$f->eval(|fromJson('{}')->to(@Map<Integer, Variant>)), 'Map<Integer, Variant> is not managed yet!');
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToListOfVariants<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('[1, 2, 3]')->to(@List<Variant>));
+    assertEquals(1, $result.values->at(0)->to(@Integer));
+    assertEquals(2, $result.values->at(1)->to(@Integer));
+    assertEquals(3, $result.values->at(2)->to(@Integer));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToListOfIntegers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('[1, 2, 3]')->to(@List<Integer>));
+    assertEquals(1, $result.values->at(0));
+    assertEquals(2, $result.values->at(1));
+    assertEquals(3, $result.values->at(2));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertError(|$f->eval(|fromJson('"not an array"')->to(@List<Variant>)), 'Variant of type \'STRING\' cannot be converted to List<Variant>');
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToEnum<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertError(|$f->eval(|fromJson('"January"')->to(@meta::pure::functions::date::Month)), 'Month is not managed yet!');
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToAny<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertError(|$f->eval(|fromJson('"hello"')->to(@Any)), 'Any is not managed yet!');
+}
+
+//written as standard test as we are testing special handling of @type only triggered via reactivate
+function <<test.Test>> meta::pure::functions::variant::convert::tests::to::testReactivate():Boolean[1]
+{
+    let value = {|fromJson('1')->to(@Integer)}.expressionSequence->at(0)->reactivate();
+    assertEquals(1, $value);
+}

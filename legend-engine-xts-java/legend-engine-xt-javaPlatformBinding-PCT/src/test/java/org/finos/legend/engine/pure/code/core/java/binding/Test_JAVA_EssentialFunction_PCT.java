@@ -183,11 +183,7 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParam_Function_1__Boolean_1_", "Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[1]->Integer[1..3]}>[*])'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParamManyMatch_Function_1__Boolean_1_", "Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[*]->Any[*]}>[*])'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType_Function_1__Boolean_1_", "Function does not exist 'deactivate(Any[1])'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 8 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:", AdapterQualifier.needsInvestigation),
-
-            //variant
-            one("meta::pure::functions::collection::tests::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_", "\"meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_ is not supported yet!", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::collection::tests::fold::testFold_FromVariant_Function_1__Boolean_1_", "\"meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_ is not supported yet!", AdapterQualifier.needsImplementation)
+            one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 8 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()

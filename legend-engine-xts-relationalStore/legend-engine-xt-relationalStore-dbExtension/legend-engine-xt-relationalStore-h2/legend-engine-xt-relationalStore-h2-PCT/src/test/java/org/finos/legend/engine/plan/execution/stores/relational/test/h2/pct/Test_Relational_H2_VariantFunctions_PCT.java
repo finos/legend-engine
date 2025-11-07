@@ -15,16 +15,14 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.h2.pct;
 
-import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.wrapSuite;
 import junit.framework.Test;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-import org.finos.legend.engine.pure.runtime.testConnection.CoreExternalTestConnectionCodeRepositoryProvider;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import org.finos.legend.pure.code.core.CoreRelationalH2PCTCodeRepositoryProvider;
-import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
+import org.finos.legend.pure.code.core.VariantCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
@@ -32,9 +30,11 @@ import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
+import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.wrapSuite;
+
 public class Test_Relational_H2_VariantFunctions_PCT extends PCTReportConfiguration
 {
-    private static final ReportScope reportScope = PlatformCodeRepositoryProvider.variantFunctions;
+    private static final ReportScope reportScope = VariantCodeRepositoryProvider.variantFunctions;
     private static final Adapter adapter = CoreRelationalH2PCTCodeRepositoryProvider.H2Adapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
@@ -102,7 +102,19 @@ public class Test_Relational_H2_VariantFunctions_PCT extends PCTReportConfigurat
             one("meta::pure::functions::variant::navigation::tests::get::testGetFromArray_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyDoesNotExists_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyExists_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation)
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "\"Match failure: DataTypeInfoObject instanceOf DataTypeInfo\"", AdapterQualifier.needsImplementation),
+
+            // fold
+            one("meta::pure::functions::variant::tests::collection::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_", "Match failure: FoldRelationalLambdaObject instanceOf FoldRelationalLambda", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::tests::collection::fold::testFold_FromVariant_Function_1__Boolean_1_", "Match failure: FoldRelationalLambdaObject instanceOf FoldRelationalLambda", AdapterQualifier.needsImplementation),
+
+            // map
+            one("meta::pure::functions::variant::tests::collection::map::testMap_FromVariantAsPrimitive_Function_1__Boolean_1_", "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::tests::collection::map::testMap_FromVariant_Function_1__Boolean_1_", "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda", AdapterQualifier.needsImplementation),
+
+            // filter
+            one("meta::pure::functions::variant::tests::collection::filter::testFilter_FromVariant_Function_1__Boolean_1_", "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::tests::collection::filter::testFilter_FromVariantAsPrimitive_Function_1__Boolean_1_", "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda", AdapterQualifier.needsImplementation)
     );
 
     public static Test suite()

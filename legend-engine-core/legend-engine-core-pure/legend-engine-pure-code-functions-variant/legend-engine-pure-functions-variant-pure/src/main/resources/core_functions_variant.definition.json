@@ -1,0 +1,5 @@
+{
+  "name" : "core_functions_variant",
+  "pattern" : "(meta::pure::functions::variant)(::.*)?",
+  "dependencies" : ["platform"]
+}

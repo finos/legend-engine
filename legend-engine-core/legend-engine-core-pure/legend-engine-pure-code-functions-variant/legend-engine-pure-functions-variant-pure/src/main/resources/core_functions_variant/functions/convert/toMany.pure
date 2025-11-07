@@ -1,0 +1,56 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::variant::*;
+import meta::pure::functions::variant::convert::*;
+
+
+native function
+    <<PCT.function>>
+    {
+        doc.doc='Converts the $variant to the given $type if the variant represent an array, failing if is not an array.\n' +
+                 'This will fail if array values cannot be coerced.'
+    }
+meta::pure::functions::variant::convert::toMany<T>(variant: Variant[0..1], type: T[0..1]): T[*];
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::toMany::testToManyVariant<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let listVariant = $f->eval(|fromJson('[1, 2, 3]')->toMany(@Variant));
+    assertEquals(1, $listVariant->at(0)->to(@Integer));
+    assertEquals(2, $listVariant->at(1)->to(@Integer));
+    assertEquals(3, $listVariant->at(2)->to(@Integer));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::toMany::testToManyInteger<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let listInteger = $f->eval(|fromJson('[1, 2, 3]')->toMany(@Integer));
+    assertEquals(1, $listInteger->at(0));
+    assertEquals(2, $listInteger->at(1));
+    assertEquals(3, $listInteger->at(2));
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertError(|$f->eval(|fromJson('"not an array"')->toMany(@Variant)), 'Expect variant that contains an \'ARRAY\', but got \'STRING\'');
+}
+
+//written as standard test as we are testing special handling of @type only triggered via reactivate
+function <<test.Test>> meta::pure::functions::variant::convert::tests::toMany::testReactivate():Boolean[1]
+{
+    let listInteger = {|fromJson('[1, 2, 3]')->toMany(@Integer)}.expressionSequence->at(0)->reactivate();
+    assertEquals(1, $listInteger->at(0));
+    assertEquals(2, $listInteger->at(1));
+    assertEquals(3, $listInteger->at(2));
+}
