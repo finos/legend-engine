@@ -76,7 +76,7 @@ function <<access.private>> meta::pure::router::store::routing::modifyMappingBas
             $runtime.connectionStores->size() >= 1,
             | let connection = $inScopeStores->map(s|$runtime->connectionByElementFailSafe($s));
             if(
-                $connection->size() == 2 && $connection->distinct()->size() == 1,
+                ($connection->size() == 2 && $connection->distinct()->size() == 1) || ($connection->size() == 0 && $runtime.preprocessFunction->isNotEmpty()),
                 | $inScopeStores->match(
                     $extensions.availableStores.localizeXStoreAssociation
                     ->map(e|$e->eval($x, $inScopeClassMappings))
