@@ -15,7 +15,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct;
 
-import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.wrapSuite;
 import junit.framework.Test;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -23,7 +22,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.tests
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.pure.runtime.testConnection.CoreExternalTestConnectionCodeRepositoryProvider;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
-import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
+import org.finos.legend.pure.code.core.VariantCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
@@ -31,9 +30,11 @@ import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
+import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.wrapSuite;
+
 public class Test_Relational_MemSQL_VariantFunctions_PCT extends PCTReportConfiguration
 {
-    private static final ReportScope reportScope = PlatformCodeRepositoryProvider.variantFunctions;
+    private static final ReportScope reportScope = VariantCodeRepositoryProvider.variantFunctions;
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.memsqlAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
@@ -76,8 +77,20 @@ public class Test_Relational_MemSQL_VariantFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithMultipleKeys_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::variant::convert::tests::toVariant::testMapWithPrimitiveValues_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
 
+            // map
+            one("meta::pure::functions::variant::tests::collection::map::testMap_FromVariantAsPrimitive_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::tests::collection::map::testMap_FromVariant_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+
+            // filter
+            one("meta::pure::functions::variant::tests::collection::filter::testFilter_FromVariant_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::tests::collection::filter::testFilter_FromVariantAsPrimitive_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+
+            //fold
+            one("meta::pure::functions::variant::tests::collection::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::variant::tests::collection::fold::testFold_FromVariant_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL", AdapterQualifier.needsImplementation),
+
             pack("meta::pure::functions::variant::navigation::tests::get", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL",  AdapterQualifier.needsImplementation)
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.needsImplementation)
     );
 
     public static Test suite()

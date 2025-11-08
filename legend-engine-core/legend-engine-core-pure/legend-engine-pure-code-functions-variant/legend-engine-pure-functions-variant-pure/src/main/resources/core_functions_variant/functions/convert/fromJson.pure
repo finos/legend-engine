@@ -1,0 +1,76 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::variant::*;
+import meta::pure::functions::variant::convert::*;
+
+native function
+    <<PCT.function>>
+    {
+        doc.doc='Parses the given json string and return its variant representation.'
+    }
+meta::pure::functions::variant::convert::fromJson(json: String[1]): Variant[1];
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::fromJson::testJsonNull<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('null', $f->eval(|fromJson('null'))->toString());
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::fromJson::testJsonArrayOfNull<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('[null,null,null]', $f->eval(|fromJson('[ null, null , null ]'))->toString());
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::fromJson::testJsonInteger<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('1', $f->eval(|fromJson('1'))->toString());
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::fromJson::testJsonArrayOfInteger<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('[1,2,3]', $f->eval(|fromJson('[ 1, 2 , 3 ]'))->toString());
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::fromJson::testJsonFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('1.25', $f->eval(|fromJson('1.25'))->toString());
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::fromJson::testJsonArrayOfFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('[1.25,2.5,3.75]', $f->eval(|fromJson('[ 1.25 , 2.5 , 3.75 ]'))->toString());
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::fromJson::testJsonString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('"Hello"', $f->eval(|fromJson('"Hello"'))->toString());
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::fromJson::testJsonArrayOfString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('["Hello","World"]', $f->eval(|fromJson('[ "Hello" , "World" ]'))->toString());
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::fromJson::testJsonObject<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('{"Hello":null}', $f->eval(|fromJson('{ "Hello" : null }'))->toString());
+    assertEquals('{"Hello":"World"}', $f->eval(|fromJson('{ "Hello" : "World" }'))->toString());
+    assertEquals('{"Hello":["World","!"]}', $f->eval(|fromJson('{ "Hello" : [ "World", "!" ] }'))->toString());
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::fromJson::testJsonArrayOfObject<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('[{"Hello":null},{"Hello":"World"}]', $f->eval(|fromJson('[ { "Hello" : null }, { "Hello" : "World" } ]'))->toString());
+}
