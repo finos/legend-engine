@@ -15,6 +15,12 @@
 package org.finos.legend.engine.plan.execution.stores.relational;
 
 import io.opentracing.Scope;
+import java.io.Closeable;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.block.procedure.checked.CheckedProcedure;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -29,15 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
-import org.h2.jdbc.JdbcSQLNonTransientConnectionException;
 import org.h2.tools.Server;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
 
 public class TestExecutionScope implements Closeable
 {
@@ -69,21 +67,9 @@ public class TestExecutionScope implements Closeable
     public static TestExecutionScope setupTestServer(RichIterable<? extends String> sqls, Scope scope) throws SQLException
     {
         // Start Test Database
-        int relationalDBPort = generatePort();
-        RelationalExecutor executor;
-        Server server;
-        try
-        {
-            executor = buildTestExecutor(relationalDBPort);
-            server = AlloyH2Server.startServer(relationalDBPort);
-        }
-        catch (JdbcSQLNonTransientConnectionException b)
-        {
-            scope.span().log("exception opening port" + relationalDBPort + ". Retrying with another port.");
-            relationalDBPort = generatePort();
-            executor = buildTestExecutor(relationalDBPort);
-            server = AlloyH2Server.startServer(relationalDBPort);
-        }
+        Server server = AlloyH2Server.startServer();
+        int relationalDBPort = server.getPort();
+        RelationalExecutor executor = buildTestExecutor(relationalDBPort);
         scope.span().log("In memory database started on port " + relationalDBPort);
 
         try

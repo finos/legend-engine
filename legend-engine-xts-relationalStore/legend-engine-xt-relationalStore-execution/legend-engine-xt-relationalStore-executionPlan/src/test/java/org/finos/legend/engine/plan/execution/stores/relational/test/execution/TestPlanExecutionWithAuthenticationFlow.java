@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.execution;
 
+import static org.junit.Assert.assertTrue;
+import java.sql.Connection;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.authentication.vaults.InMemoryVaultForTesting;
@@ -26,8 +28,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.h2.tools.Server;
 import org.junit.AfterClass;
@@ -36,20 +36,17 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.sql.Connection;
-
-import static org.junit.Assert.assertTrue;
-
 public class TestPlanExecutionWithAuthenticationFlow extends AbstractTestPlanExecution
 {
-    private static final int port = DynamicPortGenerator.generatePort();
+    private static int port;
     private static Server server;
 
     @BeforeClass
     public static void setupClass() throws Exception
     {
         registerDriver("org.h2.Driver");
-        server = AlloyH2Server.startServer(port);
+        server = AlloyH2Server.startServer();
+        port = server.getPort();
     }
 
     @AfterClass

@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
 import org.junit.Test;
 
@@ -34,8 +33,8 @@ public class TestInMemoryAlloyServer
     @Test
     public void connectionsOnDifferentPortsSameDatabaseNotUnique() throws Exception
     {
-        int port1 = DynamicPortGenerator.generatePort();
-        Server server1 = AlloyH2Server.startServer(port1);
+        Server server1 = AlloyH2Server.startServer();
+        int port1 = server1.getPort();
         ConnectionManagerSelector selector1 = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(port1), Collections.emptyList());
 
         // the first table creation is successful
@@ -43,8 +42,8 @@ public class TestInMemoryAlloyServer
         Statement statement1 = connection1.createStatement();
         statement1.execute("create table test(a varchar(100))");
 
-        int port2 = DynamicPortGenerator.generatePort();
-        Server server2 = AlloyH2Server.startServer(port2);
+        Server server2 = AlloyH2Server.startServer();
+        int port2 = server2.getPort();
         ConnectionManagerSelector selector2 = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(port2), Collections.emptyList());
 
         // the second table creation fails, even though it uses a unique port, as the database names are the same.

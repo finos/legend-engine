@@ -14,6 +14,14 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import java.sql.Connection;
+import java.util.Collections;
+import java.util.Optional;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
@@ -24,7 +32,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.jdbc.JdbcConnection;
 import org.h2.tools.Server;
 import org.junit.After;
@@ -32,16 +39,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import java.sql.Connection;
-import java.util.Collections;
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 public class TestCredentialCreation
 {
@@ -56,7 +53,7 @@ public class TestCredentialCreation
     @Before
     public void setup() throws Exception
     {
-        server = AlloyH2Server.startServer(DynamicPortGenerator.generatePort());
+        server = AlloyH2Server.startServer();
 
         this.testFlowProvider = new TestDatabaseAuthenticationFlowProvider();
         assertStaticH2FlowIsAvailable(testFlowProvider);
