@@ -18,7 +18,7 @@ import org.finos.legend.engine.postgres.PrometheusUserMetrics;
 
 public class SessionStats
 {
-    public String name = ".oO Unknown Oo.";
+    public String name = "Unknown";
     public String startTime;
     public String endTime;
     // Session counters
