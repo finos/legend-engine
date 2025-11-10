@@ -34,6 +34,8 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import org.eclipse.collections.api.block.function.Function2;
+import org.finos.legend.engine.postgres.PostgresServer;
+import org.finos.legend.engine.postgres.PrometheusUserMetrics;
 import org.finos.legend.engine.postgres.protocol.wire.auth.AuthenticationContext;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.ConnectionProperties;
 import org.finos.legend.engine.postgres.PostgresServerException;
@@ -80,6 +82,7 @@ import java.security.PrivilegedExceptionAction;
 import java.sql.ParameterMetaData;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -203,9 +206,9 @@ import static org.finos.legend.engine.postgres.protocol.wire.serialization.Forma
 
 public class PostgresWireProtocol
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostgresWireProtocol.class);
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-            PostgresWireProtocol.class);
+    private PostgresServer server;
 
     public static int SERVER_VERSION_NUM = 100500;
     public static String PG_SERVER_VERSION = "10.5";
@@ -217,18 +220,21 @@ public class PostgresWireProtocol
     private final GSSConfig gssConfig;
     private final Messages messages;
     private DelayableWriteChannel channel;
-    Session session;
+    private Session session;
+    private final SessionStats sessionStats = new SessionStats();
     private boolean ignoreTillSync = false;
     private AuthenticationContext authContext;
     private Properties properties;
 
     private CompletableFuture<?> activeExecution;
 
-    public PostgresWireProtocol(SQLManager sqlManager,
+    public PostgresWireProtocol(PostgresServer server,
+                                SQLManager sqlManager,
                                 Function2<String, ConnectionProperties, AuthenticationMethod> authService,
                                 GSSConfig gssConfig, Supplier<SslContext> getSslContext,
                                 Messages messages)
     {
+        this.server = server;
         this.sqlManager = sqlManager;
         this.authService = authService;
         this.decoder = new PgDecoder(getSslContext);
@@ -236,8 +242,14 @@ public class PostgresWireProtocol
         this.gssConfig = gssConfig;
         this.messages = messages;
         this.activeExecution = CompletableFuture.completedFuture(null);
+        this.server.open(PostgresWireProtocol.this);
+        this.sessionStats.startTime = new Date().toString();
     }
 
+    public Session getSession()
+    {
+        return session;
+    }
 
     static String readCString(ByteBuf buffer)
     {
@@ -293,14 +305,20 @@ public class PostgresWireProtocol
         return properties;
     }
 
+    public SessionStats getSessionStats()
+    {
+        return this.sessionStats;
+    }
+
     private static class ReadyForQueryCallback implements BiFunction<Object, Throwable, Object>
     {
-
+        private final SessionStats sessionStats;
         private final Channel channel;
         private final Messages messages;
 
-        private ReadyForQueryCallback(Channel channel, Messages messages)
+        private ReadyForQueryCallback(SessionStats sessionStats, Channel channel, Messages messages)
         {
+            this.sessionStats = sessionStats;
             this.channel = channel;
             this.messages = messages;
         }
@@ -312,6 +330,7 @@ public class PostgresWireProtocol
             {
                 Throwable actualCause = t.getCause();
                 PostgresServerException postgresServerException = PostgresServerException.wrapException(actualCause);
+                sessionStats.incErrors();
                 messages.sendErrorResponse(channel, postgresServerException);
             }
             boolean clientInterrupted = t instanceof ClientInterrupted
@@ -359,6 +378,7 @@ public class PostgresWireProtocol
                     */
                     LOGGER.error("Unable to handle query", t);
                     messages.sendErrorResponse(channel, t);
+                    sessionStats.incErrors();
                 }
                 catch (Throwable ti)
                 {
@@ -459,6 +479,8 @@ public class PostgresWireProtocol
             {
                 session.close();
                 session = null;
+                server.close(PostgresWireProtocol.this);
+                sessionStats.endTime = new Date().toString();
             }
         }
 
@@ -562,6 +584,10 @@ public class PostgresWireProtocol
         {
             Identity authenticatedUser = authContext.authenticate();
             handleAuthSuccess(channel, authenticatedUser);
+            sessionStats.name = authenticatedUser.getName();
+            PrometheusUserMetrics prometheusUserMetrics = server.getPrometheusCounters(sessionStats.name);
+            prometheusUserMetrics.connections.labelValues(sessionStats.name).inc();
+            sessionStats.setPrometheusUserMetrics(prometheusUserMetrics);
         }
         catch (Exception e)
         {
@@ -682,6 +708,7 @@ public class PostgresWireProtocol
         }
         this.addTaskToQueue(() ->
         {
+            sessionStats.incPreparedStatements();
             session.parse(statementName, query, paramTypes, this.sqlManager.buildPreparedStatement(query, session));
             messages.sendParseComplete(channel);
         });
@@ -1048,6 +1075,7 @@ public class PostgresWireProtocol
             }
             try
             {
+                sessionStats.incStatements();
                 return session.executeSimple(this.sqlManager.buildStatement(query, session), query, () -> new ResultSetReceiver(query, channel, true, null, messages));
             }
             catch (Throwable t)
@@ -1057,6 +1085,7 @@ public class PostgresWireProtocol
                 session.clearState();
                 messages.sendErrorResponse(channel, t);
                 result.completeExceptionally(t);
+                sessionStats.incErrors();
                 return result;
             }
         }
@@ -1115,7 +1144,7 @@ public class PostgresWireProtocol
 
     private void handleRfq()
     {
-        ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, messages);
+        ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(sessionStats, channel, messages);
         // handle will not propagate any previous exceptions, so future tasks will run
         this.activeExecution = this.activeExecution.handle(readyForQueryCallback);
     }
