@@ -244,6 +244,7 @@ public class PostgresWireProtocol
         this.activeExecution = CompletableFuture.completedFuture(null);
         this.server.open(PostgresWireProtocol.this);
         this.sessionStats.startTime = new Date().toString();
+        this.sessionStats.setPrometheusUserMetrics(server.getPrometheusCounters(this.sessionStats.name));
     }
 
     public Session getSession()
@@ -584,7 +585,7 @@ public class PostgresWireProtocol
         {
             Identity authenticatedUser = authContext.authenticate();
             handleAuthSuccess(channel, authenticatedUser);
-            sessionStats.name = authenticatedUser.getName() == null ? ".oO Unknown Oo." : authenticatedUser.getName();
+            sessionStats.name = authenticatedUser.getName();
             PrometheusUserMetrics prometheusUserMetrics = server.getPrometheusCounters(sessionStats.name);
             prometheusUserMetrics.connections.labelValues(sessionStats.name).inc();
             sessionStats.setPrometheusUserMetrics(prometheusUserMetrics);
