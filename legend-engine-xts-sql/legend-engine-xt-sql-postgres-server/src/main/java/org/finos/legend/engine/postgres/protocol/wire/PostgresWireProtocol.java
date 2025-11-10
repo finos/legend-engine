@@ -624,7 +624,7 @@ public class PostgresWireProtocol
 
         sessionStats.name = authenticatedUser.getName();
         PrometheusUserMetrics prometheusUserMetrics = server.getPrometheusCounters(sessionStats.name);
-        prometheusUserMetrics.connections.labelValues(sessionStats.name).inc();
+        prometheusUserMetrics.connections.labelValues(sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
         sessionStats.setPrometheusUserMetrics(prometheusUserMetrics);
 
         MDC.put("user", authenticatedUser.getName());

@@ -38,7 +38,7 @@ public class SessionStats
         this.preparedStatementCount++;
         if (this.prometheusUserMetrics != null)
         {
-            this.prometheusUserMetrics.preparedStatements.labelValues(name).inc();
+            this.prometheusUserMetrics.preparedStatements.labelValues(name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
         }
     }
 
@@ -47,7 +47,7 @@ public class SessionStats
         this.statementCount++;
         if (this.prometheusUserMetrics != null)
         {
-            this.prometheusUserMetrics.statements.labelValues(name).inc();
+            this.prometheusUserMetrics.statements.labelValues(name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
         }
     }
 
@@ -56,7 +56,7 @@ public class SessionStats
         this.errorCount++;
         if (this.prometheusUserMetrics != null)
         {
-            this.prometheusUserMetrics.errors.labelValues(name).inc();
+            this.prometheusUserMetrics.errors.labelValues(name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
         }
     }
 }
