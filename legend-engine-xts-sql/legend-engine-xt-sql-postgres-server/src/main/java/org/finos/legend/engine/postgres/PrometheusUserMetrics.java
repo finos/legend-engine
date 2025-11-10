@@ -15,6 +15,7 @@
 package org.finos.legend.engine.postgres;
 
 import io.prometheus.metrics.core.metrics.Counter;
+import io.prometheus.metrics.model.registry.PrometheusRegistry;
 
 public class PrometheusUserMetrics
 {
@@ -23,11 +24,11 @@ public class PrometheusUserMetrics
     public Counter statements;
     public Counter errors;
 
-    public PrometheusUserMetrics(Counter connections, Counter preparedStatements, Counter statements, Counter errors)
+    public PrometheusUserMetrics(PrometheusRegistry registry)
     {
-        this.connections = connections;
-        this.preparedStatements = preparedStatements;
-        this.statements = statements;
-        this.errors = errors;
+        this.connections = Counter.builder().labelNames("user").name("connections").help("Global connection count for a user").register(registry);
+        this.preparedStatements = Counter.builder().labelNames("user").name("preparedStatements").help("Global prepared statement creations for a user").register(registry);
+        this.statements = Counter.builder().labelNames("user").name("statements").help("Global statement creations for a user").register(registry);
+        this.errors = Counter.builder().labelNames("user").name("errors").help("Global error counts for a user").register(registry);
     }
 }

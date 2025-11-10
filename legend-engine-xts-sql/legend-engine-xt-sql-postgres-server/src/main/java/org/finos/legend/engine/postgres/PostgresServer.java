@@ -101,7 +101,7 @@ public class PostgresServer
     // Prometheus state ---------
     private PrometheusRegistry registry;
     private Gauge connectionCount;
-    private final MutableMap<String, PrometheusUserMetrics> userMetrics = Maps.mutable.empty();
+    private PrometheusUserMetrics userMetrics;
     // Prometheus state ---------
 
     public PostgresServer(ServerConfig serverConfig, SQLManager sqlManager, Function2<String, ConnectionProperties, AuthenticationMethod> authenticationProvider, Messages messages)
@@ -246,6 +246,7 @@ public class PostgresServer
 
         // Prometheus
         this.registry = new PrometheusRegistry();
+        this.userMetrics = new PrometheusUserMetrics(registry);
         this.connectionCount = Gauge.builder().name("ConnectionCount").register(this.registry);
         ServletContextHandler prometheusServletContext = new ServletContextHandler();
         prometheusServletContext.setContextPath("/");
@@ -260,17 +261,9 @@ public class PostgresServer
         server.start();
     }
 
-    public PrometheusUserMetrics getPrometheusCounters(String name)
+    public PrometheusUserMetrics getUserMetrics()
     {
-        String sanitizedName = name.replaceAll("[^a-zA-Z0-9_]", "_");
-        return userMetrics.getIfAbsentPut(sanitizedName, () ->
-                new PrometheusUserMetrics(
-                        Counter.builder().labelNames(sanitizedName).name("connections").help("Global connection count for a user").register(registry),
-                        Counter.builder().labelNames(sanitizedName).name("preparedStatements").help("Global prepared statement creations for a user").register(registry),
-                        Counter.builder().labelNames(sanitizedName).name("statements").help("Global statement creations for a user").register(registry),
-                        Counter.builder().labelNames(sanitizedName).name("errors").help("Global error counts for a user").register(registry)
-                )
-        );
+        return userMetrics;
     }
 
     private static class Info

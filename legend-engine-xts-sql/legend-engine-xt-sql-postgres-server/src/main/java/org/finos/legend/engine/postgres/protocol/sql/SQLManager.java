@@ -174,19 +174,26 @@ public class SQLManager
 
     public PostgresStatement buildStatement(String query, Session session)
     {
-        if (query != null)
+        try
         {
-            switch (getType(query))
+            if (query != null)
             {
-                case Empty:
-                    return new EmptyStatement();
-                case Legend:
-                    return new LegendStatement(findClient(clients, session.getDatabase(), session.getOptions()), session.getIdentity());
-                case Metadata:
-                    throw new RuntimeException("Not supported yet");
-                case TX:
-                    return new TxnIsolationStatement();
+                switch (getType(query))
+                {
+                    case Empty:
+                        return new EmptyStatement();
+                    case Legend:
+                        return new LegendStatement(findClient(clients, session.getDatabase(), session.getOptions()), session.getIdentity());
+                    case Metadata:
+                        return legendSessionHandler.createStatement();
+                    case TX:
+                        return new TxnIsolationStatement();
+                }
             }
+        }
+        catch (SQLException e)
+        {
+            throw new PostgresServerException(e);
         }
         return null;
     }

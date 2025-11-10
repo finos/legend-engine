@@ -221,7 +221,7 @@ public class PostgresWireProtocol
     private final Messages messages;
     private DelayableWriteChannel channel;
     private Session session;
-    private final SessionStats sessionStats = new SessionStats();
+    private final SessionStats sessionStats;
     private boolean ignoreTillSync = false;
     private AuthenticationContext authContext;
     private Properties properties;
@@ -235,6 +235,7 @@ public class PostgresWireProtocol
                                 Messages messages)
     {
         this.server = server;
+        this.sessionStats = new SessionStats(server.getUserMetrics());
         this.sqlManager = sqlManager;
         this.authService = authService;
         this.decoder = new PgDecoder(getSslContext);
@@ -244,7 +245,6 @@ public class PostgresWireProtocol
         this.activeExecution = CompletableFuture.completedFuture(null);
         this.server.open(PostgresWireProtocol.this);
         this.sessionStats.startTime = new Date().toString();
-        this.sessionStats.setPrometheusUserMetrics(server.getPrometheusCounters(this.sessionStats.name));
     }
 
     public Session getSession()
@@ -623,9 +623,8 @@ public class PostgresWireProtocol
         this.session = new Session(Executors.newCachedThreadPool(), authenticatedUser, properties);
 
         sessionStats.name = authenticatedUser.getName();
-        PrometheusUserMetrics prometheusUserMetrics = server.getPrometheusCounters(sessionStats.name);
+        PrometheusUserMetrics prometheusUserMetrics = server.getUserMetrics();
         prometheusUserMetrics.connections.labelValues(sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
-        sessionStats.setPrometheusUserMetrics(prometheusUserMetrics);
 
         MDC.put("user", authenticatedUser.getName());
         messages.sendAuthenticationOK(channel)

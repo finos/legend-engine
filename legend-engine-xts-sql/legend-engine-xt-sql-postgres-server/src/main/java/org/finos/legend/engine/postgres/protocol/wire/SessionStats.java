@@ -26,37 +26,28 @@ public class SessionStats
     public int statementCount = 0;
     public int errorCount = 0;
     // Global Prometheus counters for user
-    private PrometheusUserMetrics prometheusUserMetrics;
+    private final PrometheusUserMetrics userMetrics;
 
-    public void setPrometheusUserMetrics(PrometheusUserMetrics prometheusUserMetrics)
+    public SessionStats(PrometheusUserMetrics userMetrics)
     {
-        this.prometheusUserMetrics = prometheusUserMetrics;
+        this.userMetrics = userMetrics;
     }
 
     public void incPreparedStatements()
     {
         this.preparedStatementCount++;
-        if (this.prometheusUserMetrics != null)
-        {
-            this.prometheusUserMetrics.preparedStatements.labelValues(name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
-        }
+        this.userMetrics.preparedStatements.labelValues(name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
     }
 
     public void incStatements()
     {
         this.statementCount++;
-        if (this.prometheusUserMetrics != null)
-        {
-            this.prometheusUserMetrics.statements.labelValues(name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
-        }
+        this.userMetrics.statements.labelValues(name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
     }
 
     public void incErrors()
     {
         this.errorCount++;
-        if (this.prometheusUserMetrics != null)
-        {
-            this.prometheusUserMetrics.errors.labelValues(name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
-        }
+        this.userMetrics.errors.labelValues(name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
     }
 }
