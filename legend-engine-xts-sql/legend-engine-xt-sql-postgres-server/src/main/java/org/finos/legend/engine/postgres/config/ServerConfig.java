@@ -20,6 +20,7 @@ import org.finos.legend.engine.postgres.protocol.wire.auth.identity.IdentityType
 public class ServerConfig
 {
     private HandlerConfig handler;
+    private Integer httpPort;
     private Integer port;
     private AuthenticationMethodType authenticationMethod;
     private IdentityType identityType;
@@ -48,6 +49,16 @@ public class ServerConfig
     public void setPort(Integer port)
     {
         this.port = port;
+    }
+
+    public Integer getHttpPort()
+    {
+        return httpPort;
+    }
+
+    public void setHttpPort(Integer httpPort)
+    {
+        this.httpPort = httpPort;
     }
 
     public AuthenticationMethodType getAuthenticationMethod()

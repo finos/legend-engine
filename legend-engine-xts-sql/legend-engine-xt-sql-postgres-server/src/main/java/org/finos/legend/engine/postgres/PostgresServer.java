@@ -87,6 +87,7 @@ public class PostgresServer
     private static final Date startTime = new Date();
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresServer.class);
+    private final int httpPort;
     private final int port;
     private final Function2<String, ConnectionProperties, AuthenticationMethod> authenticationProvider;
     private final GSSConfig gssConfig;
@@ -106,6 +107,7 @@ public class PostgresServer
     public PostgresServer(ServerConfig serverConfig, SQLManager sqlManager, Function2<String, ConnectionProperties, AuthenticationMethod> authenticationProvider, Messages messages)
     {
         this.port = serverConfig.getPort();
+        this.httpPort = serverConfig.getHttpPort() == null ? 8080 : serverConfig.getHttpPort();
         this.authenticationProvider = authenticationProvider;
         this.gssConfig = serverConfig.getGss();
         this.messages = messages;
@@ -217,7 +219,7 @@ public class PostgresServer
         Server server = new Server();
 
         ServerConnector connector = new ServerConnector(server);
-        connector.setPort(80);
+        connector.setPort(this.httpPort);
         server.addConnector(connector);
 
         // Static
