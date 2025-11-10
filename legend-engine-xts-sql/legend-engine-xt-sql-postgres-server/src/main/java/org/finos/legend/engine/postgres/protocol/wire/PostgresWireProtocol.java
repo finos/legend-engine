@@ -584,7 +584,7 @@ public class PostgresWireProtocol
         {
             Identity authenticatedUser = authContext.authenticate();
             handleAuthSuccess(channel, authenticatedUser);
-            sessionStats.name = authenticatedUser.getName();
+            sessionStats.name = authenticatedUser.getName() == null ? ".oO Unknown Oo." : authenticatedUser.getName();
             PrometheusUserMetrics prometheusUserMetrics = server.getPrometheusCounters(sessionStats.name);
             prometheusUserMetrics.connections.labelValues(sessionStats.name).inc();
             sessionStats.setPrometheusUserMetrics(prometheusUserMetrics);
