@@ -262,16 +262,14 @@ public class PostgresServer
 
     public PrometheusUserMetrics getPrometheusCounters(String name)
     {
-        return userMetrics.getIfAbsentPut(name, () ->
-                {
-                    String sanitizedName = name.replaceAll("[^a-zA-Z0-9_]", "_");
-                    return new PrometheusUserMetrics(
-                            Counter.builder().labelNames(sanitizedName).name("connections").help("Global connection count for a user").register(registry),
-                            Counter.builder().labelNames(sanitizedName).name("preparedStatements").help("Global prepared statement creations for a user").register(registry),
-                            Counter.builder().labelNames(sanitizedName).name("statements").help("Global statement creations for a user").register(registry),
-                            Counter.builder().labelNames(sanitizedName).name("errors").help("Global error counts for a user").register(registry)
-                    );
-                }
+        String sanitizedName = name.replaceAll("[^a-zA-Z0-9_]", "_");
+        return userMetrics.getIfAbsentPut(sanitizedName, () ->
+                new PrometheusUserMetrics(
+                        Counter.builder().labelNames(sanitizedName).name("connections").help("Global connection count for a user").register(registry),
+                        Counter.builder().labelNames(sanitizedName).name("preparedStatements").help("Global prepared statement creations for a user").register(registry),
+                        Counter.builder().labelNames(sanitizedName).name("statements").help("Global statement creations for a user").register(registry),
+                        Counter.builder().labelNames(sanitizedName).name("errors").help("Global error counts for a user").register(registry)
+                )
         );
     }
 
