@@ -585,10 +585,6 @@ public class PostgresWireProtocol
         {
             Identity authenticatedUser = authContext.authenticate();
             handleAuthSuccess(channel, authenticatedUser);
-            sessionStats.name = authenticatedUser.getName();
-            PrometheusUserMetrics prometheusUserMetrics = server.getPrometheusCounters(sessionStats.name);
-            prometheusUserMetrics.connections.labelValues(sessionStats.name).inc();
-            sessionStats.setPrometheusUserMetrics(prometheusUserMetrics);
         }
         catch (Exception e)
         {
@@ -625,6 +621,12 @@ public class PostgresWireProtocol
     private void handleAuthSuccess(Channel channel, Identity authenticatedUser) throws Exception
     {
         this.session = new Session(Executors.newCachedThreadPool(), authenticatedUser, properties);
+
+        sessionStats.name = authenticatedUser.getName();
+        PrometheusUserMetrics prometheusUserMetrics = server.getPrometheusCounters(sessionStats.name);
+        prometheusUserMetrics.connections.labelValues(sessionStats.name).inc();
+        sessionStats.setPrometheusUserMetrics(prometheusUserMetrics);
+
         MDC.put("user", authenticatedUser.getName());
         messages.sendAuthenticationOK(channel)
                 .addListener(f -> sendParams(channel))
