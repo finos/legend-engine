@@ -183,7 +183,7 @@ public class SQLManager
                     case Empty:
                         return new EmptyStatement();
                     case Legend:
-                        return new LegendStatement(findClient(clients, session.getDatabase(), session.getOptions()), session.getIdentity());
+                        return new LegendStatement(findClient(clients, session.getDatabase(), session.getOptions()), session.getDatabase(), session.getOptions(), session.getIdentity());
                     case Metadata:
                         return legendSessionHandler.createStatement();
                     case TX:

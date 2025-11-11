@@ -52,6 +52,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -73,6 +74,9 @@ public class PostgresServerGenericTest
                 "CREATE Table myTab(name VARCHAR(200))",
                 "insert into myTab (name) values ('value')"), h2TestServer.getPort());
 
+        Assert.assertEquals(
+                "name\n" +
+                        "value\n", executePrepared("select name from tb('pack::DB.myTab') as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
         Assert.assertEquals(
                 "name\n" +
                         "value\n", execute("select name from tb('pack::DB.myTab') as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
@@ -105,6 +109,9 @@ public class PostgresServerGenericTest
                 "insert into otherTab (fid, oName) values (1, 'oValue')"), h2TestServer.getPort());
 
         //TO FIX, should not be t.name_a but t.name
+        Assert.assertEquals(
+                "name_a\n" +
+                        "value\n", executePrepared("select t.name_a from (tb('pack::DB.myTab') as a join tb('pack::DB.otherTab') as b on a.id = b.fid) as t where t.name_a = 'value'", "projects|t_group:t_name:t_version,t_group:t_name2:t_version"));
         Assert.assertEquals(
                 "name_a\n" +
                         "value\n", execute("select t.name_a from (tb('pack::DB.myTab') as a join tb('pack::DB.otherTab') as b on a.id = b.fid) as t where t.name_a = 'value'", "projects|t_group:t_name:t_version,t_group:t_name2:t_version"));
@@ -199,7 +206,7 @@ public class PostgresServerGenericTest
         }
     }
 
-    public static String execute(String query, String database) throws Exception
+    public static String executePrepared(String query, String database) throws Exception
     {
         try (
                 Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/" + database + "?options='--compute=test'", new Properties());
@@ -208,6 +215,21 @@ public class PostgresServerGenericTest
         )
         {
             return convertResultSetToCsvString(resultSet);
+        }
+    }
+
+    public static String execute(String query, String database) throws Exception
+    {
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/" + database + "?options='--compute=test'", new Properties());
+                Statement statement = connection.createStatement();
+        )
+        {
+            statement.execute(query);
+            try (ResultSet resultSet = statement.getResultSet();)
+            {
+                return convertResultSetToCsvString(resultSet);
+            }
         }
     }
 

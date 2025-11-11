@@ -515,7 +515,7 @@ public class PostgresWireProtocol
 
     private void handleStartupBody(ByteBuf buffer, Channel channel)
     {
-        properties = readStartupMessage(buffer);
+        this.properties = readStartupMessage(buffer);
         this.sessionStats.database = properties.getProperty("database");
         this.sessionStats.options = properties.getProperty("options");
         initAuthentication(channel);
