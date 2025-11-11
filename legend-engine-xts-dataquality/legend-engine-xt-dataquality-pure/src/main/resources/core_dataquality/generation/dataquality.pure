@@ -1,3 +1,4 @@
+import meta::external::query::sql::transformation::compile::utils::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::dataQuality::*;
 import meta::pure::metamodel::serialization::grammar::*;
@@ -256,29 +257,6 @@ function meta::external::dataquality::generateFilterQuery<T>(c:Class<T>[1], f: F
      ]
    )->evaluateAndDeactivate();
 }
-
-
-function meta::external::dataquality::lambda(functionType:FunctionType[1], expressionSequence:ValueSpecification[*]):LambdaFunction<Any>[1]
-{
-  let lambda = meta::pure::functions::meta::newLambdaFunction($functionType);
-  ^$lambda(expressionSequence = $expressionSequence->toOneMany());
-}
-
-function meta::external::dataquality::functionType(name:String[1], type:Type[1], multiplicity:Multiplicity[1], returnType:Type[1], returnMultiplicity:Multiplicity[1]):FunctionType[1]
-{
-  functionType($name, ^GenericType(rawType = $type), $multiplicity, ^GenericType(rawType = $returnType), $returnMultiplicity);
-}
-
-function meta::external::dataquality::functionType(name:String[1], type:GenericType[1], multiplicity:Multiplicity[1], returnType:GenericType[1], returnMultiplicity:Multiplicity[1]):FunctionType[1]
-{
-  ^FunctionType(parameters = ^VariableExpression(genericType = $type, name = $name, multiplicity = $multiplicity), returnMultiplicity = $returnMultiplicity, returnType = $returnType);
-}
-
-function meta::external::dataquality::functionType(parameters:VariableExpression[*], returnType:GenericType[1], returnMultiplicity:Multiplicity[1]):FunctionType[1]
-{
-  ^FunctionType(parameters = $parameters, returnMultiplicity = $returnMultiplicity, returnType = $returnType);
-}
-
 
 function meta::external::dataquality::generateConstraintsNegatedORQuery<T>(c:Class<T>[1], f: FunctionExpression[1], constraints: List<Constraint>[1]):FunctionExpression[1] {
   if ($constraints.values->isEmpty(),
@@ -741,7 +719,7 @@ function meta::external::dataquality::buildAggColSpecCountFirstParam(relType: me
   ^InstanceValue(
       genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(parameters = $expression, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer)))),
       multiplicity = PureOne,
-      values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer), parameters = $expression), ^InstanceValue(genericType = ^GenericType(rawType = Integer), multiplicity = PureOne, values = 1))
+      values = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer), parameters = $expression), ^InstanceValue(genericType = ^GenericType(rawType = Integer), multiplicity = PureOne, values = 1))
   )->evaluateAndDeactivate();
 }
 
@@ -761,7 +739,7 @@ function meta::external::dataquality::buildAggColSpecCountSecondParam():Instance
   ^InstanceValue(
       genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(parameters = $expression, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer)))),
       multiplicity = PureOne,
-      values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer), parameters = $expression), $countExpression)
+      values = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer), parameters = $expression), $countExpression)
   )->evaluateAndDeactivate();
 }
 
@@ -777,7 +755,7 @@ function meta::external::dataquality::buildFilterOnEmptyCountExpression(rel: Val
       [  $rel,
          ^InstanceValue (genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='row', genericType=^GenericType(rawType=$relType), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
             multiplicity = PureOne,
-            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity= PureOne, returnType = ^GenericType(rawType = Boolean), parameters = ^VariableExpression(name='row', genericType=^GenericType(rawType=$relType), multiplicity=PureOne)), buildEqualToZeroExpression($relType))
+            values = lambda(^FunctionType(returnMultiplicity= PureOne, returnType = ^GenericType(rawType = Boolean), parameters = ^VariableExpression(name='row', genericType=^GenericType(rawType=$relType), multiplicity=PureOne)), buildEqualToZeroExpression($relType))
          )->evaluateAndDeactivate()
       ]
    )->evaluateAndDeactivate();
@@ -822,7 +800,7 @@ function meta::external::dataquality::buildEvalExpression(f: ValueSpecification[
       [ ^InstanceValue (
             genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='rel', genericType=^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType)), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType))))),
             multiplicity = PureOne,
-            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType)), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType)),name='rel')]),
+            values = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType)), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType)),name='rel')]),
                                                           $f->evaluateAndDeactivate()->toOne())
          ),
          $query
@@ -850,7 +828,7 @@ function meta::external::dataquality::buildExtendExpression(rel: ValueSpecificat
                 [  ^InstanceValue (
                         genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=$newColType), parameters=^VariableExpression(name=$relParamName, genericType=^GenericType(rawType=$relType), multiplicity=PureOne)))),
                         multiplicity = PureOne,
-                        values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=$newColType), parameters=^VariableExpression(name=$relParamName, genericType=^GenericType(rawType=$relType), multiplicity=PureOne)), $newColumnFunction)),
+                        values = lambda(^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=$newColType), parameters=^VariableExpression(name=$relParamName, genericType=^GenericType(rawType=$relType), multiplicity=PureOne)), $newColumnFunction)),
                    ^InstanceValue(values=$newColumnName, genericType=^GenericType(rawType=String), multiplicity=PureOne),
                    ^InstanceValue(values=$newRelType, genericType=^GenericType(rawType=$newRelType), multiplicity=PureOne)->evaluateAndDeactivate()
                 ]
@@ -875,7 +853,7 @@ function meta::external::dataquality::buildRelationFilterExpressionForRowLevelVa
          ^InstanceValue (
             genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='validationFilter', genericType=^GenericType(rawType=$relationType), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
             multiplicity = PureOne,
-            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=$relationType),name=$assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters(false))]),
+            values = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=$relationType),name=$assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters(false))]),
                                                           $assertion.expressionSequence->evaluateAndDeactivate()->toOne()->negatedFunctionExpression())
          )
      ]
@@ -913,7 +891,7 @@ function meta::external::dataquality::isFromFunctionPresent(func: FunctionDefini
 function meta::external::dataquality::isEndingWithFromFunction(func: FunctionDefinition<Any>[1]):Boolean[1]
 {
   let queryEndExpression = $func.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression);
-  $queryEndExpression.func->in(fromFunctions());
+  $queryEndExpression.func->in(meta::external::dataquality::fromFunctions());
 }
 
 function <<access.protected>> meta::external::dataquality::fromFunctions():Function<Any>[*]
@@ -1090,7 +1068,7 @@ function meta::external::dataquality::buildEmptyInstanceValue():InstanceValue[1]
    (
       genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType=String)))),
       multiplicity = PureOne,
-      values = meta::external::dataquality::lambda(
+      values = lambda(
         ^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=String)),
                       ^InstanceValue (genericType = ^GenericType(rawType=String), multiplicity = PureOne, values = [''])
       )
@@ -1103,7 +1081,7 @@ function meta::external::dataquality::buildToOneInstanceValue(relType: meta::pur
   (
     genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType=String)))),
     multiplicity = PureOne,
-    values = meta::external::dataquality::lambda(
+    values = lambda(
       ^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=String)),
                     meta::external::dataquality::buildToStringToOneFunctionExpression($relType, $column, $relParamName)
     )
