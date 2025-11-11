@@ -277,31 +277,34 @@ function meta::pure::router::routing::routeFunctionExpressionColumn(c:Column<Nil
   ^$state(value=^$fe(parametersValues = $nstate.value->cast(@ValueSpecification)));
 }
 
-function meta::pure::router::routing::prevalFuncColSpec(z:FuncColSpec<Any,Any>[1], routed:ExtendedRoutedValueSpecification[*], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FuncColSpec<Any,Any>[1]
+function meta::pure::router::routing::prevalFuncColSpec(f:FuncColSpec<Any,Any>[1], routed:ExtendedRoutedValueSpecification[*], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
-  let res = processAggregationValueFunction($z.function, $routed, $state, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+  let res = processAggregationValueFunction($f.function, $routed, $state, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
   let newFunc = $res.value->match(
                               [
                                 e:ExtendedRoutedValueSpecification[1]|$e.value,
                                 e:FunctionRoutedValueSpecification [1]|$e
                             ])->cast(@FunctionRoutedValueSpecification).value->cast(@InstanceValue).values->toOne();
-  $z->genericType()->toOne()->dynamicNew([
-    ^KeyValue(key='name', value = $z.name),
+
+  let newColSpec = $f->genericType()->toOne()->dynamicNew([
+    ^KeyValue(key='name', value = $f.name),
     ^KeyValue(key='function', value = $newFunc)
   ])->cast(@FuncColSpec<Any,Any>);
+  ^$res(value = $newColSpec);
 }
 
-function meta::pure::router::routing::prevalAggColSpec(z:AggColSpec<Any,Any,Any>[1], routed:ExtendedRoutedValueSpecification[*], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):AggColSpec<Any,Any,Any>[1]
+function meta::pure::router::routing::prevalAggColSpec(a:AggColSpec<Any,Any,Any>[1], routed:ExtendedRoutedValueSpecification[*], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
-  let mapR = processAggregationValueFunction($z.map, $routed, $state, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
-  let reduceR = processAggregationValueFunction($z.reduce, $routed, $state, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+  let mapR = processAggregationValueFunction($a.map, $routed, $state, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+  let reduceR = processAggregationValueFunction($a.reduce, $routed, $state, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
   let newMapF = $mapR.value->match([e:ExtendedRoutedValueSpecification[1]|$e.value, e:FunctionRoutedValueSpecification [1]|$e])->cast(@FunctionRoutedValueSpecification).value->cast(@InstanceValue).values->toOne();
   let newReduceF= $reduceR.value->match([e:ExtendedRoutedValueSpecification[1]|$e.value, e:FunctionRoutedValueSpecification [1]|$e])->cast(@FunctionRoutedValueSpecification).value->cast(@InstanceValue).values->toOne();
-  $z->genericType()->toOne()->dynamicNew([
-    ^KeyValue(key='name', value = $z.name),
+  let newColSpec = $a->genericType()->toOne()->dynamicNew([
+    ^KeyValue(key='name', value = $a.name),
     ^KeyValue(key='map', value = $newMapF),
     ^KeyValue(key='reduce', value = $newReduceF)
   ])->cast(@AggColSpec<Any,Any,Any>);
+  ^$reduceR(value = $newColSpec);
 }
 
 function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
@@ -374,31 +377,39 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                 $fe->match([v:VariableExpression[1]|meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values, v:Any[1]|$v])
                                                                                                                                    ->match(
                                                                                                                                         [
-                                                                                                                                          f:FunctionExpression[1]|$a->concatenate($fe->cast(@FunctionExpression)->processAggregationFunctionExpression($routed, ^$currentLast(routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, $debug));,
-                                                                                                                                          z:FuncColSpec<Any,Any>[1]|
-                                                                                                                                             let res = prevalFuncColSpec($z, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
-                                                                                                                                             $a->concatenate(^$lastState(value=$res));,
-                                                                                                                                          d:FuncColSpecArray<Any,Any>[1]|
-                                                                                                                                            let r = $d.funcSpecs->map(z|
-                                                                                                                                                prevalFuncColSpec($z, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                          x:FunctionExpression[1]|$a->concatenate($fe->cast(@FunctionExpression)->processAggregationFunctionExpression($routed, ^$currentLast(routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, $debug));,
+                                                                                                                                          x:FuncColSpec<Any,Any>[1]|
+                                                                                                                                             let res = prevalFuncColSpec($x, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                             $a->concatenate($res);,
+                                                                                                                                          x:FuncColSpecArray<Any,Any>[1]|
+                                                                                                                                            let res = $x.funcSpecs->fold({f, a|
+                                                                                                                                                let oldState = $a.first;
+                                                                                                                                                let colSpecs = $a.second;
+                                                                                                                                                let newState = prevalFuncColSpec($f, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                pair($newState, ^$colSpecs(values += $newState.value->cast(@FuncColSpec<Any, Any>)));
+                                                                                                                                              },
+                                                                                                                                              pair($lastState, list([]->cast(@FuncColSpec<Any, Any>)))
                                                                                                                                             );
                                                                                                                                             // Rebuild the FuncColSpecArray
-                                                                                                                                            let other = $p.genericType->dynamicNew([
-                                                                                                                                                      ^KeyValue(key='funcSpecs', value = $r)
-                                                                                                                                                  ]);
-                                                                                                                                            $a->concatenate(^$lastState(value=$other));,
+                                                                                                                                            let funcSpecs = $p.genericType->dynamicNew(^KeyValue(key = 'funcSpecs', value = $res.second.values));
+                                                                                                                                            let newState = $res.first;
+                                                                                                                                            $a->concatenate(^$newState(value = $funcSpecs));,
                                                                                                                                           x:AggColSpec<Any,Any,Any>[1]|
                                                                                                                                             let res = prevalAggColSpec($x, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
-                                                                                                                                            $a->concatenate(^$lastState(value=$res));,
+                                                                                                                                            $a->concatenate($res);,
                                                                                                                                           x:AggColSpecArray<Any,Any,Any>[1]|
-                                                                                                                                            let r = $x.aggSpecs->map(z|
-                                                                                                                                                prevalAggColSpec($z, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                            let res = $x.aggSpecs->fold({as, a|
+                                                                                                                                                let oldState = $a.first;
+                                                                                                                                                let colSpecs = $a.second;
+                                                                                                                                                let newState = prevalAggColSpec($as, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                pair($newState, ^$colSpecs(values += $newState.value->cast(@AggColSpec<Any, Any, Any>)));
+                                                                                                                                              },
+                                                                                                                                              pair($lastState, list([]->cast(@AggColSpec<Any, Any, Any>)))
                                                                                                                                             );
-                                                                                                                                            // Rebuild the FuncColSpecArray
-                                                                                                                                            let other = $p.genericType->dynamicNew([
-                                                                                                                                                      ^KeyValue(key='aggSpecs', value = $r)
-                                                                                                                                                  ]);
-                                                                                                                                            $a->concatenate(^$lastState(value=$other));,
+                                                                                                                                            // Rebuild the AggColSpecArray
+                                                                                                                                            let aggSpecs = $p.genericType->dynamicNew(^KeyValue(key = 'aggSpecs', value = $res.second.values));
+                                                                                                                                            let newState = $res.first;
+                                                                                                                                            $a->concatenate(^$newState(value=$aggSpecs));,
                                                                                                                                           agg:meta::pure::functions::collection::AggregateValue<Nil,Any,Any>[1]|
                                                                                                                                                 let mapFn = processAggregationValueFunction($agg.mapFn, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                                 let aggFn = processAggregationValueFunction($agg.aggregateFn, $routed, $mapFn, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
@@ -727,6 +738,10 @@ function meta::pure::router::routing::varToString(a:Any[1]):String[1]
               e:Enumeration<Any>[1]|$e->id(),
               e:Enum[1]|$e->id(),
               k:KeyExpression[1]|'',
+              f:FuncColSpecArray<Any, Any>[1]|$f.funcSpecs->map(x | $x->varToString())->joinStrings('~[', ',', ']'),
+              f:FuncColSpec<Any, Any>[1]|$f.name + ':' + $f.function->varToString(),
+              a:AggColSpecArray<Any, Any, Any>[1]|$a.aggSpecs->map(x | $x->varToString())->joinStrings('~[', ',', ']'),
+              a:AggColSpec<Any, Any, Any>[1]|$a.name + ':' + $a.map->varToString() + ':' + $a.reduce->varToString(),
               a:Any[1] | $a->toString()
             ])
 }
