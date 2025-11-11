@@ -26,7 +26,7 @@
                 exec("/server/info", (info, infoText) => {
                         document.getElementById("startedTime").insertAdjacentHTML('afterbegin', "<b style='color:#ffa7c4;'>" + info.startedTime + "</b>, Timezone: <b style='color:#ffa7c4;'>" + info.timeZone + "</b>");
                         document.getElementById("memory").insertAdjacentHTML('afterbegin', "used: <b style='color:#ffa7c4;'>" + Math.round((info.memory.total - info.memory.free) / (1024 * 1024)) + "</b>Mb / max: <b style='color:#ffa7c4;'>" + Math.round(info.memory.max / (1024 * 1024)) + "</b>Mb / <b style='color:#ffa7c4;'>" + Math.round((info.memory.total - info.memory.free) * 100 / info.memory.max) + "</b>%");
-                        document.getElementById("live").insertAdjacentHTML('afterbegin', info.openSessions.map(x => "User: <b style='color:#ffa7c4;'>" + x.name + "</b>, startTime:<b style='color:#ffa7c4;'>" + x.startTime + "</b>, preparedStatements:<b style='color:#ffa7c4;'>" + x.preparedStatementCount + "</b>, statements:<b style='color:#ffa7c4;'>" + x.statementCount + "</b>, errors:<b style='color:#ffa7c4;'>" + x.errorCount + "</b>").join("<BR>"));
+                        document.getElementById("live").insertAdjacentHTML('afterbegin', info.openSessions.map(x => "User: <b style='color:#ffa7c4;'>" + x.name + "</b>, startTime:<b style='color:#ffa7c4;'>" + x.startTime + "</b>, preparedStatements:<b style='color:#ffa7c4;'>" + x.preparedStatementCount + "</b>, statements:<b style='color:#ffa7c4;'>" + x.statementCount + "</b>, errors:<b style='color:#ffa7c4;'>" + x.errorCount + "</b><br/>database: <b style='color:#ffa7c4;'>"+x.database+"</b>, options:<b style='color:#ffa7c4;'>"+x.options+'</b>').join("<BR>"));
                         document.getElementById("history").insertAdjacentHTML('afterbegin', info.history.map(x => "User: <b style='color:#ffa7c4;'>" + x.name + "</b>, startTime:<b style='color:#ffa7c4;'>" + x.startTime + "</b>, endTime:<b style='color:#ffa7c4;'>" + x.endTime + "</b>, preparedStatements:<b style='color:#ffa7c4;'>" + x.preparedStatementCount + "</b>, statements:<b style='color:#ffa7c4;'>" + x.statementCount + "</b>, errors:<b style='color:#ffa7c4;'>" + x.errorCount + "</b><br/>database: <b style='color:#ffa7c4;'>"+x.database+"</b>, options:<b style='color:#ffa7c4;'>"+x.options+'</b>').join("<BR>"));
                     }
                 );
@@ -98,9 +98,9 @@
             <div class="text-content">
                 <span class="text" style="font-size: 35px;font-weight: bold;"><BR/><BR/>Postgres SQL Server<BR/><BR/></span><BR><BR>
                 <span class="text">Memory: </span>&nbsp;<span class="text" id="memory"></span><BR>
-                <span class="text">Started Time:</span>&nbsp;<span class="text" id="startedTime"></span><BR><BR>
+                <span class="text">Started Time:</span>&nbsp;<span class="text" id="startedTime"></span><BR><BR><BR>
                 <span class="text"><BR/>Live sessions:</span><BR>
-                <span class="text" id="live"></span><BR>
+                <span class="text" id="live"></span><BR><BR>
                 <span class="text">History:</span><BR>
                 <span class="text" id="history"></span><BR><BR>
             </div>
