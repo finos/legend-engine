@@ -69,6 +69,7 @@ public class PostgresServerTypeMappingTest
         LegendExecutionService client = new LegendExecutionService(new LegendHttpClient("http", "localhost", String.valueOf(wireMockRule.port())));
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
+        serverConfig.setHttpPort(0);
         testPostgresServer = new TestPostgresServer(serverConfig,
                 new SQLManager(Lists.mutable.with(client)),
                 (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),

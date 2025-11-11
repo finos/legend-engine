@@ -292,6 +292,7 @@ public class PostgresServerGenericTest
         // Postgres
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
+        serverConfig.setHttpPort(0);
         testPostgresServer = new TestPostgresServer(
                 serverConfig,
                 new SQLManager(Lists.mutable.with(new GenericLegendExecution("http", "127.0.0.1", String.valueOf(engineServerPort)))),

@@ -19,21 +19,11 @@ body {
 }
 
 .main {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   background: #252525;
 }
 
-.content {
-  display: flex;
-  flex-direction: column;
-}
-
 .logo {
-  width: 50vw;
+  width: 800px;
 }
 
 .logo svg {
