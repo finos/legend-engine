@@ -22,14 +22,11 @@
 package org.finos.legend.engine.postgres;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.prometheus.metrics.core.metrics.Counter;
 import io.prometheus.metrics.core.metrics.Gauge;
 import io.prometheus.metrics.exporter.servlet.javax.PrometheusMetricsServlet;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
