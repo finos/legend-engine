@@ -12,3 +12,6 @@ mvn -pl legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-h
 ```
 
 Then navigate to http://127.0.0.1/ide
+
+
+
