@@ -478,11 +478,15 @@ public class PostgresWireProtocol
         {
             if (session != null)
             {
+                if (sessionStats.name != null)
+                {
+                    server.getUserMetrics().liveConnections.labelValues(sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_")).dec();
+                }
                 session.close();
                 session = null;
-                server.close(PostgresWireProtocol.this);
                 sessionStats.endTime = new Date().toString();
             }
+            server.close(PostgresWireProtocol.this);
         }
 
         @Override
@@ -624,7 +628,9 @@ public class PostgresWireProtocol
 
         sessionStats.name = authenticatedUser.getName();
         PrometheusUserMetrics prometheusUserMetrics = server.getUserMetrics();
-        prometheusUserMetrics.connections.labelValues(sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_")).inc();
+        String label = sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_");
+        prometheusUserMetrics.connections.labelValues(label).inc();
+        prometheusUserMetrics.liveConnections.labelValues(label).inc();
 
         MDC.put("user", authenticatedUser.getName());
         messages.sendAuthenticationOK(channel)

@@ -122,9 +122,15 @@ public class PostgresServer
 
     public void close(PostgresWireProtocol postgresWireProtocol)
     {
-        this.connectionCount.dec();
-        connectionsHistory.add(postgresWireProtocol.getSessionStats());
-        liveConnections.remove(postgresWireProtocol);
+        if (liveConnections.contains(postgresWireProtocol))
+        {
+            if (!"Unknown".equals(postgresWireProtocol.getSessionStats().name))
+            {
+                connectionsHistory.add(postgresWireProtocol.getSessionStats());
+            }
+            this.connectionCount.dec();
+            liveConnections.remove(postgresWireProtocol);
+        }
     }
 
     public void run()
@@ -247,7 +253,7 @@ public class PostgresServer
         // Prometheus
         this.registry = new PrometheusRegistry();
         this.userMetrics = new PrometheusUserMetrics(registry);
-        this.connectionCount = Gauge.builder().name("ConnectionCount").register(this.registry);
+        this.connectionCount = Gauge.builder().name("serverLiveConnections").help("Total live connections count").register(this.registry);
         ServletContextHandler prometheusServletContext = new ServletContextHandler();
         prometheusServletContext.setContextPath("/");
         prometheusServletContext.addServlet(new ServletHolder(new PrometheusMetricsServlet(this.registry)), "/prometheus");
