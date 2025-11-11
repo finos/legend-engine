@@ -214,6 +214,8 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
                                                             sfe : FunctionExpression[1]| $sfe,
                                                             a : meta::pure::tds::AggregateValue<Any,Any>[*]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate(),
                                                             a : meta::pure::functions::collection::AggregateValue<Any,Any,Any>[*]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate(),
+                                                            a: meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[*] | ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate(),
+                                                            a: meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[*] | ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate(),
                                                             a : meta::pure::tds::BasicColumnSpecification<Any>[*]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate(),
                                                             r : meta::pure::graphFetch::RootGraphFetchTree<Any>[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
                                                             b : meta::external::format::shared::binding::Binding[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
@@ -292,6 +294,32 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
                                   | ^PrevalWrapper<Any>(value = ^$av(mapFn = $newFuncWrapper_map.value->cast($mapFn), aggregateFn = $newFuncWrapper_agg.value->cast($aggFn)), canPreval = true, modified = true);
                                   );
                         },
+                        {av : meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|
+                              let mapFn = $av.map->evaluateAndDeactivate();
+                              let aggFn = $av.reduce->evaluateAndDeactivate();
+
+                              let newFuncWrapper_map = prevalInternal($mapFn, $state, $extensions);
+                              let newFuncWrapper_agg = prevalInternal($aggFn, $state, $extensions);
+
+                              if(![$newFuncWrapper_map, $newFuncWrapper_agg]->anyModified(),
+                                  | ^PrevalWrapper<Any>(value = $av, canPreval = true, modified = false),
+                                  | ^PrevalWrapper<Any>(value = ^$av(map = $newFuncWrapper_map.value->cast($mapFn), reduce = $newFuncWrapper_agg.value->cast($aggFn)), canPreval = true, modified = true);
+                                  );
+                        },
+                        {av : meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]|
+                              let aggs = $av.aggSpecs->map(a | prevalInternal($a, $state, $extensions));
+
+                              //we do a match here as casting seems to cause errors in some cases.
+                              let aggSpecs = $aggs.value->map(a | $a->match([
+                                a:AggColSpec<Any,Any,Any>[1] | $a
+                              ]));                        
+
+                              if(![$aggs]->anyModified(),
+                                  | ^PrevalWrapper<Any>(value = $av, canPreval = true, modified = false),
+                                  | ^PrevalWrapper<Any>(value = ^$av(aggSpecs = $aggSpecs), canPreval = true, modified = true);
+                                  );
+                        },
+                        
                         {s: meta::pure::tds::schema::SchemaState[1] | ^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},
                         {r: meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | ^PrevalWrapper<Any>(value = $r, canPreval = true, modified = false);},
                         {b: meta::external::format::shared::binding::Binding[1] | ^PrevalWrapper<Any>(value = $b, canPreval = true, modified = false);},
@@ -834,6 +862,8 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericFunctionEx
                                               {bcs : BasicColumnSpecification<Any>[1]|  prevalInternal($bcs, ^$state(inScopeTypeParams = ^Map<String, GenericType>(), inScopeVars = ^Map<String, List<Any>>()), $extensions).value},
                                               {av : meta::pure::functions::collection::AggregateValue<Any,Any,Any>[1]|  prevalInternal($av, ^$state(inScopeTypeParams = ^Map<String, GenericType>(), inScopeVars = ^Map<String, List<Any>>()), $extensions).value},
                                               {av : meta::pure::tds::AggregateValue<Any,Any>[1]|  prevalInternal($av, ^$state(inScopeTypeParams = ^Map<String, GenericType>(), inScopeVars = ^Map<String, List<Any>>()), $extensions).value},
+                                              {av: meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1] | prevalInternal($av, ^$state(inScopeTypeParams = ^Map<String, GenericType>(), inScopeVars = ^Map<String, List<Any>>()), $extensions).value},
+                                              {av: meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1] | prevalInternal($av, ^$state(inScopeTypeParams = ^Map<String, GenericType>(), inScopeVars = ^Map<String, List<Any>>()), $extensions).value},
                                               {a:Any[1]|$a}
                                             ]));
 
