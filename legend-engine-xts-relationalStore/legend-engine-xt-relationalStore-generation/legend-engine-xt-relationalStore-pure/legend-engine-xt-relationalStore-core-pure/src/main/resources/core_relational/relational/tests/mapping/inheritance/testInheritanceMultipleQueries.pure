@@ -62,6 +62,19 @@ function <<test.Test>> meta::relational::tests::mapping::inheritance::cross::tes
    assertSameElements([4,4,4,3,2], $result1.rows.values);
 }
 
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::inheritance::cross::testProjectAssociationTdsV2():Boolean[1]
+{
+  let result = execute(|Person.all()->project(~[wheelCount:p|$p.roadVehicles->map(r|$r.wheelCount)]), inheritanceMappingCross, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
+  assertEquals('#TDS\n' +
+                 '   wheelCount\n' +
+                 '   2\n' +
+                 '   3\n' +
+                 '   4\n' +
+                 '   4\n' +
+                 '   4\n' +
+                 '#', $result->sort([~wheelCount->ascending()])->toString());
+}
+
 function <<test.Test>> meta::relational::tests::mapping::inheritance::cross::testProjectTwoLambdas():Boolean[1]
 {
    let result1 = execute(|Person.all()->project([p|$p.name, p|$p.roadVehicles->map(r|$r.wheelCount)], ['name', 'wheelCount']), inheritanceMappingCross, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);

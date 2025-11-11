@@ -147,28 +147,9 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                   print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString('[',',',']'),|''));
                   $resultFinal;,
                 |
-                    let cols = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns;
-                    // sadly pivot does not return proper types (ie  Class<> rather than Relation<>)
-                    let relType = if ($f->functionReturnType().typeArguments->at(0).rawType->toOne()->instanceOf(RelationType),
-                      |
-                        $f->functionReturnType().typeArguments->at(0).rawType->cast(@RelationType<Any>).columns->map(x | pair($x.name->toOne(), $x->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()->elementToPath()))->newMap();
-                      ,
-                      |
-                        $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | pair($c.name, $t)))->newMap();
-                    );
-
-                    let tdsString = $cols->map(c | $c.name + $relType->get($c.name)->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
-                                  $res.result.rows->map(x|
-                                        range($x.values->size())->map(z |
-                                            $x.values->at($z)->match([
-                                              s: String[1] | $s->meta::relational::tests::csv::escapeCSVString(),
-                                              a: Any[1] | if($a == TDSNull, |'null', |$a->toString())
-                                            ]);
-                                        )->makeString(',')
-                                      )->joinStrings('\n');
-                    let resultFinal = $tdsString->stringToTDS();
-                    print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->toString(),|''));
-                    $resultFinal;
+                  let resultFinal = meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSResultFromProtocol($res, $f->functionReturnType(), $extensions);
+                  print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->toString(),|''));
+                  $resultFinal;
               );
     ))->cast(@X)->toMultiplicity(@[o]);
 }
