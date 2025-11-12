@@ -31,7 +31,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
 import org.junit.After;
 import org.junit.Before;
@@ -57,7 +56,7 @@ public class TestDatasourceCreation
     @Before
     public void setup() throws Exception
     {
-        server = AlloyH2Server.startServer(DynamicPortGenerator.generatePort());
+        server = AlloyH2Server.startServer();
 
         // We maintain a bunch of singleton state. We have to reset this state so as to avoid interference between tests
         ConnectionPoolTestUtils.resetDatasourceSpecificationSingletonState();

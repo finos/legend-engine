@@ -8,6 +8,8 @@
     "core_functions_unclassified",
     "core_functions_relation",
     "core_functions_standard",
+    "core_functions_standard",
+    "core_external_query_sql",
     "platform",
     "platform_dsl_store",
     "platform_dsl_graph",

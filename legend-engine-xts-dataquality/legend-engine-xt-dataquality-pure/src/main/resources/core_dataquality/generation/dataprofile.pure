@@ -1,0 +1,171 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::runtime::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::external::query::sql::transformation::utils::*;
+import meta::external::query::sql::transformation::compile::utils::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::router::preeval::*;
+import meta::relational::extension::*;
+import meta::external::dataquality::*;
+import meta::external::dataquality::dataprofile::*;
+import meta::pure::metamodel::relation::*;
+
+function meta::external::dataquality::dataprofile::getProfilingLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], wrapWithFrom:Boolean[1]): LambdaFunction<Any>[1]
+{
+  let lambda = $dqRelationValidation.query->popTerminalFunctionExpression();
+  
+  let from = $dqRelationValidation.query.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();
+  let runtime = getInstanceValueOfType($from.parametersValues, PackageableRuntime)->concatenate(getInstanceValueOfType($from.parametersValues, Runtime));
+  let mapping = getInstanceValueOfType($from.parametersValues, Mapping);
+
+  assert($runtime->isEmpty() || $runtime->size() == 1, | 'multiple runtimes not supported');
+  assert($mapping->isEmpty() || $mapping->size() == 1, | 'multiple mappings not supported');
+
+  getProfilingLambda($lambda, $mapping->first(), $runtime->first(), $wrapWithFrom);
+}
+
+function meta::external::dataquality::dataprofile::getProfilingLambda(l:LambdaFunction<Any>[1], mapping:Mapping[0..1], runtime:Any[0..1], wrapWithFrom:Boolean[1]):LambdaFunction<Any>[1]
+{
+  assert($l->functionReturnType().rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::Relation), 'only relation functions supported');
+
+  let relationType = $l.expressionSequence->evaluateAndDeactivate()->last().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>);
+
+  let cte = var('cte', PureOne, $l->genericType());
+
+  let queries = $relationType.columns->map(c |
+    let aggregate = sfe(
+        aggregate_Relation_1__AggColSpecArray_1__Relation_1_,
+        [
+          $cte,
+          ^AggColSpecArray<Any, Any, Any>(aggSpecs = [
+            agg('name', iv($c.name->toOne()), iv($c.name->toOne()), $c.classifierGenericType.typeArguments->at(0), gt(String), PureOne, gt(String), PureOne),
+            agg('max_number', max_Number_MANY__Number_$0_1$_, $c),
+            agg('min_number', min_Number_MANY__Number_$0_1$_, $c),
+            agg('max_date', max_Date_MANY__Date_$0_1$_, $c),
+            agg('min_date', min_Date_MANY__Date_$0_1$_, $c),
+            agg('max_length', createLength($c, 'x'), max_Number_MANY__Number_$0_1$_, $c),
+            agg('min_length', createLength($c, 'x'), min_Number_MANY__Number_$0_1$_, $c),
+            agg('count', count_Any_MANY__Integer_1_, $c),
+            agg('count_distinct', mapFn(Any, $c), createDistinctCount('y'), $c.classifierGenericType.typeArguments->at(0), gt(Any), PureOne, gt(Integer), PureOne),
+            agg('count_null', createNullCase($c, 'x'), count_Any_MANY__Integer_1_, $c)
+          ])->iv()
+        ]
+      );
+  );
+
+  let func = $queries->tail()->fold({val, acc | 
+      sfe(concatenate_Relation_1__Relation_1__Relation_1_, [$val, $acc])
+    }, $queries->head()->toOne()->evaluateAndDeactivate());
+
+  let letCte = createLet('cte', $l.expressionSequence->evaluateAndDeactivate()->last()->toOne());
+
+  let lambda = ^$l(expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->init()->concatenate([$letCte, $func])->toOneMany());//->preval(relationalExtensions())->cast(@LambdaFunction<Any>);
+
+  let compiled = $lambda->compileViaGrammar();
+
+  //TODO this should ideally be done before compile but there are issues with testing
+  if ($wrapWithFrom, | $compiled->wrapWithLambdaFrom($mapping, $runtime), | $compiled);
+}
+
+function meta::external::dataquality::dataprofile::agg(name:String[1], fn:Function<Any>[1], column:Column<Nil,Any|*>[1]):AggColSpec<Any, Any, Any>[1]
+{
+  let paramType = $fn->getParameters()->first()->evaluateAndDeactivate().genericType.rawType->toOne();
+  agg($name, mapFn($paramType, $column), $fn, $column);
+}
+
+function meta::external::dataquality::dataprofile::mapFn(paramType:Type[1], column:Column<Nil,Any|*>[1]):ValueSpecification[1]
+{
+  mapFn($paramType, $column, s | $s->evaluateAndDeactivate(), true, $paramType)
+}
+
+function meta::external::dataquality::dataprofile::mapFn(paramType:Type[1], column:Column<Nil,Any|*>[1], map:Function<{SimpleFunctionExpression[1]->SimpleFunctionExpression[1]}>[1], cast:Boolean[1], castType:Type[1]):ValueSpecification[1]
+{
+  let type = $column.classifierGenericType.typeArguments->last()->toOne();
+
+  if (isCompatible($type.rawType->toOne(), $paramType),
+    | let col = col($column, var('x'))->evaluateAndDeactivate();
+      let exp = $map->eval($col);
+      if ($paramType == Any || !$cast, | $exp, | createCast($exp, $castType));,
+    | createCast(iv([]), $castType)->evaluateAndDeactivate()
+  );
+}
+
+function meta::external::dataquality::dataprofile::agg(name:String[1],map:ValueSpecification[1], fn:Function<Any>[1], column:Column<Nil,Any|*>[1]):AggColSpec<Any, Any, Any>[1]
+{
+  let type = $column.classifierGenericType.typeArguments->last()->toOne();
+  let multiplicity = $column.classifierGenericType.multiplicityArguments->first()->toOne();
+  let relationType = $column.classifierGenericType.typeArguments->at(0);
+
+  agg($name, $map, sfe($fn, var('y')), $relationType, $type, $multiplicity, $fn->functionReturnType(), $fn->functionReturnMultiplicity());
+}
+
+function meta::external::dataquality::dataprofile::agg(name:String[1], map:ValueSpecification[1], reduce:ValueSpecification[1], relationType:GenericType[1], columnType:GenericType[1], columnMultiplicity:Multiplicity[1], returnType:GenericType[1], returnMultiplicity:Multiplicity[1]):AggColSpec<Any, Any, Any>[1]
+{
+  ^meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>(
+    name = $name, 
+    map = lambda(functionType('x', $relationType, PureOne, $columnType, $columnMultiplicity), $map),
+    reduce = lambda(functionType('y', $map->evaluateAndDeactivate().genericType, ZeroMany, $returnType, $returnMultiplicity), $reduce));
+}
+
+
+function meta::external::dataquality::dataprofile::isCompatible(columnType:Type[1], paramType:Type[1]):Boolean[1]
+{
+  $paramType == Any || ($columnType->subTypeOf($paramType));
+}
+
+function meta::external::dataquality::dataprofile::createDistinctCount( var:String[1]):SimpleFunctionExpression[1]
+{
+  sfe(count_Any_MANY__Integer_1_, sfe(distinct_T_MANY__T_MANY_, var($var)))
+}
+
+function meta::external::dataquality::dataprofile::createNullCase(column:Column<Nil,Any|*>[1], var:String[1]):SimpleFunctionExpression[1]
+{
+  let type = ^GenericType(rawType = Integer);
+
+  sfe(if_Boolean_1__Function_1__Function_1__T_m_, $type, [], ZeroOne, [
+    sfe(isEmpty_Any_$0_1$__Boolean_1_, col($column, var($var))),
+    lambda(^FunctionType(returnMultiplicity = PureOne, returnType = $type), iv(1))->iv(),
+    lambda(^FunctionType(returnMultiplicity = PureZero, returnType = $type), iv([]))->iv()
+  ]);
+}
+
+function meta::external::dataquality::dataprofile::createLength(column:Column<Nil,Any|*>[1], var:String[1]):ValueSpecification[1]
+{
+  mapFn(String, $column, s | sfe(length_String_1__Integer_1_, $s), false, Integer)
+}
+
+function meta::external::dataquality::dataprofile::col(column:Column<Nil,Any|*>[1], var:VariableExpression[1]):SimpleFunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+  (
+      importGroup = system::imports::coreImport,
+      func = $column,
+      multiplicity = $column.classifierGenericType.multiplicityArguments->first()->orElse(ZeroOne),
+      parametersValues = $var,
+      genericType = $column.classifierGenericType.typeArguments->last()->toOne()
+  );
+}
+
+function meta::external::dataquality::dataprofile::getInstanceValueOfType<T>(vs:ValueSpecification[*], types:Class<T>[1]):T[*]
+{
+  $vs->map(v | 
+    $v->match([
+        i:InstanceValue[1] | $i.values->filter(i | $types->exists(t | $i->instanceOf($t)))->cast(@T),
+        v:ValueSpecification[*] | []
+      ])
+  )
+}

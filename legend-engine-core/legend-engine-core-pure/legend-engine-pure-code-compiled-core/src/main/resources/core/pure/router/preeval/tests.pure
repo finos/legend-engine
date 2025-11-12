@@ -15,6 +15,7 @@
 // Press F9 to execute the 'go' function...
 // Press F10 to run the full test suite
 
+import meta::pure::metamodel::relation::*;
 import meta::json::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::*;
@@ -1304,6 +1305,19 @@ function <<test.Test>> meta::pure::router::preeval::tests::tesColumnEvalOnRelati
 
   let expected = {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>[1] |
                    $rel->filter(row|$row.FIRSTNAME->toOne()->length() > 10)};
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testRelationAggregation():Boolean[1]
+{
+  let input = {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>[1] | 
+                $rel->aggregate(~[value : x | 1 + 1 : y | 2 +  2])
+              };
+
+  let expected = {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>[1] | 
+                $rel->aggregate(~[value : x | 2 : y | 4])
+              };
+
   assertRoundTrip($input, $expected);
 }
 

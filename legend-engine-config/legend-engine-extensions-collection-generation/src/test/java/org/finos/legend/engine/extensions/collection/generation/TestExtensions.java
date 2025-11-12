@@ -237,7 +237,14 @@ public class TestExtensions
     @Test
     public void testCodeRepositories()
     {
-        Assert.assertEquals(Lists.mutable.withAll(getExpectedCodeRepositories()).sortThis(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName, Lists.mutable.empty()).select(c -> !c.startsWith("platform")).sortThis());
+        MutableSet<String> expectedCodeRepositories = Sets.mutable.withAll(getExpectedCodeRepositories());
+        MutableSet<String> actual = CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName, Sets.mutable.empty()).select(c -> !c.startsWith("platform"));
+
+        MutableSet<String> extraOnExpected = expectedCodeRepositories.difference(actual);
+        MutableSet<String> extraOnActual = actual.difference(expectedCodeRepositories);
+
+        Assert.assertEquals("Expected but not found on actual: ", extraOnExpected, Sets.mutable.empty());
+        Assert.assertEquals("Actual missing on expected: ", extraOnActual, Sets.mutable.empty());
     }
 
     @Test
@@ -250,7 +257,15 @@ public class TestExtensions
         Assert.assertEquals(Lists.fixedSize.empty(), Iterate.reject(expectedRepos, allSpecNames::contains, Lists.mutable.empty()));
 
         MutableSet<String> specNames = Iterate.collect(DistributedMetadataSpecification.loadSpecifications(classLoader, expectedRepos), DistributedMetadataSpecification::getName, Sets.mutable.empty());
-        Assert.assertEquals(Sets.mutable.withAll(expectedRepos).with("platform"), specNames.select(c -> !c.startsWith("platform_")));
+
+        MutableSet<String> expected = Sets.mutable.withAll(expectedRepos).with("platform");
+        MutableSet<String> actual = specNames.select(c -> !c.startsWith("platform_"));
+
+        MutableSet<String> extraOnExpected = expected.difference(actual);
+        MutableSet<String> extraOnActual = actual.difference(expected);
+
+        Assert.assertEquals("Expected but not found on actual: ", extraOnExpected, Sets.mutable.empty());
+        Assert.assertEquals("Actual missing on expected: ", extraOnActual, Sets.mutable.empty());
     }
 
     @Test
@@ -597,6 +612,7 @@ public class TestExtensions
                 .with("core_external_extensions")
                 .with("core_external_query_sql")
                 .with("core_functions_unclassified")
+                .with("core_functions_variant")
                 .with("core_analytics_binding")
                 .with("core_analytics_class")
                 .with("core_analytics_function")

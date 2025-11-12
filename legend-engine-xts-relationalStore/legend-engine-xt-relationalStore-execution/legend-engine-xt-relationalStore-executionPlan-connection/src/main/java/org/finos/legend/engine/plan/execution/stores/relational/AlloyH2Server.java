@@ -26,6 +26,11 @@ public class AlloyH2Server extends Server
 
     private static final String H2_ALLOWED_CLASSES_PROPERTY = "h2.allowedClasses";
 
+    public static Server startServer() throws SQLException
+    {
+        return startServer(0);
+    }
+
     public static Server startServer(int port) throws SQLException
     {
         String h2AllowedClassesDefault;
@@ -39,9 +44,10 @@ public class AlloyH2Server extends Server
             h2AllowedClassesDefault = "org.h2.*,org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200";
         }
 
-        LOGGER.debug("startServer port {}", port);
         System.setProperty(H2_ALLOWED_CLASSES_PROPERTY, System.getProperty(H2_ALLOWED_CLASSES_PROPERTY, h2AllowedClassesDefault));
-        return Server.createTcpServer("-ifNotExists", "-tcpPort", String.valueOf(port)).start();
+        Server server = Server.createTcpServer("-ifNotExists", "-tcpPort", String.valueOf(port)).start();
+        LOGGER.debug("startServer port {}", server.getPort());
+        return server;
     }
 
     public static void main(String[] args)

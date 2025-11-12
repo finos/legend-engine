@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::relation::*;
+import meta::pure::executionPlan::*;
 import meta::pure::mapping::*;
 import meta::alloy::metadataServer::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
@@ -85,15 +87,6 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::getPlanR
            | $retType->fromJSON(meta::protocols::pure::vX_X_X::metamodel::executionPlan::ResultType)->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::ResultType)->toOne();
         );
    );
-}
-
-function meta::protocols::pure::vX_X_X::invocation::execution::execute::executePlan(plan:meta::pure::executionPlan::ExecutionPlan[1], context: meta::pure::runtime::ExecutionContext[0..1], host: String[1], port: Integer[1], extensions:meta::pure::extension::Extension[*]) : meta::pure::mapping::Result<Any|*>[1]
-{
-   let planJSON = $plan->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($extensions)
-                       ->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
-   let resultType = $planJSON->meta::protocols::pure::vX_X_X::invocation::execution::execute::getPlanReturnType();
-   let resultJSON = executePlan($plan, $host, $port, $extensions);
-   $resultJSON->legendBuildResultFromJSON($resultType, $plan.mapping, $plan.runtime, $context, $extensions);
 }
 
 function meta::protocols::pure::vX_X_X::invocation::execution::execute::executePlan(plan:meta::pure::executionPlan::ExecutionPlan[1], host: String[1], port: Integer[1], extensions:meta::pure::extension::Extension[*]) : String[1]
@@ -179,7 +172,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::legendEx
    let transformedContext = if($context->isNotEmpty(), | $context->toOne()->transformContext($extensions),| []);
    let execMode = meta::protocols::pure::vX_X_X::invocation::execution::execute::ExecutionMode->extractEnumValue($executionMode);
    let mappings = $m->concatenate(getMappingsFromRuntime($pureRuntime));
-
+   let returnGenericType = $f.expressionSequence->evaluateAndDeactivate()->last()->toOne().genericType;
 
    // This choice is made as ExecutionContext information can affect the results computed by the executionPlan endpoint
    // If we have either of the two ExecutionContexts in the conditional - throwing the generated execution plan to the executePlan endpoint does *not* return the same results as hittign execute with function,mapping, and runtime
@@ -203,8 +196,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::legendEx
         ^Pair<Any,Any>(first=$resultType,second=$result);,
 
       |  let alloyExecuteResult = alloyExecuteLambda($f,$m,$pureRuntime, $context, $host, $port, $version, $serializationKind, $executionMode, $extensions);
-         let retGenericType = $f.expressionSequence->evaluateAndDeactivate()->last()->toOne().genericType;
-         let retType = $retGenericType.rawType->toOne();
+         let retType = $returnGenericType.rawType->toOne();
          ^Pair<Any,Any>(first=$retType,second=$alloyExecuteResult);
 
    );
@@ -212,13 +204,12 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::legendEx
    let resultJSON=$typeAndresultJSON.second->cast(@String);
    let resultClassType=$typeAndresultJSON.first;
 
-   let res= legendBuildResultFromJSON($resultJSON, $resultClassType, $m, $pureRuntime, $context, $extensions);
-
+   let res= legendBuildResultFromJSON($resultJSON, $resultClassType, $returnGenericType, $m, $pureRuntime, $context, $extensions);
    let values = $res.values->cast(@T);
    ^Result<T|m>(values=$values, activities=$res.activities);
 }
 
-function meta::protocols::pure::vX_X_X::invocation::execution::execute::legendBuildResultFromJSON(resultJSON:String[1],resultClassType:Any[1], m:Mapping[1], pureRuntime:Runtime[1], context:meta::pure::runtime::ExecutionContext[0..1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<Any|*>[1]
+function meta::protocols::pure::vX_X_X::invocation::execution::execute::legendBuildResultFromJSON(resultJSON:String[1],resultClassType:Any[1], returnGenericType:GenericType[1], m:Mapping[1], pureRuntime:Runtime[1], context:meta::pure::runtime::ExecutionContext[0..1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<Any|*>[1]
 {
    let result = $resultJSON->meta::json::parseJSON()->cast(@JSONObject);
    let builder = $result.keyValuePairs->filter(kv |$kv.key.value == 'builder').value->cast(@JSONObject);
@@ -228,7 +219,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::legendBu
    let extendedJSONDeserializationConfig = ^ExtendedJSONDeserializationConfig(nullReplacementInArray = ^TDSNull(), typeKeyName='', failOnUnknownProperties=true);
 
    let handlers= $extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).invocation_execution_execute2_pre->concatenate(
-                 $extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).invocation_execution_execute2_pre2->map(f | $f->eval($extensions)))->concatenate([
+                 $extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).invocation_execution_execute2_pre2->map(f | $f->eval($returnGenericType, $extensions)))->concatenate([
                pair ( builderType:String[1]|$builderType->isNotEmpty() && $builderType->toOne()=='json',
                       {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], r:Runtime[1], e:ExtendedJSONDeserializationConfig[1], co:meta::pure::runtime::ExecutionContext[0..1]|processJsonStreamingResult($result)}),
 
@@ -239,7 +230,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::legendBu
                                             processCSV_M2M($builderType->toOne(), $retType, $result);}
                     )
             ]->concatenate($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).invocation_execution_execute2_post)
-             ->concatenate($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).invocation_execution_execute2_post2->map(f | $f->eval($extensions))));
+             ->concatenate($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).invocation_execution_execute2_post2->map(f | $f->eval($returnGenericType, $extensions))));
 
    let res = $handlers->filter(h|$h.first->eval($builderType))->first()->toOne().second->eval($resultJSON, $result, $m, $pureRuntime, $extendedJSONDeserializationConfig, $context);
 

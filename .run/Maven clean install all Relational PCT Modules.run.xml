@@ -22,7 +22,6 @@
           <option name="pomFileName" />
           <option name="profilesMap">
             <map>
-              <entry key="sqlserver-docker-test" value="true" />
               <entry key="pct-cloud-test" value="true" />
             </map>
           </option>

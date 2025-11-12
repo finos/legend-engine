@@ -1,5 +1,6 @@
 .idea/**
 .mvn/**
+**/.develocity/**
 **/*.iml
 **/target
 **/lib
