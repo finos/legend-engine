@@ -2974,7 +2974,7 @@ public class Handlers
         map.put("meta::pure::functions::date::calendar::ytd_Date_1__String_1__Date_1__Number_$0_1$", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_Date").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_String").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_Date").contains(ps.get(2)._genericType()._rawType()._name()) && matchZeroOne(ps.get(3)._multiplicity()) && taxoMap.get("cov_Number").contains(ps.get(3)._genericType()._rawType()._name()));
     }
 
-    private void registerAdditionalSubtypes(CompilerExtensions compilerExtensions)
+    private synchronized void registerAdditionalSubtypes(CompilerExtensions compilerExtensions)
     {
         compilerExtensions.getExtraSubTypesForFunctionMatching().forEach((key, value) ->
         {
@@ -2984,11 +2984,7 @@ public class Handlers
                 throw new RuntimeException("An extension is trying to add subtypes [" + value.makeString(",") + "] for the key '" + key + "' but the key doesn't exist.\n" +
                         "Existing keys: [" + taxoMap.keysView().makeString(",") + "]");
             }
-            MutableSet<String> nullSafeSubtypes = value.select(Objects::nonNull);
-            synchronized (taxoMap)
-            {
-                sets.addAll(nullSafeSubtypes);
-            }
+            sets.addAll(value);
         });
     }
 
