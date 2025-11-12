@@ -117,8 +117,6 @@ function <<test.Test>> meta::relational::tests::projection::exists::testExistsAs
    let result = execute(|MyClass.all()->project([p|$p.hasPrivateFunction, p|$p.hasPublicFunction], ['hasPrivateFn', 'hasPublicFn']),
                          meta::relational::tests::projection::exists::mappingForMultipleSubTypes,
                         testRuntime(), meta::relational::extension::relationalExtensions());
-   println($result->sqlRemoveFormatting());
-   println($result.values.rows);
    assertSize($result.values.rows, 3);
    assertSameElements([false, false, true], $result.values.rows->map(r | $r.values->at(0)));
    assertEquals('select "fn_0".classId is not null as "hasPrivateFn", "fn_2".classId is not null as "hasPublicFn" from main as "root" left outer join (select distinct "fn_1".classId from fn as "fn_1" left outer join publicFn as "publicfn_0" on ("publicfn_0".fnId = "fn_1".id) where "publicfn_0".id is not null) as "fn_0" on ("root".id = "fn_0".classId) left outer join (select distinct "fn_1".classId from fn as "fn_1" left outer join privateFn as "privatefn_0" on ("privatefn_0".fnId = "fn_1".id) where "privatefn_0".id is not null) as "fn_2" on ("root".id = "fn_2".classId)', $result->sqlRemoveFormatting());
