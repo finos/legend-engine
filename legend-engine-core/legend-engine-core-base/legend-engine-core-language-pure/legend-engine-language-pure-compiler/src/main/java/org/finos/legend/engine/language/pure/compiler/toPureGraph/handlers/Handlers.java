@@ -2984,7 +2984,11 @@ public class Handlers
                 throw new RuntimeException("An extension is trying to add subtypes [" + value.makeString(",") + "] for the key '" + key + "' but the key doesn't exist.\n" +
                         "Existing keys: [" + taxoMap.keysView().makeString(",") + "]");
             }
-            sets.addAll(value);
+            MutableSet<String> nullSafeSubtypes = value.select(Objects::nonNull);
+            synchronized (taxoMap)
+            {
+                sets.addAll(nullSafeSubtypes);
+            }
         });
     }
 
