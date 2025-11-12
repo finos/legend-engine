@@ -91,40 +91,16 @@ public class ModelManager
     public PureModel loadModel(PureModelContext context, String clientVersion, Identity identity, String packageOffset)
     {
         PureModelProcessParameter modelProcessParameter = PureModelProcessParameter.newBuilder().withPackagePrefix(packageOffset).withForkJoinPool(this.forkJoinPool).build();
+        return loadModelOrData(context, clientVersion, identity, pureModelCache, p -> Compiler.compile(p, this.deploymentMode, identity.getName(), null, modelProcessParameter));
+    }
 
-        if (context instanceof PureModelContextPointer)
+    // Remove clientVersion
+    public PureModelContextData loadData(PureModelContext context, String clientVersion, Identity identity)
+    {
+        try (Scope scope = tracer.buildSpan("Load Model").startActive(true))
         {
-            return manage((PureModelContextPointer) context, identity, pureModelCache, cacheKey -> Compiler.compile(this.loadData(cacheKey, clientVersion, identity), this.deploymentMode, identity.getName(), null, modelProcessParameter));
-        }
-        else if (context instanceof PureModelContextCombination)
-        {
-            Pair<MutableList<PureModelContextData>, MutableList<PureModelContextPointer>> concreteVsPointer = discriminate((PureModelContextCombination) context);
-            MutableList<PureModelContextData> concretes = concreteVsPointer.getOne();
-            MutableList<PureModelContextPointer> pointers = concreteVsPointer.getTwo();
-            PureModelContextData globalContext;
-            if (!pointers.isEmpty())
-            {
-                PureModelContextData initial = manage(pointers.get(0), identity, pureModelContextCache, cacheKey -> loadData(cacheKey, clientVersion, identity));
-                PureModelContextData aggregated = pointers.subList(1, pointers.size()).injectInto(initial, (a, b) -> a.combine(manage(b, identity, pureModelContextCache, cacheKey -> loadData(cacheKey, clientVersion, identity))));
-                globalContext = concretes.injectInto(aggregated, (a, b) -> a.combine(b));
-            }
-            else if (!concretes.isEmpty())
-            {
-                globalContext = concretes.subList(1, concretes.size()).injectInto(concretes.get(0), (a, b) -> a.combine(b));
-            }
-            else
-            {
-                throw new RuntimeException("No content to process");
-            }
-            return Compiler.compile(globalContext, this.deploymentMode, identity.getName(), null, modelProcessParameter);
-        }
-        else if (context instanceof PureModelContextConcrete)
-        {
-            return Compiler.compile(this.loadData(context, clientVersion, identity), this.deploymentMode, identity.getName(), null, modelProcessParameter);
-        }
-        else
-        {
-            throw new EngineException(context.getClass().getSimpleName() + " is not supported yet");
+            scope.span().setTag("context", context.getClass().getSimpleName());
+            return loadModelOrData(context, clientVersion, identity, pureModelContextCache, p -> p);
         }
     }
 
@@ -142,25 +118,56 @@ public class ModelManager
         return Compiler.getLambdaReturnType(lambda, result);
     }
 
-    // Remove clientVersion
-    public PureModelContextData loadData(PureModelContext context, String clientVersion, Identity identity)
+
+    private <T> T loadModelOrData(PureModelContext context, String clientVersion, Identity identity, Cache<PureModelContext, T> pointerCache, Function<PureModelContextData, T> mayCompileFunction)
+    {
+        if (context instanceof PureModelContextPointer)
+        {
+            return resolvePointerAndCache((PureModelContextPointer) context, identity, pointerCache, cacheKey -> mayCompileFunction.apply(this.loadModelDataFromStorage(cacheKey, clientVersion, identity)));
+        }
+        else if (context instanceof PureModelContextCombination)
+        {
+            Pair<MutableList<PureModelContextData>, MutableList<PureModelContextPointer>> concreteVsPointer = recursivelyDiscriminateDataAndPointersLeaves((PureModelContextCombination) context);
+            MutableList<PureModelContextData> concretes = concreteVsPointer.getOne();
+            MutableList<PureModelContextPointer> pointers = concreteVsPointer.getTwo();
+            PureModelContextData globalContext;
+            if (!pointers.isEmpty())
+            {
+                PureModelContextData initial = resolvePointerAndCache(pointers.get(0), identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion, identity));
+                PureModelContextData aggregated = pointers.subList(1, pointers.size()).injectInto(initial, (a, b) -> a.combine(resolvePointerAndCache(b, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion, identity))));
+                globalContext = concretes.injectInto(aggregated, (a, b) -> a.combine(b));
+            }
+            else if (!concretes.isEmpty())
+            {
+                globalContext = concretes.subList(1, concretes.size()).injectInto(concretes.get(0), (a, b) -> a.combine(b));
+            }
+            else
+            {
+                throw new RuntimeException("No content to process");
+            }
+            return mayCompileFunction.apply(globalContext);
+        }
+        else if (context instanceof PureModelContextConcrete)
+        {
+            return mayCompileFunction.apply(transformToData((PureModelContextConcrete) context));
+        }
+        else
+        {
+            throw new EngineException(context.getClass().getSimpleName() + " is not supported yet");
+        }
+    }
+
+
+    private PureModelContextData loadModelDataFromStorage(PureModelContext context, String clientVersion, Identity identity)
     {
         try (Scope scope = tracer.buildSpan("Load Model").startActive(true))
         {
             scope.span().setTag("context", context.getClass().getSimpleName());
-            if (context instanceof PureModelContextConcrete)
-            {
-                return resolve((PureModelContextConcrete) context);
-            }
-            else
-            {
-                ModelLoader loader = this.modelLoaderForContext(context);
-                return loader.load(identity, context, clientVersion, scope.span());
-            }
+            return this.modelLoaderForContext(context).load(identity, context, clientVersion, scope.span());
         }
     }
 
-    public PureModelContextData resolve(PureModelContextConcrete context)
+    private PureModelContextData transformToData(PureModelContextConcrete context)
     {
         if (context instanceof PureModelContextData)
         {
@@ -176,14 +183,7 @@ public class ModelManager
         }
     }
 
-    public ModelLoader modelLoaderForContext(PureModelContext context)
-    {
-        MutableList<ModelLoader> loaders = modelLoaders.select(loader -> loader.supports(context));
-        Assert.assertTrue(loaders.size() == 1, () -> "Didn't find a model loader for " + context.getClass().getSimpleName());
-        return loaders.get(0);
-    }
-
-    private Pair<MutableList<PureModelContextData>, MutableList<PureModelContextPointer>> discriminate(PureModelContextCombination context)
+    private Pair<MutableList<PureModelContextData>, MutableList<PureModelContextPointer>> recursivelyDiscriminateDataAndPointersLeaves(PureModelContextCombination context)
     {
         MutableList<PureModelContextData> concrete = Lists.mutable.empty();
         MutableList<PureModelContextPointer> pointers = Lists.mutable.empty();
@@ -191,7 +191,7 @@ public class ModelManager
         {
             if (x instanceof PureModelContextConcrete)
             {
-                concrete.add(resolve((PureModelContextConcrete) x));
+                concrete.add(transformToData((PureModelContextConcrete) x));
             }
             else if (x instanceof PureModelContextPointer)
             {
@@ -199,7 +199,7 @@ public class ModelManager
             }
             else if (x instanceof PureModelContextCombination)
             {
-                Pair<MutableList<PureModelContextData>, MutableList<PureModelContextPointer>> res = discriminate((PureModelContextCombination) x);
+                Pair<MutableList<PureModelContextData>, MutableList<PureModelContextPointer>> res = recursivelyDiscriminateDataAndPointersLeaves((PureModelContextCombination) x);
                 concrete.addAll(res.getOne());
                 pointers.addAll(res.getTwo());
             }
@@ -211,7 +211,7 @@ public class ModelManager
         return Tuples.pair(concrete, pointers);
     }
 
-    private <T> T manage(PureModelContextPointer context, Identity identity, Cache<PureModelContext, T> cache, Function<PureModelContext, T> resolver)
+    private <Z> Z resolvePointerAndCache(PureModelContextPointer context, Identity identity, Cache<PureModelContext, Z> cache, Function<PureModelContext, Z> resolver)
     {
         ModelLoader loader = this.modelLoaderForContext(context);
         if (loader.shouldCache(context))
@@ -229,4 +229,10 @@ public class ModelManager
         return resolver.apply(context);
     }
 
+    private ModelLoader modelLoaderForContext(PureModelContext context)
+    {
+        MutableList<ModelLoader> loaders = modelLoaders.select(loader -> loader.supports(context));
+        Assert.assertTrue(loaders.size() == 1, () -> "Didn't find a model loader for " + context.getClass().getSimpleName());
+        return loaders.get(0);
+    }
 }
