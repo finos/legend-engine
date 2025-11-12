@@ -121,7 +121,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='to_date(%s,%s)')),
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimal()})),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
-    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as int)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as bigint)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 7 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
@@ -350,6 +350,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::translateCreateTableStatementForDatabricks(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   // pct databricks does not support constraint on tables until we get unity catalog enabled...
-  translateCreateTableStatementDefault(^$createTableSQL(applyConstraints = false), $dbConfig);
-}
+  let createStatement = translateCreateTableStatementDefault(^$createTableSQL(applyConstraints = false), $dbConfig);
+  let updatedCreateStatement = $createStatement->replace(';', '');
 
+  // Enable column mapping on tables to allow whitespace characters in column names
+  let tableProps = ' TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );';
+
+  // Concat the original create table statement with the column mapping table properties
+  let combinedStatement = $updatedCreateStatement + $tableProps;
+  [$combinedStatement];
+}
