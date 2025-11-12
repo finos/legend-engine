@@ -23,12 +23,36 @@ import meta::relational::tests::model::simple::*;
 Class meta::relational::tests::projection::exists::MyClass
 {
    name : String[1];
+   functions : ClassFunction[*];
+
    hasMatchingDependencies(){$this.dependencies->exists(d|$d.name == 'name2')}:Boolean[1];
+   hasPrivateFunction(){$this.functions->exists(f|$f.fnScope->subType(@meta::relational::tests::projection::exists::Public).id->isNotEmpty())}:Boolean[1];
+   hasPublicFunction(){$this.functions->exists(f|$f.fnScope->subType(@meta::relational::tests::projection::exists::Private).id->isNotEmpty())}:Boolean[1];
 }
 
 Class meta::relational::tests::projection::exists::Dependency
 {
     name : String[1];
+}
+
+Class meta::relational::tests::projection::exists::ClassFunction
+{
+    name : String[1];
+    fnScope : FunctionScope[1];
+}
+
+Class meta::relational::tests::projection::exists::FunctionScope
+{
+}
+
+Class meta::relational::tests::projection::exists::Private extends meta::relational::tests::projection::exists::FunctionScope
+{
+    id : Integer[1];
+}
+
+Class meta::relational::tests::projection::exists::Public extends meta::relational::tests::projection::exists::FunctionScope
+{
+    id : Integer[1];
 }
 
 Association meta::relational::tests::projection::exists::A
@@ -88,6 +112,16 @@ function <<test.Test>> meta::relational::tests::projection::exists::testExistsAs
    assertEquals('select "dep_0".otherFilter is not null and "dep_0".mainId is not null as "prop" from main as "root" left outer join (select distinct "dep_1".mainId, "dep_1".otherFilter from dep as "dep_1" where "dep_1".otherFilter = 2 and "dep_1".name = \'name2\') as "dep_0" on ("root".id = "dep_0".mainId and "root".name = \'name3\' and "dep_0".otherFilter = 2) where "root".name = \'name3\'', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::projection::exists::testExistsAsNullWithSubType():Boolean[1]
+{
+   let result = execute(|MyClass.all()->project([p|$p.hasPrivateFunction, p|$p.hasPublicFunction], ['hasPrivateFn', 'hasPublicFn']),
+                         meta::relational::tests::projection::exists::mappingForMultipleSubTypes,
+                        testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values.rows, 3);
+   assertSameElements([false, false, true], $result.values.rows->map(r | $r.values->at(0)));
+   assertEquals('select "fn_0".classId is not null as "hasPrivateFn", "fn_2".classId is not null as "hasPublicFn" from main as "root" left outer join (select distinct "fn_1".classId from fn as "fn_1" left outer join publicFn as "publicfn_0" on ("publicfn_0".fnId = "fn_1".id) where "publicfn_0".id is not null) as "fn_0" on ("root".id = "fn_0".classId) left outer join (select distinct "fn_1".classId from fn as "fn_1" left outer join privateFn as "privatefn_0" on ("privatefn_0".fnId = "fn_1".id) where "privatefn_0".id is not null) as "fn_2" on ("root".id = "fn_2".classId)', $result->sqlRemoveFormatting());
+}
+
 
 function <<test.BeforePackage>> meta::relational::tests::projection::exists::setUp():Boolean[1]
 {
@@ -116,6 +150,30 @@ function <<test.BeforePackage>> meta::relational::tests::projection::exists::set
    executeInDb('insert into dep (id, mainId, name, otherFIlter) values (5, 3, \'name1\', 0);', $connection);
    executeInDb('insert into dep (id, mainId, name, otherFIlter) values (6, 3, \'name2\', 2);', $connection);
    executeInDb('insert into dep (id, mainId, name, otherFIlter) values (7, 3, \'name3\', 0);', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'fn', $connection);
+
+   executeInDb('insert into fn (id, name, classId) values (1, \'name1\', 0);', $connection);
+   executeInDb('insert into fn (id, name, classId) values (2, \'name2\', 0);', $connection);
+   executeInDb('insert into fn (id, name, classId) values (3, \'name3\', 0);', $connection);
+   executeInDb('insert into fn (id, name, classId) values (4, \'name4\', 1);', $connection);
+   executeInDb('insert into fn (id, name, classId) values (5, \'name5\', 1);', $connection);
+   executeInDb('insert into fn (id, name, classId) values (6, \'name6\', 2);', $connection);
+   executeInDb('insert into fn (id, name, classId) values (7, \'name7\', 3);', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'privateFn', $connection);
+
+   executeInDb('insert into privateFn (id, fnId) values (1, 1);', $connection);
+   executeInDb('insert into privateFn (id, fnId) values (2, 2);', $connection);
+   executeInDb('insert into privateFn (id, fnId) values (5, 5);', $connection);
+   executeInDb('insert into privateFn (id, fnId) values (6, 6);', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'publicFn', $connection);
+
+   executeInDb('insert into publicFn (id, fnId) values (1, 1);', $connection);
+   executeInDb('insert into publicFn (id, fnId) values (2, 2);', $connection);
+   executeInDb('insert into publicFn (id, fnId) values (3, 3);', $connection);
+   executeInDb('insert into publicFn (id, fnId) values (7, 7);', $connection);
 
    true;
 
@@ -193,14 +251,49 @@ Mapping meta::relational::tests::projection::exists::mappingWithFilterAndWrongJo
                 }
 )
 
+###Mapping
+import meta::relational::tests::projection::exists::*;
+
+Mapping meta::relational::tests::projection::exists::mappingForMultipleSubTypes
+(
+   MyClass : Relational
+             {
+                 name : [db]main.name,
+                 functions[map1] : [db]@classFnJoin
+             }
+
+   ClassFunction[map1] : Relational
+                         {
+                             name : [db]fn.name,
+                             fnScope[map2] : [db]@privateFnJoin,
+                             fnScope[map3] : [db]@publicFnJoin
+                         }
+    
+   Private[map2] : Relational
+                   {
+                       id : [db]privateFn.id
+                   }
+
+   Public[map3] : Relational
+                   {
+                       id : [db]publicFn.id
+                   }
+)
+
 ###Relational
 Database meta::relational::tests::projection::exists::db
 (
    Table main(id INT PRIMARY KEY , name VARCHAR(100))
    Table mainDenorm(id INT PRIMARY KEY , name VARCHAR(100), depName VARCHAR(200))
    Table dep(id INT PRIMARY KEY , mainId INT, name VARCHAR(200), otherFilter INT)
+   Table fn(id INT PRIMARY KEY, name VARCHAR(200), classId INT)
+   Table privateFn(id INT PRIMARY KEY, fnId INT)
+   Table publicFn(id INT PRIMARY KEY, fnId INT)
    Join join(main.id = dep.mainId)
    Join wrongJoin(main.id = dep.mainId and main.name = 'name3' and dep.otherFilter=2)
+   Join classFnJoin(main.id = fn.classId)
+   Join privateFnJoin(privateFn.fnId = fn.id)
+   Join publicFnJoin(publicFn.fnId = fn.id)
    Filter f1(main.name = 'name3')
    Filter f2(dep.otherFilter = 2)
 )

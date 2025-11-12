@@ -5293,7 +5293,7 @@ function meta::relational::functions::pureToSqlQuery::buildExistsAsJoinWithNullC
 
          let newJoinOperation = $oldJoin.operation->andFilters($extensions)->reprocessAliases($oldToNewAlias);
 
-         let newJoin = ^$oldJoin(name=$oldJoin.name + $existsSubSelect.data.alias.relation->buildUniqueName(false, $extensions) + '_ecq',operation=$newJoinOperation->toOne()->cast(@Operation))->reprocessJoin($oldToNewAlias, []);
+         let newJoin = ^$oldJoin(name=$oldJoin.name + $existsSubSelect.data->buildUniqueName(false, $extensions) + '_ecq',operation=$newJoinOperation->toOne()->cast(@Operation))->reprocessJoin($oldToNewAlias, []);
 
          let newChildNode = ^$childNode(alias=$targetAlias,join=$newJoin,childrenData=[]);
 
