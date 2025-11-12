@@ -9,7 +9,7 @@ Execution engine for Legend. It provides:
 - An execution engine, generating and/or executing execution plans when provided with a Pure function, a Mapping and a Runtime.
 - Access point for model transformers written using the Pure language (soon to come).
 
-## Development setup
+## Development setup 
 
 - This application uses Maven 3.6+ and JDK 11. Run `mvn install` to compile.
 - To start the server, please use the `Main` class `org.finos.legend.engine.server.Server` with the parameters: `server legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json`.
