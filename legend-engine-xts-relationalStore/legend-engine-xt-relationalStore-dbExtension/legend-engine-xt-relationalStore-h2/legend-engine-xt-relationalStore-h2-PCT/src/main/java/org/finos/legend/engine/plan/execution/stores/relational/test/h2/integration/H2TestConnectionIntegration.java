@@ -42,7 +42,7 @@ public class H2TestConnectionIntegration implements TestConnectionIntegration, T
     @Override
     public void setup() throws Exception
     {
-        this.h2Server = AlloyH2Server.startServer(0);
+        this.h2Server = AlloyH2Server.startServer();
     }
 
     @Override
