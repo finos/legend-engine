@@ -35,8 +35,8 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     private boolean isExecuted;
     private int maxRows;
     private LegendResultSet legendResultSet;
-    private String database;
-    private String options;
+    private final String database;
+    private final String options;
 
     public LegendPreparedStatement(String query, LegendExecution client, String database, String options, Identity identity)
     {

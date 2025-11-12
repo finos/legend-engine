@@ -30,11 +30,15 @@ public class LegendStatement implements PostgresStatement
     private LegendExecution client;
     private LegendResultSet legendResultSet;
     private Identity identity;
+    private final String database;
+    private final String options;
 
-    public LegendStatement(LegendExecution client, Identity identity)
+    public LegendStatement(LegendExecution client, String database, String options, Identity identity)
     {
         this.client = client;
         this.identity = identity;
+        this.database = database;
+        this.options = options;
     }
 
     @Override
@@ -57,7 +61,7 @@ public class LegendStatement implements PostgresStatement
 
     private boolean executePrivate(String query)
     {
-        legendResultSet = new LegendResultSet(client.executeQuery(query, null, null));
+        legendResultSet = new LegendResultSet(client.executeQuery(query, database, options));
         return true;
     }
 
