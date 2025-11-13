@@ -28,6 +28,13 @@ public class GraphQLProdMappingRuntimeCacheKey extends GraphQLProdCacheKey
         this.runtimePath = runtimePath;
     }
 
+    public GraphQLProdMappingRuntimeCacheKey(String groupID, String artifactId, String versionId, String mappingPath, String runtimePath, String bindingPath, String queryClassPath, String query, String variables)
+    {
+        super(groupID, artifactId, versionId, queryClassPath, query, variables, bindingPath);
+        this.mappingPath = mappingPath;
+        this.runtimePath = runtimePath;
+    }
+
     @Override
     public boolean equals(Object o)
     {

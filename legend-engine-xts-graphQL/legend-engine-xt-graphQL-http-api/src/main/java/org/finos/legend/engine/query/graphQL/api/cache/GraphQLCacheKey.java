@@ -23,4 +23,8 @@ public interface GraphQLCacheKey
         String getRuntimePath();
 
         String getProjectBasePath();
+
+        String getVariables();
+        
+        String getBindingPath();
     }

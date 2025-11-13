@@ -213,7 +213,7 @@ public class GraphQLExecutionHelper
                 @Override
                 public Boolean visit(OperationDefinition val)
                 {
-                    return val.type == OperationType.query;
+                    return val.type == OperationType.query || val.type == OperationType.mutation;
                 }
 
                 @Override

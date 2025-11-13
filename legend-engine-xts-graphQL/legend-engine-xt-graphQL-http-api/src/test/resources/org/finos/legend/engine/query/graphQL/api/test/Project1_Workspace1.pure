@@ -48,6 +48,7 @@ Class simple::model::Query
 Class simple::model::Firm
 {
   legalName: String[1];
+  id       : Integer[1];
 }
 
 Class simple::model::Person
@@ -75,6 +76,15 @@ Association simple::model::Firm_Employees
 {
     employees: Person[*];
     employer: Firm[0..1];
+}
+
+###ExternalFormat
+Binding simple::binding::Firm_Binding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    simple::model::Firm
+  ];
 }
 
 ###Relational
@@ -143,6 +153,7 @@ Mapping simple::mapping::Map
   Firm : Relational
   {
     legalName: [DB]FIRM_TABLE.LEGAL_NAME,
+    id: [DB]FIRM_TABLE.ID,
     employees: [DB]@PERSON_FIRM
   }
 

@@ -23,6 +23,8 @@ public abstract class GraphQLProdCacheKey implements GraphQLCacheKey
     protected String versionId;
     protected String queryClassPath;
     protected String query;
+    protected String variables;
+    protected String bindingPath;
 
     public GraphQLProdCacheKey(String groupID, String artifactId, String versionId, String queryClassPath, String query)
     {
@@ -31,6 +33,13 @@ public abstract class GraphQLProdCacheKey implements GraphQLCacheKey
         this.versionId = versionId;
         this.queryClassPath = queryClassPath;
         this.query = query;
+    }
+
+    public GraphQLProdCacheKey(String groupID, String artifactId, String versionId, String queryClassPath, String query, String variables, String bindingPath)
+    {
+        this(groupID, artifactId, versionId, queryClassPath, query);
+        this.variables = variables;
+        this.bindingPath = bindingPath;
     }
 
     @Override
@@ -80,5 +89,15 @@ public abstract class GraphQLProdCacheKey implements GraphQLCacheKey
     public String getProjectBasePath()
     {
         return String.format("%s:%s:%s", groupID, artifactId, versionId);
+    }
+
+    public String getVariables()
+    {
+        return variables;
+    }
+
+    public String getBindingPath()
+    {
+        return bindingPath;
     }
 }
