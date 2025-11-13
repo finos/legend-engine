@@ -1,0 +1,62 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::external::query::sql::server::schema::*;
+
+Class meta::external::query::sql::server::schema::AddressableRelation
+{
+  tableFunctionName: String[1];
+  packageableElement : String[1];
+  pathWithinElement : String[*];
+  relationType : meta::protocols::pure::vX_X_X::metamodel::m3::relation::RelationType[1];
+}
+
+Class meta::external::query::sql::server::schema::AddressableRelationCollection
+{
+  addressableRelations : meta::external::query::sql::server::schema::AddressableRelation[*];
+}
+
+function meta::external::query::sql::server::schema::transform(p:PackageableElement[*]):AddressableRelationCollection[1]
+{
+  ^AddressableRelationCollection
+  (
+      addressableRelations = $p->map(a|$a->transformOne())
+  )
+}
+
+function meta::external::query::sql::server::schema::transformOne(p:PackageableElement[1]):AddressableRelation[*]
+{
+  $p->match(
+    meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraSchemaTransformers->concatenate(
+      d:Database[1]| let dbPath = $d->elementToPath();
+                     $d.schemas.tables->map(t|
+                                      let path = $t.name;
+                                      ^AddressableRelation
+                                      (
+                                          tableFunctionName='tb',
+                                          packageableElement=$dbPath,
+                                          pathWithinElement=$path,
+                                          relationType=compileValueSpecification('#>{'+$dbPath+'.'+$t.name->joinStrings('.')+'}#')
+                                                      .result.genericType.typeArguments.rawType
+                                                      ->cast(@RelationType<Any>)->toOne()
+                                                      ->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformRelationType()
+                                      );
+                                  );      
+    )->toOneMany()    
+  )
+}
+

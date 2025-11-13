@@ -132,6 +132,7 @@ import org.finos.legend.engine.query.pure.api.Execute;
 import org.finos.legend.engine.query.sql.api.SQLExecutor;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecute;
 import org.finos.legend.engine.query.sql.api.grammar.SqlGrammar;
+import org.finos.legend.engine.query.sql.api.schema.SqlSchema;
 import org.finos.legend.engine.query.sql.providers.LegendServiceSQLSourceProvider;
 import org.finos.legend.engine.query.sql.providers.RelationalStoreSQLSourceProvider;
 import org.finos.legend.engine.query.sql.providers.shared.FunctionSQLSourceProvider;
@@ -407,6 +408,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
                 new LegendServiceSQLSourceProvider(projectCoordinateLoader)),
                 generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers))));
         environment.jersey().register(new SqlGrammar());
+        environment.jersey().register(new SqlSchema(modelManager));
 
         // Service
         environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode, planExecutor));

@@ -138,21 +138,26 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
    );
 }
 
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformRelationType(rel:meta::pure::metamodel::relation::RelationType<Any>[1]):meta::protocols::pure::vX_X_X::metamodel::m3::relation::RelationType[1]
+{
+    ^meta::protocols::pure::vX_X_X::metamodel::m3::relation::RelationType
+    (
+      _type='relationType',
+      columns=$rel.columns->map(c |
+            ^meta::protocols::pure::vX_X_X::metamodel::m3::relation::Column
+            (
+                name = $c.name->toOne(),
+                genericType = $c.classifierGenericType.typeArguments->at(1)->transformGenericType(),
+                multiplicity = $c.classifierGenericType.multiplicityArguments->at(0)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
+            )
+        )
+    )
+}
+
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType(genericType:GenericType[1]):meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[1]
 {
     let rawType = $genericType.rawType->match([
-        rel: meta::pure::metamodel::relation::RelationType<Any>[1] | ^meta::protocols::pure::vX_X_X::metamodel::m3::relation::RelationType
-                               (
-                                 _type='relationType',
-                                 columns=$rel.columns->map(c |
-                                        ^meta::protocols::pure::vX_X_X::metamodel::m3::relation::Column
-                                        (
-                                            name = $c.name->toOne(),
-                                            genericType = $c.classifierGenericType.typeArguments->at(1)->transformGenericType(),
-                                            multiplicity = $c.classifierGenericType.multiplicityArguments->at(0)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
-                                        )
-                                    )
-                               ),
+        rel: meta::pure::metamodel::relation::RelationType<Any>[1] | $rel->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformRelationType(),
         type: Type[1] | ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType
                         (
                           _type='packageableType',
