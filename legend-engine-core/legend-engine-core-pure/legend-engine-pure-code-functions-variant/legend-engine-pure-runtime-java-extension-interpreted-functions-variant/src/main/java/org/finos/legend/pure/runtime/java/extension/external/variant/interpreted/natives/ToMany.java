@@ -22,22 +22,23 @@ import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.variant.VariantInstanceImpl;
+import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 
 public class ToMany extends AbstractTo
 {
     public ToMany(FunctionExecutionInterpreted exec, ModelRepository repository)
     {
-        super(repository);
+        super(exec, repository);
     }
 
     @Override
-    Iterable<? extends CoreInstance> toCoreInstances(VariantInstanceImpl variantCoreInstance, CoreInstance targetGenericType, MutableStack<CoreInstance> functionExpressionCallStack, ProcessorSupport processorSupport)
+    Iterable<? extends CoreInstance> toCoreInstances(VariantInstanceImpl variantCoreInstance, CoreInstance targetGenericType, MutableStack<CoreInstance> functionExpressionCallStack, ExecutionSupport executionSupport, ProcessorSupport processorSupport)
     {
         JsonNode jsonNode = variantCoreInstance.getJsonNode();
         if (jsonNode.isArray())
         {
-            return Iterate.collect(jsonNode, x -> toCoreInstance(x, targetGenericType, functionExpressionCallStack, processorSupport));
+            return Iterate.collect(jsonNode, x -> toCoreInstance(x, targetGenericType, functionExpressionCallStack, executionSupport, processorSupport));
         }
         else
         {

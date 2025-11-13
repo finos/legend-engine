@@ -95,7 +95,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
 function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], extensions:Extension[*]):X[o]
 {
-    let debug = noDebug();
+    let debug = debug();
 
     let repocessed = $f->meta::relational::tests::pct::process::reprocess($dbc, $debug);
     let newFunction = $repocessed.first;
@@ -556,32 +556,17 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
                           let i = $ix->evaluateAndDeactivate();
                           let type = $i.genericType.rawType->toOne();
                           let hasClass = $i.values->find(x|$x->instanceOf(Class))->isNotEmpty();
-                          // Nil is for Empty Sets, Any is currently for collection of primitives of different types (may create an issue if we have classes of different types)
-                          if ($type->instanceOf(Class) && !$type->subTypeOf(Function) && !$type->in([Any, Nil, TDS, Enumeration, ColSpec, ColSpecArray, FuncColSpec, FuncColSpecArray, AggColSpec, AggColSpecArray, SortInfo, _Window, Map, List, Pair, Variant, meta::pure::metamodel::relation::Relation]),
-                              |
-                                // Process class
-                                let values = $i.values->map(
-                                    x|$x->match([
-                                                  v:ValueSpecification[1]|$v->reactivate()->evaluateAndDeactivate(),
-                                                  a:Any[1]|$a
-                                                ]
-                                          )
-                                );
-                                meta::relational::tests::pct::process::reprocessNew($values, $type->cast(@Class<Any>), $state);,
-                              |
-                                // Primitive pass through
-                                let repro = $i.values->map(x|$x->reprocess($state));
-                                ^$state
-                                (
-                                  current = ^$i
-                                            (
-                                              genericType = if($repro.current->isEmpty(),|$i.genericType, |$repro.current->genericType()),
-                                              values = $repro.current
-                                            ),
-                                  mapping = $repro.mapping->first(),
-                                  replaced = $repro.replaced,
-                                  csvs = $repro.csvs
-                                );
+                          let repro = $i.values->map(x|$x->reprocess($state));
+                          ^$state
+                          (
+                            current = ^$i
+                                      (
+                                        genericType = if($repro.current->isEmpty(),|$i.genericType, |$repro.current->genericType()),
+                                        values = $repro.current
+                                      ),
+                            mapping = $repro.mapping->first(),
+                            replaced = $repro.replaced,
+                            csvs = $repro.csvs
                           );,
       z:LambdaFunction<Any>[1] | let repro = $z.expressionSequence->evaluateAndDeactivate()->map(z|$z->reprocess($state));
                                  ^$state

@@ -27,6 +27,7 @@ import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.pure.m3.compiler.Context;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionCoreInstanceWrapper;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.*;
 import org.finos.legend.pure.m3.navigation.generictype.GenericType;
@@ -34,18 +35,22 @@ import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.variant.VariantInstanceImpl;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
+import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.MapCoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.natives.NativeFunction;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
+import org.finos.legend.pure.runtime.java.interpreted.profiler.VoidProfiler;
 
 public abstract class AbstractTo extends NativeFunction
 {
+    private final FunctionExecutionInterpreted exec;
     private final ModelRepository repository;
 
-    public AbstractTo(ModelRepository repository)
+    public AbstractTo(FunctionExecutionInterpreted exec, ModelRepository repository)
     {
+        this.exec = exec;
         this.repository = repository;
     }
 
@@ -57,15 +62,15 @@ public abstract class AbstractTo extends NativeFunction
         CoreInstance targetGenericType = Instance.getValueForMetaPropertyToOneResolved(typeParameter, M3Properties.genericType, processorSupport);
 
         RichIterable<? extends CoreInstance> values = Instance.getValueForMetaPropertyToManyResolved(variantCoreInstance, M3Properties.values, processorSupport)
-                .flatCollect(x -> this.toCoreInstances((VariantInstanceImpl) x, targetGenericType, functionExpressionCallStack, processorSupport))
+                .flatCollect(x -> this.toCoreInstances((VariantInstanceImpl) x, targetGenericType, functionExpressionCallStack, executionSupport, processorSupport))
                 .select(Objects::nonNull);
 
         return ValueSpecificationBootstrap.wrapValueSpecification(values, true, targetGenericType, processorSupport);
     }
 
-    abstract Iterable<? extends CoreInstance> toCoreInstances(VariantInstanceImpl variantCoreInstance, CoreInstance targetGenericType, MutableStack<CoreInstance> functionExpressionCallStack, ProcessorSupport processorSupport);
+    abstract Iterable<? extends CoreInstance> toCoreInstances(VariantInstanceImpl variantCoreInstance, CoreInstance targetGenericType, MutableStack<CoreInstance> functionExpressionCallStack, ExecutionSupport executionSupport, ProcessorSupport processorSupport);
 
-    CoreInstance toCoreInstance(JsonNode jsonNode, CoreInstance targetGenericType, MutableStack<CoreInstance> functionExpressionCallStack, ProcessorSupport processorSupport)
+    CoreInstance toCoreInstance(JsonNode jsonNode, CoreInstance targetGenericType, MutableStack<CoreInstance> functionExpressionCallStack, ExecutionSupport executionSupport, ProcessorSupport processorSupport)
     {
         CoreInstance targetRawType = Instance.getValueForMetaPropertyToOneResolved(targetGenericType, M3Properties.rawType, processorSupport);
 
@@ -87,7 +92,7 @@ public abstract class AbstractTo extends NativeFunction
             {
                 CoreInstance listValueGenericType = Instance.getValueForMetaPropertyToOneResolved(targetGenericType, M3Properties.typeArguments, processorSupport);
 
-                Iterable<CoreInstance> values = Iterate.collect(jsonNode, x -> this.toCoreInstance(x, listValueGenericType, functionExpressionCallStack, processorSupport));
+                Iterable<CoreInstance> values = Iterate.collect(jsonNode, x -> this.toCoreInstance(x, listValueGenericType, functionExpressionCallStack, executionSupport, processorSupport));
 
                 CoreInstance listCoreInstance = processorSupport.newEphemeralAnonymousCoreInstance(M3Paths.List);
                 Instance.addValueToProperty(listCoreInstance, M3Properties.values, values, processorSupport);
@@ -115,7 +120,7 @@ public abstract class AbstractTo extends NativeFunction
                     Map.Entry<String, JsonNode> entry = it.next();
                     internalMap.put(
                             this.repository.newStringCoreInstance(entry.getKey()),
-                            this.toCoreInstance(entry.getValue(), mapValueGenericType, functionExpressionCallStack, processorSupport)
+                            this.toCoreInstance(entry.getValue(), mapValueGenericType, functionExpressionCallStack, executionSupport, processorSupport)
                     );
                 }
 
@@ -186,6 +191,26 @@ public abstract class AbstractTo extends NativeFunction
             else if (jsonNode.isTextual())
             {
                 return this.repository.newBooleanCoreInstance(jsonNode.textValue());
+            }
+
+            supportedTypeButWrongJson = true;
+        }
+        else if (processorSupport.instance_instanceOf(targetRawType, M3Paths.Class))
+        {
+            if (jsonNode.isObject())
+            {
+                CoreInstance desConfig = processorSupport.newAnonymousCoreInstance(functionExpressionCallStack.peek().getSourceInformation(), "meta::json::JSONDeserializationConfig");
+                Instance.setValueForProperty(desConfig, "typeKeyName", this.repository.newStringCoreInstance_cached("@type"), processorSupport);
+                Instance.setValueForProperty(desConfig, "failOnUnknownProperties", this.repository.newBooleanCoreInstance(false), processorSupport);
+
+                CoreInstance fromJsonToClassFunc = processorSupport.package_getByUserPath("meta::json::fromJson_String_1__Class_1__JSONDeserializationConfig_1__T_1_");
+                ListIterable<CoreInstance> arguments = Lists.fixedSize.of(
+                        ValueSpecificationBootstrap.wrapValueSpecification(this.repository.newStringCoreInstance(jsonNode.toString()), true, processorSupport),
+                        ValueSpecificationBootstrap.wrapValueSpecification(targetRawType, true, processorSupport),
+                        ValueSpecificationBootstrap.wrapValueSpecification(desConfig, true, processorSupport)
+                );
+                CoreInstance resultValue = this.exec.executeFunction(false, FunctionCoreInstanceWrapper.toFunction(fromJsonToClassFunc), arguments, new Stack<>(), new Stack<>(), VariableContext.newVariableContext(), functionExpressionCallStack, VoidProfiler.VOID_PROFILER, new InstantiationContext(), executionSupport);
+                return Instance.getValueForMetaPropertyToOneResolved(resultValue, M3Properties.values, processorSupport);
             }
 
             supportedTypeButWrongJson = true;
