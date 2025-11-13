@@ -45,7 +45,7 @@ public class AlloySDLCLoader
     {
         Assert.assertTrue(alloySDLC.project == null, () -> "Accessing metadata services using project id was demised.  Please update AlloySDLC to provide group and artifact IDs");
         Assert.assertTrue(alloySDLC.groupId != null && alloySDLC.artifactId != null, () -> "AlloySDLC info must contain and group and artifact IDs to access metadata services");
-        String version = isLatestRevision(alloySDLC) ? "master-SNAPSHOT" : alloySDLC.version;
+        String version = isLatestRevision(alloySDLC) ? "master-SNAPSHOT" : alloySDLC.version; // Seems this logic doesn't address latest for a branch
         return this.metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/versions/" + version + "/pureModelContextData?convertToNewProtocol=false&clientVersion=" + clientVersion;
     }
 
@@ -60,7 +60,7 @@ public class AlloySDLCLoader
 
     public boolean isLatestRevision(AlloySDLC alloySDLC)
     {
-        return alloySDLC.version == null || alloySDLC.version.equals("none") || alloySDLC.version.equals("master-SNAPSHOT");
+        return alloySDLC.version == null || alloySDLC.version.equals("none") || alloySDLC.version.contains("SNAPSHOT");
     }
 
     public PureModelContext getCacheKey(PureModelContext context)
