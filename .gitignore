@@ -9,6 +9,7 @@
 **/*.tokens
 **/*.patch
 **/*.DS_Store
+**/pom.xml.versionsBackup
 # for temporary files, user local data, configs, etc.
 /temp
 /duckdb*
