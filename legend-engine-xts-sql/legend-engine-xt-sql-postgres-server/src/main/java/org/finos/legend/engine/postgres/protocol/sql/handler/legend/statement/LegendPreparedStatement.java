@@ -106,7 +106,6 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     {
         isExecuted = true;
         if (identity.getFirstCredential() instanceof LegendKerberosCredential)
-
         {
             LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
             return Subject.doAs(credential.getSubject(), (PrivilegedAction<Boolean>) this::executePrivate);

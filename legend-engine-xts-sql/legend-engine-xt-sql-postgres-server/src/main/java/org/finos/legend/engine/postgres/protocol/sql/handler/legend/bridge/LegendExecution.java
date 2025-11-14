@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge;
 
+import org.finos.legend.engine.query.sql.api.schema.SchemaResult;
+
 import java.util.List;
 
 public interface LegendExecution
@@ -23,4 +25,6 @@ public interface LegendExecution
     LegendExecutionResult executeQuery(String query, String database, String options);
 
     boolean supports(String database);
+
+    SchemaResult getProjectSchema(String database);
 }

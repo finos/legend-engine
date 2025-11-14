@@ -22,6 +22,6 @@ public class AddressableRelation
 {
     public String tableFunctionName;
     public String packageableElement;
-    public List<String> pathWithElement;
+    public List<String> pathWithinElement;
     public RelationType relationType;
 }

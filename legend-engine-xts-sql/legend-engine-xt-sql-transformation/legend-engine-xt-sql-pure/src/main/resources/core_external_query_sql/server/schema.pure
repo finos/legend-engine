@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::external::query::sql::transformation::compile::utils::*;
 import meta::external::query::sql::*;
 import meta::pure::metamodel::relation::*;
 import meta::relational::metamodel::*;
@@ -38,24 +41,36 @@ function meta::external::query::sql::server::schema::transform(p:PackageableElem
   )
 }
 
+function meta::external::query::sql::server::schema::serialize(p:PackageableElement[1]):String[1]
+{
+  let config = meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration();
+  $p
+  ->scanDependencies([], meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraScanDependenciesType)
+  ->removeDuplicates({a,b|$a->elementToPath() == $b->elementToPath()})
+  ->map(x|$x->printPackageableElements($config))->joinStrings('\n');
+}
+
 function meta::external::query::sql::server::schema::transformOne(p:PackageableElement[1]):AddressableRelation[*]
 {
   $p->match(
     meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraSchemaTransformers->concatenate(
-      d:Database[1]| let dbPath = $d->elementToPath();
-                     $d.schemas.tables->map(t|
-                                      let path = $t.name;
-                                      ^AddressableRelation
-                                      (
-                                          tableFunctionName='tb',
-                                          packageableElement=$dbPath,
-                                          pathWithinElement=$path,
-                                          relationType=compileValueSpecification('#>{'+$dbPath+'.'+$t.name->joinStrings('.')+'}#')
-                                                      .result.genericType.typeArguments.rawType
-                                                      ->cast(@RelationType<Any>)->toOne()
-                                                      ->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformRelationType()
-                                      );
-                                  );      
+      [
+          d:Database[1]| let dbPath = $d->elementToPath();
+                         let dbStr = $d->serialize();
+                         $d.schemas.tables->map(t|
+                                          let path = $t.name;
+                                          let r = meta::legend::compile($dbStr+'\n###Pure\nfunction x::func():Any[1]{#>{'+$dbPath + '.' + $path->joinStrings('.')+'}#}');
+                                          let rType = $r->filter(x|$x.name == 'func__Any_1_')->toOne()->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate().genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>);
+                                          ^AddressableRelation
+                                          (
+                                              tableFunctionName='tb',
+                                              packageableElement=$dbPath,
+                                              pathWithinElement=$path,
+                                              relationType= $rType->transformRelationType()
+                                          );
+                                      );,
+          a:Any[1]|[]
+      ]
     )->toOneMany()    
   )
 }

@@ -25,7 +25,9 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.postgres.PostgresServerException;
@@ -59,7 +61,7 @@ public class SQLManager
 
     JDBCSessionHandler legendSessionHandler;
     MutableList<LegendExecution> clients;
-    CatalogManager catalogManager;
+    MutableMap<String, CatalogManager> catalogManagers = Maps.mutable.empty();
 
     public SQLManager(MutableList<LegendExecution> clients)
     {
@@ -119,8 +121,6 @@ public class SQLManager
             metadataJDBCSessionHandler.prepareStatement("CREATE DATABASE legend_m;").execute();
 
             this.legendSessionHandler = new JDBCSessionHandler("jdbc:postgresql://" + used_host + ":" + port + "/legend_m", "postgres", "");
-
-            this.catalogManager = new CatalogManager(legendSessionHandler);
         }
         catch (Exception e)
         {
@@ -140,7 +140,6 @@ public class SQLManager
                 }
             }
         }
-
         this.clients = clients;
     }
 
@@ -157,7 +156,8 @@ public class SQLManager
                     case Legend:
                         return new LegendPreparedStatement(query, findClient(clients, session.getDatabase(), session.getOptions()), session.getDatabase(), session.getOptions(), session.getIdentity());
                     case Metadata:
-                        String reprocessedQuery = SQLGrammarParser.getSqlBaseParser(query, "query").statement().accept(new SQLRewrite(session));
+                        CatalogManager catalogManager = this.catalogManagers.get(session.getIdentity().getName() + session.getDatabase());
+                        String reprocessedQuery = SQLGrammarParser.getSqlBaseParser(query, "query").statement().accept(new SQLRewrite(session, catalogManager));
                         logger.info("Executing reprocessed query: {}", reprocessedQuery);
                         return legendSessionHandler.prepareStatement(reprocessedQuery);
                     case TX:
@@ -225,5 +225,18 @@ public class SQLManager
             }
         }
         while (initializing);
+    }
+
+    public void buildCatalog(Session session)
+    {
+        String name = session.getIdentity().getName();
+        String database = session.getDatabase();
+        catalogManagers.getIfAbsentPut(name + database, () -> new CatalogManager(name, database, findClient(clients, session.getDatabase(), session.getOptions()), legendSessionHandler));
+    }
+
+    public void removeCatalog(String name, String database)
+    {
+//        CatalogManager cm = catalogManagers.remove(name + database);
+//        cm.close();
     }
 }

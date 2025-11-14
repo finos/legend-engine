@@ -29,6 +29,7 @@ import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.Legen
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.shared.LegendExecutionResultFromTds;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.shared.LegendTdsResultParser;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
+import org.finos.legend.engine.query.sql.api.schema.SchemaResult;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 import java.io.IOException;
@@ -97,6 +98,12 @@ public class LegendExecutionService implements LegendExecution
         {
             span.end();
         }
+    }
+
+    @Override
+    public SchemaResult getProjectSchema(String database)
+    {
+        return null;
     }
 
     @Override
