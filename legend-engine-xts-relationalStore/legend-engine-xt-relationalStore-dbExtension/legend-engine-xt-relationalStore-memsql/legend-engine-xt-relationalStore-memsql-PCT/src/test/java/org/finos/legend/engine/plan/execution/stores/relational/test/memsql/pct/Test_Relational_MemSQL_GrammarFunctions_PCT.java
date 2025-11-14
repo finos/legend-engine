@@ -151,17 +151,17 @@ public class Test_Relational_MemSQL_GrammarFunctions_PCT extends PCTReportConfig
 
             // Minus
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4D\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "\"\nexpected: 9223372036854775766\nactual:   <null instanceOf meta::pure::metamodel::type::Nil>\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "Match failure: null", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\"", AdapterQualifier.needsInvestigation),
 
             // Plus
             one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6D\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   <null instanceOf meta::pure::metamodel::type::Nil>\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "Match failure: null", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\"", AdapterQualifier.needsInvestigation),
 
             // Times
             one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\"\nexpected: 353791.470D\nactual:   353791.47\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   <null instanceOf meta::pure::metamodel::type::Nil>\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "Match failure: null", AdapterQualifier.needsInvestigation),
 
             // Plus (String)
             one("meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"", AdapterQualifier.needsInvestigation),
