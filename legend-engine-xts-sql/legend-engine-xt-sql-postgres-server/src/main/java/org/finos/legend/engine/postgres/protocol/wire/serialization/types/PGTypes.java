@@ -42,6 +42,7 @@ public class PGTypes
             .put(Types.BIT, BooleanType.INSTANCE)
             //.put(DataTypes.UNTYPED_OBJECT, JsonType.INSTANCE)
             //.put(RowType.EMPTY, RecordType.EMPTY_RECORD)
+            .put(Types.TINYINT, IntegerType.INSTANCE)
             .put(Types.SMALLINT, IntegerType.INSTANCE)
             .put(Types.INTEGER, IntegerType.INSTANCE)
             .put(Types.BIGINT, BigIntType.INSTANCE)

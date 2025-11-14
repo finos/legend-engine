@@ -231,7 +231,7 @@ public class SQLManager
     {
         String name = session.getIdentity().getName();
         String database = session.getDatabase();
-        catalogManagers.getIfAbsentPut(name + database, () -> new CatalogManager(name, database, findClient(clients, session.getDatabase(), session.getOptions()), legendSessionHandler));
+        catalogManagers.getIfAbsentPut(name + database, () -> new CatalogManager(session.getIdentity(), database, findClient(clients, session.getDatabase(), session.getOptions()), legendSessionHandler));
     }
 
     public void removeCatalog(String name, String database)

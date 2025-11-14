@@ -32,7 +32,11 @@ import org.finos.legend.engine.postgres.protocol.wire.serialization.types.PGType
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.query.sql.api.schema.AddressableRelation;
 import org.finos.legend.engine.query.sql.api.schema.SchemaResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 
+import javax.security.auth.Subject;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -43,54 +47,77 @@ public class CatalogManager
     private static AtomicInteger counter = new AtomicInteger(0);
     private final int id;
 
-    public CatalogManager(String name, String database, LegendExecution legendExecution, JDBCSessionHandler legendSessionHandler)
+    public CatalogManager(Identity identity, String database, LegendExecution legendExecution, JDBCSessionHandler legendSessionHandler)
     {
         id = counter.incrementAndGet();
-        SchemaResult result = legendExecution.getProjectSchema(database);
-        MutableMap<String, List<String>> types = Maps.mutable.empty();
-        result.typeInheritances.forEach(x ->
+        SchemaResult result;
+        if (identity.getFirstCredential() instanceof LegendKerberosCredential)
         {
-            types.put(x.type, x.linearizedInheritance);
-        });
-
-        try
-        {
-            // Prepare
-            legendSessionHandler.prepareStatement("CREATE SCHEMA metadata_" + id + ";").execute();
-            legendSessionHandler.prepareStatement("CREATE TABLE metadata_" + id + ".database as select oid, * from pg_catalog.pg_database where 1 = 0;").execute();
-            legendSessionHandler.prepareStatement("CREATE TABLE metadata_" + id + ".namespace as select oid, * from pg_catalog.pg_namespace where nspname='pg_catalog';").execute();
-            legendSessionHandler.prepareStatement("CREATE TABLE metadata_" + id + ".class as select oid, * from pg_catalog.pg_class;").execute();
-            legendSessionHandler.prepareStatement("CREATE TABLE metadata_" + id + ".attribute as select * from pg_catalog.pg_attribute;").execute();
-            legendSessionHandler.prepareStatement("CREATE TABLE metadata_" + id + ".proc as select oid,* from pg_catalog.pg_proc where 0 = 1;").execute();
-
-            Database db = new Database(database);
-
-            MutableListMultimap<String, AddressableRelation> grouped = ListIterate.groupBy(result.addressableRelations, x -> x.packageableElement);
-
-            for (String key : grouped.keySet())
-            {
-                Schema schema = db.schema(new Schema(key.replace("::", "_")));
-
-                schema.tables(
-                        ListIterate.collect(grouped.get(key), z ->
-                                {
-                                    Table tb = new Table(z.tableFunctionName + "_" + Lists.mutable.withAll(z.pathWithinElement).makeString("."));
-                                    tb.columns(ListIterate.collect(z.relationType.columns, p ->
-                                    {
-                                        int sqlType = TypeConversion._typeConversions.get(ListIterate.detect(types.get(((PackageableType) p.genericType.rawType).fullPath), v -> TypeConversion._typeConversions.get(v) != null));
-                                        return new Column(p.name, SQL_TO_PG_TYPES.get(sqlType));
-                                    }));
-                                    return tb;
-                                }
-                        )
-                );
-            }
-
-            create(db, legendSessionHandler);
+            LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
+            result = Subject.doAs(credential.getSubject(), (PrivilegedAction<SchemaResult>) () -> legendExecution.getProjectSchema(database));
         }
-        catch (Exception e)
+        else
         {
-            throw new RuntimeException(e);
+            result = legendExecution.getProjectSchema(database);
+        }
+
+        if (result != null)
+        {
+            MutableMap<String, List<String>> types = Maps.mutable.empty();
+            result.typeInheritances.forEach(x ->
+            {
+                types.put(x.type, x.linearizedInheritance);
+            });
+
+            try
+            {
+                // Prepare
+                legendSessionHandler.prepareStatement("CREATE SCHEMA metadata_" + id + ";").execute();
+                legendSessionHandler.prepareStatement("CREATE TABLE metadata_" + id + ".database as select oid, * from pg_catalog.pg_database where 1 = 0;").execute();
+                legendSessionHandler.prepareStatement("CREATE TABLE metadata_" + id + ".namespace as select oid, * from pg_catalog.pg_namespace where nspname='pg_catalog';").execute();
+                legendSessionHandler.prepareStatement("CREATE TABLE metadata_" + id + ".class as select oid, * from pg_catalog.pg_class;").execute();
+                legendSessionHandler.prepareStatement("CREATE TABLE metadata_" + id + ".attribute as select * from pg_catalog.pg_attribute;").execute();
+                legendSessionHandler.prepareStatement("CREATE TABLE metadata_" + id + ".proc as select oid,* from pg_catalog.pg_proc where 0 = 1;").execute();
+
+                Database db = new Database(database);
+
+                MutableListMultimap<String, AddressableRelation> grouped = ListIterate.groupBy(result.addressableRelations, x -> x.packageableElement);
+
+                for (String key : grouped.keySet())
+                {
+                    Schema schema = db.schema(new Schema(key.replace("::", "_")));
+
+                    schema.tables(
+                            ListIterate.collect(grouped.get(key), z ->
+                                    {
+                                        Table tb = new Table(z.tableFunctionName + "_" + Lists.mutable.withAll(z.pathWithinElement).makeString("."));
+                                        tb.columns(ListIterate.collect(z.relationType.columns, p ->
+                                        {
+                                            String typeName = ((PackageableType) p.genericType.rawType).fullPath;
+                                            Integer sqlType = TypeConversion._typeConversions.get(ListIterate.detect(types.get(typeName), v -> TypeConversion._typeConversions.get(v) != null));
+                                            if (sqlType == null)
+                                            {
+                                                throw new RuntimeException("The type '" + typeName + "' can't be converted to a SQL type.");
+                                            }
+                                            PGType<?> pgType = SQL_TO_PG_TYPES.get(sqlType);
+                                            if (pgType == null)
+                                            {
+                                                throw new RuntimeException("The SQL Type '" + sqlType + "' from the type '" + typeName + "' can't be converted to a Postgres type.");
+                                            }
+                                            return new Column(p.name, pgType);
+                                        }));
+                                        return tb;
+                                    }
+                            )
+                    );
+                }
+
+                create(db, legendSessionHandler);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
         }
     }
 
