@@ -1032,8 +1032,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
          ci : CDecimal[1]|'%s'->format($ci.value),
          ci : CFloat[1]|'%s'->format($ci.value),
          ci : CBoolean[1]|'%s'->format($ci.value),
-         cs : CString[1]|  let slash = '\\';
-                           '\'%s\''->format($cs.value->replace($slash, $slash + $slash)->replace('\'', '\\\'')->replace('\n', '\\n'));,
+         cs : CString[1]|  $cs.value->toRepresentation(),
          cs : CStrictDate[1]| '%' + ('%s'->format($cs.value)),
          cs : CDateTime[1]| '%' + ('%s'->format($cs.value)),
          cs : CLatestDate[1]| '%latest',
