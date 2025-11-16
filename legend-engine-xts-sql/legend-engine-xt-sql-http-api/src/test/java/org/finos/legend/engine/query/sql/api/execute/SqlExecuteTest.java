@@ -20,17 +20,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
-import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Enum;
@@ -45,7 +41,7 @@ import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
 import org.finos.legend.engine.query.sql.api.TestSQLSourceProvider;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.engine.shared.core.identity.Identity;
+import org.glassfish.jersey.test.TestProperties;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -57,19 +53,17 @@ import java.util.ServiceLoader;
 
 public class SqlExecuteTest
 {
+    static
+    {
+        System.setProperty(TestProperties.CONTAINER_PORT, "0");
+    }
+
     @ClassRule
-    public static final ResourceTestRule resources;
+    public static final ResourceTestRule resources = getResourceTestRule();
     private static final ObjectMapper OM = new ObjectMapper();
     private static final SQLGrammarParser PARSER = SQLGrammarParser.newInstance();
 
-    static
-    {
-        Pair<PureModel, ResourceTestRule> pureModelAndResources = getPureModelResourceTestRulePair();
-
-        resources =  pureModelAndResources.getTwo();
-    }
-
-    public static Pair<PureModel, ResourceTestRule> getPureModelResourceTestRulePair()
+    public static ResourceTestRule getResourceTestRule()
     {
         DeploymentMode deploymentMode = DeploymentMode.TEST;
         ModelManager modelManager = new ModelManager(deploymentMode);
@@ -79,7 +73,6 @@ public class SqlExecuteTest
         TestSQLSourceProvider testSQLSourceProvider = new TestSQLSourceProvider();
         SqlExecute sqlExecute = new SqlExecute(modelManager, executor, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), FastList.newListWith(testSQLSourceProvider), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
 
-        PureModel pureModel = modelManager.loadModel(testSQLSourceProvider.getPureModelContextData(), PureClientVersions.production, Identity.getAnonymousIdentity(), "");
         ResourceTestRule resources = ResourceTestRule.builder()
                 .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
                 .addResource(sqlExecute)
@@ -87,7 +80,8 @@ public class SqlExecuteTest
                 .addResource(new CatchAllExceptionMapper())
                 .bootstrapLogging(false)
                 .build();
-        return Tuples.pair(pureModel,resources);
+
+        return resources;
     }
 
     private Query parse(String sql)

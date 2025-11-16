@@ -34,14 +34,16 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
 import java.util.TimeZone;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendDataType;
 import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendExecutionService;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendHttpClient;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendExecutionService;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendHttpClient;
 
-import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
+import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendResultSet.TIMESTAMP_FORMATTER;
 
 import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.junit.Assert;
@@ -51,12 +53,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendDataType.*;
-
 
 public class PostgresServerTypeMappingTest
 {
-
     @ClassRule
     public static WireMockRule wireMockRule = new WireMockRule(options().dynamicPort(), false);
     private static TestPostgresServer testPostgresServer;
@@ -64,15 +63,15 @@ public class PostgresServerTypeMappingTest
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-
     @BeforeClass
     public static void setUpClass()
     {
         LegendExecutionService client = new LegendExecutionService(new LegendHttpClient("http", "localhost", String.valueOf(wireMockRule.port())));
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
+        serverConfig.setHttpPort(0);
         testPostgresServer = new TestPostgresServer(serverConfig,
-                new SQLManager(client),
+                new SQLManager(Lists.mutable.with(client)),
                 (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),
                 new Messages((exception) -> exception.getMessage()));
         testPostgresServer.startUp();
@@ -87,10 +86,10 @@ public class PostgresServerTypeMappingTest
     @Test
     public void testString() throws Exception
     {
-        validate(STRING, "\"foo\"", "varchar", "foo");
-        validate(STRING, "\"foo\"", "varchar", "foo");
-        validate(STRING, "null", "varchar", null);
-        validate(STRING, "\"\"", "varchar", "");
+        validate(LegendDataType.STRING, "\"foo\"", "varchar", "foo");
+        validate(LegendDataType.STRING, "\"foo\"", "varchar", "foo");
+        validate(LegendDataType.STRING, "null", "varchar", null);
+        validate(LegendDataType.STRING, "\"\"", "varchar", "");
     }
 
     @Test()
@@ -99,7 +98,7 @@ public class PostgresServerTypeMappingTest
         expectedException.expect(Exception.class);
         expectedException.expectMessage("ERROR: Unexpected data type for value '1....' in column 'column1'. " +
                 "Expected data type 'java.lang.String', actual data type 'java.lang.Long'");
-        validate(STRING, "1", "varchar", null);
+        validate(LegendDataType.STRING, "1", "varchar", null);
     }
 
     @Test
@@ -113,9 +112,9 @@ public class PostgresServerTypeMappingTest
     @Test
     public void testBoolean() throws Exception
     {
-        validate(BOOLEAN, "true", "bool", Boolean.TRUE);
-        validate(BOOLEAN, "false", "bool", Boolean.FALSE);
-        validate(BOOLEAN, "null", "bool", null);
+        validate(LegendDataType.BOOLEAN, "true", "bool", Boolean.TRUE);
+        validate(LegendDataType.BOOLEAN, "false", "bool", Boolean.FALSE);
+        validate(LegendDataType.BOOLEAN, "null", "bool", null);
     }
 
     @Test()
@@ -124,7 +123,7 @@ public class PostgresServerTypeMappingTest
         expectedException.expect(Exception.class);
         expectedException.expectMessage("ERROR: Unexpected data type for value '1234....' in column 'column1'." +
                 " Expected data type 'java.lang.Boolean', actual data type 'java.lang.Long'");
-        validate(BOOLEAN, "1234", "bool", null);
+        validate(LegendDataType.BOOLEAN, "1234", "bool", null);
     }
 
     @Test
@@ -134,8 +133,8 @@ public class PostgresServerTypeMappingTest
         Instant temporalAccessor = TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
         Timestamp expected = new Timestamp(temporalAccessor.toEpochMilli());
 
-        validate(DATE_TIME, "\"" + timeStamp + "\"", "timestamp", expected);
-        validate(DATE_TIME, "null", "timestamp", null);
+        validate(LegendDataType.DATE_TIME, "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(LegendDataType.DATE_TIME, "null", "timestamp", null);
     }
 
     @Test()
@@ -146,7 +145,7 @@ public class PostgresServerTypeMappingTest
         expectedException.expect(Exception.class);
         expectedException.expectMessage("ERROR: Unexpected value '20200....' in column 'column1'." +
                 " Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)");
-        validate(DATE_TIME, "\"" + timeStamp + "\"", null, null);
+        validate(LegendDataType.DATE_TIME, "\"" + timeStamp + "\"", null, null);
     }
 
     @Test
@@ -155,7 +154,7 @@ public class PostgresServerTypeMappingTest
         String timeStamp = "2020-06-07T04:15:27.000000000+0000";
         Instant temporalAccessor = (Instant) TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
         Timestamp expected = new Timestamp(temporalAccessor.toEpochMilli());
-        validate(DATE, "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(LegendDataType.DATE, "\"" + timeStamp + "\"", "timestamp", expected);
     }
 
     @Test()
@@ -166,7 +165,7 @@ public class PostgresServerTypeMappingTest
         expectedException.expect(Exception.class);
         expectedException.expectMessage("ERROR: Unexpected value '2020-....' in column 'column1'." +
                 " Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)");
-        validate(DATE, "\"" + timeStamp + "\"", null, null);
+        validate(LegendDataType.DATE, "\"" + timeStamp + "\"", null, null);
     }
 
     @Test
@@ -176,7 +175,7 @@ public class PostgresServerTypeMappingTest
         LocalDate temporalAccessor = TIMESTAMP_FORMATTER.parse(timeStamp, LocalDate::from);
         Timestamp expected = new Timestamp(temporalAccessor.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli());
 
-        validate(DATE, "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(LegendDataType.DATE, "\"" + timeStamp + "\"", "timestamp", expected);
     }
 
     @Test()
@@ -187,7 +186,7 @@ public class PostgresServerTypeMappingTest
         expectedException.expect(Exception.class);
         expectedException.expectMessage("ERROR: Unexpected value '20200....' in column 'column1'. " +
                 "Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD) or Timestamp (YYYY-MM-DDThh:mm:ss.000000000+0000)'");
-        validate(DATE, "\"" + timeStamp + "\"", null, null);
+        validate(LegendDataType.DATE, "\"" + timeStamp + "\"", null, null);
     }
 
     @Test
@@ -199,8 +198,8 @@ public class PostgresServerTypeMappingTest
         long toEpochDay = localDate.atStartOfDay(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli();
         Date expected = new Date(toEpochDay);
 
-        validate(STRICT_DATE, "\"" + date + "\"", "date", expected);
-        validate(STRICT_DATE, "null", "date", null);
+        validate(LegendDataType.STRICT_DATE, "\"" + date + "\"", "date", expected);
+        validate(LegendDataType.STRICT_DATE, "null", "date", null);
     }
 
 
@@ -212,15 +211,15 @@ public class PostgresServerTypeMappingTest
         expectedException.expect(Exception.class);
         expectedException.expectMessage("ERROR: Unexpected value '20200....' in column 'column1'." +
                 " Expected data type 'java.lang.String', value format 'Date (YYYY-MM-DD)'");
-        validate(STRICT_DATE, "\"" + date + "\"", null, null);
+        validate(LegendDataType.STRICT_DATE, "\"" + date + "\"", null, null);
     }
 
     @Test
     public void testFloat() throws Exception
     {
-        validate(FLOAT, "5.5", "float8", 5.5D);
-        validate(FLOAT, "null", "float8", null);
-        validate(FLOAT, "2645198855588.533433343434", "float8", 2645198855588.533433343434D);
+        validate(LegendDataType.FLOAT, "5.5", "float8", 5.5D);
+        validate(LegendDataType.FLOAT, "null", "float8", null);
+        validate(LegendDataType.FLOAT, "2645198855588.533433343434", "float8", 2645198855588.533433343434D);
     }
 
 
@@ -230,15 +229,15 @@ public class PostgresServerTypeMappingTest
         expectedException.expect(Exception.class);
         expectedException.expectMessage("ERROR: Unexpected data type for value 'foooo....' in column 'column1'." +
                 " Expected data type 'java.lang.Number', actual data type 'java.lang.String'");
-        validate(FLOAT, "\"fooooo\"", null, null);
+        validate(LegendDataType.FLOAT, "\"fooooo\"", null, null);
     }
 
     @Test
     public void testDecimal() throws Exception
     {
-        validate(DECIMAL, "5.5", "float8", 5.5D);
-        validate(DECIMAL, "null", "float8", null);
-        validate(DECIMAL, "2645198855588.533433343434", "float8", 2645198855588.533433343434D);
+        validate(LegendDataType.DECIMAL, "5.5", "float8", 5.5D);
+        validate(LegendDataType.DECIMAL, "null", "float8", null);
+        validate(LegendDataType.DECIMAL, "2645198855588.533433343434", "float8", 2645198855588.533433343434D);
     }
 
 
@@ -248,15 +247,15 @@ public class PostgresServerTypeMappingTest
         expectedException.expect(Exception.class);
         expectedException.expectMessage("ERROR: Unexpected data type for value 'foooo....' in column 'column1'." +
                 " Expected data type 'java.lang.Number', actual data type 'java.lang.String'");
-        validate(DECIMAL, "\"fooooo\"", null, null);
+        validate(LegendDataType.DECIMAL, "\"fooooo\"", null, null);
     }
 
     @Test
     public void testInteger() throws Exception
     {
-        validate(INTEGER, "5", "int8", 5L);
-        validate(INTEGER, "2645198855588", "int8", 2645198855588L);
-        validate(INTEGER, "null", "int8", null);
+        validate(LegendDataType.INTEGER, "5", "int8", 5L);
+        validate(LegendDataType.INTEGER, "2645198855588", "int8", 2645198855588L);
+        validate(LegendDataType.INTEGER, "null", "int8", null);
     }
 
     @Test()
@@ -265,13 +264,13 @@ public class PostgresServerTypeMappingTest
         expectedException.expect(Exception.class);
         expectedException.expectMessage("ERROR: Unexpected data type for value 'foo....' in column 'column1'. " +
                 "Expected data type 'java.lang.Number', actual data type 'java.lang.String'");
-        validate(INTEGER, "\"foo\"", null, null);
+        validate(LegendDataType.INTEGER, "\"foo\"", null, null);
     }
 
     @Test
     public void testNumberAsInteger() throws Exception
     {
-        validate(NUMBER, "5", "float8", 5.0D);
+        validate(LegendDataType.NUMBER, "5", "float8", 5.0D);
     }
 
     @Test()
@@ -280,13 +279,13 @@ public class PostgresServerTypeMappingTest
         expectedException.expect(Exception.class);
         expectedException.expectMessage("ERROR: Unexpected data type for value 'foo....' in column 'column1'. " +
                 "Expected data type 'java.lang.Number', actual data type 'java.lang.String'");
-        validate(NUMBER, "\"foo\"", null, null);
+        validate(LegendDataType.NUMBER, "\"foo\"", null, null);
     }
 
     @Test
     public void testNumberAsDouble() throws Exception
     {
-        validate(NUMBER, "5.5", "float8", 5.5D);
+        validate(LegendDataType.NUMBER, "5.5", "float8", 5.5D);
     }
 
 

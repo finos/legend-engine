@@ -28,7 +28,7 @@ public class H2LocalServer
             // We can create only one instance of the server as the databases are anyway shared in the process (VM)
             // The important part is to have an empty name in 'this.buildDataSource("127.0.0.1", localH2Port, "", null)'
             // It ensure the database creation is 'private' to the connection.
-            this.port = AlloyH2Server.startServer(0).getPort();
+            this.port = AlloyH2Server.startServer().getPort();
         }
         catch (SQLException e)
         {

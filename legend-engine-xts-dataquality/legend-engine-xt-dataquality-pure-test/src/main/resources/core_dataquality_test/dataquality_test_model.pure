@@ -8,7 +8,8 @@ Database meta::external::dataquality::tests::domain::db
     LASTNAME VARCHAR(200),
     AGE INTEGER,
     ADDRESSID INTEGER,
-    FIRMID INTEGER
+    FIRMID INTEGER,
+    DOB TIMESTAMP
   )
   Table addressTable
   (

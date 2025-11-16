@@ -21,6 +21,19 @@
 
 package org.finos.legend.engine.postgres;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.prometheus.metrics.core.metrics.Gauge;
+import io.prometheus.metrics.exporter.servlet.javax.PrometheusMetricsServlet;
+import io.prometheus.metrics.model.registry.PrometheusRegistry;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.AbstractHandler;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -35,10 +48,22 @@ import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
+import java.util.Date;
+import java.util.List;
 
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.Resource;
+import org.finos.legend.engine.postgres.protocol.wire.SessionStats;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethod;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.ConnectionProperties;
 import org.finos.legend.engine.postgres.config.GSSConfig;
@@ -50,10 +75,16 @@ import org.finos.legend.engine.postgres.utils.netty.Netty4OpenChannelsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 
 public class PostgresServer
 {
-    private static final Logger logger = LoggerFactory.getLogger(PostgresServer.class);
+    private static final Date startTime = new Date();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostgresServer.class);
+    private final int httpPort;
     private final int port;
     private final Function2<String, ConnectionProperties, AuthenticationMethod> authenticationProvider;
     private final GSSConfig gssConfig;
@@ -62,18 +93,53 @@ public class PostgresServer
     private EventLoopGroup workerGroup;
     private final Messages messages;
     private final SQLManager sqlManager;
+    private final MutableSet<PostgresWireProtocol> liveConnections = Sets.mutable.empty();
+    private final List<SessionStats> connectionsHistory = Lists.mutable.empty();
+    // Prometheus state ---------
+    private PrometheusRegistry registry;
+    private Gauge connectionCount;
+    private PrometheusUserMetrics userMetrics;
+    // Prometheus state ---------
 
     public PostgresServer(ServerConfig serverConfig, SQLManager sqlManager, Function2<String, ConnectionProperties, AuthenticationMethod> authenticationProvider, Messages messages)
     {
         this.port = serverConfig.getPort();
+        this.httpPort = serverConfig.getHttpPort() == null ? 8080 : serverConfig.getHttpPort();
         this.authenticationProvider = authenticationProvider;
         this.gssConfig = serverConfig.getGss();
         this.messages = messages;
         this.sqlManager = sqlManager;
     }
 
+    public void open(PostgresWireProtocol postgresWireProtocol)
+    {
+        this.connectionCount.inc();
+        liveConnections.add(postgresWireProtocol);
+    }
+
+    public void close(PostgresWireProtocol postgresWireProtocol)
+    {
+        if (liveConnections.contains(postgresWireProtocol))
+        {
+            if (!"Unknown".equals(postgresWireProtocol.getSessionStats().name))
+            {
+                connectionsHistory.add(postgresWireProtocol.getSessionStats());
+            }
+            this.connectionCount.dec();
+            liveConnections.remove(postgresWireProtocol);
+        }
+    }
+
     public void run()
     {
+        try
+        {
+            startHttp();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
 
         Netty4OpenChannelsHandler openChannelsHandler = new Netty4OpenChannelsHandler(
                 LoggerFactory.getLogger(Netty4OpenChannelsHandler.class));
@@ -92,7 +158,7 @@ public class PostgresServer
                         @Override
                         protected void initChannel(SocketChannel ch)
                         {
-                            PostgresWireProtocol postgresWireProtocol = new PostgresWireProtocol(sqlManager, authenticationProvider, gssConfig, () -> null, messages);
+                            PostgresWireProtocol postgresWireProtocol = new PostgresWireProtocol(PostgresServer.this, sqlManager, authenticationProvider, gssConfig, () -> null, messages);
                             ChannelPipeline pipeline = ch.pipeline();
                             pipeline.addLast("open_channels", openChannelsHandler);
                             pipeline.addLast("frame-decoder", postgresWireProtocol.decoder);
@@ -151,6 +217,108 @@ public class PostgresServer
         return workerGroup;
     }
 
+    public void startHttp() throws Exception
+    {
+        Server server = new Server();
+
+        ServerConnector connector = new ServerConnector(server);
+        connector.setPort(this.httpPort);
+        server.addConnector(connector);
+
+        // Static
+        ResourceHandler staticResourceHandler = new ResourceHandler();
+        staticResourceHandler.setDirectoriesListed(true);
+        staticResourceHandler.setWelcomeFiles(new String[]{"index.html"});
+        staticResourceHandler.setBaseResource(Resource.newClassPathResource("/static/"));
+
+        // Dynamic get Info
+        ContextHandler dynamicContentHandler = new ContextHandler("/server/info");
+        dynamicContentHandler.setHandler(new AbstractHandler()
+        {
+            @Override
+            public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException
+            {
+                response.setContentType("application/json");
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().println(MAPPER.writeValueAsString(
+                        new Info(startTime, connectionsHistory, liveConnections.collect(PostgresWireProtocol::getSessionStats).toList())
+                ));
+                baseRequest.setHandled(true);
+            }
+        });
+
+        // Prometheus
+        this.registry = new PrometheusRegistry();
+        this.userMetrics = new PrometheusUserMetrics(registry);
+        this.connectionCount = Gauge.builder().name("serverLiveConnections").help("Total live connections count").register(this.registry);
+        ServletContextHandler prometheusServletContext = new ServletContextHandler();
+        prometheusServletContext.setContextPath("/");
+        prometheusServletContext.addServlet(new ServletHolder(new PrometheusMetricsServlet(this.registry)), "/prometheus");
+
+        // Manage collections
+        HandlerCollection handlerCollection = new HandlerCollection();
+        handlerCollection.setHandlers(new Handler[]{staticResourceHandler, dynamicContentHandler, prometheusServletContext});
+        server.setHandler(handlerCollection);
+
+        // Start the server
+        server.start();
+    }
+
+    public PrometheusUserMetrics getUserMetrics()
+    {
+        return userMetrics;
+    }
+
+    private static class Info
+    {
+        public Info()
+        {
+            memory.total = Runtime.getRuntime().totalMemory();
+            memory.max = Runtime.getRuntime().maxMemory();
+            memory.free = Runtime.getRuntime().freeMemory();
+        }
+
+        public Info(Date date, List<SessionStats> history, List<SessionStats> openSessions)
+        {
+            this();
+            this.startedTime = date.toString();
+
+            this.history = history;
+            this.openSessions = openSessions;
+
+            try
+            {
+                this.hostAddress = InetAddress.getLocalHost().getCanonicalHostName();
+            }
+            catch (UnknownHostException e)
+            {
+                throw new RuntimeException(e);
+            }
+
+            this.timeZone = java.util.TimeZone.getDefault().getID();
+        }
+
+        public List<SessionStats> history;
+
+        public List<SessionStats> openSessions;
+
+        public String startedTime;
+
+        public String hostAddress;
+
+        public String timeZone;
+
+        public Memory memory = new Memory();
+    }
+
+    private static class Memory
+    {
+        public long total;
+
+        public long max;
+
+        public long free;
+    }
 }
 
 

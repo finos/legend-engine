@@ -24,6 +24,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.Relation;
 import org.finos.legend.engine.protocol.sql.metamodel.SelectItem;
 import org.finos.legend.engine.protocol.sql.metamodel.Table;
 import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
+import org.glassfish.jersey.test.TestProperties;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -33,6 +34,10 @@ import static org.junit.Assert.assertTrue;
 
 public class SqlGrammarTest
 {
+    static
+    {
+        System.setProperty(TestProperties.CONTAINER_PORT, "0");
+    }
 
     @ClassRule
     public static final ResourceTestRule resources = ResourceTestRule.builder()

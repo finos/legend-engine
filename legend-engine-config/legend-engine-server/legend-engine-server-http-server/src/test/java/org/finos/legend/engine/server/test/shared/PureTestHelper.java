@@ -19,8 +19,10 @@ import junit.framework.TestSuite;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.block.function.checked.ThrowingFunction0;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.test.H2TestServerResource;
 import org.finos.legend.engine.test.shared.framework.PureTestHelperFramework;
+import org.finos.legend.pure.runtime.java.extension.store.relational.shared.connectionManager.ConnectionManager;
 import org.junit.Ignore;
 
 public class PureTestHelper
@@ -29,7 +31,12 @@ public class PureTestHelper
     public static TestSetup wrapSuite(ThrowingFunction0<Boolean> init, Function0<TestSuite> suiteBuilder, ThrowingFunction0<Boolean> shutdown)
     {
         return PureTestHelperFramework.wrapSuite(
-                init,
+                () ->
+                {
+                    ConnectionManager.clearTestConnections();
+                    ConnectionStateManager.getInstance().clearAllConnections();
+                    return init.safeValue();
+                },
                 suiteBuilder,
                 shutdown,
                 Lists.mutable.with(new H2TestServerResource(), new MetadataTestServerResource(), new ServerTestServerResource("org/finos/legend/engine/server/test/userTestConfig.json"))

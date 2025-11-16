@@ -1,0 +1,71 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.shared;
+
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendColumn;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecutionResult;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendTdsClientException;
+
+import java.io.IOException;
+import java.util.List;
+
+public class LegendExecutionResultFromTds implements LegendExecutionResult
+{
+    private final LegendTdsResultParser parser;
+
+    public LegendExecutionResultFromTds(LegendTdsResultParser parser)
+    {
+        this.parser = parser;
+    }
+
+    @Override
+    public List<LegendColumn> getLegendColumns()
+    {
+        return parser.getLegendColumns();
+    }
+
+    @Override
+    public void close()
+    {
+        try
+        {
+            parser.close();
+        }
+        catch (IOException e)
+        {
+            throw new LegendTdsClientException("Error while closing parser", e);
+        }
+    }
+
+    @Override
+    public boolean hasNext()
+    {
+
+        try
+        {
+            return parser.hasNext();
+        }
+        catch (IOException e)
+        {
+            throw new LegendTdsClientException("Error while retrieving a row", e);
+        }
+    }
+
+    @Override
+    public List<Object> next()
+    {
+        return parser.next();
+    }
+}

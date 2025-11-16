@@ -23,7 +23,9 @@ public class GraphQLDevCacheKey implements GraphQLCacheKey
     private String queryClassPath;
     private String mappingPath;
     private String runtimePath;
+    private String bindingPath;
     private String query;
+    private String variables;
 
     public GraphQLDevCacheKey(String projectId, String workspaceId, String queryClassPath, String mappingPath, String runtimePath, String query)
     {
@@ -33,6 +35,13 @@ public class GraphQLDevCacheKey implements GraphQLCacheKey
         this.mappingPath = mappingPath;
         this.runtimePath = runtimePath;
         this.query = query;
+    }
+    
+    public GraphQLDevCacheKey(String projectId, String workspaceId, String queryClassPath, String mappingPath, String runtimePath, String bindingPath, String query, String variables)
+    {
+        this(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, query);
+        this.bindingPath = bindingPath;
+        this.variables = variables;
     }
 
     @Override
@@ -82,8 +91,18 @@ public class GraphQLDevCacheKey implements GraphQLCacheKey
         return runtimePath;
     }
 
+    public String getBindingPath()
+    {
+        return bindingPath;
+    }
+
     public String getQuery()
     {
         return query;
+    }
+
+    public String getVariables()
+    {
+        return variables;
     }
 }

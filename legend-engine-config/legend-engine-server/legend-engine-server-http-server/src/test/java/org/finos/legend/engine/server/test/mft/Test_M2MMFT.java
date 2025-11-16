@@ -19,12 +19,15 @@ package org.finos.legend.engine.server.test.mft;
 import junit.framework.Test;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.map.MutableMap;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.test.H2TestServerResource;
 import org.finos.legend.engine.test.mft.MFTReport;
 import org.finos.legend.engine.test.mft.MFTTestSuitBuilder;
 import org.finos.legend.engine.test.shared.framework.PureTestHelperFramework;
 import org.finos.legend.pure.code.core.M2MMFTReport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import org.finos.legend.pure.runtime.java.extension.store.relational.shared.connectionManager.ConnectionManager;
+
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 
@@ -34,10 +37,15 @@ public class Test_M2MMFT extends M2MMFTReport
     public static Test suite()
     {
         CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
-        MutableMap<String, String> exclusions =  MFTReport.explodeExpectedFailures(getExpectedFailures(),executionSupport.getProcessorSupport());
+        MutableMap<String, String> exclusions = MFTReport.explodeExpectedFailures(getExpectedFailures(), executionSupport.getProcessorSupport());
         return PureTestHelperFramework.wrapSuite(
-                () -> true,
-                () -> MFTTestSuitBuilder.buildMFTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, evaluatorFunction(), "meta::pure::mapping::modelToModel::mft::mftAdaptor__MFTAdapter_1_",executionSupport),
+                () ->
+                {
+                    ConnectionManager.clearTestConnections();
+                    ConnectionStateManager.getInstance().clearAllConnections();
+                    return true;
+                },
+                () -> MFTTestSuitBuilder.buildMFTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, evaluatorFunction(), "meta::pure::mapping::modelToModel::mft::mftAdaptor__MFTAdapter_1_", executionSupport),
                 () -> false,
                 Lists.mutable.with(new H2TestServerResource())
         );

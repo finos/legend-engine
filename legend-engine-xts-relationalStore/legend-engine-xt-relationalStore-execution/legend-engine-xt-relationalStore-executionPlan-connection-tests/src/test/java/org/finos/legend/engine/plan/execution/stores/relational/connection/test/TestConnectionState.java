@@ -54,7 +54,7 @@ public class TestConnectionState
     @Before
     public void setup() throws Exception
     {
-        server = AlloyH2Server.startServer(DynamicPortGenerator.generatePort());
+        server = AlloyH2Server.startServer();
 
         // We maintain a bunch of singleton state. We have to reset this state so as to avoid interference between tests
         ConnectionPoolTestUtils.resetDatasourceSpecificationSingletonState();

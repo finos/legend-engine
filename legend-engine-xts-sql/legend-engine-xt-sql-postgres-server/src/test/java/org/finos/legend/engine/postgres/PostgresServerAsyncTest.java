@@ -15,13 +15,12 @@
 package org.finos.legend.engine.postgres;
 
 import io.dropwizard.testing.junit.ResourceTestRule;
-import org.eclipse.collections.api.tuple.Pair;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.LegendExecutionService;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendExecutionService;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsTestClient;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecuteTest;
@@ -53,17 +52,11 @@ public class PostgresServerAsyncTest
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PostgresServerAsyncTest.class);
 
     @ClassRule
-    public static final ResourceTestRule resources;
+    public static final ResourceTestRule resources = SqlExecuteTest.getResourceTestRule();
     private static TestPostgresServer testPostgresServer;
 
     private static final int NUMBER_OF_EXECUTOR = 40;
     private static final int NUMBER_OF_CONCURRENT = 20;
-
-    static
-    {
-        Pair<PureModel, ResourceTestRule> pureModelResourceTestRulePair = SqlExecuteTest.getPureModelResourceTestRulePair();
-        resources = pureModelResourceTestRulePair.getTwo();
-    }
 
     @BeforeClass
     public static void setUp()
@@ -93,9 +86,10 @@ public class PostgresServerAsyncTest
 
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
+        serverConfig.setHttpPort(0);
 
         testPostgresServer = new TestPostgresServer(serverConfig,
-                new SQLManager(new LegendExecutionService(client)),
+                new SQLManager(Lists.mutable.with(new LegendExecutionService(client))),
                 (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),
                 new Messages(Throwable::getMessage));
         testPostgresServer.startUp();

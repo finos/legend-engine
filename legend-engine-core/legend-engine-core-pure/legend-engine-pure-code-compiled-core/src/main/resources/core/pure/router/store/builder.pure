@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::relation::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::path::*;
 import meta::pure::router::store::metamodel::*;
@@ -67,7 +68,7 @@ function meta::pure::router::store::routing::enrichStoreMappingRoutedValueSpecif
       let nbuilt = if($permutations->size() > 1,
                      | // Which concatenation to use (dataType/TDS = union all / type = union)?
                       let returnType = $filteredBuilt->at(0)->match([e:StoreMappingRoutedValueSpecification[1]|$e.value.genericType, v:ValueSpecification[1]|$v.genericType]);
-                      let concatenate = $returnType.rawType->toOne()->instanceOf(DataType) || $returnType.rawType->toOne()->_subTypeOf(TabularDataSet);
+                      let concatenate = $returnType.rawType->toOne()->instanceOf(DataType) || $returnType.rawType->toOne()->_subTypeOf(TabularDataSet) || $returnType.rawType->toOne()->_subTypeOf(Relation);
                       let concat = buildConcatenate($filteredBuilt, $concatenate, $returnType);
                       print(if($debug.debug,|$debug.space+'Result: '+$concat->asString()+'\n',|''));
                        $concat;,
@@ -251,7 +252,13 @@ function meta::pure::router::store::routing::build(v:ValueSpecification[1], l:Li
                                                                                                                                                              $i.genericType->dynamicNew([^KeyValue(key='name', value=$a.name),
                                                                                                                                                                                                           ^KeyValue(key='mapFn', value=^$f(expressionSequence=$sequence)),
                                                                                                                                                                                                           ^KeyValue(key='aggregateFn', value=$a.aggregateFn)]);,
-                                                                                                               a:Any[1]|$a
+                                                                                                               f:FuncColSpec<Any, Any>[1]| $f->buildFuncColSpec($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug);,
+                                                                                                               f:FuncColSpecArray<Any, Any>[1]| let newFuncSpecs = $f.funcSpecs->map(fs|$fs->buildFuncColSpec($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+                                                                                                                                                $f->genericType()->dynamicNew([^KeyValue(key = 'funcSpecs', value = $newFuncSpecs)]);,
+                                                                                                               a:AggColSpec<Any, Any, Any>[1]| $a->buildAggColSpec($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug);,
+                                                                                                               a:AggColSpecArray<Any, Any, Any>[1]| let newAggSpecs = $a.aggSpecs->map(as|$as->buildAggColSpec($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+                                                                                                                                                    $a->genericType()->dynamicNew([^KeyValue(key = 'aggSpecs', value = $newAggSpecs)]);,
+                                                                                                                a:Any[1]|$a
                                                                                                             ]
                                                                                                       );));
                                    $res->propagateVoid($res.values->filter(v|$v->instanceOf(ValueSpecification))->cast(@ValueSpecification));,
@@ -260,6 +267,29 @@ function meta::pure::router::store::routing::build(v:ValueSpecification[1], l:Li
                s: StoreRoutedValueSpecification[1]|$s;,
                c:meta::pure::router::metamodel::clustering::ClusteredValueSpecification[1] | $c
              ]);
+}
+
+function <<access.private>> meta::pure::router::store::routing::buildFuncColSpec(fs:FuncColSpec<Any, Any>[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FuncColSpec<Any, Any>[1]
+{
+  let function = $fs.function->cast(@FunctionDefinition<Any>);
+  let sequence = $function.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+  $fs->genericType()->dynamicNew([
+    ^KeyValue(key = 'name', value = $fs.name),
+    ^KeyValue(key = 'function', value = ^$function(expressionSequence = $sequence))
+  ])->cast(@FuncColSpec<Any, Any>);
+}
+
+function <<access.private>> meta::pure::router::store::routing::buildAggColSpec(as:AggColSpec<Any, Any, Any>[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):AggColSpec<Any, Any, Any>[1]
+{
+  let mapFn = $as.map->cast(@FunctionDefinition<Any>);
+  let mapFnSequence = $mapFn.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+  let reduceFn = $as.reduce->cast(@FunctionDefinition<Any>);
+  let reduceFnSequence = $reduceFn.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+  $as->genericType()->dynamicNew([
+    ^KeyValue(key = 'name', value = $as.name),
+    ^KeyValue(key = 'map', value = ^$mapFn(expressionSequence = $mapFnSequence)),
+    ^KeyValue(key = 'reduce', value = ^$reduceFn(expressionSequence = $reduceFnSequence))
+  ])->cast(@AggColSpec<Any, Any, Any>);
 }
 
 function <<access.private>> meta::pure::router::store::routing::isVoid(v:ValueSpecification[1]):Boolean[1]

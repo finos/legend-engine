@@ -90,7 +90,19 @@ public class GraphQLDebug extends GraphQL
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions = this.extensionsFunc.apply(pureModel);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
         Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult graphFetch = buildGraphFetch(_class, toPureModel(GraphQLGrammarParser.newInstance().parseDocument(query.query), pureModel), pureModel);
+       return generateGraphFetchResult(graphFetch, extensions, pureModel);
+    }
 
+    private Response generateGraphFetch(String queryClassPath, Query query, PureModel pureModel, String mappingPath, String runtimePath, String bindingPath) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, JsonProcessingException
+    {
+        RichIterable<? extends Root_meta_pure_extension_Extension> extensions = this.extensionsFunc.apply(pureModel);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
+        Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult graphFetch = buildGraphFetch(_class, toPureModel(GraphQLGrammarParser.newInstance().parseDocument(query.query), pureModel), pureModel, mappingPath, runtimePath, bindingPath);
+        return generateGraphFetchResult(graphFetch, extensions, pureModel);
+    }
+    
+    private Response generateGraphFetchResult(Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult graphFetch, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, PureModel pureModel) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, JsonProcessingException
+    {
         // Serialize the tree to production protocol
         String version = PureClientVersions.production;
         Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_valueSpecification");
@@ -167,6 +179,30 @@ public class GraphQLDebug extends GraphQL
     }
 
     @POST
+    @ApiOperation(value = "Generate Pure graphFetch(s) from a graphQL query using metadata from SDLC project (group workspace)")
+    @Path("generateGraphFetch/dev/{projectId}/groupWorkspace/{workspaceId}/query/{queryClassPath}/mapping/{mappingPath}/runtime/{runtimePath}/binding/{bindingPath}")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response generateGraphFetchDevWithGroupWorkspace(@Context HttpServletRequest request, @PathParam("workspaceId") String workspaceId, @PathParam("projectId") String projectId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, @PathParam("bindingPath") String bindingPath,  Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        return this.generateGraphFetchDevImpl(request, workspaceId, true, projectId, queryClassPath, mappingPath, runtimePath, bindingPath, query, pm);
+    }
+
+    private Response generateGraphFetchDevImpl(HttpServletRequest request, String workspaceId, boolean isGroupWorkspace, String projectId, String queryClassPath, String mappingPath, String runtimePath, String bindingPath, Query query, ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Graph Fetch").startActive(true))
+        {
+            return this.generateGraphFetch(queryClassPath, query, loadSDLCProjectModel(identity, request, projectId, workspaceId, isGroupWorkspace), mappingPath, runtimePath, bindingPath);
+        }
+        catch (Exception ex)
+        {
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, identity.getName());
+        }
+    }
+
+    @POST
     @ApiOperation(value = "Generate Pure graphFetch(s) from a graphQL query")
     @Path("generateGraphFetch/prod/{groupId}/{artifactId}/{versionId}/query/{queryClassPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
@@ -189,6 +225,11 @@ public class GraphQLDebug extends GraphQL
     private static Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult buildGraphFetch(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document document, PureModel pureModel)
     {
         return core_external_query_graphql_transformation_transformation_graphFetch.Root_meta_external_query_graphQL_transformation_queryToPure_getGraphFetchFromGraphQL_Class_1__Document_1__GraphFetchResult_1_(_class, document, pureModel.getExecutionSupport());
+    }
+
+    private static Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult buildGraphFetch(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document document, PureModel pureModel, String mappingPath, String runtimePath, String bindingPath)
+    {
+        return core_external_query_graphql_transformation_transformation_graphFetch.Root_meta_external_query_graphQL_transformation_queryToPure_getGraphFetchFromGraphQL_Class_1__Document_1__Mapping_$0_1$__Runtime_$0_1$__Binding_$0_1$__GraphFetchResult_1_(_class, document, pureModel.getMapping(mappingPath), pureModel.getRuntime(runtimePath), pureModel.getBinding(bindingPath), pureModel.getExecutionSupport());
     }
 
     @POST

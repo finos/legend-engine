@@ -14,7 +14,20 @@
 
 package org.finos.legend.engine.server;
 
+import static org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope.buildTestExecutor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
@@ -28,25 +41,13 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.Re
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.slf4j.Logger;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope.buildTestExecutor;
 
 @Ignore
 public class TestSemiStructuredWrite
@@ -99,8 +100,8 @@ public class TestSemiStructuredWrite
         {
             try
             {
-                serverPort = DynamicPortGenerator.generatePort();
-                server = AlloyH2Server.startServer(serverPort);
+                server = AlloyH2Server.startServer();
+                serverPort = server.getPort();
                 successful = true;
             }
             catch (Exception e)

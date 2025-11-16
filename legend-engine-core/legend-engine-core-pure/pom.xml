@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core</artifactId>
-        <version>4.106.1-SNAPSHOT</version>
+        <version>4.110.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,6 +30,7 @@
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-code-functions-standard</module>
         <module>legend-engine-pure-code-functions-json</module>
+        <module>legend-engine-pure-code-functions-variant</module>
         <module>legend-engine-pure-code-functions-relation</module>
         <module>legend-engine-pure-code-functions-unclassified</module>
         <module>legend-engine-pure-code-functions-legendCompiler</module>

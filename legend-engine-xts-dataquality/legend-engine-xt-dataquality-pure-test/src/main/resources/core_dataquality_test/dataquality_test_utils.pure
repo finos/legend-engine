@@ -27,14 +27,17 @@ function meta::external::dataquality::tests::loadDataQuality(tree:String[1]):Dat
 
 function meta::external::dataquality::tests::loadDataQualityRelationValidation(dq:String[1]):DataQualityRelationValidation[1]
 {
+  loadModel($dq)->filter(c | $c->elementToPath() == 'meta::external::dataquality::tests::domain::RelationValidation')->toOne()->cast(@DataQualityRelationValidation);
+}
+
+function meta::external::dataquality::tests::loadModel(items:String[*]):PackageableElement[*]
+{
   let model = readFile('/core_dataquality_test/dataquality_test_model.pure')->toOne();
   let extra = readFile('/core_dataquality_test/dataquality_test_model_legend.txt')->toOne();
 
-  let code = $model + '\n' + $extra + '\n' + $dq;
+  let code = $model + '\n' + $extra + '\n' + $items->joinStrings('\n');
 
-  let compiled = meta::legend::compileLegendGrammar($code);
-
-  $compiled->filter(c | $c->elementToPath() == 'meta::external::dataquality::tests::domain::RelationValidation')->toOne()->cast(@DataQualityRelationValidation);
+  meta::legend::compileLegendGrammar($code);
 }
 
 function meta::external::dataquality::tests::doTest(tree:String[1], expected:FunctionDefinition<Any>[1]):Boolean[1]
@@ -150,7 +153,12 @@ function meta::external::dataquality::tests::assertLambdaEquals(expected:String[
 function meta::external::dataquality::tests::assertLambdaEquals(expected:String[1], actual:String[1], packageableRuntimeAsString: String[1], fromExpected: Boolean[1]): Boolean[1]
 {
   assert(($fromExpected && $actual->contains($packageableRuntimeAsString)) || (!$fromExpected && !$actual->contains($packageableRuntimeAsString)));  
-  assertEquals($expected, $actual->replace(['->meta::pure::mapping::from(', $packageableRuntimeAsString, ')']->joinStrings(), ''));
+  assertLambdaEquals($expected, $actual->replace(['->meta::pure::mapping::from(', $packageableRuntimeAsString, ')']->joinStrings(), ''));
+}
+
+function meta::external::dataquality::tests::assertLambdaEquals(expected:String[1], actual:String[1]): Boolean[1]
+{
+  assertEquals($expected, $actual);
 }
 
 function meta::external::dataquality::tests::grammarConfig():meta::pure::metamodel::serialization::grammar::Configuration[1]

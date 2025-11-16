@@ -19,9 +19,9 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.code.core.CoreExternalSQLReversePCTCodeRepositoryProvider;
+import org.finos.legend.pure.code.core.VariantCodeRepositoryProvider;
 import org.finos.legend.pure.generated.Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource;
 import org.finos.legend.pure.generated.core_external_query_sql_reverse_pct_variant_variant;
-import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
@@ -33,7 +33,7 @@ import static org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBui
 
 public class Test_Query_SQL_VariantFunctions_Reverse_PCT extends PCTReportConfiguration
 {
-    private static final ReportScope reportScope = PlatformCodeRepositoryProvider.variantFunctions;
+    private static final ReportScope reportScope = VariantCodeRepositoryProvider.variantFunctions;
     private static final Adapter adapter = CoreExternalSQLReversePCTCodeRepositoryProvider.SQLAdapter;
     private static final String platform = "compiled";
     private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_query_sql_reverse_pct_variant_variant.Root_meta_external_query_sql_reversePCT_tests_variant_reverses__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));

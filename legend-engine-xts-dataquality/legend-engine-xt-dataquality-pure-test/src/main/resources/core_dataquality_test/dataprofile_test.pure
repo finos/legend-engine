@@ -1,0 +1,107 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::relation::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::external::dataquality::dataprofile::*;
+import meta::external::dataquality::tests::*;
+import meta::external::dataquality::dataprofile::tests::*;
+import meta::pure::router::preeval::*;
+
+function <<test.Test>> meta::external::dataquality::tests::testDataProfileLambdaGeneration():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+
+  let lambda = {|
+      let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[DOB, AGE, FIRSTNAME]);
+
+      $cte->aggregate(~[
+              name: x | 'FIRSTNAME' : y | 'FIRSTNAME',
+              max_number : x | []->cast(@Number) : y | $y->max(),
+              min_number : x | []->cast(@Number) : y | $y->min(),
+              max_date : x | []->cast(@Date) : y | $y->max(),
+              min_date : x | []->cast(@Date) : y | $y->min(),
+              max_length: x | $x.FIRSTNAME->toOne()->length() : y | $y->max(),
+              min_length: x | $x.FIRSTNAME->toOne()->length() : y | $y->min(),
+              count: x | $x.FIRSTNAME : y | $y->count(),
+              count_distinct: x | $x.FIRSTNAME : y | $y->distinct()->count(),
+              count_null: x | if ($x.FIRSTNAME->isEmpty(), | 1, | []) : y | $y->count()
+      ])->concatenate(
+        $cte->aggregate(~[
+                name: x | 'AGE' : y | 'AGE',
+                max_number : x | $x.AGE->cast(@Number) : y | $y->max(),
+                min_number : x | $x.AGE->cast(@Number) : y | $y->min(),
+                max_date : x | []->cast(@Date) : y | $y->max(),
+                min_date : x | []->cast(@Date) : y | $y->min(),
+                max_length: x | []->cast(@Integer) : y | $y->max(),
+                min_length: x | []->cast(@Integer) : y | $y->min(),
+                count: x | $x.AGE : y | $y->count(),
+                count_distinct: x | $x.AGE : y | $y->distinct()->count(),
+                count_null: x | if ($x.AGE->isEmpty(), | 1, | []) : y | $y->count()
+              ])->concatenate(
+        $cte->aggregate(~[
+                name: x | 'DOB' : y | 'DOB',
+                max_number : x | []->cast(@Number) : y | $y->max(),
+                min_number : x | []->cast(@Number) : y | $y->min(),
+                max_date : x | $x.DOB->cast(@Date) : y | $y->max(),
+                min_date : x | $x.DOB->cast(@Date) : y | $y->min(),
+                max_length: x | []->cast(@Integer) : y | $y->max(),
+                min_length: x | []->cast(@Integer) : y | $y->min(),
+                count: x | $x.DOB : y | $y->count(),
+                count_distinct: x | $x.DOB : y | $y->distinct()->count(),
+                count_null: x | if ($x.DOB->isEmpty(), | 1, | []) : y | $y->count()
+              ])
+      )
+      );
+  };
+
+  let validation = '###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[DOB, AGE, FIRSTNAME])->from(meta::external::dataquality::tests::domain::DataQualityRuntime);' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'validFirstName\';' +
+    '             description: \'first name should not be empty\';' +
+    '             assertion: row2|$row2.AGE->isNotEmpty();' +
+    '             type: ROW_LEVEL;' +
+    '          }' +
+    '         ];' +
+    '      }';
+
+  doTest(
+    $validation,
+    {|from($lambda, $runtime)},
+    true
+  );
+
+  doTest(
+    $validation,
+    $lambda,
+    false
+  );
+}
+
+function meta::external::dataquality::tests::doTest(dq:String[1], expected:FunctionDefinition<Any>[1], wrapWithFrom: Boolean[1]):Boolean[1]
+{
+  let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
+
+  let actual = $dataqualityRelationValidation->getProfilingLambda($wrapWithFrom);
+
+  let expectedPrevaled = if ($wrapWithFrom, | $expected->preval([]), | $expected);
+  let actualPrevaled = if ($wrapWithFrom, | $actual->preval([]), | $actual);
+
+  assertLambdaEquals($expectedPrevaled, $actualPrevaled->cast(@LambdaFunction<Any>));
+}

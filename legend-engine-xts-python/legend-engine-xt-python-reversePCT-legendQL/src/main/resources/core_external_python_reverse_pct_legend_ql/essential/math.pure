@@ -1,0 +1,359 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::external::python::reversePCT::legendQL::*;
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEssentialMath(): ReversesForSource[*]
+{
+  [
+    // Exponential ------------------------------------------------------
+    [ // exp
+      meta::pure::functions::math::tests::exp::testNumberExp_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::lang::eval($z, 1.0)')
+      ),
+      meta::pure::functions::math::tests::exp::testSimple_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1.0->meta::pure::functions::math::exp()', 'c(1.0).exp()'),
+          rev('|1->meta::pure::functions::math::exp()', 'c(1).exp()'),
+          rev('|4->meta::pure::functions::math::exp()->meta::pure::functions::math::log()', 'c(4).exp().log()')
+        ]
+      )
+    ]->combine(),
+    [ // log
+      meta::pure::functions::math::tests::log::testNumberLog_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::lang::eval($z, 2.718281828459045)')
+      ),
+      meta::pure::functions::math::tests::log::testSimple_Function_1__Boolean_1_->testRev(
+        [
+          rev('|4->meta::pure::functions::math::exp()->meta::pure::functions::math::log()', 'c(4).exp().log()'),
+          rev('|2.718281828459045->meta::pure::functions::math::log()', 'c(2.718281828459045).log()')
+        ]
+      )
+    ]->combine(),
+    // ------------------------------------------------------------------
+
+    // Operation --------------------------------------------------------
+    [ // abs
+      meta::pure::functions::math::tests::abs::testIntAbs_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::abs(-2)', 'abs(c(-2))')
+      ),
+      meta::pure::functions::math::tests::abs::testBigIntAbs_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::abs(-123456789123456789)', 'abs(c(-123456789123456789))')
+      ),
+      meta::pure::functions::math::tests::abs::testFloatAbs_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::abs(-2.222)', 'abs(c(-2.222))')
+      ),
+      meta::pure::functions::math::tests::abs::testBigFloatAbs_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::abs(-123456789123456784.0)', 'abs(c(-123456789123456784.0))')
+      ),
+      meta::pure::functions::math::tests::abs::testDecimalAbs_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|meta::pure::functions::math::abs(-3.0D)'),
+          noRev('|3.0D->meta::pure::functions::math::abs()')
+        ]
+      )
+    ]->combine(),
+    [ // mod
+      meta::pure::functions::math::tests::mod::testMod_Function_1__Boolean_1_->testRev(
+        [
+          rev('|12->meta::pure::functions::math::mod(5)', 'c(12) % 5'),
+          rev('|5->meta::pure::functions::math::mod(12)', 'c(5) % 12')
+        ]
+      ),
+      meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|meta::pure::functions::math::mod(-12, 5)', 'c(-12) % 5'),
+          rev('|meta::pure::functions::math::mod(-5, 12)', 'c(-5) % 12')
+        ]
+      ),
+      meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval(12, 5)'),
+          noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval(-12, 5)'),
+          noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
+        ]
+      )
+    ]->combine(),
+    // ------------------------------------------------------------------
+
+    //Power -------------------------------------------------------------
+    [ // cbrt
+      meta::pure::functions::math::tests::testCubeRoot_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::math::cbrt()', 'c(0).cbrt()'),
+          rev('|27->meta::pure::functions::math::cbrt()', 'c(27).cbrt()'),
+          rev('|0.001->meta::pure::functions::math::cbrt()', 'c(0.001).cbrt()')
+        ]
+      ),
+      meta::pure::functions::math::tests::testCubeRootEval_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::math::cbrt_Number_1__Float_1_->meta::pure::functions::lang::eval(27)')
+      )
+    ]->combine(),
+    [ // pow
+      meta::pure::functions::math::tests::pow::testSimplePow_Function_1__Boolean_1_->testRev(
+        [
+          rev('|2->meta::pure::functions::math::pow(2)', 'c(2) ** 2'),
+          rev('|2->meta::pure::functions::math::pow(2)->meta::pure::functions::math::pow(2)', '(c(2) ** 2) ** 2'),
+          rev('|4.0->meta::pure::functions::math::pow(2.0)', '4.0 ** c(2.0)')
+        ]
+      ),
+      meta::pure::functions::math::tests::pow::testComplexPow_Function_1__Boolean_1_->testRev(
+        [
+          rev('|2->meta::pure::functions::math::pow(2->meta::pure::functions::math::pow(2))', 'c(2) ** (c(2) ** 2)'),
+          rev('|3.33->meta::pure::functions::math::pow(4.33)', '3.33 ** c(4.33)')
+        ]
+      ),
+      meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::lang::eval($z, 3.0, 2)')
+      )
+    ]->combine(),
+    [ // sqrt
+      meta::pure::functions::math::tests::testSquareRoot_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::math::sqrt()', 'c(0).sqrt()'),
+          rev('|9->meta::pure::functions::math::sqrt()', 'c(9).sqrt()'),
+          rev('|0.01->meta::pure::functions::math::sqrt()', 'c(0.01).sqrt()')
+        ]
+      ),
+      meta::pure::functions::math::tests::testSquareRootEval_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::math::sqrt_Number_1__Float_1_->meta::pure::functions::lang::eval(9)')
+      )
+    ]->combine(),
+    // ------------------------------------------------------------------
+
+    //Round -------------------------------------------------------------
+    [ // ceiling
+      meta::pure::functions::math::tests::ceiling::testPositiveIntegerCeiling_Function_1__Boolean_1_->testRev(
+        rev('|17->meta::pure::functions::math::ceiling()', 'c(17).ceil()')
+      ),
+      meta::pure::functions::math::tests::ceiling::testNegativeIntegerCeiling_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::ceiling(-17)', 'math.ceil(c(-17))')
+      ),
+      meta::pure::functions::math::tests::ceiling::testPositiveFloatCeiling_Function_1__Boolean_1_->testRev(
+        [
+          rev('|17.9->meta::pure::functions::math::ceiling()', 'c(17.9).ceil()'),
+          rev('|17.5->meta::pure::functions::math::ceiling()', 'math.ceil(c(17.5))'),
+          rev('|17.01->meta::pure::functions::math::ceiling()', 'c(17.01).ceil()')
+        ]
+      ),
+      meta::pure::functions::math::tests::ceiling::testPositiveFloatWithZeroDecimalCeiling_Function_1__Boolean_1_->testRev(
+        rev('|17.0->meta::pure::functions::math::ceiling()', 'c(17.0).ceil()')
+      ),
+      meta::pure::functions::math::tests::ceiling::testNegativeFloatCeiling_Function_1__Boolean_1_->testRev(
+        [
+          rev('|meta::pure::functions::math::ceiling(-17.9)', 'math.ceil(c(-17.9))'),
+          rev('|meta::pure::functions::math::ceiling(-17.5)', 'c(-17.5).ceil()'),
+          rev('|meta::pure::functions::math::ceiling(-17.01)', 'c(-17.01).ceil()')
+        ]
+      ),
+      meta::pure::functions::math::tests::ceiling::testNegativeFloatWithZeroDecimalCeiling_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::ceiling(-17.0)', 'c(-17.0).ceil()')
+      ),
+      meta::pure::functions::math::tests::ceiling::testDecimalCeiling_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|3.14D->meta::pure::functions::math::ceiling()'),
+          noRev('|meta::pure::functions::math::ceiling(-3.14D)')
+        ]
+      )
+    ]->combine(),
+    [ // floor
+      meta::pure::functions::math::tests::floor::testPositiveIntegerFloor_Function_1__Boolean_1_->testRev(
+        rev('|17->meta::pure::functions::math::floor()', 'c(17).floor()')
+      ),
+      meta::pure::functions::math::tests::floor::testNegativeIntegerFloor_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::floor(-17)', 'math.floor(c(-17))')
+      ),
+      meta::pure::functions::math::tests::floor::testPositiveFloatFloor_Function_1__Boolean_1_->testRev(
+        [
+          rev('|17.9->meta::pure::functions::math::floor()', 'c(17.9).floor()'),
+          rev('|17.5->meta::pure::functions::math::floor()', 'math.floor(c(17.5))'),
+          rev('|17.01->meta::pure::functions::math::floor()', 'c(17.01).floor()')
+        ]
+      ),
+      meta::pure::functions::math::tests::floor::testPositiveFloatWithZeroDecimalFloor_Function_1__Boolean_1_->testRev(
+        rev('|17.0->meta::pure::functions::math::floor()', 'c(17.0).floor()')
+      ),
+      meta::pure::functions::math::tests::floor::testNegativeFloatFloor_Function_1__Boolean_1_->testRev(
+        [
+          rev('|meta::pure::functions::math::floor(-17.9)', 'math.floor(c(-17.9))'),
+          rev('|meta::pure::functions::math::floor(-17.5)', 'c(-17.5).floor()'),
+          rev('|meta::pure::functions::math::floor(-17.01)', 'c(-17.01).floor()')
+        ]
+      ),
+      meta::pure::functions::math::tests::floor::testNegativeFloatWithZeroDecimalFloor_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::floor(-17.0)', 'c(-17.0).floor()')
+      ),
+      meta::pure::functions::math::tests::floor::testDecimalFloor_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|3.14D->meta::pure::functions::math::floor()'),
+          noRev('|meta::pure::functions::math::floor(-3.14D)')
+        ]
+      )
+    ]->combine(),
+    [ // round
+      meta::pure::functions::math::tests::round::testPositiveIntegerRound_Function_1__Boolean_1_->testRev(
+        rev('|17->meta::pure::functions::math::round()', 'c(17).round()')
+      ),
+      meta::pure::functions::math::tests::round::testNegativeIntegerRound_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::round(-17)', 'round(c(-17))')
+      ),
+      meta::pure::functions::math::tests::round::testPositiveFloatRoundUp_Function_1__Boolean_1_->testRev(
+        rev('|17.6->meta::pure::functions::math::round()', 'c(17.6).round()')
+      ),
+      meta::pure::functions::math::tests::round::testPositiveFloatRoundDown_Function_1__Boolean_1_->testRev(
+        rev('|17.4->meta::pure::functions::math::round()', 'c(17.4).round()')
+      ),
+      meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenUp_Function_1__Boolean_1_->testRev(
+        rev('|17.5->meta::pure::functions::math::round()', 'c(17.5).round()')
+      ),
+      meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenDown_Function_1__Boolean_1_->testRev(
+        rev('|16.5->meta::pure::functions::math::round()', 'c(16.5).round()')
+      ),
+      meta::pure::functions::math::tests::round::testPositiveFloatWithZeroDecimalRound_Function_1__Boolean_1_->testRev(
+        rev('|17.0->meta::pure::functions::math::round()', 'c(17.0).round()')
+      ),
+      meta::pure::functions::math::tests::round::testNegativeFloatRoundUp_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::round(-17.4)', 'c(-17.4).round()')
+      ),
+      meta::pure::functions::math::tests::round::testNegativeFloatRoundDown_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::round(-17.6)', 'c(-17.6).round()')
+      ),
+      meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::round(-16.5)', 'c(-16.5).round()')
+      ),
+      meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenDown_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::round(-17.5)', 'c(-17.5).round()')
+      ),
+      meta::pure::functions::math::tests::round::testNegativeFloatWithZeroDecimalRound_Function_1__Boolean_1_->testRev(
+        rev('|meta::pure::functions::math::round(-17.0)', 'c(-17.0).round()')
+      ),
+      meta::pure::functions::math::tests::round::testDecimalRound_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|3.14159D->meta::pure::functions::math::round()'),
+          noRev('|meta::pure::functions::math::floor(-3.14D)'),
+          noRev('|3.14159D->meta::pure::functions::math::round(2)'),
+          noRev('|3.14159D->meta::pure::functions::math::round(3)'),
+          noRev('|meta::pure::functions::math::round(-3.14159D)'),
+          noRev('|meta::pure::functions::math::round(-3.14159D, 2)'),
+          noRev('|meta::pure::functions::math::round(-3.14159D, 3)')
+        ]
+      ),
+      meta::pure::functions::math::tests::round::testFloatRoundWithScale_Function_1__Boolean_1_->testRev(
+        [
+          revError('|17.3->meta::pure::functions::math::round(0)', 'c(17.3).round(0)', 'class java.lang.Long cannot be cast to class java.lang.Double (java.lang.Long and java.lang.Double are in module java.base of loader \'bootstrap\')', 'pylegend does integer rounding'),
+          rev('|meta::pure::functions::math::round(-17.36, 1)', 'c(-17.36).round(1)')
+        ]
+      )
+    ]->combine(),
+    // ------------------------------------------------------------------
+
+    // Trigonometry -----------------------------------------------------
+    [ // acos
+      meta::pure::functions::math::tests::trigonometry::testArcCosine_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::math::acos()', 'c(0).acos()'),
+          rev('|meta::pure::functions::math::acos(-1)', 'c(-1).acos()'),
+          rev('|0.5->meta::pure::functions::math::acos()', 'c(0.5).acos()')
+        ]
+      ),
+      meta::pure::functions::math::tests::trigonometry::testArcCosineEval_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::math::acos_Number_1__Float_1_->meta::pure::functions::lang::eval(0.5)')
+      )
+    ]->combine(),
+    [ // asin
+      meta::pure::functions::math::tests::trigonometry::testArcSine_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::math::asin()', 'c(0).asin()'),
+          rev('|1->meta::pure::functions::math::asin()', 'c(1).asin()'),
+          rev('|meta::pure::functions::math::asin(-0.5)', 'c(-0.5).asin()')
+        ]
+      ),
+      meta::pure::functions::math::tests::trigonometry::testArcSineEval_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::math::asin_Number_1__Float_1_->meta::pure::functions::lang::eval(1)')
+      )
+    ]->combine(),
+    [ // atan
+      meta::pure::functions::math::tests::trigonometry::testArcTangent_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::math::atan()', 'c(0).atan()'),
+          rev('|1.5->meta::pure::functions::math::atan()', 'c(1.5).atan()'),
+          rev('|100->meta::pure::functions::math::atan()', 'c(100).atan()')
+        ]
+      ),
+      meta::pure::functions::math::tests::trigonometry::testArcTangentEval_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::math::atan_Number_1__Float_1_->meta::pure::functions::lang::eval(100)')
+      )
+    ]->combine(),
+    [ // atan2
+      meta::pure::functions::math::tests::trigonometry::testArcTangent2_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::math::atan2(1)', 'c(0).atan2(1)'),
+          rev('|1->meta::pure::functions::math::atan2(0)', 'c(1).atan2(0)'),
+          rev('|0.5->meta::pure::functions::math::atan2(3.5)', 'c(0.5).atan2(3.5)')
+        ]
+      ),
+      meta::pure::functions::math::tests::trigonometry::testArcTangent2Eval_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::math::atan2_Number_1__Number_1__Float_1_->meta::pure::functions::lang::eval(1, 0)')
+      )
+    ]->combine(),
+    [ // cos
+      meta::pure::functions::math::tests::trigonometry::testCosine_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::math::cos()', 'c(0).cos()'),
+          rev('|meta::pure::functions::math::cos(-1)', 'c(-1).cos()'),
+          rev('|meta::pure::functions::math::cos(-1.5)', 'c(-1.5).cos()')
+        ]
+      ),
+      meta::pure::functions::math::tests::trigonometry::testCosEval_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::math::cos_Number_1__Float_1_->meta::pure::functions::lang::eval(1)')
+      )
+    ]->combine(),
+    [ // cot
+      meta::pure::functions::math::tests::trigonometry::testCoTangent_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::math::cot()', 'c(1).cot()'),
+          rev('|1.5->meta::pure::functions::math::cot()', 'c(1.5).cot()')
+        ]
+      ),
+      meta::pure::functions::math::tests::trigonometry::testCoTangentEval_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::math::cot_Number_1__Float_1_->meta::pure::functions::lang::eval(1.5)')
+      )
+    ]->combine(),
+    [ // sin
+      meta::pure::functions::math::tests::trigonometry::testSine_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::math::sin()', 'c(0).sin()'),
+          rev('|1->meta::pure::functions::math::sin()', 'c(1).sin()'),
+          rev('|1.5->meta::pure::functions::math::sin()', 'c(1.5).sin()')
+        ]
+      ),
+      meta::pure::functions::math::tests::trigonometry::testSineEval_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::math::sin_Number_1__Float_1_->meta::pure::functions::lang::eval(1)')
+      )
+    ]->combine(),
+    [ // tan
+      meta::pure::functions::math::tests::trigonometry::testTangent_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::math::tan()', 'c(0).tan()'),
+          rev('|2->meta::pure::functions::math::tan()', 'c(2).tan()')
+        ]
+      ),
+      meta::pure::functions::math::tests::trigonometry::testTangentEval_Function_1__Boolean_1_->testRev(
+        noRev('|meta::pure::functions::math::tan_Number_1__Float_1_->meta::pure::functions::lang::eval(2)')
+      )
+    ]->combine()
+    // ------------------------------------------------------------------
+  ]
+}

@@ -17,7 +17,7 @@ import meta::pure::test::pct::reversePCT::framework::*;
 function meta::external::query::sql::reversePCT::tests::variant::convert::fromJson::reverses():ReversesForSource[1]
 {
   ^ReversesForSource(
-    source = '/platform/pure/variant/convert/fromJson.pure',
+    source = '/core_functions_variant/functions/convert/fromJson.pure',
     reverses = [
                  revsForTest(
                       'meta::pure::functions::variant::convert::tests::fromJson::testJsonNull_Function_1__Boolean_1_',

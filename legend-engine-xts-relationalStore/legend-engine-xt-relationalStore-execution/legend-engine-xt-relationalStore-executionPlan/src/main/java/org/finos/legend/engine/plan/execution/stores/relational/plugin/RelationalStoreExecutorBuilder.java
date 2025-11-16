@@ -30,7 +30,6 @@ import java.util.Optional;
 
 public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
 {
-    private static final int DEFAULT_PORT = Integer.parseInt(System.getProperty("legend.test.h2.port", "-1"));
     public static final String DEFAULT_TEMP_PATH = "/tmp/";
 
     @Override
@@ -49,7 +48,7 @@ public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
     @Override
     public RelationalStoreExecutor build()
     {
-        TemporaryTestDbConfiguration temporaryTestDbConfiguration = new TemporaryTestDbConfiguration(DEFAULT_PORT);
+        TemporaryTestDbConfiguration temporaryTestDbConfiguration = new TemporaryTestDbConfiguration(Integer.parseInt(System.getProperty("legend.test.h2.port", "-1")));
         RelationalExecutionConfiguration relationalExecutionConfiguration = new RelationalExecutionConfiguration(DEFAULT_TEMP_PATH);
         Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder = this.configureDatabaseAuthenticationFlowProvider(relationalExecutionConfiguration);
         RelationalStoreState state = new RelationalStoreState(temporaryTestDbConfiguration, relationalExecutionConfiguration, flowProviderHolder);
@@ -71,7 +70,7 @@ public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
         }
         if (relationalExecutionConfiguration.temporarytestdb == null)
         {
-            relationalExecutionConfiguration.temporarytestdb = new TemporaryTestDbConfiguration(DEFAULT_PORT);
+            relationalExecutionConfiguration.temporarytestdb = new TemporaryTestDbConfiguration(Integer.parseInt(System.getProperty("legend.test.h2.port", "-1")));
         }
         Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder = this.configureDatabaseAuthenticationFlowProvider(relationalExecutionConfiguration);
         RelationalStoreState state = new RelationalStoreState(relationalExecutionConfiguration.temporarytestdb, relationalExecutionConfiguration, flowProviderHolder);

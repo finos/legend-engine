@@ -1,0 +1,137 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::external::python::reversePCT::legendQL::*;
+
+
+function <<PCT.adapter>> {PCT.adapterName = 'Python - LegendQL'} meta::external::python::reversePCT::legendQL::pythonLegendQLReversePCTAdapter<X|o>(f: Function<{->X[o]}>[1]):X[o]
+{
+  let rev = findReverseForFunction($f, pythonLegendQLReverses(), []);
+
+  if ($rev.shouldBeSupported,
+    | let pythonString = $rev.reverse->toOne();
+      let func = getPureLambdaForPythonCodeBlock($pythonString);
+      // println($func->meta::pure::router::printer::asString());
+      $func->cast(@Function<{->X[o]}>)->eval();,
+    | fail('Should not be supported'); @X->toMultiplicity(@[o]);
+      // ('{' + $rev.function + '}')->compileValueSpecification().result->toOne()->cast(@InstanceValue).values->toOne()->cast(@LambdaFunction<{->X[o]}>)->eval()
+  );
+}
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReverses(): ReversesForSource[*]
+{
+  pythonLegendQLReversesEssential()
+    ->concatenate(
+      pythonLegendQLReversesGrammar()
+    )
+    ->concatenate(
+      pythonLegendQLReversesRelation()
+    )
+    ->concatenate(
+      pythonLegendQLReversesStandard()
+    )
+    ->concatenate(
+      pythonLegendQLReversesUnclassified()
+    )
+    ->concatenate(
+      pythonLegendQLReversesVariant()
+    )
+}
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEssential(): ReversesForSource[*]
+{
+  pythonLegendQLReversesEssentialMath()
+    ->concatenate(
+      pythonLegendQLReversesEssentialDate()
+    )
+    ->concatenate(
+      pythonLegendQLReversesEssentialLang()
+    )
+    ->concatenate(
+      pythonLegendQLReversesEssentialString()
+    )
+    ->concatenate(
+      pythonLegendQLReversesEssentialCollection()
+    )
+}
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGrammar(): ReversesForSource[*]
+{
+  []
+}
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesRelation(): ReversesForSource[*]
+{
+  []
+}
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesStandard(): ReversesForSource[*]
+{
+  []
+}
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesUnclassified(): ReversesForSource[*]
+{
+  []
+}
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesVariant(): ReversesForSource[*]
+{
+  []
+}
+
+
+function meta::external::python::reversePCT::legendQL::testRev(testFunc: meta::pure::metamodel::function::ConcreteFunctionDefinition<Any>[1], reverses: Reverse[*]): ReversesForSource[1]
+{
+  ^ReversesForSource(source = $testFunc->sourceInformation().source->toOne(), reverses = revsForTest($testFunc->elementToPath(), $reverses))
+}
+
+function meta::external::python::reversePCT::legendQL::combine(testRevs: ReversesForSource[1..*]): ReversesForSource[1]
+{
+  if ($testRevs->size() == 1,
+      | $testRevs->at(0),
+      | let sources = $testRevs.source->removeDuplicates();
+        assert($sources->size() == 1, | 'Cannot combine test reverses defined in different source files: ' + $testRevs.source->removeDuplicates()->joinStrings('[', ', ', ']'));
+        ^ReversesForSource(source = $sources->at(0), reverses = $testRevs.reverses);
+  )
+}
+
+function <<access.private>> meta::external::python::reversePCT::legendQL::getPureLambdaForPythonCodeBlock(pythonCodeBlock: String[1]): LambdaFunction<Any>[1]
+{
+  ('{|' + getPureExpressionStringForPythonCodeBlock($pythonCodeBlock) + '}')->compileValueSpecification().result->toOne()->cast(@InstanceValue).values->toOne()->cast(@LambdaFunction<Any>)
+}
+
+function <<access.private>> meta::external::python::reversePCT::legendQL::getPureExpressionStringForPythonCodeBlock(pythonCodeBlock: String[1]): String[1]
+{
+  let script =
+    'import math\n' + 
+    'from datetime import date, datetime\n' + 
+    'from pylegend.core.tds.tds_frame import FrameToPureConfig\n' + 
+    'from pylegend.core.language import PyLegendPrimitive\n' + 
+    'from pylegend.core.language.shared.pct_helpers import c\n' + 
+    '\n' +
+    'def func():\n'+
+    '  res = (' + $pythonCodeBlock + ')\n' + 
+    '  if isinstance(res, PyLegendPrimitive):\n' + 
+    '     return res.to_pure_expression(FrameToPureConfig())\n' +
+    '  raise RuntimeError("Unhandled expression type " + str(type(res)))\n' +
+    '\n' +
+    'print(func())\n';
+
+  let res = meta::python::execution::executePythonScript($script);
+  if ($res.error->trim() != '', | fail($res.error), | []);
+  $res.output;
+}

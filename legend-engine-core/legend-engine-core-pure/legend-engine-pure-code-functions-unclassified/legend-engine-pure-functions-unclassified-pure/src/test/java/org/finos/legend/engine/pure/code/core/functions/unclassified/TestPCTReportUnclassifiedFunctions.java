@@ -24,8 +24,8 @@ public class TestPCTReportUnclassifiedFunctions
     @Test
     public void canFindPCTReport()
     {
-        Assert.assertEquals(4, PCTReportProviderLoader.gatherFunctions().size());
-        Assert.assertEquals("essential, grammar, unclassified, variant", PCTReportProviderLoader.gatherFunctions().collect(c -> c.reportScope.module).distinct().sortThis().makeString(", "));
+        Assert.assertEquals(3, PCTReportProviderLoader.gatherFunctions().size());
+        Assert.assertEquals("essential, grammar, unclassified", PCTReportProviderLoader.gatherFunctions().collect(c -> c.reportScope.module).distinct().sortThis().makeString(", "));
         Assert.assertEquals(0, PCTReportProviderLoader.gatherReports().size());
         Assert.assertEquals("", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter).distinct().sortThis().makeString(", "));
     }

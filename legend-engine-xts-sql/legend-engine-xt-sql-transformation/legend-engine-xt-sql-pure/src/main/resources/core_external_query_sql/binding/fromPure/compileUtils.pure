@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::core::runtime::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
 import meta::external::query::sql::transformation::queryToPure::*;
 import meta::relational::metamodel::*;
 import meta::pure::extension::*;
@@ -169,6 +172,42 @@ function meta::external::query::sql::transformation::compile::utils::iv(value: A
   ^InstanceValue(multiplicity = $multiplicity, genericType = $genericType, values = $value);
 }
 
+function meta::external::query::sql::transformation::compile::utils::gt(type:Type[1]): GenericType[1]
+{
+  ^GenericType(rawType = $type);
+}
+
+function meta::external::query::sql::transformation::compile::utils::createLet(name: String[1], value: ValueSpecification[1]):FunctionExpression[1]
+{
+  sfe(letFunction_String_1__T_m__T_m_, $value->genericType(), [], PureOne, [iv($name), $value]);
+}
+
+function meta::external::query::sql::transformation::compile::utils::createCast(expression:ValueSpecification[1], type:Type[1]):ValueSpecification[1]
+{
+  createCast($expression, ^GenericType(rawType = $type));
+}
+
+function meta::external::query::sql::transformation::compile::utils::createCast(expression:ValueSpecification[1], type:GenericType[1]):ValueSpecification[1]
+{
+  sfe(cast_Any_m__T_1__T_m_, $type, [], $expression->evaluateAndDeactivate().multiplicity, [$expression, ^InstanceValue(genericType = $type, multiplicity = PureOne)])
+}
+
+
+function meta::external::query::sql::transformation::compile::utils::createExtractEnumValue(enum:Enum[1]):FunctionExpression[1]
+{
+  createExtractEnumValue($enum->type()->cast(@Enumeration<Enum>), $enum->toString());
+}
+
+
+function meta::external::query::sql::transformation::compile::utils::createExtractEnumValue(enumeration:Enumeration<Enum>[1], value:String[1]):FunctionExpression[1]
+{
+  createExtractEnumValue($enumeration, $value->iv())
+}
+
+function meta::external::query::sql::transformation::compile::utils::createExtractEnumValue(enumeration:Enumeration<Enum>[1], value:ValueSpecification[1]):FunctionExpression[1]
+{
+  sfe(extractEnumValue_Enumeration_1__String_1__T_1_, ^GenericType(rawType = $enumeration), [], [iv($enumeration), $value]);
+}
 
 function meta::external::query::sql::transformation::compile::utils::processExtractEnumValue(enum:Enum[1]):FunctionExpression[1]
 {
@@ -283,8 +322,8 @@ function meta::external::query::sql::transformation::compile::utils::scanDepende
                                 $p->match(
                                       $extraScanDependenciesType->concatenate(
                                         [
-                                        x:Database[1]|$x.includes,
-                                        x:Any[1]|[]
+                                            x:Database[1]|$x.includes,
+                                            x:Any[1]|[]
                                         ]
                                       )->toOneMany()
                                 )
@@ -294,4 +333,76 @@ function meta::external::query::sql::transformation::compile::utils::scanDepende
                       )->removeDuplicates();
   let newOnes = $found->removeAll($alreadyFound);
   $v->concatenate($found->concatenate(if($newOnes->isEmpty(),|[],|$newOnes->scanDependencies($alreadyFound->concatenate($newOnes), $extraScanDependenciesType))))->removeDuplicates();
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithFro<T>(item:T[1], mapping:Mapping[0..1], runtime:Runtime[0..1], executionContext:ExecutionContext[0..1], relation:Boolean[1]):T[1]
+{
+  $item->match([
+    l:LambdaFunction<Any>[1] | wrapWithLambdaFrom($l, $mapping, $runtime)->cast(@T),
+    v:ValueSpecification[1] | wrapWithFrom($v, $mapping, $runtime, $executionContext, $relation)->cast(@T)
+  ])
+}
+
+function meta::external::query::sql::transformation::compile::utils::wrapWithLambdaFrom(lambda:LambdaFunction<Any>[1], mapping:Mapping[0..1], runtime:Any[0..1]):LambdaFunction<Any>[1]
+{
+  if ($mapping->isEmpty() && $runtime->isEmpty(),
+    | $lambda,
+    | let params = $lambda->iv()->concatenate(if ($mapping->isNotEmpty(), | $mapping->iv(), | []))->concatenate(if ($runtime->isNotEmpty(), | $runtime->iv(), | []));
+
+      let func = [
+        pair($mapping->isEmpty() && $runtime->toOne()->instanceOf(PackageableRuntime), from_FunctionDefinition_1__PackageableRuntime_1__T_m_->cast(@FunctionDefinition<Any>)),
+        pair($mapping->isEmpty() && $runtime->toOne()->instanceOf(Runtime), from_FunctionDefinition_1__Runtime_1__T_m_->cast(@FunctionDefinition<Any>)),
+        pair($mapping->isNotEmpty() && $runtime->toOne()->instanceOf(PackageableRuntime), from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_->cast(@FunctionDefinition<Any>)),
+        pair($mapping->isNotEmpty() && $runtime->toOne()->instanceOf(Runtime), from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_->cast(@FunctionDefinition<Any>))
+      ]->getValue(true);
+
+      let sfe = sfe($func, $lambda->functionReturnType(), [], PureOne, $params);
+
+      ^$lambda(expressionSequence = $sfe);
+  );
+}
+
+function meta::external::query::sql::transformation::compile::utils::wrapWithFrom(expression:ValueSpecification[1], mapping:Mapping[0..1], runtime:Runtime[0..1], executionContext:ExecutionContext[0..1], relation:Boolean[1]):ValueSpecification[1]
+{
+  let mappingOne = if ($mapping->isEmpty(), | emptyMapping(), | $mapping->toOne());
+
+  if ($relation,
+      | [
+            pair($mapping->isEmpty() && $runtime->isNotEmpty(), |
+                sfe(meta::pure::mapping::from_T_m__Runtime_1__T_m_,[$expression, iv($runtime->toOne())])),
+            pair($mapping->isNotEmpty() && $runtime->isNotEmpty(), |
+                sfe(meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_, [$expression, iv($mappingOne), iv($runtime->toOne())]))
+        ]->getValue(true, | $expression)->eval(),
+      | [
+            pair($runtime->isNotEmpty() && $executionContext->isNotEmpty(), |
+                sfe(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_, [$expression, iv($mappingOne), iv($runtime->toOne()), iv($executionContext)])),
+          pair($runtime->isNotEmpty() && $executionContext->isEmpty(), |
+                sfe(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_, [$expression, iv($mappingOne), iv($runtime->toOne())]))
+        ]->getValue(true, | $expression)->eval()
+  );
+}
+
+function meta::external::query::sql::transformation::compile::utils::emptyMapping():Mapping[1]
+{
+  ^Mapping(package = meta::external::query::sql::transformation::compile::utils, name = 'emptymapping')
+}
+
+function meta::external::query::sql::transformation::compile::utils::fromFunctions():Function<Any>[*]
+{
+  [
+    meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_,
+    meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_,
+    meta::pure::mapping::from_FunctionDefinition_1__PackageableRuntime_1__T_m_,
+    meta::pure::mapping::from_FunctionDefinition_1__Runtime_1__T_m_,
+    // meta::pure::mapping::from_T_m__DataSpaceExecutionContext_1__T_m_,
+    // meta::pure::mapping::from_T_m__DataSpace_1__T_m_,
+    meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_,
+    meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
+    meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_,
+    meta::pure::mapping::from_T_m__Runtime_1__T_m_,
+    meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__ExecutionContext_1__TabularDataSet_1_,
+    meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_,
+    meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
+    meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_
+  ]
 }

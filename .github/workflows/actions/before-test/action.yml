@@ -37,6 +37,10 @@ runs:
       shell: bash
       run: python3 --version
 
+    - name: Install pylegend
+      shell: bash
+      run: pip3 install pylegend
+
     - name: Cache Maven dependencies
       uses: actions/cache/restore@v4
       env:

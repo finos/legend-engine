@@ -56,7 +56,7 @@ function <<test.Test>> meta::relational::mutation::executionPlan::test::testSimp
   testMutationPlanGenerationHelper(
     'completeGraphFetchTreeH2PersonMutation',
     [
-      'merge into Person_Table (FIRM, FIRST_NAME, KERBEROS, LAST_NAME) values (\'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\', \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\')',
+      'merge into Person_Table using (values ( \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\', \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\' )) on KERBEROS = \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\' when matched then update set FIRM = \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', FIRST_NAME = \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', LAST_NAME = \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\' when not matched then insert ( FIRM, FIRST_NAME, KERBEROS, LAST_NAME ) values ( \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\', \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\')',
       $additionalColumnGenerator,
       'H2'
     ]
@@ -74,7 +74,7 @@ function <<test.Test>> meta::relational::mutation::executionPlan::test::testSimp
   testMutationPlanGenerationWithMilestoningHelper(
     'completeGraphFetchTreeH2PersonMutation',
     [
-      'merge into Person_Table (FIRM, FIRST_NAME, KERBEROS, LAST_NAME, in_z, out_z) values (\'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\', \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\', current_timestamp(), \'9999-12-31T23:59:59.9999\')',
+      'merge into Person_Table using (values ( \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\', \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\', current_timestamp(), \'9999-12-31T23:59:59.9999\' )) on KERBEROS = \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\' when matched then update set FIRM = \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', FIRST_NAME = \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', LAST_NAME = \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\', in_z = current_timestamp(), out_z = \'9999-12-31T23:59:59.9999\' when not matched then insert ( FIRM, FIRST_NAME, KERBEROS, LAST_NAME, in_z, out_z ) values ( \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\', \'${generatedColumnName_LAST_NAME?replace("\'", "\'\'")}\', current_timestamp(), \'9999-12-31T23:59:59.9999\')',
       $additionalColumnGenerator,
       'H2'
     ]
@@ -96,7 +96,7 @@ function <<test.Test>> meta::relational::mutation::executionPlan::test::testMuta
   testMutationPlanGenerationHelper(
     'incompleteGraphFetchTreeH2PersonMutation',
     [
-      'merge into Person_Table (FIRM, FIRST_NAME, KERBEROS) values (\'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\')',
+      'merge into Person_Table using (values ( \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\' )) on KERBEROS = \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\' when matched then update set FIRM = \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', FIRST_NAME = \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\' when not matched then insert ( FIRM, FIRST_NAME, KERBEROS ) values ( \'${generatedColumnName_FIRM?replace("\'", "\'\'")}\', \'${generatedColumnName_FIRST_NAME?replace("\'", "\'\'")}\', \'${generatedColumnName_KERBEROS?replace("\'", "\'\'")}\')',
       '',
       'H2'
     ]

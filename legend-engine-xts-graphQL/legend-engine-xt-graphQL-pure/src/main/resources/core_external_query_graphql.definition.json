@@ -11,6 +11,7 @@
     "core",
     "core_generation",
     "core_external_compiler",
+    "core_relational",
     "core_external_query_graphql_metamodel"
   ]
 }

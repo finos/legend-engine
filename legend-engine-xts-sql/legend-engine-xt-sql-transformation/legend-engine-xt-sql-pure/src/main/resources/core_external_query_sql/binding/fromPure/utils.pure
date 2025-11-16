@@ -45,6 +45,11 @@ function meta::external::query::sql::transformation::utils::getValues<X, Y>(pair
    $pairs->filter(p|$p.first == $value)->map(p | $p.second)
 }
 
+function meta::external::query::sql::transformation::utils::subTypeOfExNil(subType:Type[1], superType:Type[1]):Boolean[1]
+{
+   $subType != Nil && $subType->subTypeOf($superType);
+}
+
 function meta::external::query::sql::transformation::utils::getParameters(f:Function<Any>[1]):VariableExpression[*]
 {
    $f.classifierGenericType.typeArguments.rawType->match([

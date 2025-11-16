@@ -1,0 +1,114 @@
+import meta::pure::test::pct::reversePCT::framework::*;
+function meta::external::query::sql::reversePCT::tests::standard::math::trigonometry::cosh::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/math/trigonometry/cosh.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Identities_Function_1__Boolean_1_',
+                      [
+                        rev('|0->meta::pure::functions::math::cosh()',
+                            'select cosh(0)'
+                        ),
+                        rev('|meta::pure::functions::math::cosh(-5)',
+                            'select cosh(-5)'
+                        ),
+                        rev('|meta::pure::functions::math::cosh(-100)',
+                            'select cosh(-100)'
+                        ),
+                        rev('|meta::pure::functions::math::cosh(7 / 2)->meta::pure::functions::math::pow(2)',
+                            'select power(cosh(((1.0 * 7) / 2)), 2)'
+                        ),
+                        rev('|(1 + 7->meta::pure::functions::math::cosh()) / 2',
+                            'select ((1.0 * (1 + cosh(7))) / 2)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Integers_Function_1__Boolean_1_',
+                      [
+                        rev('|2->meta::pure::functions::math::cosh()',
+                            'select cosh(2)'
+                        ),
+                        rev('|meta::pure::functions::math::cosh(-2)',
+                            'select cosh(-2)'
+                        ),
+                        rev('|6->meta::pure::functions::math::cosh()',
+                            'select cosh(6)'
+                        ),
+                        rev('|meta::pure::functions::math::cosh(-6)',
+                            'select cosh(-6)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Floats_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::cosh(-3.14)',
+                            'select cosh(-3.14)'
+                        ),
+                        rev('|3.14->meta::pure::functions::math::cosh()',
+                            'select cosh(3.14)'
+                        ),
+                        rev('|meta::pure::functions::math::cosh(-0.7654321)',
+                            'select cosh(-0.7654321)'
+                        ),
+                        rev('|0.7654321->meta::pure::functions::math::cosh()',
+                            'select cosh(0.7654321)'
+                        ),
+                        rev('|11.573574828312076->meta::pure::functions::math::cosh()',
+                            'select cosh(11.573574828312076)'
+                        ),
+                        rev('|meta::pure::functions::math::cosh(-11.573574828312076)',
+                            'select cosh(-11.573574828312076)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::cosh(-3.14)',
+                            'select cosh(-3.14)'
+                        ),
+                        rev('|3.14->meta::pure::functions::math::cosh()',
+                            'select cosh(3.14)'
+                        ),
+                        rev('|meta::pure::functions::math::cosh(-0.7654321)',
+                            'select cosh(-0.7654321)'
+                        ),
+                        rev('|0.7654321->meta::pure::functions::math::cosh()',
+                            'select cosh(0.7654321)'
+                        ),
+                        rev('|11.573574828312076->meta::pure::functions::math::cosh()',
+                            'select cosh(11.573574828312076)'
+                        ),
+                        rev('|meta::pure::functions::math::cosh(-11.573574828312076)',
+                            'select cosh(-11.573574828312076)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::math::cosh_Number_1__Float_1_->meta::pure::functions::lang::eval(0)'),
+                        noRev('|meta::pure::functions::math::cosh_Number_1__Float_1_->meta::pure::functions::lang::eval(2)'),
+                        noRev('|meta::pure::functions::math::cosh_Number_1__Float_1_->meta::pure::functions::lang::eval(1.5)'),
+                        noRev('|meta::pure::functions::math::cosh_Number_1__Float_1_->meta::pure::functions::lang::eval(0.5)'),
+                        noRev('|meta::pure::functions::math::cosh_Number_1__Float_1_->meta::pure::functions::lang::eval(3.14)'),
+                        noRev('|meta::pure::functions::math::cosh_Number_1__Float_1_->meta::pure::functions::lang::eval(-3.14)'),
+                        noRev('|meta::pure::functions::math::cosh_Number_1__Float_1_->meta::pure::functions::lang::eval(11.573574828312076)'),
+                        noRev('|meta::pure::functions::math::cosh_Number_1__Float_1_->meta::pure::functions::lang::eval(-11.573574828312076)')
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::math::trigonometry::cosh::exec():Boolean[1]
+{
+   meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Identities(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Integers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Floats(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

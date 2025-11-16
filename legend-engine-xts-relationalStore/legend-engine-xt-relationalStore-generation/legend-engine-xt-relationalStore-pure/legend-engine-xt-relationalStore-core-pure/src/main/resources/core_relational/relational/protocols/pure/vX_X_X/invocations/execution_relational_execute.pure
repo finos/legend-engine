@@ -13,6 +13,7 @@
 // limitations under the License.
 
 ###Pure
+import meta::pure::metamodel::relation::*;
 import meta::pure::mapping::aggregationAware::*;
 import meta::json::*;
 import meta::pure::extension::*;
@@ -33,9 +34,41 @@ import meta::relational::milestoning::*;
 import meta::relational::mapping::*;
 import meta::relational::metamodel::*;
 
-function meta::protocols::pure::vX_X_X::invocation::execution::execute::processTDSResult(r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult[1], extensions:meta::pure::extension::Extension[*]) : Pair<List<Any>,List<Activity>>[1]
+function meta::protocols::pure::vX_X_X::invocation::execution::execute::processTDSResult(r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult[1], functionReturnType:GenericType[1], extensions:meta::pure::extension::Extension[*]) : Pair<List<Any>,List<Activity>>[1]
 {
-   let res = ^TabularDataSet
+  let res = if($functionReturnType.rawType->toOne()->subTypeOf(Relation),
+    | getTDSResultFromProtocol($r, $functionReturnType, $extensions),
+    | getTabularDataSetFromProtocol($r, $extensions)
+  );
+   
+  ^Pair<List<Any>, List<Activity>>(first=^List<Any>(values=$res), second=^List<Activity>(values=$r.activities->transformActivities($extensions)));
+}
+
+function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSResultFromProtocol(r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult[1], funcReturnType:GenericType[1], extensions:meta::pure::extension::Extension[*]): Any[1]
+{
+  let cols = $r.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns;
+
+  // We lose column type info after pivot, so need to compensate from protocol.
+  let columnTypeMap = if ($funcReturnType.typeArguments->at(0).rawType->toOne()->instanceOf(RelationType),
+                        | $funcReturnType.typeArguments->at(0).rawType->cast(@RelationType<Any>).columns->map(x | pair($x.name->toOne(), $x->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()->elementToPath()))->newMap(),
+                        | $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | pair($c.name, $t)))->newMap()
+                      );
+
+  let tdsString = $cols->map(c| $c.name + $columnTypeMap->get($c.name)->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
+                                $r.result.rows->map(x|
+                                  range($x.values->size())->map(z |
+                                      $x.values->at($z)->match([
+                                        s: String[1] | $s->meta::relational::tests::csv::escapeCSVString(),
+                                        a: Any[1] | if($a == TDSNull, |'null', |$a->toString())
+                                      ]);
+                                  )->makeString(',')
+                                )->joinStrings('\n');
+  $tdsString->stringToTDS();
+}
+
+function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTabularDataSetFromProtocol(r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult[1], extensions:meta::pure::extension::Extension[*]): TabularDataSet[1]
+{
+  let res = ^TabularDataSet
              (
                 columns = $r.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns
                             ->map({c |
@@ -48,36 +81,32 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::processT
                                     )})
              );
 
-   let trans = $r.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns.type->map(c|meta::protocols::pure::vX_X_X::invocation::execution::execute::dataTypeTransformer($c));
+  let trans = $r.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns.type->map(c|meta::protocols::pure::vX_X_X::invocation::execution::execute::dataTypeTransformer($c));
 
-   let ra = range($r.result.columns->size());
+  let ra = range($r.result.columns->size());
 
-   let newRows = $r.result.rows
-                  ->map({r |
-                            let vals = $r.values;
-                            ^TDSRow
-                            (
-                               parent = $res,
-                               values = $ra->map(i | let v = $vals->at($i);
-                                                    if($v->instanceOf(TDSNull),
-                                                       | $v,
-                                                       | $trans->at($i)->eval($v);
-                                                    );
-                                               )
-                            );
-                        });
-   $res->mutateAdd('rows', $newRows);
-   ^Pair<List<Any>, List<Activity>>(first=^List<Any>(values=$res), second=^List<Activity>(values=$r.activities->transformActivities($extensions)));
+  let newRows = $r.result.rows
+                ->map({r |
+                          let vals = $r.values;
+                          ^TDSRow
+                          (
+                              parent = $res,
+                              values = $ra->map(i | let v = $vals->at($i);
+                                                  if($v->instanceOf(TDSNull),
+                                                      | $v,
+                                                      | $trans->at($i)->eval($v);
+                                                  );
+                                              )
+                          );
+                      });
+  $res->mutateAdd('rows', $newRows);
 }
-
-
 
 function meta::protocols::pure::vX_X_X::invocation::execution::execute::processDataTypeResult(r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalDataTypeResult[1], extensions:meta::pure::extension::Extension[*]) : Pair<List<Any>,List<Activity>>[1]
 {
    let type = $r.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DataTypeBuilder).type;
    let trans = meta::protocols::pure::vX_X_X::invocation::execution::execute::dataTypeTransformer($type);
    ^Pair<List<Any>, List<Activity>>(first=^List<Any>(values=$r.result.rows.values->map(v|$trans->eval($v))), second=^List<Activity>(values=$r.activities->transformActivities($extensions)));
-
 }
 
 function meta::protocols::pure::vX_X_X::invocation::execution::execute::processRelationalClassResult(r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalClassResult[1], m:Mapping[1], pureRuntime:Runtime[1], context:meta::pure::runtime::ExecutionContext[0..1], extensions:meta::pure::extension::Extension[*]) : Pair<List<Any>,List<Activity>>[1]

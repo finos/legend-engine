@@ -1217,7 +1217,7 @@ public class Library
     {
         if (any instanceof String)
         {
-            return "'" + any.toString().replace("'", "\\'") + "'";
+            return "'" + any.toString().replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n") + "'";
         }
         else if (any instanceof PureDate)
         {

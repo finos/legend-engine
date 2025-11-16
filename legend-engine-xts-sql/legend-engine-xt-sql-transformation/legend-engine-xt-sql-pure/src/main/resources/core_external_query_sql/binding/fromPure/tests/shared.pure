@@ -13,15 +13,17 @@
 // limitations under the License.
 
 ###Pure
+import meta::pure::precisePrimitives::*;
+
 Class meta::external::query::sql::transformation::queryToPure::tests::FlatInput
 {
-  idIn: Integer[1];
+  idIn: SmallInt[1];
   booleanIn: Boolean[1];
   integerIn: Integer[1];
-  floatIn: Float[1];
-  decimalIn: Decimal[1];
+  floatIn: Float4[1];
+  decimalIn: Numeric(2, 1)[1];
   strictDateIn: StrictDate[1];
-  dateTimeIn: DateTime[1];
+  dateTimeIn: Timestamp[1];
   stringIn: String[1];
   enumVal: meta::external::query::sql::transformation::queryToPure::tests::MyEnum[1];
   type: meta::external::query::sql::transformation::queryToPure::tests::FieldType[1];
@@ -125,6 +127,14 @@ function meta::external::query::sql::transformation::queryToPure::tests::dummyCo
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::dummyRuntime(): Runtime[1]
+{
+  ^EngineRuntime(
+    mappings = dummyMapping,
+    connectionStores = dummyConnection()
+  );
+}
+
+function meta::external::query::sql::transformation::queryToPure::abc::dummyRuntime(): Runtime[1]
 {
   ^EngineRuntime(
     mappings = dummyMapping,

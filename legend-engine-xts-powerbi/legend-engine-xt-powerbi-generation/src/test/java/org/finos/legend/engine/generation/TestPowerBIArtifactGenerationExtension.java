@@ -130,7 +130,7 @@ public class TestPowerBIArtifactGenerationExtension
             if (infoURL != null)
             {
                 java.util.Scanner scanner = new java.util.Scanner(infoURL.openStream()).useDelimiter("\\A");
-                return scanner.hasNext() ? scanner.next() : null;
+                return scanner.hasNext() ? scanner.next().replace("\r", "") : null;
             }
             return null;
         }

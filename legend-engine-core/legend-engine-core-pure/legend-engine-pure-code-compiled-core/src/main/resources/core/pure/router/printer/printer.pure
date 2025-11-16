@@ -81,6 +81,10 @@ function meta::pure::router::printer::asString(f:ValueSpecification[1], pref:Pre
                                                                      a:BasicColumnSpecification<Any>[1]| '^BasicColumnSpecification<' + $a->genericType().typeArguments.rawType.name->makeString() + '>(name = \'' + $a.name + '\', func = ' + $a.func->asString($pref) + ')';,
                                                                      p:meta::pure::executionPlan::PlanVarPlaceHolder[1]|'$'+$p.name,
                                                                      a:Class<Any>[1]|if (efq($pref),|$a->elementToPath(),|$a->genericType().rawType.name->toOne()+' '+$a->toString()),
+                                                                     f:FuncColSpecArray<Any, Any>[1]|$f.funcSpecs->map(x | $x->varToString())->joinStrings('~[', ',', ']'),
+                                                                     f:FuncColSpec<Any, Any>[1]|$f.name + ':' + $f.function->varToString(),
+                                                                     a:AggColSpecArray<Any, Any, Any>[1]|$a.aggSpecs->map(x | $x->varToString())->joinStrings('~[', ',', ']'),
+                                                                     a:AggColSpec<Any, Any, Any>[1]|$a.name + ':' + $a.map->varToString() + ':' + $a.reduce->varToString(),
                                                                      a:Any[1]|$a->genericType().rawType.name->toOne()+' '+$a->toString();
                                                                    ]))->joinStrings(', ')+if($i.values->size() < 2,|'',|']');,
                    v:VariableExpression[1] | '$'+$v.name,
