@@ -19,12 +19,14 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammar;
+import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.function.Function5;
 import org.junit.Test;
 
@@ -117,7 +119,7 @@ public class TestGrammarGraphFetchApi extends TestGrammar<RootGraphFetchTree>
     }
 
     private static final GrammarToJson grammarToJson = new GrammarToJson();
-    private static final JsonToGrammar jsonToGrammar = new JsonToGrammar();
+    private static final JsonToGrammar jsonToGrammar = new JsonToGrammar(new ModelManager(DeploymentMode.DEV));
 
     @Override
     public Class<RootGraphFetchTree> get_Class()

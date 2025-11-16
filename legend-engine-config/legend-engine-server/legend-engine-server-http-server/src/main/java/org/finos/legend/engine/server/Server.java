@@ -356,7 +356,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // Grammar
         environment.jersey().register(new GrammarToJson());
-        environment.jersey().register(new JsonToGrammar());
+        environment.jersey().register(new JsonToGrammar(modelManager));
         environment.jersey().register(new RelationalOperationElementGrammarToJson());
         environment.jersey().register(new RelationalOperationElementJsonToGrammar());
         environment.jersey().register(new TransformGrammarToJson());
