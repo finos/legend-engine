@@ -21,10 +21,12 @@ import org.finos.legend.engine.postgres.protocol.wire.session.Session;
 public class SQLRewrite extends SQLSerializer
 {
     private final Session session;
+    private final CatalogManager catalogManager;
 
-    public SQLRewrite(Session session)
+    public SQLRewrite(Session session, CatalogManager catalogManager)
     {
         this.session = session;
+        this.catalogManager = catalogManager;
     }
 
     @Override
@@ -44,15 +46,15 @@ public class SQLRewrite extends SQLSerializer
         switch (value)
         {
             case "pg_catalog.pg_database":
-                return "metadata.database";
+                return "metadata_" + this.catalogManager.getId() + ".database";
             case "pg_catalog.pg_namespace":
-                return "metadata.namespace";
+                return "metadata_" + this.catalogManager.getId() + ".namespace";
             case "pg_catalog.pg_class":
-                return "metadata.class";
+                return "metadata_" + this.catalogManager.getId() + ".class";
             case "pg_catalog.pg_attribute":
-                return "metadata.attribute";
+                return "metadata_" + this.catalogManager.getId() + ".attribute";
             case "pg_catalog.pg_proc":
-                return "metadata.proc";
+                return "metadata_" + this.catalogManager.getId() + ".proc";
             default:
                 return value;
         }

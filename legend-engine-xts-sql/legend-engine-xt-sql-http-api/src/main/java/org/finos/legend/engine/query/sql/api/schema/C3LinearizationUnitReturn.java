@@ -12,19 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge;
-
-import org.finos.legend.engine.query.sql.api.schema.SchemaResult;
+package org.finos.legend.engine.query.sql.api.schema;
 
 import java.util.List;
 
-public interface LegendExecution
+public class C3LinearizationUnitReturn
 {
-    List<LegendColumn> getSchema(String query, String database);
+    public String type;
+    public List<String> linearizedInheritance;
 
-    LegendExecutionResult executeQuery(String query, String database, String options);
+    public C3LinearizationUnitReturn()
+    {
+    }
 
-    boolean supports(String database);
-
-    SchemaResult getProjectSchema(String database);
+    public C3LinearizationUnitReturn(String type, List<String> linearizedInheritance)
+    {
+        this.type = type;
+        this.linearizedInheritance = linearizedInheritance;
+    }
 }

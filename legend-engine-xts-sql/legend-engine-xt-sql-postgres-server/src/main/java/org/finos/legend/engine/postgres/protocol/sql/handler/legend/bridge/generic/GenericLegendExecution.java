@@ -44,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCo
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
+import org.finos.legend.engine.query.sql.api.schema.SchemaResult;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
@@ -87,6 +88,21 @@ public class GenericLegendExecution implements LegendExecution
                     .zip(type.columns, c3Linearizations.typeInheritances)
                     .collect(c -> new LegendColumn(c.getOne().name, c.getTwo().type, c.getTwo().linearizedInheritance))
                     .toList();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public SchemaResult getProjectSchema(String database)
+    {
+        try
+        {
+            StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(buildPointer(database)));
+            bodyEntity.setContentType("application/json");
+            return callServer(bodyEntity, "sql/v1/schema/getSchema", SchemaResult.class);
         }
         catch (Exception e)
         {
@@ -230,7 +246,7 @@ public class GenericLegendExecution implements LegendExecution
             throw new RuntimeException("database must start with 'projects|'");
         }
         String projectInfo = database.substring("projects|".length()).trim();
-        String[] projects = projectInfo.split(",");
+        String[] projects = projectInfo.split("\\|");
         MutableList<PureModelContextPointer> pointers = ArrayIterate.collect(projects, project ->
         {
             String[] proj = project.trim().split(":");

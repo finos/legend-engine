@@ -101,7 +101,6 @@ public class Session implements AutoCloseable
         p.sql = query;
         p.paramType = paramTypes.toArray(new Integer[]{});
         p.prep = postgresPreparedStatement;
-
         this.parsed.put(p.name, p);
     }
 

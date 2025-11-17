@@ -12,19 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge;
+import meta::pure::extension::*;
+import meta::external::query::sql::transformation::queryToPure::*;
+import meta::external::query::sql::server::schema::*;
 
-import org.finos.legend.engine.query.sql.api.schema.SchemaResult;
-
-import java.util.List;
-
-public interface LegendExecution
+Class meta::external::query::sql::PureToSQLSourceModule extends ModuleExtension
 {
-    List<LegendColumn> getSchema(String query, String database);
-
-    LegendExecutionResult executeQuery(String query, String database, String options);
-
-    boolean supports(String database);
-
-    SchemaResult getProjectSchema(String database);
+  extraDynamicSQLSources : DynamicSQLSource[*];
+  extraScanDependenciesType : Function<{Nil[0..1]->PackageableElement[*]}>[*];
+  extraSchemaTransformers : Function<{Nil[1]->AddressableRelation[*]}>[*];
 }

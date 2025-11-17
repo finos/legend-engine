@@ -93,13 +93,13 @@ public class GrammarAPI
     }
 
 
-    protected <T> Response jsonToGrammar(T graphFetchTree, RenderStyle renderStyle, Function2<T, RenderStyle, String> func, ProfileManager<CommonProfile> pm, String spanText)
+    protected <T> Response jsonToGrammar(T elementToRender, RenderStyle renderStyle, Function2<T, RenderStyle, String> func, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
         {
-            return Response.ok(func.apply(graphFetchTree, renderStyle)).build();
+            return Response.ok(func.apply(elementToRender, renderStyle)).build();
         }
         catch (Exception ex)
         {

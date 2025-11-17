@@ -24,6 +24,7 @@ import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::extension::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
+import meta::external::query::sql::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::query::sql::transformation::queryToPure::*;
 import meta::legend::service::metamodel::*;

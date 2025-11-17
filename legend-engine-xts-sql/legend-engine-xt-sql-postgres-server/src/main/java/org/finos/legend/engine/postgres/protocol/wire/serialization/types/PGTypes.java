@@ -33,8 +33,7 @@ import java.util.Set;
 
 public class PGTypes
 {
-
-    private static final Map<Integer, PGType> SQL_TO_PG_TYPES = ImmutableMap.<Integer, PGType>builder()
+    public static final Map<Integer, PGType> SQL_TO_PG_TYPES = ImmutableMap.<Integer, PGType>builder()
 
             //.put(Types.BYTE, CharType.INSTANCE)
             .put(Types.VARCHAR, VarCharType.INSTANCE)
@@ -43,6 +42,7 @@ public class PGTypes
             .put(Types.BIT, BooleanType.INSTANCE)
             //.put(DataTypes.UNTYPED_OBJECT, JsonType.INSTANCE)
             //.put(RowType.EMPTY, RecordType.EMPTY_RECORD)
+            .put(Types.TINYINT, IntegerType.INSTANCE)
             .put(Types.SMALLINT, IntegerType.INSTANCE)
             .put(Types.INTEGER, IntegerType.INSTANCE)
             .put(Types.BIGINT, BigIntType.INSTANCE)

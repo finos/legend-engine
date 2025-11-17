@@ -52,6 +52,11 @@ public class Schema
         return table;
     }
 
+    public void tables(MutableList<Table> tables)
+    {
+        this.tables.addAll(tables);
+    }
+
     public Function function(Function function)
     {
         this.functions.add(function);

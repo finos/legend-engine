@@ -423,7 +423,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(7, rows);
+            Assert.assertEquals(6, rows);
         }
     }
 
@@ -461,7 +461,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(390, rows);
+            Assert.assertEquals(375, rows);
         }
     }
 

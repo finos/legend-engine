@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//   http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,19 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge;
+package org.finos.legend.engine.query.sql.api.schema;
 
-import org.finos.legend.engine.query.sql.api.schema.SchemaResult;
+import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
 
 import java.util.List;
 
-public interface LegendExecution
+public class AddressableRelation
 {
-    List<LegendColumn> getSchema(String query, String database);
-
-    LegendExecutionResult executeQuery(String query, String database, String options);
-
-    boolean supports(String database);
-
-    SchemaResult getProjectSchema(String database);
+    public String tableFunctionName;
+    public String packageableElement;
+    public List<String> pathWithinElement;
+    public RelationType relationType;
 }

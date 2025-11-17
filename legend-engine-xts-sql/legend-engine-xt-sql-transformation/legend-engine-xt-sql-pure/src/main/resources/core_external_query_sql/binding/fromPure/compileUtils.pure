@@ -18,6 +18,7 @@ import meta::pure::mapping::*;
 import meta::external::query::sql::transformation::queryToPure::*;
 import meta::relational::metamodel::*;
 import meta::pure::extension::*;
+import meta::external::query::sql::*;
 import meta::external::query::sql::transformation::utils::*;
 import meta::external::query::sql::transformation::compile::utils::*;
 import meta::pure::metamodel::serialization::grammar::*;
