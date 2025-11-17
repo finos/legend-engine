@@ -171,11 +171,12 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
   $query->sqlToPure(getSources(), [], ^Map<String, ValueSpecification>());
 }
 
+//NOTE: this is currently only used in the sql grammar flow, not traditional.
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:DynamicSQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1]):Function<Any>[1]
 {
   let extensions = meta::relational::extension::relationalExtensions();
   let _context = rootContext($sources, $extensions);
-  let context = ^$_context(extraPackageableElements=$extraPackages,scopeVariables = $scopeVariables);
+  let context = ^$_context(extraPackageableElements=$extraPackages,scopeVariables = $scopeVariables, failOnInvalidColumns = true);
   let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true, withSupported = true));
   let pureFunc = $sqlTransformContext.lambda($context.scopeWithFrom->isTrue())->meta::pure::router::preeval::preval($extensions);
 //  println('Transfomed: '+$pureFunc->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
@@ -463,6 +464,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     |
       let from = $querySpec.from->processFrom($context);
 
+      checkReferencedColumnsAreValid($querySpec, $from, $context.failOnInvalidColumns);
+
       let withWhere = $querySpec.where->processWhere($from);
 
     //  debug(|'processed where: '+$withWhere.expression->evaluateAndDeactivate()->map(x|$x->meta::pure::metamodel::serialization::grammar::printValueSpecification(^GContext(space='')))->joinStrings(''), $context.debug->indent());
@@ -498,6 +501,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       let expected = $expectedWithRealias->map(p |
               let clash = $expectedWithRealias.expected->filter(f | $f == $p.expected)->size() > 1;
 
+              //postgres allows duplicate column names, this is not something we support in Pure. We have this check under flag currently as traditional flow has been supporting this.
+              assert(!($context.root && $context.failOnInvalidColumns && $clash), 'query returns duplicate columns, this is not supported');
+
               ^SingleColumn(alias = if ($clash, | $p.actual, | $p.expected),
                             expression = ^QualifiedNameReference(name = ^QualifiedName(parts = if ($clash, | $p.expected, | $p.actual))));
       );
@@ -522,6 +528,21 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   );
 }
 
+//as part of the query processing we do a lot of renaming of columns, eg a -> a_table1. Whilst this is fine for internal processing, this technically allows a user to reference this column within
+//the sql. This would be invalid sql but would technically work in this flow. This check ensures users are not doing this.
+//the available columns are all columns from the "from" plus all aliases in the current select as postgres allows you to refernce these by alias
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::checkReferencedColumnsAreValid(querySpec: QuerySpecification[1], from:SqlTransformContext[1], failOnInvalidColumns:Boolean[1]):Boolean[1]
+{
+  if ($failOnInvalidColumns,
+    |
+        let selectColumnNames = walk($querySpec.select, q | $q, s:SingleColumn[1] | $s->extractNameFromSingleColumn([]))->removeDuplicates();
+        let available = $from.aliases.name->concatenate($selectColumnNames);
+        let used = extractUsedColumnNames(^$querySpec(from = [])); //we only care about current query scope, not anything within the from
+        let invalidColumns = $used->removeAll($available);
+        assert($invalidColumns->isEmpty(), 'unknown columns referenced in query ' + $invalidColumns->joinStrings('[', ',', ']'));,
+    | true);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractAggregatesFromExpression(expression:meta::external::query::sql::metamodel::Expression[0..1]):FunctionCall[*]
 {
 
@@ -531,14 +552,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   )->cast(@FunctionCall);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractUsedColumnNames(expression:meta::external::query::sql::metamodel::Expression[*]):String[*]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractUsedColumnNames(node:Node[*]):String[*]
 {
-  walk($expression,
+  walk($node,
     q | $q,
     q:QualifiedNameReference[1] | $q->extractNameFromExpression([])
   )->removeDuplicates()
 }
-
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processProjection(originalSelect: Select[1], groupBy: meta::external::query::sql::metamodel::Expression[*], having:meta::external::query::sql::metamodel::Expression[0..1], orderBy:meta::external::query::sql::metamodel::Expression[*], context: SqlTransformContext[1]): Pair<SqlTransformContext, Select>[1]
 {
@@ -1218,7 +1238,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let processed = processRelation($aliased.relation, ^$context(name = $name, columns = $columns));
 
-  ^$processed(name = $aliased.alias);
+  let aliases = if ($aliased.columnNames->isEmpty(), | $processed.aliases, | $aliased.columnNames->map(c | ^SQLColumnAlias(name = $c)));
+
+  ^$processed(name = $aliased.alias, aliases = $aliases);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processDuplicateRenames(names:String[*], suffix:String[1], context:SqlTransformContext[1]): SqlTransformContext[1]
@@ -1277,7 +1299,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let newExp = ^TDSBuilder().join($join, $row1, $row2, $left.expression->toOne(), $right.expression->toOne(), $expContext, $newContext, $newContext.relation->isTrue());
 
-  clone(^$newContext(expression = $newExp), $newContext);
+  let allAliases = $left.aliases->concatenate($right.aliases);
+
+  clone(^$newContext(expression = $newExp, aliases = $allAliases), $newContext);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createJoinOn(e:meta::external::query::sql::metamodel::Expression[1], row1:VariableExpression[1], row2:VariableExpression[1], expContext:SqlTransformExpressionContext[1], context: SqlTransformContext[1]):ValueSpecification[1]
@@ -4297,6 +4321,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   columns:QueryColumn[*];
   extraPackageableElements:PackageableElement[*];
   scopeVariables: Map<String, ValueSpecification>[1];
+  failOnInvalidColumns: Boolean[1] = false;
 
   scopeVariable(name:String[1]) {
     let value = $this.scopeVariables->get($name);

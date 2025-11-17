@@ -4012,6 +4012,15 @@ function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure:
   )
 }
 
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testInvalidColumnReference():Boolean[1]
+{
+  error(
+    [
+    'select * from (values(1)) AS t (number) where "unknown" = 1',
+    'select t.number as "c1" from (values(1)) AS t (number) where "unknown" = 1 group by c1'
+    ],
+    'unknown columns referenced in query [unknown]', true);
+}
 
 
 //TODO fails to resolve enum column
