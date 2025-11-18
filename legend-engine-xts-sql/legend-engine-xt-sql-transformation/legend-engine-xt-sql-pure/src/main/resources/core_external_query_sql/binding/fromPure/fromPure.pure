@@ -535,7 +535,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   if ($failOnInvalidColumns,
     |
-        let selectColumnNames = walk($querySpec.select, q | $q, s:SingleColumn[1] | $s->extractNameFromSingleColumn([]))->removeDuplicates();
+        let selectColumnNames = walk($querySpec.select, q | $q, s:SingleColumn[1] | $s.alias)->removeDuplicates();
         let available = $from.aliases.name->concatenate($selectColumnNames);
         let used = extractUsedColumnNames(^$querySpec(from = [])); //we only care about current query scope, not anything within the from
         let invalidColumns = $used->removeAll($available);
