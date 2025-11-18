@@ -489,6 +489,14 @@ public class RelationNativeImplementation
         {
             filtered = (TestTDSCompiled) tds1.compensateLeft(filtered);
         }
+        else if (joinKind.getName().equals("RIGHT"))
+        {
+            filtered = (TestTDSCompiled) tds2.compensateLeft(filtered);
+        }
+        else if (joinKind.getName().equals("FULL"))
+        {
+            filtered = (TestTDSCompiled) tds2.compensateLeft(tds1.compensateLeft(filtered));
+        }
 
         return new TDSContainer(filtered, ps);
     }

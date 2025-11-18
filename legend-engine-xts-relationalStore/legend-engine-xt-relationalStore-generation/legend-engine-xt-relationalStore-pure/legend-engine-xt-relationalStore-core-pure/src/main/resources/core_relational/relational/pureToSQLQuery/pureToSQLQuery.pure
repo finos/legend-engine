@@ -6386,11 +6386,14 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
 
 function meta::relational::functions::pureToSqlQuery::joinKindToType(jk:JoinKind[1]):JoinType[1]
 {
-  if ([
-    pair(|$jk == JoinKind.INNER, |JoinType.INNER)//,
-   // pair(|$jk == JoinKind.RIGHT_OUTER, |JoinType.RIGHT_OUTER)
+  if (
+    [
+      pair(|$jk == JoinKind.INNER, |JoinType.INNER),
+      pair(|$jk == JoinKind.LEFT, |JoinType.LEFT_OUTER),
+      pair(|$jk == JoinKind.RIGHT, |JoinType.RIGHT_OUTER),
+      pair(|$jk == JoinKind.FULL, |JoinType.FULL_OUTER)
     ],
-    |JoinType.LEFT_OUTER
+    | fail('Unsupported JoinKind %!'->format($jk)); JoinType.LEFT_OUTER;
   );
 }
 
