@@ -74,7 +74,7 @@ public class JsonToGrammar extends GrammarAPI
         long start = System.currentTimeMillis();
         PureGrammarComposerExtensionLoader.logExtensionList();
         Identity identity = Identity.makeIdentity(pm);
-        Response response = jsonToGrammar(pureModelContext, renderStyle, (value, renderStyle1) -> PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle1).build()).renderPureModelContextData(modelManager.loadData(value, null, identity)), pm, "Json to Grammar : Model");
+        Response response = jsonToGrammar(pureModelContext, renderStyle, (value, renderStyle1) -> PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle1).build()).renderPureModelContextData(modelManager.loadData(value, "vX_X_X", identity)), pm, "Json to Grammar : Model");
         long end = System.currentTimeMillis();
         MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
         return response;

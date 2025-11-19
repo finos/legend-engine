@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.modelManager.sdlc.alloy;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
@@ -45,7 +46,7 @@ public class AlloySDLCLoader
     {
         Assert.assertTrue(alloySDLC.project == null, () -> "Accessing metadata services using project id was demised.  Please update AlloySDLC to provide group and artifact IDs");
         Assert.assertTrue(alloySDLC.groupId != null && alloySDLC.artifactId != null, () -> "AlloySDLC info must contain and group and artifact IDs to access metadata services");
-        String version = isLatestRevision(alloySDLC) ? "master-SNAPSHOT" : alloySDLC.version; // Seems this logic doesn't address latest for a branch
+        String version = alloySDLC.version == null || alloySDLC.version.equals("none") ? "master-SNAPSHOT" : alloySDLC.version;
         return this.metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/versions/" + version + "/pureModelContextData?convertToNewProtocol=false&clientVersion=" + clientVersion;
     }
 
