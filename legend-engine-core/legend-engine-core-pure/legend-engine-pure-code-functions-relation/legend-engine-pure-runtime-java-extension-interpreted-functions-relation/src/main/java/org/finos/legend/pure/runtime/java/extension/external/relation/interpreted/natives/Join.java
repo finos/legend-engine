@@ -83,6 +83,14 @@ public class Join extends Shared
         {
             res = tds1.compensateLeft(res);
         }
+        else if (joinType.equals("RIGHT"))
+        {
+            res = tds2.compensateLeft(res);
+        }
+        else if (joinType.equals("FULL"))
+        {
+            res = tds2.compensateLeft(tds1.compensateLeft(res));
+        }
         return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(res, returnGenericType, repository, processorSupport), false, processorSupport);
     }
 }

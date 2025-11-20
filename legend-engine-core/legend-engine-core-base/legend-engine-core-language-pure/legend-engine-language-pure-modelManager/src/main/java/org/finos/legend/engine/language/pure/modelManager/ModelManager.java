@@ -121,11 +121,7 @@ public class ModelManager
 
     private <T> T loadModelOrData(PureModelContext context, String clientVersion, Identity identity, Cache<PureModelContext, T> pointerCache, Function<PureModelContextData, T> mayCompileFunction)
     {
-        if (context instanceof PureModelContextPointer)
-        {
-            return resolvePointerAndCache((PureModelContextPointer) context, identity, pointerCache, cacheKey -> mayCompileFunction.apply(this.loadModelDataFromStorage(cacheKey, clientVersion, identity)));
-        }
-        else if (context instanceof PureModelContextCombination)
+        if (context instanceof PureModelContextCombination)
         {
             Pair<MutableList<PureModelContextData>, MutableList<PureModelContextPointer>> concreteVsPointer = recursivelyDiscriminateDataAndPointersLeaves((PureModelContextCombination) context);
             MutableList<PureModelContextData> concretes = concreteVsPointer.getOne();
@@ -153,7 +149,7 @@ public class ModelManager
         }
         else
         {
-            throw new EngineException(context.getClass().getSimpleName() + " is not supported yet");
+            return resolvePointerAndCache(context, identity, pointerCache, cacheKey -> mayCompileFunction.apply(this.loadModelDataFromStorage(cacheKey, clientVersion, identity)));
         }
     }
 
@@ -211,7 +207,7 @@ public class ModelManager
         return Tuples.pair(concrete, pointers);
     }
 
-    private <Z> Z resolvePointerAndCache(PureModelContextPointer context, Identity identity, Cache<PureModelContext, Z> cache, Function<PureModelContext, Z> resolver)
+    private <Z> Z resolvePointerAndCache(PureModelContext context, Identity identity, Cache<PureModelContext, Z> cache, Function<PureModelContext, Z> resolver)
     {
         ModelLoader loader = this.modelLoaderForContext(context);
         if (loader.shouldCache(context))

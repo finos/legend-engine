@@ -111,10 +111,10 @@ public class PostgresServerGenericTest
         //TO FIX, should not be t.name_a but t.name
         Assert.assertEquals(
                 "name_a\n" +
-                        "value\n", executePrepared("select t.name_a from (tb('pack::DB.myTab') as a join tb('pack::DB.otherTab') as b on a.id = b.fid) as t where t.name_a = 'value'", "projects|t_group:t_name:t_version,t_group:t_name2:t_version"));
+                        "value\n", executePrepared("select t.name_a from (tb('pack::DB.myTab') as a join tb('pack::DB.otherTab') as b on a.id = b.fid) as t where t.name_a = 'value'", "projects|t_group:t_name:t_version|t_group:t_name2:t_version"));
         Assert.assertEquals(
                 "name_a\n" +
-                        "value\n", execute("select t.name_a from (tb('pack::DB.myTab') as a join tb('pack::DB.otherTab') as b on a.id = b.fid) as t where t.name_a = 'value'", "projects|t_group:t_name:t_version,t_group:t_name2:t_version"));
+                        "value\n", execute("select t.name_a from (tb('pack::DB.myTab') as a join tb('pack::DB.otherTab') as b on a.id = b.fid) as t where t.name_a = 'value'", "projects|t_group:t_name:t_version|t_group:t_name2:t_version"));
     }
 
 

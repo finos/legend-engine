@@ -21,12 +21,14 @@ import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarCo
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtensionLoader;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.pac4j.core.profile.CommonProfile;
@@ -51,6 +53,12 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Path("pure/v1/grammar/jsonToGrammar")
 public class JsonToGrammar extends GrammarAPI
 {
+    private ModelManager modelManager;
+
+    public JsonToGrammar(ModelManager modelManager)
+    {
+        this.modelManager = modelManager;
+    }
 
     @POST
     @Path("model")
@@ -58,23 +66,18 @@ public class JsonToGrammar extends GrammarAPI
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
     @Prometheus(name = "GrammarToJson model", doc = "Grammar to Json duration summary")
-    public Response model(PureModelContextData pureModelContext,
+    public Response model(PureModelContext pureModelContext,
                           @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
                           @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm,
                           @Context UriInfo uriInfo)
     {
         long start = System.currentTimeMillis();
         PureGrammarComposerExtensionLoader.logExtensionList();
-        Response response = jsonToGrammar(pureModelContext, renderStyle, (value, renderStyle1) -> PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle1).build()).renderPureModelContextData(value), pm, "Json to Grammar : Model");
+        Identity identity = Identity.makeIdentity(pm);
+        Response response = jsonToGrammar(pureModelContext, renderStyle, (value, renderStyle1) -> PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle1).build()).renderPureModelContextData(modelManager.loadData(value, "vX_X_X", identity)), pm, "Json to Grammar : Model");
         long end = System.currentTimeMillis();
         MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
         return response;
-    }
-
-    @Deprecated
-    public Response model(PureModelContextData pureModelContext, RenderStyle renderStyle, ProfileManager<CommonProfile> pm)
-    {
-        return model(pureModelContext, renderStyle, pm, null);
     }
 
     @POST

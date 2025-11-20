@@ -36,6 +36,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.primitive.IntSet;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.block.factory.Comparators;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -370,11 +371,17 @@ public abstract class TestTDS
                 case STRING:
                 {
                     this.dataByColumnName.put(p.getOne(), new String[(int) this.rowCount]);
+                    boolean[] array = new boolean[(int) this.rowCount];
+                    Arrays.fill(array, Boolean.TRUE);
+                    this.isNullByColumn.put(p.getOne(), array);
                     break;
                 }
                 case CUSTOM:
                 {
                     this.dataByColumnName.put(p.getOne(), new Variant[(int) this.rowCount]);
+                    boolean[] array = new boolean[(int) this.rowCount];
+                    Arrays.fill(array, Boolean.TRUE);
+                    this.isNullByColumn.put(p.getOne(), array);
                     break;
                 }
                 case DOUBLE:
@@ -387,6 +394,9 @@ public abstract class TestTDS
                 }
                 case DATETIME_AS_LONG:
                     this.dataByColumnName.put(p.getOne(), new PureDate[(int) this.rowCount]);
+                    boolean[] array = new boolean[(int) this.rowCount];
+                    Arrays.fill(array, Boolean.TRUE);
+                    this.isNullByColumn.put(p.getOne(), array);
                     break;
                 default:
                     throw new RuntimeException("ERROR " + columnType.get(p.getOne()) + " not supported yet!");
@@ -529,6 +539,7 @@ public abstract class TestTDS
             case CUSTOM:
             {
                 ((Object[]) dataAsObject)[row] = ((Object[]) srcTDS.dataByColumnName.get(columnName))[srcRow];
+                nullAsObject[row] = nullAsObjectSrc[srcRow];
                 break;
             }
             default:
@@ -574,6 +585,7 @@ public abstract class TestTDS
                 case CUSTOM:
                 {
                     copy = Arrays.copyOf((Object[]) dataAsObject, (int) rowCount);
+                    copyIsNull = Arrays.copyOf(isNullByColumn.get(columnName), (int) rowCount);
                     break;
                 }
                 default:
@@ -726,6 +738,7 @@ public abstract class TestTDS
                     Object[] _copy = Arrays.copyOf((Object[]) dataAsObject1, (int) result.rowCount);
                     System.arraycopy((Object[]) dataAsObject2, 0, _copy, (int) rowCount, (int) tds2.rowCount);
                     copy = _copy;
+                    newIsNull = concatenate((boolean[]) isNullByColumn.get(columnName), (boolean[]) tds2.isNullByColumn.get(columnName));
                     break;
                 }
                 default:
@@ -818,13 +831,7 @@ public abstract class TestTDS
         this.dataByColumnName.put(name, res);
         this.columnsOrdered.add(name);
         this.columnType.put(name, dataType);
-        switch (dataType)
-        {
-            case LONG:
-            case BOOLEAN_AS_BYTE:
-            case DOUBLE:
-                isNullByColumn.put(name, nulls);
-        }
+        this.isNullByColumn.put(name, nulls);
         return this;
     }
 
@@ -1069,78 +1076,17 @@ public abstract class TestTDS
     private void sortOneLevel(TestTDS copy, SortInfo sortInfo, int start, int end)
     {
         String columnName = sortInfo.columnName;
-        Object dataAsObject = copy.dataByColumnName.get(columnName);
-        switch (copy.columnType.get(columnName))
+        MutableList<Pair<Integer, Comparable<Object>>> list = Lists.mutable.empty();
+        for (int i = start; i < end; i++)
         {
-            case LONG:
-            {
-                long[] src = (long[]) dataAsObject;
-                MutableList<Pair<Integer, Long>> list = Lists.mutable.empty();
-                for (int i = start; i < end; i++)
-                {
-                    list.add(Tuples.pair(i, src[i]));
-                }
-                list.sortThisBy(Pair::getTwo);
-                if (sortInfo.direction == SortDirection.DESC)
-                {
-                    list.reverseThis();
-                }
-                this.reorder(copy, list.collect(Pair::getOne), start, end);
-                break;
-            }
-            case BOOLEAN_AS_BYTE:
-            {
-                boolean[] src = (boolean[]) dataAsObject;
-                MutableList<Pair<Integer, Boolean>> list = Lists.mutable.empty();
-                for (int i = start; i < end; i++)
-                {
-                    list.add(Tuples.pair(i, src[i]));
-                }
-                list.sortThisBy(Pair::getTwo);
-                if (sortInfo.direction == SortDirection.DESC)
-                {
-                    list.reverseThis();
-                }
-                this.reorder(copy, list.collect(Pair::getOne), start, end);
-                break;
-            }
-            case DOUBLE:
-            {
-                double[] src = (double[]) dataAsObject;
-                MutableList<Pair<Integer, Double>> list = Lists.mutable.empty();
-                for (int i = start; i < end; i++)
-                {
-                    list.add(Tuples.pair(i, src[i]));
-                }
-                list.sortThisBy(Pair::getTwo);
-                if (sortInfo.direction == SortDirection.DESC)
-                {
-                    list.reverseThis();
-                }
-                this.reorder(copy, list.collect(Pair::getOne), start, end);
-                break;
-            }
-            case STRING:
-            case DATETIME_AS_LONG:
-            case CUSTOM:
-            {
-                Comparable<Object>[] src = (Comparable<Object>[]) dataAsObject;
-                MutableList<Pair<Integer, Comparable<Object>>> list = Lists.mutable.empty();
-                for (int i = start; i < end; i++)
-                {
-                    list.add(Tuples.pair(i, src[i]));
-                }
-                list.sortThisBy(Pair::getTwo);
-                if (sortInfo.direction == SortDirection.DESC)
-                {
-                    list.reverseThis();
-                }
-                this.reorder(copy, list.collect(Pair::getOne), start, end);
-                break;
-            }
-            default:
-                throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported yet!");
+            list.add(Tuples.pair(i, (Comparable<Object>) copy.getValue(columnName, i)));
         }
+        list.sortThis(Comparators.bySecondOfPair(Comparators.safeNullsHigh(Comparators.byFunction(p -> p))));
+        if (sortInfo.direction == SortDirection.DESC)
+        {
+            list.reverseThis();
+        }
+        this.reorder(copy, list.collect(Pair::getOne), start, end);
     }
 
     private void reorder(TestTDS copy, MutableList<Integer> indices, int start, int end)
@@ -1242,7 +1188,7 @@ public abstract class TestTDS
         MutableList<Integer> missings = Lists.mutable.empty();
         while (rowLeftCurs < leftS.rowCount)
         {
-            if (resS.rowCount == 0 || !leftS.fullMatch(cols, resS, rowLeftCurs, rowResCurs))
+            if (resS.rowCount == 0 || rowResCurs >= resS.rowCount || !leftS.fullMatch(cols, resS, rowLeftCurs, rowResCurs))
             {
                 missings.add(rowLeftCurs);
                 rowLeftCurs++;

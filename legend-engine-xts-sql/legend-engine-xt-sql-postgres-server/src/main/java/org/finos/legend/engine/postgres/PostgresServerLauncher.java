@@ -66,7 +66,6 @@ public class PostgresServerLauncher
     public void launch() throws IOException
     {
         //TODO ADD CLI
-
         ObjectMapper objectMapper = new ObjectMapper();
         ServerConfig serverConfig = objectMapper.readValue(new File(configPath), ServerConfig.class);
         /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

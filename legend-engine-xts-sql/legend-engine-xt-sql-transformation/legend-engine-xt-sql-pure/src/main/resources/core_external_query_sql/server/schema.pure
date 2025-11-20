@@ -1,0 +1,77 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::external::query::sql::transformation::compile::utils::*;
+import meta::external::query::sql::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::external::query::sql::server::schema::*;
+
+Class meta::external::query::sql::server::schema::AddressableRelation
+{
+  tableFunctionName: String[1];
+  packageableElement : String[1];
+  pathWithinElement : String[*];
+  relationType : meta::protocols::pure::vX_X_X::metamodel::m3::relation::RelationType[1];
+}
+
+Class meta::external::query::sql::server::schema::AddressableRelationCollection
+{
+  addressableRelations : meta::external::query::sql::server::schema::AddressableRelation[*];
+}
+
+function meta::external::query::sql::server::schema::transform(p:PackageableElement[*]):AddressableRelationCollection[1]
+{
+  ^AddressableRelationCollection
+  (
+      addressableRelations = $p->map(a|$a->transformOne())
+  )
+}
+
+function meta::external::query::sql::server::schema::serialize(p:PackageableElement[1]):String[1]
+{
+  let config = meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration();
+  $p
+  ->scanDependencies([], meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraScanDependenciesType)
+  ->removeDuplicates({a,b|$a->elementToPath() == $b->elementToPath()})
+  ->map(x|$x->printPackageableElements($config))->joinStrings('\n');
+}
+
+function meta::external::query::sql::server::schema::transformOne(p:PackageableElement[1]):AddressableRelation[*]
+{
+  $p->match(
+    meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraSchemaTransformers->concatenate(
+      [
+          d:Database[1]| let dbPath = $d->elementToPath();
+                         let dbStr = $d->serialize();
+                         $d.schemas.tables->map(t|
+                                          let path = $t.name;
+                                          let r = meta::legend::compile($dbStr+'\n###Pure\nfunction x::func():Any[1]{#>{'+$dbPath + '.' + $path->joinStrings('.')+'}#}');
+                                          let rType = $r->filter(x|$x.name == 'func__Any_1_')->toOne()->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate().genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>);
+                                          ^AddressableRelation
+                                          (
+                                              tableFunctionName='tb',
+                                              packageableElement=$dbPath,
+                                              pathWithinElement=$path,
+                                              relationType= $rType->transformRelationType()
+                                          );
+                                      );,
+          a:Any[1]|[]
+      ]
+    )->toOneMany()    
+  )
+}
+

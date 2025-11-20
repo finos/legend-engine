@@ -482,6 +482,7 @@ public class PostgresWireProtocol
                 {
                     server.getUserMetrics().liveConnections.labelValues(sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_")).dec();
                 }
+                sqlManager.removeCatalog(session.getIdentity().getName(), session.getDatabase());
                 session.close();
                 session = null;
                 sessionStats.endTime = new Date().toString();
@@ -633,6 +634,8 @@ public class PostgresWireProtocol
         String label = sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_");
         prometheusUserMetrics.connections.labelValues(label).inc();
         prometheusUserMetrics.liveConnections.labelValues(label).inc();
+
+        sqlManager.buildCatalog(session);
 
         MDC.put("user", authenticatedUser.getName());
         messages.sendAuthenticationOK(channel)

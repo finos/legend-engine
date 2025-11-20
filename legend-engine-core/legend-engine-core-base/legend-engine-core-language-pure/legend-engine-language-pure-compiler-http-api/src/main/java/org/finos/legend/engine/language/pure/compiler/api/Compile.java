@@ -160,7 +160,7 @@ public class Compile
     @Path("c3Linearization")
     @ApiOperation(value = "Given a model and a list of types. Returns the list of inheritance lines (according to C3Linearization algorithm).")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    @Prometheus(name = "lambda relation type")
+    @Prometheus(name = "c3 linearization")
     public Response c3Linearization(C3LinearizationInput c3LinerizationInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
