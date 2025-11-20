@@ -80,7 +80,7 @@ public class HelperValueSpecificationBuilder
 {
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambda(LambdaFunction lambda, CompileContext context)
     {
-        return buildLambda(lambda.body, lambda.parameters, context);
+        return buildLambdaWithContext(lambda.body, lambda.parameters, null, context, new ProcessingContext("build Lambda"));
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambda(List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context)
@@ -90,12 +90,17 @@ public class HelperValueSpecificationBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(LambdaFunction lambda, CompileContext context, ProcessingContext ctx)
     {
-        return buildLambdaWithContext(lambda.body, lambda.parameters, context, ctx);
+        return buildLambdaWithContext(lambda.body, lambda.parameters, null, context, ctx);
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
     {
         return buildLambdaWithContext("", expressions, parameters, context, ctx);
+    }
+
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(List<ValueSpecification> expressions, List<Variable> parameters, SourceInformation sourceInformation, CompileContext context, ProcessingContext ctx)
+    {
+        return buildLambdaWithContext("", expressions, parameters, sourceInformation, context, ctx, ValueSpecificationBuilder::new);
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
@@ -104,6 +109,11 @@ public class HelperValueSpecificationBuilder
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx, Function3<CompileContext, MutableList<String>, ProcessingContext, ValueSpecificationBuilder> valueSpecificationBuilderFactory)
+    {
+        return buildLambdaWithContext(lambdaId, expressions, parameters, null, context, ctx, valueSpecificationBuilderFactory);
+    }
+
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> expressions, List<Variable> parameters, SourceInformation sourceInformation, CompileContext context, ProcessingContext ctx, Function3<CompileContext, MutableList<String>, ProcessingContext, ValueSpecificationBuilder> valueSpecificationBuilderFactory)
     {
         ctx.push("new lambda");
         ctx.addVariableLevel();
@@ -143,6 +153,10 @@ public class HelperValueSpecificationBuilder
                 ._classifierGenericType(context.newGenericType(context.pureModel.getType(M3Paths.LambdaFunction), FastList.newListWith(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
+        if (sourceInformation != null)
+        {
+            lambda.setSourceInformation(SourceInformationHelper.toM3SourceInformation(sourceInformation));
+        }
 
         return context.getCompilerExtensions().getExtraLambdaPostProcessors().stream()
                 .reduce(lambda, (originalLambda, processor) -> processor.value(originalLambda, context, ctx), (p1, p2) -> p1);
