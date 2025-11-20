@@ -41,7 +41,15 @@ function meta::relational::tests::semistructured::join::semiStructuredExecute(co
         '"{\\"ID\\": 2, \\"legalName\\": \\"Firm A\\", \\"employeeCount\\": 1, \\"mnc\\": false, \\"dates\\": {\\"estDate\\": \\"2012-11-13\\", \\"lastUpdate\\": \\"2022-02-14T03:00:00\\"}, \\"entity\\": {\\"entityType\\":\\"O\\"}, \\"otherNames\\": [\\"O3\\", \\"O4\\"], \\"address\\": {\\"name\\": \\"A2\\", \\"lines\\": [{\\"details\\": \\"D4\\"}, {\\"details\\": \\"D5\\"}]}}"\n' +
         '"{\\"ID\\": 3, \\"legalName\\": \\"Firm B\\", \\"employeeCount\\": 2, \\"mnc\\": true, \\"dates\\": {\\"estDate\\": \\"2017-7-7\\", \\"lastUpdate\\": \\"2022-9-01T06:00:00\\"}, \\"entity\\": {\\"entityType\\":\\"C\\"}, \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"address\\": {\\"name\\": \\"A3\\", \\"lines\\": [{\\"details\\": \\"D5\\"},{\\"details\\": \\"D6\\"}]}}"\n';
 
-  let csv = [$t1, $t2];
+  let t3 =
+          'LOCATION_SCHEMA\n' +
+          'LOCATION_TABLE\n' +
+          'ID,LOCATION_DETAILS\n' +
+          '1,"{\\"residents\\": [{\\"ID\\": 1}, {\\"ID\\": 4}, {\\"ID\\": 7}], \\"identifier\\": [{\\"length\\": 2, \\"name\\": \\"US\\"}, {\\"length\\": 3, \\"name\\": \\"USA\\"}]}"\n'+
+          '2,"{\\"residents\\": [{\\"ID\\": 2}, {\\"ID\\": 5}], \\"identifier\\": [{\\"length\\": 2, \\"name\\": \\"UK\\"}]}"\n'+
+          '3,"{\\"residents\\": [{\\"ID\\": 3}, {\\"ID\\": 6}], \\"identifier\\": [{\\"length\\": 2, \\"name\\": \\"CH\\"}, {\\"length\\": 11, \\"name\\": \\"Switzerland\\"}]}"\n';
+
+  let csv = [$t1, $t2, $t3];
 
   let model = '/core_relational/relational/tests/semistructured/model/extractFromSemiStructuredJoin.legend';
 
@@ -63,5 +71,20 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::join::testJ
     'Fabrice,Roberts,Firm A\n' +
     'Oliver,Hill,Firm B\n' +
     'David,Harris,Firm B\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::join::testJoinOnSemiStructuredPropertyWithQPFilter(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'join::testJoinOnSemiStructuredPropertyWithQPFilter__TabularDataSet_1_',
+    'First Name,Last Name,Country Code\n' +
+    'Anthony,Allen,US\n' +
+    'David,Harris,US\n' +
+    'Fabrice,Roberts,UK\n' +
+    'John,Hill,CH\n' +
+    'John,Johnson,UK\n' +
+    'Oliver,Hill,CH\n' +
+    'Peter,Smith,US\n'
   );
 }

@@ -5015,10 +5015,11 @@ function meta::relational::functions::pureToSqlQuery::processFilter(expression:F
 
    let rawType = $leftSidePure.genericType.rawType->toOne();
    let isFilterOnDataType = $state.inFilter && $rawType->instanceOf(DataType);
+   let isFilterOnLateralJoin = $newLastNode->match([j:JoinTreeNode[1]|$j.lateral == true, a:Any[0..1]|false]);
    let savedFilterCurrentTreeNode = $newLastNode;
 
-   let filteringOperation = if ($isFilterOnDataType || $savedFilterCurrentTreeNode->isEmpty(), | $managedFilteredPosition.filteringOperation,|[]);
-   let savedFilteringOperation = if($isFilterOnDataType  || $savedFilterCurrentTreeNode->isEmpty() || $managedFilteredPosition.filteringOperation->isEmpty(),
+   let filteringOperation = if ($isFilterOnDataType || $savedFilterCurrentTreeNode->isEmpty() || $isFilterOnLateralJoin, | $managedFilteredPosition.filteringOperation,|[]);
+   let savedFilteringOperation = if($isFilterOnDataType  || $savedFilterCurrentTreeNode->isEmpty() || $managedFilteredPosition.filteringOperation->isEmpty() || $isFilterOnLateralJoin,
                                     |$managedFilteredPosition.savedFilteringOperation,
                                     |$managedFilteredPosition.savedFilteringOperation->concatenate(pair($savedFilterCurrentTreeNode->toOne(), $managedFilteredPosition.filteringOperation->toOne())));
 
