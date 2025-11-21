@@ -43,6 +43,33 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    );
 }
 
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::testEmbeddedMappingForPropertyHavingEnumAttribute(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         firm {
+            legalName
+         },
+         address{
+          type
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbeddedWithFirmDistinct;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","firm":{"legalName":"Firm X"},"address":{"type":"CITY"}},{"firstName":"John","firm":{"legalName":"Firm X"},"address":{"type":"CITY"}},{"firstName":"Fabrice","firm":{"legalName":"Firm A"},"address":{"type":"REGION"}}]',
+      $result
+   );
+}
+
+
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::testMultiLevelEmbeddedMapping(): Boolean[1]
 {
    let tree = #{

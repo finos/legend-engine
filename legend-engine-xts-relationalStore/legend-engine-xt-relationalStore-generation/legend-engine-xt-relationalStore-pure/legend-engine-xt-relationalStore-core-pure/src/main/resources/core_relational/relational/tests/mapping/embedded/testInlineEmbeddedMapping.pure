@@ -385,7 +385,8 @@ Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappi
       scope([eDB]PRODUCT_DENORM)
       (
          description:BOND_DETAILS,
-         type: BOND_TYPE
+         type: BOND_TYPE,
+         status: EnumerationMapping bondStatusMapping: BOND_STATUS 
       )
    }
 
@@ -393,6 +394,13 @@ Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappi
    {
       type : [eDB]BondClassificationTable.type
    }
+
+   meta::relational::tests::mapping::embedded::advanced::model::Status: EnumerationMapping bondStatusMapping
+  {
+    Pending: ['Pending'],
+    Open: ['Open'],
+    Closed: ['Closed']
+  }
 
 )
 
