@@ -152,7 +152,7 @@ function meta::analytics::lineage::property::relation::scanRelations::extractQue
                                       let sources = $incomingState.lineageColumn->filter(c|$c.name->in($sourceCol.name));
                                       let owner = $globalState.currentOwner->filter(p|$sources.name->exists(v|$v->in($p.properties.name)));
                                       let propOwner=  if($owner->size()!=1,|$globalState.currentOwner->at(0),|$owner->toOne());
-                                      ^LineageProperty(ownerID=$propOwner.id,dataType=$funcCol.function->functionReturnType().rawType.name->toOne(), propertyType=PropertyType.RELATION, name=$funcCol.name, scope= $fe.func.name,sourceProperties=$sources););
+                                      ^LineageProperty(ownerID=$propOwner.id,dataType=$funcCol.function->functionReturnType().rawType.name->toOne(), propertyType=PropertyType.RELATION, name=$funcCol.name, scope= $fe.func.name,sourceProperties=$sources, sourceInfo=$funcCol.function->sourceInformation()););
 
  }
 
