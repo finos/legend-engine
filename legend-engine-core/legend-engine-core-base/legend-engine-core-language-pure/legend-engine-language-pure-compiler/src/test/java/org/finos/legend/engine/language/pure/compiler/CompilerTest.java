@@ -15,15 +15,19 @@
 
 package org.finos.legend.engine.language.pure.compiler;
 
-import java.util.stream.Collectors;
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
-import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.stream.Collectors;
 
 public class CompilerTest
 {
@@ -44,5 +48,14 @@ public class CompilerTest
         Assert.assertTrue(genericType.rawType instanceof PackageableType);
         Assert.assertEquals("meta::pure::functions::collection::Pair", ((PackageableType) genericType.rawType).fullPath);
         Assert.assertEquals(Lists.mutable.with("Integer", "String"), genericType.typeArguments.stream().map(x -> ((PackageableType) x.rawType).fullPath).collect(Collectors.toList()));
+    }
+
+    @Test
+    public void getLambdaSourceInformation()
+    {
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|pair(1, '2')");
+        SourceInformation sourceInformationForLambda = HelperValueSpecificationBuilder.buildLambda(lambda, PureModel.getCorePureModel().getContext()).getSourceInformation();
+        Assert.assertNotNull(sourceInformationForLambda);
+        Assert.assertEquals(SourceInformationHelper.toM3SourceInformation(lambda.sourceInformation), sourceInformationForLambda) ;
     }
 }

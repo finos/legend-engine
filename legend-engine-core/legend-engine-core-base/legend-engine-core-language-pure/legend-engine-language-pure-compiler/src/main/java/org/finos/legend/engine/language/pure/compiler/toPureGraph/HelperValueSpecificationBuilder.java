@@ -80,7 +80,7 @@ public class HelperValueSpecificationBuilder
 {
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambda(LambdaFunction lambda, CompileContext context)
     {
-        return buildLambdaWithContext(lambda.body, lambda.parameters, null, context, new ProcessingContext("build Lambda"));
+        return buildLambdaWithContext(lambda.body, lambda.parameters, lambda.sourceInformation, context, new ProcessingContext("build Lambda"));
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambda(List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context)
@@ -90,7 +90,7 @@ public class HelperValueSpecificationBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(LambdaFunction lambda, CompileContext context, ProcessingContext ctx)
     {
-        return buildLambdaWithContext(lambda.body, lambda.parameters, null, context, ctx);
+        return buildLambdaWithContext(lambda.body, lambda.parameters, lambda.sourceInformation, context, ctx);
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
