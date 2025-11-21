@@ -4012,7 +4012,26 @@ function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure:
   )
 }
 
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testInvalidColumnReference():Boolean[1]
+{
+  error(
+    [
+    'select * from (values(1)) AS t (number) where "unknown" = 1',
+    'select t.number as "c1" from (values(1)) AS t (number) where "unknown" = 1 group by c1',
+    'select unknown from (values(1)) AS t (number)'
+    ],
+    'unknown columns referenced in query [unknown]', true);
+}
 
+
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testFailOnclash():Boolean[1]
+{
+  error(
+    [
+    'select * from service."/service/service1" t1 left outer join service."/service/service1" t2 on t1.String = t2.String'
+    ],
+    'query returns duplicate columns, this is not supported', true);
+}
 
 //TODO fails to resolve enum column
 function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testEnumValuesRelation():Boolean[1]

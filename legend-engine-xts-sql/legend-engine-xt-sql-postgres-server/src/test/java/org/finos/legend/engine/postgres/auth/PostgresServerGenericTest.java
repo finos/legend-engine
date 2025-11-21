@@ -108,13 +108,12 @@ public class PostgresServerGenericTest
                 "insert into myTab (id, name) values (1, 'value')",
                 "insert into otherTab (fid, oName) values (1, 'oValue')"), h2TestServer.getPort());
 
-        //TO FIX, should not be t.name_a but t.name
         Assert.assertEquals(
-                "name_a\n" +
-                        "value\n", executePrepared("select t.name_a from (tb('pack::DB.myTab') as a join tb('pack::DB.otherTab') as b on a.id = b.fid) as t where t.name_a = 'value'", "projects|t_group:t_name:t_version|t_group:t_name2:t_version"));
+                "name\n" +
+                        "value\n", executePrepared("select t.name from (tb('pack::DB.myTab') as a join tb('pack::DB.otherTab') as b on a.id = b.fid) as t where t.name = 'value'", "projects|t_group:t_name:t_version|t_group:t_name2:t_version"));
         Assert.assertEquals(
-                "name_a\n" +
-                        "value\n", execute("select t.name_a from (tb('pack::DB.myTab') as a join tb('pack::DB.otherTab') as b on a.id = b.fid) as t where t.name_a = 'value'", "projects|t_group:t_name:t_version|t_group:t_name2:t_version"));
+                "name\n" +
+                        "value\n", execute("select t.name from (tb('pack::DB.myTab') as a join tb('pack::DB.otherTab') as b on a.id = b.fid) as t where t.name = 'value'", "projects|t_group:t_name:t_version|t_group:t_name2:t_version"));
     }
 
 
