@@ -56,6 +56,6 @@ public class CompilerTest
         LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|pair(1, '2')");
         SourceInformation sourceInformationForLambda = HelperValueSpecificationBuilder.buildLambda(lambda, PureModel.getCorePureModel().getContext()).getSourceInformation();
         Assert.assertNotNull(sourceInformationForLambda);
-        Assert.assertEquals(SourceInformationHelper.toM3SourceInformation(lambda.sourceInformation), sourceInformationForLambda) ;
+        Assert.assertEquals(SourceInformationHelper.toM3SourceInformation(lambda.sourceInformation), sourceInformationForLambda);
     }
 }
