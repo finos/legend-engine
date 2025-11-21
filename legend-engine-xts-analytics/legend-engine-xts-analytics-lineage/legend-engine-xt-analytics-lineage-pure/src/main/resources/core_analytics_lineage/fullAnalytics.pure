@@ -887,7 +887,8 @@ function meta::analytics::lineage::printReportLineage(reportLineage:ReportLineag
 
 function meta::analytics::lineage::assertLineage(databaseLineage:String[*], classLineage:String[*], reportLineage:String[1], functionAnalytics:FunctionAnalytics[1]):Boolean[1]
 {
-  assertSameElements($databaseLineage, $functionAnalytics.databaseLineage.nodes.data.id) && assertSameElements($classLineage, $functionAnalytics.classLineage.nodes.data.id) && assertEquals($reportLineage, printReportLineage($functionAnalytics.reportLineage,false));
+  assertSameElements($databaseLineage, $functionAnalytics.databaseLineage.nodes.data.id) && assertSameElements($classLineage, $functionAnalytics.classLineage.nodes.data.id) && assertEquals($reportLineage, printReportLineage($functionAnalytics.reportLineage,false))
+  && assert($functionAnalytics.reportLineage.columns.lineageProperty->filter(x|$x.propertyType==PropertyType.RELATION)->forAll(x|$x.sourceInfo->isNotEmpty())); // assert source information is not empty for lineage property of type RELATION
 }
 
 
