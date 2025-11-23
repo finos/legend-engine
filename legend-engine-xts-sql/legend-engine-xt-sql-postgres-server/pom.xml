@@ -21,7 +21,7 @@
                         <artifactId>jib-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <phase>deploy</phase>
+                                <phase>install</phase>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
@@ -54,7 +54,7 @@
                         <artifactId>jib-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <phase>deploy</phase>
+                                <phase>install</phase>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
@@ -87,7 +87,7 @@
                         <artifactId>jib-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <phase>deploy</phase>
+                                <phase>install</phase>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
