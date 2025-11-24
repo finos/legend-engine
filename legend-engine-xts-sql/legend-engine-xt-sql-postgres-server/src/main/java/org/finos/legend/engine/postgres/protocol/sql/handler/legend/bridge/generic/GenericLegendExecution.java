@@ -106,7 +106,7 @@ public class GenericLegendExecution implements LegendExecution
         }
         catch (Exception e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException("The project schema can't be fetched for the database '" + database + "'", e);
         }
     }
 
