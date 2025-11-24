@@ -705,7 +705,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     @Override
     public ValueSpecification visit(LambdaFunction glambda)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(glambda.body, glambda.parameters, this.context, processingContext);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(glambda.body, glambda.parameters, glambda.sourceInformation, this.context, processingContext);
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(glambda.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(lambda._classifierGenericType())
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))

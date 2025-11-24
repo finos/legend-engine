@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xts-sql</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.111.1-SNAPSHOT</version>
+        <version>4.112.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -21,7 +21,7 @@
                         <artifactId>jib-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <phase>deploy</phase>
+                                <phase>install</phase>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
@@ -54,7 +54,7 @@
                         <artifactId>jib-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <phase>deploy</phase>
+                                <phase>install</phase>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
@@ -87,7 +87,7 @@
                         <artifactId>jib-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <phase>deploy</phase>
+                                <phase>install</phase>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>

@@ -47,6 +47,29 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
   );
 }
 
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::inline::testInlineEmbeddedMappingForPropertyHavingEnumAttribute(): Boolean[1]
+{
+  let tree = #{
+    Product {
+      name,
+      bondDetails {
+        description,
+        status
+      }
+    }
+  }#;
+  let query = {|Product.all()->graphFetch($tree)->serialize($tree)};
+  let mapping = meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbedded;
+  let runtime =  meta::external::store::relational::tests::testRuntime();
+  let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+  assertJsonStringsEqual(
+    '[{"name":"Product 1","bondDetails":{"description":"Bond 1","status":"Open"}},' +
+    '{"name":"Product 2","bondDetails":{"description":"Bond 2","status":"Open"}},' +
+    '{"name":"Product 3","bondDetails":{"description":"SuperBond 3 super","status":"Closed"}}]',
+    $result
+  );
+}
+
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::inline::testQualifierWithArgs(): Boolean[1]
 {
   let tree = #{
