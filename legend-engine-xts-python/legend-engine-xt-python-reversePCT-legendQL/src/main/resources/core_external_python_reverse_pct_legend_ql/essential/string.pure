@@ -539,13 +539,13 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
     [ // matches
       meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_->testRev(
         [
-          rev('|\'hello\'->meta::pure::functions::string::matches(\'hello\')', 'c("hello").matches("hello")'),
-          rev('|\'abc\'->meta::pure::functions::string::matches(\'[a-z][a-z][a-z]\')', 'c("abc").matches("[a-z][a-z][a-z]")')
+          rev('|\'hello\'->meta::pure::functions::string::matches(\'hello\')', 'c("hello").full_match("hello")'),
+          rev('|\'abc\'->meta::pure::functions::string::matches(\'[a-z][a-z][a-z]\')', 'c("abc").full_match("[a-z][a-z][a-z]")')
         ]
       ),
       meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_->testRev(
         [
-          rev('|\'abc\'->meta::pure::functions::string::matches(\'[a-z][a-z][a-z][a-z]\')', 'c("abc").matches("[a-z][a-z][a-z][a-z]")')
+          rev('|\'abc\'->meta::pure::functions::string::matches(\'[a-z][a-z][a-z][a-z]\')', 'c("abc").full_match("[a-z][a-z][a-z][a-z]")')
         ]
       )
     ]->combine(),
