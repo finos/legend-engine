@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.postgres.protocol.sql.handler.jdbc;
 
+import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
+import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.SQLRewrite;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepared.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
@@ -29,10 +31,15 @@ public class JDBCPostgresPreparedStatement implements PostgresPreparedStatement,
     private final PreparedStatement preparedStatement;
     private boolean isExecuted = false;
 
-    public JDBCPostgresPreparedStatement(Connection connection, String query) throws SQLException
+    public JDBCPostgresPreparedStatement(Connection connection, String query, SQLRewrite sqlRewrite) throws SQLException
     {
         this.connection = connection;
-        this.preparedStatement = this.connection.prepareStatement(query);
+        this.preparedStatement = this.connection.prepareStatement(reprocessQuery(query, sqlRewrite));
+    }
+
+    public static String reprocessQuery(String query, SQLRewrite sqlRewrite)
+    {
+        return SQLGrammarParser.getSqlBaseParser(query, "query").statement().accept(sqlRewrite).replaceAll("\\$\\d+", "?");
     }
 
     @Override

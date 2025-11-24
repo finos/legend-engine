@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.postgres.protocol.sql.handler.jdbc;
 
+import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.SQLRewrite;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.PostgresStatement;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 
@@ -25,17 +26,19 @@ public class JDBCPostgresStatement implements PostgresStatement, AutoCloseable
 {
     private final Connection connection;
     private final Statement postgresStatement;
+    private final SQLRewrite sqlRewrite;
 
-    public JDBCPostgresStatement(Connection connection) throws SQLException
+    public JDBCPostgresStatement(Connection connection, SQLRewrite sqlRewrite) throws SQLException
     {
         this.connection = connection;
         this.postgresStatement = connection.createStatement();
+        this.sqlRewrite = sqlRewrite;
     }
 
     @Override
     public boolean execute(String query) throws Exception
     {
-        return postgresStatement.execute(query);
+        return postgresStatement.execute(JDBCPostgresPreparedStatement.reprocessQuery(query, sqlRewrite));
     }
 
     @Override

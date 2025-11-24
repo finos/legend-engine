@@ -171,12 +171,11 @@ public class SQLManager
                     case Legend:
                         return new LegendPreparedStatement(query, findClient(clients, session.getDatabaseName(), session.getOptions()), session.getDatabaseName(), session.getOptions(), session.getIdentity());
                     case Metadata_Generic:
-                        return new JDBCPostgresPreparedStatement(metadataConnectionPool.getConnection(), query);
+                        // We still want to rewrite things like the current_database function.
+                        return new JDBCPostgresPreparedStatement(metadataConnectionPool.getConnection(), query, new SQLRewrite(session, null));
                     case Metadata_User_Specific:
                         CatalogManager catalogManager = catalogManagers.getIfAbsentPut(getKeyFromSession(session), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName(), session.getOptions()), metadataConnectionPool));
-                        String reprocessedQuery = SQLGrammarParser.getSqlBaseParser(query, "query").statement().accept(new SQLRewrite(session, catalogManager));
-                        logger.info("Executing reprocessed query: {}", reprocessedQuery);
-                        return new JDBCPostgresPreparedStatement(metadataConnectionPool.getConnection(), reprocessedQuery.replaceAll("\\$\\d+", "?"));
+                        return new JDBCPostgresPreparedStatement(metadataConnectionPool.getConnection(), query, new SQLRewrite(session, catalogManager));
                     case TX:
                         return new TxnIsolationPreparedStatement();
                 }
@@ -202,10 +201,10 @@ public class SQLManager
                     case Legend:
                         return new LegendStatement(findClient(clients, session.getDatabaseName(), session.getOptions()), session.getDatabaseName(), session.getOptions(), session.getIdentity());
                     case Metadata_Generic:
-                        return new JDBCPostgresStatement(metadataConnectionPool.getConnection());
+                        return new JDBCPostgresStatement(metadataConnectionPool.getConnection(), new SQLRewrite(session, null));
                     case Metadata_User_Specific:
-                        catalogManagers.getIfAbsentPut(getKeyFromSession(session), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName(), session.getOptions()), metadataConnectionPool));
-                        return new JDBCPostgresStatement(metadataConnectionPool.getConnection());
+                        CatalogManager catalogManager = catalogManagers.getIfAbsentPut(getKeyFromSession(session), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName(), session.getOptions()), metadataConnectionPool));
+                        return new JDBCPostgresStatement(metadataConnectionPool.getConnection(), new SQLRewrite(session, catalogManager));
                     case TX:
                         return new TxnIsolationStatement();
                 }
