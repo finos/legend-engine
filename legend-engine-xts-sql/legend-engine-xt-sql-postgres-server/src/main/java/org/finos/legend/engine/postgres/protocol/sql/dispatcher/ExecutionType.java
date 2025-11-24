@@ -18,6 +18,7 @@ public enum ExecutionType
 {
     Empty,
     TX,
-    Metadata,
+    Metadata_Generic,
+    Metadata_User_Specific,
     Legend
 }

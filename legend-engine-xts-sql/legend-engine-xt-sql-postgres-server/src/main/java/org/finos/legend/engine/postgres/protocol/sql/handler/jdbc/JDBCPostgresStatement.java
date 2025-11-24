@@ -17,16 +17,19 @@ package org.finos.legend.engine.postgres.protocol.sql.handler.jdbc;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.PostgresStatement;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 
-class JDBCPostgresStatement implements PostgresStatement
+public class JDBCPostgresStatement implements PostgresStatement, AutoCloseable
 {
-
+    private final Connection connection;
     private final Statement postgresStatement;
 
-    public JDBCPostgresStatement(Statement postgresStatement)
+    public JDBCPostgresStatement(Connection connection) throws SQLException
     {
-        this.postgresStatement = postgresStatement;
+        this.connection = connection;
+        this.postgresStatement = connection.createStatement();
     }
 
     @Override
@@ -47,6 +50,10 @@ class JDBCPostgresStatement implements PostgresStatement
         if (postgresStatement != null)
         {
             postgresStatement.close();
+        }
+        if (connection != null)
+        {
+            connection.close();
         }
     }
 

@@ -376,6 +376,11 @@
         </dependency>
         <!-- OPEN TELEMETRY -->
 
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+
         <!-- WIREMOCK -->
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
@@ -477,11 +482,6 @@
                     <artifactId>junit</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>

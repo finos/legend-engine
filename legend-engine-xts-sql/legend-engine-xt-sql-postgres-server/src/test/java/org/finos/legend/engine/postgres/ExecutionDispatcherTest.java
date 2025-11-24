@@ -55,7 +55,7 @@ public class ExecutionDispatcherTest
     @Test
     public void testSelectConstant()
     {
-        assertMetadataSessionHandler("SELECT 1");
+        Assert.assertEquals(ExecutionType.Metadata_Generic, getExecutionType("SELECT 1"));
     }
 
     @Test
@@ -96,7 +96,7 @@ public class ExecutionDispatcherTest
     private static void assertMetadataSessionHandler(String query)
     {
         ExecutionType executionType = getExecutionType(query);
-        Assert.assertEquals(ExecutionType.Metadata, executionType);
+        Assert.assertEquals(ExecutionType.Metadata_User_Specific, executionType);
     }
 
     private static void assertTxnIsoSessionHandler(String query)

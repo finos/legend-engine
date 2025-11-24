@@ -25,9 +25,11 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
-import org.eclipse.collections.api.factory.Maps;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.postgres.PostgresServerException;
@@ -35,7 +37,8 @@ import org.finos.legend.engine.postgres.protocol.sql.dispatcher.ExecutionType;
 import org.finos.legend.engine.postgres.protocol.sql.dispatcher.StatementDispatcherVisitor;
 import org.finos.legend.engine.postgres.protocol.sql.handler.empty.EmptyPreparedStatement;
 import org.finos.legend.engine.postgres.protocol.sql.handler.empty.EmptyStatement;
-import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.JDBCSessionHandler;
+import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.JDBCPostgresPreparedStatement;
+import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.JDBCPostgresStatement;
 import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.CatalogManager;
 import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.SQLRewrite;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecution;
@@ -50,6 +53,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Arrays;
@@ -59,9 +65,10 @@ public class SQLManager
 {
     private static final Logger logger = LoggerFactory.getLogger(SQLManager.class);
 
-    JDBCSessionHandler legendSessionHandler;
+    HikariDataSource metadataConnectionPool;
+
     MutableList<LegendExecution> clients;
-    MutableMap<String, CatalogManager> catalogManagers = Maps.mutable.empty();
+    MutableMap<String, CatalogManager> catalogManagers = new ConcurrentHashMap<>();
 
     public SQLManager(MutableList<LegendExecution> clients)
     {
@@ -112,15 +119,23 @@ public class SQLManager
             String host = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
             String used_host = host == null ? "localhost" : host;
             logger.info("Connecting using host: {}", used_host);
-            JDBCSessionHandler metadataJDBCSessionHandler = new JDBCSessionHandler("jdbc:postgresql://" + used_host + ":" + port + "/postgres", "postgres", "");
 
             logger.info("Waiting for initialization");
-            waitInitialization(metadataJDBCSessionHandler);
-            logger.info("Postgres initialized on port " + port);
+            waitInitialization("jdbc:postgresql://" + used_host + ":" + port + "/postgres", "postgres", "");
 
-            metadataJDBCSessionHandler.prepareStatement("CREATE DATABASE legend_m;").execute();
+            // Create metadata database
+            try (Connection connection = DriverManager.getConnection("jdbc:postgresql://" + used_host + ":" + port + "/postgres", "postgres", "");
+                 PreparedStatement preparedStatement = connection.prepareStatement("CREATE DATABASE legend_m;"))
+            {
+                logger.info("Postgres initialized on port " + port);
+                preparedStatement.execute();
+            }
 
-            this.legendSessionHandler = new JDBCSessionHandler("jdbc:postgresql://" + used_host + ":" + port + "/legend_m", "postgres", "");
+            // Create connection pool for metadata database
+            HikariConfig jdbcConfig = new HikariConfig();
+            jdbcConfig.setJdbcUrl("jdbc:postgresql://" + used_host + ":" + port + "/legend_m");
+            jdbcConfig.setUsername("postgres");
+            this.metadataConnectionPool = new HikariDataSource(jdbcConfig);
         }
         catch (Exception e)
         {
@@ -154,12 +169,14 @@ public class SQLManager
                     case Empty:
                         return new EmptyPreparedStatement();
                     case Legend:
-                        return new LegendPreparedStatement(query, findClient(clients, session.getDatabase(), session.getOptions()), session.getDatabase(), session.getOptions(), session.getIdentity());
-                    case Metadata:
-                        CatalogManager catalogManager = this.catalogManagers.get(session.getIdentity().getName() + session.getDatabase());
+                        return new LegendPreparedStatement(query, findClient(clients, session.getDatabaseName(), session.getOptions()), session.getDatabaseName(), session.getOptions(), session.getIdentity());
+                    case Metadata_Generic:
+                        return new JDBCPostgresPreparedStatement(metadataConnectionPool.getConnection(), query);
+                    case Metadata_User_Specific:
+                        CatalogManager catalogManager = catalogManagers.getIfAbsentPut(getKeyFromSession(session), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName(), session.getOptions()), metadataConnectionPool));
                         String reprocessedQuery = SQLGrammarParser.getSqlBaseParser(query, "query").statement().accept(new SQLRewrite(session, catalogManager));
                         logger.info("Executing reprocessed query: {}", reprocessedQuery);
-                        return legendSessionHandler.prepareStatement(reprocessedQuery);
+                        return new JDBCPostgresPreparedStatement(metadataConnectionPool.getConnection(), reprocessedQuery.replaceAll("\\$\\d+", "?"));
                     case TX:
                         return new TxnIsolationPreparedStatement();
                 }
@@ -183,9 +200,12 @@ public class SQLManager
                     case Empty:
                         return new EmptyStatement();
                     case Legend:
-                        return new LegendStatement(findClient(clients, session.getDatabase(), session.getOptions()), session.getDatabase(), session.getOptions(), session.getIdentity());
-                    case Metadata:
-                        return legendSessionHandler.createStatement();
+                        return new LegendStatement(findClient(clients, session.getDatabaseName(), session.getOptions()), session.getDatabaseName(), session.getOptions(), session.getIdentity());
+                    case Metadata_Generic:
+                        return new JDBCPostgresStatement(metadataConnectionPool.getConnection());
+                    case Metadata_User_Specific:
+                        catalogManagers.getIfAbsentPut(getKeyFromSession(session), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName(), session.getOptions()), metadataConnectionPool));
+                        return new JDBCPostgresStatement(metadataConnectionPool.getConnection());
                     case TX:
                         return new TxnIsolationStatement();
                 }
@@ -208,7 +228,7 @@ public class SQLManager
         return query.isEmpty() ? ExecutionType.Empty : SQLGrammarParser.getSqlBaseParser(query, "query").singleStatement().accept(new StatementDispatcherVisitor());
     }
 
-    public void waitInitialization(JDBCSessionHandler metadataJDBCSessionHandler)
+    public void waitInitialization(String url, String user, String password)
     {
         boolean initializing = true;
         do
@@ -216,7 +236,11 @@ public class SQLManager
             try
             {
                 Thread.sleep(100);
-                metadataJDBCSessionHandler.prepareStatement("select 1;").execute();
+                try (Connection connection = DriverManager.getConnection(url, user, password);
+                     PreparedStatement preparedStatement = connection.prepareStatement("select 1;"))
+                {
+                    preparedStatement.execute();
+                }
                 initializing = false;
             }
             catch (Exception e)
@@ -227,16 +251,17 @@ public class SQLManager
         while (initializing);
     }
 
-    public void buildCatalog(Session session)
+    public void removeCatalog(Session session) throws SQLException
     {
-        String name = session.getIdentity().getName();
-        String database = session.getDatabase();
-        catalogManagers.getIfAbsentPut(name + database, () -> new CatalogManager(session.getIdentity(), database, findClient(clients, session.getDatabase(), session.getOptions()), legendSessionHandler));
+        CatalogManager cm = catalogManagers.remove(getKeyFromSession(session));
+        if (cm != null)
+        {
+            cm.close();
+        }
     }
 
-    public void removeCatalog(String name, String database)
+    public String getKeyFromSession(Session session)
     {
-//        CatalogManager cm = catalogManagers.remove(name + database);
-//        cm.close();
+        return "session_" + session.getId();
     }
 }

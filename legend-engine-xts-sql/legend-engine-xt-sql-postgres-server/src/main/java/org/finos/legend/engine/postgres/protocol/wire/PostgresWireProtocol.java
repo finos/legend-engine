@@ -474,7 +474,7 @@ public class PostgresWireProtocol
             }
         }
 
-        private void closeSession()
+        private void closeSession() throws Exception
         {
             if (session != null)
             {
@@ -482,7 +482,7 @@ public class PostgresWireProtocol
                 {
                     server.getUserMetrics().liveConnections.labelValues(sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_")).dec();
                 }
-                sqlManager.removeCatalog(session.getIdentity().getName(), session.getDatabase());
+                sqlManager.removeCatalog(session);
                 session.close();
                 session = null;
                 sessionStats.endTime = new Date().toString();
@@ -634,8 +634,6 @@ public class PostgresWireProtocol
         String label = sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_");
         prometheusUserMetrics.connections.labelValues(label).inc();
         prometheusUserMetrics.liveConnections.labelValues(label).inc();
-
-        sqlManager.buildCatalog(session);
 
         MDC.put("user", authenticatedUser.getName());
         messages.sendAuthenticationOK(channel)
@@ -1118,8 +1116,17 @@ public class PostgresWireProtocol
 
         // Cancel request is sent by the client over a new connection.
         // This closes the new connection, not the one running the query.
-        handler.closeSession();
         channel.close();
+
+        try
+        {
+            handler.closeSession();
+        }
+        catch (Exception e)
+        {
+            LOGGER.error("Error closing the session", e);
+            // keep silent on purpose
+        }
     }
 
     private static class AcceptorCreator implements PrivilegedExceptionAction<GSSCredential>
