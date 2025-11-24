@@ -62,6 +62,12 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
           rev('|$string->meta::pure::functions::string::indexOf(\'fox\')', 'c("the quick brown fox jumps over the lazy dog").index("fox")'),
           rev('|$string->meta::pure::functions::string::indexOf(\'happy\')', 'c("the quick brown fox jumps over the lazy dog").index_of("happy")')
         ]
+      ),
+      meta::pure::functions::string::tests::indexOf::testFromIndex_Function_1__Boolean_1_->testRev(
+        [
+          rev('|$string->meta::pure::functions::string::indexOf(\'h\', 0)','c("the the").index_of("h", 0)'),
+          rev('|$string->meta::pure::functions::string::indexOf(\'h\', 3)','c("the the").index_of("h", 3)')
+        ]
       )
     ]->combine(),
     // ------------------------------------------------------------------
@@ -129,8 +135,278 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         rev('|\'9999999999999992\'->meta::pure::functions::string::parseInteger()', 'c("9999999999999992").parse_int()')
       ]
     ),
-    // ------------------------------------------------------------------
+    [ // parseBoolean
+      meta::pure::functions::string::tests::parseBoolean::testParseTrue_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'true\'->meta::pure::functions::string::parseBoolean()', 'c("true").parse_boolean()'),
+          rev('|\'True\'->meta::pure::functions::string::parseBoolean()', 'c("True").parse_boolean()'),
+          rev('|\'tRue\'->meta::pure::functions::string::parseBoolean()', 'c("tRue").parse_boolean()'),
+          rev('|\'trUe\'->meta::pure::functions::string::parseBoolean()', 'c("trUe").parse_boolean()'),
+          rev('|\'truE\'->meta::pure::functions::string::parseBoolean()', 'c("truE").parse_boolean()'),
+          rev('|\'TRUE\'->meta::pure::functions::string::parseBoolean()', 'c("TRUE").parse_boolean()')       
+        ]
+    ),
+      meta::pure::functions::string::tests::parseBoolean::testParseFalse_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'false\'->meta::pure::functions::string::parseBoolean()', 'c("false").parse_boolean()'),
+          rev('|\'False\'->meta::pure::functions::string::parseBoolean()', 'c("False").parse_boolean()'),
+          rev('|\'fAlse\'->meta::pure::functions::string::parseBoolean()', 'c("fAlse").parse_boolean()'),
+          rev('|\'faLse\'->meta::pure::functions::string::parseBoolean()', 'c("faLse").parse_boolean()'),
+          rev('|\'falSe\'->meta::pure::functions::string::parseBoolean()', 'c("falSe").parse_boolean()'),
+          rev('|\'falsE\'->meta::pure::functions::string::parseBoolean()', 'c("falsE").parse_boolean()'),
+          rev('|\'FALSE\'->meta::pure::functions::string::parseBoolean()', 'c("FALSE").parse_boolean()')       
+        ]
+    )
+    ]->combine(),
+    [ // parseDate
+      meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'2014-02-27T10:01:35.231-0500\'->meta::pure::functions::string::parseDate()', 'c("2014-02-27T10:01:35.231-0500").parse_datetime()'),
+          rev('|\'2014-2-27T10:01:35.231+0500\'->meta::pure::functions::string::parseDate()', 'c("2014-2-27T10:01:35.231+0500").parse_datetime()')
+        ]
+      ),
+      meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'2014-2-27T10:01:35.231\'->meta::pure::functions::string::parseDate()', 'c("2014-2-27T10:01:35.231").parse_datetime()'),
+          rev('|\'2014-02-27T10:01:35.231\'->meta::pure::functions::string::parseDate()', 'c("2014-02-27T10:01:35.231").parse_datetime()')
 
+        ]
+      ),
+      meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'2014-02-27T10:01:35.231Z\'->meta::pure::functions::string::parseDate()', 'c("2014-02-27T10:01:35.231Z").parse_datetime()'),
+          rev('|\'2014-2-27T10:01:35.231Z\'->meta::pure::functions::string::parseDate()', 'c("2014-2-27T10:01:35.231Z").parse_datetime()')
+
+        ]
+      ),
+      meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'2014-02-27T00:00:00.000000\'->meta::pure::functions::string::parseDate()', 'c("2014-02-27T00:00:00.000000").parse_datetime()'),
+          rev('|\'2014-02-27\'->meta::pure::functions::string::parseDate()', 'c("2017-02-27").parse_datetime()')
+        ]
+      )
+    ]->combine(),
+    // ------------------------------------------------------------------
+    [ // ascii
+      meta::pure::functions::string::tests::ascii::testAsciiDigit_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'0\'->meta::pure::functions::string::ascii()', 'c("0").ascii()'),
+          rev('|\'9\'->meta::pure::functions::string::ascii()', 'c("9").ascii()')
+        ]
+      ),
+      meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'\\n\'->meta::pure::functions::string::ascii()', 'c("\\n").ascii()')
+        ]
+      ),
+      meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'\'->meta::pure::functions::string::ascii()', 'c("").ascii()')
+        ]
+      ),
+      meta::pure::functions::string::tests::ascii::testAsciiLower_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'a\'->meta::pure::functions::string::ascii()', 'c("a").ascii()'),
+          rev('|\'z\'->meta::pure::functions::string::ascii()', 'c("z").ascii()')
+        ]
+      ),
+      meta::pure::functions::string::tests::ascii::testAsciiUpper_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'A\'->meta::pure::functions::string::ascii()', 'c("A").ascii()'),
+          rev('|\'Z\'->meta::pure::functions::string::ascii()', 'c("Z").ascii()')
+        ]
+      ),
+      meta::pure::functions::string::tests::ascii::testAsciiMultiCharString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abc\'->meta::pure::functions::string::ascii()', 'c("abc").ascii()')
+        ]
+      ),
+      meta::pure::functions::string::tests::ascii::testAsciiWhitespace_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\' \'->meta::pure::functions::string::ascii()', 'c(" ").ascii()')
+        ]
+      )
+    ]->combine(),
+    [ // char
+      meta::pure::functions::string::tests::char::testSpace_Function_1__Boolean_1_->testRev(
+        [
+          rev('|32->meta::pure::functions::string::char()', 'c(32).char()')
+        ]
+      ),
+      meta::pure::functions::string::tests::char::testNewline_Function_1__Boolean_1_->testRev(
+        [
+          rev('|10->meta::pure::functions::string::char()', 'c(10).char()')
+        ]
+      ),
+      meta::pure::functions::string::tests::char::testEmptyChar_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::string::char()', 'c(0).char()')
+        ]
+      ),
+      meta::pure::functions::string::tests::char::testCharDigits_Function_1__Boolean_1_->testRev(
+        [
+          rev('|48->meta::pure::functions::string::char()', 'c(48).char()'),
+          rev('|57->meta::pure::functions::string::char()', 'c(57).char()')
+        ]
+      ),
+      meta::pure::functions::string::tests::char::testCharLower_Function_1__Boolean_1_->testRev(
+        [
+          rev('|97->meta::pure::functions::string::char()', 'c(97).char()'),
+          rev('|122->meta::pure::functions::string::char()', 'c(122).char()')
+        ]
+      ),
+      meta::pure::functions::string::tests::char::testCharUpper_Function_1__Boolean_1_->testRev(
+        [
+          rev('|65->meta::pure::functions::string::char()', 'c(65).char()'),
+          rev('|90->meta::pure::functions::string::char()', 'c(90).char()')
+        ]
+      )
+    ]->combine(),
+    [ // base64
+      meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip_Function_1__Boolean_1_->testRev(
+        [
+          rev('|$testString->meta::pure::functions::string::encodeBase64()->meta::pure::functions::string::decodeBase64()', 'c("Any Random String").encode_base64().decode_base64()')
+        ]
+      ),
+      meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'SGVsbG8sIFdvcmxkIQ\'->meta::pure::functions::string::decodeBase64()', 'c("SGVsbG8sIFdvcmxkIQ").decode_base64()')
+        ]
+      ),
+      meta::pure::functions::string::tests::base64::testDecodeBase64_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'SGVsbG8sIFdvcmxkIQ==\'->meta::pure::functions::string::decodeBase64()', 'c("SGVsbG8sIFdvcmxkIQ==").decode_base64()')
+        ]
+      )
+    ]->combine(),
+    [ // base64
+      meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'Hello, World!\'->meta::pure::functions::string::encodeBase64()', 'c("Hello, World!").encode_base64()')
+        ]
+      ),
+      meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip_Function_1__Boolean_1_->testRev(
+        [
+          rev('|$testString->meta::pure::functions::string::decodeBase64()->meta::pure::functions::string::encodeBase64()', 'c("SGVsbG8sIFdvcmxkIQ==").decode_base64().encode_base64()')
+        ]
+      )
+    ]->combine(),
+    [ // tolowerfirstcharacter
+      meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'XoXoXoX\'->meta::pure::functions::string::toLowerFirstCharacter()', 'c("XoXoXoX").to_lower_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'xOxOxOx\'->meta::pure::functions::string::toLowerFirstCharacter()', 'c("xOxOxOx").to_lower_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterNumber_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'1isOne\'->meta::pure::functions::string::toLowerFirstCharacter()', 'c("1isOne").to_lower_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterEmptyString_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'\'->meta::pure::functions::string::toLowerFirstCharacter()', 'c("").to_lower_first_character()')
+        ]
+      )
+    ]->combine(),
+    [// toupperfirstcharacter
+      meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'xOxOxOx\'->meta::pure::functions::string::toUpperFirstCharacter()', 'c("xOxOxOx").to_upper_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'XoXoXoX\'->meta::pure::functions::string::toUpperFirstCharacter()', 'c("XoXoXoX").to_upper_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'1isOne\'->meta::pure::functions::string::toUpperFirstCharacter()', 'c("1isOne").to_upper_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterEmptyString_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'\'->meta::pure::functions::string::toUpperFirstCharacter()', 'c("").to_upper_first_character()')
+        ]
+    )
+    ]->combine(),
+    [ //left
+      meta::pure::functions::string::tests::left::testLeft_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcdefg\'->meta::pure::functions::string::left(3)', 'c("abcdefg").left(3)')
+        ]
+      ),
+      meta::pure::functions::string::tests::left::testLeftTooShortString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'ab\'->meta::pure::functions::string::left(7)', 'c("ab").left(7)')
+        ]
+      ),
+      meta::pure::functions::string::tests::left::testLeftEmptyString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'\'->meta::pure::functions::string::left(7)', 'c("").left(7)')
+        ]
+      )
+    ]->combine(),
+    [ // right
+      meta::pure::functions::string::tests::right::testRight_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcdefg\'->meta::pure::functions::string::right(3)', 'c("abcdefg").right(3)')
+        ]
+      ),
+      meta::pure::functions::string::tests::right::testRightTooShortString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'ab\'->meta::pure::functions::string::right(7)', 'c("ab").right(7)')
+        ]
+      ),
+      meta::pure::functions::string::tests::right::testRightEmptyString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'\'->meta::pure::functions::string::right(7)', 'c("").right(7)')
+        ]
+      )
+    ]->combine(),
+    [ // substring
+      meta::pure::functions::string::tests::substring::testStart_Function_1__Boolean_1_->testRev(
+        [
+          rev('|$string->meta::pure::functions::string::substring(0)','c("the quick brown fox jumps over the lazy dog").substring(0)'),
+          rev('|$string->meta::pure::functions::string::substring(1)', 'c("the quick brown fox jumps over the lazy dog").substring(1)'),
+          rev('|$string->meta::pure::functions::string::substring(2)', 'c("the quick brown fox jumps over the lazy dog").substring(2)'),
+          rev('|$string->meta::pure::functions::string::substring(3)', 'c("the quick brown fox jumps over the lazy dog").substring(3)'),
+          rev('|$string->meta::pure::functions::string::substring(4)', 'c("the quick brown fox jumps over the lazy dog").substring(4)')
+        ]
+      ),
+      meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_->testRev(
+      [
+        rev('|$string->meta::pure::functions::string::substring(0, 43)', 'c("the quick brown fox jumps over the lazy dog").substring(0, 43)'),
+        rev('|$string->meta::pure::functions::string::substring(1, 42)', 'c("the quick brown fox jumps over the lazy dog").substring(1, 42)'),
+        rev('|$string->meta::pure::functions::string::substring(2, 41)', 'c("the quick brown fox jumps over the lazy dog").substring(2, 41)'),
+        rev('|$string->meta::pure::functions::string::substring(3, 40)', 'c("the quick brown fox jumps over the lazy dog").substring(3, 40)'),
+        rev('|$string->meta::pure::functions::string::substring(4, 39)', 'c("the quick brown fox jumps over the lazy dog").substring(4, 39)')
+      ]
+    )
+    ]->combine(),
+    [ //split
+      meta::pure::functions::string::tests::split::testSplit_Function_1__Boolean_1_->testRev(
+        [
+          rev(
+            '|\'Hello World\'->meta::pure::functions::string::split(\' \')',
+            'c("Hello World").split(" ")'
+          )
+        ]
+      ),
+      meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_->testRev(
+        [
+          rev(
+            '|\'Hello World\'->meta::pure::functions::string::split(\';\')',
+            'c("Hello World").split(";")'
+          )
+        ]
+      )
+    ]->combine(),
     // Transformation ---------------------------------------------------
     // toLower
     meta::pure::functions::string::tests::tolower::testToLower_Function_1__Boolean_1_->testRev(
@@ -146,8 +422,133 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         rev('|\'TEST\'->meta::pure::functions::string::toUpper()', 'c("TEST").upper()')
       ]
     ),
+    //reverseString
+    meta::pure::functions::string::tests::reverse::testReverseString_Function_1__Boolean_1_->testRev(
+      [
+        rev('|\'\'->meta::pure::functions::string::reverseString()', 'c("").reverse()'),
+        rev('|\'cba\'->meta::pure::functions::string::reverseString()', 'c("cba").reverse()')
+      ]
+    ),
+    //replace
+    meta::pure::functions::string::tests::replace::testReplace_Function_1__Boolean_1_->testRev(
+      [
+        rev('|\'abcde\'->meta::pure::functions::string::replace(\'ab\', \'fg\')','c("abcde").replace("ab", "fg")')
+      ]
+    ),
+    [ // lpad
+      meta::pure::functions::string::tests::lpad::testLpad_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcd\'->meta::pure::functions::string::lpad(10, \'_\')','c("abcd").lpad(10, "_")')
+        ]
+      ),
+      meta::pure::functions::string::tests::lpad::testLpadDefaultCharacter_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcd\'->meta::pure::functions::string::lpad(10)','c("abcd").lpad(10)')
+        ]
+      ),
+      meta::pure::functions::string::tests::lpad::testLpadStringLongerThanLength_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcd\'->meta::pure::functions::string::lpad(3, \'_\')','c("abcd").lpad(3, "_")'
+          )
+        ]
+      ),
+      meta::pure::functions::string::tests::lpad::testLpadEmptyString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'\'->meta::pure::functions::string::lpad(3, \'?\')','c("").lpad(3, "?")')
+        ]
+      ),
+      meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcd\'->meta::pure::functions::string::lpad(10, \'\')','c("abcd").lpad(10, "")')
+        ]
+      )
+    ]->combine(),
+    [ // rpad
+      meta::pure::functions::string::tests::rpad::testRpad_Function_1__Boolean_1_->testRev(
+        [ rev('|\'abcd\'->meta::pure::functions::string::rpad(10, \'_\')', 'c("abcd").rpad(10, "_")') ]
+      ),
+      meta::pure::functions::string::tests::rpad::testRpadDefaultCharacter_Function_1__Boolean_1_->testRev(
+        [ rev('|\'abcd\'->meta::pure::functions::string::rpad(10)', 'c("abcd").rpad(10)') ]
+      ),
+      meta::pure::functions::string::tests::rpad::testRpadStringLongerThanLength_Function_1__Boolean_1_->testRev(
+        [ rev('|\'abcd\'->meta::pure::functions::string::rpad(3, \'_\')', 'c("abcd").rpad(3, "_")') ]
+      ),
+      meta::pure::functions::string::tests::rpad::testRpadEmptyString_Function_1__Boolean_1_->testRev(
+        [ rev('|\'\'->meta::pure::functions::string::rpad(3, \'?\')', 'c("").rpad(3, "?")') ]
+      ),
+      meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_->testRev(
+        [ rev('|\'abcd\'->meta::pure::functions::string::rpad(10, \'\')', 'c("abcd").rpad(10, "")') ]
+      ),
+      meta::pure::functions::string::tests::rpad::testRpadMultiChar_Function_1__Boolean_1_->testRev(
+        [ rev('|\'pp\'->meta::pure::functions::string::rpad(5, \'xo\')', 'c("pp").rpad(5, "xo")') ]
+      )
+    ]->combine(),
+    [ // splitPart
+      meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 0)', 'c("Hello World").split_part(" ", 0)'),
+          rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 1)', 'c("Hello World").split_part(" ", 1)')
+        ]
+      ),
+      meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|[]->meta::pure::functions::string::splitPart(\' \', 0)', 'c(\'\').split_part(" ", 0)')
+        ]
+      ),
+      meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\'\', 0)', 'c("Hello World").split_part("", 0)')
+        ]
+      ),
+      meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\';\', 0)', 'c("Hello World").split_part(";", 0)')
+        ]
+      ),
+      meta::pure::functions::string::tests::splitPart::testSplitPartTypicalToken_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'Sunglasses, Keys, Phone, SL-card\'->meta::pure::functions::string::splitPart(\', \', 2)', 'c("Sunglasses, Keys, Phone, SL-card").split_part(", ", 2)'),
+          rev('|\'user.name\'->meta::pure::functions::string::splitPart(\'.\', 1)', 'c("user.name").split_part(".", 1)'),
+          rev('|\'a;b;c;d;e\'->meta::pure::functions::string::splitPart(\';\', 4)', 'c("a;b;c;d;e").split_part(";", 4)'),
+          rev('|\'2_0_4\'->meta::pure::functions::string::splitPart(\'_\', 2)', 'c("2_0_4").split_part("_", 2)'),
+          rev('|\'super-duper-looper\'->meta::pure::functions::string::splitPart(\'-\', 0)', 'c("super-duper-looper").split_part("-", 0)')
+        ]
+      )
+    ]->combine(),
+    [ // plus
+      meta::pure::functions::string::tests::plus::testPlus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'a\' + \'p\'', 'c("a") + c("p")')
+        ]
+      ),
+      meta::pure::functions::string::tests::plus::testMultiPlus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'the quick brown fox\' + \' jumps over \' + \'the lazy dog\'', 'c("the quick brown fox") + c(" jumps over ") + c("the lazy dog")'),
+          rev('|(\'the quick brown fox\' + \' jumps over \') + \'the lazy dog\'', '(c("the quick brown fox") + c(" jumps over ")) + c("the lazy dog")'),
+          rev('|\'the quick brown fox\' + \' \' + \'jumps\' + \' \' + \'over\' + \' \' + \'the lazy dog\'', 'c("the quick brown fox") + " " + c("jumps") + " " + c("over") + " " + c("the lazy dog")'),
+          rev('|\'the quick brown fox\' + (\' \' + \'jumps\' + \' \' + \'over\' + \' \' + \'the lazy dog\')', 'c("the quick brown fox") + ( " " + c("jumps") + " " + c("over") + " " + c("the lazy dog") )')
+        ]
+      ),
+      meta::pure::functions::string::tests::plus::testMultiPlusWithFunctionExpressions_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::string::toString() + \' \' + meta::pure::functions::string::toString(1 + 1) + \' \' + meta::pure::functions::string::toString(2 + 1)', 'c(str(1) + " " + str(1+1) + " " + str(2+1))')
+        ]
+      )
+    ]->combine(),
     // ------------------------------------------------------------------
-
+    [ // matches
+      meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'hello\'->meta::pure::functions::string::matches(\'hello\')', 'c("hello").matches("hello")'),
+          rev('|\'abc\'->meta::pure::functions::string::matches(\'[a-z][a-z][a-z]\')', 'c("abc").matches("[a-z][a-z][a-z]")')
+        ]
+      ),
+      meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abc\'->meta::pure::functions::string::matches(\'[a-z][a-z][a-z][a-z]\')', 'c("abc").matches("[a-z][a-z][a-z][a-z]")')
+        ]
+      )
+    ]->combine(),
     // Trim -------------------------------------------------------------
     // ltrim
     meta::pure::functions::string::tests::trim::testLTrim_Function_1__Boolean_1_->testRev(
@@ -171,6 +572,77 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         rev('|\'A Simple Text To Trim \'->meta::pure::functions::string::rtrim()', 'c("A Simple Text To Trim ").rstrip()'),
         rev('|\' A Simple Text To Trim\'->meta::pure::functions::string::rtrim()', 'c(" A Simple Text To Trim").rstrip()')
       ]
-    )
+    ),
+    [
+      meta::pure::functions::string::tests::toString::testBooleanToString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true->meta::pure::functions::string::toString()', 'c(True).to_string()'),
+          rev('|false->meta::pure::functions::string::toString()', 'c(False).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testStringToString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'the quick brown fox jumps over the lazy dog\'->meta::pure::functions::string::toString()', 'c("the quick brown fox jumps over the lazy dog").to_string()'),
+          rev('|\'\'->meta::pure::functions::string::toString()', 'c("").to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testFloatToString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|3.14->meta::pure::functions::string::toString()', 'c(3.14).to_string()'),
+          rev('|3.14159->meta::pure::functions::string::toString()', 'c(3.14159).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testFloatToStringWithExcessTrailingZeros_Function_1__Boolean_1_->testRev(
+        [
+          rev('|17.0->meta::pure::functions::string::toString()', 'c(17.0).to_string()'),
+          rev('|17.000->meta::pure::functions::string::toString()', 'c(17.000).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testFloatToStringWithNoLeadingZero_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0.01->meta::pure::functions::string::toString()', 'c(0.01).to_string()'),
+          rev('|.01->meta::pure::functions::string::toString()', 'c(.01).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testFloatToStringWithPositiveExponent_Function_1__Boolean_1_->testRev(
+        [
+          rev('|134.21e6->meta::pure::functions::string::toString()', 'c(134.21e6).to_string()'),
+          rev('|1.3421e8->meta::pure::functions::string::toString()', 'c(1.3421e8).to_string()'),
+          rev('|0.13421e9->meta::pure::functions::string::toString()', 'c(0.13421e9).to_string()'),
+          rev('|134210000.0->meta::pure::functions::string::toString()', 'c(134210000.0).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testFloatToStringWithNegativeExponent_Function_1__Boolean_1_->testRev(
+        [
+          rev('|134.21e-10->meta::pure::functions::string::toString()', 'c(134.21e-10).to_string()'),
+          rev('|1.3421e-8->meta::pure::functions::string::toString()', 'c(1.3421e-8).to_string()'),
+          rev('|0.13421e-7->meta::pure::functions::string::toString()', 'c(0.13421e-7).to_string()'),
+          rev('|0.000000013421->meta::pure::functions::string::toString()', 'c(0.000000013421).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testIntegerToString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::string::toString()', 'c(1).to_string()'),
+          rev('|meta::pure::functions::string::toString(-1)', 'c(-1).to_string()')
+        ]
+      )
+    ]->combine(),
+    [
+      meta::pure::functions::string::tests::repeatstring::testRepeatString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'ab\'->meta::pure::functions::string::repeatString(2)', 'c("ab").repeat_string(2)')
+        ]
+      ),
+      meta::pure::functions::string::tests::repeatstring::testRepeatStringEmptyString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'\'->meta::pure::functions::string::repeatString(2)', 'c("").repeat_string(2)')
+        ]
+      )
+      // meta::pure::functions::string::tests::repeatstring::testRepeatStringNoString_Function_1__Boolean_1_->testRev(
+      //   [
+      //     rev('|[]->meta::pure::functions::string::repeatString(2)', 'c().repeat_string(2)')
+      //   ]
+      // )
+    ]->combine()
   ]
 }
