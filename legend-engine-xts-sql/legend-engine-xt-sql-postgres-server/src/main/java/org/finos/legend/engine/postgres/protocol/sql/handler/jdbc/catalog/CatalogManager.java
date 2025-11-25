@@ -20,6 +20,7 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.model.Column;
 import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.model.Database;
 import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.model.Function;
@@ -35,7 +36,6 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 
 import javax.security.auth.Subject;
-import javax.sql.DataSource;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -49,13 +49,13 @@ public class CatalogManager
 {
     private static final AtomicInteger counter = new AtomicInteger(0);
     private final int id;
-    private final DataSource metadataConnectionPool;
+    private final Connection connection;
 
-    public CatalogManager(Identity identity, String databaseFromConnectionString, LegendExecution legendExecution, DataSource metadataConnectionPool)
+    public CatalogManager(Identity identity, String databaseFromConnectionString, LegendExecution legendExecution, Connection connection)
     {
         id = counter.incrementAndGet();
 
-        this.metadataConnectionPool = metadataConnectionPool;
+        this.connection = connection;
 
         SchemaResult schemaResult;
         if (identity.getFirstCredential() instanceof LegendKerberosCredential)
@@ -72,9 +72,9 @@ public class CatalogManager
         {
             try
             {
-                setupMetadataTables(metadataConnectionPool, getMetadataSchemaName());
+                setupMetadataTables(getMetadataSchemaName());
                 Database metadataDatabase = buildDatabaseFromSchema(databaseFromConnectionString, schemaResult);
-                insertDatabaseInMetadataTables(metadataDatabase, getMetadataSchemaName(), metadataConnectionPool);
+                insertDatabaseInMetadataTables(metadataDatabase, getMetadataSchemaName());
             }
             catch (Exception e)
             {
@@ -90,23 +90,17 @@ public class CatalogManager
 
     public void close() throws SQLException
     {
-        try (Connection connection = metadataConnectionPool.getConnection())
-        {
-            executeSQLWithCleanUp(connection, "DROP SCHEMA IF EXISTS " + getMetadataSchemaName() + " CASCADE;");
-        }
+        executeSQLWithCleanUp(connection, "DROP SCHEMA IF EXISTS " + getMetadataSchemaName() + " CASCADE;");
     }
 
-    private void setupMetadataTables(DataSource metadataConnectionPool, String schemaName) throws Exception
+    private void setupMetadataTables(String schemaName) throws Exception
     {
-        try (Connection connection = metadataConnectionPool.getConnection())
-        {
-            executeSQLWithCleanUp(connection, "CREATE SCHEMA " + schemaName + ";");
-            executeSQLWithCleanUp(connection, "CREATE TABLE " + schemaName + ".database as select oid, * from pg_catalog.pg_database where 1 = 0;");
-            executeSQLWithCleanUp(connection, "CREATE TABLE " + schemaName + ".namespace as select oid, * from pg_catalog.pg_namespace where nspname='pg_catalog';");
-            executeSQLWithCleanUp(connection, "CREATE TABLE " + schemaName + ".class as select oid, * from pg_catalog.pg_class;");
-            executeSQLWithCleanUp(connection, "CREATE TABLE " + schemaName + ".attribute as select * from pg_catalog.pg_attribute;");
-            executeSQLWithCleanUp(connection, "CREATE TABLE " + schemaName + ".proc as select oid,* from pg_catalog.pg_proc where 0 = 1;");
-        }
+        executeSQLWithCleanUp(connection, "CREATE SCHEMA " + schemaName + ";");
+        executeSQLWithCleanUp(connection, "CREATE TABLE " + schemaName + ".database as select oid, * from pg_catalog.pg_database where 1 = 0;");
+        executeSQLWithCleanUp(connection, "CREATE TABLE " + schemaName + ".namespace as select oid, * from pg_catalog.pg_namespace where nspname='pg_catalog';");
+        executeSQLWithCleanUp(connection, "CREATE TABLE " + schemaName + ".class as select oid, * from pg_catalog.pg_class;");
+        executeSQLWithCleanUp(connection, "CREATE TABLE " + schemaName + ".attribute as select * from pg_catalog.pg_attribute;");
+        executeSQLWithCleanUp(connection, "CREATE TABLE " + schemaName + ".proc as select oid,* from pg_catalog.pg_proc where 0 = 1;");
     }
 
     private static Database buildDatabaseFromSchema(String database, SchemaResult result)
@@ -159,57 +153,54 @@ public class CatalogManager
     //         .columns(Lists.mutable.with(new Column("pierreColumn", BooleanType.INSTANCE)));
     //  schema.function(new Function("myFunc", Lists.mutable.with(BooleanType.INSTANCE, IntegerType.INSTANCE), VarCharType.INSTANCE, false));
     //  insertDatabaseInMetadataTables(db, legendSessionHandler);
-    private void insertDatabaseInMetadataTables(Database database, String metadataSchemaName, DataSource metadataConnectionPool) throws Exception
+    private void insertDatabaseInMetadataTables(Database database, String metadataSchemaName) throws Exception
     {
-        try (Connection connection = metadataConnectionPool.getConnection())
+        // Create DB
+        executeSQLWithCleanUp(connection,
+                "insert into " + metadataSchemaName + ".database (oid, datname, datdba, encoding, datcollate, datctype, datistemplate, datallowconn, datconnlimit, datlastsysoid, datfrozenxid, datminmxid, dattablespace, datacl)" +
+                        " values " +
+                        "(" + database.getDbId() + ", '" + database.getName() + "', 10, 6, 'en_US.utf8', 'en_US.utf8', false, true, -1, 12993, 549::varchar::xid, 1::varchar::xid, 1663, null);"
+        );
+
+        // Create Schema
+        for (Schema schema : database.getSchemas())
         {
-            // Create DB
             executeSQLWithCleanUp(connection,
-                    "insert into " + metadataSchemaName + ".database (oid, datname, datdba, encoding, datcollate, datctype, datistemplate, datallowconn, datconnlimit, datlastsysoid, datfrozenxid, datminmxid, dattablespace, datacl)" +
+                    "insert into " + metadataSchemaName + ".namespace (oid, nspname, nspowner, nspacl)" +
                             " values " +
-                            "(" + database.getDbId() + ", '" + database.getName() + "', 10, 6, 'en_US.utf8', 'en_US.utf8', false, true, -1, 12993, 549::varchar::xid, 1::varchar::xid, 1663, null);"
+                            "(" + schema.getSchemaId() + ", '" + schema.getName() + "', 10, null);"
             );
 
-            // Create Schema
-            for (Schema schema : database.getSchemas())
+            for (Table table : schema.getTables())
             {
+                // Create Table
                 executeSQLWithCleanUp(connection,
-                        "insert into " + metadataSchemaName + ".namespace (oid, nspname, nspowner, nspacl)" +
+                        "insert into " + metadataSchemaName + ".class (oid, relname, relnamespace, reltype, reloftype, relowner, relam, relfilenode, reltablespace, relpages, reltuples, relallvisible, reltoastrelid, relhasindex, relisshared, relpersistence, relkind, relnatts, relchecks, relhasoids, relhaspkey, relhasrules, relhastriggers, relhassubclass, relrowsecurity, relforcerowsecurity, relispopulated, relreplident, relispartition, relfrozenxid, relminmxid, relacl, reloptions, relpartbound)" +
                                 " values " +
-                                "(" + schema.getSchemaId() + ", '" + schema.getName() + "', 10, null);"
+                                "(" + table.getTableId() + ", '" + table.getName() + "', " + schema.getSchemaId() + ", null, 0, 10, 0, null, 0, 0, 0, 0, null, false, false, 'p', 'r', null, 0, true, false, false, false, false, false, false, true, 'd', false, null, 1::varchar::xid, null, null, null);"
                 );
 
-                for (Table table : schema.getTables())
+                int attNum = 1;
+                for (Column column : table.getColumns())
                 {
-                    // Create Table
+                    // Create Column
                     executeSQLWithCleanUp(connection,
-                            "insert into " + metadataSchemaName + ".class (oid, relname, relnamespace, reltype, reloftype, relowner, relam, relfilenode, reltablespace, relpages, reltuples, relallvisible, reltoastrelid, relhasindex, relisshared, relpersistence, relkind, relnatts, relchecks, relhasoids, relhaspkey, relhasrules, relhastriggers, relhassubclass, relrowsecurity, relforcerowsecurity, relispopulated, relreplident, relispartition, relfrozenxid, relminmxid, relacl, reloptions, relpartbound)" +
+                            "insert into " + metadataSchemaName + ".attribute (attrelid, attname, atttypid, attstattarget, attlen, attnum, attndims, attcacheoff, atttypmod, attbyval, attstorage, attalign, attnotnull, atthasdef, attidentity, attisdropped, attislocal, attinhcount, attcollation, attacl, attoptions, attfdwoptions)" +
                                     " values " +
-                                    "(" + table.getTableId() + ", '" + table.getName() + "', " + schema.getSchemaId() + ", null, 0, 10, 0, null, 0, 0, 0, 0, null, false, false, 'p', 'r', null, 0, true, false, false, false, false, false, false, true, 'd', false, null, 1::varchar::xid, null, null, null);"
+                                    "(" + table.getTableId() + ", '" + column.getName() + "', " + column.getType().oid() + ", -1, " + column.getType().typeLen() + ", " + (attNum++) + ", 0, -1, " + column.getType().typeMod() + ", true, 'p', 'i', true, false, '', false, true, 0, 0, null, null, null);"
                     );
 
-                    int attNum = 1;
-                    for (Column column : table.getColumns())
-                    {
-                        // Create Column
-                        executeSQLWithCleanUp(connection,
-                                "insert into " + metadataSchemaName + ".attribute (attrelid, attname, atttypid, attstattarget, attlen, attnum, attndims, attcacheoff, atttypmod, attbyval, attstorage, attalign, attnotnull, atthasdef, attidentity, attisdropped, attislocal, attinhcount, attcollation, attacl, attoptions, attfdwoptions)" +
-                                        " values " +
-                                        "(" + table.getTableId() + ", '" + column.getName() + "', " + column.getType().oid() + ", -1, " + column.getType().typeLen() + ", " + (attNum++) + ", 0, -1, " + column.getType().typeMod() + ", true, 'p', 'i', true, false, '', false, true, 0, 0, null, null, null);"
-                        );
-
-                    }
                 }
+            }
 
-                for (Function function : schema.getFunctions())
-                {
-                    // Create Function
-                    executeSQLWithCleanUp(connection,
-                            "insert into " + metadataSchemaName + ".proc (proname, pronamespace, proowner, prolang, procost, prorows, provariadic, protransform, proisagg, proiswindow, prosecdef, proleakproof, proisstrict, proretset, provolatile, proparallel, pronargs, pronargdefaults, prorettype, proargtypes, proallargtypes, proargmodes, proargnames, proargdefaults, protrftypes, prosrc, probin, proconfig, proacl)" +
-                                    " values " +
-                                    "('" + function.getName() + "', " + schema.getSchemaId() + ", 10, 14, 1, 1000, 0, '-', false, false, false, false, true, " + function.getReturnSet() + ", 's', 's', " + function.getParameters().size() + ", 0, " + function.getReturnType().oid() + ", '" + function.getParameters().collect(PGType::oid).makeString(" ") + "',  null, null, null, null, null, 'xx', null, null, null);"
-                    );
-                }
+            for (Function function : schema.getFunctions())
+            {
+                // Create Function
+                executeSQLWithCleanUp(connection,
+                        "insert into " + metadataSchemaName + ".proc (proname, pronamespace, proowner, prolang, procost, prorows, provariadic, protransform, proisagg, proiswindow, prosecdef, proleakproof, proisstrict, proretset, provolatile, proparallel, pronargs, pronargdefaults, prorettype, proargtypes, proallargtypes, proargmodes, proargnames, proargdefaults, protrftypes, prosrc, probin, proconfig, proacl)" +
+                                " values " +
+                                "('" + function.getName() + "', " + schema.getSchemaId() + ", 10, 14, 1, 1000, 0, '-', false, false, false, false, true, " + function.getReturnSet() + ", 's', 's', " + function.getParameters().size() + ", 0, " + function.getReturnType().oid() + ", '" + function.getParameters().collect(PGType::oid).makeString(" ") + "',  null, null, null, null, null, 'xx', null, null, null);"
+                );
             }
         }
     }
@@ -225,5 +216,10 @@ public class CatalogManager
     private String getMetadataSchemaName()
     {
         return "metadata_" + id;
+    }
+
+    public static String reprocessQuery(String query, SQLRewrite sqlRewrite)
+    {
+        return SQLGrammarParser.getSqlBaseParser(query, "query").statement().accept(sqlRewrite).replaceAll("\\$\\d+", "?");
     }
 }

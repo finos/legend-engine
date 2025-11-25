@@ -14,31 +14,29 @@
 
 package org.finos.legend.engine.postgres.protocol.sql.handler.jdbc;
 
+import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.CatalogManager;
 import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.SQLRewrite;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.PostgresStatement;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class JDBCPostgresStatement implements PostgresStatement, AutoCloseable
 {
-    private final Connection connection;
     private final Statement postgresStatement;
     private final SQLRewrite sqlRewrite;
 
-    public JDBCPostgresStatement(Connection connection, SQLRewrite sqlRewrite) throws SQLException
+    public JDBCPostgresStatement(Statement postgresStatement, SQLRewrite sqlRewrite) throws SQLException
     {
-        this.connection = connection;
-        this.postgresStatement = connection.createStatement();
+        this.postgresStatement = postgresStatement;
         this.sqlRewrite = sqlRewrite;
     }
 
     @Override
     public boolean execute(String query) throws Exception
     {
-        return postgresStatement.execute(JDBCPostgresPreparedStatement.reprocessQuery(query, sqlRewrite));
+        return postgresStatement.execute(CatalogManager.reprocessQuery(query, sqlRewrite));
     }
 
     @Override
@@ -53,10 +51,6 @@ public class JDBCPostgresStatement implements PostgresStatement, AutoCloseable
         if (postgresStatement != null)
         {
             postgresStatement.close();
-        }
-        if (connection != null)
-        {
-            connection.close();
         }
     }
 

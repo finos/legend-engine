@@ -14,32 +14,22 @@
 
 package org.finos.legend.engine.postgres.protocol.sql.handler.jdbc;
 
-import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
-import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.SQLRewrite;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepared.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
 
-import java.sql.Connection;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class JDBCPostgresPreparedStatement implements PostgresPreparedStatement, AutoCloseable
 {
-    private final Connection connection;
     private final PreparedStatement preparedStatement;
     private boolean isExecuted = false;
 
-    public JDBCPostgresPreparedStatement(Connection connection, String query, SQLRewrite sqlRewrite) throws SQLException
+    public JDBCPostgresPreparedStatement(PreparedStatement preparedStatement) throws SQLException
     {
-        this.connection = connection;
-        this.preparedStatement = this.connection.prepareStatement(reprocessQuery(query, sqlRewrite));
-    }
-
-    public static String reprocessQuery(String query, SQLRewrite sqlRewrite)
-    {
-        return SQLGrammarParser.getSqlBaseParser(query, "query").statement().accept(sqlRewrite).replaceAll("\\$\\d+", "?");
+        this.preparedStatement = preparedStatement;
     }
 
     @Override
@@ -66,10 +56,6 @@ public class JDBCPostgresPreparedStatement implements PostgresPreparedStatement,
         if (preparedStatement != null)
         {
             preparedStatement.close();
-        }
-        if (connection != null)
-        {
-            connection.close();
         }
     }
 
