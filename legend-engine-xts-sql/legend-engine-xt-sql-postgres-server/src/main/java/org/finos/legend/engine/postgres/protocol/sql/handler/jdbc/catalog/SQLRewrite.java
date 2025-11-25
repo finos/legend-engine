@@ -34,7 +34,7 @@ public class SQLRewrite extends SQLSerializer
     {
         if ("current_database".equals(ctx.qname().accept(this)))
         {
-            return "'" + session.getDatabase() + "'";
+            return "'" + session.getDatabaseName() + "'";
         }
         return super.visitFunctionCall(ctx);
     }

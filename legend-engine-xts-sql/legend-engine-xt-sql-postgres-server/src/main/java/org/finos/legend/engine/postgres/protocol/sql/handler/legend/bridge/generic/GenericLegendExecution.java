@@ -43,6 +43,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCombination;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.query.sql.api.schema.SchemaResult;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -106,7 +107,7 @@ public class GenericLegendExecution implements LegendExecution
         }
         catch (Exception e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException("The project schema can't be fetched for the database '" + database + "'", e);
         }
     }
 
@@ -245,35 +246,51 @@ public class GenericLegendExecution implements LegendExecution
         {
             throw new RuntimeException("database must start with 'projects|'");
         }
-        String projectInfo = database.substring("projects|".length()).trim();
-        String[] projects = projectInfo.split("\\|");
-        MutableList<PureModelContextPointer> pointers = ArrayIterate.collect(projects, project ->
-        {
-            String[] proj = project.trim().split(":");
-            if (proj.length != 3)
-            {
-                throw new RuntimeException("projects must be of the form group:artifact:version,group:artifact:version,... Provided info:\"" + project + "\"");
-            }
-            PureModelContextPointer pointer = new PureModelContextPointer();
-            AlloySDLC alloySDLC = new AlloySDLC();
-            pointer.sdlcInfo = alloySDLC;
-            alloySDLC.baseVersion = "latest";
-            alloySDLC.groupId = proj[0].trim();
-            alloySDLC.artifactId = proj[1].trim();
-            alloySDLC.version = proj[2].trim();
-            return pointer;
-        });
 
-        if (pointers.size() == 1)
+        if ("projects|test".equals(database))
         {
-            return pointers.get(0);
+            return buildTestPayload();
         }
         else
         {
-            PureModelContextCombination combination = new PureModelContextCombination();
-            combination.contexts = pointers;
-            return combination;
+            String projectInfo = database.substring("projects|".length()).trim();
+            String[] projects = projectInfo.split("\\|");
+            MutableList<PureModelContextPointer> pointers = ArrayIterate.collect(projects, project ->
+            {
+                String[] proj = project.trim().split(":");
+                if (proj.length != 3)
+                {
+                    throw new RuntimeException("projects must be of the form group:artifact:version,group:artifact:version,... Provided info:\"" + project + "\"");
+                }
+                PureModelContextPointer pointer = new PureModelContextPointer();
+                AlloySDLC alloySDLC = new AlloySDLC();
+                pointer.sdlcInfo = alloySDLC;
+                alloySDLC.baseVersion = "latest";
+                alloySDLC.groupId = proj[0].trim();
+                alloySDLC.artifactId = proj[1].trim();
+                alloySDLC.version = proj[2].trim();
+                return pointer;
+            });
+
+            if (pointers.size() == 1)
+            {
+                return pointers.get(0);
+            }
+            else
+            {
+                PureModelContextCombination combination = new PureModelContextCombination();
+                combination.contexts = pointers;
+                return combination;
+            }
         }
+    }
+
+    private PureModelContextText buildTestPayload()
+    {
+        PureModelContextText pureModelContextText = new PureModelContextText();
+        pureModelContextText.code = "###Relational\n" +
+                "Database pack::myDatabase (Table myTable(myColumn VARCHAR(200)))";
+        return pureModelContextText;
     }
 
     private static void process(String parameter, ComputeState state)
@@ -340,7 +357,7 @@ public class GenericLegendExecution implements LegendExecution
             HttpClient httpClient = HttpClientBuilder.getHttpClient(new BasicCookieStore());
             HttpResponse response = httpClient.execute(request);
             String content = EntityUtils.toString(response.getEntity());
-            throw new RuntimeException("Error parsing: " + content, e);
+            throw new RuntimeException("Error parsing (url=" + url + "): " + content, e);
         }
     }
 
