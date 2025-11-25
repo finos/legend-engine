@@ -1007,7 +1007,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     Lists.mutable.with(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
                             ._genericType(compileContext.pureModel.getGenericType("Integer"))
                             ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
-                            ._values(Lists.immutable.with(1))),
+                            ._values(Lists.immutable.with(1L))),
                     compileContext
             );
         }
