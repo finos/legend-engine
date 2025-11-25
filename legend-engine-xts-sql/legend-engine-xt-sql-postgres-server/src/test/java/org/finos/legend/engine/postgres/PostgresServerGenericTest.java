@@ -79,6 +79,9 @@ public class PostgresServerGenericTest
         Assert.assertEquals(
                 "name\n" +
                         "value\n", execute("select name from tb('pack::DB.myTab') as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
+        Assert.assertEquals(
+                "name\n" +
+                        "value\n", executePrepared("select name from tb__pack_DB.myTab as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
     }
 
 

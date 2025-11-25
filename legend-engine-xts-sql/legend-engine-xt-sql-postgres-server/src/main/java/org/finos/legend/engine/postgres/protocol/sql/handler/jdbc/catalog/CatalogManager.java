@@ -41,6 +41,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.finos.legend.engine.postgres.protocol.wire.serialization.types.PGTypes.SQL_TO_PG_TYPES;
@@ -103,6 +104,35 @@ public class CatalogManager
         executeSQLWithCleanUp(connection, "CREATE TABLE " + schemaName + ".proc as select oid,* from pg_catalog.pg_proc where 0 = 1;");
     }
 
+    private static class Key
+    {
+        String tableFunctionName;
+        String packageableElement;
+
+        public Key(String tableFunctionName, String packageableElement)
+        {
+            this.tableFunctionName = tableFunctionName;
+            this.packageableElement = packageableElement;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (o == null || getClass() != o.getClass())
+            {
+                return false;
+            }
+            Key key = (Key) o;
+            return Objects.equals(tableFunctionName, key.tableFunctionName) && Objects.equals(packageableElement, key.packageableElement);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(tableFunctionName, packageableElement);
+        }
+    }
+
     private static Database buildDatabaseFromSchema(String database, SchemaResult result)
     {
         MutableMap<String, List<String>> types = Maps.mutable.empty();
@@ -113,16 +143,16 @@ public class CatalogManager
 
         Database db = new Database(database);
 
-        MutableListMultimap<String, AddressableRelation> grouped = ListIterate.groupBy(result.addressableRelations, x -> x.packageableElement);
+        MutableListMultimap<Key, AddressableRelation> grouped = ListIterate.groupBy(result.addressableRelations, x -> new Key(x.tableFunctionName, x.packageableElement));
 
-        for (String key : grouped.keySet())
+        for (Key key : grouped.keySet())
         {
-            Schema schema = db.schema(new Schema(key.replace("::", "_")));
+            Schema schema = db.schema(new Schema(key.tableFunctionName + "__" + key.packageableElement.replace("::", "_")));
 
             schema.tables(
                     ListIterate.collect(grouped.get(key), z ->
                             {
-                                Table tb = new Table(z.tableFunctionName + "_" + Lists.mutable.withAll(z.pathWithinElement).makeString("."));
+                                Table tb = new Table(Lists.mutable.withAll(z.pathWithinElement).makeString("."));
                                 tb.columns(ListIterate.collect(z.relationType.columns, p ->
                                 {
                                     String typeName = ((PackageableType) p.genericType.rawType).fullPath;
