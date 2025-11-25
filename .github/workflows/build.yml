@@ -197,6 +197,9 @@ jobs:
         run: |
           echo INCLUSION_MODULES=`jq -c 'map("org.finos.legend.engine:" + .) | join(",")' <<< $MODULES` >> $GITHUB_OUTPUT
 
+      - name: Disk content summery
+        run: df -h
+
       - name: Test
         env:
           MAVEN_OPTS: "-Xmx1g"
