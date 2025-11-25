@@ -175,7 +175,7 @@ jobs:
 
   test-modules:
     name: Test Module - ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner || 'ubuntu-latest' }}
     needs:
       - build
 
