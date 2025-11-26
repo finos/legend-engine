@@ -209,6 +209,7 @@ jobs:
           mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Disk content summery after test
+        if: always()
         run: df -h
 
       - name: Upload Test Results
