@@ -197,7 +197,7 @@ jobs:
         run: |
           echo INCLUSION_MODULES=`jq -c 'map("org.finos.legend.engine:" + .) | join(",")' <<< $MODULES` >> $GITHUB_OUTPUT
 
-      - name: Disk content summery
+      - name: Disk content summery before test
         run: df -h
 
       - name: Test
@@ -207,6 +207,9 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}          
         run: |
           mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+
+      - name: Disk content summery after test
+        run: df -h
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
