@@ -53,7 +53,7 @@
     },
     {
       "name": "memsql",
-      "runner": "ubuntu-latest-8-cores",
+      "runner": "ubuntu-latest-16-cores",
       "modules": [
         "legend-engine-xt-relationalStore-memsql-PCT",
         "legend-engine-xt-relationalStore-memsql-SDT"
@@ -86,7 +86,7 @@
     },
     {
       "name": "elasticsearch",
-      "runner": "ubuntu-latest-8-cores",
+      "runner": "ubuntu-latest-16-cores",
       "modules": [
         "legend-engine-xt-elasticsearch-executionPlan-test"
       ]
