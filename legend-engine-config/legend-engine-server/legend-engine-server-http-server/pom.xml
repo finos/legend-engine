@@ -1274,7 +1274,7 @@
                         <inherited>false</inherited>
                         <executions>
                             <execution>
-                                <phase>install</phase>
+                                <phase>deploy</phase>
                                 <goals>
                                     <goal>build</goal>
                                     <goal>tag</goal>
