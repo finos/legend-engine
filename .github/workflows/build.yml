@@ -159,18 +159,6 @@ jobs:
         id: modulesToExclude
         run: echo EXCLUSION_MODULES=`jq -c '.include | map(.modules) | flatten | map("!org.finos.legend.engine:" + .) | join(",")' ./.github/workflows/resources/modulesToTest.json` >> $GITHUB_OUTPUT
 
-      - name: Remove unnecessary pre-installed toolchains for free disk spaces
-        run: |
-          echo "=== BEFORE ==="
-          df -h
-          # Source: https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /usr/local/share/boost
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          echo "=== AFTER ==="
-          df -h
-
       - name: Test
         env:
           MAVEN_OPTS: "-Xmx1g"
