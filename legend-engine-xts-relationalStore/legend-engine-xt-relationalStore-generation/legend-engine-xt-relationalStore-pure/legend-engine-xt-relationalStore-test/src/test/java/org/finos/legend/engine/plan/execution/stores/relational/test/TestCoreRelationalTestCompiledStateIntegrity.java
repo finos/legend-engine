@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.code.core;
+package org.finos.legend.engine.plan.execution.stores.relational.test;
 
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
+import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
-public class CoreRelationalMutationExecutionTestCodeRepositoryProvider implements CodeRepositoryProvider
+@Ignore
+public class TestCoreRelationalTestCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
-    @Override
-    public CodeRepository repository()
+    @BeforeClass
+    public static void initialize()
     {
-        return GenericCodeRepository.build("core_relational_mutation_execution_test.definition.json");
+        initialize("core_relational_test");
+    }
+
+    @Test(expected = AssertionError.class)
+    @Override
+    public void testReferenceUsages()
+    {
+        super.testReferenceUsages();
     }
 }

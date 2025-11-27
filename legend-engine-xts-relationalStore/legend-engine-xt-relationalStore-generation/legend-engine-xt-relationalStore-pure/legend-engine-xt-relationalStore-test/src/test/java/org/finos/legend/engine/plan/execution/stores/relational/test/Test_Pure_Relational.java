@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package org.finos.legend.engine.plan.execution.stores.relational.test.mutation;
+package org.finos.legend.engine.plan.execution.stores.relational.test;
 
 import junit.framework.TestSuite;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
@@ -21,13 +21,16 @@ import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
-public class TestRelationalMutationExecutionPlan
+public class Test_Pure_Relational
 {
     public static TestSuite suite()
     {
         TestSuite suite = new TestSuite();
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
+
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::relational::grammar::serialization::tests", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::relational::mutation::executionPlan::test", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+
         return suite;
     }
 }

@@ -1,6 +1,6 @@
 {
-  "name": "core_relational_mutation_execution_test",
-  "pattern": "(meta::relational::mutation::executionPlan::test|meta::relational::mutation::execution::test)(::.*)?",
+  "name": "core_relational_test",
+  "pattern": "(meta::relational)(::.*)?",
   "dependencies": [
     "platform",
     "core",
