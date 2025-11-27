@@ -20,7 +20,8 @@ runs:
   using: "composite"
   steps:
     - name: Remove unnecessary pre-installed toolchains for free disk spaces
-      run: |
+    shell: bash  
+    run: |
         echo "=== BEFORE ==="
         df -h
         # Source: https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
