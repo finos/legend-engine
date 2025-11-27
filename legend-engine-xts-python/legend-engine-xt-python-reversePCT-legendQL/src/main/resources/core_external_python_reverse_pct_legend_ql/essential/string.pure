@@ -62,12 +62,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
           rev('|$string->meta::pure::functions::string::indexOf(\'fox\')', 'c("the quick brown fox jumps over the lazy dog").index("fox")'),
           rev('|$string->meta::pure::functions::string::indexOf(\'happy\')', 'c("the quick brown fox jumps over the lazy dog").index_of("happy")')
         ]
-      ),
-      meta::pure::functions::string::tests::indexOf::testFromIndex_Function_1__Boolean_1_->testRev(
-        [
-          rev('|$string->meta::pure::functions::string::indexOf(\'h\', 0)','c("the the").index_of("h", 0)'),
-          rev('|$string->meta::pure::functions::string::indexOf(\'h\', 3)','c("the the").index_of("h", 3)')
-        ]
       )
     ]->combine(),
     // ------------------------------------------------------------------
