@@ -1,5 +1,6 @@
 {
   "port": 9998,
+  "httpPort": "8080",
   "authenticationMethod": "NO_PASSWORD",
   "identityType": "ANONYMOUS",
   "handler": {
@@ -7,7 +8,6 @@
     "protocol": "http",
     "host": "localhost",
     "port": "6300",
-    "httpPort": "8080",
     "type": "LEGEND"
   },
   "logConfigFile": "legend-engine-xts-sql/legend-engine-xt-sql-postgres-server/src/main/resources/defaultLogback-test.xml"

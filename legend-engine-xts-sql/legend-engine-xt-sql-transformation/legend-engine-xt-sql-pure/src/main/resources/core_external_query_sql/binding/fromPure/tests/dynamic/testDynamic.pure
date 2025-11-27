@@ -64,6 +64,15 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 transform('select a from tb(\'legend::db.myTb\')', meta::legend::compile(readFile('/core_external_query_sql/binding/fromPure/tests/dynamic/db.legend')->toOne())));
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicTableInjectedSpecSchemaForm():Boolean[1]
+{
+  assertEquals('|#>{legend::db.myTb}#->meta::pure::functions::relation::select(~[a])',
+                transform('select a from tb__legend_db.myTb', meta::legend::compile(readFile('/core_external_query_sql/binding/fromPure/tests/dynamic/db.legend')->toOne())));
+
+  assertEquals('|#>{legend::db.myTb}#->meta::pure::functions::relation::select(~[a])',
+                transform('select a from "tb__legend_db"."myTb"', meta::legend::compile(readFile('/core_external_query_sql/binding/fromPure/tests/dynamic/db.legend')->toOne())));
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testStarOnDynamicTable():Boolean[1]
 {
   assertEquals('|#>{legend::db.myTb}#',

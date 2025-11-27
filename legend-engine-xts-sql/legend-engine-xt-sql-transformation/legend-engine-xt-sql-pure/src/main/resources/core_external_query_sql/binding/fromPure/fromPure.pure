@@ -57,7 +57,7 @@ Class meta::external::query::sql::transformation::queryToPure::SQLSource
   key: SQLSourceArgument[*];
 
   matches(type:String[1], arguments:SQLSourceArgument[*]) {
-    $this.type == $type && $this.key->forAll(k | $arguments->exists(a | $a.matches($k)));
+    ($this.type == $type || $type->startsWith($this.type+'_')) && $this.key->forAll(k | $arguments->exists(a | $a.matches($k)));
   }:Boolean[1];
 }
 
@@ -105,7 +105,12 @@ function meta::external::query::sql::transformation::queryToPure::getSources():D
           type = 'tb',
           func = x:String[1]|1,
           generationFunction = {x:TableFunction[1], s:SqlTransformContext[1]|
-              let param = $x.functionCall.arguments->cast(@StringLiteral)->toOne().value;
+              let functionName = $x.functionCall.name.parts->at(0);
+              let originalParameter = $x.functionCall.arguments->cast(@StringLiteral)->toOne().value;
+              let param = if ($functionName->startsWith('tb__'),
+                |$functionName->substring(4)->replace('_','::') + '.' + $originalParameter,
+                |$originalParameter
+              );
 
               // Manage retreiving the store 'compiled' vs in-flow
               // It helps manage all execution modes:
@@ -472,7 +477,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
       let projection = $querySpec.select->processProjection($querySpec.groupBy, $querySpec.having, $querySpec.orderBy.sortKey, $withWhere);
 
-      let query = $querySpec.having->processHaving($projection.second, $projection.first);
+      let query = $querySpec.limit->processLimitOffset($querySpec.offset,
+        $querySpec.orderBy->processOrderBy($projection.second.selectItems,
+          $querySpec.having->processHaving($projection.second,
+            $projection.first
+          )
+        )
+      );
 
       //pair(sql specified name, sql column alias object)
       let expectedWithRealias = $querySpec.select.selectItems->map(si |
@@ -520,11 +531,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
       let aliases = $final.columns.name->map(c | ^SQLColumnAlias(name = $c));
 
-      let mainQueryResult = ^$final(aliases = $aliases);
-
-      let withOrderBy = $querySpec.orderBy->processOrderBy($projection.second.selectItems, $mainQueryResult);
-
-      $querySpec.limit->processLimitOffset($querySpec.offset, $withOrderBy);
+      ^$final(aliases = $aliases);
   );
 }
 
@@ -2624,8 +2631,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     c:Class<Any>[1] | Any,
     e:Enumeration<Any>[1] | Enum,
     p:PrimitiveType[1] | $p
-  ])->preciseToPrimitive()); 
-  
+  ])->preciseToPrimitive());
+
   assertEquals(1, $property->size(), | 'no properties found for type ' + $type->toString());
 
   let propertySfe = sfe($property->toOne(), [$var, $column.name->iv()]);

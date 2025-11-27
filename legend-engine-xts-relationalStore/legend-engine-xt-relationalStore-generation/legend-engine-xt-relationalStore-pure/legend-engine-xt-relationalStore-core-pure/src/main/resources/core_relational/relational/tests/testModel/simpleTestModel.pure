@@ -417,6 +417,21 @@ Class <<temporal.businesstemporal>> meta::relational::tests::model::simple::Prod
    description : String[1];
 }
 
+Class <<meta::pure::profiles::temporal.businesstemporal>> meta::relational::tests::model::simple::TemporalProduct
+{
+  positionType: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> meta::relational::tests::model::simple::TemporalTrade
+{
+}
+
+Association meta::relational::tests::model::simple::ProductToTrade
+{
+  trade: meta::relational::tests::model::simple::TemporalTrade[1];
+  product: meta::relational::tests::model::simple::TemporalProduct[*];
+}
+
 Enum meta::relational::tests::model::simple::ProductSynonymType
 {
    CUSIP,

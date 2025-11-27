@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xts-sql</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.112.2-SNAPSHOT</version>
+        <version>4.113.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -428,6 +428,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-dsl-service</artifactId>
             <scope>test</scope>
@@ -477,11 +482,6 @@
                     <artifactId>junit</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>

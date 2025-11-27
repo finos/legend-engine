@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.postgres.auth;
+package org.finos.legend.engine.postgres;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Span;
@@ -25,7 +25,6 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.stores.relational.test.H2TestServerResource;
-import org.finos.legend.engine.postgres.TestPostgresServer;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.generic.GenericLegendExecution;
@@ -80,6 +79,9 @@ public class PostgresServerGenericTest
         Assert.assertEquals(
                 "name\n" +
                         "value\n", execute("select name from tb('pack::DB.myTab') as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
+        Assert.assertEquals(
+                "name\n" +
+                        "value\n", executePrepared("select name from tb__pack_DB.myTab as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
     }
 
 

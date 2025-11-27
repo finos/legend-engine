@@ -20,14 +20,14 @@ import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.
 
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-class JDBCPostgresPreparedStatement implements PostgresPreparedStatement
+public class JDBCPostgresPreparedStatement implements PostgresPreparedStatement, AutoCloseable
 {
-
     private final PreparedStatement preparedStatement;
     private boolean isExecuted = false;
 
-    public JDBCPostgresPreparedStatement(PreparedStatement preparedStatement)
+    public JDBCPostgresPreparedStatement(PreparedStatement preparedStatement) throws SQLException
     {
         this.preparedStatement = preparedStatement;
     }
@@ -53,7 +53,10 @@ class JDBCPostgresPreparedStatement implements PostgresPreparedStatement
     @Override
     public void close() throws Exception
     {
-        preparedStatement.close();
+        if (preparedStatement != null)
+        {
+            preparedStatement.close();
+        }
     }
 
     @Override

@@ -654,6 +654,12 @@ Database meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapp
     type : ProductTable.type
   )
 
+  View ProductTableViewNested(
+    id : ProductTableView.id PRIMARY KEY,
+    name : ProductTableView.name PRIMARY KEY,
+    type : ProductTableView.type
+  )
+
   Table ProductClassificationTable(
           milestoning(
               business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
@@ -678,6 +684,12 @@ Database meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapp
   Join ProductClassificationTable_ProductClassificationFilterTable(ProductClassificationTable.type = ProductClassificationFilterTable.type)
 
   Filter NonNullFilter(ProductClassificationFilterTable.exchange is not null)
+
+  Join TradeProductClassificationTable_Join(tradeTable.tradeDate = ProductClassificationTable.from_z)
+  Join ProductViewTrade_Join(ProductTableViewNested.id = tradeTable.ID)
+  Join ProductProductClassification_Join(ProductTableViewNested.type = ProductClassificationTable.type)
+
+  Filter Commercial_Filter(tradeTable.ID != 0)
 )
 
 ###Pure
@@ -695,3 +707,38 @@ function meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapp
 
   true;
 }
+
+###Mapping
+Mapping meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedWithMilestoningDepthTwoNested
+(
+  *meta::relational::tests::model::simple::TemporalTrade[trade]: Relational
+  {
+    ~filter [meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]Commercial_Filter
+    ~primaryKey
+    (
+      [meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]tradeTable.ID
+    )
+    ~mainTable [meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]tradeTable
+  }
+  
+  *meta::relational::tests::model::simple::TemporalProduct[product]: Relational
+  {
+    ~filter [meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore] (INNER) @ProductViewTrade_Join | [meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]Commercial_Filter
+    ~primaryKey
+    (
+      [meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]ProductTableViewNested.id
+    )
+    ~mainTable [meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]ProductTableViewNested
+    
+    positionType: toString([meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]ProductTableViewNested.id)
+  }
+
+  meta::relational::tests::model::simple::ProductToTrade: Relational
+  {
+    AssociationMapping
+    (
+      trade[product,trade]: [meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]@ProductViewTrade_Join,
+      product[trade,product]: [meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]@ProductViewTrade_Join
+    )
+  }
+)

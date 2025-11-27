@@ -35,15 +35,15 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import org.eclipse.collections.api.block.function.Function2;
 import org.finos.legend.engine.postgres.PostgresServer;
-import org.finos.legend.engine.postgres.PrometheusUserMetrics;
-import org.finos.legend.engine.postgres.protocol.wire.auth.AuthenticationContext;
-import org.finos.legend.engine.postgres.protocol.wire.auth.method.ConnectionProperties;
 import org.finos.legend.engine.postgres.PostgresServerException;
-import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethod;
-import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethodType;
-import org.finos.legend.engine.postgres.protocol.wire.auth.identity.KerberosIdentityProvider;
+import org.finos.legend.engine.postgres.PrometheusUserMetrics;
 import org.finos.legend.engine.postgres.config.GSSConfig;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
+import org.finos.legend.engine.postgres.protocol.wire.auth.AuthenticationContext;
+import org.finos.legend.engine.postgres.protocol.wire.auth.identity.KerberosIdentityProvider;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethod;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.AuthenticationMethodType;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.ConnectionProperties;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.ClientInterrupted;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.DescribeResult;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.FormatCodes;
@@ -51,10 +51,10 @@ import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.PgDecoder;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.QueryStringSplitter;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.ResultSetReceiver;
-import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
-import org.finos.legend.engine.postgres.protocol.wire.session.Session;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.types.PGType;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.types.PGTypes;
+import org.finos.legend.engine.postgres.protocol.wire.session.Session;
+import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.postgres.utils.netty.DelayableWriteChannel;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -474,7 +474,7 @@ public class PostgresWireProtocol
             }
         }
 
-        private void closeSession()
+        private void closeSession() throws Exception
         {
             if (session != null)
             {
@@ -482,7 +482,7 @@ public class PostgresWireProtocol
                 {
                     server.getUserMetrics().liveConnections.labelValues(sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_")).dec();
                 }
-                sqlManager.removeCatalog(session.getIdentity().getName(), session.getDatabase());
+                sqlManager.sessionClosing(session);
                 session.close();
                 session = null;
                 sessionStats.endTime = new Date().toString();
@@ -629,13 +629,13 @@ public class PostgresWireProtocol
     {
         this.session = new Session(Executors.newCachedThreadPool(), authenticatedUser, properties);
 
+        sqlManager.sessionCreated(session);
+
         sessionStats.name = authenticatedUser.getName();
         PrometheusUserMetrics prometheusUserMetrics = server.getUserMetrics();
         String label = sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_");
         prometheusUserMetrics.connections.labelValues(label).inc();
         prometheusUserMetrics.liveConnections.labelValues(label).inc();
-
-        sqlManager.buildCatalog(session);
 
         MDC.put("user", authenticatedUser.getName());
         messages.sendAuthenticationOK(channel)
@@ -1118,8 +1118,17 @@ public class PostgresWireProtocol
 
         // Cancel request is sent by the client over a new connection.
         // This closes the new connection, not the one running the query.
-        handler.closeSession();
         channel.close();
+
+        try
+        {
+            handler.closeSession();
+        }
+        catch (Exception e)
+        {
+            LOGGER.error("Error closing the session", e);
+            // keep silent on purpose
+        }
     }
 
     private static class AcceptorCreator implements PrivilegedExceptionAction<GSSCredential>
