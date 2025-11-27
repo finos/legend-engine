@@ -1,0 +1,46 @@
+import meta::pure::precisePrimitives::*;
+import meta::pure::metamodel::relation::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::*;
+import meta::external::query::sql::server::schema::*;
+
+function <<test.Test>> meta::external::query::sql::server::schema::testTransformDatabase():Boolean[1]
+{
+  let res = meta::external::query::sql::server::schema::transform(meta::external::query::sql::server::schema::TestDB);
+
+  let expected = ^AddressableRelationCollection(
+                    addressableRelations = [
+                      ^AddressableRelation(
+                        tableFunctionName = 'tb',
+                        packageableElement = meta::external::query::sql::server::schema::TestDB->elementToPath(),
+                        pathWithinElement = 'Schema1.table2',
+                        relationType = @(name:Varchar(200))->genericType().rawType->cast(@RelationType<Any>)->toOne()->transformRelationType()
+                      ),
+                      ^AddressableRelation(
+                        tableFunctionName = 'tb',
+                        packageableElement = meta::external::query::sql::server::schema::TestDB->elementToPath(),
+                        pathWithinElement = 'table1',
+                        relationType = @(name:Varchar(200))->genericType().rawType->cast(@RelationType<Any>)->toOne()->transformRelationType()
+                      )
+                    ]
+                 );
+
+  assertEquals($expected->meta::json::toJSON(100), $res->meta::json::toJSON(100));
+}
+
+
+###Relational
+Database meta::external::query::sql::server::schema::TestDB
+(
+  Table table1
+  (
+    name Varchar(200)
+  )
+
+  Schema Schema1
+  (
+    Table table2
+    (
+      name Varchar(200)
+    )
+  )
+)
