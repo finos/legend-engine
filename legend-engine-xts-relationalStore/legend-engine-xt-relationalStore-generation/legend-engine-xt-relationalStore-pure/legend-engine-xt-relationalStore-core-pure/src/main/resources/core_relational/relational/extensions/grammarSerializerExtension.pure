@@ -34,7 +34,11 @@ function meta::relational::grammar::serialization::printDatabase(d:Database[1]):
                   $x.columns->map(z|let c = $z->cast(@meta::relational::metamodel::Column);
                                     if($c.name->contains(' '),|'"'+$c.name+'"',|$c.name) + ' ' + $c.type->match([
                                                           x : Varchar[1] | 'VARCHAR(' + $x.size->toString() + ')',
+                                                          c : Char[1] | 'CHAR(' + $c.size->toString() + ')',
+                                                          b : Binary[1] | 'BINARY(' + $b.size->toString() + ')',
+                                                          v : Varbinary[1] | 'VARBINARY(' + $v.size->toString() + ')',
                                                           d : meta::relational::metamodel::datatype::Decimal[1] | 'DECIMAL(' + $d.precision->toString() + ',' + $d.scale->toString() + ')',
+                                                          n : meta::relational::metamodel::datatype::Numeric[1] | 'NUMERIC(' + $n.precision->toString() + ',' + $n.scale->toString() + ')',
                                                           z : Any[1] | $z->type().name->toOne()
                                                         ]
                                                       ) + if ($x.primaryKey->contains($c),
@@ -44,10 +48,10 @@ function meta::relational::grammar::serialization::printDatabase(d:Database[1]):
                                  )->joinStrings(', ')+
               ')'
                   )->joinStrings('') + '\n  )'
-          )->joinStrings('')+
+          )->joinStrings('\n  ') + 
     $d.joins->map(
       j | 'Join '+$j.name+'('+$j.operation->printRelationalOperationElement(false)+')'
-    )->joinStrings(' ')+
+    )->joinStrings('\n  ', '\n  ', '')+
   '\n)';
 }
 
@@ -72,12 +76,48 @@ function meta::relational::grammar::serialization::printRelationalOperationEleme
 {
   $d->match(
     [
-      t:TableAliasColumn[1]|if($forMapping,|'['+$t.alias.database->toOne()->elementToPath()+']',|'')+$t.alias.relationalElement->cast(@Table).schema.name->toOne()+'.'+$t.alias.relationalElement->cast(@Table).name+'.'+$t.column.name,
+      t:TableAliasColumn[1]|
+        let table = $t.alias.relationalElement->cast(@Table);
+        let name = if($t.alias.name->equal('t_' + $table.name),|'{target}',|$table.schema.name->toOne()+'.'+$table.name);
+
+        if($forMapping,|'['+$t.alias.database->toOne()->elementToPath()+']',|'')+ $name +'.'+$t.column.name;,
       x:RelationalOperationElementWithJoin[1]|'['+$x.joinTreeNode.database->toOne()->elementToPath()+']@'+$x.joinTreeNode.joinName->toOne(),
-      v:DynaFunction[1]|$v.name + '('+$v.parameters->map(p|$p->printRelationalOperationElement($forMapping))->joinStrings(',')+')'
+      v:DynaFunction[1]|
+        if ([
+          dynaFunc2($v, 'equal', '=', $forMapping),
+          dynaFunc2($v, 'notEqual', '!=', $forMapping),
+          dynaFunc2($v, 'greaterThan', '>', $forMapping),
+          dynaFunc2($v, 'greaterThanEqual', '>=', $forMapping),
+          dynaFunc2($v, 'lessThan', '<', $forMapping),
+          dynaFunc2($v, 'lessThanEqual', '<=', $forMapping),
+          dynaFunc2($v, 'notEqualAnsi', '<>', $forMapping),
+          dynaFunc1($v, 'isNull', 'is null', $forMapping),
+          dynaFunc1($v, 'isNotNull', 'is not null', $forMapping),
+          pair(|$v.name == 'group', | '(' + $v.parameters->at(0)->printRelationalOperationElement($forMapping) + ')'),
+          pair(|$v.name->in(['and', 'or']), | $v.parameters->map(p | $p->printRelationalOperationElement($forMapping))->joinStrings(' ' + $v.name + ' '))
+        ], | 
+          $v.name + '('+$v.parameters->map(p|$p->printRelationalOperationElement($forMapping))->joinStrings(',')+')'
+        )
     ]
-  )
+  );
 }
+
+function meta::relational::grammar::serialization::dynaFunc2(v:DynaFunction[1], name:String[1], func:String[1], forMapping:Boolean[1]): Pair<Function<{->Boolean[1]}>, Function<{->String[1]}>>[1]
+{
+  pair(|$v.name == $name, 
+       {| assert($v.parameters->size() == 2, | 'Unable to transform operation: exactly 2 parameters are expected for ' + $func + ' operation');
+         $v.parameters->at(0)->printRelationalOperationElement($forMapping) + ' ' + $func + ' ' + $v.parameters->at(1)->printRelationalOperationElement($forMapping);}
+  );
+}
+
+function meta::relational::grammar::serialization::dynaFunc1(v:DynaFunction[1], name:String[1], func:String[1], forMapping:Boolean[1]): Pair<Function<{->Boolean[1]}>, Function<{->String[1]}>>[1]
+{
+  pair(|$v.name == $name, 
+       {| assert($v.parameters->size() == 1, | 'Unable to transform operation: exactly 2 parameters are expected for ' + $func + ' operation');
+         $v.parameters->at(0)->printRelationalOperationElement($forMapping) + ' ' + $func;}
+  );
+}
+
 
 function meta::relational::grammar::serialization::printRelationalDatabaseConnection(connection:meta::external::store::relational::runtime::RelationalDatabaseConnection[1]):String[1]
 {

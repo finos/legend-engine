@@ -1,0 +1,71 @@
+import meta::relational::metamodel::*;
+import meta::relational::grammar::serialization::*;
+import meta::relational::grammar::serialization::tests::*;
+
+function <<test.Test>> meta::relational::grammar::serialization::tests::testPrintDatabase():Boolean[1]
+{
+  let str = printDatabase(TestDB);
+  let compiled = meta::legend::compileLegendGrammar('###Relational\n' + $str)->filter(e | $e->elementToPath() == meta::relational::grammar::serialization::tests::TestDB->elementToPath())->toOne()->cast(@Database);
+
+  assertEquals($compiled->printDatabase(), $str);
+}
+
+###Relational
+Database meta::relational::grammar::serialization::tests::TestDB
+(
+  Schema MySchema
+  (
+      Table Table1
+      (
+        id INT PRIMARY KEY,
+
+        float FLOAT,
+        double DOUBLE,
+
+        int INT,
+        integer INTEGER,
+        bigint BIGINT,
+        smallint SMALLINT,
+        tinyint TINYINT,
+
+        char CHAR(1),
+        varchar VARCHAR(100),
+
+        binary BINARY(1),
+        varbinary VARBINARY(100),
+
+        timestamp TIMESTAMP,
+        date DATE,
+        decimal DECIMAL(1, 2),
+        numeric NUMERIC(1, 2),
+
+        // distinct DISTINCT, //TODO support
+        other OTHER,
+        bit BIT,
+        real REAL,
+        // array ARRAY, //TODO support
+        json JSON,
+        semi SEMISTRUCTURED
+      )
+
+      Table Table2
+      (
+        id VARCHAR(100)
+      )
+  )
+
+  Join SimpleJoin (MySchema.Table1.id = MySchema.Table2.id)
+  Join CompositeJoin (
+    (MySchema.Table1.id = MySchema.Table2.id) and 
+    (MySchema.Table1.varchar <> MySchema.Table2.id) and
+    (MySchema.Table1.varchar != MySchema.Table2.id) and
+    (MySchema.Table1.varchar < MySchema.Table2.id) and
+    (MySchema.Table1.varchar > MySchema.Table2.id) and
+    (MySchema.Table1.varchar <= MySchema.Table2.id) and 
+    (MySchema.Table1.varchar >= MySchema.Table2.id) and
+    (MySchema.Table1.varchar <> MySchema.Table2.id) and
+    (MySchema.Table1.varchar is null) and
+    (MySchema.Table1.varchar is not null)
+  )
+  Join SelfJoin (MySchema.Table1.id = {target}.id)
+)

@@ -58,7 +58,7 @@ function meta::external::query::sql::server::schema::transformOne(p:PackageableE
           d:Database[1]| let dbPath = $d->elementToPath();
                          let dbStr = $d->serialize();
                          $d.schemas.tables->map(t|
-                                          let path = $t.name;
+                                          let path = if ($t.schema.name == 'default', | '', | $t.schema.name + '.') + $t.name;
                                           let r = meta::legend::compile($dbStr+'\n###Pure\nfunction x::func():Any[1]{#>{'+$dbPath + '.' + $path->joinStrings('.')+'}#}');
                                           let rType = $r->filter(x|$x.name == 'func__Any_1_')->toOne()->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate().genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>);
                                           ^AddressableRelation
