@@ -83,7 +83,7 @@ function <<test.Test>> meta::external::dataquality::tests::testDataProfileLambda
 
   doTest(
     $validation,
-    {|from($lambda, $runtime)},
+    {|from($lambda->eval(), $runtime)},
     true
   );
 
