@@ -1,0 +1,43 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::external::python::reversePCT::legendQL::*;
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGrammarString(): ReversesForSource[*]
+{
+  [
+     // Operation ----------------------------------------------------------
+    [ // plus
+      meta::pure::functions::string::tests::plus::testPlus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'a\' + \'p\'', 'c("a") + c("p")')
+        ]
+      ),
+      meta::pure::functions::string::tests::plus::testMultiPlus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'the quick brown fox\' + \' jumps over \' + \'the lazy dog\'', 'c("the quick brown fox") + c(" jumps over ") + c("the lazy dog")'),
+          rev('|(\'the quick brown fox\' + \' jumps over \') + \'the lazy dog\'', '(c("the quick brown fox") + c(" jumps over ")) + c("the lazy dog")'),
+          rev('|\'the quick brown fox\' + \' \' + \'jumps\' + \' \' + \'over\' + \' \' + \'the lazy dog\'', 'c("the quick brown fox") + " " + c("jumps") + " " + c("over") + " " + c("the lazy dog")'),
+          rev('|\'the quick brown fox\' + (\' \' + \'jumps\' + \' \' + \'over\' + \' \' + \'the lazy dog\')', 'c("the quick brown fox") + ( " " + c("jumps") + " " + c("over") + " " + c("the lazy dog") )')
+        ]
+      ),
+      meta::pure::functions::string::tests::plus::testMultiPlusWithFunctionExpressions_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::string::toString() + \' \' + meta::pure::functions::string::toString(1 + 1) + \' \' + meta::pure::functions::string::toString(2 + 1)', 'c(str(1) + " " + str(1+1) + " " + str(2+1))')
+        ]
+      )
+    ]->combine()
+  ]
+}

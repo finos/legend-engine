@@ -70,7 +70,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGrammar(): ReversesForSource[*]
 {
-  []
+  pythonLegendQLReversesGrammarString()
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesRelation(): ReversesForSource[*]
@@ -85,7 +85,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesUnclassified(): ReversesForSource[*]
 {
-  []
+  pythonLegendQLReversesUnclassifiedString()
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesVariant(): ReversesForSource[*]
