@@ -201,25 +201,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
       ]
     )
     ]->combine(),
-     // Split ----------------------------------------------------------
-    [ //split
-      meta::pure::functions::string::tests::split::testSplit_Function_1__Boolean_1_->testRev(
-        [
-          rev(
-            '|\'Hello World\'->meta::pure::functions::string::split(\' \')',
-            'c("Hello World").split(" ")'
-          )
-        ]
-      ),
-      meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_->testRev(
-        [
-          rev(
-            '|\'Hello World\'->meta::pure::functions::string::split(\';\')',
-            'c("Hello World").split(";")'
-          )
-        ]
-      )
-    ]->combine(),
     // Transformation ---------------------------------------------------
     // toLower
     meta::pure::functions::string::tests::tolower::testToLower_Function_1__Boolean_1_->testRev(

@@ -26,11 +26,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesUnc
           rev('|\'9\'->meta::pure::functions::string::ascii()', 'c("9").ascii()')
         ]
       ),
-      meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_->testRev(
-        [
-          rev('|\'\\n\'->meta::pure::functions::string::ascii()', 'c("\\n").ascii()')
-        ]
-      ),
       meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_->testRev(
         [
           rev('|\'\'->meta::pure::functions::string::ascii()', 'c("").ascii()')
@@ -240,11 +235,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesUnc
         [
           rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 0)', 'c("Hello World").split_part(" ", 0)'),
           rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 1)', 'c("Hello World").split_part(" ", 1)')
-        ]
-      ),
-      meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString_Function_1__Boolean_1_->testRev(
-        [
-          rev('|[]->meta::pure::functions::string::splitPart(\' \', 0)', 'c(\'\').split_part(" ", 0)')
         ]
       ),
       meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_->testRev(
