@@ -18,6 +18,7 @@ import meta::pure::mapping::*;
 import meta::external::query::sql::transformation::queryToPure::*;
 import meta::relational::metamodel::*;
 import meta::pure::extension::*;
+import meta::external::query::sql::*;
 import meta::external::query::sql::transformation::utils::*;
 import meta::external::query::sql::transformation::compile::utils::*;
 import meta::pure::metamodel::serialization::grammar::*;
@@ -249,7 +250,7 @@ function meta::external::query::sql::transformation::compile::utils::compileViaG
   let config = meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration();
   let dependenciesAsStr = $value
                           ->meta::external::query::sql::transformation::compile::utils::_extractDependencies()
-                          ->scanDependencies([], meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(meta::external::query::sql::PureToSQLSourceModule))->cast(@meta::external::query::sql::PureToSQLSourceModule).extraScanDependenciesType)
+                          ->scanDependencies([], meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraScanDependenciesType)
                           ->removeDuplicates({a,b|$a->elementToPath() == $b->elementToPath()})
                           ->map(x|$x->printPackageableElements($config))->joinStrings('\n');
 
@@ -384,11 +385,11 @@ function meta::external::query::sql::transformation::compile::utils::wrapWithFro
             pair($mapping->isEmpty() && $runtime->isNotEmpty() && $runtime->toOne()->instanceOf(Runtime), |
                 sfe(meta::pure::mapping::from_T_m__Runtime_1__T_m_,[$expression, iv($runtime->toOne())])),
             pair($mapping->isEmpty() && $runtime->isNotEmpty() && $runtime->toOne()->instanceOf(PackageableRuntime), |
-                sfe(meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_,[$expression, iv($runtime->toOne())])),                
+                sfe(meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_,[$expression, iv($runtime->toOne())])),
             pair($mapping->isNotEmpty() && $runtime->isNotEmpty() && $runtime->toOne()->instanceOf(Runtime), |
                 sfe(meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_, [$expression, iv($mappingOne), iv($runtime->toOne())])),
             pair($mapping->isNotEmpty() && $runtime->isNotEmpty()  && $runtime->toOne()->instanceOf(PackageableRuntime), |
-                sfe(meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_, [$expression, iv($mappingOne), iv($runtime->toOne())]))                
+                sfe(meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_, [$expression, iv($mappingOne), iv($runtime->toOne())]))
         ]->getValue(true, | $expression)->eval(),
       | [
             pair($runtime->isNotEmpty() && $runtime->toOne()->instanceOf(Runtime) && $executionContext->isNotEmpty(), |
@@ -398,7 +399,7 @@ function meta::external::query::sql::transformation::compile::utils::wrapWithFro
             pair($runtime->isNotEmpty() && $runtime->toOne()->instanceOf(PackageableRuntime) && $executionContext->isNotEmpty(), |
                 sfe(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__ExecutionContext_1__TabularDataSet_1_, [$expression, iv($mappingOne), iv($runtime->toOne()), iv($executionContext)])),
             pair($runtime->isNotEmpty() && $runtime->toOne()->instanceOf(PackageableRuntime) && $executionContext->isEmpty(), |
-                sfe(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_, [$expression, iv($mappingOne), iv($runtime->toOne())]))                
+                sfe(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_, [$expression, iv($mappingOne), iv($runtime->toOne())]))
         ]->getValue(true, | $expression)->eval()
   );
 }
