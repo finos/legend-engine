@@ -75,7 +75,9 @@ function meta::external::dataquality::dataprofile::getProfilingLambda(l:LambdaFu
 
   let lambda = ^$l(expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->init()->concatenate([$letCte, $func])->toOneMany());//->preval(relationalExtensions())->cast(@LambdaFunction<Any>);
 
-  let compiled = $lambda->compileViaGrammar();
+  let compiled = if ($wrapWithFrom, 
+                    | ^$lambda(expressionSequence = sfe(eval_Function_1__V_m_, [iv($lambda)])), 
+                    | $lambda)->compileViaGrammar();
 
   //TODO this should ideally be done before compile but there are issues with testing
   if ($wrapWithFrom, | $compiled->wrapWithLambdaFrom($mapping, $runtime), | $compiled);
