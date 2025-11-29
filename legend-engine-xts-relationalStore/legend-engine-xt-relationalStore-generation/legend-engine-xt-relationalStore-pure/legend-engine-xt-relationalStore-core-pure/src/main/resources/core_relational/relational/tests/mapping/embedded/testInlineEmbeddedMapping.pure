@@ -196,6 +196,11 @@ Enum meta::relational::tests::mapping::embedded::advanced::model::PartyType
    Company, Bearer, Goverment
 }
 
+Enum meta::relational::tests::mapping::embedded::advanced::model::GenderType
+{
+   Male, Female
+}
+
 Class meta::relational::tests::mapping::embedded::advanced::model::Party
 {
   name : String[1];
@@ -250,6 +255,16 @@ Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded
   division: meta::relational::tests::mapping::embedded::advanced::model::Division[0..1];
   department: meta::relational::tests::mapping::embedded::advanced::model::Department[0..1];
   firm: FirmWithRegion[0..1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::PersonWithGenderInfo
+{
+  genderInfo: meta::relational::tests::mapping::embedded::advanced::model::GenderInfo[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::GenderInfo
+{
+  gender: meta::relational::tests::mapping::embedded::advanced::model::GenderType[1];
 }
 
 Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::AddressInfo
@@ -453,5 +468,31 @@ Mapping meta::relational::tests::mapping::embedded::advanced::model::testMilesto
    {
     ~mainTable [eDB]Person
     firmName: 'NNIP'
+   }
+
+   meta::relational::tests::mapping::embedded::advanced::model::GenderInfo[genderInfo]: Relational
+   {
+    ~primaryKey
+    (
+      [eDB]Person.id
+    )
+    ~mainTable [eDB]Person
+    gender: EnumerationMapping GenderTypeMapping: 'Female'
+   }
+
+   meta::relational::tests::mapping::embedded::advanced::model::PersonWithGenderInfo: Relational
+   {
+    ~primaryKey
+    (
+      [eDB]Person.id
+    )
+    ~mainTable [eDB]Person
+    genderInfo() Inline[genderInfo]
+   }
+
+   meta::relational::tests::mapping::embedded::advanced::model::GenderType: EnumerationMapping GenderTypeMapping
+   {
+     Male: ['Male'],
+     Female: ['Female']
    }
 )

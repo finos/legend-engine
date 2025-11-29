@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mapping::*;
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::pure::graphFetch::execution::*;
 import meta::relational::functions::asserts::*;
@@ -164,7 +165,6 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
    assertJsonStringsEqual('[{"product":{"state":"TX","unit(2022-10-20T23:59:59+0000)":{"number":8}},"id":2},{"product":{"state":"NY","unit(2022-10-20T23:59:59+0000)":{"number":9}},"id":3}]' , $result.values);
 }
 
-
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testMilestonedExtendsEmbeddedGraphFetch():Boolean[1]
 {
    let tree = #{
@@ -174,4 +174,16 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
               }#;
    let result = execute(|Person.all(%2022-10-20T23:59:59)->graphFetch($tree)->serialize($tree), testMilestonedEmbeddedInlineMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertJsonStringsEqual('[{"firm(2022-10-20T23:59:59+0000)":{"firmName":"NNIP"}},{"firm(2022-10-20T23:59:59+0000)":{"firmName":"NNIP"}}]' , $result.values);
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testMilestonedInlineGraphFetchWithEnumProperty():Boolean[1]
+{
+   let tree = #{
+                  PersonWithGenderInfo {
+                          'gender':  genderInfo(%2022-10-20T23:59:59) { gender }
+                         }
+              }#;
+   let result = execute(|PersonWithGenderInfo.all(%2022-10-20T23:59:59)->graphFetch($tree)->serialize($tree), testMilestonedEmbeddedInlineMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('[{"gender":{"gender":"Female"}},{"gender":{"gender":"Female"}}]' , $result.values);
 }

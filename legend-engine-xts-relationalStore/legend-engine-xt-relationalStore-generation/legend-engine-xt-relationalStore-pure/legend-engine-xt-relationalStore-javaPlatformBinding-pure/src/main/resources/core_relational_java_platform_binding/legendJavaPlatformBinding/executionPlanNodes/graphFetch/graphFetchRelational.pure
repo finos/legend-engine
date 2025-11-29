@@ -449,7 +449,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                                              if ($propertyType->instanceOf(meta::pure::metamodel::type::Enumeration),
                                                 {|
                                                    let allPropertyMappings = $sets->at($s)->meta::relational::mapping::dataTypePropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType));
-                                                   let currentPropertyMapping = $allPropertyMappings->filter(x | $x.property == $prop)->toOne()->cast(@RelationalPropertyMapping);
+                                                   let currentPropertyMapping = $allPropertyMappings->filter(x | $x.property == $prop)->removeDuplicates({u,v|$u.property == $v.property && $u.sourceSetImplementationId == $v.sourceSetImplementationId && $u.targetSetImplementationId == $v.targetSetImplementationId })->toOne()->cast(@RelationalPropertyMapping);
                                                    $enumPropertyGetterCodes->eval($prop, $propertyType, $currentPropertyMapping);
                                                 },
                                                 {|
