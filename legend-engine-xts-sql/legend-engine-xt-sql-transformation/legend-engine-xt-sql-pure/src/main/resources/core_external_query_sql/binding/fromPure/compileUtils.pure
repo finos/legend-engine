@@ -230,7 +230,7 @@ function meta::external::query::sql::transformation::compile::utils::compileViaG
 {
   let config = meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration();
   let str = $vs->printValueSpecification($config, ^GContext(space=''));
-  compileViaGrammar($vs, $str, @ValueSpecification);
+  compileViaGrammar($vs, $str, @ValueSpecification, v | $v->evaluateAndDeactivate());
 }
 
 function meta::external::query::sql::transformation::compile::utils::compileViaGrammar(lambda:LambdaFunction<Any>[1]):LambdaFunction<Any>[1]
@@ -242,10 +242,10 @@ function meta::external::query::sql::transformation::compile::utils::compileViaG
 {
   let config = meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration();
   let functionStr = if ($removeFrom, | $lambda->removeFrom(), | $lambda)->printFunctionDefinition($config, ^GContext(space=''));
-  compileViaGrammar($lambda, $functionStr, @LambdaFunction<Any>);
+  compileViaGrammar($lambda, $functionStr, @LambdaFunction<Any>, v | $v->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@LambdaFunction<Any>));
 }
 
-function meta::external::query::sql::transformation::compile::utils::compileViaGrammar<T>(value:Any[1], str:String[1], object:T[1]):T[1]
+function meta::external::query::sql::transformation::compile::utils::compileViaGrammar<T>(value:Any[1], str:String[1], object:T[1], processor:Function<{ValueSpecification[1]->T[1]}>[1]):T[1]
 {
   let config = meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration();
   let dependenciesAsStr = $value
@@ -260,7 +260,7 @@ function meta::external::query::sql::transformation::compile::utils::compileViaG
               '  ' + $str + '\n'+
               '}';
 
-  meta::legend::compile($code)->filter(x|$x.name == 'container__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@T);
+  $processor->eval(meta::legend::compile($code)->filter(x|$x.name == 'container__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->toOne()->evaluateAndDeactivate());
 }
 
 function meta::external::query::sql::transformation::compile::utils::removeFrom<T>(lambda:LambdaFunction<T>[1]):LambdaFunction<T>[1]
