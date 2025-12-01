@@ -122,6 +122,7 @@ function <<access.private>> meta::external::python::reversePCT::legendQL::getPur
     'from pylegend.core.tds.tds_frame import FrameToPureConfig\n' + 
     'from pylegend.core.language import PyLegendPrimitive\n' + 
     'from pylegend.core.language.shared.pct_helpers import c\n' + 
+    'from pylegend.core.language.shared.functions import pi\n' + 
     '\n' +
     'def func():\n'+
     '  res = (' + $pythonCodeBlock + ')\n' + 
