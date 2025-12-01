@@ -75,10 +75,12 @@ function meta::external::dataquality::dataprofile::getProfilingLambda(l:LambdaFu
 
   let lambda = ^$l(expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->init()->concatenate([$letCte, $func])->toOneMany());//->preval(relationalExtensions())->cast(@LambdaFunction<Any>);
 
-  let compiled = $lambda->compileViaGrammar();
-
-  //TODO this should ideally be done before compile but there are issues with testing
-  if ($wrapWithFrom, | $compiled->wrapWithLambdaFrom($mapping, $runtime), | $compiled);
+  if ($wrapWithFrom,
+                    | ^$lambda(expressionSequence = sfe(eval_Function_1__V_m_, [iv($lambda)])
+                        ->compileViaGrammar()
+                        ->wrapWithFrom($mapping, $runtime, [], true) //TODO this should ideally be done before compile but there are issues with testing
+                      ),
+                    | $lambda->compileViaGrammar());
 }
 
 function meta::external::dataquality::dataprofile::agg(name:String[1], fn:Function<Any>[1], column:Column<Nil,Any|*>[1]):AggColSpec<Any, Any, Any>[1]

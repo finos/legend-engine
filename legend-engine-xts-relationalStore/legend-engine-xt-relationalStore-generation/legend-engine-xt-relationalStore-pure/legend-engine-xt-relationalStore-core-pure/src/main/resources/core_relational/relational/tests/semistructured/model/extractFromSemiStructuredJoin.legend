@@ -18,6 +18,8 @@ Class join::model::Person
   firstName: String[1];
   lastName: String[1];
   firm: join::model::Firm[1];
+  location: join::model::Location[1];
+  countryCode() {$this.location.identifier->filter(i|$i.length == 2)->first().name}: String[0..1];
 }
 
 Class join::model::Firm
@@ -25,6 +27,17 @@ Class join::model::Firm
   ID: Integer[1];
   legalName: String[1];
   otherNames: String[1];
+}
+
+Class join::model::Location
+{
+  identifier: join::model::LocationIdentifier[*];
+}
+
+Class join::model::LocationIdentifier
+{
+  length: Integer[1];
+  name: String[1];
 }
 
 ###Relational
@@ -47,7 +60,16 @@ Database join::store::H2DB
       FIRM_DETAILS SEMISTRUCTURED PRIMARY KEY
     )
   )
+  Schema LOCATION_SCHEMA
+  (
+    Table LOCATION_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      LOCATION_DETAILS SEMISTRUCTURED NOT NULL
+    )
+  )
   Join FirmPerson(extractFromSemiStructured(PERSON_SCHEMA.PERSON_TABLE.FIRM, 'ID', 'INTEGER') = extractFromSemiStructured(FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'ID', 'INTEGER'))
+  Join LocationPerson(PERSON_SCHEMA.PERSON_TABLE.ID = extractFromSemiStructured(explodeSemiStructured(LOCATION_SCHEMA.LOCATION_TABLE.LOCATION_DETAILS, 'residents', 'SEMISTRUCTURED'), 'ID', 'INTEGER'))
 )
 
 ###ExternalFormat
@@ -56,6 +78,14 @@ Binding join::store::FirmBinding
   contentType: 'application/json';
   modelIncludes: [
     join::model::Firm
+  ];
+}
+
+Binding join::store::LocationBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    join::model::Location
   ];
 }
 
@@ -71,8 +101,8 @@ Mapping join::mapping::H2Mapping
     ~mainTable [join::store::H2DB]PERSON_SCHEMA.PERSON_TABLE
     firstName: [join::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
     lastName: [join::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
-    firm: Binding join::store::FirmBinding : [join::store::H2DB]@FirmPerson | [join::store::H2DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS
-
+    firm: Binding join::store::FirmBinding : [join::store::H2DB]@FirmPerson | [join::store::H2DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS,
+    location: Binding join::store::LocationBinding : [join::store::H2DB]@LocationPerson | parseJson([join::store::H2DB]LOCATION_SCHEMA.LOCATION_TABLE.LOCATION_DETAILS)
   }
 )
 
@@ -89,6 +119,22 @@ function join::testJoinOnSemiStructuredProperty():TabularDataSet[1]
         'First Name',
         'Last Name',
         'Firm/Legal Name'
+      ]
+    );
+}
+
+function join::testJoinOnSemiStructuredPropertyWithQPFilter():TabularDataSet[1]
+{
+    join::model::Person.all()->project(
+      [
+        x|$x.firstName,
+        x|$x.lastName,
+        x|$x.countryCode
+      ],
+      [
+        'First Name',
+        'Last Name',
+        'Country Code'
       ]
     );
 }

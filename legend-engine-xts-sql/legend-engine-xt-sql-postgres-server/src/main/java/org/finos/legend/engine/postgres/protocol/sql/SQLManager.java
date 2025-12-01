@@ -25,9 +25,9 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
-import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.postgres.PostgresServerException;
@@ -35,12 +35,13 @@ import org.finos.legend.engine.postgres.protocol.sql.dispatcher.ExecutionType;
 import org.finos.legend.engine.postgres.protocol.sql.dispatcher.StatementDispatcherVisitor;
 import org.finos.legend.engine.postgres.protocol.sql.handler.empty.EmptyPreparedStatement;
 import org.finos.legend.engine.postgres.protocol.sql.handler.empty.EmptyStatement;
-import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.JDBCSessionHandler;
+import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.JDBCPostgresPreparedStatement;
+import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.JDBCPostgresStatement;
 import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.CatalogManager;
 import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.SQLRewrite;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecution;
-import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.LegendStatement;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.LegendPreparedStatement;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.LegendStatement;
 import org.finos.legend.engine.postgres.protocol.sql.handler.txn.TxnIsolationPreparedStatement;
 import org.finos.legend.engine.postgres.protocol.sql.handler.txn.TxnIsolationStatement;
 import org.finos.legend.engine.postgres.protocol.wire.session.Session;
@@ -50,6 +51,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Arrays;
@@ -58,10 +62,13 @@ import java.util.List;
 public class SQLManager
 {
     private static final Logger logger = LoggerFactory.getLogger(SQLManager.class);
+    private final MutableList<LegendExecution> clients;
 
-    JDBCSessionHandler legendSessionHandler;
-    MutableList<LegendExecution> clients;
-    MutableMap<String, CatalogManager> catalogManagers = Maps.mutable.empty();
+    private final MutableMap<Integer, CatalogManager> catalogManagersBySession = new ConcurrentHashMap<>();
+
+    private final String host;
+    private final int port;
+    private final MutableMap<Integer, Connection> connectionsBySession = new ConcurrentHashMap<>();
 
     public SQLManager(MutableList<LegendExecution> clients)
     {
@@ -105,22 +112,24 @@ public class SQLManager
 
             dockerClient.startContainerCmd(container.getId()).exec();
 
-            int port = Integer.parseInt(dockerClient.inspectContainerCmd(container.getId()).exec()
+            this.port = Integer.parseInt(dockerClient.inspectContainerCmd(container.getId()).exec()
                     .getNetworkSettings()
                     .getPorts().getBindings().values().iterator().next()[0].getHostPortSpec());
 
-            String host = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
-            String used_host = host == null ? "localhost" : host;
-            logger.info("Connecting using host: {}", used_host);
-            JDBCSessionHandler metadataJDBCSessionHandler = new JDBCSessionHandler("jdbc:postgresql://" + used_host + ":" + port + "/postgres", "postgres", "");
+            String givenHost = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
+            this.host = givenHost == null ? "localhost" : givenHost;
+            logger.info("Connecting using host: {}", this.host);
 
             logger.info("Waiting for initialization");
-            waitInitialization(metadataJDBCSessionHandler);
-            logger.info("Postgres initialized on port " + port);
+            waitInitialization("jdbc:postgresql://" + this.host + ":" + this.port + "/postgres", "postgres", "");
 
-            metadataJDBCSessionHandler.prepareStatement("CREATE DATABASE legend_m;").execute();
-
-            this.legendSessionHandler = new JDBCSessionHandler("jdbc:postgresql://" + used_host + ":" + port + "/legend_m", "postgres", "");
+            // Create metadata database
+            try (Connection connection = DriverManager.getConnection("jdbc:postgresql://" + this.host + ":" + this.port + "/postgres", "postgres", "");
+                 PreparedStatement preparedStatement = connection.prepareStatement("CREATE DATABASE legend_m;"))
+            {
+                logger.info("Postgres initialized on port " + this.port);
+                preparedStatement.execute();
+            }
         }
         catch (Exception e)
         {
@@ -154,12 +163,14 @@ public class SQLManager
                     case Empty:
                         return new EmptyPreparedStatement();
                     case Legend:
-                        return new LegendPreparedStatement(query, findClient(clients, session.getDatabase(), session.getOptions()), session.getDatabase(), session.getOptions(), session.getIdentity());
-                    case Metadata:
-                        CatalogManager catalogManager = this.catalogManagers.get(session.getIdentity().getName() + session.getDatabase());
-                        String reprocessedQuery = SQLGrammarParser.getSqlBaseParser(query, "query").statement().accept(new SQLRewrite(session, catalogManager));
-                        logger.info("Executing reprocessed query: {}", reprocessedQuery);
-                        return legendSessionHandler.prepareStatement(reprocessedQuery);
+                        return new LegendPreparedStatement(query, findClient(clients, session.getDatabaseName()), session.getDatabaseName(), session.getOptions(), session.getIdentity());
+                    case Metadata_Generic:
+                        // We still want to rewrite things like the current_database function.
+                        return new JDBCPostgresPreparedStatement(connectionsBySession.get(session.getId()).prepareStatement(CatalogManager.reprocessQuery(query, new SQLRewrite(session, null))));
+                    case Metadata_User_Specific:
+                        Connection connection = connectionsBySession.get(session.getId());
+                        CatalogManager catalogManager = catalogManagersBySession.getIfAbsentPut(session.getId(), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName()), connection));
+                        return new JDBCPostgresPreparedStatement(connection.prepareStatement(CatalogManager.reprocessQuery(query, new SQLRewrite(session, catalogManager))));
                     case TX:
                         return new TxnIsolationPreparedStatement();
                 }
@@ -183,9 +194,13 @@ public class SQLManager
                     case Empty:
                         return new EmptyStatement();
                     case Legend:
-                        return new LegendStatement(findClient(clients, session.getDatabase(), session.getOptions()), session.getDatabase(), session.getOptions(), session.getIdentity());
-                    case Metadata:
-                        return legendSessionHandler.createStatement();
+                        return new LegendStatement(findClient(clients, session.getDatabaseName()), session.getDatabaseName(), session.getOptions(), session.getIdentity());
+                    case Metadata_Generic:
+                        return new JDBCPostgresStatement(connectionsBySession.get(session.getId()).createStatement(), new SQLRewrite(session, null));
+                    case Metadata_User_Specific:
+                        Connection connection = connectionsBySession.get(session.getId());
+                        CatalogManager catalogManager = catalogManagersBySession.getIfAbsentPut(session.getId(), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName()), connection));
+                        return new JDBCPostgresStatement(connection.createStatement(), new SQLRewrite(session, catalogManager));
                     case TX:
                         return new TxnIsolationStatement();
                 }
@@ -198,7 +213,7 @@ public class SQLManager
         return null;
     }
 
-    private LegendExecution findClient(MutableList<LegendExecution> clients, String database, String options)
+    private LegendExecution findClient(MutableList<LegendExecution> clients, String database)
     {
         return clients.select(x -> x.supports(database)).getFirst();
     }
@@ -208,7 +223,7 @@ public class SQLManager
         return query.isEmpty() ? ExecutionType.Empty : SQLGrammarParser.getSqlBaseParser(query, "query").singleStatement().accept(new StatementDispatcherVisitor());
     }
 
-    public void waitInitialization(JDBCSessionHandler metadataJDBCSessionHandler)
+    public void waitInitialization(String url, String user, String password)
     {
         boolean initializing = true;
         do
@@ -216,7 +231,11 @@ public class SQLManager
             try
             {
                 Thread.sleep(100);
-                metadataJDBCSessionHandler.prepareStatement("select 1;").execute();
+                try (Connection connection = DriverManager.getConnection(url, user, password);
+                     PreparedStatement preparedStatement = connection.prepareStatement("select 1;"))
+                {
+                    preparedStatement.execute();
+                }
                 initializing = false;
             }
             catch (Exception e)
@@ -227,16 +246,27 @@ public class SQLManager
         while (initializing);
     }
 
-    public void buildCatalog(Session session)
+
+    public void sessionCreated(Session session)
     {
-        String name = session.getIdentity().getName();
-        String database = session.getDatabase();
-        catalogManagers.getIfAbsentPut(name + database, () -> new CatalogManager(session.getIdentity(), database, findClient(clients, session.getDatabase(), session.getOptions()), legendSessionHandler));
+        try
+        {
+            connectionsBySession.put(session.getId(), DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/legend_m", "postgres", ""));
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void removeCatalog(String name, String database)
+    public void sessionClosing(Session session) throws SQLException
     {
-//        CatalogManager cm = catalogManagers.remove(name + database);
-//        cm.close();
+        CatalogManager cm = this.catalogManagersBySession.remove(session.getId());
+        if (cm != null)
+        {
+            cm.close();
+        }
+        connectionsBySession.get(session.getId()).close();
     }
+
 }

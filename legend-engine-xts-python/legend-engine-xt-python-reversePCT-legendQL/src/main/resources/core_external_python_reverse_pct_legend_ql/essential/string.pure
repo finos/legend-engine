@@ -129,8 +129,78 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         rev('|\'9999999999999992\'->meta::pure::functions::string::parseInteger()', 'c("9999999999999992").parse_int()')
       ]
     ),
-    // ------------------------------------------------------------------
+    [ // parseBoolean
+      meta::pure::functions::string::tests::parseBoolean::testParseTrue_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'true\'->meta::pure::functions::string::parseBoolean()', 'c("true").parse_boolean()'),
+          rev('|\'True\'->meta::pure::functions::string::parseBoolean()', 'c("True").parse_boolean()'),
+          rev('|\'tRue\'->meta::pure::functions::string::parseBoolean()', 'c("tRue").parse_boolean()'),
+          rev('|\'trUe\'->meta::pure::functions::string::parseBoolean()', 'c("trUe").parse_boolean()'),
+          rev('|\'truE\'->meta::pure::functions::string::parseBoolean()', 'c("truE").parse_boolean()'),
+          rev('|\'TRUE\'->meta::pure::functions::string::parseBoolean()', 'c("TRUE").parse_boolean()')
+        ]
+    ),
+      meta::pure::functions::string::tests::parseBoolean::testParseFalse_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'false\'->meta::pure::functions::string::parseBoolean()', 'c("false").parse_boolean()'),
+          rev('|\'False\'->meta::pure::functions::string::parseBoolean()', 'c("False").parse_boolean()'),
+          rev('|\'fAlse\'->meta::pure::functions::string::parseBoolean()', 'c("fAlse").parse_boolean()'),
+          rev('|\'faLse\'->meta::pure::functions::string::parseBoolean()', 'c("faLse").parse_boolean()'),
+          rev('|\'falSe\'->meta::pure::functions::string::parseBoolean()', 'c("falSe").parse_boolean()'),
+          rev('|\'falsE\'->meta::pure::functions::string::parseBoolean()', 'c("falsE").parse_boolean()'),
+          rev('|\'FALSE\'->meta::pure::functions::string::parseBoolean()', 'c("FALSE").parse_boolean()')
+        ]
+    )
+    ]->combine(),
+    [ // parseDate
+      meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'2014-02-27T10:01:35.231-0500\'->meta::pure::functions::string::parseDate()', 'c("2014-02-27T10:01:35.231-0500").parse_datetime()'),
+          rev('|\'2014-2-27T10:01:35.231+0500\'->meta::pure::functions::string::parseDate()', 'c("2014-2-27T10:01:35.231+0500").parse_datetime()')
+        ]
+      ),
+      meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'2014-2-27T10:01:35.231\'->meta::pure::functions::string::parseDate()', 'c("2014-2-27T10:01:35.231").parse_datetime()'),
+          rev('|\'2014-02-27T10:01:35.231\'->meta::pure::functions::string::parseDate()', 'c("2014-02-27T10:01:35.231").parse_datetime()')
 
+        ]
+      ),
+      meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'2014-02-27T10:01:35.231Z\'->meta::pure::functions::string::parseDate()', 'c("2014-02-27T10:01:35.231Z").parse_datetime()'),
+          rev('|\'2014-2-27T10:01:35.231Z\'->meta::pure::functions::string::parseDate()', 'c("2014-2-27T10:01:35.231Z").parse_datetime()')
+
+        ]
+      ),
+      meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'2014-02-27T00:00:00.000000\'->meta::pure::functions::string::parseDate()', 'c("2014-02-27T00:00:00.000000").parse_datetime()'),
+          rev('|\'2014-02-27\'->meta::pure::functions::string::parseDate()', 'c("2017-02-27").parse_datetime()')
+        ]
+      )
+    ]->combine(),
+    // Slice ------------------------------------------------------------------
+    [ // substring
+      meta::pure::functions::string::tests::substring::testStart_Function_1__Boolean_1_->testRev(
+        [
+          rev('|$string->meta::pure::functions::string::substring(0)','c("the quick brown fox jumps over the lazy dog").substring(0)'),
+          rev('|$string->meta::pure::functions::string::substring(1)', 'c("the quick brown fox jumps over the lazy dog").substring(1)'),
+          rev('|$string->meta::pure::functions::string::substring(2)', 'c("the quick brown fox jumps over the lazy dog").substring(2)'),
+          rev('|$string->meta::pure::functions::string::substring(3)', 'c("the quick brown fox jumps over the lazy dog").substring(3)'),
+          rev('|$string->meta::pure::functions::string::substring(4)', 'c("the quick brown fox jumps over the lazy dog").substring(4)')
+        ]
+      ),
+      meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_->testRev(
+      [
+        rev('|$string->meta::pure::functions::string::substring(0, 43)', 'c("the quick brown fox jumps over the lazy dog").substring(0, 43)'),
+        rev('|$string->meta::pure::functions::string::substring(1, 42)', 'c("the quick brown fox jumps over the lazy dog").substring(1, 42)'),
+        rev('|$string->meta::pure::functions::string::substring(2, 41)', 'c("the quick brown fox jumps over the lazy dog").substring(2, 41)'),
+        rev('|$string->meta::pure::functions::string::substring(3, 40)', 'c("the quick brown fox jumps over the lazy dog").substring(3, 40)'),
+        rev('|$string->meta::pure::functions::string::substring(4, 39)', 'c("the quick brown fox jumps over the lazy dog").substring(4, 39)')
+      ]
+    )
+    ]->combine(),
     // Transformation ---------------------------------------------------
     // toLower
     meta::pure::functions::string::tests::tolower::testToLower_Function_1__Boolean_1_->testRev(
@@ -146,8 +216,20 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         rev('|\'TEST\'->meta::pure::functions::string::toUpper()', 'c("TEST").upper()')
       ]
     ),
+    //reverseString
+    meta::pure::functions::string::tests::reverse::testReverseString_Function_1__Boolean_1_->testRev(
+      [
+        rev('|\'\'->meta::pure::functions::string::reverseString()', 'c("").reverse()'),
+        rev('|\'cba\'->meta::pure::functions::string::reverseString()', 'c("cba").reverse()')
+      ]
+    ),
+    //replace
+    meta::pure::functions::string::tests::replace::testReplace_Function_1__Boolean_1_->testRev(
+      [
+        rev('|\'abcde\'->meta::pure::functions::string::replace(\'ab\', \'fg\')','c("abcde").replace("ab", "fg")')
+      ]
+    ),
     // ------------------------------------------------------------------
-
     // Trim -------------------------------------------------------------
     // ltrim
     meta::pure::functions::string::tests::trim::testLTrim_Function_1__Boolean_1_->testRev(
@@ -171,6 +253,61 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         rev('|\'A Simple Text To Trim \'->meta::pure::functions::string::rtrim()', 'c("A Simple Text To Trim ").rstrip()'),
         rev('|\' A Simple Text To Trim\'->meta::pure::functions::string::rtrim()', 'c(" A Simple Text To Trim").rstrip()')
       ]
-    )
+    ),
+     // ToString ----------------------------------------------------------
+    [
+      meta::pure::functions::string::tests::toString::testBooleanToString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true->meta::pure::functions::string::toString()', 'c(True).to_string()'),
+          rev('|false->meta::pure::functions::string::toString()', 'c(False).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testStringToString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'the quick brown fox jumps over the lazy dog\'->meta::pure::functions::string::toString()', 'c("the quick brown fox jumps over the lazy dog").to_string()'),
+          rev('|\'\'->meta::pure::functions::string::toString()', 'c("").to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testFloatToString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|3.14->meta::pure::functions::string::toString()', 'c(3.14).to_string()'),
+          rev('|3.14159->meta::pure::functions::string::toString()', 'c(3.14159).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testFloatToStringWithExcessTrailingZeros_Function_1__Boolean_1_->testRev(
+        [
+          rev('|17.0->meta::pure::functions::string::toString()', 'c(17.0).to_string()'),
+          rev('|17.000->meta::pure::functions::string::toString()', 'c(17.000).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testFloatToStringWithNoLeadingZero_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0.01->meta::pure::functions::string::toString()', 'c(0.01).to_string()'),
+          rev('|.01->meta::pure::functions::string::toString()', 'c(.01).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testFloatToStringWithPositiveExponent_Function_1__Boolean_1_->testRev(
+        [
+          rev('|134.21e6->meta::pure::functions::string::toString()', 'c(134.21e6).to_string()'),
+          rev('|1.3421e8->meta::pure::functions::string::toString()', 'c(1.3421e8).to_string()'),
+          rev('|0.13421e9->meta::pure::functions::string::toString()', 'c(0.13421e9).to_string()'),
+          rev('|134210000.0->meta::pure::functions::string::toString()', 'c(134210000.0).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testFloatToStringWithNegativeExponent_Function_1__Boolean_1_->testRev(
+        [
+          rev('|134.21e-10->meta::pure::functions::string::toString()', 'c(134.21e-10).to_string()'),
+          rev('|1.3421e-8->meta::pure::functions::string::toString()', 'c(1.3421e-8).to_string()'),
+          rev('|0.13421e-7->meta::pure::functions::string::toString()', 'c(0.13421e-7).to_string()'),
+          rev('|0.000000013421->meta::pure::functions::string::toString()', 'c(0.000000013421).to_string()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testIntegerToString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::string::toString()', 'c(1).to_string()'),
+          rev('|meta::pure::functions::string::toString(-1)', 'c(-1).to_string()')
+        ]
+      )
+    ]->combine()
   ]
 }

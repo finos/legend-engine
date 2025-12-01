@@ -34,9 +34,11 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.CatalogManager;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.DescribeResult;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.FormatCodes;
 import org.finos.legend.engine.postgres.PostgresServerException;
@@ -52,6 +54,8 @@ import org.slf4j.LoggerFactory;
 
 public class Session implements AutoCloseable
 {
+    private static AtomicInteger counter = new AtomicInteger(0);
+    private int id;
     private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
     public static final String FAILED_TO_EXECUTE = "Failed to execute";
     private final Map<String, Prepared> parsed = new ConcurrentHashMap<>();
@@ -59,9 +63,11 @@ public class Session implements AutoCloseable
     private final ExecutorService executorService;
     private final Identity identity;
     private final Properties properties;
+    private CatalogManager catalogManager;
 
     public Session(ExecutorService executorService, Identity identity, Properties properties)
     {
+        this.id = counter.getAndIncrement();
         this.executorService = executorService;
         this.identity = identity;
         this.properties = properties;
@@ -69,7 +75,12 @@ public class Session implements AutoCloseable
         OpenTelemetryUtil.TOTAL_SESSIONS.add(1);
     }
 
-    public String getDatabase()
+    public int getId()
+    {
+        return id;
+    }
+
+    public String getDatabaseName()
     {
         return this.properties.getProperty("database", "");
     }

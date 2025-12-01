@@ -48,17 +48,20 @@ public class StatementDispatcherVisitor extends SqlBaseParserBaseVisitor<Executi
     @Override
     public ExecutionType visitShowSessionParameter(SqlBaseParser.ShowSessionParameterContext ctx)
     {
-        return ExecutionType.Metadata;
+        return ExecutionType.Metadata_Generic;
     }
 
     @Override
     public ExecutionType visitDefault(SqlBaseParser.DefaultContext ctx)
     {
         List<QualifiedName> qualifiedNames = ctx.accept(EXTRACTOR);
-        boolean isMetadataQuery = qualifiedNames.isEmpty() || qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(s -> s.equalsIgnoreCase("information_schema") || s.toLowerCase().startsWith("pg_"));
-        if (isMetadataQuery)
+        if (qualifiedNames.isEmpty())
         {
-            return ExecutionType.Metadata;
+            return ExecutionType.Metadata_Generic;
+        }
+        if (qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(s -> s.equalsIgnoreCase("information_schema") || s.toLowerCase().startsWith("pg_")))
+        {
+            return ExecutionType.Metadata_User_Specific;
         }
         else
         {

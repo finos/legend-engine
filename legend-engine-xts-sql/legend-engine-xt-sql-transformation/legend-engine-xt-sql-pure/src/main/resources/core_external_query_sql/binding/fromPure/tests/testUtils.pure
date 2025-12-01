@@ -95,6 +95,18 @@ function meta::external::query::sql::transformation::queryToPure::tests::test(sq
   test($sqls, $expected->map(e | c($e, $assertLambda, $assertJSON, $sources)), $scopeWithFrom);
 }
 
+
+function meta::external::query::sql::transformation::queryToPure::tests::error(sqls:String[*], error:String[1], failOnUnknown:Boolean[1]):Boolean[1]
+{
+  $sqls->forAll(sql | $sql->error($error, $failOnUnknown));
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::error(sql:String[1], error:String[1], failOnUnknown:Boolean[1]):Boolean[1]
+{
+  assertError({|processQuery($sql, relationSources(), false, $failOnUnknown)}, $error)
+}
+
+
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], scopeWithFrom:Boolean[1], relation:Boolean[1]): SqlTransformContext[1]
 {
   processQuery($sql, if ($relation, | relationSources(), | tabularDataSetSources()), $scopeWithFrom);
@@ -126,10 +138,15 @@ function meta::external::query::sql::transformation::queryToPure::tests::relatio
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
 {
+  processQuery($sql, $sources, $scopeWithFrom, false)
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], failOnInvalidColumns:Boolean[1]): SqlTransformContext[1]
+{
   let query = meta::external::store::relational::postgresSql::parser::parseSqlStatement($sql)->cast(@Query);
 
   let extensions = relationalExtensions();
   let context = rootContext($sources, $extensions);
 
-  $query->processRootQuery(^$context(scopeWithFrom = $scopeWithFrom, withSupported = true, debug=noDebug()));
+  $query->processRootQuery(^$context(scopeWithFrom = $scopeWithFrom, withSupported = true, debug=noDebug(), failOnInvalidColumns = $failOnInvalidColumns));
 }

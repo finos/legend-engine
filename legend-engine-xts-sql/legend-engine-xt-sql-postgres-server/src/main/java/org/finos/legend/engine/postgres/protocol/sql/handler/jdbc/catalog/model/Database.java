@@ -21,11 +21,11 @@ public class Database
 {
     static int _dbId = 20000;
 
-    private final  String name;
+    private final String name;
 
-    private final  MutableList<Schema> schemas;
+    private final MutableList<Schema> schemas;
 
-    private final  int dbId;
+    private final int dbId;
 
     public Database(String name)
     {

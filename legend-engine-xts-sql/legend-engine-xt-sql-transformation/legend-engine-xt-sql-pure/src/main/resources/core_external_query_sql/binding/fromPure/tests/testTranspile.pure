@@ -611,6 +611,34 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByOriginalColumn():Boolean[1]
+{
+  test(
+    [
+      'SELECT Integer as int, String as str FROM service."/service/service1" ORDER BY Integer DESC, String ASC'
+    ],
+
+    [
+      {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->restrict(['Integer', 'String'])
+        ->renameColumns([pair('Integer', 'int'), pair('String', 'str')])
+        ->sort([desc('int'), asc('str')])
+      },
+
+      {| FlatInput.all()->project(
+              ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+        )
+        ->select(~[Integer, String])
+        ->rename(~Integer, ~int)
+        ->rename(~String, ~str)
+        ->sort([descending(~int), ascending(~str)])
+      }
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByColumnRealiasWithGroupBy():Boolean[1]
 {
   test([
@@ -4012,7 +4040,26 @@ function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure:
   )
 }
 
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testInvalidColumnReference():Boolean[1]
+{
+  error(
+    [
+    'select * from (values(1)) AS t (number) where "unknown" = 1',
+    'select t.number as "c1" from (values(1)) AS t (number) where "unknown" = 1 group by c1',
+    'select unknown from (values(1)) AS t (number)'
+    ],
+    'unknown columns referenced in query [unknown]', true);
+}
 
+
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testFailOnclash():Boolean[1]
+{
+  error(
+    [
+    'select * from service."/service/service1" t1 left outer join service."/service/service1" t2 on t1.String = t2.String'
+    ],
+    'query returns duplicate columns, this is not supported', true);
+}
 
 //TODO fails to resolve enum column
 function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testEnumValuesRelation():Boolean[1]

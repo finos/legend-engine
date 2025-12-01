@@ -20,6 +20,7 @@ import meta::external::store::relational::tests::*;
 import meta::relational::tests::mapping::embedded::model::mapping::*;
 import meta::relational::tests::csv::*;
 import meta::relational::functions::asserts::*;
+import meta::pure::functions::meta::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::classMappingFilterWithInnerJoin::setUp():Boolean[1]
 {
@@ -315,4 +316,11 @@ function <<test.Test>> meta::relational::tests::mapping::classMappingFilterWithI
     'select "root".name as "productName", "producttableview_0".type as "productClassificationTypes", "producttableview_0".type_description as "productClassificationDescriptions" from ProductTable as "root" left outer join (select "producttableview_1".id as id, "producttableview_1".name as name, "productclassificationtable_0".type as type, "productclassificationtable_0".type_description as type_description from (select "root".id as id, "root".name as name, "root".type as type, \'2015-10-26\' as "k_businessDate" from ProductTable as "root" where "root".from_z <= DATE\'2015-10-26\' and "root".thru_z > DATE\'2015-10-26\') as "producttableview_1" inner join (select "root".type as type, "root".type_description as type_description, "root".system as system, "root".exchange as exchange, "root".from_z as from_z, "root".thru_z as thru_z from ProductClassificationTable as "root" inner join ProductClassificationFilterTable as "productclassificationfiltertable_0" on ("root".type = "productclassificationfiltertable_0".type) where "productclassificationfiltertable_0".exchange is not null and "root".from_z <= DATE\'2015-10-26\' and "root".thru_z > DATE\'2015-10-26\') as "productclassificationtable_0" on ("producttableview_1".type = "productclassificationtable_0".type)) as "producttableview_0" on ("root".from_z <= DATE\'2015-10-26\' and "root".thru_z > DATE\'2015-10-26\' and "root".id = "producttableview_0".id and "root".name = "producttableview_0".name) where "root".from_z <= DATE\'2015-10-26\' and "root".thru_z > DATE\'2015-10-26\'',
     $results->sqlRemoveFormatting()
    );
+}
+
+function <<test.Test>> meta::relational::tests::mapping::classMappingFilterWithInnerJoin::TestClassMappingsWithInnerFilterJoinedWithMilestoningDepthTwoNestedGeneration():Boolean[1]
+{
+    let result = execute(|meta::relational::tests::model::simple::TemporalTrade.all(%2015-10-26)->project([p | $p.product.positionType], ['positionType']),meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedWithMilestoningDepthTwoNested,meta::external::store::relational::tests::testRuntime(),meta::relational::extension::relationalExtensions());
+    assertEquals(['null', '2'], $result.values.rows.values->map(c | if(!$c->instanceOf(meta::pure::tds::TDSNull) ,| $c ,| 'null' )));
+    assertEquals('select cast("producttableviewnested_0".id as varchar) as "positionType" from tradeTable as "root" left outer join (select "root".id as id, "root".name as name, "root".type as type from (select "root".id as id, "root".name as name, "root".type as type, \'2015-10-26\' as "k_businessDate" from (select "root".id as id, "root".name as name, "root".type as type, \'2015-10-26\' as "k_businessDate" from ProductTable as "root" where "root".from_z <= DATE\'2015-10-26\' and "root".thru_z > DATE\'2015-10-26\' and "root".id <> 0) as "root" where "root".id <> 0) as "root" inner join tradeTable as "tradetable_1" on ("root".id = "tradetable_1".ID and "tradetable_1".ID <> 0) where "tradetable_1".ID <> 0 and "root".id <> 0) as "producttableviewnested_0" on ("producttableviewnested_0".id = "root".ID and "producttableviewnested_0".id <> 0) where "root".ID <> 0', $result->sqlRemoveFormatting());
 }

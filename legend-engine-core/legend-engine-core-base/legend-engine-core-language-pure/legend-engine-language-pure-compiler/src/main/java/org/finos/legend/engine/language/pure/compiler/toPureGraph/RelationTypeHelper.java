@@ -55,6 +55,10 @@ public class RelationTypeHelper
                             );
                             col._stereotypes(ListIterate.collect(c.stereotypes, ctx::resolveStereotype));
                             col._taggedValues(ListIterate.collect(c.taggedValues, ctx::newTaggedValue));
+                            if (c.sourceInformation != null)
+                            {
+                                col.setSourceInformation(SourceInformationHelper.toM3SourceInformation(c.sourceInformation));
+                            }
                             return col;
                         }
                 ),

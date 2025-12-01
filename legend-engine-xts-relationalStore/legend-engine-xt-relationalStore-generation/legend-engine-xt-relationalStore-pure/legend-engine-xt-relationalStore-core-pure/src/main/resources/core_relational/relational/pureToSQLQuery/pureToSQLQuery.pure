@@ -1490,12 +1490,20 @@ function meta::relational::functions::pureToSqlQuery::extractColumnAliasesInRela
             | let relationsSupportingProjectedColumn = $foundColumn->extractTableAliasColumns().alias.relation;
               print(if(!$context.debug, |'', | $context.space+'Found depth-2 nested select while processing column - ' +  $column.name + '. Adding inner relations from depth-2 subselect for handling class mapping filter with inner join : ' + $relationsSupportingProjectedColumn->map(rel | $rel->buildUniqueName(false, $extensions))->joinStrings('[', ' , ', ']')));
               let columnName = $foundColumn->toOne()->extractColumnName();
-              if($relationsSupportingProjectedColumn->concatenate($s)->contains($relationalElement) || $relationalElement->instanceOf(RelationFunction), 
-                | ^TableAliasColumn(alias = $n.alias, columnName = $columnName, column = ^$column(name = $columnName)),
-                | []
-              );,
-            | []
-          );,
+              let isViewMatch = if($relationalElement->instanceOf(View),
+                 | $relationsSupportingProjectedColumn->exists(rel |
+                   $rel->instanceOf(ViewSelectSQLQuery) && $rel->cast(@ViewSelectSQLQuery).view == $relationalElement
+                  );,
+                  | false;
+                );
+                if($relationsSupportingProjectedColumn->concatenate($s)->contains($relationalElement) ||
+                  $relationalElement->instanceOf(RelationFunction) ||
+                  $isViewMatch,
+                  | ^TableAliasColumn(alias = $n.alias, columnName = $columnName, column = ^$column(name = $columnName));,
+                  | [];
+                );,
+              | [];
+            );,
         r:RelationalOperationElement[1]|if($r == $relationalElement,
                                           | ^TableAliasColumn(alias = $n.alias, columnName = $column.name, column = ^$column(name = $column.name));,
                                           | [];
@@ -5015,10 +5023,11 @@ function meta::relational::functions::pureToSqlQuery::processFilter(expression:F
 
    let rawType = $leftSidePure.genericType.rawType->toOne();
    let isFilterOnDataType = $state.inFilter && $rawType->instanceOf(DataType);
+   let isFilterOnLateralJoin = $newLastNode->match([j:JoinTreeNode[1]|$j.lateral == true, a:Any[0..1]|false]);
    let savedFilterCurrentTreeNode = $newLastNode;
 
-   let filteringOperation = if ($isFilterOnDataType || $savedFilterCurrentTreeNode->isEmpty(), | $managedFilteredPosition.filteringOperation,|[]);
-   let savedFilteringOperation = if($isFilterOnDataType  || $savedFilterCurrentTreeNode->isEmpty() || $managedFilteredPosition.filteringOperation->isEmpty(),
+   let filteringOperation = if ($isFilterOnDataType || $savedFilterCurrentTreeNode->isEmpty() || $isFilterOnLateralJoin, | $managedFilteredPosition.filteringOperation,|[]);
+   let savedFilteringOperation = if($isFilterOnDataType  || $savedFilterCurrentTreeNode->isEmpty() || $managedFilteredPosition.filteringOperation->isEmpty() || $isFilterOnLateralJoin,
                                     |$managedFilteredPosition.savedFilteringOperation,
                                     |$managedFilteredPosition.savedFilteringOperation->concatenate(pair($savedFilterCurrentTreeNode->toOne(), $managedFilteredPosition.filteringOperation->toOne())));
 

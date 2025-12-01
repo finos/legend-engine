@@ -1,0 +1,306 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::external::python::reversePCT::legendQL::*;
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesUnclassifiedString(): ReversesForSource[*]
+{
+  [
+     // ascii ----------------------------------------------------------
+    [ // ascii
+      meta::pure::functions::string::tests::ascii::testAsciiDigit_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'0\'->meta::pure::functions::string::ascii()', 'c("0").ascii()'),
+          rev('|\'9\'->meta::pure::functions::string::ascii()', 'c("9").ascii()')
+        ]
+      ),
+      meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'\'->meta::pure::functions::string::ascii()', 'c("").ascii()')
+        ]
+      ),
+      meta::pure::functions::string::tests::ascii::testAsciiLower_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'a\'->meta::pure::functions::string::ascii()', 'c("a").ascii()'),
+          rev('|\'z\'->meta::pure::functions::string::ascii()', 'c("z").ascii()')
+        ]
+      ),
+      meta::pure::functions::string::tests::ascii::testAsciiUpper_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'A\'->meta::pure::functions::string::ascii()', 'c("A").ascii()'),
+          rev('|\'Z\'->meta::pure::functions::string::ascii()', 'c("Z").ascii()')
+        ]
+      ),
+      meta::pure::functions::string::tests::ascii::testAsciiMultiCharString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abc\'->meta::pure::functions::string::ascii()', 'c("abc").ascii()')
+        ]
+      ),
+      meta::pure::functions::string::tests::ascii::testAsciiWhitespace_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\' \'->meta::pure::functions::string::ascii()', 'c(" ").ascii()')
+        ]
+      )
+    ]->combine(),
+    [ // char
+      meta::pure::functions::string::tests::char::testSpace_Function_1__Boolean_1_->testRev(
+        [
+          rev('|32->meta::pure::functions::string::char()', 'c(32).char()')
+        ]
+      ),
+      meta::pure::functions::string::tests::char::testNewline_Function_1__Boolean_1_->testRev(
+        [
+          rev('|10->meta::pure::functions::string::char()', 'c(10).char()')
+        ]
+      ),
+      meta::pure::functions::string::tests::char::testEmptyChar_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::string::char()', 'c(0).char()')
+        ]
+      ),
+      meta::pure::functions::string::tests::char::testCharDigits_Function_1__Boolean_1_->testRev(
+        [
+          rev('|48->meta::pure::functions::string::char()', 'c(48).char()'),
+          rev('|57->meta::pure::functions::string::char()', 'c(57).char()')
+        ]
+      ),
+      meta::pure::functions::string::tests::char::testCharLower_Function_1__Boolean_1_->testRev(
+        [
+          rev('|97->meta::pure::functions::string::char()', 'c(97).char()'),
+          rev('|122->meta::pure::functions::string::char()', 'c(122).char()')
+        ]
+      ),
+      meta::pure::functions::string::tests::char::testCharUpper_Function_1__Boolean_1_->testRev(
+        [
+          rev('|65->meta::pure::functions::string::char()', 'c(65).char()'),
+          rev('|90->meta::pure::functions::string::char()', 'c(90).char()')
+        ]
+      )
+    ]->combine(),
+     // Codec ----------------------------------------------------------
+    [ // decodeBase64
+      meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip_Function_1__Boolean_1_->testRev(
+        [
+          rev('|$testString->meta::pure::functions::string::encodeBase64()->meta::pure::functions::string::decodeBase64()', 'c("Any Random String").b64encode().b64decode()')
+        ]
+      ),
+      meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'SGVsbG8sIFdvcmxkIQ\'->meta::pure::functions::string::decodeBase64()', 'c("SGVsbG8sIFdvcmxkIQ").b64decode()')
+        ]
+      ),
+      meta::pure::functions::string::tests::base64::testDecodeBase64_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'SGVsbG8sIFdvcmxkIQ==\'->meta::pure::functions::string::decodeBase64()', 'c("SGVsbG8sIFdvcmxkIQ==").b64decode()')
+        ]
+      )
+    ]->combine(),
+    [ // encodeBase64
+      meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'Hello, World!\'->meta::pure::functions::string::encodeBase64()', 'c("Hello, World!").b64encode()')
+        ]
+      ),
+      meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip_Function_1__Boolean_1_->testRev(
+        [
+          rev('|$testString->meta::pure::functions::string::decodeBase64()->meta::pure::functions::string::encodeBase64()', 'c("SGVsbG8sIFdvcmxkIQ==").b64decode().b64encode()')
+        ]
+      )
+    ]->combine(),
+     // Padding ----------------------------------------------------------
+    [ // lpad
+      meta::pure::functions::string::tests::lpad::testLpad_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcd\'->meta::pure::functions::string::lpad(10, \'_\')','c("abcd").rjust(10, "_")')
+        ]
+      ),
+      meta::pure::functions::string::tests::lpad::testLpadDefaultCharacter_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcd\'->meta::pure::functions::string::lpad(10)','c("abcd").rjust(10)')
+        ]
+      ),
+      meta::pure::functions::string::tests::lpad::testLpadStringLongerThanLength_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcd\'->meta::pure::functions::string::lpad(3, \'_\')','c("abcd").rjust(3, "_")'
+          )
+        ]
+      ),
+      meta::pure::functions::string::tests::lpad::testLpadEmptyString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'\'->meta::pure::functions::string::lpad(3, \'?\')','c("").rjust(3, "?")')
+        ]
+      ),
+      meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcd\'->meta::pure::functions::string::lpad(10, \'\')','c("abcd").rjust(10, "")')
+        ]
+      )
+    ]->combine(),
+    [ // repeat_string
+      meta::pure::functions::string::tests::repeatstring::testRepeatString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'ab\'->meta::pure::functions::string::repeatString(2)', 'c("ab").repeat_string(2)')
+        ]
+      ),
+      meta::pure::functions::string::tests::repeatstring::testRepeatStringEmptyString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'\'->meta::pure::functions::string::repeatString(2)', 'c("").repeat_string(2)')
+        ]
+      )
+    ]->combine(),
+    [ // rpad
+      meta::pure::functions::string::tests::rpad::testRpad_Function_1__Boolean_1_->testRev(
+        [ rev('|\'abcd\'->meta::pure::functions::string::rpad(10, \'_\')', 'c("abcd").ljust(10, "_")') ]
+      ),
+      meta::pure::functions::string::tests::rpad::testRpadDefaultCharacter_Function_1__Boolean_1_->testRev(
+        [ rev('|\'abcd\'->meta::pure::functions::string::rpad(10)', 'c("abcd").ljust(10)') ]
+      ),
+      meta::pure::functions::string::tests::rpad::testRpadStringLongerThanLength_Function_1__Boolean_1_->testRev(
+        [ rev('|\'abcd\'->meta::pure::functions::string::rpad(3, \'_\')', 'c("abcd").ljust(3, "_")') ]
+      ),
+      meta::pure::functions::string::tests::rpad::testRpadEmptyString_Function_1__Boolean_1_->testRev(
+        [ rev('|\'\'->meta::pure::functions::string::rpad(3, \'?\')', 'c("").ljust(3, "?")') ]
+      ),
+      meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_->testRev(
+        [ rev('|\'abcd\'->meta::pure::functions::string::rpad(10, \'\')', 'c("abcd").ljust(10, "")') ]
+      ),
+      meta::pure::functions::string::tests::rpad::testRpadMultiChar_Function_1__Boolean_1_->testRev(
+        [ rev('|\'pp\'->meta::pure::functions::string::rpad(5, \'xo\')', 'c("pp").ljust(5, "xo")') ]
+      )
+    ]->combine(),
+     // Regex ----------------------------------------------------------
+    [ // matches
+      meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'hello\'->meta::pure::functions::string::matches(\'hello\')', 'c("hello").full_match("hello")'),
+          rev('|\'abc\'->meta::pure::functions::string::matches(\'[a-z][a-z][a-z]\')', 'c("abc").full_match("[a-z][a-z][a-z]")')
+        ]
+      ),
+      meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abc\'->meta::pure::functions::string::matches(\'[a-z][a-z][a-z][a-z]\')', 'c("abc").full_match("[a-z][a-z][a-z][a-z]")')
+        ]
+      )
+    ]->combine(),
+     // Slice ----------------------------------------------------------
+    [ //left
+      meta::pure::functions::string::tests::left::testLeft_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcdefg\'->meta::pure::functions::string::left(3)', 'c("abcdefg").left(3)')
+        ]
+      ),
+      meta::pure::functions::string::tests::left::testLeftTooShortString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'ab\'->meta::pure::functions::string::left(7)', 'c("ab").left(7)')
+        ]
+      ),
+      meta::pure::functions::string::tests::left::testLeftEmptyString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'\'->meta::pure::functions::string::left(7)', 'c("").left(7)')
+        ]
+      )
+    ]->combine(),
+    [ // right
+      meta::pure::functions::string::tests::right::testRight_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'abcdefg\'->meta::pure::functions::string::right(3)', 'c("abcdefg").right(3)')
+        ]
+      ),
+      meta::pure::functions::string::tests::right::testRightTooShortString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'ab\'->meta::pure::functions::string::right(7)', 'c("ab").right(7)')
+        ]
+      ),
+      meta::pure::functions::string::tests::right::testRightEmptyString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'\'->meta::pure::functions::string::right(7)', 'c("").right(7)')
+        ]
+      )
+    ]->combine(),
+     // Split ----------------------------------------------------------
+    [ // splitPart
+      meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 0)', 'c("Hello World").split_part(" ", 0)'),
+          rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 1)', 'c("Hello World").split_part(" ", 1)')
+        ]
+      ),
+      meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\'\', 0)', 'c("Hello World").split_part("", 0)')
+        ]
+      ),
+      meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\';\', 0)', 'c("Hello World").split_part(";", 0)')
+        ]
+      ),
+      meta::pure::functions::string::tests::splitPart::testSplitPartTypicalToken_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'Sunglasses, Keys, Phone, SL-card\'->meta::pure::functions::string::splitPart(\', \', 2)', 'c("Sunglasses, Keys, Phone, SL-card").split_part(", ", 2)'),
+          rev('|\'user.name\'->meta::pure::functions::string::splitPart(\'.\', 1)', 'c("user.name").split_part(".", 1)'),
+          rev('|\'a;b;c;d;e\'->meta::pure::functions::string::splitPart(\';\', 4)', 'c("a;b;c;d;e").split_part(";", 4)'),
+          rev('|\'2_0_4\'->meta::pure::functions::string::splitPart(\'_\', 2)', 'c("2_0_4").split_part("_", 2)'),
+          rev('|\'super-duper-looper\'->meta::pure::functions::string::splitPart(\'-\', 0)', 'c("super-duper-looper").split_part("-", 0)')
+        ]
+      )
+    ]->combine(),
+     // Transformation ----------------------------------------------------------
+    [ // tolowerfirstcharacter
+      meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'XoXoXoX\'->meta::pure::functions::string::toLowerFirstCharacter()', 'c("XoXoXoX").to_lower_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'xOxOxOx\'->meta::pure::functions::string::toLowerFirstCharacter()', 'c("xOxOxOx").to_lower_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterNumber_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'1isOne\'->meta::pure::functions::string::toLowerFirstCharacter()', 'c("1isOne").to_lower_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterEmptyString_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'\'->meta::pure::functions::string::toLowerFirstCharacter()', 'c("").to_lower_first_character()')
+        ]
+      )
+    ]->combine(),
+    [// toupperfirstcharacter
+      meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'xOxOxOx\'->meta::pure::functions::string::toUpperFirstCharacter()', 'c("xOxOxOx").to_upper_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'XoXoXoX\'->meta::pure::functions::string::toUpperFirstCharacter()', 'c("XoXoXoX").to_upper_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'1isOne\'->meta::pure::functions::string::toUpperFirstCharacter()', 'c("1isOne").to_upper_first_character()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterEmptyString_Function_1__Boolean_1_->testRev(
+        [
+        rev('|\'\'->meta::pure::functions::string::toUpperFirstCharacter()', 'c("").to_upper_first_character()')
+        ]
+    )
+    ]->combine()
+  ]
+}
