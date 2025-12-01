@@ -371,24 +371,88 @@ function meta::analytics::lineage::property::buildNamedTransforms(fe:FunctionExp
                                   let modelProps = $trees->map( t | ^LineageModelProperty(propertyType=PropertyType.MODEL, dataType=$transform.function->cast(@FunctionDefinition<Any>)->functionReturnType().rawType.name->toOne(), name=$t->propertyTreetoName(), ownerID = $ownerNode.id, propertyTree=$t));
                                   pair($transform.name,list($modelProps));
                                   ); 
-                                  
+    //Gather included mappings (mapping includes) if present
+    let includeMappings = if($state.mapping->isEmpty(), | [], | $state.mapping->toOne().includes.included);
+    let includedClassMap =
+    if($includeMappings->isEmpty(),
+       | [],
+       |
+       $includeMappings->map(inc |let incPath = $inc->elementToPath();
+           meta::pure::mapping::classMappings($inc)->filter(cm | $cm.class->isNotEmpty())->map(cm | pair($cm.class->toOne()->elementToPath()->toOne(), $incPath));)->concatenate([]);
+    );
+    let rootMapping  = if($state.mapping->isEmpty(), | [], | [$state.mapping->toOne()] );
+    let parentClassMap = if($rootMapping->isEmpty(),
+    |[],
+    |meta::pure::mapping::classMappings($rootMapping->toOne())->filter(cm | $cm.class->isNotEmpty())
+                ->map(cm | pair($cm.class->toOne()->elementToPath()->toOne(), $rootMapping->toOne()->elementToPath()))
+    );
+    let mutatedPropsPairs =meta::analytics::lineage::property::buildMutatedPropsPairs($props, $includedClassMap, $parentClassMap, $classPath);
     let updatedNode = $ownerNode->mutateAdd('properties',$props.second.values);
     let updatedState = ^$state(currentFunction=$fe);
     let incomingState= $updatedNode->meta::analytics::lineage::property::scanMappedNode($updatedState,$extension);
-
-
+    //Group properties per class referenced in the query
+    let includeState =
+    if($mutatedPropsPairs ->isEmpty(),
+       | $incomingState,
+       | meta::analytics::lineage::property::attachRelationalIncludeOwnerLinks($incomingState, $updatedNode, $mutatedPropsPairs , $extension)
+    );
     if($state.inReprocess,
-    | $incomingState;,
-    | let queryProps = $props->map( p |   let sourceCol = $incomingState.lineageColumn->filter(c|$c.name->in($p.second.values.name));
+    | $includeState;,
+    | let queryProps = $props->map( p |   let sourceCol = $includeState.lineageColumn->filter(c|$c.name->in($p.second.values.name));
                                           let prop =  ^LineageProperty(ownerID='query',dataType=$sourceCol.dataType->at(0), propertyType=PropertyType.MODEL, name=$p.first, scope= 'IDENTITY',sourceProperties=$sourceCol);
                                           );
 
       let rootNode = ^meta::analytics::lineage::property::Query(name = $fe.func.name->toOne(), id='Query_'+$fe.func.name->toOne(),properties=$queryProps);  //TODO Add id# so we get unique ids for these
-      let links =  $incomingState.currentOwner->map(o| ^OwnerLink(source=$o.id, target = $rootNode.id ));
-      ^$incomingState(currentOwner=$rootNode,
+      let links =  $includeState.currentOwner->map(o| ^OwnerLink(source=$o.id, target = $rootNode.id ));
+      ^$includeState(currentOwner=$rootNode,
                 propertyOwner+= $rootNode, 
                 ownerLink += $links,
                 lineageColumn=$queryProps   ););
+}
+
+function meta::analytics::lineage::property::buildMutatedPropsPairs(props:Pair<String,List<LineageModelProperty>>[*],includedClassMap:Pair<String,String>[*],parentClassMap:Pair<String,String>[*],rootClassPath:String[1]):Pair<String,List<LineageModelProperty>>[*]
+{
+  //Filter classes used other than root class
+  let referencedClasses =$props.second.values->cast(@LineageModelProperty)->map(mp |$mp.propertyTree->propertyTreeProperties()->map(pp | $pp.owner->elementToPath()))
+  ->concatenate([])->removeDuplicates()->filter(c | $c != $rootClassPath);
+  if($referencedClasses->isEmpty(),
+     |[],
+     |$props->map(propPair | let mutated=$propPair.second.values->cast(@LineageModelProperty)->map(mp | let treeClasses=$mp.propertyTree->propertyTreeProperties()
+     ->map(pp | $pp.owner->elementToPath())->removeDuplicates();
+            // Restrict to classes that are actually referenced elsewhere in the projection
+            let matched = $treeClasses->filter(c | $c->in($referencedClasses));
+            if($matched->isEmpty(),
+            |[],
+            | $matched->removeDuplicates()->map(chosenClass |
+              // Resolve mapping path precedence: included mapping first, then parent
+              let incMappingPath =$includedClassMap->filter(pc | $pc.first == $chosenClass)->map(pc | $pc.second);
+              let parentMappingPath = $parentClassMap->filter(pc | $pc.first == $chosenClass)->map(pc | $pc.second);
+              let mappingPath   = if($incMappingPath->isNotEmpty(), | $incMappingPath, | $parentMappingPath);
+              // Skip if mapping cannot be resolved (no include or parent match)
+              if($mappingPath->isEmpty(),| [],|
+              let mappingSuffix = '.' + $mappingPath->at(0);
+              let newOwnerName = $chosenClass + $mappingSuffix;
+              let newOwnerId   = 'MappedClassOwner_' + $newOwnerName;
+              // Create a LineageModelProperty pointing to the future per-class owner
+              ^LineageModelProperty(
+                      propertyType = $mp.propertyType,
+                      dataType     = $mp.dataType,
+                      name         = $mp.name,
+                      ownerID      = $newOwnerId,
+                      propertyTree = $mp.propertyTree
+            );
+          );
+        );
+      );
+     )->concatenate([]);
+     // Group and dedupe properties (same ownerID + name + propertyTree based filter)
+     if($mutated->isEmpty(),
+            | [],
+            | [ pair($propPair.first, list($mutated->groupBy(p | pair($p.ownerID + '|' + $p.name + '|' + $p.propertyTree->propertyTreetoName(), $p))->keyValues()
+            ->map(g | $g.second.values->at(0)))) ]
+         );
+       )->concatenate([]);
+  );
 }
 
 
@@ -495,7 +559,115 @@ function  meta::analytics::lineage::property::buildVSLineagePropertyNode(funcBod
 
 }
 
-
+function meta::analytics::lineage::property::attachRelationalIncludeOwnerLinks(state:meta::analytics::lineage::property::scanner::ScannerState[1], ownerNode: MappedClassOwner[1], props:Pair<String,List<LineageModelProperty>>[*],extensions:LineageExtension[*]):meta::analytics::lineage::property::scanner::ScannerState[1]
+{
+  let rootMapping = $state.mapping->toOne();
+  let includes = $rootMapping.includes.included;
+  // Build (classPath -> setImplementation) pairs for parent and included mappings
+  let parentClassMappings = meta::pure::mapping::classMappings($rootMapping)->filter(cm | $cm.class->isNotEmpty())->map(cm | pair($cm.class->toOne()->elementToPath()->toOne(),$cm));
+  let includedClassMappings =$includes->map(inc |let incPath = $inc->elementToPath();meta::pure::mapping::classMappings($inc)->filter(cm | $cm.class->isNotEmpty())
+                                      ->map(cm | pair($cm.class->toOne()->elementToPath()->toOne(), $cm));)->concatenate([]);
+  let includedClassPaths = $includedClassMappings.first->removeDuplicates();
+  let parentPaths   = $parentClassMappings.first->removeDuplicates();
+  let parentClassPaths = $parentPaths->filter(pp | !$includedClassPaths->contains($pp));
+  // Gather all classes referenced in the property trees for the current owner (excluding the owner itself) 
+  let referencedClassesRaw =$props.second.values->cast(@LineageModelProperty)->map(lp | $lp.propertyTree->propertyTreeProperties()->map(pp | $pp.owner->elementToPath()))->concatenate([])->removeDuplicates();
+  let referencedClasses =$referencedClassesRaw->filter(c | $c != $ownerNode._class)->removeDuplicates();
+  let chosenClassPathCandidates =$referencedClasses->filter(rc | $includedClassPaths->exists(p | $p == $rc) || $parentClassPaths->exists(icp | $icp == $rc));
+  if($chosenClassPathCandidates->isEmpty(),
+   |$state,
+   |
+    let existingMappedOwners= $state.propertyOwner->filter(o | $o->instanceOf(meta::analytics::lineage::property::MappedClassOwner))->cast( @meta::analytics::lineage::property::MappedClassOwner);
+    // Build new MappedClassOwner nodes for candidate classes not already present
+    let newOwner= $chosenClassPathCandidates->map(chosenClassPath | let chosenCM =$includedClassMappings->filter(p | $p.first == $chosenClassPath) // Resolve the chosen class's set implementation, prefer included mapping, else parent
+                                            ->map(p | $p.second)->defaultIfEmpty($parentClassMappings->filter(p | $p.first == $chosenClassPath)->map(p | $p.second)->at(0));
+    // Skip if an owner with same resolved setImplementation already exists
+    let already = $existingMappedOwners->exists(o|$o.setImplementationID->isNotEmpty() && $o.setImplementationID->toOne() == $chosenCM.id);
+    if($already,
+       |[],
+       |let incMappingPath =if($includes->filter(inc |meta::pure::mapping::classMappings($inc)->exists(cm | $cm.id == $chosenCM.id))->exists(x | true),
+       |[$includes->toOne()->elementToPath()],|[]);
+        let parentMappingPath = if($rootMapping->meta::pure::mapping::classMappings()->exists(cm | $cm.id == $chosenCM.id)->exists(x | true),
+        | [$rootMapping->toOne()->elementToPath()], | []);
+        let mappingPath = if($incMappingPath->isNotEmpty(), | $incMappingPath, | if($parentMappingPath->isNotEmpty(), | $parentMappingPath, |[]));
+        let name = $chosenClassPath + if( $incMappingPath->isNotEmpty(),|'.'+$incMappingPath->toOne(),| '.' + $mappingPath->toOne());
+        [ ^meta::analytics::lineage::property::MappedClassOwner(
+                 id='MappedClassOwner_'+$name,
+                 _class=$chosenClassPath,
+                  name=$name,
+                  mapping=$mappingPath
+        )];);)->concatenate([])->removeDuplicates();
+    // If no new owners were created, lineage state is unchanged
+    if($newOwner->isEmpty(),
+      |$state,
+      |
+       // Attach the correct subset of mutated properties to each new owner
+       let ownersWithProps = $newOwner->map(no | let propsForOwner =  $props.second.values->cast(@LineageModelProperty)->filter(p | $p.ownerID == $no.id);
+           $no->mutateAdd('properties', $propsForOwner););
+       // Enrich each owner's properties via column scanning (relational lineage);
+       let ownersEnriched = $ownersWithProps->map(updatedNode |
+          let columnFold = $updatedNode.properties ->cast(@LineageModelProperty)
+          ->fold(
+             { p, colState |
+              let scanRes = $p.propertyTree->meta::pure::lineage::scanColumns::scanColumns($rootMapping, $colState.classToSets, $colState.idToSet);
+              let cols    = $scanRes.colRes.columns;
+              if($cols->isEmpty(),
+               | ^$colState(),  // no enrichment; keep state as-is
+               |
+                // Build enriched lineage model property with upstream column sources
+                let sourceProps = $cols->map(c | $c.column->lineagePropertyColumn());
+                let enrichedProp = ^$p(ownerID = $updatedNode.id, sourceProperties = $sourceProps.second);
+                ^$colState(
+                   owners       += $sourceProps.first,
+                   properties   += $enrichedProp,
+                   link         += ^PropertyLink(target = $p, source = $enrichedProp),
+                   idToSet        = $scanRes.idToSet->map(n | $n->keyValues())->newMap(),
+                   classToSets    = $scanRes.classToSets->map(n | $n->keyValues())->newMap()
+                 ););},
+              ^LineagePropertyColumnScanner(idToSet     = ^Map<String, List<SetImplementation>>(),classToSets = ^Map<Class<Any>, List<InstanceSetImplementation>>()));
+      // Resolve to relational or pure set;
+      let set =$rootMapping->meta::pure::mapping::rootClassMappingByClass($updatedNode._class->pathToElement()->cast(@Class<Any>))->last()->meta::pure::router::routing::resolveOperation($rootMapping);
+      let mappedNode =$set->match([
+          r:RootRelationalInstanceSetImplementation[1] |
+          ^$updatedNode(name              = $r.parent->toOne()->elementToPath(),
+                        id                = 'MappedClassOwner_' + $r.id,
+                        setImplementationID = $r.id,
+                        properties        = $columnFold.properties),
+          p:PureInstanceSetImplementation[1] | $updatedNode,
+          a:Any[*] | $updatedNode]);
+      pair($mappedNode, $columnFold);
+    );
+    // Reuse relational owners by finding only tables touched by included class mappings as rootclass containes all the referenced prop details
+    let includeOwnerTablesKeys = $ownersEnriched.first.mapping->toOne()->pathToElement()->cast(@Mapping)->map(inc | meta::pure::mapping::classMappings($inc)
+    ->filter(cm | $cm->instanceOf(RootRelationalInstanceSetImplementation))->cast(@RootRelationalInstanceSetImplementation)
+       ->map(r | $r.propertyMappings->filter(pm | $pm->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping)
+       ->map(rpm | $rpm.relationalOperationElement->meta::analytics::lineage::flowDatabase::getTables())->concatenate([]);)->concatenate([]);
+    )->concatenate([])->removeDuplicates();
+    // Filter relational property owners to those actually referenced by included owners' tables
+    let includeTableKeys = $includeOwnerTablesKeys->filter(t | $t->instanceOf(Table))->cast(@Table)->map(tbl | $tbl.schema.database->elementToPath()+ '.' + $tbl.schema.name+ '.' + $tbl.name)->removeDuplicates();
+    let includeRelOwners = $ownersEnriched.second.owners->concatenate([])->filter(ro | $ro->instanceOf(RelationalPropertyOwner))->cast(@RelationalPropertyOwner)->filter(ro | $includeTableKeys->contains($ro.name))->distinct();
+    let includePropertyLinks = $ownersEnriched.second.link->concatenate([])->distinct();
+    // Determine which relational owners are new
+    let existingRelOwnerIds = $state.propertyOwner->filter(o | $o->instanceOf(RelationalPropertyOwner))->cast(@RelationalPropertyOwner)->map(r | $r.id)->removeDuplicates();
+    let newRelOwners = $includeRelOwners->filter(ro | !$existingRelOwnerIds->contains($ro.id));
+    // Edges: relational owner -> each new mapped class owner
+    let mappingToRelationalLink = $includeRelOwners->map(rel |$ownersEnriched.first->map(incOwner | ^OwnerLink(target = $incOwner.id, source = $rel.id)))->concatenate([])->distinct();
+    // Parent-child edges: new included owners -> existing mapped owners for root mapping
+    let includeEdges = $ownersEnriched.first->map(no | $existingMappedOwners->filter(o | $o.mapping->isNotEmpty() && $o.mapping->toOne() == $rootMapping->elementToPath()->toOne())->map(po | ^OwnerLink(source = $no.id, target = $po.id)))->concatenate([]);
+    let incomingLinks = $state.ownerLink;
+    let ownerIds      = $includeRelOwners.id->removeDuplicates();
+    let includeLinks  = $state.ownerLink->filter(li | $ownerIds->contains($li.source));
+    let mergedLinks = $incomingLinks->concatenate($mappingToRelationalLink)->concatenate($includeEdges)->distinct();
+    // Merge owners (mapped class owners + any new relational owners), remove duplicates by id
+    let mergedOwners =$ownersEnriched.first->concatenate($newRelOwners)->groupBy(n | pair($n.id, $n))->keyValues()->map(g | $g.second.values->at(0));
+    ^$state(
+      propertyOwner += $mergedOwners,
+      ownerLink = $mergedLinks,
+      propertyLink +=$includePropertyLinks,
+      currentOwner = $state.currentOwner,
+      lineageColumn = $state.lineageColumn
+    );););
+}
 
 function  meta::analytics::lineage::property::scanMappedNode(m:MappedClassOwner[1],state:meta::analytics::lineage::property::scanner::ScannerState[1], extensions:LineageExtension[*]):ScannerState[1]
 
