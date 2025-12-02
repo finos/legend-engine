@@ -441,5 +441,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         noRev('|meta::pure::functions::math::tan_Number_1__Float_1_->meta::pure::functions::lang::eval(2)')
       )
     ]->combine()
+    // ------------------------------------------------------------------
   ]
 }
