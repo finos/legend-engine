@@ -17,6 +17,7 @@ import meta::core::runtime::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::metamodel::section::*;
 
 Class meta::pure::metamodel::serialization::grammar::Configuration
 {
@@ -588,13 +589,14 @@ function meta::pure::metamodel::serialization::grammar::printPackageableElements
 
 function meta::pure::metamodel::serialization::grammar::printPackageableElements(packageableElements:PackageableElement[*], configuration:Configuration[0..1]): String[1]
 {
-   $packageableElements->map(pe| $pe->match([
-            t:Type[1]                    | $t->printType(),
-            a:Association[1]             | $a->printAssociation(),
-            p:Profile[1]                 | $p->printProfile(),
-            f:FunctionDefinition<Any>[1] | 'function ' + printStereotypes($f->cast(@ElementWithStereotypes)) + printTaggedValues($f->cast(@ElementWithTaggedValues)) + $f->printFunctionDefinition(^GContext(space='')),
+   let printedEl = $packageableElements->map(pe| $pe->match([
+            t:Type[1]                    | '###Pure\n'+$t->printType(),
+            a:Association[1]             | '###Pure\n'+$a->printAssociation(),
+            p:Profile[1]                 | '###Pure\n'+$p->printProfile(),
+            f:FunctionDefinition<Any>[1] | '###Pure\n'+'function ' + printStereotypes($f->cast(@ElementWithStereotypes)) + printTaggedValues($f->cast(@ElementWithTaggedValues)) + $f->printFunctionDefinition(^GContext(space='')),
             x:NativeFunction<Any>[1]     | '',
-            p:Package[1]                 | ''
+            p:Package[1]                 | '',
+            s:SectionIndex[1]            | ''
         ]->concatenate($configuration.extensions.extraPackageableElementHandlers)->toOneMany()
       )
    )->filter(x|$x!='')->joinStrings('\n\n');
@@ -631,4 +633,11 @@ function meta::pure::metamodel::serialization::grammar::printNew(a:Any[1]):Strin
   );
 }
 
-
+function meta::pure::metamodel::serialization::grammar::grammarConfiguration():meta::pure::metamodel::serialization::grammar::Configuration[1]
+{
+  ^meta::pure::metamodel::serialization::grammar::Configuration
+  (
+    fullPath = true,
+    extensions = meta::legend::getLegendExtensions().grammarSerializerExtensions
+  );
+}
