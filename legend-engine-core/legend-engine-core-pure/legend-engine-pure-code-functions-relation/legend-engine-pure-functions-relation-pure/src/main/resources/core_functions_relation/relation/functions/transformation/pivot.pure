@@ -19,10 +19,13 @@ native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,
 
 native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
+native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], values:Any[1..*], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
+
 native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
 native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
+native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], values:Any[1..*], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1]; // Validate same type as colspec, potentailly in Handlers
 
 function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
@@ -312,4 +315,92 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_M
                   '#', $res->cast(@Relation<(year:Integer,'\'UK__|__LDN__|__sum\'':Integer,'\'UK__|__LDN__|__count\'':Integer,'\'USA__|__NYC__|__sum\'':Integer,'\'USA__|__NYC__|__count\'':Integer,'\'USA__|__SAN__|__sum\'':Integer,'\'USA__|__SAN__|__count\'':Integer)>)
                            ->select(~[year, '\'UK__|__LDN__|__sum\'', '\'UK__|__LDN__|__count\'', '\'USA__|__NYC__|__sum\'', '\'USA__|__NYC__|__count\'', '\'USA__|__SAN__|__sum\'', '\'USA__|__SAN__|__count\''])
                            ->sort([ascending(~year)])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                    city, country, year, treePlanted
+                    NYC, USA, 2011, 5000.0
+                    NYC, USA, 2000, 5000.0
+                    SAN, USA, 2000, 2000.0
+                    SAN, USA, 2011, 100.0
+                    LDN, UK, 2011, 3000.0
+                    SAN, USA, 2011, 2500.0
+                    NYC, USA, 2000, 10000.0
+                    NYC, USA, 2012, 7600.0
+                    NYC, USA, 2012, 7600.0
+                 #->pivot(~year, [2000, 2011], ~[newCol : x | $x.treePlanted : y | $y->plus()])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   city,country,\'2000__|__newCol\',\'2011__|__newCol\'\n' +
+                  '   LDN,UK,null,3000.0\n' +
+                  '   NYC,USA,15000.0,5000.0\n' +
+                  '   SAN,USA,2000.0,2600.0\n' +
+                  '#', $res->cast(@Relation<(city:String,country:String,'\'2000__|__newCol\'':Number,'\'2011__|__newCol\'':Number)>)->sort([ascending(~city)])->toString()); // New pivoted columns should be cast to Integer
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_StringPivotValue<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                    week, day, numWorkers, itemsProduced
+                    Week1, SUNDAY, 2, 4.0
+                    Week1, MONDAY, 11, 15.0
+                    Week1, TUESDAY, 10, 12.0
+                    Week1, WEDNESDAY, 11, 7.0
+                    Week1, THURSDAY, 10, 12.0
+                    Week1, FRIDAY, 11, 10.0
+                    Week1, SATURDAY, 5, 7.0
+                    Week2, SUNDAY, 4, 5.0
+                    Week2, MONDAY, 8, 10.0
+                    Week2, TUESDAY, 8, 11.0
+                    Week2, WEDNESDAY, 7, 9.0
+                    Week2, THURSDAY, 11, 8.0
+                    Week2, FRIDAY, 11, 12.0
+                    Week2, SATURDAY, 6, 8.0
+                 #->pivot(~day, ['MONDAY', 'TUESDAY'], ~[newCol : x | $x.itemsProduced : y | $y->plus()])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   week,numWorkers,\'MONDAY__|__newCol\',\'TUESDAY__|__newCol\'\n' +
+                  '   Week2,8,10.0,11.0\n' +
+                  '   Week1,10,null,12.0\n' +
+                  '   Week1,11,15.0,null\n' +
+                  '#', $res->cast(@Relation<(week:String,numWorkers:Integer,'\'MONDAY__|__newCol\'':Number,'\'TUESDAY__|__newCol\'':Number)>)->sort([ascending(~numWorkers)])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                    city, country, year, treePlanted, alphabet
+                    NYC, USA, 2011, 5000.0, a
+                    NYC, USA, 2000, 5000.0, b
+                    SAN, USA, 2000, 2000.0, c
+                    SAN, USA, 2011, 100.0, d
+                    LDN, UK, 2011, 3000.0, e
+                    SAN, USA, 2011, 2500.0, d
+                    NYC, USA, 2000, 10000.0, b
+                    NYC, USA, 2012, 7600.0, h
+                    NYC, USA, 2012, 7600.0, i
+                 #->pivot(~year, [2000, 2011], ~[sum : x | $x.treePlanted : y | $y->plus(), chars : x | $x.alphabet : y | $y->joinStrings('')])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   city,country,\'2000__|__chars\',\'2000__|__sum\',\'2011__|__chars\',\'2011__|__sum\'\n' +
+                  '   LDN,UK,null,null,e,3000.0\n' +
+                  '   NYC,USA,bb,15000.0,a,5000.0\n' +
+                  '   SAN,USA,c,2000.0,dd,2600.0\n' +
+                  '#', $res->cast(@Relation<(city:String,country:String,'\'2000__|__chars\'':String,'\'2000__|__sum\'':Number,'\'2011__|__chars\'':String,'\'2011__|__sum\'':Number)>)
+                           ->select(~[city, country, '\'2000__|__chars\'', '\'2000__|__sum\'', '\'2011__|__chars\'', '\'2011__|__sum\''])
+                           ->sort([ascending(~city)])->toString());
 }
