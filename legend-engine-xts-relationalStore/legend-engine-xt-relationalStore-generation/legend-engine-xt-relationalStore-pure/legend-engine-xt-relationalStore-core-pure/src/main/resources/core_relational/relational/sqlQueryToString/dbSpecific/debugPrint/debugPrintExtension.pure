@@ -81,7 +81,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::debug
 function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::processPivotForDebugPrint(p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
 {
   let pivotColumnName = $dbConfig.identifierProcessor($p.pivotColumns->toOne()->cast(@ColumnName).name);
-  let aggregateColumn = processSelectColumns($p.aggColumns->toOne(), $dbConfig, $format->indent(), $config, true, $extensions);
+  let aggregateColumn = processSelectColumns($p.aggColumns, $dbConfig, $format->indent(), $config, true, $extensions);
   ' ' + $format.separator + 'pivot (' + $aggregateColumn +
   ' ' + $format.separator + 'for ' +  $pivotColumnName +
   ' ' + $format.separator + 'in (ANY ORDER BY ' + $pivotColumnName + '))';

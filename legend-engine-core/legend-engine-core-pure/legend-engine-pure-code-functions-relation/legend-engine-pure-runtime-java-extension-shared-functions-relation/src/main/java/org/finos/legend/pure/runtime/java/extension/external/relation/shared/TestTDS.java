@@ -1512,10 +1512,7 @@ public abstract class TestTDS
                 }
             }
             tds.dataByColumnName.put(name, dataAsObject);
-            if (!newColInfo.getColumnType().equals(DataType.STRING) && !newColInfo.getColumnType().equals(DataType.DATETIME_AS_LONG))
-            {
-                tds.isNullByColumn.put(name, isNull);
-            }
+            tds.isNullByColumn.put(name, isNull);
             tds.columnsOrdered.add(name);
             tds.columnType.put(name, newColInfo.getColumnType());
             return tds;
