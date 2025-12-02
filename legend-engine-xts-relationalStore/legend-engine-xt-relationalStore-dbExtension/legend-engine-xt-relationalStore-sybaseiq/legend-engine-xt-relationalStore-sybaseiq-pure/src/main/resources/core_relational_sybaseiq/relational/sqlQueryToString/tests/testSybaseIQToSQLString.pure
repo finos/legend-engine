@@ -773,3 +773,14 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
 
     assertEquals('select cast("root".quantity as decimal) as "decimal", cast("root".quantity as double) as "float" from tradeTable as "root"', $result);
 }
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSQLStringGenerateGuid():Boolean[1]
+{
+    let result = toSQLString(
+     |Trade.all()
+        ->project([
+          col(t|meta::pure::functions::string::generation::generateGuid(), 'uuid')
+        ]), simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select newid() as "uuid" from tradeTable as "root"', $result);
+}
