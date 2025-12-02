@@ -1269,24 +1269,49 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.spotify</groupId>
-                        <artifactId>dockerfile-maven-plugin</artifactId>
-                        <inherited>false</inherited>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <phase>deploy</phase>
+                                <phase>install</phase>
                                 <goals>
                                     <goal>build</goal>
-                                    <goal>tag</goal>
-                                    <goal>push</goal>
                                 </goals>
                             </execution>
                         </executions>
                         <configuration>
-                            <tag>${project.version}</tag>
-                            <username>${env.DOCKER_USERNAME}</username>
-                            <password>${env.DOCKER_PASSWORD}</password>
-                            <repository>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}</repository>
+                            <from>
+                                <image>eclipse-temurin:11-jre</image>
+                            </from>
+                            <to>
+                                <tags>${project.version}</tags>
+                                <auth>
+                                    <username>${env.DOCKER_USERNAME}</username>
+                                    <password>${env.DOCKER_PASSWORD}</password>
+                                </auth>
+                                <image>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}</image>
+                            </to>
+                            <container>
+                                <mainClass>org.finos.legend.engine.server.Server</mainClass>
+                                <args>
+                                    <arg>server</arg>
+                                    <arg>/config/config.json</arg>
+                                </args>
+                                <jvmFlags>
+                                    <jvmFlag>-XX:+ExitOnOutOfMemoryError</jvmFlag>
+                                    <jvmFlag>-XX:MaxRAMPercentage=60</jvmFlag>
+                                    <jvmFlag>-Xss4M</jvmFlag>
+                                    <jvmFlag>-Dfile.encoding=UTF8</jvmFlag>
+                                </jvmFlags>
+                            </container>
+                            <extraDirectories>
+                                <paths>
+                                    <path>
+                                        <from>src/main/resources/docker/config</from>
+                                        <into>/config</into>
+                                    </path>
+                                </paths>
+                            </extraDirectories>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -1297,24 +1322,98 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.spotify</groupId>
-                        <artifactId>dockerfile-maven-plugin</artifactId>
-                        <inherited>false</inherited>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <phase>install</phase>
                                 <goals>
                                     <goal>build</goal>
-                                    <goal>tag</goal>
-                                    <goal>push</goal>
                                 </goals>
                             </execution>
                         </executions>
                         <configuration>
-                            <tag>snapshot</tag>
-                            <username>${env.DOCKER_USERNAME}</username>
-                            <password>${env.DOCKER_PASSWORD}</password>
-                            <repository>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}</repository>
+                            <from>
+                                <image>eclipse-temurin:11-jre</image>
+                            </from>
+                            <to>
+                                <tags>snapshot</tags>
+                                <auth>
+                                    <username>${env.DOCKER_USERNAME}</username>
+                                    <password>${env.DOCKER_PASSWORD}</password>
+                                </auth>
+                                <image>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}</image>
+                            </to>
+                            <container>
+                                <mainClass>org.finos.legend.engine.server.Server</mainClass>
+                                <args>
+                                    <arg>server</arg>
+                                    <arg>/config/config.json</arg>
+                                </args>
+                                <jvmFlags>
+                                    <jvmFlag>-XX:+ExitOnOutOfMemoryError</jvmFlag>
+                                    <jvmFlag>-XX:MaxRAMPercentage=60</jvmFlag>
+                                    <jvmFlag>-Xss4M</jvmFlag>
+                                    <jvmFlag>-Dfile.encoding=UTF8</jvmFlag>
+                                </jvmFlags>
+                            </container>
+                            <extraDirectories>
+                                <paths>
+                                    <path>
+                                        <from>src/main/resources/docker/config</from>
+                                        <into>/config</into>
+                                    </path>
+                                </paths>
+                            </extraDirectories>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>docker-local</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>dockerBuild</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <from>
+                                <image>eclipse-temurin:11-jre</image>
+                            </from>
+                            <to>
+                                <tags>${project.version}-local</tags>
+                                <image>${project.artifactId}</image>
+                            </to>
+                            <container>
+                                <mainClass>org.finos.legend.engine.server.Server</mainClass>
+                                <args>
+                                    <arg>server</arg>
+                                    <arg>/config/config.json</arg>
+                                </args>
+                                <jvmFlags>
+                                    <jvmFlag>-XX:+ExitOnOutOfMemoryError</jvmFlag>
+                                    <jvmFlag>-XX:MaxRAMPercentage=60</jvmFlag>
+                                    <jvmFlag>-Xss4M</jvmFlag>
+                                    <jvmFlag>-Dfile.encoding=UTF8</jvmFlag>
+                                </jvmFlags>
+                            </container>
+                            <extraDirectories>
+                                <paths>
+                                    <path>
+                                        <from>src/main/resources/docker/config</from>
+                                        <into>/config</into>
+                                    </path>
+                                </paths>
+                            </extraDirectories>
                         </configuration>
                     </plugin>
                 </plugins>
