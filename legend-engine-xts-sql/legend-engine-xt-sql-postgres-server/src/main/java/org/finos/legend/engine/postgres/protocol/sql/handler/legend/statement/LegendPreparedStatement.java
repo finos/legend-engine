@@ -60,11 +60,11 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
         {
             LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
             return Subject.doAs(credential.getSubject(), (PrivilegedAction<LegendResultSetMetaData>) () ->
-                    new LegendResultSetMetaData(client.getSchema(query, database)));
+                    new LegendResultSetMetaData(client.getSchema(query, database, options)));
         }
         else
         {
-            return new LegendResultSetMetaData(client.getSchema(query, database));
+            return new LegendResultSetMetaData(client.getSchema(query, database, options));
         }
     }
 

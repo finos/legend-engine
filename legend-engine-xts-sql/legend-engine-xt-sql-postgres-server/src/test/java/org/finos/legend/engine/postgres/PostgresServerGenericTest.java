@@ -84,6 +84,47 @@ public class PostgresServerGenericTest
                         "value\n", executePrepared("select name from tb__pack_DB.myTab as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
     }
 
+    @Test
+    public void testSimpleQueryOneProjectWorkspaceGroup() throws Exception
+    {
+        testSimpleQueryOneProjectWorkspace(true);
+    }
+
+    @Test
+    public void testSimpleQueryOneProjectWorkspace() throws Exception
+    {
+        testSimpleQueryOneProjectWorkspace(false);
+    }
+
+    public void testSimpleQueryOneProjectWorkspace(boolean group) throws Exception
+    {
+        loader.setData(Maps.mutable.with(
+                buildWorkspacePointer("PROJECT-123", "ws1", group),
+                PureGrammarParser.newInstance().parseModel("###Relational\n" +
+                        "Database pack::DB\n" +
+                        "(\n" +
+                        "    Table myTab(name VARCHAR(200))\n" +
+                        ")\n")));
+
+        updateDB(Lists.mutable.with(
+                "drop table if exists myTab",
+                "CREATE Table myTab(name VARCHAR(200))",
+                "insert into myTab (name) values ('value')"), h2TestServer.getPort());
+
+        String workspace = group ? "--groupWorkspace=ws1" : "--workspace=ws1";
+        String options = "?options='" + workspace  + " --compute=test'";
+
+        Assert.assertEquals(
+                "name\n" +
+                        "value\n", executePrepared("select name from tb('pack::DB.myTab') as t where t.name = 'value'", "projects|PROJECT-123", options));
+        Assert.assertEquals(
+                "name\n" +
+                        "value\n", execute("select name from tb('pack::DB.myTab') as t where t.name = 'value'", "projects|PROJECT-123", options));
+        Assert.assertEquals(
+                "name\n" +
+                        "value\n", executePrepared("select name from tb__pack_DB.myTab as t where t.name = 'value'", "projects|PROJECT-123", options));
+    }
+
 
     @Test
     public void testSimpleQueryMultipleProjects() throws Exception
@@ -209,8 +250,13 @@ public class PostgresServerGenericTest
 
     public static String executePrepared(String query, String database) throws Exception
     {
+        return executePrepared(query, database, "?options='--compute=test'");
+    }
+
+    public static String executePrepared(String query, String database, String params) throws Exception
+    {
         try (
-                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/" + database + "?options='--compute=test'", new Properties());
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/" + database + params, new Properties());
                 PreparedStatement statement = connection.prepareStatement(query);
                 ResultSet resultSet = statement.executeQuery()
         )
@@ -221,8 +267,13 @@ public class PostgresServerGenericTest
 
     public static String execute(String query, String database) throws Exception
     {
+        return execute(query, database, "?options='--compute=test'");
+    }
+
+    public static String execute(String query, String database, String params) throws Exception
+    {
         try (
-                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/" + database + "?options='--compute=test'", new Properties());
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/" + database + params, new Properties());
                 Statement statement = connection.createStatement();
         )
         {
@@ -244,6 +295,20 @@ public class PostgresServerGenericTest
                 "      \"groupId\": \"" + group + "\",\n" +
                 "      \"artifactId\": \"" + artifact + "\",\n" +
                 "      \"version\": \"" + version + "\",\n" +
+                "      \"packageableElementPointers\": []\n" +
+                "     }\n" +
+                "}", PureModelContextPointer.class);
+    }
+
+    public static PureModelContextPointer buildWorkspacePointer(String project, String version, boolean group) throws Exception
+    {
+        return MAPPER.readValue("{\n" +
+                "    \"_type\": \"pointer\",\n" +
+                "    \"sdlcInfo\": {\n" +
+                "      \"_type\": \"workspace\",\n" +
+                "      \"isGroupWorkspace\": " + group + ",\n" +
+                "      \"version\": \"" + version + "\",\n" +
+                "      \"project\": \"" + project + "\",\n" +
                 "      \"packageableElementPointers\": []\n" +
                 "     }\n" +
                 "}", PureModelContextPointer.class);

@@ -44,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCo
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
+import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.query.sql.api.schema.SchemaResult;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -70,13 +71,13 @@ public class GenericLegendExecution implements LegendExecution
     }
 
     @Override
-    public List<LegendColumn> getSchema(String query, String database)
+    public List<LegendColumn> getSchema(String query, String database, String options)
     {
         try
         {
             // Relation --------------------------------
             LambdaReturnTypeInput input = new LambdaReturnTypeInput();
-            input.model = buildPointer(database);
+            input.model = buildPointer(database, getComputeState(options));
             input.lambda = parseLambda("#SQL{" + query + "}#");
             StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(input));
             bodyEntity.setContentType("application/json");
@@ -97,11 +98,11 @@ public class GenericLegendExecution implements LegendExecution
     }
 
     @Override
-    public SchemaResult getProjectSchema(String database)
+    public SchemaResult getProjectSchema(String database, String options)
     {
         try
         {
-            StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(buildPointer(database)));
+            StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(buildPointer(database, getComputeState(options))));
             bodyEntity.setContentType("application/json");
             return callServer(bodyEntity, "sql/v1/schema/getSchema", SchemaResult.class);
         }
@@ -116,9 +117,11 @@ public class GenericLegendExecution implements LegendExecution
     {
         try
         {
+
+            ComputeState computeState = getComputeState(options);
             // Execute Input --------------------------
             ExecuteInput input = new ExecuteInput();
-            input.model = buildComposite(Lists.mutable.with(buildPointer(database), buildRuntimeModel(options)));
+            input.model = buildComposite(Lists.mutable.with(buildPointer(database, computeState), buildRuntimeModel(computeState)));
             input.context = new BaseExecutionContext();
             input.function = parseLambda("#SQL{" + query + "}#->from(sqlServer::dynamically::added::runtime::Runtime)");
             StringEntity bodyEntity = new StringEntity(MAPPER.writeValueAsString(input));
@@ -181,21 +184,8 @@ public class GenericLegendExecution implements LegendExecution
         return combination;
     }
 
-    private PureModelContextData buildRuntimeModel(String options) throws Exception
+    private PureModelContextData buildRuntimeModel(ComputeState computeState) throws Exception
     {
-        options = options.trim();
-        if (options.startsWith("'") && options.endsWith("'"))
-        {
-            options = options.substring(1, options.length() - 1);
-        }
-        // Split by space, knowing space can be escaped by \ and \ by \\
-        String[] parameters = options.split("(?<!\\\\)(?:\\\\\\\\)* ");
-
-        ComputeState computeState = new ComputeState();
-        for (int i = 0; i < parameters.length; i++)
-        {
-            process(parameters[i], computeState);
-        }
 
         if (computeState.compute == Compute.TEST)
         {
@@ -239,7 +229,7 @@ public class GenericLegendExecution implements LegendExecution
         }
     }
 
-    private PureModelContext buildPointer(String _database)
+    private PureModelContext buildPointer(String _database, ComputeState computeState)
     {
         String database = _database.trim();
         if (!database.startsWith("projects|"))
@@ -257,19 +247,37 @@ public class GenericLegendExecution implements LegendExecution
             String[] projects = projectInfo.split("\\|");
             MutableList<PureModelContextPointer> pointers = ArrayIterate.collect(projects, project ->
             {
-                String[] proj = project.trim().split(":");
-                if (proj.length != 3)
+
+                if (computeState.workspace != null || computeState.groupWorkspace != null)
                 {
-                    throw new RuntimeException("projects must be of the form group:artifact:version,group:artifact:version,... Provided info:\"" + project + "\"");
+                    boolean isGroupWorkspace = computeState.groupWorkspace != null;
+
+                    PureModelContextPointer pointer = new PureModelContextPointer();
+                    WorkspaceSDLC workspaceSDLC = new WorkspaceSDLC();
+                    workspaceSDLC.version = isGroupWorkspace ? computeState.groupWorkspace : computeState.workspace;
+                    workspaceSDLC.isGroupWorkspace = isGroupWorkspace;
+                    workspaceSDLC.project = project;
+
+                    pointer.sdlcInfo = workspaceSDLC;
+
+                    return pointer;
                 }
-                PureModelContextPointer pointer = new PureModelContextPointer();
-                AlloySDLC alloySDLC = new AlloySDLC();
-                pointer.sdlcInfo = alloySDLC;
-                alloySDLC.baseVersion = "latest";
-                alloySDLC.groupId = proj[0].trim();
-                alloySDLC.artifactId = proj[1].trim();
-                alloySDLC.version = proj[2].trim();
-                return pointer;
+                else
+                {
+                    String[] proj = project.trim().split(":");
+                    if (proj.length != 3)
+                    {
+                        throw new RuntimeException("projects must be of the form group:artifact:version,group:artifact:version,... Provided info:\"" + project + "\"");
+                    }
+                    PureModelContextPointer pointer = new PureModelContextPointer();
+                    AlloySDLC alloySDLC = new AlloySDLC();
+                    pointer.sdlcInfo = alloySDLC;
+                    alloySDLC.baseVersion = "latest";
+                    alloySDLC.groupId = proj[0].trim();
+                    alloySDLC.artifactId = proj[1].trim();
+                    alloySDLC.version = proj[2].trim();
+                    return pointer;
+                }
             });
 
             if (pointers.size() == 1)
@@ -293,6 +301,24 @@ public class GenericLegendExecution implements LegendExecution
         return pureModelContextText;
     }
 
+    private static ComputeState getComputeState(String options)
+    {
+        options = options.trim();
+        if (options.startsWith("'") && options.endsWith("'"))
+        {
+            options = options.substring(1, options.length() - 1);
+        }
+        // Split by space, knowing space can be escaped by \ and \ by \\
+        String[] parameters = options.split("(?<!\\\\)(?:\\\\\\\\)* ");
+
+        ComputeState computeState = new ComputeState();
+        for (int i = 0; i < parameters.length; i++)
+        {
+            process(parameters[i], computeState);
+        }
+        return computeState;
+    }
+
     private static void process(String parameter, ComputeState state)
     {
         if (parameter.startsWith("--compute="))
@@ -311,9 +337,18 @@ public class GenericLegendExecution implements LegendExecution
         {
             state.workspace = parameter.substring("--workspace=".length());
         }
+        else if (parameter.startsWith("--groupWorkspace="))
+        {
+            state.groupWorkspace = parameter.substring("--groupWorkspace=".length());
+        }
         else
         {
             throw new RuntimeException(String.format("Unknown parameter: %s", parameter));
+        }
+
+        if (state.groupWorkspace != null && state.workspace != null)
+        {
+            throw new RuntimeException("only 1 of workspace or groupWorkspace can be provided");
         }
     }
 

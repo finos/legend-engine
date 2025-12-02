@@ -169,7 +169,7 @@ public class SQLManager
                         return new JDBCPostgresPreparedStatement(connectionsBySession.get(session.getId()).prepareStatement(CatalogManager.reprocessQuery(query, new SQLRewrite(session, null))));
                     case Metadata_User_Specific:
                         Connection connection = connectionsBySession.get(session.getId());
-                        CatalogManager catalogManager = catalogManagersBySession.getIfAbsentPut(session.getId(), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName()), connection));
+                        CatalogManager catalogManager = catalogManagersBySession.getIfAbsentPut(session.getId(), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), session.getOptions(), findClient(clients, session.getDatabaseName()), connection));
                         return new JDBCPostgresPreparedStatement(connection.prepareStatement(CatalogManager.reprocessQuery(query, new SQLRewrite(session, catalogManager))));
                     case TX:
                         return new TxnIsolationPreparedStatement();
@@ -199,7 +199,7 @@ public class SQLManager
                         return new JDBCPostgresStatement(connectionsBySession.get(session.getId()).createStatement(), new SQLRewrite(session, null));
                     case Metadata_User_Specific:
                         Connection connection = connectionsBySession.get(session.getId());
-                        CatalogManager catalogManager = catalogManagersBySession.getIfAbsentPut(session.getId(), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName()), connection));
+                        CatalogManager catalogManager = catalogManagersBySession.getIfAbsentPut(session.getId(), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), session.getOptions(), findClient(clients, session.getDatabaseName()), connection));
                         return new JDBCPostgresStatement(connection.createStatement(), new SQLRewrite(session, catalogManager));
                     case TX:
                         return new TxnIsolationStatement();

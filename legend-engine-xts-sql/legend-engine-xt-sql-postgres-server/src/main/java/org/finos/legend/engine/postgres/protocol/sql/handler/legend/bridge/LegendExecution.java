@@ -20,11 +20,11 @@ import java.util.List;
 
 public interface LegendExecution
 {
-    List<LegendColumn> getSchema(String query, String database);
+    List<LegendColumn> getSchema(String query, String database, String options);
 
     LegendExecutionResult executeQuery(String query, String database, String options);
 
     boolean supports(String database);
 
-    SchemaResult getProjectSchema(String database);
+    SchemaResult getProjectSchema(String database, String options);
 }

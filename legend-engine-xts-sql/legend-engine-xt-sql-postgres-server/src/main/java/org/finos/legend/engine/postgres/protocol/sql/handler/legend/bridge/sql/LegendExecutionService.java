@@ -50,7 +50,7 @@ public class LegendExecutionService implements LegendExecution
         this.executionClient = executionClient;
     }
 
-    public List<LegendColumn> getSchema(String query, String database)
+    public List<LegendColumn> getSchema(String query, String database, String options)
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Legend ExecutionService Get Schema").startSpan();
@@ -101,7 +101,7 @@ public class LegendExecutionService implements LegendExecution
     }
 
     @Override
-    public SchemaResult getProjectSchema(String database)
+    public SchemaResult getProjectSchema(String database, String options)
     {
         return null;
     }

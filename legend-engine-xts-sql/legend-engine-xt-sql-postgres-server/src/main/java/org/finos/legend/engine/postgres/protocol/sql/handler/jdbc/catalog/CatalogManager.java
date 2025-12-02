@@ -52,7 +52,7 @@ public class CatalogManager
     private final int id;
     private final Connection connection;
 
-    public CatalogManager(Identity identity, String databaseFromConnectionString, LegendExecution legendExecution, Connection connection)
+    public CatalogManager(Identity identity, String databaseFromConnectionString, String options, LegendExecution legendExecution, Connection connection)
     {
         id = counter.incrementAndGet();
 
@@ -62,11 +62,11 @@ public class CatalogManager
         if (identity.getFirstCredential() instanceof LegendKerberosCredential)
         {
             LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
-            schemaResult = Subject.doAs(credential.getSubject(), (PrivilegedAction<SchemaResult>) () -> legendExecution.getProjectSchema(databaseFromConnectionString));
+            schemaResult = Subject.doAs(credential.getSubject(), (PrivilegedAction<SchemaResult>) () -> legendExecution.getProjectSchema(databaseFromConnectionString, options));
         }
         else
         {
-            schemaResult = legendExecution.getProjectSchema(databaseFromConnectionString);
+            schemaResult = legendExecution.getProjectSchema(databaseFromConnectionString, options);
         }
 
         if (schemaResult != null)
