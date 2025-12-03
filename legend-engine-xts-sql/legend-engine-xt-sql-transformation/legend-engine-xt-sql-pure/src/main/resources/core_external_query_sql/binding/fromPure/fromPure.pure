@@ -1499,7 +1499,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         (
           columns = $columns->map(c | ^QueryColumn(
                                           name = $c.name->toOne(),
-                                          type = $c.classifierGenericType.typeArguments->last().rawType->cast(@DataType),
+                                          type = $c.classifierGenericType.typeArguments->last().rawType->cast(@Type),
                                           multiplicity = $c.classifierGenericType.multiplicityArguments->first());
                               ),
           expression = ^InstanceValue
