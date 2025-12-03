@@ -589,7 +589,7 @@ function meta::pure::metamodel::serialization::grammar::printPackageableElements
 
 function meta::pure::metamodel::serialization::grammar::printPackageableElements(packageableElements:PackageableElement[*], configuration:Configuration[0..1]): String[1]
 {
-   let printedEl = $packageableElements->map(pe| $pe->match([
+   $packageableElements->map(pe| $pe->match([
             t:Type[1]                    | '###Pure\n'+$t->printType(),
             a:Association[1]             | '###Pure\n'+$a->printAssociation(),
             p:Profile[1]                 | '###Pure\n'+$p->printProfile(),
