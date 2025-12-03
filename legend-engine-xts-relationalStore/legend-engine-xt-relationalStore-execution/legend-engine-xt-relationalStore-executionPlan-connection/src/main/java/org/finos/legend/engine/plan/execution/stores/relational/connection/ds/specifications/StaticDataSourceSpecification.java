@@ -25,7 +25,7 @@ public class StaticDataSourceSpecification extends DataSourceSpecification
 {
     public StaticDataSourceSpecification(StaticDataSourceSpecificationKey key, DatabaseManager driver, AuthenticationStrategy authenticationStrategy)
     {
-        this(key, driver, authenticationStrategy, new Properties());
+        this(key, driver, authenticationStrategy, new Properties(), Integer.parseInt(System.getProperty("legend.relational.static.maxPoolSize", String.valueOf(HIKARICP_DEFAULT_MAX_POOL_SIZE))), HIKARICP_DEFAULT_MIN_IDLE);
     }
 
     public StaticDataSourceSpecification(StaticDataSourceSpecificationKey key, DatabaseManager driver, AuthenticationStrategy authenticationStrategy, int maxPoolSize, int minPoolSize)
