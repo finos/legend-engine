@@ -22,20 +22,20 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
     [ // divide
       meta::pure::functions::math::tests::divide::testSimpleDivide_Function_1__Boolean_1_->testRev(
         [
-          rev('|4 / 2', 'c(4/2)'),
-          rev('|meta::pure::functions::math::divide(4,2)', 'c(4/2)'),
-          rev('|3 / 2', 'c(3/2)'),
-          rev('|meta::pure::functions::math::divide(3,2)', 'c(3/2)'),
-          rev('|4 / 5', 'c(4/5)'),
-          rev('|meta::pure::functions::math::divide(4,5)', 'c(4/5)')
+          rev('|4 / 2', 'c(4)/2'),
+          rev('|meta::pure::functions::math::divide(4,2)', 'c(4)/2'),
+          rev('|3 / 2', '3/c(2)'),
+          rev('|meta::pure::functions::math::divide(3,2)', '3/c(2)'),
+          rev('|4 / 5', 'c(4)/c(5)'),
+          rev('|meta::pure::functions::math::divide(4,5)', 'c(4)/c(5)')
         ]
       ),
       meta::pure::functions::math::tests::divide::testComplexDivide_Function_1__Boolean_1_->testRev(
         [
-          rev('|9 / (18 / 6)', 'c(9 / (18 / 6))'),
-          rev('|meta::pure::functions::math::divide(9, meta::pure::functions::math::divide(18, 6))', 'c(9 / (18 / 6))'),
-          rev('|3 / (4 / 5)', 'c(3 / (4 / 5))'),
-          rev('|meta::pure::functions::math::divide(3, meta::pure::functions::math::divide(4, 5))', 'c(3 / (4 / 5))')
+          rev('|9 / (18 / 6)', 'c(9) / (18 / 6)'),
+          rev('|meta::pure::functions::math::divide(9, meta::pure::functions::math::divide(18, 6))', 'c(9) / (18 / 6)'),
+          rev('|3 / (4 / 5)', '3 / c(4 / 5)'),
+          rev('|meta::pure::functions::math::divide(3, meta::pure::functions::math::divide(4, 5))', '3 / c(4 / 5)')
         ]
       ),
       meta::pure::functions::math::tests::divide::testDivideWithNonTerminatingExpansion_Function_1__Boolean_1_->testRev(
@@ -45,13 +45,13 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
       ),
       meta::pure::functions::math::tests::divide::testNegativeDivide_Function_1__Boolean_1_->testRev(
         [
-          rev('|4 / (-2)', 'c(4 / -2)'),
-          rev('|3 / (-2)', 'c(3 / -2)')
+          rev('|4 / (-2)', 'c(4) / (-2)'),
+          rev('|3 / (-2)', '3 / c(-2)')
         ]
       ),
       meta::pure::functions::math::tests::divide::testFloatDivide_Function_1__Boolean_1_->testRev(
         [
-          rev('|1.75 / 0.5', 'c(1.75 / 0.5)')
+          rev('|1.75 / 0.5', 'c(1.75) / 0.5')
         ]
       ),
       meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_->testRev(
