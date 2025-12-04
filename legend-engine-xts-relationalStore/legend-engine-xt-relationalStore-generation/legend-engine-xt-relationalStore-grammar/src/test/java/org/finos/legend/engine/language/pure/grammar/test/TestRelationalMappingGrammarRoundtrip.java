@@ -21,14 +21,12 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
     @Test
     public void testEmptyMapping()
     {
-        test("###Mapping\n"  +
-                "Mapping mappings::BaseMapping\n"  +
-                "(\n"  +
-                ")\n");
-        testToPureGrammar("###Mapping\n"  +
-                "Mapping mappings::BaseMapping\n"  +
-                "(\n"  +
-                "\n)");
+        String code = "###Mapping\n" +
+                "Mapping mappings::BaseMapping\n" +
+                "(\n" +
+                ")";
+        test(code + "\n");
+        testToPureGrammar(code);
     }
 
     @Test
@@ -299,6 +297,27 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "\n" +
                 "  Join AtoB(exampleSub.TableASub.id = exampleSub.TableBSub.id)\n" +
                 ")\n");
+    }
 
+    @Test
+    public void testEnumerationMapping()
+    {
+        String model = "Enum model::someEnum\n" +
+                "{\n" +
+                "  value1,\n" +
+                "  value2\n" +
+                "}\n" +
+                "\n";
+        String mapping = "###Mapping\n" +
+                "Mapping model::someMapping\n" +
+                "(\n" +
+                "  model::someEnum: EnumerationMapping SomeEnumMapping\n" +
+                "  {\n" +
+                "    value1: ['VALUE_1'],\n" +
+                "    value2: ['VALUE_2']\n" +
+                "  }\n" +
+                ")";
+        test(model + "\n" + mapping + "\n");
+        testToPureGrammar("###Pure\n" + model  + mapping);
     }
 }

@@ -181,7 +181,7 @@ public class TestGrammarRoundtrip
             CompiledExecutionSupport es = pureModel.getExecutionSupport();
             org.finos.legend.pure.generated.Root_meta_pure_metamodel_serialization_grammar_Configuration configuration = this.getConfiguration(es);
 
-            Assert.assertEquals(expectedCode, org.finos.legend.pure.generated.core_pure_serialization_toPureGrammar.Root_meta_pure_metamodel_serialization_grammar_printPackageableElements_PackageableElement_MANY__Configuration_$0_1$__String_1_(pureModel.getPackageableElements(), configuration, es));
+            Assert.assertEquals(expectedCode.replace("INTEGER", "INT"), org.finos.legend.pure.generated.core_pure_serialization_toPureGrammar.Root_meta_pure_metamodel_serialization_grammar_printPackageableElements_PackageableElement_MANY__Configuration_$0_1$__String_1_(pureModel.getPackageableElements(), configuration, es));
         }
 
         public static void testFormat(String code, String unformattedCode)

@@ -1113,7 +1113,6 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                         "    ~mainTable [stores::ExtendedDB]PeopleSchema.People\n" +
                         "    name: [stores::ExtendedDB]PeopleSchema.People.name\n" +
                         "  }\n" +
-                        "\n" +
                         ")\n" +
                         "\n" +
                         "###Pure\n" +
