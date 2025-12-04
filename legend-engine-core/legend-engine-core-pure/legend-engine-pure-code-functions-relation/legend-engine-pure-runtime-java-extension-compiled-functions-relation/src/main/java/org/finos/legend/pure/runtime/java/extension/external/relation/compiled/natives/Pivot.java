@@ -24,7 +24,7 @@ public class Pivot extends AbstractNative implements Native
 {
     public Pivot()
     {
-        super("pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_");
+        super("pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", "pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_");
     }
 
     @Override
@@ -36,7 +36,12 @@ public class Pivot extends AbstractNative implements Native
         result.append(", ");
         result.append(transformedParams.get(1));
         result.append(", ");
-        result.append("Lists.mutable.with(" + transformedParams.get(2) + ")");
+        if (transformedParams.size() == 4)
+        {
+            result.append(transformedParams.get(2));
+            result.append(", ");
+        }
+        result.append("Lists.mutable.with(" + transformedParams.get((transformedParams.size() == 3) ? 2 : 3) + ")");
         Pivot.processAggColSpec(result);
         result.append(", es)");
         return result.toString();

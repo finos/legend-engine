@@ -596,18 +596,42 @@ public class RelationNativeImplementation
 
     public static <T> Relation<? extends Object> pivot(Relation<? extends T> rel, ColSpec<?> pivotCols, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
     {
-        return pivot(rel, Lists.mutable.with(pivotCols._name()), aggColSpecTrans, es);
+        return pivot(rel, Lists.mutable.with(pivotCols._name()), Lists.fixedSize.empty(), aggColSpecTrans, es);
+    }
+
+    public static <T> Relation<? extends Object> pivot(Relation<? extends T> rel, ColSpec<?> pivotCols, MutableList<? extends Object> staticPivotValues, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
+    {
+        return pivot(rel, Lists.mutable.with(pivotCols._name()), staticPivotValues, aggColSpecTrans, es);
     }
 
     public static <T> Relation<? extends Object> pivot(Relation<? extends T> rel, ColSpecArray<?> pivotCols, MutableList<AggColSpecTrans1> aggColSpecTransAll, ExecutionSupport es)
     {
-        return pivot(rel, Lists.mutable.withAll(pivotCols._names()), aggColSpecTransAll, es);
+        return pivot(rel, Lists.mutable.withAll(pivotCols._names()), Lists.fixedSize.empty(), aggColSpecTransAll, es);
     }
 
-    private static <T> Relation<? extends Object> pivot(Relation<? extends T> rel, MutableList<String> pivotCols, MutableList<AggColSpecTrans1> aggColSpecTransAll, ExecutionSupport es)
+    private static <T> Relation<? extends Object> pivot(Relation<? extends T> rel, MutableList<String> pivotCols, MutableList<? extends Object> staticPivotValues, MutableList<AggColSpecTrans1> aggColSpecTransAll, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
         TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
+
+        if (staticPivotValues.notEmpty())
+        {
+            final String pivotColName = pivotCols.getOnly();
+            MutableIntSet rowsToDrop = new IntHashSet();
+            for (int i = 0; i < tds.getRowCount(); i++)
+            {
+                Object pivotValueCoreInstance = tds.getValueAsCoreInstance(pivotColName, i);
+                boolean matches = staticPivotValues.anySatisfy(staticPivotValue -> CompiledSupport.compare(staticPivotValue, pivotValueCoreInstance) == 0);
+                if (!matches)
+                {
+                    rowsToDrop.add(i);
+                }
+            }
+            if (!rowsToDrop.isEmpty())
+            {
+                tds = (TestTDSCompiled) tds.drop(rowsToDrop);
+            }
+        }
 
         ListIterable<String> columnsUsedInAggregation = aggColSpecTransAll.flatCollect(col ->
         {

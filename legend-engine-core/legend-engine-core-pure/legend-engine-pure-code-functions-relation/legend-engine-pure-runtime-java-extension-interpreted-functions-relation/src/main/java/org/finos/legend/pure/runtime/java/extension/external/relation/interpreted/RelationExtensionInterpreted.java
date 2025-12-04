@@ -110,6 +110,8 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", Pivot::new),
                 Tuples.pair("pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", Pivot::new),
                 Tuples.pair("pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", Pivot::new),
+                Tuples.pair("pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpecArray_1__Relation_1_", Pivot::new),
+                Tuples.pair("pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_", Pivot::new),
                 Tuples.pair("project_C_MANY__FuncColSpecArray_1__Relation_1_", Project::new),
                 Tuples.pair("project_Relation_1__FuncColSpecArray_1__Relation_1_", ProjectRelation::new),
                 Tuples.pair("columns_Relation_1__Column_MANY_", Columns::new),

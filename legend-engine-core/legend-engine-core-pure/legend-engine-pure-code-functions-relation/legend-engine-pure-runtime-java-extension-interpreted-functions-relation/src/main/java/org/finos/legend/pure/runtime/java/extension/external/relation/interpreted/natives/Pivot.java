@@ -24,6 +24,8 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.api.set.primitive.MutableIntSet;
+import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunctionCoreInstanceWrapper;
@@ -52,6 +54,7 @@ import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationContext;
+import org.finos.legend.pure.runtime.java.interpreted.natives.grammar.lang.Compare;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
 
 import java.util.Objects;
@@ -85,7 +88,15 @@ public class Pivot extends Shared
             throw new RuntimeException("Not Possible");
         }
 
-        CoreInstance aggColSpec = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport);
+        boolean isStaticPivot = params.size() == 4;
+        ListIterable<? extends CoreInstance> staticPivotValues = Lists.mutable.empty();
+        int aggColSpecIndex = 2;
+        if (isStaticPivot)
+        {
+            staticPivotValues = Instance.getValueForMetaPropertyToManyResolved(params.get(2), M3Properties.values, processorSupport);
+            aggColSpecIndex = 3;
+        }
+        CoreInstance aggColSpec = Instance.getValueForMetaPropertyToOneResolved(params.get(aggColSpecIndex), M3Properties.values, processorSupport);
         ListIterable<AggColSpec> aggColSpecs;
         if (aggColSpec instanceof AggColSpec)
         {
@@ -100,6 +111,25 @@ public class Pivot extends Shared
             throw new RuntimeException("Not Possible");
         }
 
+        if (isStaticPivot && !staticPivotValues.isEmpty())
+        {
+            final String pivotColName = pivotCols.getOnly();
+            MutableIntSet rowsToDrop = new IntHashSet();
+            for (int i = 0; i < tds.getRowCount(); i++)
+            {
+                CoreInstance pivotValueCoreInstance = (CoreInstance) tds.getValueAsCoreInstance(pivotColName, i);
+                CoreInstance pivotValue = pivotValueCoreInstance.getValueForMetaPropertyToOne(M3Properties.values);
+                boolean matches = staticPivotValues.anySatisfy(staticPivotValue -> Compare.compare(pivotValue, staticPivotValue, processorSupport) == 0);
+                if (!matches)
+                {
+                    rowsToDrop.add(i);
+                }
+            }
+            if (!rowsToDrop.isEmpty())
+            {
+                tds = tds.drop(rowsToDrop);
+            }
+        }
         ListIterable<String> columnsUsedInAggregation = aggColSpecs.flatCollect(col ->
         {
             LambdaFunction<?> lambdaFunction = (LambdaFunction<?>) col._map();
