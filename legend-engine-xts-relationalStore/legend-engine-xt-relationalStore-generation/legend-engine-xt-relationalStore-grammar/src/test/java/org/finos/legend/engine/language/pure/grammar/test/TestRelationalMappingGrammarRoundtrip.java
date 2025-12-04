@@ -19,6 +19,19 @@ import org.junit.Test;
 public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
+    public void testEmptyMapping()
+    {
+        test("###Mapping\n"  +
+                "Mapping mappings::BaseMapping\n"  +
+                "(\n"  +
+                ")\n");
+        testToPureGrammar("###Mapping\n"  +
+                "Mapping mappings::BaseMapping\n"  +
+                "(\n"  +
+                "\n)");
+    }
+
+    @Test
     public void testMappingInheritance()
     {
         // Without extends
@@ -165,7 +178,7 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
     @Test
     public void testSemiStructuredColumn()
     {
-        test("###Relational\n" +
+        String code = "###Relational\n" +
                 "Database simple::DB\n" +
                 "(\n" +
                 "  Table personTable\n" +
@@ -173,13 +186,15 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "    FIRSTNAME VARCHAR(10),\n" +
                 "    FIRM SEMISTRUCTURED\n" +
                 "  )\n" +
-                ")\n");
+                ")";
+        test(code + "\n");
+        testToPureGrammar(code);
     }
 
     @Test
     public void testJsonColumn()
     {
-        test("###Relational\n" +
+        String code = "###Relational\n" +
                 "Database simple::DB\n" +
                 "(\n" +
                 "  Table personTable\n" +
@@ -187,7 +202,9 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "    FIRSTNAME VARCHAR(10),\n" +
                 "    FIRM JSON\n" +
                 "  )\n" +
-                ")\n");
+                ")";
+        test(code + "\n");
+        testToPureGrammar(code);
     }
 
     @Test
@@ -235,7 +252,6 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
 
     @Test
     public void testNestedJoinFromIncludedDatabase()
-
     {
         test("###Relational\n" +
                 "Database example::database\n" +

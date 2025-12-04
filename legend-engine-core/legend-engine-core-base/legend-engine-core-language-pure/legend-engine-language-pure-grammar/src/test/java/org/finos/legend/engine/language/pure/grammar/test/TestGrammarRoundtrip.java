@@ -18,14 +18,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
-import org.finos.legend.engine.language.pure.grammar.test.to.TestMappingGrammarTo;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.junit.Assert;
 
 import java.io.IOException;
@@ -148,6 +152,36 @@ public class TestGrammarRoundtrip
         public static void testFormatWithSectionInfoPreserved(String code, String unformattedCode)
         {
             testFormat(code, unformattedCode, false);
+        }
+
+        protected org.finos.legend.pure.generated.Root_meta_pure_metamodel_serialization_grammar_Configuration getConfiguration(CompiledExecutionSupport es)
+        {
+            return org.finos.legend.pure.generated.core_pure_serialization_toPureGrammar.Root_meta_pure_metamodel_serialization_grammar_grammarConfiguration__Configuration_1_(es);
+        }
+
+        public void testToPureGrammar(String code)
+        {
+            testToPureGrammar(code, code);
+        }
+
+        public void testToPureGrammar(String code, String expectedCode)
+        {
+            PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(code);
+            try
+            {
+                ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+                String json = objectMapper.writeValueAsString(modelData);
+                modelData = objectMapper.readValue(json, PureModelContextData.class);
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+            PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+            CompiledExecutionSupport es = pureModel.getExecutionSupport();
+            org.finos.legend.pure.generated.Root_meta_pure_metamodel_serialization_grammar_Configuration configuration = this.getConfiguration(es);
+
+            Assert.assertEquals(expectedCode, org.finos.legend.pure.generated.core_pure_serialization_toPureGrammar.Root_meta_pure_metamodel_serialization_grammar_printPackageableElements_PackageableElement_MANY__Configuration_$0_1$__String_1_(pureModel.getPackageableElements(), configuration, es));
         }
 
         public static void testFormat(String code, String unformattedCode)

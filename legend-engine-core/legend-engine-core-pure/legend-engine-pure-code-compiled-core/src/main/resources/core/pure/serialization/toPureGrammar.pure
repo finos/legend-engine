@@ -334,7 +334,12 @@ function meta::pure::metamodel::serialization::grammar::printEnumeration(enum:En
 {
     'Enum ' + printStereotypes($enum) + printTaggedValues($enum) + elementToPath($enum) + '\n' +
     '{\n' +
-        $enum->enumValues()->map(p|printStereotypes($p->cast(@ElementWithStereotypes)) + printTaggedValues($p->cast(@ElementWithTaggedValues)) + $p->id()) -> joinStrings('  ', ',\n  ', '\n') +
+        $enum->enumValues()->map(ev|$ev->match(
+          [
+            p:ElementWithStereotypes[1] | printStereotypes($p->cast(@ElementWithStereotypes)) + printTaggedValues($p->cast(@ElementWithTaggedValues)) + $p->id(),
+            a:Any[1] | $a->toString()
+          ]
+        ))->joinStrings('  ', ',\n  ', '\n') +
     '}';
 }
 

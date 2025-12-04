@@ -25,7 +25,7 @@ function meta::relational::grammar::serialization::printDatabase(d:Database[1]):
 {
   'Database ' + $d->elementToPath() +
   '\n('+
-   $d.includes->map(x|'\n  include ' + $x->elementToPath())->joinStrings('\n') +
+   $d.includes->map(x|'\n  include ' + $x->elementToPath())->joinStrings('\n') + if($d.includes->isEmpty(), |'', |'\n') +
    $d.schemas->map(
       s | let defaultSchema = if($s.name->toOne()->equalIgnoreCase('DEFAULT'), |true, |false);
           let indent = if($defaultSchema, |'  ', |'    ');
@@ -44,12 +44,40 @@ function meta::relational::grammar::serialization::printDatabase(d:Database[1]):
                                                           );
                                  )->joinStrings(',\n')+
               '\n'+$indent+')'
-            )->joinStrings('')+if($defaultSchema, |'', |'\n  )');
-          )->joinStrings('')+
+            )->joinStrings('')
+        +if($defaultSchema, |'', |'\n  )');
+    )->joinStrings('')+
+    if($d.joins->isEmpty(), |'', |'\n')+
     $d.joins->map(
-      j | '\n  Join '+$j.name+'('+$j.operation->printRelationalOperationElement(false)+')'
+      j | '\n  Join '+ escapeIdentifier($j.name) +'('+$j.operation->printRelationalOperationElement(false)+')'
+    )->joinStrings('')+
+    if($d.filters->isEmpty(), |'', |'\n')+
+    $d.filters->map(
+      f | '\n  '+if($f->instanceOf(MultiGrainFilter), | 'MultiGrainFilter', | 'Filter') + ' ' + escapeIdentifier($f.name) + '(' + $f.operation->printRelationalOperationElement(false) + ')'
     )->joinStrings('')+
   '\n)';
+}
+
+function meta::relational::grammar::serialization::escapeIdentifier(name:String[1]):String[1]
+{
+  if ($name->contains(' ') && !$name->startsWith('"'), | '"' + $name + '"', | $name);
+}
+
+function meta::relational::grammar::serialization::printColumn(c:meta::relational::metamodel::Column[1], pk:meta::relational::metamodel::Column[*], indent:String[1]):String[1]
+{
+$indent + '  ' + escapeIdentifier($c.name) + ' ' + $c.type->match([
+                                                          x : Varchar[1] | 'VARCHAR(' + $x.size->toString() + ')',
+                                                          c : Char[1] | 'CHAR(' + $c.size->toString() + ')',
+                                                          b : Binary[1] | 'BINARY(' + $b.size->toString() + ')',
+                                                          v : Varbinary[1] | 'VARBINARY(' + $v.size->toString() + ')',
+                                                          d : meta::relational::metamodel::datatype::Decimal[1] | 'DECIMAL(' + $d.precision->toString() + ',' + $d.scale->toString() + ')',
+                                                          n : meta::relational::metamodel::datatype::Numeric[1] | 'NUMERIC(' + $n.precision->toString() + ',' + $n.scale->toString() + ')',
+                                                          z : Any[1] | $z->type().name->toOne()->toUpper()
+                                                        ]
+                                                      ) + if ($pk->contains($c),
+                                                                |' PRIMARY KEY',
+                                                                |if ($c.nullable->isNotEmpty() && $c.nullable->toOne(), |'', |' NOT NULL')
+                                                          );
 }
 
 function meta::relational::grammar::serialization::printMapping(d:Mapping[1]):String[1]
@@ -59,7 +87,7 @@ function meta::relational::grammar::serialization::printMapping(d:Mapping[1]):St
     $d.includes->map(x|'  include mapping ' + $x.included->elementToPath())->joinStrings('\n') +
     $d.classMappings->map(si|$si->match(
       [
-          rs:meta::relational::mapping::RootRelationalInstanceSetImplementation[1] | '  *'+$si.class->elementToPath()+'['+$si.id+']: Relational\n'+'  {\n'+
+          rs:meta::relational::mapping::RootRelationalInstanceSetImplementation[1] | '  '+if($si.root, |'*', |'')+$si.class->elementToPath()++if($si.id->isEmpty(), |'', |'['+$si.id+']')+': Relational\n'+'  {\n'+
               if($rs.primaryKey->isNotEmpty(),
                 | let pk = $rs.primaryKey->cast(@TableAliasColumn);
                   '    ~primaryKey\n'+
@@ -73,8 +101,43 @@ function meta::relational::grammar::serialization::printMapping(d:Mapping[1]):St
                 | ''
               ) +
               $rs.propertyMappings->cast(@meta::relational::mapping::RelationalPropertyMapping)->map(pm|
-                '    '+$pm.property.name->toOne()+if($pm.targetSetImplementationId == '',|'',|'['+$pm.targetSetImplementationId+']')+': '+$pm.relationalOperationElement->printRelationalOperationElement(true))->joinStrings(',\n')
+                '    '+$pm.property.name->toOne()+$pm.transformer->match(
+                  [
+                    em:meta::pure::mapping::EnumerationMapping<Any>[1] | ': EnumerationMapping '+$em.name,
+                    a:Any[0..1] | ''
+                  ])+
+                if($pm.targetSetImplementationId == '',|'',|'['+$pm.targetSetImplementationId+']')+': '+$pm.relationalOperationElement->printRelationalOperationElement(true))->joinStrings(',\n')
           +'\n  }'
+      ]
+    ))->joinStrings('\n')+
+    if($d.classMappings->isEmpty(), |'', |'\n')+
+    $d.enumerationMappings->map(em|'  '+$em.enumeration->elementToPath()+': EnumerationMapping '+$em.name+' {\n'+
+        $em.enumValueMappings->map(v|$v->match(
+          [
+            evm:meta::pure::mapping::EnumValueMapping[1] | '    '+$evm.enum.name+'['+$evm.sourceValues->map(sv|$sv->match(
+              [
+                r:RelationalOperationElement[1] | $r->printRelationalOperationElement(true),
+                s:String[1] | '\'' + $s + '\'',
+                f:Float[1] | $f->toString(),
+                f:Double[1] | $f->toString(),
+                f:Integer[1] | $f->toString()
+              ]
+            ))->joinStrings(',')+']'
+          ]
+        ))->joinStrings('\n')
+        +'\n  }'
+    )->joinStrings('\n')+
+    if($d.enumerationMappings->isEmpty(), |'', |'\n')+
+    $d.associationMappings->map(am|$am->match(
+      [
+          ra:meta::relational::mapping::RelationalAssociationImplementation[1] | '  '+$am.association->elementToPath()+if($am.id->isEmpty(), |'', |'['+$am.id+']')+': Relational\n'+
+              '  {\n'+
+              '    AssociationMapping\n'+
+              '    (\n'+
+              $ra.propertyMappings->cast(@meta::relational::mapping::RelationalPropertyMapping)->map(pm|
+              '      '+$pm.property.name->toOne()+'['+$pm.sourceSetImplementationId+','+$pm.targetSetImplementationId+']: '+$pm.relationalOperationElement->printRelationalOperationElement(true))->joinStrings(',\n')+'\n'+
+              '    )\n'+
+              '  }'
       ]
     ))->joinStrings('\n')+
   '\n)';
@@ -111,7 +174,13 @@ function meta::relational::grammar::serialization::printRelationalOperationEleme
         ], | 
           $v.name + '('+$v.parameters->map(p|$p->printRelationalOperationElement($forMapping))->joinStrings(',')+')'
         ),
-      l:Literal[1]|'\''+$l.value->toString()+'\''
+      l:Literal[1] | $l.value->match([
+        r:RelationalOperationElement[1] | printRelationalOperationElement($r, $forMapping),
+        s:String[1] | '\'' + $s + '\'',
+        f:Float[1] | $f->toString()->toUpper(),
+        f:Double[1] | $f->toString()->toUpper(),
+        f:Integer[1] | $f->toString()->toUpper()
+      ])
     ]
   );
 }

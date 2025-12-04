@@ -173,7 +173,7 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
     @Test
     public void testRelationalSchemaDoubleQuote()
     {
-        test("###Relational\n" +
+        String schema = "###Relational\n" +
                 "Database simple::dbInc\n" +
                 "(\n" +
                 "  Schema \"productSchema\"\n" +
@@ -184,14 +184,15 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "      NAME VARCHAR(200)\n" +
                 "    )\n" +
                 "  )\n" +
-                ")\n"
-        );
+                ")";
+        test(schema + "\n");
+        testToPureGrammar(schema);
     }
 
     @Test
     public void testRelationalSchemaSingleDoubleQuote()
     {
-        test("###Relational\n" +
+        String schema = "###Relational\n" +
                 "Database simple::dbInc\n" +
                 "(\n" +
                 "  Schema '\"productSchema\"'\n" +
@@ -202,8 +203,9 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "      NAME VARCHAR(200)\n" +
                 "    )\n" +
                 "  )\n" +
-                ")\n"
-        );
+                ")";
+        test(schema + "\n");
+        testToPureGrammar(schema);
     }
 
     @Test
@@ -786,10 +788,24 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
     @Test
     public void testAssociationRelationalMapping()
     {
-        test("###Mapping\n" +
+        String database = "###Relational\n" +
+                "Database model::Test\n" +
+                "(\n" +
+                "  Table TestTable1\n" +
+                "  (\n" +
+                "    prop1_source INTEGER\n" +
+                "  )\n" +
+                "  Table TestTable2\n" +
+                "  (\n" +
+                "    prop2_source INTEGER\n" +
+                "  )\n" +
+                "\n" +
+                "  Join RandomJoin(TestTable1.prop1_source = TestTable2.prop2_source)\n" +
+                ")\n";
+        String mapping = "###Mapping\n" +
                 "Mapping test::mapping\n" +
                 "(\n" +
-                "  test::SomeAssociationMapping: Relational\n" +
+                "  test::SomeAssociation: Relational\n" +
                 "  {\n" +
                 "    AssociationMapping\n" +
                 "    (\n" +
@@ -797,7 +813,20 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "      prop2[prop1_source,prop2_source]: [model::Test]@RandomJoin\n" +
                 "    )\n" +
                 "  }\n" +
-                ")\n");
+                ")\n";
+        String classModel = "###Pure\n" +
+                "Class test::SomeClass\n" +
+                "{\n" +
+                "  prop: Integer[1];\n" +
+                "}\n";
+        String associationModel = "Association test::SomeAssociation\n" +
+                "{\n" +
+                "  prop1: test::SomeClass[1];\n" +
+                "  prop2: test::SomeClass[1];\n" +
+                "}";
+        test(database + "\n\n" + classModel + "\n" + associationModel + "\n\n\n" + mapping);
+        testToPureGrammar(classModel + associationModel + "\n" + database + mapping,
+                database + "\n" + classModel + "\n" + mapping + "\n###Pure\n" + associationModel);
     }
 
     @Test
@@ -986,4 +1015,133 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "}\n");
     }
 
+    @Test
+    public void testMappingIncludesDatabaseIncludes()
+    {
+        testToPureGrammar("###Pure\n" +
+                        "Class models::Firm\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "}\n" +
+                        "###Pure\n" +
+                        "Class models::Person\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "  firm: models::Firm[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Mapping\n" +
+                        "Mapping mappings::BaseMapping\n" +
+                        "(\n" +
+                        "  models::Firm[model_Firm]: Relational\n" +
+                        "  {\n" +
+                        "    name: [stores::ExtendedDB]FirmSchema.Firms.name\n" +
+                        "  }\n" +
+                        "  models::Person[model_Person]: Relational\n" +
+                        "  {\n" +
+                        "    name: [stores::ExtendedDB]PeopleSchema.People.name\n" +
+                        "  }\n" +
+                        ")\n" +
+                        "Mapping mappings::ExtendedMapping\n" +
+                        "(\n" +
+                        "  include mapping mappings::BaseMapping\n" +
+                        ")\n" +
+                        "###Relational\n" +
+                        "Database stores::BaseDB\n" +
+                        "(\n" +
+                        "  Schema PeopleSchema\n" +
+                        "  (\n" +
+                        "    Table People\n" +
+                        "    (\n" +
+                        "      id INTEGER PRIMARY KEY,\n" +
+                        "      name VARCHAR(200),\n" +
+                        "      firm_id INTEGER\n" +
+                        "    )\n" +
+                        "  )\n" +
+                        ")\n" +
+                        "Database stores::ExtendedDB\n" +
+                        "(\n" +
+                        "  include stores::BaseDB\n" +
+                        "  Schema FirmSchema\n" +
+                        "  (\n" +
+                        "    Table Firms\n" +
+                        "    (\n" +
+                        "      id INTEGER PRIMARY KEY,\n" +
+                        "      name VARCHAR(200)\n" +
+                        "    )\n" +
+                        "  )\n" +
+                        ")",
+                "###Pure\n" +
+                        "Class models::Firm\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database stores::ExtendedDB\n" +
+                        "(\n" +
+                        "  include stores::BaseDB\n" +
+                        "\n" +
+                        "  Schema FirmSchema\n" +
+                        "  (\n" +
+                        "    Table Firms\n" +
+                        "    (\n" +
+                        "      id INTEGER PRIMARY KEY,\n" +
+                        "      name VARCHAR(200)\n" +
+                        "    )\n" +
+                        "  )\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Mapping\n" +
+                        "Mapping mappings::BaseMapping\n" +
+                        "(\n" +
+                        "  *models::Firm[model_Firm]: Relational\n" +
+                        "  {\n" +
+                        "    ~primaryKey\n" +
+                        "    (\n" +
+                        "      [stores::ExtendedDB]FirmSchema.Firms.id\n" +
+                        "    )\n" +
+                        "    ~mainTable [stores::ExtendedDB]FirmSchema.Firms\n" +
+                        "    name: [stores::ExtendedDB]FirmSchema.Firms.name\n" +
+                        "  }\n" +
+                        "  *models::Person[model_Person]: Relational\n" +
+                        "  {\n" +
+                        "    ~primaryKey\n" +
+                        "    (\n" +
+                        "      [stores::ExtendedDB]PeopleSchema.People.id\n" +
+                        "    )\n" +
+                        "    ~mainTable [stores::ExtendedDB]PeopleSchema.People\n" +
+                        "    name: [stores::ExtendedDB]PeopleSchema.People.name\n" +
+                        "  }\n" +
+                        "\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "Class models::Person\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "  firm: models::Firm[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Mapping\n" +
+                        "Mapping mappings::ExtendedMapping\n" +
+                        "(\n" +
+                        "  include mapping mappings::BaseMapping\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database stores::BaseDB\n" +
+                        "(\n" +
+                        "  Schema PeopleSchema\n" +
+                        "  (\n" +
+                        "    Table People\n" +
+                        "    (\n" +
+                        "      id INTEGER PRIMARY KEY,\n" +
+                        "      name VARCHAR(200),\n" +
+                        "      firm_id INTEGER\n" +
+                        "    )\n" +
+                        "  )\n" +
+                        ")"
+        );
+    }
 }
