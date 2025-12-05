@@ -154,36 +154,6 @@ public class TestGrammarRoundtrip
             testFormat(code, unformattedCode, false);
         }
 
-        protected org.finos.legend.pure.generated.Root_meta_pure_metamodel_serialization_grammar_Configuration getConfiguration(CompiledExecutionSupport es)
-        {
-            return org.finos.legend.pure.generated.core_pure_serialization_toPureGrammar.Root_meta_pure_metamodel_serialization_grammar_grammarConfiguration__Configuration_1_(es);
-        }
-
-        public void testToPureGrammar(String code)
-        {
-            testToPureGrammar(code, code);
-        }
-
-        public void testToPureGrammar(String code, String expectedCode)
-        {
-            PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(code);
-            try
-            {
-                ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-                String json = objectMapper.writeValueAsString(modelData);
-                modelData = objectMapper.readValue(json, PureModelContextData.class);
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-            PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
-            CompiledExecutionSupport es = pureModel.getExecutionSupport();
-            org.finos.legend.pure.generated.Root_meta_pure_metamodel_serialization_grammar_Configuration configuration = this.getConfiguration(es);
-
-            Assert.assertEquals(expectedCode.replace("INTEGER", "INT"), org.finos.legend.pure.generated.core_pure_serialization_toPureGrammar.Root_meta_pure_metamodel_serialization_grammar_printPackageableElements_PackageableElement_MANY__Configuration_$0_1$__String_1_(pureModel.getPackageableElements(), configuration, es));
-        }
-
         public static void testFormat(String code, String unformattedCode)
         {
             testFormat(code, unformattedCode, true);

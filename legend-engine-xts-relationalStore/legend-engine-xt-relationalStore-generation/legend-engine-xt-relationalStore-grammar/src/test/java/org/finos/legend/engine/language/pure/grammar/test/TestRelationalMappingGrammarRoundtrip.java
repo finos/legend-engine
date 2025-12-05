@@ -14,9 +14,10 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
+import org.finos.legend.engine.language.pure.compiler.test.TestToPureGrammarRoundtrip;
 import org.junit.Test;
 
-public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
+public class TestRelationalMappingGrammarRoundtrip extends TestToPureGrammarRoundtrip
 {
     @Test
     public void testEmptyMapping()
