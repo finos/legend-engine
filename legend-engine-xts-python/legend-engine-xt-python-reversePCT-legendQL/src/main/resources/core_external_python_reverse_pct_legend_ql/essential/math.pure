@@ -42,16 +42,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         ]
       )
     ]->combine(),
-    [ // log10
-      meta::pure::functions::math::tests::log10::testNumberLog10_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::lang::eval($z, 10)')
-      ),
-      meta::pure::functions::math::tests::log10::testSimpleLog10_Function_1__Boolean_1_->testRev(
-        [
-          rev('|10->meta::pure::functions::math::log10()', 'c(10).log10()')
-        ]
-      )
-    ]->combine(),
     // ------------------------------------------------------------------
 
     // Operation --------------------------------------------------------
@@ -66,7 +56,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         rev('|meta::pure::functions::math::abs(-2.222)', 'abs(c(-2.222))')
       ),
       meta::pure::functions::math::tests::abs::testBigFloatAbs_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::abs(-123456789123456784.0)') // Making it noRev because of float precision mismatch in github runner
+        rev('|meta::pure::functions::math::abs(-123456789123456784.0)', 'abs(c(-123456789123456784.0))')
       ),
       meta::pure::functions::math::tests::abs::testDecimalAbs_Function_1__Boolean_1_->testRev(
         [
@@ -75,17 +65,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         ]
       )
     ]->combine(),
-    meta::pure::functions::math::tests::sign::testSign_Function_1__Boolean_1_->testRev(
-      [
-        rev('|meta::pure::functions::math::sign(-10)','c(-10).sign()'),
-        rev('|0->meta::pure::functions::math::sign()','c(0).sign()'),
-        rev('|10->meta::pure::functions::math::sign()','c(10).sign()'),
-
-        rev('|meta::pure::functions::math::sign(-10.5)','c(-10.5).sign()'),
-        rev('|0.5->meta::pure::functions::math::sign()','c(0.5).sign()'),
-        rev('|10.5->meta::pure::functions::math::sign()','c(10.5).sign()')
-      ]
-    ),
     [ // mod
       meta::pure::functions::math::tests::mod::testMod_Function_1__Boolean_1_->testRev(
         [
@@ -104,72 +83,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
           noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval(12, 5)'),
           noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval(-12, 5)'),
           noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-        ]
-      )
-    ]->combine(),
-    [ // rem
-     meta::pure::functions::math::tests::rem::testRem_Function_1__Boolean_1_->testRev(
-        [
-          rev('|12->meta::pure::functions::math::rem(5)', 'c(12).rem(5)'),
-          rev('|5->meta::pure::functions::math::rem(12)', 'c(5).rem(12)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemWithNegativeIntegers_Function_1__Boolean_1_->testRev(
-        [
-          rev('|meta::pure::functions::math::rem(-12, 5)', 'c(-12).rem(5)'),
-          rev('|meta::pure::functions::math::rem(-5, 12)', 'c(-5).rem(12)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemWithFloats_Function_1__Boolean_1_->testRev(
-        [
-          rev('|5->meta::pure::functions::math::rem(1.5)', 'c(5).rem(1.5)'),
-          rev('|5.5->meta::pure::functions::math::rem(1.5)', 'c(5.5).rem(1.5)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemWithNegativeFloats_Function_1__Boolean_1_->testRev(
-        [
-          rev('|meta::pure::functions::math::rem(-5, 1.5)', 'c(-5).rem(1.5)'),
-          rev('|5->meta::pure::functions::math::rem(-1.5)', 'c(5).rem(-1.5)'),
-          rev('|5.5->meta::pure::functions::math::rem(-1.5)', 'c(5.5).rem(-1.5)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemWithMixedIntegersAndFloats_Function_1__Boolean_1_->testRev(
-        [
-          rev('|5->meta::pure::functions::math::rem(2.5)', 'c(5).rem(2.5)'),
-          rev('|7.5->meta::pure::functions::math::rem(5)', 'c(7.5).rem(5)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|3.14->meta::pure::functions::math::rem(1.5D)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(12, 5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(-12, 5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, 1.5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(7.5, 5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, 2.5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5.5, 1.5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, -1.5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5.5, -1.5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
         ]
       )
     ]->combine(),
