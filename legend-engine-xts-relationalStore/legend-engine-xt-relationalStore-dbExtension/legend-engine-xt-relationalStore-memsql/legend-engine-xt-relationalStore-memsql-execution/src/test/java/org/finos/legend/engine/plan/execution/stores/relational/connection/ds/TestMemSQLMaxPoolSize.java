@@ -26,11 +26,12 @@ public class TestMemSQLMaxPoolSize
     @Test
     public void testMemSQLStaticMaxPoolSizeWithSystemProperty()
     {
-        System.setProperty("legend.relational.maxPoolSize", "200");
-        StaticDataSourceSpecification ds1 = new StaticDataSourceSpecification(
+        System.setProperty("legend.relational.maxPoolSize", "101");
+        StaticDataSourceSpecification ds = new StaticDataSourceSpecification(
                 new StaticDataSourceSpecificationKey("0.0.0.0", 1000, "MemSQL"),
                 new MemSQLManager(),
                 new TestDatabaseAuthenticationStrategy());
-        Assert.assertEquals("200", String.valueOf(ds1.getHikariMaxPoolSize()));
+        Assert.assertEquals("101", String.valueOf(ds.getHikariMaxPoolSize()));
+        System.clearProperty("legend.relational.maxPoolSize");
     }
 }
