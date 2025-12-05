@@ -127,6 +127,11 @@ public abstract class DataSourceSpecification
         return this.extraDatasourceProperties;
     }
 
+    public Integer getHikariMaxPoolSize()
+    {
+        return HIKARICP_DEFAULT_MAX_POOL_SIZE;
+    }
+
     public Connection getConnectionUsingIdentity(Identity identity)
     {
 
