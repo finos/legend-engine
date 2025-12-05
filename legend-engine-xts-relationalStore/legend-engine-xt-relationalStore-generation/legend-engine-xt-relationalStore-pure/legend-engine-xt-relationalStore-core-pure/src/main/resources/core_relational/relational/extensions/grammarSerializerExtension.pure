@@ -23,7 +23,6 @@ import meta::relational::grammar::serialization::*;
 
 function meta::relational::grammar::serialization::printDatabase(d:Database[1]):String[1]
 {
-  println($d.joins);
   'Database ' + $d->elementToPath() + '\n' +
   '('+
    $d.includes->map(x|'\n  include ' + $x->elementToPath())->joinStrings('\n') + if($d.includes->isEmpty(), |'', |'\n') +
