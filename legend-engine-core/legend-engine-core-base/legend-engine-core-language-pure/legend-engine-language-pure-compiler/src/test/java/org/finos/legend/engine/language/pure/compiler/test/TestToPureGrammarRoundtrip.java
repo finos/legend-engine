@@ -14,9 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
