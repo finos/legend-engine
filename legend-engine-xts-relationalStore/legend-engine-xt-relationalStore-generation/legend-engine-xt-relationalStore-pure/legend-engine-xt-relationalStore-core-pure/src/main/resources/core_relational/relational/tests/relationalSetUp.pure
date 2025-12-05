@@ -308,6 +308,167 @@ Database meta::relational::tests::caseSensitiveTableNames
 
 )
 
+###Relational
+Database meta::relational::tests::NorthwindDatabase
+(
+  Schema NORTHWIND
+  (
+    Table CATEGORIES
+    (
+      CATEGORY_ID SMALLINT PRIMARY KEY,
+      CATEGORY_NAME VARCHAR(15) NOT NULL,
+      DESCRIPTION VARCHAR(256),
+      PICTURE OTHER
+    )
+    Table CUSTOMERS
+    (
+      CUSTOMER_ID VARCHAR(5) PRIMARY KEY,
+      COMPANY_NAME VARCHAR(40) NOT NULL,
+      CONTACT_NAME VARCHAR(30),
+      CONTACT_TITLE VARCHAR(30),
+      ADDRESS VARCHAR(60),
+      CITY VARCHAR(15),
+      REGION VARCHAR(15),
+      POSTAL_CODE VARCHAR(10),
+      COUNTRY VARCHAR(15),
+      PHONE VARCHAR(24),
+      FAX VARCHAR(24)
+    )
+    Table CUSTOMER_CUSTOMER_DEMO
+    (
+      CUSTOMER_ID VARCHAR(5) PRIMARY KEY,
+      CUSTOMER_TYPE_ID VARCHAR(5) PRIMARY KEY
+    )
+    Table CUSTOMER_DEMOGRAPHICS
+    (
+      CUSTOMER_TYPE_ID VARCHAR(5) PRIMARY KEY,
+      CUSTOMER_DESC VARCHAR(256)
+    )
+    Table EMPLOYEES
+    (
+      EMPLOYEE_ID SMALLINT PRIMARY KEY,
+      LAST_NAME VARCHAR(20) NOT NULL,
+      FIRST_NAME VARCHAR(10) NOT NULL,
+      TITLE VARCHAR(30),
+      TITLE_OF_COURTESY VARCHAR(25),
+      BIRTH_DATE DATE,
+      HIRE_DATE DATE,
+      ADDRESS VARCHAR(60),
+      CITY VARCHAR(15),
+      REGION VARCHAR(15),
+      POSTAL_CODE VARCHAR(10),
+      COUNTRY VARCHAR(15),
+      HOME_PHONE VARCHAR(24),
+      EXTENSION VARCHAR(4),
+      PHOTO OTHER,
+      NOTES OTHER,
+      REPORTS_TO SMALLINT,
+      PHOTO_PATH VARCHAR(255)
+    )
+    Table EMPLOYEE_TERRITORIES
+    (
+      EMPLOYEE_ID SMALLINT PRIMARY KEY,
+      TERRITORY_ID VARCHAR(20) PRIMARY KEY
+    )
+    Table ORDERS
+    (
+      ORDER_ID SMALLINT PRIMARY KEY,
+      CUSTOMER_ID VARCHAR(5),
+      EMPLOYEE_ID SMALLINT,
+      ORDER_DATE DATE,
+      REQUIRED_DATE DATE,
+      SHIPPED_DATE DATE,
+      SHIP_VIA SMALLINT,
+      FREIGHT OTHER,
+      SHIP_NAME VARCHAR(40),
+      SHIP_ADDRESS VARCHAR(60),
+      SHIP_CITY VARCHAR(15),
+      SHIP_REGION VARCHAR(15),
+      SHIP_POSTAL_CODE VARCHAR(10),
+      SHIP_COUNTRY VARCHAR(15)
+    )
+    Table ORDER_DETAILS
+    (
+      ORDER_ID SMALLINT PRIMARY KEY,
+      PRODUCT_ID SMALLINT PRIMARY KEY,
+      UNIT_PRICE OTHER NOT NULL,
+      QUANTITY SMALLINT NOT NULL,
+      DISCOUNT OTHER NOT NULL
+    )
+    Table PRODUCTS
+    (
+      PRODUCT_ID SMALLINT PRIMARY KEY,
+      PRODUCT_NAME VARCHAR(40) NOT NULL,
+      SUPPLIER_ID SMALLINT,
+      CATEGORY_ID SMALLINT,
+      QUANTITY_PER_UNIT VARCHAR(20),
+      UNIT_PRICE OTHER,
+      UNITS_IN_STOCK SMALLINT,
+      UNITS_ON_ORDER SMALLINT,
+      REORDER_LEVEL SMALLINT,
+      DISCONTINUED INTEGER NOT NULL
+    )
+    Table REGION
+    (
+      REGION_ID SMALLINT PRIMARY KEY,
+      REGION_DESCRIPTION VARCHAR(60) NOT NULL
+    )
+    Table SHIPPERS
+    (
+      SHIPPER_ID SMALLINT PRIMARY KEY,
+      COMPANY_NAME VARCHAR(40) NOT NULL,
+      PHONE VARCHAR(24) NOT NULL
+    )
+    Table SUPPLIERS
+    (
+      SUPPLIER_ID SMALLINT PRIMARY KEY,
+      COMPANY_NAME VARCHAR(40) NOT NULL,
+      CONTACT_NAME VARCHAR(30),
+      CONTACT_TITLE VARCHAR(30),
+      ADDRESS VARCHAR(60),
+      CITY VARCHAR(15),
+      REGION VARCHAR(15),
+      POSTAL_CODE VARCHAR(10),
+      COUNTRY VARCHAR(15),
+      PHONE VARCHAR(24),
+      FAX VARCHAR(24),
+      HOMEPAGE VARCHAR(256)
+    )
+    Table TERRITORIES
+    (
+      TERRITORY_ID VARCHAR(20) PRIMARY KEY,
+      TERRITORY_DESCRIPTION VARCHAR(60) NOT NULL,
+      REGION_ID SMALLINT NOT NULL
+    )
+    Table US_STATES
+    (
+      STATE_ID SMALLINT PRIMARY KEY,
+      STATE_NAME VARCHAR(100),
+      STATE_ABBR VARCHAR(2),
+      STATE_REGION VARCHAR(50)
+    )
+  )
+
+  Join ORDERS_CUSTMERS(NORTHWIND.ORDERS.CUSTOMER_ID = NORTHWIND.CUSTOMERS.CUSTOMER_ID)
+  Join ORDERS_EMPLOYEES(NORTHWIND.ORDERS.EMPLOYEE_ID = NORTHWIND.EMPLOYEES.EMPLOYEE_ID)
+  Join ORDERS_SHIPPERS(NORTHWIND.ORDERS.SHIP_VIA = NORTHWIND.SHIPPERS.SHIPPER_ID)
+  Join ORDERS_ORDER_DETAILS(NORTHWIND.ORDERS.ORDER_ID = NORTHWIND.ORDER_DETAILS.ORDER_ID)
+  Join ORDERS_DETAILS_PRODUCTS(NORTHWIND.ORDER_DETAILS.PRODUCT_ID = NORTHWIND.PRODUCTS.PRODUCT_ID)
+  Join PRODUCTS_CATEGORIES(NORTHWIND.PRODUCTS.CATEGORY_ID = NORTHWIND.CATEGORIES.CATEGORY_ID)
+  Join PRODUCTS_SUPPLIERS(NORTHWIND.PRODUCTS.SUPPLIER_ID = NORTHWIND.SUPPLIERS.SUPPLIER_ID)
+  Join TERRITORIES_REGION(NORTHWIND.TERRITORIES.REGION_ID = NORTHWIND.REGION.REGION_ID)
+  Join EMPLOYEES_EMPLOYEE_TERRITORIES(NORTHWIND.EMPLOYEES.EMPLOYEE_ID = NORTHWIND.EMPLOYEE_TERRITORIES.EMPLOYEE_ID)
+  Join EMPLOYEE_TERRITORIES_TERRITORIES(NORTHWIND.EMPLOYEE_TERRITORIES.TERRITORY_ID = NORTHWIND.TERRITORIES.TERRITORY_ID)
+  Join CUSTOMER_CURSTOMER_DEMO(NORTHWIND.CUSTOMERS.CUSTOMER_ID = NORTHWIND.CUSTOMER_CUSTOMER_DEMO.CUSTOMER_ID)
+  Join CURSTOMER_DEMO_DEMOGRAPHICS(NORTHWIND.CUSTOMER_CUSTOMER_DEMO.CUSTOMER_TYPE_ID = NORTHWIND.CUSTOMER_DEMOGRAPHICS.CUSTOMER_TYPE_ID)
+  Join EMPLOYEE_REPORTS(NORTHWIND.EMPLOYEES.REPORTS_TO = {target}.EMPLOYEE_ID)
+  Join SUPPLIERS_REGION(NORTHWIND.SUPPLIERS.REGION = NORTHWIND.REGION.REGION_ID)
+  Join ORDERS_REGION(NORTHWIND.ORDERS.SHIP_REGION = NORTHWIND.REGION.REGION_ID)
+  Join CUSTOMERS_REGION(NORTHWIND.CUSTOMERS.REGION = NORTHWIND.REGION.REGION_ID)
+  Join EMPLOYEES_REGION(NORTHWIND.EMPLOYEES.REGION = NORTHWIND.REGION.REGION_ID)
+)
+
+
 ###Mapping
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
@@ -348,6 +509,7 @@ Mapping meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping
              }
 )
 
+
 Mapping meta::relational::tests::MappingWithInnerJoinAndEmbeddedMappingSub
 (
     Person : Relational
@@ -359,6 +521,283 @@ Mapping meta::relational::tests::MappingWithInnerJoinAndEmbeddedMappingSub
                )
             }
 )
+
+Mapping meta::relational::tests::NorthwindextraMapping
+(
+  ProductCategory[Category]: Relational
+  {
+    ~primaryKey
+    (
+      [NorthwindDatabase]NORTHWIND.CATEGORIES.CATEGORY_ID
+    )
+    ~mainTable [meta::relational::tests::NorthwindDatabase]NORTHWIND.CATEGORIES
+    id: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CATEGORIES.CATEGORY_ID,
+    name: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CATEGORIES.CATEGORY_NAME,
+    description: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CATEGORIES.DESCRIPTION
+  }
+)
+
+Mapping meta::relational::tests::NorthwindMapping
+(
+  include meta::relational::tests::NorthwindextraMapping
+
+  Producttest[Producttest]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::NorthwindDatabase]NORTHWIND.PRODUCTS.PRODUCT_ID
+    )
+    ~mainTable [meta::relational::tests::NorthwindDatabase]NORTHWIND.PRODUCTS
+    id: [meta::relational::tests::NorthwindDatabase]NORTHWIND.PRODUCTS.PRODUCT_ID,
+    name: [meta::relational::tests::NorthwindDatabase]NORTHWIND.PRODUCTS.PRODUCT_NAME,
+    quantityPerUnit: [meta::relational::tests::NorthwindDatabase]NORTHWIND.PRODUCTS.QUANTITY_PER_UNIT,
+    unitsInStock: [meta::relational::tests::NorthwindDatabase]NORTHWIND.PRODUCTS.UNITS_IN_STOCK,
+    unitsOnOrder: [meta::relational::tests::NorthwindDatabase]NORTHWIND.PRODUCTS.UNITS_ON_ORDER,
+    reorderLevel: [meta::relational::tests::NorthwindDatabase]NORTHWIND.PRODUCTS.REORDER_LEVEL,
+    discontinued: [meta::relational::tests::NorthwindDatabase]NORTHWIND.PRODUCTS.DISCONTINUED
+  }
+  Customer[Customer]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.CUSTOMER_ID
+    )
+    ~mainTable [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS
+    id: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.CUSTOMER_ID,
+    companyName: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.COMPANY_NAME,
+    contactName: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.CONTACT_NAME,
+    companyTitle: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.CONTACT_TITLE,
+    address
+    (
+      address: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.ADDRESS,
+      city: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.CITY,
+      region: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.REGION,
+      postalCode: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.POSTAL_CODE,
+      country: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.COUNTRY
+    ),
+    telephoneNumber: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.PHONE,
+    faxNumber: [meta::relational::tests::NorthwindDatabase]NORTHWIND.CUSTOMERS.FAX
+  }
+  Employeetest[Employeetest]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.EMPLOYEE_ID
+    )
+    ~mainTable [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES
+    id: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.EMPLOYEE_ID,
+    lastName: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.LAST_NAME,
+    firstName: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.FIRST_NAME,
+    title: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.TITLE,
+    preferredTitle: EnumerationMapping TitleMapping: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.TITLE_OF_COURTESY,
+    dateOfBirth: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.BIRTH_DATE,
+    dateOfHire: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.HIRE_DATE,
+    address
+    (
+      address: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.ADDRESS,
+      city: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.CITY,
+      region: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.REGION,
+      postalCode: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.POSTAL_CODE,
+      country: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.COUNTRY
+    ),
+    homeTelephoneNumber: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.HOME_PHONE,
+    extension: [meta::relational::tests::NorthwindDatabase]NORTHWIND.EMPLOYEES.EXTENSION
+  }
+  Ordertest[Ordertest]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS.ORDER_ID
+    )
+    ~mainTable [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS
+    id: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS.ORDER_ID,
+    createdDate: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS.ORDER_DATE,
+    requiredDate: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS.REQUIRED_DATE,
+    shippedDate: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS.SHIPPED_DATE,
+    shipToName: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_NAME,
+    shipToAddress
+    (
+      address: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_ADDRESS,
+      city: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_CITY,
+      region: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_REGION,
+      postalCode: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_POSTAL_CODE,
+      country: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_COUNTRY
+    )
+  }
+  OrderLineItem[OrderLineItem]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDER_DETAILS.ORDER_ID,
+      [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDER_DETAILS.PRODUCT_ID
+    )
+    ~mainTable [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDER_DETAILS
+    quantity: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDER_DETAILS.QUANTITY,
+    unitPrice: [meta::relational::tests::NorthwindDatabase]NORTHWIND.ORDER_DETAILS.UNIT_PRICE,
+    unitPriceCurrency: 'USD'
+  }
+  SalesRegion[Region]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::NorthwindDatabase]NORTHWIND.REGION.REGION_ID
+    )
+    ~mainTable [meta::relational::tests::NorthwindDatabase]NORTHWIND.REGION
+    id: [meta::relational::tests::NorthwindDatabase]NORTHWIND.REGION.REGION_ID,
+    description: [meta::relational::tests::NorthwindDatabase]NORTHWIND.REGION.REGION_DESCRIPTION
+  }
+  ShippingCompany[Shipper]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::NorthwindDatabase]NORTHWIND.SHIPPERS.SHIPPER_ID
+    )
+    ~mainTable [meta::relational::tests::NorthwindDatabase]NORTHWIND.SHIPPERS
+    id: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SHIPPERS.SHIPPER_ID,
+    name: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SHIPPERS.COMPANY_NAME,
+    telephoneNumber: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SHIPPERS.PHONE
+  }
+ Supplier[Supplier]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.SUPPLIER_ID
+    )
+    ~mainTable [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS
+    id: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.SUPPLIER_ID,
+    companyName: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.COMPANY_NAME,
+    contactName: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.CONTACT_NAME,
+    contactTitle: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.CONTACT_TITLE,
+    address
+    (
+      address: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.ADDRESS,
+      city: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.CITY,
+      region: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.REGION,
+      postalCode: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.POSTAL_CODE,
+      country: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.COUNTRY
+    ),
+    telephoneNumber: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.PHONE,
+    faxNumber: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.FAX,
+    homepageUrl: [meta::relational::tests::NorthwindDatabase]NORTHWIND.SUPPLIERS.HOMEPAGE
+  }
+  SalesTerritory[Territory]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::NorthwindDatabase]NORTHWIND.TERRITORIES.TERRITORY_ID
+    )
+    ~mainTable [meta::relational::tests::NorthwindDatabase]NORTHWIND.TERRITORIES
+    id: [meta::relational::tests::NorthwindDatabase]NORTHWIND.TERRITORIES.TERRITORY_ID,
+    description: [meta::relational::tests::NorthwindDatabase]NORTHWIND.TERRITORIES.TERRITORY_DESCRIPTION
+  }
+  USState[USState]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::NorthwindDatabase]NORTHWIND.US_STATES.STATE_ID
+    )
+    ~mainTable [meta::relational::tests::NorthwindDatabase]NORTHWIND.US_STATES
+    id: [meta::relational::tests::NorthwindDatabase]NORTHWIND.US_STATES.STATE_ID,
+    name: [meta::relational::tests::NorthwindDatabase]NORTHWIND.US_STATES.STATE_NAME,
+    code: [meta::relational::tests::NorthwindDatabase]NORTHWIND.US_STATES.STATE_ABBR
+  }
+
+  Order_Customer: Relational
+  {
+    AssociationMapping
+    (
+      orders[Customer,Ordertest]: [meta::relational::tests::NorthwindDatabase]@ORDERS_CUSTMERS,
+      customer[Ordertest,Customer]: [meta::relational::tests::NorthwindDatabase]@ORDERS_CUSTMERS
+    )
+  }
+  Order_Employee: Relational
+  {
+    AssociationMapping
+    (
+      orders[Employeetest,Ordertest]: [meta::relational::tests::NorthwindDatabase]@ORDERS_EMPLOYEES,
+      employee[Ordertest,Employeetest]: [meta::relational::tests::NorthwindDatabase]@ORDERS_EMPLOYEES
+    )
+  }
+  Order_Shipper: Relational
+  {
+    AssociationMapping
+    (
+      orders[Shipper,Ordertest]: [meta::relational::tests::NorthwindDatabase]@ORDERS_SHIPPERS,
+      shipper[Ordertest,Shipper]: [meta::relational::tests::NorthwindDatabase]@ORDERS_SHIPPERS
+    )
+  }
+  Order_OrderLineItem: Relational
+  {
+    AssociationMapping
+    (
+      order[OrderLineItem,Ordertest]: [meta::relational::tests::NorthwindDatabase]@ORDERS_ORDER_DETAILS,
+      lineItems[Ordertest,OrderLineItem]: [meta::relational::tests::NorthwindDatabase]@ORDERS_ORDER_DETAILS
+    )
+  }
+  OrderLineItem_Product: Relational
+  {
+    AssociationMapping
+    (
+      orderLineItems[Producttest,OrderLineItem]: [meta::relational::tests::NorthwindDatabase]@ORDERS_DETAILS_PRODUCTS,
+      product[OrderLineItem,Producttest]: [meta::relational::tests::NorthwindDatabase]@ORDERS_DETAILS_PRODUCTS
+    )
+  }
+  Product_Category: Relational
+  {
+    AssociationMapping
+    (
+      category[Producttest,Category]: [meta::relational::tests::NorthwindDatabase]@PRODUCTS_CATEGORIES,
+      products[Category,Producttest]: [meta::relational::tests::NorthwindDatabase]@PRODUCTS_CATEGORIES
+    )
+  }
+  Product_Suppliers: Relational
+  {
+    AssociationMapping
+    (
+      supplier[Producttest,Supplier]: [meta::relational::tests::NorthwindDatabase]@PRODUCTS_SUPPLIERS,
+      products[Supplier,Producttest]: [meta::relational::tests::NorthwindDatabase]@PRODUCTS_SUPPLIERS
+    )
+  }
+  Terriroties_Region: Relational
+  {
+    AssociationMapping
+    (
+      region[Territory,Region]: [meta::relational::tests::NorthwindDatabase]@TERRITORIES_REGION,
+      territories[Region,Territory]: [meta::relational::tests::NorthwindDatabase]@TERRITORIES_REGION
+    )
+  }
+  Terriroties_Employees: Relational
+  {
+    AssociationMapping
+    (
+      employees[Territory,Employeetest]: [meta::relational::tests::NorthwindDatabase]@EMPLOYEE_TERRITORIES_TERRITORIES > [meta::relational::tests::NorthwindDatabase]@EMPLOYEES_EMPLOYEE_TERRITORIES,
+      territories[Employeetest,Territory]: [meta::relational::tests::NorthwindDatabase]@EMPLOYEES_EMPLOYEE_TERRITORIES > [meta::relational::tests::NorthwindDatabase]@EMPLOYEE_TERRITORIES_TERRITORIES
+    )
+  }
+  Employee_Manager: Relational
+  {
+    AssociationMapping
+    (
+      reports[Employeetest,Employeetest]: [meta::relational::tests::NorthwindDatabase]@EMPLOYEE_REPORTS,
+      manager[Employeetest,Employeetest]: [meta::relational::tests::NorthwindDatabase]@EMPLOYEE_REPORTS
+    )
+  }
+
+  Title: EnumerationMapping TitleMapping
+  {
+    Mr: ['Mr.'],
+    Mrs: ['Mrs.'],
+    Miss: ['Miss.'],
+    Ms: ['Ms.'],
+    Dr: ['Dr.'],
+    Sir: ['Sir.'],
+    Professor: ['Prof.'],
+    Duchess: ['Duchess.'],
+    Duke: ['Duke.']
+  }
+)
+
+
 
 ###Mapping
 import meta::relational::tests::model::simple::*;
@@ -1081,6 +1520,7 @@ Mapping meta::relational::tests::TestViewWithDistinctAndJoins
       address  (name : [db] FirstNameAddress.address)
    }
 )
+
 
 ###Mapping
 import meta::relational::tests::*;
