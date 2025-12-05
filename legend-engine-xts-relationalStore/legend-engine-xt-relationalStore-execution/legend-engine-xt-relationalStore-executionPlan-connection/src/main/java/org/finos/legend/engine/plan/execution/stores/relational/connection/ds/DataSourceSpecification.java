@@ -129,7 +129,7 @@ public abstract class DataSourceSpecification
 
     public Integer getHikariMaxPoolSize()
     {
-        return this.HIKARICP_DEFAULT_MAX_POOL_SIZE;
+        return this.maxPoolSize;
     }
 
     public Connection getConnectionUsingIdentity(Identity identity)
