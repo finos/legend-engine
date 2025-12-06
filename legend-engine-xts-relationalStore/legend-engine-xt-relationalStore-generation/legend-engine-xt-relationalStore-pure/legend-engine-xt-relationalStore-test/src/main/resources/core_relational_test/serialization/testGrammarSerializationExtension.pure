@@ -13,6 +13,16 @@ function <<test.Test>> meta::relational::grammar::serialization::tests::testPrin
 ###Relational
 Database meta::relational::grammar::serialization::tests::TestDB
 (
+  Schema "Schema with space"
+  (
+      Table "Table with space"
+      (
+        id INT PRIMARY KEY,
+
+        "column with space" VARCHAR(1)
+      )
+  )
+
   Schema MySchema
   (
       Table Table1
@@ -56,16 +66,20 @@ Database meta::relational::grammar::serialization::tests::TestDB
 
   Join SimpleJoin (MySchema.Table1.id = MySchema.Table2.id)
   Join CompositeJoin (
-    (MySchema.Table1.id = MySchema.Table2.id) and 
+    (MySchema.Table1.id = MySchema.Table2.id) and
     (MySchema.Table1.varchar <> MySchema.Table2.id) and
     (MySchema.Table1.varchar != MySchema.Table2.id) and
     (MySchema.Table1.varchar < MySchema.Table2.id) and
     (MySchema.Table1.varchar > MySchema.Table2.id) and
-    (MySchema.Table1.varchar <= MySchema.Table2.id) and 
+    (MySchema.Table1.varchar <= MySchema.Table2.id) and
     (MySchema.Table1.varchar >= MySchema.Table2.id) and
     (MySchema.Table1.varchar <> MySchema.Table2.id) and
     (MySchema.Table1.varchar is null) and
-    (MySchema.Table1.varchar is not null)
+    (MySchema.Table1.varchar is not null) and
+    (MySchema.Table1.varchar = 999)
   )
   Join SelfJoin (MySchema.Table1.id = {target}.id)
+
+  Filter SimpleFilter(MySchema.Table1.varchar = 'abc')
+  MultiGrainFilter multiGrain(MySchema.Table1.varchar = 'abc')
 )

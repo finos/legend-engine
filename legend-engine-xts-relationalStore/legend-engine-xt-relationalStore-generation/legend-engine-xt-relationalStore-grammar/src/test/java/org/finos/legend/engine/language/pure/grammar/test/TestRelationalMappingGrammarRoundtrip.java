@@ -14,10 +14,22 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
+import org.finos.legend.engine.language.pure.compiler.test.TestToPureGrammarRoundtrip;
 import org.junit.Test;
 
-public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
+public class TestRelationalMappingGrammarRoundtrip extends TestToPureGrammarRoundtrip
 {
+    @Test
+    public void testEmptyMapping()
+    {
+        String code = "###Mapping\n" +
+                "Mapping mappings::BaseMapping\n" +
+                "(\n" +
+                ")";
+        test(code + "\n");
+        testToPureGrammar(code);
+    }
+
     @Test
     public void testMappingInheritance()
     {
@@ -165,7 +177,7 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
     @Test
     public void testSemiStructuredColumn()
     {
-        test("###Relational\n" +
+        String code = "###Relational\n" +
                 "Database simple::DB\n" +
                 "(\n" +
                 "  Table personTable\n" +
@@ -173,13 +185,15 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "    FIRSTNAME VARCHAR(10),\n" +
                 "    FIRM SEMISTRUCTURED\n" +
                 "  )\n" +
-                ")\n");
+                ")";
+        test(code + "\n");
+        testToPureGrammar(code);
     }
 
     @Test
     public void testJsonColumn()
     {
-        test("###Relational\n" +
+        String code = "###Relational\n" +
                 "Database simple::DB\n" +
                 "(\n" +
                 "  Table personTable\n" +
@@ -187,7 +201,9 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "    FIRSTNAME VARCHAR(10),\n" +
                 "    FIRM JSON\n" +
                 "  )\n" +
-                ")\n");
+                ")";
+        test(code + "\n");
+        testToPureGrammar(code);
     }
 
     @Test
@@ -235,7 +251,6 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
 
     @Test
     public void testNestedJoinFromIncludedDatabase()
-
     {
         test("###Relational\n" +
                 "Database example::database\n" +
@@ -283,6 +298,27 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "\n" +
                 "  Join AtoB(exampleSub.TableASub.id = exampleSub.TableBSub.id)\n" +
                 ")\n");
+    }
 
+    @Test
+    public void testEnumerationMapping()
+    {
+        String model = "Enum model::someEnum\n" +
+                "{\n" +
+                "  value1,\n" +
+                "  value2\n" +
+                "}\n" +
+                "\n";
+        String mapping = "###Mapping\n" +
+                "Mapping model::someMapping\n" +
+                "(\n" +
+                "  model::someEnum: EnumerationMapping SomeEnumMapping\n" +
+                "  {\n" +
+                "    value1: ['VALUE_1'],\n" +
+                "    value2: ['VALUE_2']\n" +
+                "  }\n" +
+                ")";
+        test(model + "\n" + mapping + "\n");
+        testToPureGrammar("###Pure\n" + model  + mapping);
     }
 }
