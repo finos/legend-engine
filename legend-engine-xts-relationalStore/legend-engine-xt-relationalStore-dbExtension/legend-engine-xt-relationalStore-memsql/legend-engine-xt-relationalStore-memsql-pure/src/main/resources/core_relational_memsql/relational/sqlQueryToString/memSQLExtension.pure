@@ -336,12 +336,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
   if ($s.data == [],
     |'',
-    | if ($s.pivot->isEmpty(),
-      | ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), $joinOrder, $extensions),
-      | let from = $s.data->toOne();
-        let fromStr = ' ' + $format.separator + 'from ' + $from->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions);
-        $fromStr + processPivotForMemSQL($s.pivot->toOne(), $dbConfig, $format, ^$config(useUnqualifiedColumnNameInPivot = true), $extensions);
-      )
+    | let fromStr = $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), $joinOrder, $extensions);
+      ' ' + $format.separator + 'from ' + $fromStr + if($s.pivot->isEmpty(), | '', | processPivotForMemSQL($s.pivot->toOne(), $dbConfig, $format, ^$config(useUnqualifiedColumnNameInPivot = true), $extensions));
   ) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
@@ -357,24 +353,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
                                       p:Pivot[1] | fail('MemSQL does not support dynamic pivot'); [];
                                     ]);
   let pivotColumnName = $dbConfig.identifierProcessor($p.pivotColumns->toOne()->cast(@ColumnName).name);
-  let aggColumns = $p.aggColumns;
-  if ($aggColumns->size() == 1,
-      | let aggregateColumnAlias = $aggColumns->toOne()->cast(@Alias);
-        let processedAggColumn = processSelectColumns($aggregateColumnAlias.relationalElement, $dbConfig, $format->indent(), $config, true, $extensions);
-        let staticPivotValueAliases = $staticPivotValues->map(v | ^Alias(name = '"\'' + $v.value->toString() + meta::relational::functions::sqlQueryToString::default::pivotColumnDelimeter() + $aggregateColumnAlias.name + '\'"', relationalElement = $v));
-        let processedStaticPivotValues = $staticPivotValueAliases->map(a | $a->processOperation($dbConfig, $format->indent(), $config, $extensions))->joinStrings(',');
-        getFinalStaticPivotQuery($processedAggColumn, $pivotColumnName, $processedStaticPivotValues, $format);,
-
-      | let processedAggColumns = processSelectColumns($aggColumns->cast(@Alias)->map(a | ^$a(name = '"_|__' + $a.name + '\'"')), $dbConfig, $format->indent(), $config, true, $extensions);
-        let staticPivotValueAliases = $staticPivotValues->map(v | ^Alias(name = '"\'' + $v.value->toString(), relationalElement = $v));
-        let processedStaticPivotValues = $staticPivotValueAliases->map(s | $s->processOperation($dbConfig, $format->indent(), $config, $extensions))->joinStrings(',');
-        getFinalStaticPivotQuery($processedAggColumns, $pivotColumnName, $processedStaticPivotValues, $format);
-  );
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::getFinalStaticPivotQuery(processedAggColumns:String[1], pivotColumnName:String[1], processedStaticPivotValues:String[1], format:Format[1]):String[1]
-{
-  ' ' + $format.separator + 'pivot (' + $processedAggColumns +
+  let aggColumn = $p.aggColumns->cast(@Alias)->toOne();
+  let processedAggColumn = processSelectColumns($aggColumn.relationalElement, $dbConfig, $format->indent(), $config, true, $extensions);
+  let staticPivotValueAliases = $staticPivotValues->map(v | ^Alias(name = '"\'' + $v.value->toString() + meta::relational::functions::sqlQueryToString::default::pivotColumnDelimeter() + $aggColumn.name + '\'"', relationalElement = $v));
+  let processedStaticPivotValues = $staticPivotValueAliases->map(a | $a->processOperation($dbConfig, $format->indent(), $config, $extensions))->joinStrings(',');
+  ' ' + $format.separator + 'pivot (' + $processedAggColumn +
   ' ' + $format.separator + 'for ' + $pivotColumnName +
   ' ' + $format.separator + 'in (' + $processedStaticPivotValues + ')) as pivot_result';
 }
