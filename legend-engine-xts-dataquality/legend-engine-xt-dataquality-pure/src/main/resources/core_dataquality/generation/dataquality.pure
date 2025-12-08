@@ -15,7 +15,9 @@ import meta::pure::functions::boolean::*;
 import meta::pure::metamodel::constraint::*;
 import meta::pure::lineage::scanProperties::propertyTree::*;
 import meta::pure::precisePrimitives::*;
-
+import meta::pure::runtime::*;
+import meta::external::dataquality::dataprofile::*;
+import meta::external::query::sql::transformation::compile::utils::*;
 
 Class meta::external::dataquality::MilestoningContext
 {
@@ -492,28 +494,38 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
 
 function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationNames: String[*], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]): LambdaFunction<Any>[1]
 {
-  let lambda = if ($removeFrom, | $dqRelationValidation.query->popTerminalFunctionExpression(), | $dqRelationValidation.query);
+  let from = $dqRelationValidation.query.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();
+
   //if validation name provided only generate query for that validation else generate query for all validations
   let selectedValidations = if ($validationNames->isEmpty(),
     | $dqRelationValidation.validations,
     | $dqRelationValidation.validations->filter(val| $validationNames->contains($val.name))
   );
+  let multipleValidations = $selectedValidations->size() > 1;
+  let lambda = if ($removeFrom || $multipleValidations, //if we are running multiple validations we will wrap the expression in an eval on the from function at the end to ensure correct sql generated
+    | $dqRelationValidation.query->popTerminalFunctionExpression(), 
+    | $dqRelationValidation.query
+  );
+
   if ($selectedValidations->isEmpty(),
     | fail('Expect at least one validation to exist on data quality validation');
       $lambda;,
     | let query = $lambda.expressionSequence->toOne()->evaluateAndDeactivate();
       //if there are more than one validations then we assign the top level query to a variable to make use of CTEs (to not evaluate top level query multiple times for each validation)
-      let multipleValidations = $selectedValidations->size() > 1;
       let queryInput = if ($multipleValidations, 
         | ^VariableExpression(name = 'sourceQuery', genericType = $query.genericType, multiplicity = PureOne),
         | $query
       );
       let validationSubQueries = $selectedValidations->map(val | $queryInput->generateDataqualityRelationValidationLambda($val, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $removeFrom));
       let validationsUnion = $validationSubQueries->tail()->fold({val1, val2 | buildUnionExpression($val1->evaluateAndDeactivate(), $val2->evaluateAndDeactivate())}, $validationSubQueries->head()->toOne()->evaluateAndDeactivate());
-      ^$lambda(expressionSequence = if ($multipleValidations, 
+      let expressionSequence = if ($multipleValidations, 
         | [buildLetExpression('sourceQuery', $query), $validationsUnion],
         | $validationsUnion
-      ));
+      );
+      if (!$removeFrom && $multipleValidations, 
+        | ^$lambda(expressionSequence = $expressionSequence)->wrapWithEvalOnFrom($from), //need to wrap in eval on from so that let expression works correctly (correct sql can be generated)
+        | ^$lambda(expressionSequence = $expressionSequence)
+      );
   );
 }
 
@@ -1162,4 +1174,24 @@ function meta::external::dataquality::buildLetExpression(name: String[1], value:
         $value
       ]
   )->evaluateAndDeactivate();
+}
+
+//TODO - reuse function from dataprofile.pure once we change this flow to use compileViaGrammar() function
+function meta::external::dataquality::wrapWithEvalOnFrom(lambda:LambdaFunction<Any>[1], from:FunctionExpression[1]):LambdaFunction<Any>[1]
+{  
+  let runtime = getInstanceValueOfType($from.parametersValues, PackageableRuntime)->concatenate(getInstanceValueOfType($from.parametersValues, Runtime))->first();
+  let mapping = getInstanceValueOfType($from.parametersValues, Mapping)->first();
+  let relType = $lambda.expressionSequence->evaluateAndDeactivate().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>)->toOne();
+  let expressionSequence = ^SimpleFunctionExpression
+  (
+    func = eval_Function_1__V_m_,
+    multiplicity = PureOne,
+    genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType)),
+    importGroup  = system::imports::coreImport,
+    parametersValues =
+    [ 
+      ^InstanceValue (genericType = $lambda->genericType(), multiplicity = PureOne, values = $lambda)
+    ]
+  )->evaluateAndDeactivate();
+  ^$lambda(expressionSequence = $expressionSequence->wrapWithFrom($mapping, $runtime, [], true));
 }
