@@ -52,11 +52,6 @@ public class Test_Relational_Snowflake_RelationFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_", "Typed object schema mismatch in conversion", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_", "Typed object schema mismatch in conversion", AdapterQualifier.needsInvestigation),
 
-            // Static pivot
-            one("meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleMultiple_Function_1__Boolean_1_", "\"Static pivot is currently not supported in Snowflake\"", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_Function_1__Boolean_1_", "\"Static pivot is currently not supported in Snowflake\"", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_StringPivotValue_Function_1__Boolean_1_", "\"Static pivot is currently not supported in Snowflake\"", AdapterQualifier.needsImplementation),
-
             // Snowflake doesn't support window frame without ORDER BY
             one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_", "Window frame requires an ORDER BY clause", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_", "Window frame requires an ORDER BY clause", AdapterQualifier.unsupportedFeature),

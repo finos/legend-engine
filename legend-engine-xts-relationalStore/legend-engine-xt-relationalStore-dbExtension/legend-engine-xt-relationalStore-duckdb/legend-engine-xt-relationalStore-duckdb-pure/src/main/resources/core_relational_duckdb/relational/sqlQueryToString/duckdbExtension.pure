@@ -472,10 +472,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
   if($s.data == [],
     | '',
-    | ' ' + $format.separator + 'from ' + if($s.pivot->isEmpty(),
-                                  | $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions),
-                                  | '(' + $s->processPivotForDuckDB($s.pivot->toOne(), $dbConfig, $format, ^$config(useUnqualifiedColumnNameInPivot = true), $extensions) + ')'
-                                )
+    | let fromStr = $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions);
+      ' ' + $format.separator + 'from ' + if($s.pivot->isEmpty(), | $fromStr, | '(' + processPivotForDuckDB($fromStr, $s.pivot->toOne(), $dbConfig, $format, ^$config(useUnqualifiedColumnNameInPivot = true), $extensions) + ')');
   ) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(',')) +
@@ -485,19 +483,31 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForDuckDB_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processPivotForDuckDB(s:SelectSQLQuery[1], p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processPivotForDuckDB(fromStr:String[1], p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
 {
-  let dynamicPivot = $p->match([
-                                  s:StaticPivot[1] | fail('Static pivot is currently not supported in DuckDB'); [];,
-                                  p:Pivot[1] | $p
-                               ]);
-  let pivotDynaFunction = ^DynaFunction(
-                                name = 'concat',
-                                parameters = [^Literal(value='\'')]->concatenate($dynamicPivot.pivotColumns->toOne()->cast(@ColumnName))->concatenate(^Literal(value='\''))
-                              );
-  $format.separator + 'pivot ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions) +
-  ' ' + $format.separator + 'on ' + processSelectColumns($pivotDynaFunction, $dbConfig, $format->indent(), $config, false, $extensions) +
-  ' ' + $format.separator + 'using ' + processSelectColumns($dynamicPivot.aggColumns->toOne(), $dbConfig, $format->indent(), $config, true, $extensions);
+  $p->match([
+              sp:StaticPivot[1] | processStaticPivotForDuckDB($fromStr, $sp, $dbConfig, $format, $config, $extensions),
+              dynamicPivot:Pivot[1] | let pivotDynaFunction = ^DynaFunction(
+                                                                name = 'concat',
+                                                                parameters = [^Literal(value='\'')]->concatenate($dynamicPivot.pivotColumns->toOne()->cast(@ColumnName))->concatenate(^Literal(value='\''))
+                                                              );
+                                      $format.separator + 'pivot ' + $fromStr +
+                                      ' ' + $format.separator + 'on ' + processSelectColumns($pivotDynaFunction, $dbConfig, $format->indent(), $config, false, $extensions) +
+                                      ' ' + $format.separator + 'using ' + processSelectColumns($dynamicPivot.aggColumns->toOne(), $dbConfig, $format->indent(), $config, true, $extensions);
+            ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processStaticPivotForDuckDB(fromStr:String[1], staticPivot:StaticPivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
+{
+  let pivotColumnName = $dbConfig.identifierProcessor($staticPivot.pivotColumns->toOne()->cast(@ColumnName).name);
+  let aggColumns = $staticPivot.aggColumns;
+  let processedAggColumns = processSelectColumns($aggColumns->cast(@Alias)->map(a | ^$a(name = '"_|__' + $a.name + '\'"')), $dbConfig, $format->indent(), $config, true, $extensions);
+  let staticPivotValueAliases = $staticPivot.values->map(v | ^Alias(name = '"\'' + $v.value->toString(), relationalElement = $v));
+  let processedStaticPivotValues = $staticPivotValueAliases->map(s | $s->processOperation($dbConfig, $format->indent(), $config, $extensions))->joinStrings(',');
+  ' ' + $format.separator + 'pivot ' + $fromStr +
+  ' ' + $format.separator + 'on ' + $pivotColumnName +
+  ' ' + $format.separator + 'in (' + $processedStaticPivotValues + ')' +
+  ' ' + $format.separator + 'using ' + $processedAggColumns;
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSliceOrDropForDuckDB(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]

@@ -15,17 +15,20 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
+native function <<PCT.function>> {doc.doc = 'Pivots a relation by rotating data from rows into columns. Takes multiple pivot columns and a single aggregate specification. All unique combinations of values from the pivot columns become new columns in the result. Each combination is aggregated according to the aggregate specification. All remaining columns (not pivoted or aggregated) become grouping columns.'}
+  meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
+native function <<PCT.function>> {doc.doc = 'Pivots a relation by rotating data from rows into columns. Takes a single pivot column and a single aggregate specification. All unique values from the pivot column become new columns in the result. Each value is aggregated according to the aggregate specification. All remaining columns (not pivoted or aggregated) become grouping columns.'}
+  meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], values:Any[1..*], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
+native function <<PCT.function>> {doc.doc = 'Pivots a relation by rotating data from rows into columns. Takes a single pivot column with explicitly specified values and a single aggregate specification. Only the specified pivot values become new columns in the result. Each value is aggregated according to the aggregate specification. This static pivot allows control over which columns appear in the output and their order. All remaining columns (not pivoted or aggregated) become grouping columns.'}
+  meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], values:Any[1..*], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
+native function <<PCT.function>> {doc.doc = 'Pivots a relation by rotating data from rows into columns. Takes multiple pivot columns and multiple aggregate specifications. All unique combinations of values from the pivot columns become new column groups in the result. For each combination, multiple aggregated columns are created (one per aggregate specification). All remaining columns (not pivoted or aggregated) become grouping columns.'}
+  meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
-native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
-
-native function <<PCT.function>> meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], values:Any[1..*], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1]; // Validate same type as colspec, potentailly in Handlers
+native function <<PCT.function>> {doc.doc = 'Pivots a relation by rotating data from rows into columns. Takes a single pivot column and multiple aggregate specifications. All unique values from the pivot column become new column groups in the result. For each value, multiple aggregated columns are created (one per aggregate specification). All remaining columns (not pivoted or aggregated) become grouping columns.'}
+  meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
 function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
@@ -331,7 +334,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testStaticP
                     NYC, USA, 2000, 10000.0
                     NYC, USA, 2012, 7600.0
                     NYC, USA, 2012, 7600.0
-                 #->pivot(~year, [2000, 2011], ~[newCol : x | $x.treePlanted : y | $y->plus()])
+                 #->pivot(~year, [2000, 2011], ~newCol : x | $x.treePlanted : y | $y->plus())
                };
 
     let res =  $f->eval($expr);
@@ -363,7 +366,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testStaticP
                     Week2, THURSDAY, 11, 8.0
                     Week2, FRIDAY, 11, 12.0
                     Week2, SATURDAY, 6, 8.0
-                 #->pivot(~day, ['MONDAY', 'TUESDAY'], ~[newCol : x | $x.itemsProduced : y | $y->plus()])
+                 #->pivot(~day, ['MONDAY', 'TUESDAY'], ~newCol : x | $x.itemsProduced : y | $y->plus())
                };
 
     let res =  $f->eval($expr);
@@ -373,34 +376,5 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testStaticP
                   '   Week2,8,10.0,11.0\n' +
                   '   Week1,10,null,12.0\n' +
                   '   Week1,11,15.0,null\n' +
-                  '#', $res->cast(@Relation<(week:String,numWorkers:Integer,'\'MONDAY__|__newCol\'':Number,'\'TUESDAY__|__newCol\'':Number)>)->sort([ascending(~numWorkers)])->toString());
-}
-
-function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {
-                |#TDS
-                    city, country, year, treePlanted, alphabet
-                    NYC, USA, 2011, 5000.0, a
-                    NYC, USA, 2000, 5000.0, b
-                    SAN, USA, 2000, 2000.0, c
-                    SAN, USA, 2011, 100.0, d
-                    LDN, UK, 2011, 3000.0, e
-                    SAN, USA, 2011, 2500.0, d
-                    NYC, USA, 2000, 10000.0, b
-                    NYC, USA, 2012, 7600.0, h
-                    NYC, USA, 2012, 7600.0, i
-                 #->pivot(~year, [2000, 2011], ~[sum : x | $x.treePlanted : y | $y->plus(), chars : x | $x.alphabet : y | $y->joinStrings('')])
-               };
-
-    let res =  $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   city,country,\'2000__|__chars\',\'2000__|__sum\',\'2011__|__chars\',\'2011__|__sum\'\n' +
-                  '   LDN,UK,null,null,e,3000.0\n' +
-                  '   NYC,USA,bb,15000.0,a,5000.0\n' +
-                  '   SAN,USA,c,2000.0,dd,2600.0\n' +
-                  '#', $res->cast(@Relation<(city:String,country:String,'\'2000__|__chars\'':String,'\'2000__|__sum\'':Number,'\'2011__|__chars\'':String,'\'2011__|__sum\'':Number)>)
-                           ->select(~[city, country, '\'2000__|__chars\'', '\'2000__|__sum\'', '\'2011__|__chars\'', '\'2011__|__sum\''])
-                           ->sort([ascending(~city)])->toString());
+                  '#', $res->cast(@Relation<(week:String,numWorkers:Number,'\'MONDAY__|__newCol\'':Number,'\'TUESDAY__|__newCol\'':Number)>)->sort([ascending(~numWorkers)])->toString());
 }
