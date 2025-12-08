@@ -635,7 +635,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   let qualifyStr = if($s.qualifyOperation->isEmpty(), |'', |$s.qualifyOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
-  processSelectColumns(if($s.pivot->isEmpty(), | $s.columns, | []), $dbConfig, $format->indent(), true, $extensions) +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
   if ($s.data == [],
     |'',
     | let fromStr = $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions);

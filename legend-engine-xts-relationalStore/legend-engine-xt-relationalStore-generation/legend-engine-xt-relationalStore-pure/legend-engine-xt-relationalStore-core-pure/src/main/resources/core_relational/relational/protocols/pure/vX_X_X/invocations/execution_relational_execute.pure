@@ -54,7 +54,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSRe
                         | $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | pair($c.name, $t)))->newMap()
                       );
 
-  let tdsString = $cols->map(c| $c.name->stripMatchingQuotes() + $columnTypeMap->get($c.name)->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
+  let tdsString = $cols->map(c| $c.name + $columnTypeMap->get($c.name)->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
                                 $r.result.rows->map(x|
                                   range($x.values->size())->map(z |
                                       $x.values->at($z)->match([
@@ -64,14 +64,6 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSRe
                                   )->makeString(',')
                                 )->joinStrings('\n');
   $tdsString->stringToTDS();
-}
-
-function <<access.private>> meta::protocols::pure::vX_X_X::invocation::execution::execute::stripMatchingQuotes(s: String[1]): String[1]
-{
-    if($s->startsWith('"') && $s->endsWith('"'),
-        | $s->parseJSON()->cast(@JSONString).value,
-        | $s
-    );
 }
 
 function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTabularDataSetFromProtocol(r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult[1], extensions:meta::pure::extension::Extension[*]): TabularDataSet[1]
