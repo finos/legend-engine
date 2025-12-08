@@ -78,7 +78,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesRelation(): ReversesForSource[*]
 {
-  []
+  pythonLegendQLReversesEssentialRelation()
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesStandard(): ReversesForSource[*]
@@ -126,11 +126,15 @@ function <<access.private>> meta::external::python::reversePCT::legendQL::getPur
     'from pylegend.core.language import PyLegendPrimitive\n' + 
     'from pylegend.core.language.shared.pct_helpers import c\n' + 
     'from pylegend.core.language.shared.functions import pi\n' + 
+    'from pylegend.extensions.tds.legendql_api.frames.legendql_api_csv_input_frame import LegendQLApiCsvNonExecutableInputTdsFrame\n'+
+    'from pylegend.core.tds.legendql_api.frames.legendql_api_applied_function_tds_frame import LegendQLApiAppliedFunctionTdsFrame' +
     '\n' +
     'def func():\n'+
     '  res = (' + $pythonCodeBlock + ')\n' + 
     '  if isinstance(res, PyLegendPrimitive):\n' + 
     '     return res.to_pure_expression(FrameToPureConfig())\n' +
+    '  if isinstance(res, LegendQLApiAppliedFunctionTdsFrame):\n' + 
+    '     return res.to_pure(FrameToPureConfig())\n' +
     '  raise RuntimeError("Unhandled expression type " + str(type(res)))\n' +
     '\n' +
     'print(func())\n';
