@@ -33,13 +33,6 @@ function meta::pure::metamodel::serialization::grammar::tests::testFunction():St
 //this tests the correct fullPath serialization, In Legend Compiler it wrongly gets set so we handle this here until fixed.
 function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testFunctionName():Boolean[1]
 {
-  // let func = ^ConcreteFunctionDefinition<Integer>(
-  //   name = 'testFunc', 
-  //   package = ^Package(name = 'my'),
-  //   genericType = ^GenericType(rawType = ConcreteFunctionDefinition, typeArguments = ^GenericType(rawType = Integer)),
-  //   functionName = 'testFunc',
-  //   expressionSequence=^InstanceValue(multiplicity=PureOne,genericType=^GenericType(rawType = Integer), values = 1)
-  // );
 
   let func = meta::pure::metamodel::serialization::grammar::tests::testFunction__String_1_;
   let config = ^Configuration(fullPath = true);
