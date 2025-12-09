@@ -111,8 +111,8 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.67.0</legend.pure.version>
-        <legend.shared.version>0.29.0</legend.shared.version>
+        <legend.pure.version>5.68.0</legend.pure.version>
+        <legend.shared.version>0.30.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
         <!-- SONAR -->
