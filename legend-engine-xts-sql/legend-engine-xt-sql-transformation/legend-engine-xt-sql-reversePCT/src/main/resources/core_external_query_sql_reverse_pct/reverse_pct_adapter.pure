@@ -29,7 +29,7 @@ function <<PCT.adapter>> {PCT.adapterName='SQL'} meta::external::query::sql::rev
       let returnType = $func->functionReturnType();
       let expectedReturnType = $f->functionReturnType();
 
-      if ($returnType.rawType == Relation && $expectedReturnType.rawType != Relation,
+      if ($returnType.rawType->toOne()->subTypeOf(Relation) && !$expectedReturnType.rawType->toOne()->subTypeOf(Relation),
         | 
           let tds = $func->cast(@Function<{->Relation<Any>[1]}>)->eval();
           let columns = $tds->columns();

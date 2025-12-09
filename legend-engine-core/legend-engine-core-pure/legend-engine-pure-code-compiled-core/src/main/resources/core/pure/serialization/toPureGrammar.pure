@@ -97,7 +97,7 @@ function meta::pure::metamodel::serialization::grammar::printFunctionDefinition(
                                               ],
                                               | $expressions->joinStrings('', ';\n'+$multipleLineIndent, ';\n')
                                             ) + if($addBrackets,|'}',|'');,
-      other:FunctionDefinition<Any>[1] | $other->printFunctionSignature() + '\n' +
+      other:FunctionDefinition<Any>[1] | $other->printFunctionSignature('', false, $configuration.fullPath->orElse(false)) + '\n' +
                                          $context.space + '{\n' +
                                          if($expressions->size() == 1,
                                             |$context.space + '  ' + $expressions->toOne() + '\n',
@@ -235,7 +235,10 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
    let context = ^$_context(parentFunction=$functionExpression.func);
    if (
         [
-          pair(|$functionExpression.parametersValues->isEmpty(), | if($configuration->isNotEmpty() && $configuration->toOne().fullPath,|$functionExpression.func->cast(@PackageableElement).package->toOne()->elementToPath()+'::',|'')+$name->toOne()+'()'),
+          pair(|$functionExpression.parametersValues->isEmpty(), | 
+              if($configuration->isNotEmpty() && $configuration->toOne().fullPath,
+                |$functionExpression.func->cast(@PackageableElement).package->toOne()->elementToPath()+'::',
+                |'')+$name->toOne()+'()';),
           pair(|$name == 'getAll',|let genericType = $functionExpression.parametersValues->at(0)->cast(@InstanceValue).genericType;
                                    let main = $genericType.rawType->toOne()->cast(@Class<Any>);
                                    let val = if ($main == Class,
@@ -535,7 +538,16 @@ function meta::pure::metamodel::serialization::grammar::printFunctionSignature(f
 
     if($func.functionName->isEmpty(),
         | 'LAMBDA',
-        | if($fullPath && $func->instanceOf(PackageableElement),|$func->cast(@PackageableElement).package->toOne()->elementToPath()+'::',|'')+$func.functionName->toOne()) + if($typeParams->isEmpty(), |'', |$typeParams->map(t:TypeParameter[1]|$t.name)->joinStrings('<', ', ','>')) + $parameters->map(v | $v.name + ': ' + printGenericType($v.genericType) + '[' + printMultiplicity($v.multiplicity) + ']')->joinStrings('(', ', ', ')') + $body +': ' + printGenericType($returnType) + '[' + printMultiplicity($funcType.returnMultiplicity) + ']';
+        | if($fullPath && $func->instanceOf(PackageableElement),|printFullFunctionName($func),|$func.functionName->toOne())) + if($typeParams->isEmpty(), |'', |$typeParams->map(t:TypeParameter[1]|$t.name)->joinStrings('<', ', ','>')) + $parameters->map(v | $v.name + ': ' + printGenericType($v.genericType) + '[' + printMultiplicity($v.multiplicity) + ']')->joinStrings('(', ', ', ')') + $body +': ' + printGenericType($returnType) + '[' + printMultiplicity($funcType.returnMultiplicity) + ']';
+}
+
+function meta::pure::metamodel::serialization::grammar::printFullFunctionName(func:Function<Any>[1]):String[1]
+{
+  let pkg = $func->cast(@PackageableElement).package->toOne()->elementToPath() + '::';
+  let name = $func.functionName->toOne();
+  let functionName = if ($name->startsWith($pkg), | $name->replace($pkg, ''), | $name);
+
+  $pkg + $functionName;
 }
 
 function meta::pure::metamodel::serialization::grammar::printMultiplicity(multiplicity:Multiplicity[1]):String[1]
@@ -598,7 +610,7 @@ function meta::pure::metamodel::serialization::grammar::printPackageableElements
             t:Type[1]                    | '###Pure\n'+$t->printType(),
             a:Association[1]             | '###Pure\n'+$a->printAssociation(),
             p:Profile[1]                 | '###Pure\n'+$p->printProfile(),
-            f:FunctionDefinition<Any>[1] | '###Pure\n'+'function ' + printStereotypes($f->cast(@ElementWithStereotypes)) + printTaggedValues($f->cast(@ElementWithTaggedValues)) + $f->printFunctionDefinition(^GContext(space='')),
+            f:FunctionDefinition<Any>[1] | '###Pure\n'+'function ' + printStereotypes($f->cast(@ElementWithStereotypes)) + printTaggedValues($f->cast(@ElementWithTaggedValues)) + $f->printFunctionDefinition($configuration, ^GContext(space='')),
             x:NativeFunction<Any>[1]     | '',
             p:Package[1]                 | '',
             s:SectionIndex[1]            | ''

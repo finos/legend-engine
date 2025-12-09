@@ -1,3 +1,4 @@
+import meta::relational::metamodel::join::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::store::*;
 import meta::external::store::relational::runtime::*;
@@ -31,15 +32,26 @@ function meta::relational::grammar::serialization::printDatabase(d:Database[1]):
           let indent = if($defaultSchema, |'  ', |'    ');
           if($defaultSchema, |'', |'\n  Schema '+$s.name + '\n  (')+
             + $s.tables->map(x|
-              '\n'+$indent+'Table '+$x.name+'\n'+$indent+'(\n'+
-                  $x.columns->map(z|let c = $z->cast(@meta::relational::metamodel::Column);
-                                    $indent+'  ' + escapeIdentifier($c.name) + ' ' + meta::relational::metamodel::datatype::dataTypeToSqlText($c.type)
-                                                 + if ($x.primaryKey->contains($c),
-                                                      |' PRIMARY KEY',
-                                                      |if ($c.nullable->isNotEmpty() && $c.nullable->toOne(), |'', |' NOT NULL')
-                                                   );
-                                 )->joinStrings(',\n')+
+              '\n'+$indent+'Table '+escapeIdentifier($x.name)+'\n'+$indent+'(\n'+
+                  $x.columns->map(z| printDatabaseColumn($z->cast(@meta::relational::metamodel::Column), $x.primaryKey, $indent))->joinStrings(',\n')+
               '\n'+$indent+')'
+            )->joinStrings('') +
+            if ($s.tabularFunctions->isEmpty(), | '', | '\n') +
+            $s.tabularFunctions->map(t | 
+              $indent + 'TabularFunction ' + escapeIdentifier($t.name) + '\n' + 
+              $indent + '(\n' + 
+                $t.columns->map(c | printDatabaseColumn($c->cast(@meta::relational::metamodel::Column), [], $indent))->joinStrings(',\n') + '\n' +
+              $indent + ')'
+            )->joinStrings('') +
+            if ($s.views->isEmpty(), | '', | '\n')+
+            $s.views->map(v | 
+              let v_indent = $indent + '  ';
+              '\n' + $indent + 'View ' + escapeIdentifier($v.name) + '\n' + $indent + '(\n' + 
+                  if ($v.filter->isEmpty(), | '', | $v_indent + printFilterMapping($v.filter->toOne()) + '\n') +
+                  if ($v.groupBy->isEmpty(), | '', | $v_indent + '~groupBy\n' + $indent + '  (\n' + $v.groupBy.columns->map(g | $v_indent + '  ' + printRelationalOperationElement($g, false))->joinStrings(',\n') + '\n' + $v_indent + ')\n') +
+                  if ($v.distinct->isTrue(), | $v_indent + '~distinct\n', | '') +
+                  if ($v.columnMappings->isEmpty(), | '', | $v.columnMappings->map(c | printViewColumnMapping($c, $v.primaryKey, $v_indent))->joinStrings(',\n') + '\n') +
+              $indent + ')';
             )->joinStrings('')
         +if($defaultSchema, |'', |'\n  )');
     )->joinStrings('')+
@@ -54,9 +66,46 @@ function meta::relational::grammar::serialization::printDatabase(d:Database[1]):
   '\n)';
 }
 
+function meta::relational::grammar::serialization::printDatabaseColumn(c:Column[1], primaryKey:Column[*], indent:String[1]):String[1]
+{
+  $indent+ '  ' + escapeIdentifier($c.name) + ' ' + meta::relational::metamodel::datatype::dataTypeToSqlText($c.type)
+                + if ($primaryKey->contains($c),
+                    |' PRIMARY KEY',
+                    |if ($c.nullable->isNotEmpty() && $c.nullable->toOne(), |'', |' NOT NULL')
+                  )  
+}
+
 function meta::relational::grammar::serialization::escapeIdentifier(name:String[1]):String[1]
 {
   if ($name->contains(' ') && !$name->startsWith('"'), | '"' + $name + '"', | $name);
+}
+
+function meta::relational::grammar::serialization::printViewColumnMapping(c:ColumnMapping[1], primaryKey:Column[*], indent:String[1]):String[1]
+{
+  $indent + $c.columnName + ': ' + printRelationalOperationElement($c.relationalOperationElement, false) + if ($primaryKey.name->contains($c.columnName), | ' PRIMARY KEY', | '')
+}
+
+function meta::relational::grammar::serialization::printFilterMapping(filterMapping:FilterMapping[1]):String[1]
+{
+  let joins = flattenJoinTreeNode($filterMapping.joinTreeNode);
+
+   let joinSize = $joins->size();
+   let firstJoin = if($joinSize > 0,
+                      | printJoinTreeNode($filterMapping.joinTreeNode->at(0), true),
+                      | '');
+
+   let otherJoins = if($joinSize > 1,
+                       | $joins->tail(),
+                       | []);
+
+   let body = $firstJoin +
+              if($otherJoins->isNotEmpty(),
+                 | ' > ' + $otherJoins->map(j | printJoinTreeNode($j, false))->joinStrings(' > '),
+                 | '') +
+              if($joins->isNotEmpty(), | ' | ', | '') +
+              printDatabasePointer($filterMapping.filter.database->toOne());
+
+   '~filter ' + if($filterMapping.filter.database->isNotEmpty(), | $body, | '') +  $filterMapping.filterName;
 }
 
 function meta::relational::grammar::serialization::printMapping(d:Mapping[1]):String[1]
@@ -77,7 +126,7 @@ function meta::relational::grammar::serialization::printMapping(d:Mapping[1]):St
                 | ''
               ) +
               if($rs.mainTableAlias->isNotEmpty(),
-                | '    ~mainTable ['+$rs.mainTableAlias.database->toOne()->elementToPath()+']'+$rs.mainTableAlias.relationalElement->cast(@meta::relational::metamodel::relation::Table)->printTable()+'\n',
+                | '    ~mainTable ['+$rs.mainTableAlias.database->toOne()->elementToPath()+']'+$rs.mainTableAlias.relationalElement->printRelationalOperationElementTarget()+'\n',
                 | ''
               ) +
               $rs.propertyMappings->cast(@meta::relational::mapping::RelationalPropertyMapping)->map(pm|
@@ -120,9 +169,37 @@ function meta::relational::grammar::serialization::printMapping(d:Mapping[1]):St
   '\n)';
 }
 
-function meta::relational::grammar::serialization::printTable(t:Table[1]):String[1]
+function meta::relational::grammar::serialization::printRelationalOperationElementTarget(r:RelationalOperationElement[1]):String[1]
 {
-  if ($t.schema.name->toOne()->equalIgnoreCase('DEFAULT'), |'', |$t.schema.name->toOne() + '.') + $t.name
+  $r->match([
+    t:Table[1] | printName($t.schema, $t.name),
+    v:View[1] | printName($v.schema, $v.name)
+  ])
+}
+
+function meta::relational::grammar::serialization::printName(schema:Schema[1], name:String[1]):String[1]
+{
+  if ($schema.name->toOne()->equalIgnoreCase('DEFAULT'), |'', |$schema.name->toOne() + '.') + $name
+}
+
+function meta::relational::grammar::serialization::flattenJoinTreeNode(tree:JoinTreeNode[0..1]):JoinTreeNode[*]
+{
+  $tree->concatenate($tree.childrenData->cast(@JoinTreeNode)->map(t | flattenJoinTreeNode($t)));
+}
+
+function meta::relational::grammar::serialization::printJoinTreeNode(tree:JoinTreeNode[1], first:Boolean[1]):String[1]
+{
+  let type = if ($tree.joinType->isEmpty(), | '', | '(' + $tree.joinType->toOne().name->replace('LEFT_OUTER', 'OUTER') + ')');
+  let db = if ($tree.database->isEmpty(), | '', | printDatabasePointer($tree.database));
+
+  if ($first, 
+    | $db + $type + '@' + $tree.joinName, 
+    | $type + $db + '@' + $tree.joinName);
+}
+
+function meta::relational::grammar::serialization::printDatabasePointer(db:Database[1]):String[1]
+{
+  '[' + $db->elementToPath() + ']'
 }
 
 function meta::relational::grammar::serialization::printRelationalOperationElement(d:RelationalOperationElement[1], forMapping:Boolean[1]):String[1]
@@ -130,11 +207,24 @@ function meta::relational::grammar::serialization::printRelationalOperationEleme
   $d->match(
     [
       t:TableAliasColumn[1]|
-        let table = $t.alias.relationalElement->cast(@Table);
-        let name = if($t.alias.name->equal('t_' + $table.name),|'{target}',|$table->printTable());
+        let relation = $t.alias.relation->cast(@NamedRelation);
+        let name = if($t.alias.name->equal('t_' + $relation.name),|'{target}',|$relation->printRelationalOperationElementTarget());
 
         if($forMapping,|'['+$t.alias.database->toOne()->elementToPath()+']',|'')+ $name +'.'+$t.column.name;,
-      x:RelationalOperationElementWithJoin[1]|'['+$x.joinTreeNode.database->toOne()->elementToPath()+']@'+$x.joinTreeNode.joinName->toOne(),
+      x:RelationalOperationElementWithJoin[1]|
+        let joins = flattenJoinTreeNode($x.joinTreeNode);
+
+        let joinStr = if ($joins->isEmpty(), 
+          | '', 
+          | printJoinTreeNode($joins->at(0), true) + if ($joins->size() == 1, | '', | ' > ' + $joins->tail()->map(j | printJoinTreeNode($j, false))->joinStrings(' > '));
+        );
+
+        let element = if ($x.relationalOperationElement->isEmpty(), 
+          | '', 
+          | if ($joins->isNotEmpty(), | ' | ', | '') + printRelationalOperationElement($x.relationalOperationElement->toOne(), $forMapping)
+        );
+        
+        $joinStr + $element;,
       v:DynaFunction[1]|
         if ([
           dynaFunc2($v, 'equal', '=', $forMapping),

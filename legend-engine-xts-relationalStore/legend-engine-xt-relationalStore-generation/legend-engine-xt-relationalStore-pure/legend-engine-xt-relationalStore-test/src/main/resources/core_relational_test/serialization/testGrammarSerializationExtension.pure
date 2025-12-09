@@ -62,9 +62,21 @@ Database meta::relational::grammar::serialization::tests::TestDB
       (
         id VARCHAR(100)
       )
+
+      View View1
+      (
+        ~filter SimpleFilter
+        ~groupBy (MySchema.Table1.varchar, MySchema.Table1.char)
+        ~distinct
+        id:  Table1.id,
+        char: @SimpleJoin > (INNER) @SimpleJoin2 > (OUTER) @SimpleJoin3 | MySchema.Table2.id
+      )      
   )
 
   Join SimpleJoin (MySchema.Table1.id = MySchema.Table2.id)
+  Join SimpleJoin2 (MySchema.Table1.id = MySchema.Table2.id)
+  Join SimpleJoin3 (MySchema.Table1.id = MySchema.Table2.id)
+  
   Join CompositeJoin (
     (MySchema.Table1.id = MySchema.Table2.id) and
     (MySchema.Table1.varchar <> MySchema.Table2.id) and
@@ -79,6 +91,7 @@ Database meta::relational::grammar::serialization::tests::TestDB
     (MySchema.Table1.varchar = 999)
   )
   Join SelfJoin (MySchema.Table1.id = {target}.id)
+  Join SelfViewJoin (MySchema.View1.id = {target}.id)
 
   Filter SimpleFilter(MySchema.Table1.varchar = 'abc')
   MultiGrainFilter multiGrain(MySchema.Table1.varchar = 'abc')
