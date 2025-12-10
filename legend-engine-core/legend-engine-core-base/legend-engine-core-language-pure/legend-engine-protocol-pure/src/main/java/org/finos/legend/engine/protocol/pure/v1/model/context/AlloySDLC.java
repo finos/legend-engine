@@ -33,11 +33,7 @@ public class AlloySDLC extends SDLC
     @Override
     public boolean equals(Object o)
     {
-        if (this == o)
-        {
-            return true;
-        }
-        if ((o == null) || (o.getClass() != this.getClass()))
+        if (!super.equals(o))
         {
             return false;
         }
@@ -48,7 +44,7 @@ public class AlloySDLC extends SDLC
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(this.project) + 89 * Objects.hashCode(this.version) + 17 * Objects.hashCode(this.groupId) + 17 * Objects.hashCode(artifactId);
+        return super.hashCode() + 37 * Objects.hashCode(this.project) + 89 * Objects.hashCode(this.version) + 17 * Objects.hashCode(this.groupId) + 17 * Objects.hashCode(artifactId);
     }
 
     @Override
