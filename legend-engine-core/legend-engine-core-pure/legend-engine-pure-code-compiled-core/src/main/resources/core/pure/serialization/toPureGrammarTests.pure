@@ -37,7 +37,7 @@ function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::tes
   let config = ^Configuration(fullPath = true);
   let expected = '###Pure\nfunction meta::pure::metamodel::serialization::grammar::tests::testFunction(): String[1]\n{\n  \'abc\'\n}';
 
-  assertEquals($expected,printPackageableElements($func, $config));
+  assertEquals($expected, printPackageableElements($func, $config));
   assertEquals($expected, printPackageableElements(^$func(functionName = $func.package->toOne()->elementToPath() + '::' + $func.functionName->toOne()), $config));
 }
 
@@ -47,6 +47,6 @@ function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::tes
   let config = ^Configuration(fullPath = false);
   let expected = '###Pure\nfunction testFunction(): String[1]\n{\n  \'abc\'\n}';
 
-  assertEquals($expected,printPackageableElements($func, $config));
+  assertEquals($expected, printPackageableElements($func, $config));
   assertEquals($expected, printPackageableElements(^$func(functionName = $func.package->toOne()->elementToPath() + '::' + $func.functionName->toOne()), $config));
 }
