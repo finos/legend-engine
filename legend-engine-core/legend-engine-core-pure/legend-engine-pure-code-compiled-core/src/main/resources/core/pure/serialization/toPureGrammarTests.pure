@@ -24,3 +24,29 @@ function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::tes
   assertEquals('^meta::pure::metamodel::serialization::grammar::tests::testNew::TestClass(a=\'ok\',b=true,c=1,d=1.0,e=%2015-04-15T17:09:21.398+0000,f=meta::pure::metamodel::serialization::grammar::tests::testNew::MyEnum.Other,g=10D)', $val->printNew());
   true;
 }
+
+function meta::pure::metamodel::serialization::grammar::tests::testFunction():String[1]
+{
+  'abc';
+}
+ 
+//this tests the correct fullPath serialization, In Legend Compiler it wrongly gets set so we handle this here until fixed.
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testFunctionNameFullPath():Boolean[1]
+{
+  let func = meta::pure::metamodel::serialization::grammar::tests::testFunction__String_1_;
+  let config = ^Configuration(fullPath = true);
+  let expected = '###Pure\nfunction meta::pure::metamodel::serialization::grammar::tests::testFunction(): String[1]\n{\n  \'abc\'\n}';
+
+  assertEquals($expected, printPackageableElements($func, $config));
+  assertEquals($expected, printPackageableElements(^$func(functionName = $func.package->toOne()->elementToPath() + '::' + $func.functionName->toOne()), $config));
+}
+
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testFunctionNameNotFullPath():Boolean[1]
+{
+  let func = meta::pure::metamodel::serialization::grammar::tests::testFunction__String_1_;
+  let config = ^Configuration(fullPath = false);
+  let expected = '###Pure\nfunction testFunction(): String[1]\n{\n  \'abc\'\n}';
+
+  assertEquals($expected, printPackageableElements($func, $config));
+  assertEquals($expected, printPackageableElements(^$func(functionName = $func.package->toOne()->elementToPath() + '::' + $func.functionName->toOne()), $config));
+}

@@ -300,7 +300,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                           $reprocessed.mapping->toOne()->printMapping()
                         )+
                         '\n###Pure\n'+
-                        $otherFuncs->filter(x|$x->instanceOf(FunctionDefinition))->map(o|'function '+$o->cast(@PackageableElement).package->toOne()->elementToPath()+'::'+$o->cast(@FunctionDefinition<Any>)->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''));)->joinStrings('')+
+                        $otherFuncs->filter(x|$x->instanceOf(FunctionDefinition))->map(o|'function ' +$o->cast(@FunctionDefinition<Any>)->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''));)->joinStrings('')+
                         'function test::lambdaContainer():Any[*]{\n'+
                         '  '+meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+'\n'+
                         '}'
