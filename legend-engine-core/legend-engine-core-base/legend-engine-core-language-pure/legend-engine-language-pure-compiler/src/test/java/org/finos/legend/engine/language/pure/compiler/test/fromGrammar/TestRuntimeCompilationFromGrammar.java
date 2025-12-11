@@ -105,7 +105,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "  mappings:\n" +
                 "  [\n" +
                 "  ];\n" +
-                "}\n", null, Lists.mutable.with("COMPILATION error at [15:1-20:1]: Runtime must cover at least one mapping"));
+                "}\n", null, Lists.mutable.with("COMPILATION warning at [15:1-20:1]: Runtime must cover at least one mapping"));
         // Unknown connection pointer
         test(resource +
                 "###Runtime\n" +
@@ -345,7 +345,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "      connection_2: humanResourceModel::M2MModelChainConnection2\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}",null, Collections.singletonList("COMPILATION error at [73:1-87:1]: Multiple ModelChainConnections are Not Supported for the same Runtime."));
+                "}",null, Collections.singletonList("COMPILATION warning at [73:1-87:1]: Multiple ModelChainConnections are Not Supported for the same Runtime."));
     }
 
     @Test
@@ -425,6 +425,6 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "      connection_3: modelToModel::test::XmlConnection\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}",null,Collections.singletonList("COMPILATION error at [60:1-75:1]: Multiple Connections available for Source Class - __Firm"));
+                "}",null,Collections.singletonList("COMPILATION warning at [60:1-75:1]: Multiple Connections available for Source Class - __Firm"));
     }
 }

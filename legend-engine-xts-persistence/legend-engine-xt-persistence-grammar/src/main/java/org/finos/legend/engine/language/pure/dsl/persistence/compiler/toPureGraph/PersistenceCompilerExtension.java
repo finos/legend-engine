@@ -104,7 +104,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             if (persistence.persister != null)
                             {
                                 purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
-                                context.pureModel.addWarnings(Collections.singletonList(new Warning(persistence.sourceInformation, "Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar.")));
+                                context.pureModel.addDefects(Collections.singletonList(new Warning(persistence.sourceInformation, "Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar.")));
                             }
                             purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));
                             purePersistence._tests(HelperPersistenceBuilder.buildTests(persistence, purePersistence, context));

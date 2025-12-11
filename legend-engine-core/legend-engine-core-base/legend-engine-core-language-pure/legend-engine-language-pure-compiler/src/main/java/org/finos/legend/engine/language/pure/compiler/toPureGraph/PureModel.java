@@ -34,6 +34,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.MetadataWrapper;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
@@ -147,7 +148,7 @@ public class PureModel implements IPureModel
     // this as part of `CompileContext`
     final CompilerExtensions extensions;
 
-    private final MutableList<Warning> warnings = Lists.mutable.empty();
+    private final MutableList<Defect> defects = Lists.mutable.empty();
 
     final Handlers handlers;
 
@@ -482,16 +483,33 @@ public class PureModel implements IPureModel
         return root;
     }
 
+    /**
+     * @deprecated Use addDefects() instead.
+     */
+    @Deprecated
     public synchronized void addWarnings(Iterable<Warning> warnings)
     {
-        this.warnings.addAllIterable(warnings);
+        this.defects.addAllIterable(warnings);
     }
 
+    /**
+     * @deprecated Use getDefects() instead to get all defects including warnings.
+     */
+    @Deprecated
     public MutableList<Warning> getWarnings()
     {
-        return this.warnings;
+        return this.defects.select(d -> d instanceof Warning).collect(w -> (Warning) w);
     }
 
+    public synchronized void addDefects(Iterable<? extends Defect> defects)
+    {
+        this.defects.addAllIterable(defects);
+    }
+
+    public MutableList<? extends Defect> getDefects()
+    {
+        return this.defects;
+    }
     // ------------------------------------------ INITIALIZATION -----------------------------------------
 
     /**

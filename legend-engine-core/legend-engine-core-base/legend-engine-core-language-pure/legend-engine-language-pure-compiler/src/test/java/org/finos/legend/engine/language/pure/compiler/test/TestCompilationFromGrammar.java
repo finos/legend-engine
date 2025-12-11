@@ -26,7 +26,7 @@ import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
@@ -93,12 +93,12 @@ public class TestCompilationFromGrammar
 
                 if (expectedWarnings == null)
                 {
-                    Assert.assertTrue("expected no warnings but found " + pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).collect(Collectors.toList()), pureModel.getWarnings().isEmpty());
+                    Assert.assertTrue("expected no warnings but found " + pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).collect(Collectors.toList()), pureModel.getDefects().isEmpty());
                 }
 
                 if (expectedWarnings != null)
                 {
-                    List<String> warnings = pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).sorted().collect(Collectors.toList());
+                    List<String> warnings = pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).sorted().collect(Collectors.toList());
                     Collections.sort(expectedWarnings);
                     Assert.assertEquals(expectedWarnings, warnings);
                 }
@@ -165,12 +165,12 @@ public class TestCompilationFromGrammar
 
                 if (expectedWarnings == null)
                 {
-                    Assert.assertTrue("expected no warnings but found " + pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).collect(Collectors.toList()), pureModel.getWarnings().isEmpty());
+                    Assert.assertTrue("expected no warnings but found " + pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).collect(Collectors.toList()), pureModel.getDefects().isEmpty());
                 }
 
                 if (expectedWarnings != null)
                 {
-                    List<String> warnings = pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).sorted().collect(Collectors.toList());
+                    List<String> warnings = pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).sorted().collect(Collectors.toList());
                     Collections.sort(expectedWarnings);
                     Assert.assertEquals(expectedWarnings, warnings);
                 }

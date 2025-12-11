@@ -1068,7 +1068,7 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    }\n" +
                 ")\n\n",
                 null,
-                Lists.mutable.with("COMPILATION error at [119:9-71]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                Lists.mutable.with("COMPILATION warning at [119:9-71]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
                 );
 
         test(JSON_BINDING +

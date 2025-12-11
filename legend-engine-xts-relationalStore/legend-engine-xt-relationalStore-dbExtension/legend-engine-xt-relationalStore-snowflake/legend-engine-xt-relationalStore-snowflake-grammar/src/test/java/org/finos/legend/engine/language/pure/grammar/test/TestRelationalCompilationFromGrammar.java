@@ -275,9 +275,9 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     public void testRelationalDatabaseFail()
     {
         MutableList<String> warnings = Lists.mutable.empty();
-        warnings.add("COMPILATION error at [4:5-212]: Duplicate column definitions [FIRSTNAME, LASTNAME] in table: personTable");
-        warnings.add("COMPILATION error at [7:5-152]: Duplicate column definitions [ADDRESSID, LEGALNAME] in table: firmTable");
-        warnings.add("COMPILATION error at [9:5-107]: Duplicate column definitions [LEGALNAME] in table: otherFirmTable");
+        warnings.add("COMPILATION warning at [4:5-212]: Duplicate column definitions [FIRSTNAME, LASTNAME] in table: personTable");
+        warnings.add("COMPILATION warning at [7:5-152]: Duplicate column definitions [ADDRESSID, LEGALNAME] in table: firmTable");
+        warnings.add("COMPILATION warning at [9:5-107]: Duplicate column definitions [LEGALNAME] in table: otherFirmTable");
         PureModel dbIncModel = test(DB_DUP_INC, null, warnings).getTwo();
 
     }
@@ -1579,11 +1579,11 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    lastName: [simple::dbInc]personTable.LASTNAME, \n" +
                 "    firm[x]: [simple::dbInc]@personSelfJoin\n" +
                 "  }\n" +
-                ")\n", null, Arrays.asList("COMPILATION error at [30:12-43]: Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc"));
+                ")\n", null, Arrays.asList("COMPILATION warning at [30:12-43]: Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc"));
 
         MutableList<Warning> warnings = res.getTwo().getWarnings();
         Assert.assertEquals(1, warnings.size());
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":30,\"startColumn\":12,\"endLine\":30,\"endColumn\":43},\"message\":\"Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
+        Assert.assertEquals("{\"defectSeverityLevel\":\"WARN\",\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":30,\"startColumn\":12,\"endLine\":30,\"endColumn\":43},\"message\":\"Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc\",\"defectTypeId\":\"PureWarning\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
     }
 
     @Test
@@ -1771,7 +1771,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:20-69]: Mapping error: model::myRelationalMapping the join Address_Person does not contain the source table [dbInc]firmTable"));
+                ")", null, Arrays.asList("COMPILATION warning at [107:20-69]: Mapping error: model::myRelationalMapping the join Address_Person does not contain the source table [dbInc]firmTable"));
 
         test(MODEL +
                 "Association model::Employment\n" +
@@ -1799,7 +1799,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         employees : [model::relational::tests::dbInc]@OtherFirm_PersonFirm >@Firm_Person\n" + //Join chain doesn't start on correct Table
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:20-89]: Mapping error: model::myRelationalMapping the join OtherFirm_PersonFirm does not contain the source table [dbInc]firmTable"));
+                ")", null, Arrays.asList("COMPILATION warning at [107:20-89]: Mapping error: model::myRelationalMapping the join OtherFirm_PersonFirm does not contain the source table [dbInc]firmTable"));
 
         test(MODEL +
                 "Association model::Employment\n" +
@@ -1828,7 +1828,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 //  "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:20-94]: Mapping error: model::myRelationalMapping the join OtherFirm_PersonFirm does not connect from the source table [dbInc]PersonToFirm to the target table [dbInc]personTable; instead it connects to [dbInc]otherFirmTable"));
+                ")", null, Arrays.asList("COMPILATION warning at [107:20-94]: Mapping error: model::myRelationalMapping the join OtherFirm_PersonFirm does not connect from the source table [dbInc]PersonToFirm to the target table [dbInc]personTable; instead it connects to [dbInc]otherFirmTable"));
 
 
         test(MODEL +
@@ -1869,7 +1869,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm[OtherFirm] : [model::relational::tests::dbInc]@Firm_Person\n" + //id exists but it's the wrong  type (Join is correct)
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [119:26-72]: Mapping Error: on model::myRelationalMapping The setImplementationId 'OtherFirm' is implementing the class 'OtherFirm' which is not a subType of 'Firm' return type of the mapped property 'firm'"));
+                ")", null, Arrays.asList("COMPILATION warning at [119:26-72]: Mapping Error: on model::myRelationalMapping The setImplementationId 'OtherFirm' is implementing the class 'OtherFirm' which is not a subType of 'Firm' return type of the mapped property 'firm'"));
 
 
         test(MODEL +
@@ -1899,7 +1899,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm[person, firm] : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:37-83]: Unable to find source class mapping (id:wrongID) for property 'employees' in Association mapping 'model::Employment'. Make sure that you have specified a valid Class mapping id as the source id and target id, using the syntax 'property[sourceId, targetId]'."));
+                ")", null, Arrays.asList("COMPILATION warning at [107:37-83]: Unable to find source class mapping (id:wrongID) for property 'employees' in Association mapping 'model::Employment'. Make sure that you have specified a valid Class mapping id as the source id and target id, using the syntax 'property[sourceId, targetId]'."));
 
 
         test(MODEL +
@@ -1929,7 +1929,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm[person, firm] : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:34-80]: Unable to find target class mapping (id:wrongID) for property 'employees' in Association mapping 'model::Employment'. Make sure that you have specified a valid Class mapping id as the source id and target id, using the syntax 'property[sourceId, targetId]'."));
+                ")", null, Arrays.asList("COMPILATION warning at [107:34-80]: Unable to find target class mapping (id:wrongID) for property 'employees' in Association mapping 'model::Employment'. Make sure that you have specified a valid Class mapping id as the source id and target id, using the syntax 'property[sourceId, targetId]'."));
 
 
         test(MODEL +
@@ -1959,7 +1959,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", null, Arrays.asList("COMPILATION error at [107:20-73]: Mapping Error! on model::myRelationalMapping Expected a Join"));
+                ")", null, Arrays.asList("COMPILATION warning at [107:20-73]: Mapping Error! on model::myRelationalMapping Expected a Join"));
 
 
         test(MODEL +
@@ -2000,7 +2000,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  {\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [97:8-54]: Mapping error on mapping model::myRelationalMapping. The property 'age' returns a data type. However it's mapped to a Join."));
+                ")", null, Arrays.asList("COMPILATION warning at [97:8-54]: Mapping error on mapping model::myRelationalMapping. The property 'age' returns a data type. However it's mapped to a Join."));
 
         test(MODEL +
                 "Class model::OtherFirm extends model::LegalEntity \n" +
@@ -2033,7 +2033,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  {\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [105:20-71]: Mapping Error: on model::myRelationalMapping The setImplementationId 'OtherFirm' is implementing the class 'OtherFirm' which is not a subType of 'Firm' return type of the mapped property 'firm'"));
+                ")", null, Arrays.asList("COMPILATION warning at [105:20-71]: Mapping Error: on model::myRelationalMapping The setImplementationId 'OtherFirm' is implementing the class 'OtherFirm' which is not a subType of 'Firm' return type of the mapped property 'firm'"));
 
 
         test(MODEL +
@@ -2057,7 +2057,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  {\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [93:3-99:3]: Mapping Error: on model::myRelationalMapping The property 'firm' doesn't return a data type. However it's mapped to a column or a function."));
+                ")", null, Arrays.asList("COMPILATION warning at [93:3-99:3]: Mapping Error: on model::myRelationalMapping The property 'firm' doesn't return a data type. However it's mapped to a column or a function."));
 
 
         test(MODEL +
@@ -2081,7 +2081,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  {\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [93:3-99:3]: Mapping Error: on model::myRelationalMapping The target type:'Firm' on property firm is not a data type and a join is expected"));
+                ")", null, Arrays.asList("COMPILATION warning at [93:3-99:3]: Mapping Error: on model::myRelationalMapping The target type:'Firm' on property firm is not a data type and a join is expected"));
 
         test(MODEL +
                 "Association model::Employment\n" +
@@ -2100,7 +2100,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    age: [model::relational::tests::dbInc]personTable.AGE,\n" +
                 "    firm:[model::relational::tests::dbInc]@Firm_Person \n" +  //Missing firm mapping  (Warning on properties)
                 "  }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [98:9-54]: Error 'model_Firm' can't be found in the mapping model::myRelationalMapping"));
+                ")", null, Arrays.asList("COMPILATION warning at [98:9-54]: Error 'model_Firm' can't be found in the mapping model::myRelationalMapping"));
 
     }
 

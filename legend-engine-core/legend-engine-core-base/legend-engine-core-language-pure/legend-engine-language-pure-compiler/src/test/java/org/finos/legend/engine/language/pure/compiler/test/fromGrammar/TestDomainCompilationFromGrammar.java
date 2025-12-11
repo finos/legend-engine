@@ -277,7 +277,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   tags : [doc, doc];\n" +
                 "   stereotypes : [modifier, modifier, accessorType, accessorType];\n" +
-                "}\n", null, Lists.fixedSize.with("COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'accessorType' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'modifier' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated tag 'doc' in profile 'test::A'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION warning at [1:1-5:1]: Found duplicated stereotype 'accessorType' in profile 'test::A'", "COMPILATION warning at [1:1-5:1]: Found duplicated stereotype 'modifier' in profile 'test::A'", "COMPILATION warning at [1:1-5:1]: Found duplicated tag 'doc' in profile 'test::A'"));
     }
 
     @Test
@@ -286,7 +286,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         test("Enum test::A\n" +
                 "{\n" +
                 "   TEA,COFFEE,TEA,TEA,COFFEE\n" +
-                "}\n", null, Lists.fixedSize.with("COMPILATION error at [3:4-6]: Found duplicated value 'TEA' in enumeration 'test::A'", "COMPILATION error at [3:8-13]: Found duplicated value 'COFFEE' in enumeration 'test::A'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION warning at [3:4-6]: Found duplicated value 'TEA' in enumeration 'test::A'", "COMPILATION warning at [3:8-13]: Found duplicated value 'COFFEE' in enumeration 'test::A'"));
     }
 
     @Test
@@ -298,7 +298,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   property1: test::A[0..1];\n" +
                 "   property1: test::B[1];\n" +
-                "}\n", null, Lists.fixedSize.with("COMPILATION error at [5:4-28]: Found duplicated property 'property1' in association 'test::C'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION warning at [5:4-28]: Found duplicated property 'property1' in association 'test::C'"));
     }
 
     @Test
@@ -311,7 +311,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   other : String[1];\n" +
                 "   ok : String[1];\n" +
                 "   other: String[1];\n" +
-                "}\n", null, Lists.fixedSize.with("COMPILATION error at [3:4-28]: Found duplicated property 'property' in class 'test::A'", "COMPILATION error at [5:4-21]: Found duplicated property 'other' in class 'test::A'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION warning at [3:4-28]: Found duplicated property 'property' in class 'test::A'", "COMPILATION warning at [5:4-21]: Found duplicated property 'other' in class 'test::A'"));
     }
 
     @Test
@@ -331,7 +331,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   other : String[1];\n" +
                 "   ok : String[1];\n" +
                 "   other: String[1];\n" +
-                "}\n", null, Lists.fixedSize.with("COMPILATION error at [5:4-28]: Found duplicated property 'property1' in association 'test::C'", "COMPILATION error at [10:4-28]: Found duplicated property 'property' in class 'test::D'", "COMPILATION error at [12:4-21]: Found duplicated property 'other' in class 'test::D'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION warning at [5:4-28]: Found duplicated property 'property1' in association 'test::C'", "COMPILATION warning at [10:4-28]: Found duplicated property 'property' in class 'test::D'", "COMPILATION warning at [12:4-21]: Found duplicated property 'other' in class 'test::D'"));
     }
 
     @Test
@@ -2702,9 +2702,9 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "  biTemporalAddress : test::BiTemporalAddress[1];\n" +
                 "}";
         PureModel pm = test(grammar, null, Lists.mutable.with(
-                "COMPILATION error at [2:1-5:1]: Class test::ProcessingTemporalAddress has temporal specification: [processingtemporal] properties: [processingDate] are reserved and should not be explicit in the Model",
-                "COMPILATION error at [7:1-10:1]: Class test::BusinessTemporalAddress has temporal specification: [businesstemporal] properties: [businessDate] are reserved and should not be explicit in the Model",
-                "COMPILATION error at [12:1-16:1]: Class test::BiTemporalAddress has temporal specification: [bitemporal] properties: [processingDate, businessDate] are reserved and should not be explicit in the Model"
+                "COMPILATION warning at [2:1-5:1]: Class test::ProcessingTemporalAddress has temporal specification: [processingtemporal] properties: [processingDate] are reserved and should not be explicit in the Model",
+                "COMPILATION warning at [7:1-10:1]: Class test::BusinessTemporalAddress has temporal specification: [businesstemporal] properties: [businessDate] are reserved and should not be explicit in the Model",
+                "COMPILATION warning at [12:1-16:1]: Class test::BiTemporalAddress has temporal specification: [bitemporal] properties: [processingDate, businessDate] are reserved and should not be explicit in the Model"
 
         )).getTwo();
 
