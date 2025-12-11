@@ -26,7 +26,6 @@ public class PythonExecutionUtil
 {
     private static final String DOCKER_IMAGE = "finos/pylegend:0.10.0";
     private static GenericContainer<?> pythonContainer = new GenericContainer<>(DockerImageName.parse(DOCKER_IMAGE)).withCommand("tail", "-f", "/dev/null");
-    private static final Object lock = new Object();
 
     private PythonExecutionUtil()
     {
