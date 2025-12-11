@@ -639,7 +639,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   if ($s.data == [],
     |'',
     | let fromStr = $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions);
-      ' ' + $format.separator + 'from ' + $fromStr + if($s.pivot->isEmpty(), | '', | processPivotForSnowflake($s.pivot->toOne(), $dbConfig, $format, ^$config(useUnqualifiedColumnNameInPivot = true), $extensions));
+      ' ' + $format.separator + 'from ' + $fromStr + if($s.pivot->isEmpty(), | '', | processPivotForSnowflake($s, $s.pivot->toOne(), $dbConfig, $format, ^$config(useUnqualifiedColumnNameInPivot = true), $extensions));
   ) +
 
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
@@ -650,10 +650,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForSnowflake_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processPivotForSnowflake(p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processPivotForSnowflake(s:SelectSQLQuery[1], p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
 {
   $p->match([
-              staticPivot:StaticPivot[1] | processStaticPivotForSnowflake($staticPivot, $dbConfig, $format, $config, $extensions),
+              staticPivot:StaticPivot[1] | processStaticPivotForSnowflake($s, $staticPivot, $dbConfig, $format, $config, $extensions),
               dynamicPivot:Pivot[1] | let pivotColumnName = $dbConfig.identifierProcessor($dynamicPivot.pivotColumns->toOne()->cast(@ColumnName).name);
                                       let processedAggColumns = processSelectColumns($dynamicPivot.aggColumns->toOne(), $dbConfig, $format->indent(), $config, true, $extensions);
                                       ' ' + $format.separator + 'pivot (' + $processedAggColumns +
@@ -662,16 +662,18 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
             ]);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processStaticPivotForSnowflake(staticPivot:StaticPivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processStaticPivotForSnowflake(s:SelectSQLQuery[1], staticPivot:StaticPivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
 {
   let pivotColumnName = $dbConfig.identifierProcessor($staticPivot.pivotColumns->toOne()->cast(@ColumnName).name);
   let aggColumn = $staticPivot.aggColumns->cast(@Alias)->toOne();
   let processedAggColumn = processSelectColumns($aggColumn.relationalElement, $dbConfig, $format->indent(), $config, true, $extensions);
   let staticPivotValueAliases = $staticPivot.values->map(v | ^Alias(name = '"\'' + $v.value->toString() + pivotColumnDelimeter() + $aggColumn.name + '\'"', relationalElement = $v));
   let processedStaticPivotValues = $staticPivotValueAliases->map(s | $s->processOperation($dbConfig, $format->indent(), $config, $extensions))->joinStrings(',');
+  let pivotSelectColumns = $s.columns->map(c | $c->processOperation($dbConfig, $format->indent(), $config, $extensions))->joinStrings(',');
   ' ' + $format.separator + 'pivot (' + $processedAggColumn +
   ' ' + $format.separator + 'for ' + $pivotColumnName +
-  ' ' + $format.separator + 'in (' + $processedStaticPivotValues + '))';
+  ' ' + $format.separator + 'in (' + $processedStaticPivotValues + '))' +
+  ' ' + $format.separator + 'as pivot_result(' + $pivotSelectColumns + ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processJoinTreeNodeWithLateralJoinForSnowflake(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
