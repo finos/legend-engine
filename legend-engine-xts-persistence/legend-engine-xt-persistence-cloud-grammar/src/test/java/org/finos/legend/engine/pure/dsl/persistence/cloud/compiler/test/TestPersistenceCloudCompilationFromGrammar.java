@@ -181,7 +181,7 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
                 "      modelClass: test::ServiceResult;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", null, Collections.singletonList("COMPILATION error at [88:1-117:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
+                "}\n", null, Collections.singletonList("COMPILATION warning at [88:1-117:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 

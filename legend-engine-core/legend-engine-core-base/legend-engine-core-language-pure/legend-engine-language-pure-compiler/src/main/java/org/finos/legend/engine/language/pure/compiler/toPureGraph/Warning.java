@@ -14,24 +14,14 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.DefectSeverityLevel;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
-public class Warning
+public class Warning extends Defect
 {
-    public SourceInformation sourceInformation;
-    public String message;
-
     public Warning(SourceInformation sourceInformation, String message)
     {
-        this.sourceInformation = sourceInformation;
-        this.message = message;
-    }
-
-    /**
-     * Only used for testing, the backend should return just the error message.
-     */
-    public String buildPrettyWarningMessage()
-    {
-        return ("COMPILATION error" + (sourceInformation == SourceInformation.getUnknownSourceInformation() || sourceInformation == null ? "" : " at " + sourceInformation.getMessage() + "") + (message == null ? "" : ": " + message));
+        super(DefectSeverityLevel.WARN, sourceInformation, message, "PureWarning");
     }
 }

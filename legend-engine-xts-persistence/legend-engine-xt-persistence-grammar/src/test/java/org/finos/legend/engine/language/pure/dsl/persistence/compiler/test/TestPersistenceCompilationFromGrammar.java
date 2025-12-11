@@ -1445,7 +1445,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      isTestDataFromServiceOutput: false;\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}\n", null, Collections.singletonList("COMPILATION error at [48:1-114:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
+                "}\n", null, Collections.singletonList("COMPILATION warning at [48:1-114:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 
@@ -1691,7 +1691,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                         "      }\n" +
                         "    ];\n" +
                         "  }\n" +
-                        "}", null, Collections.singletonList("COMPILATION error at [68:1-149:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
+                        "}", null, Collections.singletonList("COMPILATION warning at [68:1-149:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 

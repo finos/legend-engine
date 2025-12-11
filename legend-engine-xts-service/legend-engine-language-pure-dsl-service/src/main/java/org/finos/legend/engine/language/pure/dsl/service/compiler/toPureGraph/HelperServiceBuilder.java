@@ -446,7 +446,7 @@ public class HelperServiceBuilder
         if (!compatible)
         {
             String runtimeName = runtime instanceof RuntimePointer ? " '" + ((RuntimePointer) runtime).runtime + "'" : "";
-            pureModel.addWarnings(Lists.mutable.with(new Warning(sourceInformation, context.get() + " Runtime" + runtimeName + " does not cover mapping '" + mapping + "'")));
+            pureModel.addDefects(Lists.mutable.with(new Warning(sourceInformation, context.get() + " Runtime" + runtimeName + " does not cover mapping '" + mapping + "'")));
         }
     }
 

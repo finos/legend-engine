@@ -45,7 +45,7 @@ public class ProfileValidator
         elements.values().forEach(el ->
         {
             MutableMultimap<String, String> tags = Iterate.groupBy(el.tags.stream().map(t -> t.value).collect(Collectors.toList()), p -> p);
-            pureModel.addWarnings(tags.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(el.sourceInformation, "Found duplicated tag '" + a.getFirst() + "' in profile '" + pureModel.buildPackageString(el._package, el.name) + "'")) : Lists.mutable.empty()));
+            pureModel.addDefects(tags.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(el.sourceInformation, "Found duplicated tag '" + a.getFirst() + "' in profile '" + pureModel.buildPackageString(el._package, el.name) + "'")) : Lists.mutable.empty()));
         });
     }
 
@@ -54,7 +54,7 @@ public class ProfileValidator
         elements.values().forEach(el ->
         {
             MutableMultimap<String, String> stereotypes = Iterate.groupBy(el.stereotypes.stream().map(st -> st.value).collect(Collectors.toList()), p -> p);
-            pureModel.addWarnings(stereotypes.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(el.sourceInformation, "Found duplicated stereotype '" + a.getFirst() + "' in profile '" + pureModel.buildPackageString(el._package, el.name) + "'")) : Lists.mutable.empty()));
+            pureModel.addDefects(stereotypes.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(el.sourceInformation, "Found duplicated stereotype '" + a.getFirst() + "' in profile '" + pureModel.buildPackageString(el._package, el.name) + "'")) : Lists.mutable.empty()));
         });
     }
 }

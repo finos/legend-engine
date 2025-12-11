@@ -111,7 +111,7 @@ public class HelperRuntimeBuilder
         // TODO?: drill down for model store to detect when a class has not been mapped?
         if (!mappedStores.isEmpty())
         {
-            context.pureModel.addWarnings(Lists.mutable.with(new Warning(sourceInformation, "Runtime does not cover store(s) '"
+            context.pureModel.addDefects(Lists.mutable.with(new Warning(sourceInformation, "Runtime does not cover store(s) '"
                     + StringUtils.join(new ArrayList<>(mappedStores), "', '")
                     + "' in mapping(s) '" + StringUtils.join(mappings.stream().map(mapping -> HelperModelBuilder.getElementFullPath(mapping, context.pureModel.getExecutionSupport())).collect(Collectors.toList())))));
         }
@@ -128,7 +128,7 @@ public class HelperRuntimeBuilder
     {
         if (engineRuntime.mappings.isEmpty())
         {
-            context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Runtime must cover at least one mapping")));
+            context.pureModel.addDefects(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Runtime must cover at least one mapping")));
         }
         // verify if each mapping associated with the PackageableRuntime exists
         MutableList<Mapping> mappings = engineRuntime.mappings.isEmpty() ? Lists.mutable.empty() : ListIterate.collect(engineRuntime.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation));
@@ -208,7 +208,7 @@ public class HelperRuntimeBuilder
             {
                 if (visitedSourceClasses.contains(pureConnection.getValueForMetaPropertyToOne("class")) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) connectionStore._element(),context.pureModel.getExecutionSupport())))
                 {
-                    context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Multiple Connections available for Source Class - " + pureConnection.getValueForMetaPropertyToOne("class"))));
+                    context.pureModel.addDefects(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Multiple Connections available for Source Class - " + pureConnection.getValueForMetaPropertyToOne("class"))));
                 }
                 else
                 {
@@ -221,11 +221,11 @@ public class HelperRuntimeBuilder
                 {
                     if (pureConnection instanceof Root_meta_external_store_model_ModelChainConnection)
                     {
-                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Runtime.")));
+                        context.pureModel.addDefects(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Runtime.")));
                     }
                     else
                     {
-                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Store - " + HelperModelBuilder.getElementFullPath((PackageableElement) connectionStore._element(),context.pureModel.getExecutionSupport()))));
+                        context.pureModel.addDefects(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Store - " + HelperModelBuilder.getElementFullPath((PackageableElement) connectionStore._element(),context.pureModel.getExecutionSupport()))));
                     }
                 }
                 else
