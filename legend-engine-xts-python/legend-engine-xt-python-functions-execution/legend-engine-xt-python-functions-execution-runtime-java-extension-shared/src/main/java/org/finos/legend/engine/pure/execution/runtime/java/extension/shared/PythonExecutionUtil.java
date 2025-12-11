@@ -76,30 +76,5 @@ public class PythonExecutionUtil
             Instance.setValuesForProperty(coreInstance, "error", Lists.immutable.of(processorSupport.newCoreInstance(e.getMessage(), "String", null)), processorSupport);
             return coreInstance;
         }
-//        try (GenericContainer<?> container = new GenericContainer<>(DockerImageName.parse("finos/pylegend:0.10.0")))
-//        {
-//            container.withCommand("tail","-f","/dev/null");
-//            container.start();
-//
-//            Container.ExecResult execResult = container.execInContainer("python3", "-c", script);
-//
-//            int exitCode = execResult.getExitCode();
-//            String output = execResult.getStdout();
-//            String error = execResult.getStderr();
-//
-//            CoreInstance coreInstance = processorSupport.newEphemeralAnonymousCoreInstance("meta::python::execution::PythonExecutionResult");
-//            Instance.setValuesForProperty(coreInstance, "exitCode", Lists.immutable.of(processorSupport.newCoreInstance(Integer.toString(exitCode), "Integer", null)), processorSupport);
-//            Instance.setValuesForProperty(coreInstance, "output", Lists.immutable.of(processorSupport.newCoreInstance(output, "String", null)), processorSupport);
-//            Instance.setValuesForProperty(coreInstance, "error", Lists.immutable.of(processorSupport.newCoreInstance(error, "String", null)), processorSupport);
-//            return coreInstance;
-//        }
-//        catch (Exception e)
-//        {
-//            CoreInstance coreInstance = processorSupport.newEphemeralAnonymousCoreInstance("meta::python::execution::PythonExecutionResult");
-//            Instance.setValuesForProperty(coreInstance, "exitCode", Lists.immutable.of(processorSupport.newCoreInstance(Integer.toString(-1), "Integer", null)), processorSupport);
-//            Instance.setValuesForProperty(coreInstance, "output", Lists.immutable.of(processorSupport.newCoreInstance("", "String", null)), processorSupport);
-//            Instance.setValuesForProperty(coreInstance, "error", Lists.immutable.of(processorSupport.newCoreInstance(e.getMessage(), "String", null)), processorSupport);
-//            return coreInstance;
-//        }
     }
 }
