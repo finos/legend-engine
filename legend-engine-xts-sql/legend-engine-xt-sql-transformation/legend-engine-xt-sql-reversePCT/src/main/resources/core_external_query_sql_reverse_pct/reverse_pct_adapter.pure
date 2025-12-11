@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::test::pct::reversePCT::framework::*;
 import meta::external::query::sql::reversePCT::framework::*;
@@ -28,13 +29,11 @@ function <<PCT.adapter>> {PCT.adapterName='SQL'} meta::external::query::sql::rev
 
       let returnType = $func->functionReturnType();
       let expectedReturnType = $f->functionReturnType();
-
-      if ($returnType.rawType == Relation && $expectedReturnType.rawType != Relation,
+      if ($returnType.rawType->toOne()->subTypeOf(Relation) && ($expectedReturnType.rawType->toOne() == Nil || !$expectedReturnType.rawType->toOne()->subTypeOf(Relation)),
         | 
           let tds = $func->cast(@Function<{->Relation<Any>[1]}>)->eval();
           let columns = $tds->columns();
           let values = $tds->map(x | $columns->map(c | $c->eval($x)));
-
           let functionType = $f.classifierGenericType.typeArguments->toOne().rawType->cast(@FunctionType)->toOne();
           let newFunc = meta::pure::functions::meta::newLambdaFunction($functionType);
           ^$newFunc(expressionSequence = ^InstanceValue(multiplicity=$f->functionReturnMultiplicity(),genericType=$f->functionReturnType(), values = $values))->cast(@Function<{->X[o]}>)->eval();,

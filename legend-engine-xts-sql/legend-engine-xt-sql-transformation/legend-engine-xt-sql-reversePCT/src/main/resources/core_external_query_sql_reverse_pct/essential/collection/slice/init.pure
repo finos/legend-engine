@@ -8,8 +8,12 @@ function meta::external::query::sql::reversePCT::tests::essential::collection::s
                  revsForTest(
                       'meta::pure::functions::collection::tests::init::testInit_Function_1__Boolean_1_',
                       [
-                        rev('|[\'a\', \'b\', \'c\']->meta::pure::functions::collection::init()',
-                            'select (array[\'a\', \'b\', \'c\'])[1:array_length(array[\'a\', \'b\', \'c\'], 1) - 1]'
+                        revError('|[\'a\', \'b\', \'c\']->meta::pure::functions::collection::init()',
+                            'select (array[\'a\', \'b\', \'c\'])[1:array_length(array[\'a\', \'b\', \'c\'], 1) - 1]',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "\n'+
+                            'expected: [\'a\', \'b\']\n'+
+                            'actual:   [\'a\']"',
+                            'A TDS column can\'t currently contain a collection'
                         )
                       ]
                  ),

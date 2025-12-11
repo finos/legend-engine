@@ -17,24 +17,36 @@ function meta::external::query::sql::reversePCT::tests::essential::collection::s
                  revsForTest(
                       'meta::pure::functions::collection::tests::slice::testSlice_Function_1__Boolean_1_',
                       [
-                        rev('|[1, 2, 3, 4, 5, 6]->meta::pure::functions::collection::slice(1, 4)',
-                            'select (array[1,2,3,4,5,6])[2:4]'
+                        revError('|[1, 2, 3, 4, 5, 6]->meta::pure::functions::collection::slice(1, 4)',
+                            'select (array[1,2,3,4,5,6])[2:4]',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "\n'+
+                            'expected: [2, 3, 4]\n'+
+                            'actual:   [2]"',
+                            'A TDS column can\'t currently contain a collection'
                         )
                       ]
                  ),
                  revsForTest(
                       'meta::pure::functions::collection::tests::slice::testSliceOutOfBounds_Function_1__Boolean_1_',
                       [
-                        rev('|[2, 3, 4, 5]->meta::pure::functions::collection::slice(-1, 10)',
-                            'select (array[2,3,4,5])[0:10]'
+                        revError('|[2, 3, 4, 5]->meta::pure::functions::collection::slice(-1, 10)',
+                            'select (array[2,3,4,5])[0:10]',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "\n'+
+                            'expected: [2, 3, 4, 5]\n'+
+                            'actual:   [2]"',
+                            'A TDS column can\'t currently contain a collection'
                         )
                       ]
                  ),
                  revsForTest(
                       'meta::pure::functions::collection::tests::slice::testSliceOnBounds_Function_1__Boolean_1_',
                       [
-                        rev('|[2, 3, 4, 5]->meta::pure::functions::collection::slice(0, 4)',
-                            'select (array[2,3,4,5])[1:4]'
+                        revError('|[2, 3, 4, 5]->meta::pure::functions::collection::slice(0, 4)',
+                            'select (array[2,3,4,5])[1:4]',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "\n'+
+                            'expected: [2, 3, 4, 5]\n'+
+                            'actual:   [2]"',
+                            'A TDS column can\'t currently contain a collection'
                         )
                       ]
                  ),

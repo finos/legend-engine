@@ -42,6 +42,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relati
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.TDSRelationAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
@@ -61,6 +62,7 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.CompiledPrimitiveHandler;
 import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.NullRowContainer;
 import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.RowContainer;
+import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.SingleValueTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.TDSContainer;
 import org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.TestTDSCompiled;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
@@ -74,6 +76,12 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.shared.win
 
 public class RelationNativeImplementation
 {
+    public static Relation<?> build(Object value, GenericType genericType, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        return new TDSContainer(new SingleValueTDS(value, genericType, (CompiledExecutionSupport) es), ps);
+    }
+
     public static TestTDSCompiled getTDS(Object value, ExecutionSupport es)
     {
         if (value instanceof TDSRelationAccessor)
