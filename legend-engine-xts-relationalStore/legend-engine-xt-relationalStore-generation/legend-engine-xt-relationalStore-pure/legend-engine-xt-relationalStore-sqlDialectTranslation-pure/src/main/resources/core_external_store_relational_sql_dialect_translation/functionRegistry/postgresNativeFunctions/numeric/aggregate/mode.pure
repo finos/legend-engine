@@ -42,7 +42,20 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     ],
     tests = [
       sqlFunctionTest(
-        testSetupDataForWindowFunctions(),
+        // Test data with tie for mode()
+        ^TestSetupData(
+          tableName = 'testTable',
+          columns = [pair('student', 'varchar'), pair('dept', 'varchar'), pair('score', 'integer')],
+          data = [
+            dataRow(['Alice', 'Science', 90]),
+            dataRow(['Bob', 'Science', 88]),
+            dataRow(['Charlie', 'Science', 85]),
+            dataRow(['David', 'Science', 80]),
+            dataRow(['Eve', 'Arts', 88]),
+            dataRow(['Grace', 'Arts', 84]),
+            dataRow(['Hannah', 'Arts', 80])
+          ]
+        ),
         // SELECT mode() WITHIN GROUP (ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY result NULLS LAST
         simpleAggFunctionCall(
           ^FunctionCall(
