@@ -1,0 +1,126 @@
+###DataQualityValidation
+DataQualityRelationValidation demo::simplePersonValidation
+{
+   query: |demo::Person.all()->project(
+  ~[
+     id: x|$x.id,
+     fullName: x|$x.fullName,
+     age: x|$x.age,
+     emailAddress: x|$x.emailAddress,
+     annualSalary: x|$x.annualSalary
+   ]
+)->from(
+  demo::PersonMap,
+  demo::PersonRuntime
+);
+   validations: [
+   {
+     name: 'idNotNegative';
+     description: 'Validates that person ID is not negative';
+     assertion: rel|$rel->filter(
+  row|$row.id > 0
+)->assertRelationEmpty(
+  ~[
+     id,
+     fullName
+   ]
+);
+    },
+   {
+     name: 'ageValid';
+     description: 'Validates that person age is not negative when present';
+     assertion: rel|$rel->filter(
+  row|$row.age->isNotEmpty() &&
+    ($row.age->toOne() > 0)
+)->assertRelationEmpty(
+  ~[
+     id,
+     fullName
+   ]
+);
+    }
+   ];
+}
+
+
+###Relational
+Database demo::PersonDB
+(
+  Table PERSON_TBL
+  (
+    ID INTEGER PRIMARY KEY,
+    FULL_NAME VARCHAR(200),
+    AGE INTEGER,
+    EMAIL VARCHAR(200),
+    SALARY DECIMAL(10, 2)
+  )
+)
+
+
+###Pure
+Class demo::Person
+{
+  id: Integer[1];
+  fullName: String[1];
+  age: Integer[0..1];
+  emailAddress: String[0..1];
+  annualSalary: Float[0..1];
+}
+
+
+###Mapping
+Mapping demo::PersonMap
+(
+  *demo::Person: Relational
+  {
+    ~primaryKey
+    (
+      [demo::PersonDB]PERSON_TBL.ID
+    )
+    ~mainTable [demo::PersonDB]PERSON_TBL
+    id: [demo::PersonDB]PERSON_TBL.ID,
+    fullName: [demo::PersonDB]PERSON_TBL.FULL_NAME,
+    age: [demo::PersonDB]PERSON_TBL.AGE,
+    emailAddress: [demo::PersonDB]PERSON_TBL.EMAIL,
+    annualSalary: [demo::PersonDB]PERSON_TBL.SALARY
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection demo::H2Connection
+{
+  store: demo::PersonDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS PERSON_TBL;',
+      'CREATE TABLE PERSON_TBL(ID INT, FULL_NAME VARCHAR(200), AGE INT, EMAIL VARCHAR(200), SALARY DECIMAL(10,2));',
+      'INSERT INTO PERSON_TBL VALUES (-1, \'Smith Failsson\', 30, \'fail@test.com\', 30000.00);',
+      'INSERT INTO PERSON_TBL VALUES (1, \'Alice Smith\', 30, \'alice@test.com\', 50000.00);',
+      'INSERT INTO PERSON_TBL VALUES (2, \'Bob Johnson\', 25, \'bob@test.com\', 60000.50);',
+      'INSERT INTO PERSON_TBL VALUES (3, \'Charlie Brown\', 35, \'charlie@test.com\', 75000.75);',
+      'INSERT INTO PERSON_TBL VALUES (4, \'Diana Prince\', NULL, \'diana@test.com\', 45000.00);',
+      'INSERT INTO PERSON_TBL VALUES (5, \'Eve Davis\', 28, NULL, 55000.00);'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime demo::PersonRuntime
+{
+  mappings:
+  [
+    demo::PersonMap
+  ];
+  connections:
+  [
+    demo::PersonDB:
+    [
+      c1: demo::H2Connection
+    ]
+  ];
+}

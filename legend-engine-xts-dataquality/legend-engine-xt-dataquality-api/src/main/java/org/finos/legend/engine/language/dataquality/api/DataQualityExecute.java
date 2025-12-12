@@ -27,6 +27,7 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.generation.dataquality.DataQualityLambdaGenerator;
+import org.finos.legend.engine.generation.dataquality.DataQualityProfilingLambdaGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
@@ -226,6 +227,39 @@ public class DataQualityExecute
         catch (Exception ex)
         {
             return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, identity.getName());
+        }
+    }
+
+    @POST
+    @Path("profile")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    //@Prometheus(name = "data profile")
+    public Response profile(@Context HttpServletRequest request, DataQualityProfileInput dataQualityProfilingInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        LOGGER.info(new LogInfo(identity.getName(), DataQualityProfileLoggingEventType.DATAQUALITY_PROFILE_START).toString());
+        try (Scope scope = GlobalTracer.get().buildSpan("DataQuality - profiling: planGeneration").startActive(true))
+        {
+            // 1. load pure model from PureModelContext
+            PureModel pureModel = this.modelManager.loadModel(dataQualityProfilingInput.model, dataQualityProfilingInput.clientVersion, identity, null);
+            // 2. call DQ PURE func to generate lambda
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction =  DataQualityProfilingLambdaGenerator.generateLambda(pureModel, dataQualityProfilingInput.packagePath);
+            // 3. Generate Plan from the lambda generated in the previous step
+            SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityProfilingInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
+            // 4. Execute plan
+            Map<String, Object> lambdaParameterMap = dataQualityProfilingInput.lambdaParameterValues != null ? dataQualityProfilingInput.lambdaParameterValues.stream().collect(Collectors.<ParameterValue, String, Object>toMap(p -> p.name, p -> p.value.accept(new PrimitiveValueSpecificationToObjectVisitor()))) : Maps.mutable.empty();
+            Response response = executePlan(request, identity, format, start, singleExecutionPlan, lambdaParameterMap);
+
+            LOGGER.info(new LogInfo(identity.getName(), DataQualityProfileLoggingEventType.DATAQUALITY_PROFILE_END, System.currentTimeMillis() - start).toString());
+            return response;
+        }
+        catch (Exception ex)
+        {
+            LOGGER.error(new LogInfo(identity.getName(), LoggingEventType.GENERATE_PLAN_ERROR, (double) System.currentTimeMillis() - start).toString(), ex);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PLAN_ERROR, identity.getName());
         }
     }
 
