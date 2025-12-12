@@ -107,8 +107,12 @@ function meta::external::query::sql::transformation::queryToPure::getSources():D
           generationFunction = {x:TableFunction[1], s:SqlTransformContext[1]|
               let param = normalizeDynamicTableSourceParam($x, 'tb');
               
-              let fullPath = $param->split('.')->at(0);
-              let store = extractElement($fullPath, 'Database', $s.extraPackageableElements, @meta::relational::metamodel::Database);
+              let store = $x->match(
+                [
+                  a:meta::external::query::sql::expression::AccessorTableFunction[1]|$a.store,
+                  a:Any[1]| extractElement($param->split('.')->at(0), 'Database', $s.extraPackageableElements, @meta::relational::metamodel::Database)
+                ]
+              );
 
               let databaseStr = $store
                                 ->scanDependencies([], meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraScanDependenciesType)
