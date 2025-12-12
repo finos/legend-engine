@@ -438,7 +438,6 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         // DataQuality
         environment.jersey().register(new DataQualityExecute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), serverConfiguration.metadataserver, null));
 
-
         // Testable
         environment.jersey().register(new TestableApi(modelManager));
 
