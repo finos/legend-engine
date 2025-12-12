@@ -63,7 +63,7 @@ public class PostgresServerGenericTest
         loader.setData(Maps.mutable.with(
                 buildPointer("t_group", "t_name", "t_version"),
                 PureGrammarParser.newInstance().parseModel("###Relational\n" +
-                        "Database pack::DB\n" +
+                        "Database pack_age::My_DB\n" +
                         "(\n" +
                         "    Table myTab(name VARCHAR(200))\n" +
                         ")\n")));
@@ -75,13 +75,13 @@ public class PostgresServerGenericTest
 
         Assert.assertEquals(
                 "name\n" +
-                        "value\n", executePrepared("select name from tb('pack::DB.myTab') as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
+                        "value\n", executePrepared("select name from tb('pack_age::My_DB.myTab') as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
         Assert.assertEquals(
                 "name\n" +
-                        "value\n", execute("select name from tb('pack::DB.myTab') as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
+                        "value\n", execute("select name from tb('pack_age::My_DB.myTab') as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
         Assert.assertEquals(
                 "name\n" +
-                        "value\n", executePrepared("select name from tb__pack_DB.myTab as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
+                        "value\n", executePrepared("select name from tb__pack__age_My__DB.myTab as t where t.name = 'value'", "projects|t_group:t_name:t_version"));
     }
 
 

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::relation::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::external::query::sql::transformation::compile::utils::*;
@@ -37,7 +38,7 @@ function meta::external::query::sql::server::schema::transform(p:PackageableElem
 {
   ^AddressableRelationCollection
   (
-      addressableRelations = $p->map(a|$a->transformOne())
+      addressableRelations = $p->removeDuplicates()->map(a|$a->transformOne())
   )
 }
 
@@ -57,21 +58,36 @@ function meta::external::query::sql::server::schema::transformOne(p:PackageableE
       [
           d:Database[1]| let dbPath = $d->elementToPath();
                          let dbStr = $d->serialize();
-                         $d.schemas.tables->map(t|
-                                          let path = if ($t.schema.name == 'default', | '', | $t.schema.name + '.') + $t.name;
-                                          let r = meta::legend::compile($dbStr+'\n###Pure\nfunction x::func():Any[1]{#>{'+$dbPath + '.' + $path->joinStrings('.')+'}#}');
-                                          let rType = $r->filter(x|$x.name == 'func__Any_1_')->toOne()->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate().genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>);
-                                          ^AddressableRelation
-                                          (
-                                              tableFunctionName='tb',
-                                              packageableElement=$dbPath,
-                                              pathWithinElement=$path,
-                                              relationType= $rType->transformRelationType()
-                                          );
-                                      );,
+
+                        let accessors = $d.schemas.tables->map(t | 
+                          let path = getTablePath($t);
+                          '#>{'+$dbPath + '.' + $path->joinStrings('.')+'}#;';
+                        );
+
+                        let code = $dbStr+'\n###Pure\nfunction test::container():Any[*]{\n' + $accessors->joinStrings('\n') + '\n}';
+
+                        let compiled = meta::legend::compile($code);
+                        
+                        let expressions = $compiled->filter(x|$x.name == 'container__Any_MANY_')->toOne()->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate();
+
+                        $expressions->map(e | 
+                          let table = $e->cast(@InstanceValue).values->toOne()->cast(@meta::pure::store::RelationStoreAccessor<Any>).sourceElement->cast(@Table);
+
+                          ^AddressableRelation
+                          (
+                              tableFunctionName = 'tb',
+                              packageableElement = $dbPath,
+                              pathWithinElement = getTablePath($table),
+                              relationType = $e.genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>)->transformRelationType()
+                          );
+                        );,
           a:Any[1]|[]
       ]
     )->toOneMany()    
   )
 }
 
+function <<access.private>> meta::external::query::sql::server::schema::getTablePath(t:Table[1]):String[1]
+{
+  if ($t.schema.name == 'default', | '', | $t.schema.name + '.') + $t.name
+}
