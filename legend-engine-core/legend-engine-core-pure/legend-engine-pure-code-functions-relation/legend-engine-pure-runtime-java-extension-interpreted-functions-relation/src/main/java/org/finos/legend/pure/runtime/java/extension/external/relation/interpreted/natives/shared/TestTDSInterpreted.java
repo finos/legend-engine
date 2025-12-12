@@ -14,14 +14,11 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared;
 
-import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.newBooleanLiteral;
-import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.newDateLiteral;
-import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.newFloatLiteral;
-import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.newIntegerLiteral;
-import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.newStringLiteral;
 import io.deephaven.csv.parsers.DataType;
 import io.deephaven.csv.reading.CsvReader;
+
 import java.math.BigDecimal;
+
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
@@ -36,10 +33,12 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 
+import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.*;
+
 public class TestTDSInterpreted extends TestTDS
 {
-    private ModelRepository modelRepository;
-    private ProcessorSupport processorSupport;
+    protected ModelRepository modelRepository;
+    protected ProcessorSupport processorSupport;
 
     public TestTDSInterpreted(CsvReader.Result result, ModelRepository repository, ProcessorSupport processorSupport)
     {
@@ -95,7 +94,7 @@ public class TestTDSInterpreted extends TestTDS
             {
                 Variant[] data = (Variant[]) dataAsObject;
                 Variant value = data[rowNum];
-                result = value != null ? ValueSpecificationBootstrap.wrapValueSpecification(value, true, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Variant, processorSupport), processorSupport), true, processorSupport);
+                result = value != null ? wrapValueSpecification(value, true, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Variant, processorSupport), processorSupport), true, processorSupport);
                 break;
             }
             case STRING:
@@ -114,7 +113,10 @@ public class TestTDSInterpreted extends TestTDS
             case DOUBLE:
             {
                 double[] data = (double[]) dataAsObject;
-                result = !isNull[rowNum] ? newFloatLiteral(modelRepository, BigDecimal.valueOf(data[rowNum]), processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Float, processorSupport), processorSupport), true, processorSupport);
+                String pureType = columnPureType.get(columnName);
+                result = !isNull[rowNum] ?
+                        ("Decimal".equals(pureType) ? wrapValueSpecification(modelRepository.newDecimalCoreInstance(BigDecimal.valueOf(data[rowNum])), true, processorSupport) : newFloatLiteral(modelRepository, BigDecimal.valueOf(data[rowNum]), processorSupport)) :
+                        ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath("Decimal".equals(pureType) ? M3Paths.Decimal : M3Paths.Float, processorSupport), processorSupport), true, processorSupport);
                 break;
             }
             case DATETIME_AS_LONG:

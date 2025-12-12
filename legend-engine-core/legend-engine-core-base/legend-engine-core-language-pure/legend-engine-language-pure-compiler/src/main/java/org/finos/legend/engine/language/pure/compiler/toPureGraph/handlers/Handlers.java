@@ -1194,6 +1194,29 @@ public class Handlers
                 )
         );
 
+        register(h("meta::pure::functions::relation::wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_", true,
+                ps -> res(
+                        CompileContext.newGenericType(
+                                this.pureModel.getType("meta::pure::metamodel::relation::TDS"),
+                                CompileContext.newGenericType(
+                                        _RelationType.build(
+                                                Lists.mutable.with(
+                                                        _Column.getColumnInstance("value", false, ps.get(0)._genericType(), pureModel.getMultiplicity("one"), null, pureModel.getExecutionSupport().getProcessorSupport())
+                                                ),
+                                                null,
+                                                pureModel.getExecutionSupport().getProcessorSupport()
+                                        ),
+                                        pureModel
+                                ),
+                                pureModel
+                        ),
+                        "one"
+                ),
+//                ps -> Lists.fixedSize.of(ps.get(0)._genericType()),
+                ps -> true
+                )
+        );
+
         register(h("meta::pure::functions::collection::isEmpty_Any_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> matchZeroOne(ps.get(0)._multiplicity())),
                 h("meta::pure::functions::collection::isEmpty_Any_MANY__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> true));
         register(h("meta::pure::functions::collection::isNotEmpty_Any_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> matchZeroOne(ps.get(0)._multiplicity())),
@@ -3759,6 +3782,7 @@ public class Handlers
         map.put("meta::pure::tds::tdsContains_T_1__Function_MANY__String_MANY__TabularDataSet_1__Function_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 5 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || check(funcType(ps.get(1)._genericType()), (FunctionType ft) -> matchZeroOne(ft._returnMultiplicity()) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1 && isOne(nps.get(0)._multiplicity())))) && taxoMap.get("cov_String").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && taxoMap.get("cov_tds_TabularDataSet").contains(ps.get(3)._genericType()._rawType()._name()) && isOne(ps.get(4)._multiplicity()) && ("Nil".equals(ps.get(4)._genericType()._rawType()._name()) || check(funcType(ps.get(4)._genericType()), (FunctionType ft) -> isOne(ft._returnMultiplicity()) && taxoMap.get("cov_Boolean").contains(ft._returnType()._rawType()._name()) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 2 && isOne(nps.get(0)._multiplicity()) && taxoMap.get("contra_tds_TDSRow").contains(nps.get(0)._genericType()._rawType()._name()) && isOne(nps.get(1)._multiplicity()) && taxoMap.get("contra_tds_TDSRow").contains(nps.get(1)._genericType()._rawType()._name())))));
         map.put("meta::pure::tds::tdsContains_T_1__Function_MANY__TabularDataSet_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || check(funcType(ps.get(1)._genericType()), (FunctionType ft) -> matchZeroOne(ft._returnMultiplicity()) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1 && isOne(nps.get(0)._multiplicity())))) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_tds_TabularDataSet").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::tdsRows_TabularDataSet_1__TDSRow_MANY_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_tds_TabularDataSet").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::relation::meta::pure::functions::relation::wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()));
         ListIterate.flatCollect(context.getCompilerExtensions().getExtraFunctionHandlerDispatchBuilderInfoCollectors(), collector -> collector.valueOf(this)).forEach(info -> map.put(info.functionName, info.dispatch));
         return map;
     }

@@ -59,6 +59,7 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.interprete
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Size;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Slice;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Sort;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.WrapPrimitiveInTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Write;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.TDSWithCursorCoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
@@ -125,7 +126,8 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_", CumulativeDistribution::new),
                 Tuples.pair("asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", AsOfJoin::new),
                 Tuples.pair("asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_", AsOfJoin::new),
-                Tuples.pair("write_Relation_1__RelationElementAccessor_1__Integer_1_", Write::new)
+                Tuples.pair("write_Relation_1__RelationElementAccessor_1__Integer_1_", Write::new),
+                Tuples.pair("wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_", WrapPrimitiveInTDS::new)
         );
     }
 

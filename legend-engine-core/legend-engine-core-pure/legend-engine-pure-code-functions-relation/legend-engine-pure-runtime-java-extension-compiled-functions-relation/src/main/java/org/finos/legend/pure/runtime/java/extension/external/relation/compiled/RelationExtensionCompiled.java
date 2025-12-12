@@ -91,7 +91,8 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new Nth(),
                 new DenseRank(),
                 new PercentRank(),
-                new Write()
+                new Write(),
+                new WrapPrimitiveInTDS()
         );
     }
 

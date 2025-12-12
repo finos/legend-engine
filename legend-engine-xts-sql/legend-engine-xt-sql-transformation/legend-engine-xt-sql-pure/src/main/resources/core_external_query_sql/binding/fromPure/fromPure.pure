@@ -464,10 +464,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   if ($querySpec.from->isEmpty(),
     | let func = $querySpec.select.selectItems->processSelectItems($context, false)->at(0).first;
-//      println('Generated Pure Function for column: '+$func->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
-      ^$context(expression=$func.expressionSequence->evaluateAndDeactivate()->toOne());,
-    |
-      let from = $querySpec.from->processFrom($context);
+      // println('Generated Pure Function for column: '+$func->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
+      let vs = $func.expressionSequence->evaluateAndDeactivate()->toOne();
+      let genType = if ($vs.genericType.rawType->isEmpty(),
+        | meta::legend::compileVS('|'+$vs->printValueSpecification(^GContext(space='')))->evaluateAndDeactivate()->cast(@LambdaFunction<Any>).expressionSequence.genericType,
+        |$vs.genericType
+      )->toOne();
+      let wrapped = sfe(meta::pure::functions::relation::wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_, $vs.genericType, [$vs, ^InstanceValue(multiplicity = PureOne, genericType = $genType, values = [])])->evaluateAndDeactivate();
+      // println('Generated Pure Function for column: '+$wrapped->printValueSpecification(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
+      ^$context(expression=$wrapped);,
+    | let from = $querySpec.from->processFrom($context);
 
       checkReferencedColumnsAreValid($querySpec, $from, $context.failOnInvalidColumns);
 
