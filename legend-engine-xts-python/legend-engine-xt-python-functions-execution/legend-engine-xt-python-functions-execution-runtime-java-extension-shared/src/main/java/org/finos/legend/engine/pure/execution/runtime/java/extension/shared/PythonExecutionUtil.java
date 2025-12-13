@@ -22,10 +22,33 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 public class PythonExecutionUtil
 {
-    private static final String DOCKER_IMAGE = "finos/pylegend:0.10.0";
-    private static GenericContainer<?> pythonContainer = new GenericContainer<>(DockerImageName.parse(DOCKER_IMAGE)).withCommand("tail", "-f", "/dev/null");
+    private static final String DOCKER_IMAGE_TAG_VERSION;
+
+    static
+    {
+        Properties properties = new Properties();
+        try (InputStream input = PythonExecutionUtil.class.getClassLoader().getResourceAsStream("pylegend-version.properties"))
+        {
+            if (input == null)
+            {
+                System.err.println("pylegend-version.properties not found in classpath");
+            }
+            properties.load(input);
+        }
+        catch (IOException e)
+        {
+            System.err.println("Could not load pylegend-version.properties. Error: " + e.getMessage());
+        }
+        DOCKER_IMAGE_TAG_VERSION = properties.getProperty("legend.pylegend.version","SNAPSHOT"); // Fallback version snapshot
+    }
+
+    private static GenericContainer<?> pythonContainer = new GenericContainer<>(DockerImageName.parse("finos/pylegend:" + DOCKER_IMAGE_TAG_VERSION)).withCommand("tail", "-f", "/dev/null");
 
     private PythonExecutionUtil()
     {

@@ -27,6 +27,15 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Python - Functions - Execution - Runtime - Java Extension - Shared</name>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
