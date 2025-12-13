@@ -18,12 +18,38 @@ import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.testcontainers.containers.Container;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.Scanner;
+import java.util.Properties;
 
 public class PythonExecutionUtil
 {
+    private static final String DOCKER_IMAGE_TAG_VERSION;
+
+    static
+    {
+        Properties properties = new Properties();
+        try (InputStream input = PythonExecutionUtil.class.getClassLoader().getResourceAsStream("pylegend-version.properties"))
+        {
+            if (input == null)
+            {
+                System.err.println("pylegend-version.properties not found in classpath");
+            }
+            properties.load(input);
+        }
+        catch (IOException e)
+        {
+            System.err.println("Could not load pylegend-version.properties. Error: " + e.getMessage());
+        }
+        DOCKER_IMAGE_TAG_VERSION = properties.getProperty("legend.pylegend.version","SNAPSHOT"); // Fallback version snapshot
+    }
+
+    private static GenericContainer<?> pythonContainer = new GenericContainer<>(DockerImageName.parse("finos/pylegend:" + DOCKER_IMAGE_TAG_VERSION)).withCommand("tail", "-f", "/dev/null");
+
     private PythonExecutionUtil()
     {
         // utility class
@@ -31,21 +57,31 @@ public class PythonExecutionUtil
 
     public static CoreInstance executePythonScript(String script, ProcessorSupport processorSupport)
     {
+        if (!pythonContainer.isRunning())
+        {
+            try
+            {
+                pythonContainer.start();
+                Runtime.getRuntime().addShutdownHook(new Thread(pythonContainer::stop));
+            }
+            catch (Exception e)
+            {
+                CoreInstance errorCoreInstance = processorSupport.newEphemeralAnonymousCoreInstance("meta::python::execution::PythonExecutionResult");
+                Instance.setValuesForProperty(errorCoreInstance, "exitCode", Lists.immutable.of(processorSupport.newCoreInstance(Integer.toString(-1), "Integer", null)), processorSupport);
+                Instance.setValuesForProperty(errorCoreInstance, "output", Lists.immutable.of(processorSupport.newCoreInstance("", "String", null)), processorSupport);
+                Instance.setValuesForProperty(errorCoreInstance, "error", Lists.immutable.of(processorSupport.newCoreInstance("Container initialization failed: " + e.getMessage(), "String", null)), processorSupport);
+                return errorCoreInstance;
+            }
+        }
+
         try
         {
-            ProcessBuilder processBuilder = new ProcessBuilder("python3", "-c", script);
-            Process process = processBuilder.start();
+            // Use the already initialized (or currently initializing) singleton container for script execution.
+            Container.ExecResult execResult = pythonContainer.execInContainer("python3", "-c", script);
 
-            InputStream inputStream = process.getInputStream();
-            InputStream errorStream = process.getErrorStream();
-            Scanner outputScanner = new Scanner(inputStream).useDelimiter("\\A");
-            Scanner errorScanner = new Scanner(errorStream).useDelimiter("\\A");
-
-            int exitCode = process.waitFor();
-            String output = outputScanner.hasNext() ? outputScanner.next() : "";
-            String error = errorScanner.hasNext() ? errorScanner.next() : "";
-            outputScanner.close();
-            errorScanner.close();
+            int exitCode = execResult.getExitCode();
+            String output = execResult.getStdout();
+            String error = execResult.getStderr();
 
             CoreInstance coreInstance = processorSupport.newEphemeralAnonymousCoreInstance("meta::python::execution::PythonExecutionResult");
             Instance.setValuesForProperty(coreInstance, "exitCode", Lists.immutable.of(processorSupport.newCoreInstance(Integer.toString(exitCode), "Integer", null)), processorSupport);
@@ -55,6 +91,7 @@ public class PythonExecutionUtil
         }
         catch (Exception e)
         {
+            // Handle exceptions that occur during the script execution itself.
             CoreInstance coreInstance = processorSupport.newEphemeralAnonymousCoreInstance("meta::python::execution::PythonExecutionResult");
             Instance.setValuesForProperty(coreInstance, "exitCode", Lists.immutable.of(processorSupport.newCoreInstance(Integer.toString(-1), "Integer", null)), processorSupport);
             Instance.setValuesForProperty(coreInstance, "output", Lists.immutable.of(processorSupport.newCoreInstance("", "String", null)), processorSupport);
