@@ -1505,11 +1505,13 @@ public class Handlers
         register("meta::pure::functions::hash::hashCode_Any_MANY__Integer_1_", "hashCode", true, ps -> res("Integer", "one"));
 
         // Variant
-        register("meta::pure::functions::variant::convert::fromJson_String_1__Variant_1_", "fromJson", true, ps -> res(M3Paths.Variant, "one"));
-        register("meta::pure::functions::variant::convert::toJson_Variant_1__String_1_", "toJson", true, ps -> res("String", "one"));
-        register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_$0_1$__T_$0_1$_", "to", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
-        register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_", "toMany", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
-        register("meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_", "toVariant", true, ps -> res(M3Paths.Variant, "one"));
+        register("meta::pure::functions::variant::convert::fromJson_String_1__Variant_1_", true, ps -> res(M3Paths.Variant, "one"));
+        register("meta::pure::functions::variant::convert::toJson_Variant_1__String_1_", true, ps -> res("String", "one"));
+        register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_1__T_$0_1$_", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
+        register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_1__String_1__Pair_MANY__T_$0_1$_", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
+        register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_1__T_MANY_", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
+        register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_1__String_1__Pair_MANY__T_MANY_", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
+        register("meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_", true, ps -> res(M3Paths.Variant, "one"));
         register(
             m(
                     h("meta::pure::functions::collection::get_Map_1__U_1__V_$0_1$_", "get", true, ps -> res(ps.get(0)._genericType()._typeArguments().getLast(), "zeroOne"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Map")),

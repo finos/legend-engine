@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.variant.interpreted.natives;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -33,12 +34,12 @@ public class ToMany extends AbstractTo
     }
 
     @Override
-    Iterable<? extends CoreInstance> toCoreInstances(VariantInstanceImpl variantCoreInstance, CoreInstance targetGenericType, MutableStack<CoreInstance> functionExpressionCallStack, ExecutionSupport executionSupport, ProcessorSupport processorSupport)
+    Iterable<? extends CoreInstance> toCoreInstances(VariantInstanceImpl variantCoreInstance, CoreInstance targetGenericType, CoreInstance typeKeyName, ListIterable<? extends CoreInstance> typeLookup, MutableStack<CoreInstance> functionExpressionCallStack, ExecutionSupport executionSupport, ProcessorSupport processorSupport)
     {
         JsonNode jsonNode = variantCoreInstance.getJsonNode();
         if (jsonNode.isArray())
         {
-            return Iterate.collect(jsonNode, x -> toCoreInstance(x, targetGenericType, functionExpressionCallStack, executionSupport, processorSupport));
+            return Iterate.collect(jsonNode, x -> toCoreInstance(x, targetGenericType, typeKeyName, typeLookup, functionExpressionCallStack, executionSupport, processorSupport));
         }
         else
         {

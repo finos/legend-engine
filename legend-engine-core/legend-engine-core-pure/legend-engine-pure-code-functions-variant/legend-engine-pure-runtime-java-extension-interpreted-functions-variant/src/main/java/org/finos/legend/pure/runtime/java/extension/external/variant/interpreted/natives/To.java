@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.variant.interpreted.natives;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.ModelRepository;
@@ -31,8 +32,8 @@ public class To extends AbstractTo
     }
 
     @Override
-    Iterable<? extends CoreInstance> toCoreInstances(VariantInstanceImpl variantCoreInstance, CoreInstance targetGenericType, MutableStack<CoreInstance> functionExpressionCallStack, ExecutionSupport executionSupport, ProcessorSupport processorSupport)
+    Iterable<? extends CoreInstance> toCoreInstances(VariantInstanceImpl variantCoreInstance, CoreInstance targetGenericType, CoreInstance typeKeyName, ListIterable<? extends CoreInstance> typeLookup, MutableStack<CoreInstance> functionExpressionCallStack, ExecutionSupport executionSupport, ProcessorSupport processorSupport)
     {
-        return Lists.fixedSize.of(this.toCoreInstance(variantCoreInstance.getJsonNode(), targetGenericType, functionExpressionCallStack, executionSupport, processorSupport));
+        return Lists.fixedSize.of(this.toCoreInstance(variantCoreInstance.getJsonNode(), targetGenericType, typeKeyName, typeLookup, functionExpressionCallStack, executionSupport, processorSupport));
     }
 }

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::variant::convert::tests::toMany::*;
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
@@ -23,7 +24,18 @@ native function
         doc.doc='Converts the $variant to the given $type if the variant represent an array, failing if is not an array.\n' +
                  'This will fail if array values cannot be coerced.'
     }
-meta::pure::functions::variant::convert::toMany<T>(variant: Variant[0..1], type: T[0..1]): T[*];
+meta::pure::functions::variant::convert::toMany<T>(variant: Variant[0..1], type: T[1], typeKeyName: String[1], typeLookup: Pair<String,Class<Any>>[*]): T[*];
+
+native function
+    <<PCT.function>>
+    {
+        doc.doc='Converts the $variant to the given $type if the variant represent an array, failing if is not an array.\n' +
+                 'This will fail if array values cannot be coerced.'
+    }
+meta::pure::functions::variant::convert::toMany<T>(variant: Variant[0..1], type: T[1]): T[*];
+//{
+//    toMany($variant, $type, '_type', [])
+//}
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::toMany::testToManyVariant<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
@@ -46,6 +58,18 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
     assertError(|$f->eval(|fromJson('"not an array"')->toMany(@Variant)), 'Expect variant that contains an \'ARRAY\', but got \'STRING\'');
 }
 
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::toMany::testToClass<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('[{"firstName": "John", "lastName": "Smith"}, {"firstName": "Jane", "lastName": "Smith"}]')->toMany(@Person));
+    assertEquals([^Person(firstName = 'John', lastName = 'Smith'), ^Person(firstName = 'Jane', lastName = 'Smith')], $result);
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::toMany::testToClassWithInheritance<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('[{"_type": "Dog", "name": "Doggo", "isPuppy": true}, {"_type": "Cat", "name": "Gato", "isKitten": false}]')->toMany(@Pet));
+    assertEquals([^Dog(name = 'Doggo', isPuppy = true), ^Cat(name = 'Gato', isKitten = false)], $result);
+}
+
 //written as standard test as we are testing special handling of @type only triggered via reactivate
 function <<test.Test>> meta::pure::functions::variant::convert::tests::toMany::testReactivate():Boolean[1]
 {
@@ -53,4 +77,27 @@ function <<test.Test>> meta::pure::functions::variant::convert::tests::toMany::t
     assertEquals(1, $listInteger->at(0));
     assertEquals(2, $listInteger->at(1));
     assertEquals(3, $listInteger->at(2));
+}
+
+Class <<access.private>> meta::pure::functions::variant::convert::tests::toMany::Person
+{
+  <<equality.Key>> firstName: String[1];
+  <<equality.Key>> lastName: String[1];
+}
+
+Class <<access.private>> meta::pure::functions::variant::convert::tests::toMany::Pet
+{
+  <<equality.Key>> name: String[1];  
+  <<equality.Key>> owner: Person[0..1]; 
+}
+
+
+Class <<access.private>> meta::pure::functions::variant::convert::tests::toMany::Dog extends meta::pure::functions::variant::convert::tests::toMany::Pet
+{
+  <<equality.Key>> isPuppy: Boolean[1];
+}
+
+Class <<access.private>> meta::pure::functions::variant::convert::tests::toMany::Cat extends meta::pure::functions::variant::convert::tests::toMany::Pet
+{
+  <<equality.Key>> isKitten: Boolean[1];  
 }

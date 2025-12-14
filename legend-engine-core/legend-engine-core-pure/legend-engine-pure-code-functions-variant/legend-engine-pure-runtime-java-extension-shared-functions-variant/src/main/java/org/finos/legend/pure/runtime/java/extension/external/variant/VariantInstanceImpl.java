@@ -20,7 +20,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.VariantCoreInstanceWrapper;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
-import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
 import java.io.IOException;
@@ -101,24 +100,12 @@ public class VariantInstanceImpl extends VariantCoreInstanceWrapper
 
     public static VariantInstanceImpl newVariant(JsonNode node, ProcessorSupport processorSupport)
     {
-        return newVariant(node, (SourceInformation) null, processorSupport);
+        return newVariant(node, null, processorSupport);
     }
 
     public static VariantInstanceImpl newVariant(JsonNode node, SourceInformation sourceInformation, ProcessorSupport processorSupport)
     {
         Variant variant = (Variant) processorSupport.newCoreInstance(node.toString(), M3Paths.Variant, sourceInformation);
         return new VariantInstanceImpl(node, variant);
-    }
-
-    @Deprecated
-    public static VariantInstanceImpl newVariant(String json, ModelRepository modelRepository, ProcessorSupport processorSupport)
-    {
-        return newVariant(json, processorSupport);
-    }
-
-    @Deprecated
-    public static VariantInstanceImpl newVariant(JsonNode node, ModelRepository modelRepository, ProcessorSupport processorSupport)
-    {
-        return newVariant(node, processorSupport);
     }
 }

@@ -63,6 +63,13 @@ Class meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction e
   owner: meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation[1];
 }
 
+Class meta::relational::metamodel::VariantToElement extends meta::relational::metamodel::RelationalOperationElement
+{
+   value :  meta::relational::metamodel::RelationalOperationElement[1];
+   typeName : String[0..1];
+   typeLookup : Pair<String, Class<Any>>[*];
+}
+
 Class meta::relational::metamodel::TableAliasColumnName extends meta::relational::metamodel::RelationalOperationElement
 {
    alias : TableAlias[1];

@@ -2295,7 +2295,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       //TODO this technically works, but in postgres you cannot cast a variant array
       let pureType = getCastType($type.innerType.name);
 
-      sfe(toMany_Variant_$0_1$__T_$0_1$__T_MANY_, ^GenericType(rawType = $pureType), [], [$expression, ^InstanceValue(genericType = ^GenericType(rawType = $pureType), multiplicity = PureOne)]);,
+      sfe(toMany_Variant_$0_1$__T_1__T_MANY_, ^GenericType(rawType = $pureType), [], [$expression, ^InstanceValue(genericType = ^GenericType(rawType = $pureType), multiplicity = PureOne)]);,
     |
       processSimpleCast($expression, ^Cast(expression = $c.expression, type = $type.innerType), $expContext, $context)
   );
@@ -2313,7 +2313,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   if ($pureType == Variant && $v.genericType.rawType == Variant,
     | $v,
-    | sfe(to_Variant_$0_1$__T_$0_1$__T_$0_1$_, ^GenericType(rawType = $pureType), [], [$v, ^InstanceValue(genericType = ^GenericType(rawType = $pureType), multiplicity = PureOne)]));
+    | sfe(to_Variant_$0_1$__T_1__T_$0_1$_, ^GenericType(rawType = $pureType), [], [$v, ^InstanceValue(genericType = ^GenericType(rawType = $pureType), multiplicity = PureOne)]));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSimpleCast(expression:ValueSpecification[1], c:Cast[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
