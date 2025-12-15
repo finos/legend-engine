@@ -1,0 +1,99 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::external::python::reversePCT::legendQL::*;
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesStandardBoolean(): ReversesForSource[*]
+{
+  [
+    [
+      meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberInteger_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::boolean::between(0, 3)', '(c(1) >= 0) & (c(1) <= 3)'),
+          rev('|meta::pure::functions::boolean::between(-10, -20, 0)', '(c(-10) >= -20) & (c(-10) <= 0)'),
+          rev('|10000000->meta::pure::functions::boolean::between(999999, 10000002)', '(c(10000000) >= 999999) & (c(10000000) <= 10000002)'),
+          rev('|meta::pure::functions::boolean::between(-10000000, -10000002, -999999)', '(c(-10000000) >= -10000002) & (c(-10000000) <= -999999)'),
+          rev('|0->meta::pure::functions::boolean::between(0, 0)', '(c(0) >= 0) & (c(0) <= 0)'),
+          rev('|1->meta::pure::functions::boolean::between(0, 1)', '(c(1) >= 0) & (c(1) <= 1)'),
+          rev('|5->meta::pure::functions::boolean::between(0, 3)', '(c(5) >= 0) & (c(5) <= 3)'),
+
+          rev('|100->meta::pure::functions::boolean::between(0, 3)', '(c(100) >= 0) & (c(100) <= 3)'),
+          rev('|meta::pure::functions::boolean::between(-21, -20, 0)', '(c(-21) >= -20) & (c(-21) <= 0)'),
+          rev('|10000003->meta::pure::functions::boolean::between(999999, 10000002)', '(c(10000003) >= 999999) & (c(10000003) <= 10000002)'),
+          rev('|meta::pure::functions::boolean::between(-10000003, -10000002, -999999)', '(c(-10000003) >= -10000002) & (c(-10000003) <= -999999)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberLong_Function_1__Boolean_1_->testRev(
+      [
+        rev('|21474836471->meta::pure::functions::boolean::between(21474836470, 21474836473)','(c(21474836471) >= 21474836470) & (c(21474836471) <= 21474836473)'),
+        rev('|meta::pure::functions::boolean::between(-2147483647, -2147483648, 0)','(c(-2147483647) >= -2147483648) & (c(-2147483647) <= 0)'),
+        rev('|9223372036854775805->meta::pure::functions::boolean::between(9223372036854775804, 9223372036854775806)','(c(9223372036854775805) >= 9223372036854775804) & (c(9223372036854775805) <= 9223372036854775806)'),
+        rev('|meta::pure::functions::boolean::between(-9223372036854775805, -9223372036854775806, -9223372036854775804)','(c(-9223372036854775805) >= -9223372036854775806) & (c(-9223372036854775805) <= -9223372036854775804)'),
+        rev('|21474836470->meta::pure::functions::boolean::between(21474836471, 21474836473)','(c(21474836470) >= 21474836471) & (c(21474836470) <= 21474836473)'),
+        rev('|meta::pure::functions::boolean::between(-2147483648, -2147483647, 0)','(c(-2147483648) >= -2147483647) & (c(-2147483648) <= 0)'),
+        rev('|9223372036854775804->meta::pure::functions::boolean::between(9223372036854775805, 9223372036854775806)','(c(9223372036854775804) >= 9223372036854775805) & (c(9223372036854775804) <= 9223372036854775806)'),
+        rev('|meta::pure::functions::boolean::between(-9223372036854775806, -9223372036854775805, -9223372036854775804)','(c(-9223372036854775806) >= -9223372036854775805) & (c(-9223372036854775806) <= -9223372036854775804)')
+      ]
+    ),
+    meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberFloat_Function_1__Boolean_1_->testRev(
+      [
+        rev('|1.5->meta::pure::functions::boolean::between(1, 2)', '(c(1.5) >= 1) & (c(1.5) <= 2)'),
+        rev('|3.14159265359->meta::pure::functions::boolean::between(3.1415, 3.1415927)','(c(3.14159265359) >= 3.1415) & (c(3.14159265359) <= 3.1415927)'),
+        rev('|meta::pure::functions::boolean::between(-3.14159265359, -3.1415927, -3.1415)','(c(-3.14159265359) >= -3.1415927) & (c(-3.14159265359) <= -3.1415)'),
+        rev('|20->meta::pure::functions::boolean::between(20, 20.5)','(c(20) >= 20) & (c(20) <= 20.5)'),
+        rev('|2.01->meta::pure::functions::boolean::between(1, 2)','(c(2.01) >= 1) & (c(2.01) <= 2)'),
+        rev('|13.14159265359->meta::pure::functions::boolean::between(3.1415, 3.1415927)','(c(13.14159265359) >= 3.1415) & (c(13.14159265359) <= 3.1415927)'),
+        rev('|meta::pure::functions::boolean::between(-13.14159265359, -3.1415927, -3.1415)','(c(-13.14159265359) >= -3.1415927) & (c(-13.14159265359) <= -3.1415)')
+      ]
+    ),
+    meta::pure::functions::boolean::tests::inequalities::between::testBetween_String_Function_1__Boolean_1_->testRev(
+      [
+        rev('|$s2->meta::pure::functions::boolean::between($s1, $s3)', '(c("hijklmn") >= c("abcdefg")) & (c("hijklmn") <= c("opqrstu"))'),
+        rev('|$s5->meta::pure::functions::boolean::between($s6, $s4)', '(c("ABcdefg") >= c("ABCdefg")) & (c("ABcdefg") <= c("Abcdefg"))'),
+        rev('|$s7->meta::pure::functions::boolean::between($s4, $s1)', '(c("abcdefG") >= c("Abcdefg")) & (c("abcdefG") <= c("abcdefg"))'),
+        rev('|$s3->meta::pure::functions::boolean::between(\'O\', \'oq\')', '(c("opqrstu") >= c("O")) & (c("opqrstu") <= c("oq"))'),
+        rev('|$s1->meta::pure::functions::boolean::between($s2, $s3)', '(c("abcdefg") >= c("hijklmn")) & (c("abcdefg") <= c("opqrstu"))'),
+        rev('|$s5->meta::pure::functions::boolean::between($s4, $s6)', '(c("ABcdefg") >= c("Abcdefg")) & (c("ABcdefg") <= c("ABCdefg"))'),
+        rev('|$s5->meta::pure::functions::boolean::between($s7, $s6)', '(c("ABcdefg") >= c("abcdefG")) & (c("ABcdefg") <= c("ABCdefg"))'),
+        rev('|$s3->meta::pure::functions::boolean::between($s2, \'O\')', '(c("opqrstu") >= c("hijklmn")) & (c("opqrstu") <= c("O"))'),
+        rev('|$s3->meta::pure::functions::boolean::between($s3, $s3)', '(c("opqrstu") >= c("opqrstu")) & (c("opqrstu") <= c("opqrstu"))')
+      ]
+    ),
+    meta::pure::functions::boolean::tests::inequalities::between::testBetween_StrictDate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|$date2->meta::pure::functions::boolean::between($date1, $date3)', 'c(date(1972,8,23) >= date(1951,10,1)) & (date(1972,8,23) <= date(2025,4,3))'),
+          rev('|$date4->meta::pure::functions::boolean::between($date5, $date6)', 'c(date(1032,1,1) >= date(1031,12,31)) & c(date(1032,1,1) <= date(1032,12,31))'),
+          rev('|$date2->meta::pure::functions::boolean::between($date1, $date2)', '(date(1972,8,23) >= date(1951,10,1)) & c(date(1972,8,23) <= date(1972,8,23))'),
+          rev('|$date2->meta::pure::functions::boolean::between($date2, $date1)', 'c(date(1972,8,23) >= date(1972,8,23)) & c(date(1972,8,23) <= date(1951,10,1))'),
+          rev('|$date2->meta::pure::functions::boolean::between($date3, $date1)', 'c(date(1972,8,23) >= date(2025,4,3)) & c(date(1972,8,23) <= date(1951,10,1))'),
+          rev('|$date4->meta::pure::functions::boolean::between($date6, $date5)', 'c(date(1032,1,1) >= date(1032,12,31)) & c(date(1032,1,1) <= date(1031,12,31))')
+        ]
+      ),
+    meta::pure::functions::boolean::tests::inequalities::between::testBetween_DateTime_Function_1__Boolean_1_->testRev(
+      [
+        rev('|$dateTime1->meta::pure::functions::boolean::between($dateTime3, $dateTime2)', 'c(datetime(1032,1,1,0,32,34) >= datetime(1031,12,31,7,22,22)) & (datetime(1032,1,1,0,32,34) <= datetime(1951,10,1,14,1,1))'),
+        rev('|$dateTime4->meta::pure::functions::boolean::between($dateTime5, $dateTime6)', 'c(datetime(2032,1,1,0,32,34) >= datetime(2032,1,1,0,32,33)) & (datetime(2032,1,1,0,32,34) <= datetime(2032,1,1,0,32,35))'),
+        rev('|$dateTime1->meta::pure::functions::boolean::between($dateTime1, $dateTime2)', 'c(datetime(1032,1,1,0,32,34) >= datetime(1032,1,1,0,32,34)) & (datetime(1032,1,1,0,32,34) <= datetime(1951,10,1,14,1,1))'),
+        rev('|$dateTime1->meta::pure::functions::boolean::between($dateTime2, $dateTime1)', 'c(datetime(1032,1,1,0,32,34) >= datetime(1951,10,1,14,1,1)) & (datetime(1032,1,1,0,32,34) <= datetime(1032,1,1,0,32,34))'),
+        rev('|$dateTime4->meta::pure::functions::boolean::between($dateTime5, $dateTime4)', 'c(datetime(2032,1,1,0,32,34) >= datetime(2032,1,1,0,32,33)) & (datetime(2032,1,1,0,32,34) <= datetime(2032,1,1,0,32,34))'),
+        rev('|$dateTime4->meta::pure::functions::boolean::between($dateTime4, $dateTime5)', 'c(datetime(2032,1,1,0,32,34) >= datetime(2032,1,1,0,32,34)) & (datetime(2032,1,1,0,32,34) <= datetime(2032,1,1,0,32,33))'),
+        rev('|$dateTime5->meta::pure::functions::boolean::between($dateTime5, $dateTime5)', 'c(datetime(2032,1,1,0,32,33) >= datetime(2032,1,1,0,32,33)) & (datetime(2032,1,1,0,32,33) <= datetime(2032,1,1,0,32,33))'),
+        rev('|$dateTime1->meta::pure::functions::boolean::between($dateTime2, $dateTime3)', 'c(datetime(1032,1,1,0,32,34) >= datetime(1951,10,1,14,1,1)) & (datetime(1032,1,1,0,32,34) <= datetime(1031,12,31,7,22,22))'),
+        rev('|$dateTime4->meta::pure::functions::boolean::between($dateTime6, $dateTime5)', 'c(datetime(2032,1,1,0,32,34) >= datetime(2032,1,1,0,32,35)) & (datetime(2032,1,1,0,32,34) <= datetime(2032,1,1,0,32,33))')
+      ]
+    )
+    ]->combine()
+  ]
+}

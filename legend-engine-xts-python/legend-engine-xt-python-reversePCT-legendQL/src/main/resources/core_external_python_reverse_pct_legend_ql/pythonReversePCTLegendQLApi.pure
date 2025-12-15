@@ -74,6 +74,9 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
     ->concatenate(
       pythonLegendQLReversesGrammarMath()
     )
+    -> concatenate(
+      pythonLegendQLReversesGrammarBoolean
+    )
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesRelation(): ReversesForSource[*]
@@ -84,6 +87,9 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesRel
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesStandard(): ReversesForSource[*]
 {
   pythonLegendQLReversesStandardMath()
+    ->concatenate(
+      pythonLegendQLReversesStandardBoolean()
+    )
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesUnclassified(): ReversesForSource[*]
