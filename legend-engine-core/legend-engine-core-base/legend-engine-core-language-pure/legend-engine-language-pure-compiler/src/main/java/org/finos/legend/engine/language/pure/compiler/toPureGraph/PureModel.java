@@ -925,7 +925,7 @@ public class PureModel implements IPureModel
 
         // Search for system types in the Pure graph
         type = tryGetFromMetadataAccessor("Root::" + fullPath, MetadataAccessor::getClass, MetadataAccessor::getEnumeration, MetadataAccessor::getPrimitiveType, MetadataAccessor::getMeasure, MetadataAccessor::getUnit);
-        if (type != null && type != NULL_ELEMENT_SENTINEL)
+        if (type != null)
         {
             this.immutables.add(fullPathWithPrefix);
             this.typesIndex.put(fullPathWithPrefix, type);
@@ -935,7 +935,7 @@ public class PureModel implements IPureModel
             this.typesIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
             this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
         }
-        return type == NULL_ELEMENT_SENTINEL ? null : type;
+        return type;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getClass(String fullPath)
@@ -1354,7 +1354,8 @@ public class PureModel implements IPureModel
 
     public Type getTypeFromIndex(String fullPath)
     {
-        return this.typesIndex.get(addPrefixToTypeReference(fullPath));
+        Type type = this.typesIndex.get(addPrefixToTypeReference(fullPath));
+        return type == NULL_ELEMENT_SENTINEL ? null : type;
     }
 
     public GenericType getGenericTypeFromIndex(String fullPath)
