@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       testMatrix: ${{ steps.testMatrix.outputs.testMatrix }}
-      profiles: ${{ steps.requiredSecrets.outputs.PROFILES || steps.setProfiles.outputs.PROFILES}}
+      profiles: ${{ steps.requiredSecrets.outputs.PROFILES }}
 
     steps:
       - name: Checkout repo
@@ -90,14 +90,14 @@ jobs:
       - name: Set profiles that required github secrets
         id: requiredSecrets
         if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'finos/legend-engine') || github.event_name == 'push'
-        run: echo PROFILES='${{ steps.setProfiles.outputs.PROFILES }},pct-cloud-test' >> $GITHUB_OUTPUT
+        run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
 
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         env:
           MAVEN_OPTS: "-Xmx7g"
         run: |
-          mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES || steps.setProfiles.outputs.PROFILES}}
+          mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }}
 
       - name: Build (Master + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
