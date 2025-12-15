@@ -790,6 +790,11 @@ public class PureModel implements IPureModel
         return this.packageableElementsIndex.valuesView();
     }
 
+    public RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> getUserDefinedPackageableElements()
+    {
+        return this.packageableElementsIndex.valuesView().select(p -> p != NULL_ELEMENT_SENTINEL);
+    }
+
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement(String fullPath)
     {
         return getPackageableElement(fullPath, SourceInformation.getUnknownSourceInformation());
@@ -925,7 +930,7 @@ public class PureModel implements IPureModel
 
         // Search for system types in the Pure graph
         type = tryGetFromMetadataAccessor("Root::" + fullPath, MetadataAccessor::getClass, MetadataAccessor::getEnumeration, MetadataAccessor::getPrimitiveType, MetadataAccessor::getMeasure, MetadataAccessor::getUnit);
-        if (type != null)
+        if (type != null && type != NULL_ELEMENT_SENTINEL)
         {
             this.immutables.add(fullPathWithPrefix);
             this.typesIndex.put(fullPathWithPrefix, type);
@@ -935,7 +940,7 @@ public class PureModel implements IPureModel
             this.typesIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
             this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
         }
-        return type;
+        return type == NULL_ELEMENT_SENTINEL ? null : type;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getClass(String fullPath)
