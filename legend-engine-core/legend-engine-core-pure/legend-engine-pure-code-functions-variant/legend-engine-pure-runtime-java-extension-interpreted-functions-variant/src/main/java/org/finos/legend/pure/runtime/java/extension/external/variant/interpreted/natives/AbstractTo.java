@@ -67,7 +67,8 @@ public abstract class AbstractTo extends NativeFunction
         {
             typeKeyName = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport);
             typeLookup = Instance.getValueForMetaPropertyToManyResolved(params.get(3), M3Properties.values, processorSupport)
-                    .collect(x -> {
+                    .collect(x ->
+                    {
                         CoreInstance pair = processorSupport.newAnonymousCoreInstance(functionExpressionCallStack.peek().getSourceInformation(), "meta::pure::functions::collection::Pair");
                         Instance.setValueForProperty(pair, M3Properties.first, x.getValueForMetaPropertyToOne("first"), processorSupport);
                         Instance.setValueForProperty(pair, M3Properties.second, repository.newStringCoreInstance_cached(PackageableElement.getUserPathForPackageableElement(x.getValueForMetaPropertyToOne("second"))), processorSupport);

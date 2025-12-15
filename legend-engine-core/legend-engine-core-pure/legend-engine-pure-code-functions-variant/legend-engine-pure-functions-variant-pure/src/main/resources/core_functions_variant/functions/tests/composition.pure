@@ -152,12 +152,15 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
 
     let result2 = $f->eval(|fromJson('[{"_type": "Dog", "name": "Doggo", "isPuppy": true}, {"_type": "Cat", "name": "Gato", "isKitten": false}]')->toMany(@Pet)->filter(x | $x->instanceOf(Cat)).name);
     assertEquals('Gato', $result2);
+}
 
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceAndInstanceOf_withTypeLookup<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
     let result3 = $f->eval(|fromJson('[{"@type": "perro", "name": "Doggo", "isPuppy": true}, {"@type": "gato", "name": "Gato", "isKitten": false}]')->toMany(@Pet, '@type', [pair('gato',Cat), pair('perro',Dog)])->filter(x | $x->instanceOf(Dog)).name);
     assertEquals('Doggo', $result3);
 
     let result4 = $f->eval(|fromJson('[{"@type": "perro", "name": "Doggo", "isPuppy": true}, {"@type": "gato", "name": "Gato", "isKitten": false}]')->toMany(@Pet, '@type', [pair('gato',Cat), pair('perro',Dog)])->filter(x | $x->instanceOf(Cat)).name);
-    assertEquals('Gato', $result4);    
+    assertEquals('Gato', $result4);
 }
 
 Class <<access.private>> meta::pure::functions::variant::tests::convert::to::model::Person

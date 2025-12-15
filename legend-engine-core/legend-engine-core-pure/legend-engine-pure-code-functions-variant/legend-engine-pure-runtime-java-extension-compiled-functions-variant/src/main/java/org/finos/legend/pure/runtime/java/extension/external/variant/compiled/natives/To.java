@@ -16,6 +16,8 @@
 package org.finos.legend.pure.runtime.java.extension.external.variant.compiled.natives;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Iterator;
+import java.util.Map;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -23,13 +25,20 @@ import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.finos.legend.pure.generated.JsonGen;
+import org.finos.legend.pure.generated.Root_meta_json_JSONDeserializationConfig;
+import org.finos.legend.pure.generated.Root_meta_json_JSONDeserializationConfig_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_Pair_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.List;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.generictype.GenericType;
 import org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity;
@@ -51,14 +60,11 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.type.Fu
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.type.TypeProcessor;
 import org.finos.legend.pure.runtime.java.extension.external.variant.VariantInstanceImpl;
 
-import java.util.Iterator;
-import java.util.Map;
-
 public class To extends AbstractNative
 {
     public To()
     {
-        super("to_Variant_$0_1$__T_$0_1$__T_$0_1$_");
+        super("to_Variant_$0_1$__T_1__T_$0_1$_", "to_Variant_$0_1$__T_1__String_1__Pair_MANY__T_$0_1$_");
     }
 
     @Override
@@ -75,14 +81,18 @@ public class To extends AbstractNative
 
     protected static String buildBody(boolean isZeroOne)
     {
-        return "new DefendedPureFunction2<Object, " + FullJavaPaths.GenericType + ", Object>()\n" +
+        return "new SharedPureFunction<Object>()\n" +
+                "{\n" +
+                "        @Override\n" +
+                "        public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
                 "        {\n" +
-                "            @Override\n" +
-                "            public Object value(Object instances, " + FullJavaPaths.GenericType + " type, ExecutionSupport es)\n" +
-                "            {\n" +
-                "                return " + To.class.getCanonicalName() + ".to((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant) instances, " + isZeroOne + ", type, null, es);\n" +
-                "            }\n" +
-                "        }\n";
+                "           org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant instances = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant) vars.get(0);\n" +
+                "           " + FullJavaPaths.GenericType + " type = (" + FullJavaPaths.GenericType + ") vars.get(1);\n" +
+                "           String typeName = vars.size() > 2 ? (String) vars.get(2) : null;\n" +
+                "           ListIterable typeLookup = vars.size() > 2 ? (ListIterable) vars.get(3) : null;\n" +
+                "           return " + To.class.getCanonicalName() + ".to(instances, typeName, typeLookup, " + isZeroOne + ", type, null, es);\n" +
+                "        }\n" +
+                "}";
     }
 
     protected static String getString(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
@@ -113,12 +123,34 @@ public class To extends AbstractNative
             pureGenericType = "null";
         }
 
-        return "(" + pureJavaType + ")" + To.class.getCanonicalName() + ".to(" + transformedParams.get(0) + "," + toZeroOrOne + ',' + pureGenericType + ',' + sourceInformation + ",es)";
+        String typeName = "null";
+        String typeLookup = "null";
+
+        if (transformedParams.size() > 2)
+        {
+            typeName = transformedParams.get(2);
+            typeLookup = transformedParams.get(3);
+        }
+
+        return "(" + pureJavaType + ")" + To.class.getCanonicalName() + ".to(" + transformedParams.get(0) + "," + typeName + "," + typeLookup + "," + toZeroOrOne + ',' + pureGenericType + ',' + sourceInformation + ",es)";
     }
 
-    public static Object to(Variant variant, boolean isZeroOrOne, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType pureGenericType, SourceInformation sourceInformation, ExecutionSupport es)
+    public static Object to(Variant variant, String iTypeKeyName, ListIterable itypeLookup, boolean isZeroOrOne, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType pureGenericType, SourceInformation sourceInformation, ExecutionSupport es)
     {
         JsonNode jsonNode = null;
+
+        String typeKeyName = iTypeKeyName == null ? "_type" : iTypeKeyName;
+
+        if (itypeLookup == null)
+        {
+            itypeLookup = Lists.fixedSize.empty();
+        }
+
+        ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair<String,String>> typeLookup = itypeLookup.collect(
+                p -> new Root_meta_pure_functions_collection_Pair_Impl("")
+                        ._first((String)((Pair) p)._first())
+                        ._second(PackageableElement.getUserPathForPackageableElement((Class)((Pair) p)._second()))
+        );
 
         if (variant != null)
         {
@@ -127,7 +159,7 @@ public class To extends AbstractNative
 
         if (isZeroOrOne)
         {
-            return to(jsonNode, pureGenericType, sourceInformation, (CompiledExecutionSupport) es);
+            return to(jsonNode, typeKeyName, typeLookup, pureGenericType, sourceInformation, (CompiledExecutionSupport) es);
         }
         else
         {
@@ -139,7 +171,7 @@ public class To extends AbstractNative
             {
                 if (jsonNode.isArray())
                 {
-                    return Iterate.collect(jsonNode, x -> to(x, pureGenericType, sourceInformation, (CompiledExecutionSupport) es));
+                    return Iterate.collect(jsonNode, x -> to(x, typeKeyName, typeLookup, pureGenericType, sourceInformation, (CompiledExecutionSupport) es));
                 }
                 else
                 {
@@ -149,7 +181,7 @@ public class To extends AbstractNative
         }
     }
 
-    private static Object to(JsonNode jsonNode, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType pureGenericType, SourceInformation sourceInformation, CompiledExecutionSupport es)
+    private static Object to(JsonNode jsonNode, String typeKeyName, ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair<String,String>> typeLookup, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType pureGenericType, SourceInformation sourceInformation, CompiledExecutionSupport es)
     {
         boolean supportedTypeButWrongJson = false;
 
@@ -176,7 +208,7 @@ public class To extends AbstractNative
                         for (Iterator<Map.Entry<String, JsonNode>> it = jsonNode.fields(); it.hasNext(); )
                         {
                             Map.Entry<String, JsonNode> jsonNodeEntry = it.next();
-                            map.put(jsonNodeEntry.getKey(), to(jsonNodeEntry.getValue(), valueType, sourceInformation, es));
+                            map.put(jsonNodeEntry.getKey(), to(jsonNodeEntry.getValue(), typeKeyName, typeLookup, valueType, sourceInformation, es));
                         }
 
                         return new PureMap(map);
@@ -189,7 +221,7 @@ public class To extends AbstractNative
                 if (jsonNode.isArray())
                 {
                     org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType elementType = pureGenericType._typeArguments().getOnly();
-                    RichIterable<Object> values = Iterate.collect(jsonNode, x -> to(x, elementType, sourceInformation, es), Lists.mutable.empty());
+                    RichIterable<Object> values = Iterate.collect(jsonNode, x -> to(x, typeKeyName, typeLookup, elementType, sourceInformation, es), Lists.mutable.empty());
                     List<Object> list = (List<Object>) es.getProcessorSupport().newEphemeralAnonymousCoreInstance(M3Paths.List);
                     list._values(values);
                     return list;
@@ -260,7 +292,20 @@ public class To extends AbstractNative
             {
                 return jsonNode.asText();
             }
+            else if (pureGenericType._rawType() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)
+            {
+                if (jsonNode.isObject())
+                {
+                    Root_meta_json_JSONDeserializationConfig config = new Root_meta_json_JSONDeserializationConfig_Impl("")
+                            ._typeKeyName(typeKeyName)
+                            ._typeLookup(typeLookup)
+                            ._failOnUnknownProperties(false);
 
+                    return JsonGen.fromJson(jsonNode.toString(), (Class<Object>) pureGenericType._rawType(), config, sourceInformation, es);
+                }
+
+                supportedTypeButWrongJson = true;
+            }
         }
         catch (IllegalArgumentException e)
         {

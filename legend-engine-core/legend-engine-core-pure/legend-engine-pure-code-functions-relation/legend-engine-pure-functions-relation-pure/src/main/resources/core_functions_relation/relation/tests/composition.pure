@@ -1284,3 +1284,44 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   3,null,null,null\n'+
                 '#', $res->toString());
 }
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_modelOutputNotSupported<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, payload:meta::pure::metamodel::variant::Variant
+                  1, "{"name": "Jose"}"
+                  2, "{"name": "Juan"}"
+                  3, "{"name": "Pedro"}"
+                #->project(~[name: x | $x.payload->to(@meta::pure::functions::relation::tests::composition::Person)])
+              };
+
+   let res =  assertError(|$f->eval($expr), 'The type Person is not supported yet!');
+}
+
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_projectodelProperty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, payload:meta::pure::metamodel::variant::Variant
+                  1, "{"name": "Jose"}"
+                  2, "{"name": "Juan"}"
+                  3, "{"name": "Pedro"}"
+                #->project(~[name: x | $x.payload->to(@meta::pure::functions::relation::tests::composition::Person).name])
+              };
+
+   let res =  $f->eval($expr)->sort(~name->ascending());
+
+   assertEquals('#TDS\n'+
+                '   name\n'+
+                '   Jose\n'+
+                '   Juan\n'+
+                '   Pedro\n'+
+                '#', $res->toString());
+}
+
+Class <<access.private>> meta::pure::functions::relation::tests::composition::Person
+{
+  <<equality.Key>> name: String[1];
+}

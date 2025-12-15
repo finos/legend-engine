@@ -407,12 +407,7 @@ function meta::relational::functions::pureToSqlQuery::processValueSpecificationR
                  r:FunctionRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  f:FunctionExpression[1] | processFunctionExpression($f, $currentPropertyMapping, $operation, $vars, ^$state(functionExpressionStack+=$f), $joinType, buildNodeId($nodeId,'_d'), $aggFromMap, $context, $extensions),
                  i:InstanceValue[1] | let elements = processInstanceValue($i, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-                                      $elements->map(e | 
-                                        $e->match([
-                                          op: OperationWithParentPropertyMapping[1] | $op,
-                                          roe: RelationalOperationElement[1] | ^OperationWithParentPropertyMapping(element=$e)
-                                        ])                                        
-                                      );,
+                                      $elements->map(e | $e->wrapIfNecessary());,
                  v:VariableExpression[1] | processVariableExpression($v,$currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  c:StoreClusteredValueSpecification[1]|fail('This query is attempting to join across stores which is not currently supported. If you are reusing other mapping definitions this may indicate that you have not re-aliased the store names when defining includes. \n'+
                                                        'For example, the mapping may have\n include mapping::example::ExampleMapping\ninstead of\n include mapping::example::ExampleMapping[OtherStore->MyStore]\n' +
@@ -3636,7 +3631,7 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
    let milestoningContext=$newQuery.milestoningContext->concatenate($operation.milestoningContext)->first();
 
    let isSemiStructuredPropertyMapping = ($newCurrentPropertyMapping->size() >= 1) && $newCurrentPropertyMapping->forAll(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping));
-   let isVariant = $f.parametersValues->at(0)->isVariantInput($vars);
+   let isVariant = $f.parametersValues->at(0)->isVariantInput($vars, $state);
    let extraColumn = if(($isSemiStructuredPropertyMapping || $isVariant) && ($select.columns->size() == 1),
                         | $select.columns->toOne()->reprocessAliases($mainQuery.currentTreeNode.alias.name->map(n | ^OldAliasToNewAlias(first = $n, second = $newQuery.currentTreeNode.alias->toOne()))),
                         | []);
@@ -3667,7 +3662,7 @@ function meta::relational::functions::pureToSqlQuery::isVariantInput(v: ValueSpe
       $v->match([
         fe: FunctionExpression[1] | $fe.parametersValues->head()->map(x | $x->isVariantInput($vars, $state))->orElse(false),
         ve: VariableExpression[1] | $vars->get($ve)->map(x | $x->isVariantInput($vars, $state))->orElse(false),
-        rvs: RoutedValueSpecification[1] | $rvs.value->isVariantInputWithInstanceValue($vars, $state),
+        rvs: RoutedValueSpecification[1] | $rvs.value->isVariantInput($vars, $state),
         any: Any[1] | false;
       ])
   );
@@ -4212,15 +4207,20 @@ function meta::relational::functions::pureToSqlQuery::processVariantRemoveDuplic
   processDynaFunction('array_distinct', {reo | $reo->toVariantFriendlyValue($f.parametersValues->at(0).genericType->genericTypeToDataType($f.parametersValues->at(0).multiplicity))}, $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
-function meta::relational::functions::pureToSqlQuery::findVariantTo(value: RelationalOperationElement[1]):VariantToElement[0..1]
+function meta::relational::functions::pureToSqlQuery::findVariantToMetadata(value: RelationalOperationElement[1]):VariantToElementMetadata[0..1]
 {
-  $value->match([
-    vto: VariantToElement[1] | $vto,
-    df: DynaFunction[1] | $df.parameters->head()->map(x | $x->findVariantTo()),
-    rlp: RelationalLambdaParameter[1] | $rlp.value->findVariantTo(),
-    rl: RelationalLambda[1] | $rl.parameters->at(0)->findVariantTo(),
-    a: RelationalOperationElement[1] | fail($a->type()->elementToPath()); $a->cast(@VariantToElement);
-  ])
+  if ($value.metadata->isNotEmpty() && $value.metadata->toOne()->instanceOf(VariantToElementMetadata),
+    |
+      $value.metadata->cast(@VariantToElementMetadata)
+    ,
+    |
+      $value->match([    
+        df: DynaFunction[1] | $df.parameters->head()->map(x | $x->findVariantToMetadata()),
+        rlp: RelationalLambdaParameter[1] | $rlp.value->findVariantToMetadata(),
+        rl: RelationalLambda[1] | $rl.parameters->at(0)->findVariantToMetadata(),
+        a: RelationalOperationElement[1] | fail($a->type()->elementToPath()); $a.metadata->cast(@VariantToElementMetadata);
+      ])
+  )
 }
 
 function meta::relational::functions::pureToSqlQuery::processVariantInstanceOf(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -4228,9 +4228,9 @@ function meta::relational::functions::pureToSqlQuery::processVariantInstanceOf(f
   let variant = $f.parametersValues->at(0)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(inFilter = false), $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor).select.columns->toOne();
   let class = $f->instanceValueAtParameter(1)->toOne()->cast(@Class<Any>);
 
-  let variantToElement = findVariantTo($variant)->toOne('did you forgot to call to or toMany?');
-  let keyProp = $variantToElement.typeName->orElse('_type');
-  let className = $variantToElement.typeLookup->filter(p | $p.second == $class)->head().first->orElse($class.name->toOne());
+  let variantToMetadata = findVariantToMetadata($variant)->toOne('did you forgot to call to() or toMany()?');
+  let keyProp = $variantToMetadata.typeName->orElse('_type');
+  let className = $variantToMetadata.typeLookup->filter(p | $p.second == $class)->head().first->orElse($class.name->toOne());
 
   let typeProp = ^SemiStructuredPropertyAccess(operand = $variant, property = ^Literal(value = $keyProp), returnType = String);
   let typePropCasted = newDynaFunction('variantTo', [$typeProp, ^DataTypeInfo(dataType = ^meta::relational::metamodel::datatype::Varchar(size=100))]);
@@ -4248,14 +4248,21 @@ function meta::relational::functions::pureToSqlQuery::processTo(f:FunctionExpres
   let valueToCast = if($f.parametersValues->size() > 2,
     |
       let typeName = $f->instanceValueAtParameter(2)->cast(@String);
-      let typeLookup = $f->deepByPassRouterInfo()->cast(@FunctionExpression)->instanceValuesAtParameter(3, $vars, $state.inScopeVars)->match([
-          p: Pair<String, Class<Any>>[*] | $p,
-          vs : ValueSpecification[*] | $vs->map(x | $x->reactivate($state.inScopeVars))->cast(@Pair<String,Class<Any>>)
-      ]);
-      ^VariantToElement(value = $value, typeName = $typeName, typeLookup = $typeLookup);
+
+      // routing does not propagate type arguments properly, hence reactivation is not possible until that is fixed
+      let newPairFe = $f.parametersValues->evaluateAndDeactivate()->at(3)->cast(@InstanceValue).values->cast(@SimpleFunctionExpression);
+      $newPairFe->forAll(x | $x->isNewPairFunction($vars, $state))->assert(|'type lookup on to() function should be pair() functions!');
+      let typeLookup = $newPairFe->map(p | 
+        let ke = $p.parametersValues->evaluateAndDeactivate()->drop(2)->cast(@InstanceValue).values->cast(@KeyExpression)->sortBy(x | $x.key->reactivate()->cast(@String)->toOne()); // pair has 2 properties, "first" and "second"... alphabetically "first" goes before "second"... 
+        let first = $ke->at(0).expression->reactivate()->toOne()->cast(@String);
+        let second = $ke->at(1).expression->reactivate()->toOne()->cast(@Class<Any>);
+        pair($first, $second);
+      );
+
+      ^$value(metadata = ^VariantToElementMetadata(typeName = $typeName, typeLookup = $typeLookup));
     ,
     |
-      ^VariantToElement(value = $value, typeName = '_type', typeLookup = []);
+      ^$value(metadata = ^VariantToElementMetadata(typeName = '_type', typeLookup = []));
   );
 
   let typeParam = $f.parametersValues->at(1);
@@ -4281,14 +4288,21 @@ function meta::relational::functions::pureToSqlQuery::processToMany(f:FunctionEx
   let valueToCast = if($f.parametersValues->size() > 2,
     |
       let typeName = $f->instanceValueAtParameter(2)->cast(@String);
-      let typeLookup = $f->instanceValuesAtParameter(3, $vars, $state.inScopeVars)->match([
-          p: Pair<String, Class<Any>>[*] | $p,
-          vs : ValueSpecification[*] | $vs->map(x | $x->reactivate($state.inScopeVars))->cast(@Pair<String,Class<Any>>)
-      ]);
-      ^VariantToElement(value = $value, typeName = $typeName, typeLookup = $typeLookup);
+
+      // routing does not propagate type arguments properly, hence reactivation is not possible until that is fixed
+      let newPairFe = $f.parametersValues->evaluateAndDeactivate()->at(3)->cast(@InstanceValue).values->cast(@SimpleFunctionExpression);
+      $newPairFe->forAll(x | $x->isNewPairFunction($vars, $state))->assert(|'type lookup on to() function should be pair() functions!');
+      let typeLookup = $newPairFe->map(p | 
+        let ke = $p.parametersValues->evaluateAndDeactivate()->drop(2)->cast(@InstanceValue).values->cast(@KeyExpression)->sortBy(x | $x.key->reactivate()->cast(@String)->toOne()); // pair has 2 properties, "first" and "second"... alphabetically "first" goes before "second"... 
+        let first = $ke->at(0).expression->reactivate()->toOne()->cast(@String);
+        let second = $ke->at(1).expression->reactivate()->toOne()->cast(@Class<Any>);
+        pair($first, $second);
+      );
+      
+      ^$value(metadata = ^VariantToElementMetadata(typeName = $typeName, typeLookup = $typeLookup));
     ,
     |
-      ^VariantToElement(value = $value, typeName = '_type', typeLookup = []);
+      ^$value(metadata = ^VariantToElementMetadata(typeName = '_type', typeLookup = []));
   );
 
   let dataType = $f.parametersValues->at(1).genericType->genericTypeToDataType(ZeroOne);
@@ -4379,7 +4393,17 @@ function meta::relational::functions::pureToSqlQuery::processVariantAt(f:Functio
     ->cast(@SelectWithCursor);
   let property = $propertyToAccess.select.columns->toOne();
 
-  let relOpElement = ^SemiStructuredArrayElementAccess(index = $property, operand = $operand, returnType = $f.genericType.rawType);
+  let rawRelOpElement = ^SemiStructuredArrayElementAccess(index = $property, operand = $operand, returnType = $f.genericType.rawType);
+
+  let dataType = $f.genericType->genericTypeToDataType(ZeroOne);
+
+  // dont cast if going from variant to variant
+  let relOpElement = $dataType->match([
+    s: meta::relational::metamodel::datatype::SemiStructured[1] | $rawRelOpElement,
+    o: meta::relational::metamodel::datatype::Object[1] | $rawRelOpElement,
+    any: Any[1] | newDynaFunction('cast', [$rawRelOpElement, ^DataTypeInfo(dataType = $dataType)])
+  ]);
+
 
   let select = $operation.select;
   ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $relOpElement),|^$select(columns = $relOpElement)));
@@ -4397,7 +4421,16 @@ function meta::relational::functions::pureToSqlQuery::processMapGet(f:FunctionEx
     ->cast(@SelectWithCursor);
   let property = $propertyToAccess.select.columns->toOne();
 
-  let relOpElement = ^SemiStructuredPropertyAccess(property = $property, operand = $operand, returnType = $f.genericType.rawType);
+  let rawRelOpElement = ^SemiStructuredPropertyAccess(property = $property, operand = $operand, returnType = $f.genericType.rawType);
+
+  let dataType = $f.genericType->genericTypeToDataType(ZeroOne);
+
+  // dont cast if going from variant to variant
+  let relOpElement = $dataType->match([
+    s: meta::relational::metamodel::datatype::SemiStructured[1] | $rawRelOpElement,
+    o: meta::relational::metamodel::datatype::Object[1] | $rawRelOpElement,
+    any: Any[1] | newDynaFunction('cast', [$rawRelOpElement, ^DataTypeInfo(dataType = $dataType)])
+  ]);
 
   let select = $operation.select;
   ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $relOpElement),|^$select(columns = $relOpElement)));  
@@ -9743,7 +9776,7 @@ function meta::relational::functions::pureToSqlQuery::genericTypeToDataType(gene
             pair(|$path == 'List', |^meta::relational::metamodel::datatype::Array(type = $genericType.typeArguments->at(0)->genericTypeToDataType(ZeroOne))),
             pair(|$path == 'Map' && $genericType.typeArguments->at(0).rawType == String, |^meta::relational::metamodel::datatype::Object(keyType = $genericType.typeArguments->at(0)->genericTypeToDataType(ZeroOne), valueType = $genericType.typeArguments->at(1)->genericTypeToDataType(ZeroOne))),
             pair(|$path == 'Pair' && $genericType.typeArguments->at(0).rawType == String, |^meta::relational::metamodel::datatype::Object(keyType = $genericType.typeArguments->at(0)->genericTypeToDataType(ZeroOne), valueType = $genericType.typeArguments->at(1)->genericTypeToDataType(ZeroOne))),
-            pair(|$path == 'Variant' || $genericType.rawType->toOne()->instanceOf(Class), |^meta::relational::metamodel::datatype::SemiStructured()),
+            pair(|$path == 'Variant' || ($path->in(['Map', 'Pair', 'List'])->not() && $genericType.rawType->toOne()->instanceOf(Class)), |^meta::relational::metamodel::datatype::SemiStructured()),
 
             pair(|$path == 'BigInt', |^meta::relational::metamodel::datatype::BigInt()),
             pair(|$path == 'StrictDate', |^meta::relational::metamodel::datatype::Date()),

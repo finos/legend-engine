@@ -518,7 +518,6 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           f:FreeMarkerOperationHolder[1]|processFreeMarkerOperationHolder($f, $dbConfig, $format, $generationState, $config, false, $extensions),
                                           u:meta::relational::functions::pureToSqlQuery::union::UnionOrJoin[1]|processDynaFunction($u.parameters->reverse()->meta::relational::functions::pureToSqlQuery::orFilters($extensions)->toOne()->cast(@DynaFunction), $sgc),
                                           d:DynaFunction[1]|processDynaFunction($d, $sgc),
-                                          vte:VariantToElement[1]|$vte.value->processOperation($dbConfig, $format, $config, $extensions),
                                           c:ColumnName[1]|$dbConfig.identifierProcessor($c.name->toOne()),
                                           s:SemiStructuredObjectNavigation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
                                           s:SemiStructuredArrayFlatten[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
