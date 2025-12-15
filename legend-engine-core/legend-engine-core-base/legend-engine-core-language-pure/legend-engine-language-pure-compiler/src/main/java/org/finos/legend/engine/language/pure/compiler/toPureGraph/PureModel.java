@@ -790,11 +790,6 @@ public class PureModel implements IPureModel
         return this.packageableElementsIndex.valuesView();
     }
 
-    public RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> getUserDefinedPackageableElements()
-    {
-        return this.packageableElementsIndex.valuesView().select(p -> p != NULL_ELEMENT_SENTINEL);
-    }
-
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement(String fullPath)
     {
         return getPackageableElement(fullPath, SourceInformation.getUnknownSourceInformation());
