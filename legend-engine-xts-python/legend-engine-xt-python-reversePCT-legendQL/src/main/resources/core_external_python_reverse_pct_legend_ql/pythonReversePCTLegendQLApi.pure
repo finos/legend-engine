@@ -75,7 +75,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
       pythonLegendQLReversesGrammarMath()
     )
     -> concatenate(
-      pythonLegendQLReversesGrammarBoolean
+      pythonLegendQLReversesGrammarBoolean()
     )
 }
 
