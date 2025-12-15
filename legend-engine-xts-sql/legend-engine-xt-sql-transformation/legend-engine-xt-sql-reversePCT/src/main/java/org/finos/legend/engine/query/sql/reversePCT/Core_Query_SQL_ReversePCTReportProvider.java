@@ -20,9 +20,17 @@ import org.finos.legend.pure.m3.pct.functions.model.Functions;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterReport;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProvider;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderTool;
+import org.finos.legend.pure.m3.pct.reports.model.AdapterReverse;
 
 public class Core_Query_SQL_ReversePCTReportProvider implements PCTReportProvider
 {
+    public static final AdapterReverse SQLAdapter = new AdapterReverse(
+            "SQL",
+            "Reverse_PCT",
+            "meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_",
+            "meta::external::query::sql::reversePCT::framework::reverses__ReverseInformation_1_"
+    );
+
     @Override
     public MutableList<Functions> getFunctions()
     {

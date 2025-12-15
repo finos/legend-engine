@@ -1,0 +1,91 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::functions::meta::*;
+import meta::pure::test::pct::*;
+import meta::pure::test::pct::reversePCT::framework::documentation::*;
+import meta::pure::test::pct::reversePCT::framework::*;
+
+function meta::pure::test::pct::reversePCT::framework::documentation::reprocess(f:ConcreteFunctionDefinition<Any>[1], r:Map<String, List<ReversesForSource>>[1], reverseTransformer:Function<{String[1]->Any[1]}>[1]):ConcreteFunctionDefinition<Any>[1]
+{
+  if ($f->hasStereotype('test', PCT),
+    | let valuesForSource = $r->get($f->sourceInformation().source->toOne()).values;
+      let path = $f->elementToPath();
+      let foundReverse = $valuesForSource.reverses->filter(v|$v.testFunction == $path);
+      $f->swapReverse($foundReverse.reverses->groupBy(x|$x.function), $reverseTransformer);,
+    |$f
+  );
+}
+
+function meta::pure::test::pct::reversePCT::framework::documentation::swapReverse(f:ConcreteFunctionDefinition<Any>[1], reverses:Map<String,List<Reverse>>[1], reverseTransformer:Function<{String[1]->Any[1]}>[1]):ConcreteFunctionDefinition<Any>[1]
+{
+  ^$f(
+    expressionSequence = $f.expressionSequence->evaluateAndDeactivate()->map(x|$x->swapReverse($reverses, $reverseTransformer))
+  );
+}
+
+function meta::pure::test::pct::reversePCT::framework::documentation::swapReverse(v:ValueSpecification[1], reverses:Map<String,List<Reverse>>[1], reverseTransformer:Function<{String[1]->Any[1]}>[1]):ValueSpecification[1]
+{
+  $v->match([
+    fe:FunctionExpression[1]|^$fe(parametersValues=$fe.parametersValues->evaluateAndDeactivate()->map(x|$x->swapReverse($reverses, $reverseTransformer))),
+    i:InstanceValue[1]|if ($i.values->genericType().rawType == LambdaFunction,
+                            | ^$i(
+                                  values = $i.values->map(x|
+                                    let f = $x->cast(@FunctionDefinition<Any>)->printFunctionDefinition(meta::pure::test::pct::reversePCT::framework::documentation::dynamicGrammarConfiguration(), ^GContext(space=''));
+                                    let reverse = $reverses->get($f).values.reverse;
+                                    if ($reverse->isEmpty(),
+                                      |$x,
+                                      |$reverseTransformer->eval($reverse->toOne());
+                                    );
+                                  )
+                               ),
+                            | $i->evaluateAndDeactivate()
+                       )->cast(@ValueSpecification),
+    a:ValueSpecification[1]|$a;
+  ])
+}
+
+function meta::pure::test::pct::reversePCT::framework::documentation::dynamicGrammarConfiguration():meta::pure::metamodel::serialization::grammar::Configuration[1]
+{
+  ^meta::pure::metamodel::serialization::grammar::Configuration
+  (
+    fullPath = true,
+    extensions = meta::pure::extension::runtime::getExtensions().grammarSerializerExtensions
+  );
+}
+
+function meta::pure::test::pct::reversePCT::framework::documentation::generateDoc(file:String[1], reverseFunc : String[1]):String[1]
+{
+    let myMap = meta::pure::functions
+                ->getAllPackageElements(true)
+                ->filter(x|!$x->instanceOf(Package))
+                ->groupBy(x|$x->sourceInformation()->toOne().source);
+
+    let revs = $reverseFunc->pathToElement()->cast(@Function<{->ReverseInformation[1]}>)->eval();
+    let reverses = $revs.reversesForSource->groupBy(x|$x.source);
+
+    let configuration = meta::pure::test::pct::reversePCT::framework::documentation::dynamicGrammarConfiguration();
+    let conf = ^$configuration(fullPath=false);
+
+    $myMap->keys()->filter(x|$x == $file)->map(x|
+      $myMap->get($x).values
+            ->sortBy(x|$x->sourceInformation().startLine->toOne())
+            ->map(pe|$pe->match([
+              f:ConcreteFunctionDefinition<Any>[1]|$f->reprocess($reverses, $revs.reverseTransformer),
+              a:PackageableElement[1]|$a
+            ]))
+            ->printPackageableElements($conf)
+      )->makeString('\n');
+}

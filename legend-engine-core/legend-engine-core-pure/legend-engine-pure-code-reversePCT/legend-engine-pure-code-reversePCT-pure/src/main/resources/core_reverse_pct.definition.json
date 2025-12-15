@@ -3,6 +3,8 @@
   "pattern": "(meta::pure::test::pct::reversePCT)(::.*)?",
   "dependencies": [
     "platform",
+    "core_functions_unclassified",
+    "core_external_extensions",
     "core"
   ]
 }

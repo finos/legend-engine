@@ -216,6 +216,23 @@ function <<access.private>> meta::pure::metamodel::serialization::grammar::force
   'from'
 }
 
+function <<access.private>> meta::pure::metamodel::serialization::grammar::forceNonArrow():String[*]
+{
+  [
+    'assertEq',
+    'assertEqWithinTolerance',
+    'assertEquals',
+    'assert',
+    'assertEmpty',
+    'assertNotEmpty',
+    'assertFalse',
+    'assertIs',
+    'assertSize',
+    'assertSameElements',
+    'assertError'
+  ]
+}
+
 function meta::pure::metamodel::serialization::grammar::printColSpec(functionExpression:FunctionExpression[1], configuration:Configuration[0..1], context:GContext[1]):String[1]
 {
   let isAgg = $functionExpression.parametersValues->size() > 3;
@@ -278,7 +295,7 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
 
         ],
         |let firstParam = $functionExpression.parametersValues->head()->toOne();
-         if(!$firstParam.genericType.rawType == LambdaFunction && (forceArrow()->contains($name)  ||
+         if(!$firstParam.genericType.rawType == LambdaFunction && !forceNonArrow()->contains($name) && (forceArrow()->contains($name)  ||
                 !(
                   ($firstParam->instanceOf(SimpleFunctionExpression) && $firstParam->cast(@SimpleFunctionExpression).functionName->isNotEmpty()  && $special->get($firstParam->cast(@SimpleFunctionExpression).functionName->toOne())->isNotEmpty()) ||
                   ($firstParam->instanceOf(FunctionExpression) && $firstParam->cast(@FunctionExpression).func.functionName->isNotEmpty()  && $special->get($firstParam->cast(@FunctionExpression).func.functionName->toOne())->isNotEmpty())
