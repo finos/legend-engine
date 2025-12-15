@@ -43,14 +43,14 @@ public class Test_Relational_DuckDB_GrammarFunctions_PCT extends PCTReportConfig
             // Eq
             one("meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_", "\"DuckDB doesn't support YEAR and YEAR-MONTH\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_", "Error in 'meta::relational::tests::pct::process::myMapping': Can't find the main table for class 'BottomClass'. Please specify a main table using the ~mainTable directive.", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\"", AdapterQualifier.unsupportedFeature),
 
             // Equal
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_", "\"Assert failed\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_", "Error in 'meta::relational::tests::pct::process::myMapping': Can't find the main table for class 'BottomClass'. Please specify a main table using the ~mainTable directive.", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_", "\"DuckDB doesn't support YEAR and YEAR-MONTH\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\"", AdapterQualifier.unsupportedFeature),
 

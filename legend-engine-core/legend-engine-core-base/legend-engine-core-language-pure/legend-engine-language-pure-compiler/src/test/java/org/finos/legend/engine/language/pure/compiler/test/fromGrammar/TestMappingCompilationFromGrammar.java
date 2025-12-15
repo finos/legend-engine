@@ -1586,7 +1586,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "      employer[p, f]: $this.firmId == $that.id\n" +
                                 "   }"),
                 null,
-                Lists.mutable.with("COMPILATION error at [36:7-46]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                Lists.mutable.with("COMPILATION warning at [36:7-46]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
         );
 
         test(
@@ -1598,8 +1598,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "   }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [36:7-46]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [37:7-47]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [36:7-46]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [37:7-47]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                         )
         );
 
@@ -1671,7 +1671,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "    employer[p, f]: $this.firmId == $that.id\n" +
                                 "  }"),
                 null,
-                Lists.mutable.with("COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                Lists.mutable.with("COMPILATION warning at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
         );
         test(
                 String.format(
@@ -1685,8 +1685,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "  }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                         )
         );
         test(
@@ -1722,8 +1722,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "  }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                 )
         );
         test(
@@ -1749,8 +1749,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "  }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [38:5-44]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [39:5-45]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                         )
         );
         test(
@@ -1807,7 +1807,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "      employer[p, f]: $this.firmName == $that.name\n" +
                                 "   }"),
                 null,
-                Lists.mutable.with("COMPILATION error at [95:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                Lists.mutable.with("COMPILATION warning at [95:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
         );
         test(
                 String.format(
@@ -1818,8 +1818,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "   }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [95:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [96:7-51]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [95:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [96:7-51]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                         )
         );
 
@@ -1892,7 +1892,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "      employer[p, f]: $this.firmName == $that.name\n" +
                                     "   }\n)"),
                     null,
-                    Lists.mutable.with("COMPILATION error at [97:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                    Lists.mutable.with("COMPILATION warning at [97:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
             );
             test(
                     String.format(
@@ -1903,8 +1903,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "   }\n)"),
                     null,
                     Lists.mutable.with(
-                            "COMPILATION error at [97:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                            "COMPILATION error at [98:7-51]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                            "COMPILATION warning at [97:7-50]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION warning at [98:7-51]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                     )
             );
             test(
@@ -1965,7 +1965,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "      street[a, s]: $this.streetName == $that.streetId\n" +
                                 "   }"),
                 null,
-                Lists.mutable.with("COMPILATION error at [94:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                Lists.mutable.with("COMPILATION warning at [94:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
         );
         test(
                 String.format(
@@ -1976,8 +1976,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "   }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [94:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [94:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                 )
         );
         test(
@@ -2004,8 +2004,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                 "   }"),
                 null,
                 Lists.mutable.with(
-                        "COMPILATION error at [94:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                        "COMPILATION error at [95:7-57]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                        "COMPILATION warning at [94:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                        "COMPILATION warning at [95:7-57]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                         )
         );
         test(
@@ -2077,7 +2077,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "      address[p, a]: $this.addressName == $that.name\n" +
                                     "   }"),
                     null,
-                    Lists.mutable.with("COMPILATION error at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                    Lists.mutable.with("COMPILATION warning at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
             );
             test(
                     String.format(
@@ -2088,8 +2088,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "   }"),
                     null,
                     Lists.mutable.with(
-                            "COMPILATION error at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                            "COMPILATION error at [96:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                            "COMPILATION warning at [95:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION warning at [96:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                             )
             );
             test(
@@ -2241,7 +2241,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                             "      address[p, a]: $this.addressName == $that.name\n" +
                             "   }\n)\n",
                     null,
-                    Lists.mutable.with("COMPILATION error at [82:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
+                    Lists.mutable.with("COMPILATION warning at [82:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.")
             );
             test(grammar_milestoned +
                             "   test::Person_Address: XStore {\n" +
@@ -2250,8 +2250,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "   }\n)\n",
                     null,
                     Lists.mutable.with(
-                            "COMPILATION error at [82:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                            "COMPILATION error at [83:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                            "COMPILATION warning at [82:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION warning at [83:7-52]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                             )
             );
             test(grammar_milestoned +
@@ -2272,8 +2272,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                                     "   }\n)\n",
                     null,
                     Lists.mutable.with(
-                            "COMPILATION error at [82:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
-                            "COMPILATION error at [83:7-57]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
+                            "COMPILATION warning at [82:7-54]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model.",
+                            "COMPILATION warning at [83:7-57]: XStore specified with reference to mapping IDs is discouraged; most use cases do not require to mapping IDs in XStore grammar. Specifying mapping ids can lead to unnecessary dependencies on physical data model."
                             )
             );
             test(grammar_milestoned +

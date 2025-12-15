@@ -13,6 +13,16 @@ function <<test.Test>> meta::relational::grammar::serialization::tests::testPrin
 ###Relational
 Database meta::relational::grammar::serialization::tests::TestDB
 (
+  Schema "Schema with space"
+  (
+      Table "Table with space"
+      (
+        id INT PRIMARY KEY,
+
+        "column with space" VARCHAR(1)
+      )
+  )
+
   Schema MySchema
   (
       Table Table1
@@ -52,20 +62,37 @@ Database meta::relational::grammar::serialization::tests::TestDB
       (
         id VARCHAR(100)
       )
+
+      View View1
+      (
+        ~filter SimpleFilter
+        ~groupBy (MySchema.Table1.varchar, MySchema.Table1.char)
+        ~distinct
+        id:  Table1.id,
+        char: @SimpleJoin > (INNER) @SimpleJoin2 > (OUTER) @SimpleJoin3 | MySchema.Table2.id
+      )      
   )
 
   Join SimpleJoin (MySchema.Table1.id = MySchema.Table2.id)
+  Join SimpleJoin2 (MySchema.Table1.id = MySchema.Table2.id)
+  Join SimpleJoin3 (MySchema.Table1.id = MySchema.Table2.id)
+  
   Join CompositeJoin (
-    (MySchema.Table1.id = MySchema.Table2.id) and 
+    (MySchema.Table1.id = MySchema.Table2.id) and
     (MySchema.Table1.varchar <> MySchema.Table2.id) and
     (MySchema.Table1.varchar != MySchema.Table2.id) and
     (MySchema.Table1.varchar < MySchema.Table2.id) and
     (MySchema.Table1.varchar > MySchema.Table2.id) and
-    (MySchema.Table1.varchar <= MySchema.Table2.id) and 
+    (MySchema.Table1.varchar <= MySchema.Table2.id) and
     (MySchema.Table1.varchar >= MySchema.Table2.id) and
     (MySchema.Table1.varchar <> MySchema.Table2.id) and
     (MySchema.Table1.varchar is null) and
-    (MySchema.Table1.varchar is not null)
+    (MySchema.Table1.varchar is not null) and
+    (MySchema.Table1.varchar = 999)
   )
   Join SelfJoin (MySchema.Table1.id = {target}.id)
+  Join SelfViewJoin (MySchema.View1.id = {target}.id)
+
+  Filter SimpleFilter(MySchema.Table1.varchar = 'abc')
+  MultiGrainFilter multiGrain(MySchema.Table1.varchar = 'abc')
 )

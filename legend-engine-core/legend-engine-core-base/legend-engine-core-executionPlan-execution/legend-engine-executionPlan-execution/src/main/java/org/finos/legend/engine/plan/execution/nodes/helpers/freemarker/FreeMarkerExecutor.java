@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 
 public class FreeMarkerExecutor
 {
-    private static Configuration freemarkerConfig = new Configuration();
+    private static Configuration freemarkerConfig = new Configuration(Configuration.VERSION_2_3_30);
     private static Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
     public static Pattern pattern = Pattern.compile("(\\$)[\\{](?:[^\\{\\}]+|[\\{][^\\{\\}]*[\\}])*[\\}]");
     private static ObjectWrapper objectWrapper = FreeMarkerExecutor.freemarkerConfig.getObjectWrapper();

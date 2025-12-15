@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
@@ -23,10 +22,11 @@ import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.language.pure.compiler.MetadataWrapper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
@@ -36,8 +36,15 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Package_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
+import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
@@ -47,6 +54,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel.METADATA_LAZY;
 
 public class TestCompilationFromGrammar
 {
@@ -93,12 +102,12 @@ public class TestCompilationFromGrammar
 
                 if (expectedWarnings == null)
                 {
-                    Assert.assertTrue("expected no warnings but found " + pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).collect(Collectors.toList()), pureModel.getWarnings().isEmpty());
+                    Assert.assertTrue("expected no warnings but found " + pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).collect(Collectors.toList()), pureModel.getDefects().isEmpty());
                 }
 
                 if (expectedWarnings != null)
                 {
-                    List<String> warnings = pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).sorted().collect(Collectors.toList());
+                    List<String> warnings = pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).sorted().collect(Collectors.toList());
                     Collections.sort(expectedWarnings);
                     Assert.assertEquals(expectedWarnings, warnings);
                 }
@@ -165,12 +174,12 @@ public class TestCompilationFromGrammar
 
                 if (expectedWarnings == null)
                 {
-                    Assert.assertTrue("expected no warnings but found " + pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).collect(Collectors.toList()), pureModel.getWarnings().isEmpty());
+                    Assert.assertTrue("expected no warnings but found " + pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).collect(Collectors.toList()), pureModel.getDefects().isEmpty());
                 }
 
                 if (expectedWarnings != null)
                 {
-                    List<String> warnings = pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).sorted().collect(Collectors.toList());
+                    List<String> warnings = pureModel.getDefects().stream().map(Defect::buildPrettyDefectMessage).sorted().collect(Collectors.toList());
                     Collections.sort(expectedWarnings);
                     Assert.assertEquals(expectedWarnings, warnings);
                 }
@@ -1319,5 +1328,24 @@ public class TestCompilationFromGrammar
                         "   1->cast(@meta::pure::precisePrimitives::TinyInt) + '1';" +
                         "}", "COMPILATION error at [2:83-87]: Can't find a match for function 'plus(Any[2])'"
         );
+    }
+
+    @Test
+    public void testCompilationOfAnyFromCompiledMetadata()
+    {
+        PureModel pm = PureModel.getCorePureModel();
+
+        PureModelContextData model = PureGrammarParser.newInstance().parseModel("###Pure\n" +
+                "function example::testAny(): Any[1]\n" +
+                "{\n" +
+                "    1;" +
+                "}");
+        PureModel compiled = Compiler.compile(model, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName(), "", pm.getExecutionSupport().getMetadata());
+
+        PureModel result = Compiler.compile(model, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName(), "", new MetadataWrapper(new Package_Impl(M3Paths.Root)._name(M3Paths.Root), METADATA_LAZY, compiled));
+
+        ConcreteFunctionDefinition<?> func = result.getConcreteFunctionDefinition("example::testAny__Any_1_", null);
+        Type returnType = ((FunctionType) func._classifierGenericType()._typeArguments().getOnly()._rawType())._returnType()._rawType();
+        Assert.assertEquals("meta::pure::metamodel::type::Any", Pure.elementToPath((PackageableElement) returnType, "::"));
     }
 }

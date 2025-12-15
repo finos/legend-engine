@@ -32,7 +32,7 @@ Class meta::external::query::sql::transformation::queryToPure::tests::TestConfig
   }:FunctionDefinition<Any>[1];
 
   relation(){
-    $this.expected->functionReturnType().rawType == meta::pure::metamodel::relation::Relation;
+    $this.expected->functionReturnType().rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::Relation);
   }:Boolean[1];
 
   resolveSources()

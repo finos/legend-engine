@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-python</artifactId>
-        <version>4.113.2-SNAPSHOT</version>
+        <version>4.115.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -110,74 +110,52 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
-                    <excludes>
-                        <exclude>**/Test_External_PythonLegendQL*_Reverse_PCT*.java</exclude>
-                    </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-pct</artifactId>
+                <configuration>
+                    <mode>Compiled</mode>
+                    <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
+                    <PCTTestSuites>
+                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_EssentialFunctions_Reverse_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_GrammarFunctions_Reverse_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_RelationFunctions_Reverse_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_StandardFunctions_Reverse_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_UnclassifiedFunctions_Reverse_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_VariantFunctions_Reverse_PCT</PCTTestSuite>
+                    </PCTTestSuites>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>PCT-Generation</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>generate-pct-report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-compiled</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>python-test</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludes>
-                                <exclude>NOTHING_EXCLUDED</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-maven-generation-pct</artifactId>
-                        <configuration>
-                            <mode>Compiled</mode>
-                            <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
-                            <PCTTestSuites>
-                                <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_EssentialFunctions_Reverse_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_GrammarFunctions_Reverse_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_RelationFunctions_Reverse_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_StandardFunctions_Reverse_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_UnclassifiedFunctions_Reverse_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_VariantFunctions_Reverse_PCT</PCTTestSuite>
-                            </PCTTestSuites>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>PCT-Generation</id>
-                                <phase>process-test-classes</phase>
-                                <goals>
-                                    <goal>generate-pct-report</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.finos.legend.engine</groupId>
-                                <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                                <version>${project.version}</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.finos.legend.engine</groupId>
-                                <artifactId>legend-engine-pure-code-reversePCT</artifactId>
-                                <version>${project.version}</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.finos.legend.engine</groupId>
-                                <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-compiled</artifactId>
-                                <version>${project.version}</version>
-                            </dependency>
-                        </dependencies>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <dependencies>
         <dependency>

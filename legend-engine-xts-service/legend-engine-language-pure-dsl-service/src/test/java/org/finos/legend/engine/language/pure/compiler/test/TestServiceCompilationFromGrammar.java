@@ -3648,7 +3648,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      runtime: test::runtime;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", null, FastList.newListWith("COMPILATION error at [30:16-28]: Execution Environment 'test::executionEnvironment', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
+                "}\n", null, FastList.newListWith("COMPILATION warning at [30:16-28]: Execution Environment 'test::executionEnvironment', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
 
         test(resource + "###Service \n" +
                 "Service test::Service \n" +
@@ -3663,7 +3663,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    mapping: test::mapping2; \n" +
                 "    runtime: test::runtime; \n" +
                 "  }\n" +
-                "}", null, FastList.newListWith("COMPILATION error at [33:14-26]: Service 'test::Service' Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
+                "}", null, FastList.newListWith("COMPILATION warning at [33:14-26]: Service 'test::Service' Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
 
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -3688,8 +3688,8 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    }\n" +
                 "  }\n" +
                 "}\n", null, FastList.newListWith(
-                        "COMPILATION error at [36:16-28]: Service 'test::Service', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'",
-                "COMPILATION error at [41:16-28]: Service 'test::Service', key: 'QA', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
+                        "COMPILATION warning at [36:16-28]: Service 'test::Service', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'",
+                "COMPILATION warning at [41:16-28]: Service 'test::Service', key: 'QA', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
 
         String binding = "###ExternalFormat\n" +
                 "Binding test::bind\n" +
@@ -3716,7 +3716,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    }\n" +
                 "  ];\n" +
                 "}\n", null, FastList.newListWith(
-                        "COMPILATION error at [40:12-34]: Execution Environment 'test::executionEnvironment', key: 'UAT', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"
+                        "COMPILATION warning at [40:12-34]: Execution Environment 'test::executionEnvironment', key: 'UAT', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"
         ));
     }
 }

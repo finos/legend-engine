@@ -14,18 +14,21 @@
 
 package org.finos.legend.engine.language.pure.compiler.api;
 
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
 
 import java.util.List;
 
+@JsonPropertyOrder({"message", "defects"})
 public class CompileResult
 {
     public String message;
-    public List<Warning> warnings;
+    public List<? extends Defect> defects;
 
-    public CompileResult(String message, List<Warning> warnings)
+    public CompileResult(String message, List<? extends Defect> defects)
     {
         this.message = message;
-        this.warnings = warnings;
+        this.defects = defects;
+
     }
 }

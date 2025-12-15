@@ -326,7 +326,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectSQLQueryForMemSQL(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
-  assertEmpty($sq.pivot, 'pivot is not supported');
   assertEmpty($sq.qualifyOperation, 'QUALIFY grammar is not supported');
   let s = if($sq.fromRow->isNotEmpty() && $sq.toRow->isEmpty(), |$sq->rewriteSliceAsWindowFunction(), |$sq);
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
@@ -335,12 +334,32 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
-  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), $joinOrder, $extensions)) +
+  if ($s.data == [],
+    |'',
+    | let fromStr = $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), $joinOrder, $extensions);
+      ' ' + $format.separator + 'from ' + $fromStr + if($s.pivot->isEmpty(), | '', | processPivotForMemSQL($s.pivot->toOne(), $dbConfig, $format, ^$config(useUnqualifiedColumnNameInPivot = true), $extensions));
+  ) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
   + processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processPivotForMemSQL(p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
+{
+  let staticPivotValues = $p->match([
+                                      s:StaticPivot[1] | $s.values,
+                                      p:Pivot[1] | fail('MemSQL does not support dynamic pivot'); [];
+                                    ]);
+  let pivotColumnName = $dbConfig.identifierProcessor($p.pivotColumns->toOne()->cast(@ColumnName).name);
+  let aggColumn = $p.aggColumns->cast(@Alias)->toOne();
+  let processedAggColumn = processSelectColumns($aggColumn.relationalElement, $dbConfig, $format->indent(), $config, true, $extensions);
+  let staticPivotValueAliases = $staticPivotValues->map(v | ^Alias(name = '"\'' + $v.value->toString() + meta::relational::functions::sqlQueryToString::default::pivotColumnDelimeter() + $aggColumn.name + '\'"', relationalElement = $v));
+  let processedStaticPivotValues = $staticPivotValueAliases->map(a | $a->processOperation($dbConfig, $format->indent(), $config, $extensions))->joinStrings(',');
+  ' ' + $format.separator + 'pivot (' + $processedAggColumn +
+  ' ' + $format.separator + 'for ' + $pivotColumnName +
+  ' ' + $format.separator + 'in (' + $processedStaticPivotValues + ')) as pivot_result';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::getDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]

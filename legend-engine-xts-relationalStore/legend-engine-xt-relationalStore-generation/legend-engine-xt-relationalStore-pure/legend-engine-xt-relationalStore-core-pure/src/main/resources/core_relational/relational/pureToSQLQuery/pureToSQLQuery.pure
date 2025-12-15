@@ -5783,6 +5783,69 @@ function meta::relational::functions::pureToSqlQuery::isResultColumnsDynamic(sel
 
 function meta::relational::functions::pureToSqlQuery::processPivot(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
+  if ($expression.parametersValues->size() == 3,
+      | processDynamicPivot($expression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
+      | processStaticPivot($expression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)
+  );
+}
+
+function meta::relational::functions::pureToSqlQuery::processStaticPivot(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  let inputQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+  let inputSelect = $inputQuery.select->cast(@TdsSelectSqlQuery);
+  let inputQueryAlias = 'pivotInput_' + $nodeId;
+  let pivotColumnName = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
+      s:String[*]|$s,
+      v:meta::pure::metamodel::relation::ColSpec<Any>[1]|$v.name
+    ])->toOne('Only one pivot column can be provided for static pivot');
+  let staticPivotValues = $expression->instanceValuesAtParameter(2, $vars, $state.inScopeVars)->map(x | ^Literal(value = $x))->toOneMany('At least one static pivot value must be provided');
+  let pivotColumn = $inputSelect.columns->map(c | $c->match([
+    a:Alias[1] | if($a.name->quoteSafeEqual($pivotColumnName), |$a.relationalElement->cast(@TableAliasColumn), |[]),
+    tac:TableAliasColumn[1] | if($tac.column.name->quoteSafeEqual($pivotColumnName), |$tac, |[])]))->toOne('Could not find the pivot column in input: ' + $pivotColumnName);
+  let matchedPivotColumnName = ^ColumnName(name = $pivotColumn.column.name->addQuotesIfNecessary());
+  let filteringOp = ^DynaFunction(name = 'in', parameters = [$matchedPivotColumnName, ^LiteralList(values = $staticPivotValues)]);
+  let filteredInputSelect = ^$inputSelect(filteringOperation = $filteringOp);
+  let inputTableAlias = ^TableAlias(name = $inputQueryAlias, relationalElement=$filteredInputSelect);
+  let allInputColumns = $filteredInputSelect.columns->map(c | let alias = $inputTableAlias->switchAliasForColumns($c)->toOne();
+                                                        let tac = $alias.relationalElement->cast(@TableAliasColumn);
+                                                        let column = $tac.column;
+                                                        ^$tac(column = ^$column(name = $alias.name));
+  );
+  let noSubSelect = false;
+  let aggVS = $expression.parametersValues->at(3)->reprocessVS()->reactivate($state.inScopeVars)->evaluateAndDeactivate()->match([
+                        avs:meta::pure::tds::AggregateValue<Any,Any>[*]|$avs->map(a|^AggContainer(name=$a.name,map=$a.mapFn,reduce=$a.aggregateFn));,
+                        x:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|^AggContainer(name=$x.name,map=$x.map,reduce=$x.reduce);,
+                        z:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]|$z.aggSpecs->map(x|^AggContainer(name=$x.name,map=$x.map,reduce=$x.reduce));
+                      ]);
+
+  let existingPaths = $inputSelect.paths;
+  let pathInfos = $existingPaths->filter(p|$p.first == $pivotColumnName)
+                                ->concatenate($aggVS->map(a | let pureType = $a.reduce->toOne()->functionReturnType().rawType->toOne();
+                                                              pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));
+                                                         )
+                                             );
+
+  let aggAliases = $aggVS->map(a | ^Alias(name = $a.name, relationalElement = processTDSMapReduce($a, $inputSelect, $noSubSelect, 'aggreg', $currentPropertyMapping, $vars, $state, $context)));
+  let originalAggColumnNames = $aggAliases->extractTableAliasColumns()->map(tac | $tac.column.name);
+  let originalAggColumns = $originalAggColumnNames->map(n | $allInputColumns->filter(c | $c.column.name->quoteSafeEqual($n))->toOne('Could not find the original aggregate column: ' + $n));
+  let allButPivotAndAggregateColumns = $allInputColumns->removeAll($originalAggColumns)->map(c | ^ColumnName(name = $c.column.name))->filter(c | $c.name != $matchedPivotColumnName.name);
+  let staticPivot = ^StaticPivot(
+    pivotColumns = $matchedPivotColumnName,
+    values = $staticPivotValues,
+    aggColumns = $aggAliases
+  );
+  let newPivotedColumns = $staticPivotValues->map(v | $aggAliases->map(a | ^ColumnName(name = '"\'' + $v.value->toString() + meta::relational::functions::sqlQueryToString::default::pivotColumnDelimeter() + $a.name + '\'"')));
+
+  ^TdsSelectSqlQuery(
+    columns = $allButPivotAndAggregateColumns->concatenate($newPivotedColumns),
+    data = ^RootJoinTreeNode(alias = $inputTableAlias),
+    pivot = $staticPivot,
+    paths = $pathInfos
+  )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($inputQuery, $state, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processDynamicPivot(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
   let inputQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
   let inputSelect = $inputQuery.select->cast(@TdsSelectSqlQuery);
   let inputQueryAlias = 'pivotInput_' + $nodeId;
@@ -5806,15 +5869,11 @@ function meta::relational::functions::pureToSqlQuery::processPivot(expression:Fu
                         z:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]|$z.aggSpecs->map(x|^AggContainer(name=$x.name,map=$x.map,reduce=$x.reduce));
                       ]);
   let existingPaths = $inputSelect.paths;
-  let pathInfos = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match(
-                                                                                          [
-                                                                                            s:String[*]|$s,
-                                                                                            x:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|$x.names,
-                                                                                            z:meta::pure::metamodel::relation::ColSpec<Any>[1]|$z.name
-                                                                                          ]
-                                                                                        )->map(n|$existingPaths->filter(p|$p.first == $n))
-                   ->concatenate($aggVS->map(a|  let pureType = $a.reduce->toOne()->functionReturnType().rawType->toOne();
-                                                 pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));));
+  let pathInfos = $pivotColumnNames->map(n|$existingPaths->filter(p|$p.first == $n))
+                                   ->concatenate($aggVS->map(a | let pureType = $a.reduce->toOne()->functionReturnType().rawType->toOne();
+                                                                 pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));
+                                                            )
+                                                );
   let pivotColumnAliasName = 'pivot_column';
   let subSelectAliasName = 'aggreg';
   let pivotColumns = $pivotColumnNames->map(n | $allInputColumns->filter(c | $c.column.name->quoteSafeEqual($n))->toOne('Could not find the pivot column: ' + $n));
@@ -10126,6 +10185,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_, second = meta::relational::functions::pureToSqlQuery::processLateral_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
 
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_, second = meta::relational::functions::pureToSqlQuery::processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

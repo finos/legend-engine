@@ -147,7 +147,7 @@ public class CatalogManager
 
         for (Key key : grouped.keySet())
         {
-            Schema schema = db.schema(new Schema(key.tableFunctionName + "__" + key.packageableElement.replace("::", "_")));
+            Schema schema = db.schema(new Schema(key.tableFunctionName + "__" + key.packageableElement.replace("_", "__").replace("::", "_")));
 
             schema.tables(
                     ListIterate.collect(grouped.get(key), z ->

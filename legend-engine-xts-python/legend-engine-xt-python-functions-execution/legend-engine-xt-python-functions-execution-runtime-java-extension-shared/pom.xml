@@ -19,13 +19,22 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-python-functions-execution</artifactId>
-        <version>4.113.2-SNAPSHOT</version>
+        <version>4.115.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-shared</artifactId>
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Python - Functions - Execution - Runtime - Java Extension - Shared</name>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
 
     <dependencies>
         <dependency>
@@ -41,6 +50,12 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

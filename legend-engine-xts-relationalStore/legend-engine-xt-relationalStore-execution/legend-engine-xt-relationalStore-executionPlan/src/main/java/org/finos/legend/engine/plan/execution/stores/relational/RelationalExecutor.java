@@ -421,7 +421,7 @@ public class RelationalExecutor
         String result = "";
         try
         {
-            Configuration cfg = new Configuration();
+            Configuration cfg = new Configuration(Configuration.VERSION_2_3_30);
             cfg.setNumberFormat("computer");
             Template t = new Template("sqlTemplate", new StringReader(templateFunctions + "\n" + query), cfg);
             StringWriter stringWriter = new StringWriter();

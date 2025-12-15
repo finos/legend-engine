@@ -105,33 +105,14 @@ function meta::external::query::sql::transformation::queryToPure::getSources():D
           type = 'tb',
           func = x:String[1]|1,
           generationFunction = {x:TableFunction[1], s:SqlTransformContext[1]|
-              let functionName = $x.functionCall.name.parts->at(0);
-              let originalParameter = $x.functionCall.arguments->cast(@StringLiteral)->toOne().value;
-              let param = if ($functionName->startsWith('tb__'),
-                |$functionName->substring(4)->replace('_','::') + '.' + $originalParameter,
-                |$originalParameter
-              );
-
-              // Manage retreiving the store 'compiled' vs in-flow
-              // It helps manage all execution modes:
-              //    - legend compiled within Pure IDE
-              //    - Legend compiled stand-alone
-              //    - Pure
+              let param = normalizeDynamicTableSourceParam($x, 'tb');
+              
               let store = $x->match(
                 [
                   a:meta::external::query::sql::expression::AccessorTableFunction[1]|$a.store,
-                  a:Any[1]| let fullPath = $param->split('.')->at(0);
-                            let element = lenientPathToElement($fullPath);
-                            if ($element->isEmpty(),
-                              |let res = $s.extraPackageableElements->filter(e|$e->elementToPath() == $fullPath);
-                               if ($res->isEmpty(),
-                                  |fail('The element \''+$fullPath+'\' can\'t be found in the graph or in the extra elements.'),
-                                  |$res->toOne()
-                               );,
-                              |$element->toOne()
-                            );
+                  a:Any[1]| extractElement($param->split('.')->at(0), 'Database', $s.extraPackageableElements, @meta::relational::metamodel::Database)
                 ]
-              )->cast(@meta::relational::metamodel::Database);
+              );
 
               let databaseStr = $store
                                 ->scanDependencies([], meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraScanDependenciesType)
@@ -149,6 +130,35 @@ function meta::external::query::sql::transformation::queryToPure::getSources():D
           }
      )
     ]->concatenate(meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraDynamicSQLSources);
+}
+
+function meta::external::query::sql::transformation::queryToPure::normalizeDynamicTableSourceParam(t:TableFunction[1], type:String[1]):String[1]
+{
+  let functionName = $t.functionCall.name.parts->at(0);
+  let originalParameter = $t.functionCall.arguments->cast(@StringLiteral)->toOne().value;
+
+  if ($functionName->startsWith($type + '__'),
+    |$functionName->substring($type->length() + 2)->replace('_','::')->replace('::::', '_') + '.' + $originalParameter,
+    |$originalParameter
+  );
+}
+
+
+// Manage retreiving the store 'compiled' vs in-flow
+// It helps manage all execution modes:
+//    - legend compiled within Pure IDE
+//    - Legend compiled stand-alone
+//    - Pure
+function meta::external::query::sql::transformation::queryToPure::extractElement<T>(fullPath:String[1], type:String[1], elements:PackageableElement[*], object:T[1]):T[1]
+{
+  let element = lenientPathToElement($fullPath);
+
+  if ($element->isEmpty(),
+    | let res = $elements->filter(e|$e->elementToPath() == $fullPath);
+      assertEquals(1, $res->size(), | 'Can\'t find the ' + $type + ' ' + $fullPath + ' (or found too many:'+$res->size()->toString()+' found)');
+      $res->toOne();,
+    |$element->toOne()
+  )->cast(@T);
 }
 
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(sqlString:String[1]):Function<Any>[1]
@@ -464,10 +474,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   if ($querySpec.from->isEmpty(),
     | let func = $querySpec.select.selectItems->processSelectItems($context, false)->at(0).first;
-//      println('Generated Pure Function for column: '+$func->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
-      ^$context(expression=$func.expressionSequence->evaluateAndDeactivate()->toOne());,
-    |
-      let from = $querySpec.from->processFrom($context);
+      // println('Generated Pure Function for column: '+$func->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
+      let vs = $func.expressionSequence->evaluateAndDeactivate()->toOne();
+      let genType = if ($vs.genericType.rawType->isEmpty(),
+        | meta::legend::compileVS('|'+$vs->printValueSpecification(^GContext(space='')))->evaluateAndDeactivate()->cast(@LambdaFunction<Any>).expressionSequence.genericType,
+        |$vs.genericType
+      )->toOne();
+      let wrapped = sfe(meta::pure::functions::relation::wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_, $vs.genericType, [$vs, ^InstanceValue(multiplicity = PureOne, genericType = $genType, values = [])])->evaluateAndDeactivate();
+      // println('Generated Pure Function for column: '+$wrapped->printValueSpecification(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
+      ^$context(expression=$wrapped);,
+    | let from = $querySpec.from->processFrom($context);
 
       checkReferencedColumnsAreValid($querySpec, $from, $context.failOnInvalidColumns);
 
@@ -1499,7 +1515,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         (
           columns = $columns->map(c | ^QueryColumn(
                                           name = $c.name->toOne(),
-                                          type = $c.classifierGenericType.typeArguments->last().rawType->cast(@DataType),
+                                          type = $c.classifierGenericType.typeArguments->last().rawType->cast(@Type),
                                           multiplicity = $c.classifierGenericType.multiplicityArguments->first());
                               ),
           expression = ^InstanceValue

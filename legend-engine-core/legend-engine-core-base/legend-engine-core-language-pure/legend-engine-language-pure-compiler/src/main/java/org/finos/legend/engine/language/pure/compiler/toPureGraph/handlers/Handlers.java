@@ -793,13 +793,14 @@ public class Handlers
         String gtName = gt._rawType()._name();
         if ("TabularDataSet".equals(gtName) || "TableTDS".equals(gtName))
         {
-            aggInferenceAll(parameters, cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), 1, 2, valueSpecificationBuilder);
+            int aggOffset = parameters.size() == 3 ? 2 : 3;
+            aggInferenceAll(parameters, cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), 1, aggOffset, valueSpecificationBuilder);
             parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
         }
         else if (taxoMap.get("cov_relation_Relation").contains(gt._rawType().getName()))
         {
-            boolean containsGroupByCols = parameters.size() == 3;
-            int aggSpecParamIndex = containsGroupByCols ? 2 : 1;
+            boolean containsGroupByCols = parameters.size() == 3 || parameters.size() == 4;
+            int aggSpecParamIndex = containsGroupByCols ? parameters.size() == 3 ? 2 : 3 : 1;
             if (containsGroupByCols)
             {
                 processColumn(parameters.get(1), gt, cc);
@@ -1066,12 +1067,16 @@ public class Handlers
                 )
         );
 
-        register(
-                grp(TDSAggInference,
-                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
-                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
-                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
-                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true)
+        register(m(
+                        grp(TDSAggInference,
+                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true)
+                        ),
+                        grp(TDSAggInference,
+                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true)
+                        )
                 )
         );
 
@@ -1186,6 +1191,29 @@ public class Handlers
                                 h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 4 && isOne(ps.get(3)._multiplicity())),
                                 h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 4)
                         )
+                )
+        );
+
+        register(h("meta::pure::functions::relation::wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_", true,
+                ps -> res(
+                        CompileContext.newGenericType(
+                                this.pureModel.getType("meta::pure::metamodel::relation::TDS"),
+                                CompileContext.newGenericType(
+                                        _RelationType.build(
+                                                Lists.mutable.with(
+                                                        _Column.getColumnInstance("value", false, ps.get(0)._genericType(), pureModel.getMultiplicity("one"), null, pureModel.getExecutionSupport().getProcessorSupport())
+                                                ),
+                                                null,
+                                                pureModel.getExecutionSupport().getProcessorSupport()
+                                        ),
+                                        pureModel
+                                ),
+                                pureModel
+                        ),
+                        "one"
+                ),
+//                ps -> Lists.fixedSize.of(ps.get(0)._genericType()),
+                ps -> true
                 )
         );
 
@@ -3595,6 +3623,7 @@ public class Handlers
         map.put("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_Relation").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation_ColSpecArray").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_relation_AggColSpec").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_Relation").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation_ColSpec").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_relation_AggColSpecArray").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_Relation").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation_ColSpec").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_relation_AggColSpec").contains(ps.get(2)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_Relation").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation_ColSpec").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && taxoMap.get("cov_relation_AggColSpec").contains(ps.get(3)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation_FuncColSpecArray").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_Relation").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation_FuncColSpecArray").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::relation::rank_Relation_1___Window_1__T_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_relation_Relation").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && taxoMap.get("cov_relation__Window").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()));
@@ -3753,6 +3782,7 @@ public class Handlers
         map.put("meta::pure::tds::tdsContains_T_1__Function_MANY__String_MANY__TabularDataSet_1__Function_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 5 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || check(funcType(ps.get(1)._genericType()), (FunctionType ft) -> matchZeroOne(ft._returnMultiplicity()) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1 && isOne(nps.get(0)._multiplicity())))) && taxoMap.get("cov_String").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && taxoMap.get("cov_tds_TabularDataSet").contains(ps.get(3)._genericType()._rawType()._name()) && isOne(ps.get(4)._multiplicity()) && ("Nil".equals(ps.get(4)._genericType()._rawType()._name()) || check(funcType(ps.get(4)._genericType()), (FunctionType ft) -> isOne(ft._returnMultiplicity()) && taxoMap.get("cov_Boolean").contains(ft._returnType()._rawType()._name()) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 2 && isOne(nps.get(0)._multiplicity()) && taxoMap.get("contra_tds_TDSRow").contains(nps.get(0)._genericType()._rawType()._name()) && isOne(nps.get(1)._multiplicity()) && taxoMap.get("contra_tds_TDSRow").contains(nps.get(1)._genericType()._rawType()._name())))));
         map.put("meta::pure::tds::tdsContains_T_1__Function_MANY__TabularDataSet_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || check(funcType(ps.get(1)._genericType()), (FunctionType ft) -> matchZeroOne(ft._returnMultiplicity()) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1 && isOne(nps.get(0)._multiplicity())))) && isOne(ps.get(2)._multiplicity()) && taxoMap.get("cov_tds_TabularDataSet").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::tdsRows_TabularDataSet_1__TDSRow_MANY_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && taxoMap.get("cov_tds_TabularDataSet").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::relation::meta::pure::functions::relation::wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()));
         ListIterate.flatCollect(context.getCompilerExtensions().getExtraFunctionHandlerDispatchBuilderInfoCollectors(), collector -> collector.valueOf(this)).forEach(info -> map.put(info.functionName, info.dispatch));
         return map;
     }

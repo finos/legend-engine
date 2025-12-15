@@ -27,7 +27,7 @@ public class TDSContainer extends Root_meta_pure_metamodel_relation_Relation_Imp
         this.tds = tds.updateColumns(ps);
         if (tds.getClassifierGenericType() == null)
         {
-            throw new RuntimeException("");
+            throw new RuntimeException("The tds classifier should not be null");
         }
         this._classifierGenericType(tds.getClassifierGenericType());
     }

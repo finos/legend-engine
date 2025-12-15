@@ -19,13 +19,16 @@ import io.deephaven.csv.parsers.DataType;
 import io.deephaven.csv.parsers.Parsers;
 import io.deephaven.csv.reading.CsvReader;
 import io.deephaven.csv.sinks.SinkFactory;
+
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Stream;
+
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
@@ -71,6 +74,7 @@ public abstract class TestTDS
     protected MutableMap<String, Object> dataByColumnName = Maps.mutable.empty();
     protected MutableMap<String, boolean[]> isNullByColumn = Maps.mutable.empty();
     protected MutableMap<String, DataType> columnType = Maps.mutable.empty();
+    protected MutableMap<String, String> columnPureType = Maps.mutable.empty();
     protected MutableList<String> columnsOrdered = Lists.mutable.empty();
     protected long rowCount;
 
@@ -102,7 +106,8 @@ public abstract class TestTDS
             case DOUBLE:
             {
                 double[] data = (double[]) dataAsObject;
-                result = !isNull[rowNum] ? data[rowNum] : null;
+                String pureType = columnPureType.get(columnName);
+                result = !isNull[rowNum] ? ("Decimal".equals(pureType) ? BigDecimal.valueOf(data[rowNum]) : data[rowNum]) : null;
                 break;
             }
             case STRING:
@@ -129,7 +134,7 @@ public abstract class TestTDS
         TestTDS testTDS = newTDS(columnsOrdered, columnType, 1);
         for (String col : columnsOrdered)
         {
-            testTDS.isNullByColumn.put(col, new boolean[] {true});
+            testTDS.isNullByColumn.put(col, new boolean[]{true});
             switch (columnType.get(col))
             {
                 case LONG:
@@ -189,13 +194,17 @@ public abstract class TestTDS
             {
                 String specifiedType = name.substring(typeIndex + 1);
                 type = pureToTDSType(specifiedType, type);
-
                 name = name.substring(0, typeIndex);
+                columnPureType.put(name, specifiedType);
+            }
+            else
+            {
+                columnPureType.put(name, tdsTypeToPure(type));
             }
 
             columnsOrdered.add(name);
             columnType.put(name, type);
-            Object data = getDataAsType(c, type, (int) rowCount);
+            Object data = getDataAsType(c, type, (int) rowCount, processorSupport);
             dataByColumnName.put(name, data);
             boolean[] isNullFlag = new boolean[(int) this.rowCount];
             isNullByColumn.put(name, isNullFlag);
@@ -303,7 +312,28 @@ public abstract class TestTDS
         return type;
     }
 
-    private Object getDataAsType(CsvReader.ResultColumn c, DataType type, int rowCount)
+    private static String tdsTypeToPure(DataType givenType)
+    {
+        switch (givenType)
+        {
+            case BOOLEAN_AS_BYTE:
+                return M3Paths.Boolean;
+            case LONG:
+                return M3Paths.Integer;
+            case DATETIME_AS_LONG:
+                return M3Paths.DateTime;
+            case DOUBLE:
+                return M3Paths.Float;
+            case STRING:
+                return M3Paths.String;
+            case CUSTOM:
+                return M3Paths.Variant;
+            default:
+        }
+        throw new RuntimeException("ERROR " + givenType + " not supported yet!");
+    }
+
+    private Object getDataAsType(CsvReader.ResultColumn c, DataType type, int rowCount, ProcessorSupport processorSupport)
     {
         // CSV parser, when all values are null, cannot infer type, and ends giving String[]
         boolean allNull = false;
@@ -1512,10 +1542,7 @@ public abstract class TestTDS
                 }
             }
             tds.dataByColumnName.put(name, dataAsObject);
-            if (!newColInfo.getColumnType().equals(DataType.STRING) && !newColInfo.getColumnType().equals(DataType.DATETIME_AS_LONG))
-            {
-                tds.isNullByColumn.put(name, isNull);
-            }
+            tds.isNullByColumn.put(name, isNull);
             tds.columnsOrdered.add(name);
             tds.columnType.put(name, newColInfo.getColumnType());
             return tds;

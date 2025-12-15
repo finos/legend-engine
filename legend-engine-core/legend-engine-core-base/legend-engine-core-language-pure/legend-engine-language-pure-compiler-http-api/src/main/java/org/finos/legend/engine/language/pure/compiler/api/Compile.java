@@ -92,7 +92,7 @@ public class Compile
             MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
             // NOTE: we could change this to return 204 (No Content), but Pure client test will break
             // on the another hand, returning 200 Ok with no content is not appropriate. So we have to put this dummy message "OK"
-            return Response.ok(new CompileResult("OK", res.getTwo().getWarnings()), MediaType.APPLICATION_JSON_TYPE).build();
+            return Response.ok(new CompileResult("OK", res.getTwo().getDefects()), MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {

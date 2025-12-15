@@ -44,7 +44,7 @@ public class EnumerationValidator
         elements.values().forEach(el ->
         {
             MutableMultimap<String, EnumValue> val = Iterate.groupBy(el.values, p -> p.value);
-            pureModel.addWarnings(val.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(a.getFirst().sourceInformation, "Found duplicated value '" + a.getFirst().value + "' in enumeration '" + pureModel.buildPackageString(el._package, el.name) + "'")) : Lists.mutable.empty()));
+            pureModel.addDefects(val.multiValuesView().flatCollect(a -> a.size() > 1 ? Lists.mutable.with(new Warning(a.getFirst().sourceInformation, "Found duplicated value '" + a.getFirst().value + "' in enumeration '" + pureModel.buildPackageString(el._package, el.name) + "'")) : Lists.mutable.empty()));
         });
     }
 }

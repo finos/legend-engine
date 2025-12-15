@@ -71,6 +71,9 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGrammar(): ReversesForSource[*]
 {
   pythonLegendQLReversesGrammarString()
+    ->concatenate(
+      pythonLegendQLReversesGrammarMath()
+    )
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesRelation(): ReversesForSource[*]
@@ -80,7 +83,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesRel
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesStandard(): ReversesForSource[*]
 {
-  []
+  pythonLegendQLReversesStandardMath()
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesUnclassified(): ReversesForSource[*]
@@ -122,6 +125,7 @@ function <<access.private>> meta::external::python::reversePCT::legendQL::getPur
     'from pylegend.core.tds.tds_frame import FrameToPureConfig\n' + 
     'from pylegend.core.language import PyLegendPrimitive\n' + 
     'from pylegend.core.language.shared.pct_helpers import c\n' + 
+    'from pylegend.core.language.shared.functions import pi\n' + 
     '\n' +
     'def func():\n'+
     '  res = (' + $pythonCodeBlock + ')\n' + 

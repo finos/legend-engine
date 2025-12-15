@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.113.2-SNAPSHOT</version>
+    <version>4.115.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -111,9 +111,10 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.67.0</legend.pure.version>
-        <legend.shared.version>0.29.0</legend.shared.version>
+        <legend.pure.version>5.68.0</legend.pure.version>
+        <legend.shared.version>0.30.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
+        <legend.pylegend.version>0.10.0</legend.pylegend.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -138,7 +139,7 @@
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
         <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
-        <project.build.outputTimestamp>1764170040</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1765477804</project.build.outputTimestamp>
         <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1 -Duser.timezone=GMT</surefire.vm.params>
         <surefire.reports.directory />
         <publish.server.id>central</publish.server.id>
@@ -170,7 +171,7 @@
         <dropwizard.metrics.version>4.1.16</dropwizard.metrics.version>
         <dropwizard.version>1.3.29</dropwizard.version>
         <eclipsecollections.version>10.2.0</eclipsecollections.version>
-        <freemarker.version>2.3.30</freemarker.version>
+        <freemarker.version>2.3.34</freemarker.version>
         <github.classgraph.version>4.8.25</github.classgraph.version>
         <google.api.grpc.version>2.21.0</google.api.grpc.version>
         <grpc.version>1.56.0</grpc.version>

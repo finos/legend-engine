@@ -23,7 +23,6 @@ public class TestTDSImpl extends TestTDS
 {
     public TestTDSImpl()
     {
-
     }
 
     public TestTDSImpl(String csv)
