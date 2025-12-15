@@ -91,6 +91,26 @@ Class meta::pure::mapping::modelToModel::test::shared::dest::Address
    extension : AddressExtension[0..1];
 }
 
+Class meta::pure::mapping::modelToModel::test::shared::dest::PersonView
+{
+  firstname: String[1];
+  lastname: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::OrderContactView
+{
+  orderId: Integer[1];
+  qty: Float[1];
+  contact: meta::pure::mapping::modelToModel::test::shared::dest::PersonView[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::DestOrderContact
+{
+  id: Integer[0..1];
+  qty: Float[1];
+  contactLastName: String[0..1];
+}
+
 Class meta::pure::mapping::modelToModel::test::shared::dest::Address_ExtendedPrimitives
 {
    street : meta::pure::mapping::modelToModel::test::shared::dest::ExtendedString[0..1];
