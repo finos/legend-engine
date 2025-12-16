@@ -1354,8 +1354,7 @@ public class PureModel implements IPureModel
 
     public Type getTypeFromIndex(String fullPath)
     {
-        Type type = this.typesIndex.get(addPrefixToTypeReference(fullPath));
-        return type == NULL_ELEMENT_SENTINEL ? null : type;
+        return this.typesIndex.get(addPrefixToTypeReference(fullPath));
     }
 
     public GenericType getGenericTypeFromIndex(String fullPath)
