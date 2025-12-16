@@ -9783,7 +9783,7 @@ function meta::relational::functions::pureToSqlQuery::genericTypeToDataType(gene
             pair(|$path == 'List', |^meta::relational::metamodel::datatype::Array(type = $genericType.typeArguments->at(0)->genericTypeToDataType(ZeroOne))),
             pair(|$path == 'Map' && $genericType.typeArguments->at(0).rawType == String, |^meta::relational::metamodel::datatype::Object(keyType = $genericType.typeArguments->at(0)->genericTypeToDataType(ZeroOne), valueType = $genericType.typeArguments->at(1)->genericTypeToDataType(ZeroOne))),
             pair(|$path == 'Pair' && $genericType.typeArguments->at(0).rawType == String, |^meta::relational::metamodel::datatype::Object(keyType = $genericType.typeArguments->at(0)->genericTypeToDataType(ZeroOne), valueType = $genericType.typeArguments->at(1)->genericTypeToDataType(ZeroOne))),
-            pair(|$path == 'Variant' || ($path->in(['Map', 'Pair', 'List'])->not() && $genericType.rawType->toOne()->instanceOf(Class)), |^meta::relational::metamodel::datatype::SemiStructured()),
+            pair(|$path == 'Variant' || ($path->in(['Map', 'Pair', 'List', 'Any'])->not() && $genericType.rawType->toOne()->instanceOf(Class)), |^meta::relational::metamodel::datatype::SemiStructured()),
 
             pair(|$path == 'BigInt', |^meta::relational::metamodel::datatype::BigInt()),
             pair(|$path == 'StrictDate', |^meta::relational::metamodel::datatype::Date()),
