@@ -20,6 +20,26 @@ import org.junit.Test;
 public class TestPrimitives extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
+    public void testDecimaOne()
+    {
+        test("function a::a(): Decimal[1]\n" +
+                "{\n" +
+                "  1.0D\n" +
+                "}\n"
+        );
+    }
+
+    @Test
+    public void testDecimaMany()
+    {
+        test("function a::a(): Decimal[*]\n" +
+                "{\n" +
+                "  [1.0D, 3.0D]\n" +
+                "}\n"
+        );
+    }
+
+    @Test
     public void testStringOne()
     {
         test("function a::a(): String[1]\n" +

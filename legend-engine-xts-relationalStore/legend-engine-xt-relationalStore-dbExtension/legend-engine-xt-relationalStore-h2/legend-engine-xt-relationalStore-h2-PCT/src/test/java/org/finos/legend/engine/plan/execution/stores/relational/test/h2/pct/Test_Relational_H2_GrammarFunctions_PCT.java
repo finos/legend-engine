@@ -103,12 +103,12 @@ public class Test_Relational_H2_GrammarFunctions_PCT extends PCTReportConfigurat
             one("meta::pure::functions::lang::tests::compare::testDateCompare_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
 
             // Minus
-            one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4D\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"-9223372036854775718\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\"", AdapterQualifier.needsInvestigation),
 
             // Plus
-            one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6D\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"9223372036854775807\"; SQL statement:\nselect 9223372036854775807 + 3 + 4 + 5 + 7 [22003-214]", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\"", AdapterQualifier.needsInvestigation),
 

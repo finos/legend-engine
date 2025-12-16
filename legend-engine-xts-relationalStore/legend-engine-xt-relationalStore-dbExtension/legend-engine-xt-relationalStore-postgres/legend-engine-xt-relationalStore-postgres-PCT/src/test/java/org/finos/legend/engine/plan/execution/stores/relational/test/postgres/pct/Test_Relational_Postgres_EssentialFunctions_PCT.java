@@ -102,9 +102,6 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
             // Pow
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\"\nexpected: 9.0\nactual:   27.0\"", AdapterQualifier.unsupportedFeature),
 
-            // Abs
-            one("meta::pure::functions::math::tests::abs::testDecimalAbs_Function_1__Boolean_1_", "\"\nexpected: 3.0D\nactual:   3D\"", AdapterQualifier.unsupportedFeature),
-
             // Reverse
             one("meta::pure::functions::collection::tests::reverse::testReverseEmpty_Function_1__Boolean_1_", "[unsupported-api] The function 'array_reverse' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::reverse::testReverse_Function_1__Boolean_1_", "[unsupported-api] The function 'array_reverse' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),

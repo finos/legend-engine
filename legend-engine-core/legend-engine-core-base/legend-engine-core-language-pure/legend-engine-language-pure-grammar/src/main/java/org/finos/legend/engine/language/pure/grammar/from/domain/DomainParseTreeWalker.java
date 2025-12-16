@@ -104,6 +104,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class DomainParseTreeWalker
@@ -927,9 +928,36 @@ public class DomainParseTreeWalker
                         )
                 )
         );
-        List<ValueSpecification> keyExpressions = processExpressionInstanceParserPropertyAssignments(ctx.expressionInstanceParserPropertyAssignment(), typeParametersNames, lambdaContext, addLines, space);
-        Collection valueAssignments = new Collection(keyExpressions);
-        return this.createAppliedFunction(Lists.mutable.with(generic, new CString(""), valueAssignments), "new");
+        String typeName = (((PackageableType) generic.genericType.typeArguments.get(0).rawType).fullPath);
+        MutableList<ValueSpecification> keyExpressions = processExpressionInstanceParserPropertyAssignments(ctx.expressionInstanceParserPropertyAssignment(), typeParametersNames, lambdaContext, addLines, space);
+
+        if ("Pair".equals(typeName) || "meta::pure::functions::collection::Pair".equals(typeName))
+        {
+            return this.createAppliedFunction(Lists.mutable.with(find("first", keyExpressions), find("second", keyExpressions)), "meta::pure::functions::collection::pair");
+        }
+        else if ("TdsOlapRank".equals(typeName) || "meta::pure::tds::TdsOlapRank".equals(typeName))
+        {
+            return this.createAppliedFunction(Lists.mutable.with(find("func", keyExpressions)), "meta::pure::tds::func");
+        }
+        else if ("BasicColumnSpecification".equals(typeName) || "meta::pure::tds::BasicColumnSpecification".equals(typeName))
+        {
+            return this.createAppliedFunction(Lists.mutable.with(find("func", keyExpressions), find("name", keyExpressions), find("documentation", keyExpressions)).select(Objects::nonNull), "meta::pure::tds::col");
+        }
+        else
+        {
+            Collection valueAssignments = new Collection(keyExpressions);
+            return this.createAppliedFunction(Lists.mutable.with(generic, new CString(""), valueAssignments), "new");
+        }
+    }
+
+    private ValueSpecification find(String name, MutableList<ValueSpecification> keyExpressions)
+    {
+        KeyExpression keyExpression = (KeyExpression) keyExpressions.detect(c -> name.equals(((CString) ((KeyExpression) c).key).value));
+        if (keyExpression != null)
+        {
+            return keyExpression.expression;
+        }
+        return null;
     }
 
     public List<ValueSpecification> processTypeVariableValues(DomainParserGrammar.TypeVariableValuesContext ctx)
@@ -1619,6 +1647,17 @@ public class DomainParseTreeWalker
             result.multiplicityArguments = ListIterate.collect(ctx.multiplicityArguments().multiplicityArgument(), this::buildMultiplicity);
         }
         result.typeVariableValues = processTypeVariableValues(ctx.typeVariableValues());
+
+        // For backward compatibility when users were not defining typeArgs ----------------------
+        if (type instanceof PackageableType && "Result".equals(((PackageableType) type).fullPath))
+        {
+            if (result.typeArguments.isEmpty())
+            {
+                result.typeArguments = Lists.mutable.with(new GenericType(new PackageableType("meta::pure::metamodel::type::Any")));
+                result.multiplicityArguments = Lists.mutable.with(new Multiplicity(1, null));
+            }
+        }
+        //----------------------------------------------------------------------------------------
         return result;
     }
 
