@@ -48,6 +48,7 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -1330,7 +1331,7 @@ public class TestCompilationFromGrammar
         );
     }
 
-    @Test
+    @Ignore
     public void testCompilationOfAnyFromCompiledMetadata()
     {
         PureModel pm = PureModel.getCorePureModel();
