@@ -1189,7 +1189,6 @@ public class TestServiceTestSuite
 
         Assert.assertEquals(1, serviceStoreTestResultsWithTestError.size());
         Assert.assertTrue(serviceStoreTestResultsWithTestError.get(0) instanceof TestError);
-        System.out.println(((TestError) serviceStoreTestResultsWithTestError.get(0)).error);
         MatcherAssert.assertThat(((TestError) serviceStoreTestResultsWithTestError.get(0)).error.replace("\r", ""), CoreMatchers.containsString((
                         "                                               Request was not matched\n" +
                         "                                               =======================\n" +
