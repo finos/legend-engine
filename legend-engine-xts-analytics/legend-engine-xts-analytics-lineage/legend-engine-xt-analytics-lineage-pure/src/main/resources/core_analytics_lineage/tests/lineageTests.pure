@@ -843,7 +843,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relation::testLineagePar
   let query   = {|Order.all()->project(~['contactLastName': o| $o.pnlContact.lastName])};
   let mapping = meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping;
   let runtime = meta::external::store::relational::tests::testRuntime();
-  //print($mapping);
+
   let lineage = meta::analytics::lineage::computeLineage($query,$mapping,$runtime,meta::relational::extension::relationalExtensions(),meta::analytics::lineage::tests::relation::propertyLineageConfig());
   assertSameElements(
     [['db_db -> tb_dbdefaultorderTable','db_db -> tb_dbdefaultsalesPersonTable','db_dbInc -> tb_dbIncdefaultpersonTable','tb_dbdefaultorderTable -> Lambda','tb_dbdefaultsalesPersonTable -> Lambda','tb_dbIncdefaultpersonTable -> Lambda']],$lineage.databaseLineage.edges.data->map(e | $e.source.data.id + ' -> ' + $e.target.data.id));
