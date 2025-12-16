@@ -513,17 +513,13 @@ function meta::analytics::lineage::property::propsPerMappingNode( props: Lineage
                                      first  = $si.parent->toOne()->elementToPath()->toOne(),second = $si))->groupBy(g | $g.first)->keyValues(),
                       | []->cast(@Pair<String, List<Pair<String, InstanceSetImplementation>>>));
           let attachToRoot = if($groups->isEmpty(), | true, | $groups->exists(g | $g.first ==$ownerMappingPath));
-          let ownerIdMappingPathPairs = $groups->filter(gv | $gv.first != $ownerMappingPath)->map(g |
-               let groupMappingPath = $g.first;
-               ^Pair<String, String>(first = 'MappedClassOwner_' + $groupMappingPath, second = $groupMappingPath);
-          );
           let mappingSetImplPairs = $groups->map(g |
                let groupMappingPath = $g.first;
                let repSet           = $g.second.values->at(0).second;
-               ^Pair<String, InstanceSetImplementation>(first = 'MappedClassOwner_' + $groupMappingPath, second = $repSet);
+               ^Pair<String, InstanceSetImplementation>(first = $groupMappingPath, second = $repSet);
           );
           let propForRoot = if($attachToRoot, | [^$lc(ownerID = 'MappedClassOwner_' + $ownerMappingPath,sourceProperties = $lc.sourceProperties,mapping = $ownerMappingPath)], | []);
-          let propForNonRoot = if($attachToRoot, | [], | $ownerIdMappingPathPairs->filter(pairs | $pairs.second != $ownerMappingPath)->map(pairs | ^$lc(ownerID = $pairs.first, sourceProperties = $lc.sourceProperties, mapping = $pairs.second)));
+          let propForNonRoot = if($attachToRoot, | [], | $mappingSetImplPairs->filter(pairs | $pairs.first != $ownerMappingPath)->map(pairs | ^$lc(ownerID = 'MappedClassOwner_' + $pairs.first, sourceProperties = $lc.sourceProperties, mapping = $pairs.first)));
           let resolvedprops =  $propForRoot->concatenate($propForNonRoot);
           ^Pair<List<LineageModelProperty>, List<Pair<String, InstanceSetImplementation>>>(
              first  = ^List<LineageModelProperty>(values = $acc.first.values->concatenate($resolvedprops)),
@@ -539,7 +535,7 @@ function meta::analytics::lineage::property::propsPerMappingNode( props: Lineage
   let propsperMapping = $allProps->filter(lp | !$lp.mapping->isEmpty())->groupBy(lp | $lp.mapping->toOne())->keyValues();
   let ownersPerMapping = $propsperMapping->map(kv |
                                 let mappingPath = $kv.first;
-                                let repSetOpt = $mappingSetImplPairs->filter(p | $p.first == ('MappedClassOwner_' + $mappingPath))->map(p | $p.second);
+                                let repSetOpt = $mappingSetImplPairs->filter(p | $p.first == $mappingPath)->map(p | $p.second);
                                 let repSet    = if(!$repSetOpt->isNotEmpty(), | [], | $repSetOpt);
                                 let childClass = if(!$repSet->isNotEmpty() || $repSet.class->isEmpty(), | $ClassPath,| $repSet->filter(x | ($x->instanceOf(RootRelationalInstanceSetImplementation) || ($x->instanceOf(PureInstanceSetImplementation))))->map(x | $x.class->elementToPath()->toOne()));
                                 let childSetId = if(!$repSet->isNotEmpty(), | '', | $repSet.id)->distinct();
