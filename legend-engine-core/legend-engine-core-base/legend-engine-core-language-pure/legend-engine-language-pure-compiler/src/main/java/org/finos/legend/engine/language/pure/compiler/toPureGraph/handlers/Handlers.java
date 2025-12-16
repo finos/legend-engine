@@ -1507,10 +1507,10 @@ public class Handlers
         // Variant
         register("meta::pure::functions::variant::convert::fromJson_String_1__Variant_1_", true, ps -> res(M3Paths.Variant, "one"));
         register("meta::pure::functions::variant::convert::toJson_Variant_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_1__T_$0_1$_", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
-        register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_1__String_1__Pair_MANY__T_$0_1$_", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
-        register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_1__T_MANY_", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
-        register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_1__String_1__Pair_MANY__T_MANY_", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
+        register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_$0_1$__T_$0_1$_", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
+        register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_$0_1$__String_1__Pair_MANY__T_$0_1$_", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
+        register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
+        register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__String_1__Pair_MANY__T_MANY_", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
         register("meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_", true, ps -> res(M3Paths.Variant, "one"));
         register(
             m(

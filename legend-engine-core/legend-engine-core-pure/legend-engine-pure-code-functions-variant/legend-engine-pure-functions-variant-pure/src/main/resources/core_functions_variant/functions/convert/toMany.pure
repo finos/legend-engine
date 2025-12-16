@@ -24,7 +24,7 @@ native function
         doc.doc='Converts the $variant to the given $type if the variant represent an array, failing if is not an array.\n' +
                  'This will fail if array values cannot be coerced.'
     }
-meta::pure::functions::variant::convert::toMany<T>(variant: Variant[0..1], type: T[1], typeKeyName: String[1], typeLookup: Pair<String,Class<Any>>[*]): T[*];
+meta::pure::functions::variant::convert::toMany<T>(variant: Variant[0..1], type: T[0..1], typeKeyName: String[1], typeLookup: Pair<String,Class<Any>>[*]): T[*];
 
 native function
     <<PCT.function>>
@@ -32,7 +32,7 @@ native function
         doc.doc='Converts the $variant to the given $type if the variant represent an array, failing if is not an array.\n' +
                  'This will fail if array values cannot be coerced.'
     }
-meta::pure::functions::variant::convert::toMany<T>(variant: Variant[0..1], type: T[1]): T[*];
+meta::pure::functions::variant::convert::toMany<T>(variant: Variant[0..1], type: T[0..1]): T[*];
 //{
 //    toMany($variant, $type, '_type', [])
 //}

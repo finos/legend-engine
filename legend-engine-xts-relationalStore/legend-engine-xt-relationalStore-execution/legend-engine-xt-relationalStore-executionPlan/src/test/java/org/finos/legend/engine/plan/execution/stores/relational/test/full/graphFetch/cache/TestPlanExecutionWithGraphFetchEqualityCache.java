@@ -719,9 +719,6 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
         s.execute("insert into otherNamesTable (PERSON_ID, OTHER_NAME) values (1, 'ghi');");
         s.execute("insert into otherNamesTable (PERSON_ID, OTHER_NAME) values (2, 'jkl');");
         s.execute("insert into otherNamesTable (PERSON_ID, OTHER_NAME) values (2, 'mno');");
-
-        System.out.println("finished inserts");
-
     }
 
     private SingleExecutionPlan buildPlanForFetchFunction(String fetchFunction)

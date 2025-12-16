@@ -25,7 +25,7 @@ native function
                  'The type key name and type lookup are leveraged when coercing a complex type (ie Class).\n' +
                  'This will fail if value cannot be coerced.'
     }
-meta::pure::functions::variant::convert::to<T>(variant: Variant[0..1], type: T[1], typeKeyName: String[1], typeLookup: Pair<String,Class<Any>>[*]): T[0..1];
+meta::pure::functions::variant::convert::to<T>(variant: Variant[0..1], type: T[0..1], typeKeyName: String[1], typeLookup: Pair<String,Class<Any>>[*]): T[0..1];
 
 native function
     <<PCT.function>>
@@ -34,7 +34,7 @@ native function
                  'This allows to extract the variant actual value, like primitives.\n' +
                  'This will fail if value cannot be coerced.'
     }
-meta::pure::functions::variant::convert::to<T>(variant: Variant[0..1], type: T[1]): T[0..1];
+meta::pure::functions::variant::convert::to<T>(variant: Variant[0..1], type: T[0..1]): T[0..1];
 //{
 //  to($variant, $type, '_type', [])
 //}

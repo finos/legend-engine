@@ -64,7 +64,7 @@ public class To extends AbstractNative
 {
     public To()
     {
-        super("to_Variant_$0_1$__T_1__T_$0_1$_", "to_Variant_$0_1$__T_1__String_1__Pair_MANY__T_$0_1$_");
+        super("to_Variant_$0_1$__T_$0_1$__T_$0_1$_", "to_Variant_$0_1$__T_$0_1$__String_1__Pair_MANY__T_$0_1$_");
     }
 
     @Override
