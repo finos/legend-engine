@@ -656,42 +656,6 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::mo
                                          $lineage2);
 }
 
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::modeltomodel::testPureMappingWithRelationalIncluded():Boolean[1]
-{
-  let query = {|DestOrderContact.all()->project([f|$f.id,f|$f.qty,f|$f.contactLastName], ['id','quantity','contactLastName'])};
-
-  let mapping =  meta::pure::mapping::modelToModel::test::simple::destOrderContactMapping;
-
-  let runtimeWithChain = ^meta::core::runtime::Runtime(connectionStores = [
-                                  ^meta::core::runtime::ConnectionStore(
-                                      element = ^ModelStore(),
-                                      connection = ^ModelChainConnection(mappings = meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping)
-                                    ),
-                                    getConnection()
-                                  ]
-                          );
-                         
-  let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtimeWithChain, meta::relational::extension::relationalExtensions(), meta::analytics::lineage::tests::relation::propertyLineageConfig());
-  assertSameElements(
-    [[
-      'db_db -> tb_dbdefaultorderTable',
-      'db_db -> tb_dbdefaultsalesPersonTable',
-      'db_dbInc -> tb_dbIncdefaultpersonTable',
-      'tb_dbdefaultorderTable -> Lambda',
-      'tb_dbIncdefaultpersonTable -> Lambda',
-      'tb_dbdefaultsalesPersonTable -> Lambda'
-    ]],
-    $lineage.databaseLineage.edges.data->map(e | $e.source.data.id + ' -> ' + $e.target.data.id)
-  );
-  meta::analytics::lineage::assertLineage(['Lambda', 'db_db', 'db_dbInc', 'tb_dbIncdefaultpersonTable', 'tb_dbdefaultorderTable', 'tb_dbdefaultsalesPersonTable'],
-                                          [],
-                                          '[contactLastName: [query.contactLastName->[MappedClassOwner_meta::pure::mapping::modelToModel::test::simple::destOrderContactMapping.DestOrderContact.contactLastName->[MappedClassOwner_meta::relational::tests::MappingWithInnerJoinAndEmbeddedMappingSub.Order.pnlContact.lastName->[RelationalPropertyOwner_meta::relational::tests::db.default.orderTable.accountID,RelationalPropertyOwner_meta::relational::tests::db.default.salesPersonTable.ACCOUNT_ID,RelationalPropertyOwner_meta::relational::tests::db.default.salesPersonTable.PERSON_ID,RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.ID,RelationalPropertyOwner_meta::relational::tests::dbInc.default.personTable.LASTNAME]]]], id: [query.id->[MappedClassOwner_meta::pure::mapping::modelToModel::test::simple::destOrderContactMapping.DestOrderContact.id->[MappedClassOwner_meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping.Order.id->[RelationalPropertyOwner_meta::relational::tests::db.default.orderTable.ID]]]], quantity: [query.quantity->[MappedClassOwner_meta::pure::mapping::modelToModel::test::simple::destOrderContactMapping.DestOrderContact.qty->[MappedClassOwner_meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping.Order.quantity->[RelationalPropertyOwner_meta::relational::tests::db.default.orderTable.quantity]]]]]',
-                                          $lineage);
-  let ownerLinks = $lineage.propertyLineage.ownerLink->map(l | $l.source + ' -> ' + $l.target);
-  assert($ownerLinks->exists(e | $e == 'MappedClassOwner_meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping -> MappedClassOwner_meta::pure::mapping::modelToModel::test::simple::destOrderContactMapping'));
-  assert($ownerLinks->exists(e | $e == 'MappedClassOwner_meta::relational::tests::MappingWithInnerJoinAndEmbeddedMappingSub -> MappedClassOwner_meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping'));
-}
-
 function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::modeltomodel::testPureIncludedMappingWithRelationalIncluded(): Boolean[1]
 {
   let query =

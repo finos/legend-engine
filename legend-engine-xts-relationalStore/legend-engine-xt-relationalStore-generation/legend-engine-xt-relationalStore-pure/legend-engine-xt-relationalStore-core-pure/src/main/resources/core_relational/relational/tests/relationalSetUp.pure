@@ -361,17 +361,6 @@ Mapping meta::relational::tests::MappingWithInnerJoinAndEmbeddedMappingSub
             }
 )
 
-Mapping meta::pure::mapping::modelToModel::test::simple::destOrderContactMapping
-(
-  meta::pure::mapping::modelToModel::test::shared::dest::DestOrderContact: Pure
-  {
-    ~src Order
-      id: $src.id,
-      qty: $src.quantity,
-      contactLastName: $src.pnlContact.lastName
-  }
-)
-
 Mapping meta::pure::mapping::modelToModel::test::simple::PersonPureMapping
 (
   meta::pure::mapping::modelToModel::test::shared::dest::PersonView: Pure
