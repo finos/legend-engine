@@ -54,7 +54,6 @@ public class PureGrammarParser
 
     private final DEPRECATED_PureGrammarParserLibrary parsers;
     private final PureGrammarParserExtensions extensions;
-    private ObjectMapper converterMapper;
 
     private PureGrammarParser(PureGrammarParserExtensions extensions)
     {
@@ -66,7 +65,6 @@ public class PureGrammarParser
                 connectionParser,
                 RuntimeParser.newInstance(connectionParser)
         ));
-        this.converterMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     }
 
     public static PureGrammarParser newInstance(PureGrammarParserExtensions extensions)
@@ -131,6 +129,7 @@ public class PureGrammarParser
         sectionIndex.name = "SectionIndex";
         sectionIndex._package = "__internal__";
         sectionIndex.sections = ListIterate.collect(parser.definition().section(), sectionCtx -> this.visitSection(sectionCtx, parserLibrary, walkerSourceInformation, parserContext, builder::addElement, returnSourceInfo));
+
         return builder.withElement(sectionIndex).build();
     }
 
