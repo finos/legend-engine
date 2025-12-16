@@ -49,6 +49,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.depreca
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
+        //--------------------------------------------------------
+        // Instances instantiated by the grammar -----------------
+        //--------------------------------------------------------
         // Collection
         @JsonSubTypes.Type(value = Collection.class, name = "collection"),
         // Applied Function
@@ -61,7 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.depreca
         @JsonSubTypes.Type(value = Variable.class, name = "var"),
         // Core Class Instances (could be moved to classInstance)
         @JsonSubTypes.Type(value = LambdaFunction.class, name = "lambda"),
-        @JsonSubTypes.Type(value = KeyExpression.class, name = "keyExpression"), // Used for new
+        @JsonSubTypes.Type(value = KeyExpression.class, name = "keyExpression"), // Used for new, however new for special types must be replaced by special functions (example ^Pair replaced by pair(...))
         // Data Type - Enumeration
         @JsonSubTypes.Type(value = EnumValue.class, name = "enumValue"),
         // Data Type - Unit
@@ -77,8 +80,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.depreca
         @JsonSubTypes.Type(value = CStrictTime.class, name = "strictTime"),
         @JsonSubTypes.Type(value = CLatestDate.class, name = "latestDate"),
         @JsonSubTypes.Type(value = CByteArray.class, name = "byteArray"),
-        // Class Instance
+        // Should only be used for DSLs like #>{}#, #/A/B#, #SQL{}#, others should be replaced by special functions
         @JsonSubTypes.Type(value = ClassInstance.class, name = "classInstance"),
+        //--------------------------------------------------------
+        // Instances instantiated by the grammar -----------------
+        //--------------------------------------------------------
+
 
 
         // Instances understood by the protocol ----------------------------------------------------------

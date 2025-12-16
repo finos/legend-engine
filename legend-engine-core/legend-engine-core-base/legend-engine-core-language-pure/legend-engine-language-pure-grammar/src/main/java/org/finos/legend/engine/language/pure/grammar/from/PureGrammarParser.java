@@ -131,9 +131,7 @@ public class PureGrammarParser
         sectionIndex.name = "SectionIndex";
         sectionIndex._package = "__internal__";
         sectionIndex.sections = ListIterate.collect(parser.definition().section(), sectionCtx -> this.visitSection(sectionCtx, parserLibrary, walkerSourceInformation, parserContext, builder::addElement, returnSourceInfo));
-        // tactically run parsed values thru converters to fix old/legacy code
-        PureModelContextData pmcd = builder.withElement(sectionIndex).build();
-        return this.converterMapper.convertValue(pmcd, PureModelContextData.class);
+        return builder.withElement(sectionIndex).build();
     }
 
     private Section visitSection(CodeParserGrammar.SectionContext ctx, DEPRECATED_PureGrammarParserLibrary parserLibrary, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, Consumer<PackageableElement> elementConsumer, boolean returnSourceInfo)

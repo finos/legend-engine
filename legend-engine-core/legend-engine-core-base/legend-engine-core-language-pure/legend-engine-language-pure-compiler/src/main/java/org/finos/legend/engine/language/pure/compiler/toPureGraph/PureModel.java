@@ -105,6 +105,7 @@ import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
+import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataAccessor;
@@ -161,6 +162,9 @@ public class PureModel implements IPureModel
     private final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> packageableElementsIndex;
     private final ConcurrentLinkedQueue<EngineException> engineExceptions = new ConcurrentLinkedQueue<>();
 
+    private static final RichIterable<CodeRepository> repositories = CodeRepositoryProviderHelper.findCodeRepositories().select(CodeRepositoryProviderHelper.platformAndCore);
+    private static final MutableList<CompiledExtension> compiledExtensions = CompiledExtensionLoader.extensions();
+
     public PureModel(PureModelContextData pure, String user, DeploymentMode deploymentMode)
     {
         this(pure, user, null, deploymentMode, new PureModelProcessParameter(), null);
@@ -204,7 +208,7 @@ public class PureModel implements IPureModel
                     new CompiledProcessorSupport(classLoader, metaData == null ? new MetadataWrapper(this.root, METADATA_LAZY, this) : metaData, Sets.mutable.empty()),
                     null,
                     new CompositeCodeStorage(
-                            new ClassLoaderCodeStorage(CodeRepositoryProviderHelper.findCodeRepositories().select(CodeRepositoryProviderHelper.platformAndCore)),
+                            new ClassLoaderCodeStorage(repositories),
                             //TODO eventually remove, keep system so that we can get latestVersion in Alloy.
                             new VersionControlledClassLoaderCodeStorage(classLoader, new GenericCodeRepository("system", ""), null)),
                     null,
@@ -212,7 +216,7 @@ public class PureModel implements IPureModel
                     console,
                     null,
                     Sets.mutable.empty(),
-                    CompiledExtensionLoader.extensions()
+                    compiledExtensions
             );
 
             ForkJoinPool forkJoinPool = pureModelProcessParameter.getForkJoinPool();
