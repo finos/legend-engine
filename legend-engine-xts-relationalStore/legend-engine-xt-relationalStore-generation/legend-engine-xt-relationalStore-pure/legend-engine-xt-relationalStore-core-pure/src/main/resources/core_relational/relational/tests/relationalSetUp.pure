@@ -721,54 +721,6 @@ Mapping meta::relational::tests::simpleRelationalMappingWithEnumConstant
    }
 )
 
-Mapping meta::relational::tests::IncludedAddressMapping
-(
-  Address: Relational
-  {
-    name     : [dbInc]addressTable.NAME,
-    street   : [dbInc]addressTable.STREET,
-    type     : EnumerationMapping GE : [dbInc]addressTable.TYPE,
-    comments : [dbInc]addressTable.COMMENTS
-  }
-
-  GeographicEntityType: EnumerationMapping GE
-  {
-    CITY: 1
-  }
-)
-
-Mapping meta::relational::tests::IncludedPersonMapping
-(
-  Person: Relational
-  {
-    scope([dbInc])
-    (
-      firstName : personTable.FIRSTNAME,
-      age       : personTable.AGE
-    ),
-    scope([dbInc]default.personTable)
-    (
-      lastName  : LASTNAME
-    ),
-    address : [dbInc]@Address_Person,
-    firm    : [dbInc]@Firm_Person,
-    manager : [dbInc]@Person_Manager
-  }
-)
-
-Mapping meta::relational::tests::MultipleIncludesFirmMapping
-(
-  include meta::relational::tests::IncludedAddressMapping
-  include meta::relational::tests::IncludedPersonMapping
-
-  Firm: Relational
-  {
-    legalName : [dbInc]firmTable.LEGALNAME,
-    address   : [dbInc]@Address_Firm,     
-    employees : [dbInc]@Firm_Person      
-  }
-)
-
 Mapping meta::relational::tests::AddressMapping
 (
   Address: Relational

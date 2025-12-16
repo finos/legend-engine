@@ -146,11 +146,11 @@ function <<access.private>> meta::pure::lineage::scanColumns::enrichSimpleProper
     let propertyMappings = $sets->map(s|$s->_propertyMappingsByPropertyName($sp.name->toOne()));
     printDebug(|'  property mappings: '+$propertyMappings->map(pm|$pm.sourceSetImplementationId+' -> '+if($pm.targetSetImplementationId == '',|$sp.name->toOne(),|$pm.targetSetImplementationId))->joinStrings('[',', ',']')+'\n', $debug);
     // more than one resolved mapping implies one PropertyPathTree enriches into multiple trees due to multiple subtypes/subclasses
-    let resolvedMappings = $propertyMappings->map(pm|if($pm->instanceOf(AggregationAwarePropertyMapping), |reprocessAggregationAwarePropertyMapping($pm),| $pm););
+    let resolvedMappings = $propertyMappings->map(pm|if($pm->instanceOf(AggregationAwarePropertyMapping), |reprocessAggregationAwarePropertyMapping($pm),| $pm);); 
     printDebug(|'  resolved mappings: '+$resolvedMappings->map(pm|$pm.sourceSetImplementationId+' -> '+if($pm.targetSetImplementationId == '',|$sp.name->toOne(),|$pm.targetSetImplementationId))->joinStrings('[',', ',']')+'\n', $debug);
-
+    
     if($sp.genericType.rawType->isNotEmpty() && $sp.genericType.rawType->toOne()->instanceOf(DataType), // branch on data type property
-        |
+        | 
           $resolvedMappings->filter(pm|$pm->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping)->fold({pm, st|
                                                                   let columns = $pm->getColumns();
                                                                   let parentMapping = $pm.owner.parent->toOne(); // TODO: check if best place for mapping identification
