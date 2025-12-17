@@ -25,28 +25,83 @@ function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::tes
   true;
 }
 
+ 
+//these tests the correct fullPath serialization, In Legend Compiler it wrongly gets set so we handle this here until fixed.
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testFunctionDefinition():Boolean[1]
+{
+  let func = meta::pure::metamodel::serialization::grammar::tests::testFunction__String_1_;
+
+  meta::pure::metamodel::serialization::grammar::tests::functionTest(meta::pure::metamodel::serialization::grammar::tests::testFunction__String_1_, 'meta::pure::metamodel::serialization::grammar::tests::testFunction(): String[1]\n{\n  \'abc\'\n}', true);
+  meta::pure::metamodel::serialization::grammar::tests::functionTest(meta::pure::metamodel::serialization::grammar::tests::testFunction__String_1_, 'testFunction(): String[1]\n{\n  \'abc\'\n}', false);
+}
+
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testFunctionNameReference():Boolean[1] 
+{
+  let lambda = {| meta::pure::metamodel::serialization::grammar::tests::testFunction()};
+  let func = meta::pure::metamodel::serialization::grammar::tests::testFunction__String_1_;
+
+  meta::pure::metamodel::serialization::grammar::tests::expressionTest(
+    $lambda,
+    $func,
+    '|meta::pure::metamodel::serialization::grammar::tests::testFunction()',
+    true
+  );
+
+  meta::pure::metamodel::serialization::grammar::tests::expressionTest(
+    $lambda,
+    $func,
+    '|testFunction()',
+    false
+  );  
+}
+
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testFunctionNameReferenceParameters():Boolean[1] 
+{
+  let lambda = {| meta::pure::metamodel::serialization::grammar::tests::testFunctionWithParams('a')};
+  let func = meta::pure::metamodel::serialization::grammar::tests::testFunctionWithParams_String_1__String_1_;
+
+  meta::pure::metamodel::serialization::grammar::tests::expressionTest(
+    $lambda,
+    $func,
+    '|\'a\'->meta::pure::metamodel::serialization::grammar::tests::testFunctionWithParams()',
+    true
+  );
+
+  meta::pure::metamodel::serialization::grammar::tests::expressionTest(
+    $lambda,
+    $func,
+    '|\'a\'->testFunctionWithParams()',
+    false
+  );  
+}
+
+function meta::pure::metamodel::serialization::grammar::tests::functionTest(func:ConcreteFunctionDefinition<Any>[1], expected:String[1], fullPath:Boolean[1]):Boolean[1]
+{
+  let config = ^Configuration(fullPath = $fullPath);
+
+  assertEquals('###Pure\nfunction ' + $expected, printPackageableElements($func, $config));
+  assertEquals('###Pure\nfunction ' + $expected, printPackageableElements(^$func(functionName = $func.package->toOne()->elementToPath() + '::' + $func.functionName->toOne()), $config));
+
+  assertEquals($expected, printFunctionDefinition($func, $config, ^GContext(space='')));
+  assertEquals($expected, printFunctionDefinition(^$func(functionName = $func.package->toOne()->elementToPath() + '::' + $func.functionName->toOne()), $config, ^GContext(space='')));  
+}
+
+function meta::pure::metamodel::serialization::grammar::tests::expressionTest(lambda:LambdaFunction<Any>[1], func:ConcreteFunctionDefinition<Any>[1], expected:String[1], fullPath:Boolean[1]):Boolean[1]
+{
+  let config = ^Configuration(fullPath = $fullPath);
+
+  let exp = $lambda.expressionSequence->at(0)->cast(@SimpleFunctionExpression);
+
+  assertEquals($expected, printFunctionDefinition($lambda, $config, ^GContext(space='')));
+  assertEquals($expected, printFunctionDefinition(^$lambda(expressionSequence = ^$exp(func = ^$func(functionName = $func.package->toOne()->elementToPath() + '::' + $func.functionName->toOne()))), $config, ^GContext(space='')));
+}
+
 function meta::pure::metamodel::serialization::grammar::tests::testFunction():String[1]
 {
   'abc';
 }
- 
-//this tests the correct fullPath serialization, In Legend Compiler it wrongly gets set so we handle this here until fixed.
-function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testFunctionNameFullPath():Boolean[1]
+
+function meta::pure::metamodel::serialization::grammar::tests::testFunctionWithParams(a:String[1]):String[1]
 {
-  let func = meta::pure::metamodel::serialization::grammar::tests::testFunction__String_1_;
-  let config = ^Configuration(fullPath = true);
-  let expected = '###Pure\nfunction meta::pure::metamodel::serialization::grammar::tests::testFunction(): String[1]\n{\n  \'abc\'\n}';
-
-  assertEquals($expected, printPackageableElements($func, $config));
-  assertEquals($expected, printPackageableElements(^$func(functionName = $func.package->toOne()->elementToPath() + '::' + $func.functionName->toOne()), $config));
-}
-
-function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testFunctionNameNotFullPath():Boolean[1]
-{
-  let func = meta::pure::metamodel::serialization::grammar::tests::testFunction__String_1_;
-  let config = ^Configuration(fullPath = false);
-  let expected = '###Pure\nfunction testFunction(): String[1]\n{\n  \'abc\'\n}';
-
-  assertEquals($expected, printPackageableElements($func, $config));
-  assertEquals($expected, printPackageableElements(^$func(functionName = $func.package->toOne()->elementToPath() + '::' + $func.functionName->toOne()), $config));
+  'abc';
 }
