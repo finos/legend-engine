@@ -34,52 +34,66 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.type.Type;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class FunctionHandler
 {
-    private final String _package;
+    private PureModel pureModel;
     private final String fullName;
-    private final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> func;
-    private final String functionSignature;
-    private final String functionName;
+    private String functionName;
+    private final boolean isNative;
     private final ReturnInference returnInference;
     private final ResolveTypeParameterInference resolvedTypeParametersInference;
     private Dispatch dispatch;
-    private final int parametersSize;
-    private PureModel pureModel;
 
-    FunctionHandler(PureModel pureModel, String name, boolean isNative, ReturnInference returnInference)
+    private FuncHandlerLazyState funcHandlerLazyState;
+
+    FunctionHandler(PureModel pureModel, String fullName, String name, boolean isNative, ReturnInference returnInference)
     {
-        this(pureModel, name, isNative, returnInference, p -> true);
+        this(pureModel, fullName, name, isNative, returnInference, p -> true);
     }
 
-    FunctionHandler(PureModel pureModel, String name, boolean isNative, ReturnInference returnInference, Dispatch dispatch)
+    FunctionHandler(PureModel pureModel, String fullName, String name, boolean isNative, ReturnInference returnInference, Dispatch dispatch)
     {
-        this(pureModel, name, pureModel.getFunction(name, isNative), returnInference, null, dispatch);
+        this(pureModel, fullName, name, isNative, returnInference, null, dispatch);
     }
 
-    FunctionHandler(PureModel pureModel, String name, boolean isNative, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
-    {
-        this(pureModel, name, pureModel.getFunction(name, isNative), returnInference, resolvedTypeParametersInference, dispatch);
-    }
-
-    public FunctionHandler(PureModel pureModel, String name, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> func, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
+    public FunctionHandler(PureModel pureModel, String fullName, String name, boolean isNative, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
     {
         this.pureModel = pureModel;
-        this._package = PackageableElement.getUserPathForPackageableElement(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) func)._package());
-        this.func = func;
-        this.functionSignature = func._name();
-        this.fullName = name;
-        this.functionName = func._functionName();
+        this.fullName = fullName;
+        this.isNative = isNative;
         this.returnInference = returnInference;
-        this.dispatch = dispatch;
-        this.parametersSize = ((FunctionType) func._classifierGenericType()._typeArguments().getAny()._rawType())._parameters().size();
         this.resolvedTypeParametersInference = resolvedTypeParametersInference;
+        this.dispatch = dispatch;
+        this.functionName = name;
+    }
+
+    public void initialize()
+    {
+        if (this.funcHandlerLazyState == null)
+        {
+            synchronized (this)
+            {
+                if (this.funcHandlerLazyState == null)
+                {
+                    initialize(pureModel.getFunction(fullName, isNative));
+                    this.pureModel.loadModelFromFunctionHandler(this);
+                }
+            }
+        }
+    }
+
+    public void initialize(Function<?> func)
+    {
+        this.funcHandlerLazyState = new FuncHandlerLazyState(func);
     }
 
     public SimpleFunctionExpression process(List<ValueSpecification> vs, SourceInformation sourceInformation)
     {
+        initialize();
+
         TypeAndMultiplicity inferred = null;
         try
         {
@@ -91,52 +105,19 @@ public class FunctionHandler
             throw e;
         }
         RichIterable<? extends GenericType> resolvedTypeParameters = resolvedTypeParametersInference == null ? Lists.mutable.empty() : resolvedTypeParametersInference.infer(vs);
-        Assert.assertTrue(func != null, () -> "Func is null");
+        Assert.assertTrue(this.funcHandlerLazyState.func != null, () -> "Func is null");
         return new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
-                ._func(func)
-                ._functionName(func._functionName())
+                ._func(this.funcHandlerLazyState.func)
+                ._functionName(this.funcHandlerLazyState.func._functionName())
                 ._genericType(inferred.genericType)
                 ._multiplicity(inferred.multiplicity)
                 ._parametersValues(Lists.mutable.withAll(vs))
                 ._resolvedTypeParameters(resolvedTypeParameters);
     }
 
-    // TO DELETE!
-    public String buildCode(PureModel pureModel)
-    {
-        RichIterable<? extends VariableExpression> vars = ((FunctionType) func._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters();
-        StringBuilder builder = new StringBuilder(functionName);
-        builder.append(" ");
-        for (VariableExpression v : vars)
-        {
-            builder.append(v._genericType()._rawType() != null && Type.subTypeOf(v._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport()) ? "1" : "0");
-        }
-        return builder.toString();
-    }
-
     public Dispatch getDispatch()
     {
         return dispatch;
-    }
-
-    public String getPackage()
-    {
-        return this._package;
-    }
-
-    public String getFunctionSignature()
-    {
-        return functionSignature;
-    }
-
-    public String getFunctionName()
-    {
-        return this.functionName;
-    }
-
-    public Function<? extends Object> getFunc()
-    {
-        return func;
     }
 
     public void setDispatch(Dispatch di)
@@ -149,8 +130,26 @@ public class FunctionHandler
         return this.fullName;
     }
 
+    public String getFunctionSignature()
+    {
+        this.initialize();
+        return this.funcHandlerLazyState.functionSignature;
+    }
+
+    public String getFunctionName()
+    {
+        return this.functionName;
+    }
+
+    public Function<? extends Object> getFunc()
+    {
+        this.initialize();
+        return this.funcHandlerLazyState.func;
+    }
+
     public int getParametersSize()
     {
-        return this.parametersSize;
+        this.initialize();
+        return this.funcHandlerLazyState.parametersSize;
     }
 }

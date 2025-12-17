@@ -553,11 +553,11 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
         return Collections.singletonList((handlers) ->
                 Lists.mutable.with(
                         new FunctionExpressionBuilderRegistrationInfo(org.eclipse.collections.impl.factory.Lists.mutable.with(0),
-                                handlers.m(handlers.h("meta::pure::mapping::from_T_m__DataSpaceExecutionContext_1__T_m_", false, ps -> handlers.res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && handlers.typeOne(ps.get(1), "DataSpaceExecutionContext")))
+                                handlers.m(handlers.h("meta::pure::mapping::from_T_m__DataSpaceExecutionContext_1__T_m_", "from",false, ps -> handlers.res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && handlers.typeOne(ps.get(1), "DataSpaceExecutionContext")))
                         ),
                         // getter for execution parameters from execution environment
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.m(handlers.h("meta::pure::metamodel::dataSpace::get_DataSpace_1__String_1__DataSpaceExecutionContext_1_", false, ps -> handlers.res("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "DataSpace")))))
+                                handlers.m(handlers.m(handlers.h("meta::pure::metamodel::dataSpace::get_DataSpace_1__String_1__DataSpaceExecutionContext_1_", "get", false, ps -> handlers.res("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "DataSpace")))))
 
                 ));
     }
