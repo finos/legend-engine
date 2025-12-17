@@ -1,0 +1,57 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::dataquality::tests::*;
+import meta::external::dataquality::dataprofile::*;
+import meta::external::dataquality::rule_suggestions::*;
+
+function <<test.Test>> meta::external::dataquality::tests::testRuleSuggestions():Boolean[1]
+{
+  let lambda = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, AGE, DOB])};
+
+  let values = [
+    newMap([
+      p(ProfileColumn.COLUMN_NAME, 'FIRSTNAME'),
+      p(ProfileColumn.COUNT, 3),
+      p(ProfileColumn.COUNT_NULL, 0)
+    ]),
+    newMap([
+      p(ProfileColumn.COLUMN_NAME, 'AGE'),
+      p(ProfileColumn.COUNT, 3),
+      p(ProfileColumn.COUNT_NULL, 1),
+      p(ProfileColumn.NUMBER_MIN, 1),
+      p(ProfileColumn.NUMBER_MAX, 10)
+    ]),
+    newMap([
+      p(ProfileColumn.COLUMN_NAME, 'DOB'),
+      p(ProfileColumn.COUNT, 3),
+      p(ProfileColumn.COUNT_NULL, 3)
+    ])    
+  ];
+
+  let results = ruleSuggestions($values, $lambda);
+
+  let expected = [
+    ^RuleSuggestion(name = 'FIRSTNAMENonNull', assertion = 'rel|$rel->rowsWithEmptyColumn(~FIRSTNAME)->assertRelationEmpty(~[FIRSTNAME,AGE,DOB])'),
+    ^RuleSuggestion(name = 'AGEBetweenValues', assertion = 'rel|$rel->rowsWithValueOutsideRange(~AGE, 1, 10)->assertRelationEmpty(~[FIRSTNAME,AGE,DOB])'),
+    ^RuleSuggestion(name = 'DOBNull', assertion = 'rel|$rel->rowsWithNonEmptyColumn(~DOB)->assertRelationEmpty(~[FIRSTNAME,AGE,DOB])')
+  ];
+
+  assertEquals($expected, $results);
+}
+
+function meta::external::dataquality::tests::p(col:ProfileColumn[1], value:Any[1]):Pair<String, Any>[1]
+{
+  pair(name($col), $value)
+}

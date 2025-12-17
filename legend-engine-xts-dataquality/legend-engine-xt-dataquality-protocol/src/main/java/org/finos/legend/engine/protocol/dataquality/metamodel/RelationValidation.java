@@ -23,6 +23,30 @@ import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RelationValidation
 {
+    public RelationValidation _name(String name)
+    {
+        this.name = name;
+        return this;
+    }
+
+    public RelationValidation _description(String description)
+    {
+        this.description = description;
+        return this;
+    }
+
+    public RelationValidation _assertion(LambdaFunction assertion)
+    {
+        this.assertion = assertion;
+        return this;
+    }
+
+    public RelationValidation _type(String type)
+    {
+        this.type = type;
+        return this;
+    }
+
     public String name;
     public String description;
     public LambdaFunction assertion;

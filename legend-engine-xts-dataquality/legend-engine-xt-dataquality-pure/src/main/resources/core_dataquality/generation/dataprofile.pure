@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 import meta::pure::mapping::*;
 import meta::external::query::sql::transformation::utils::*;
@@ -29,7 +28,7 @@ function meta::external::dataquality::dataprofile::getProfilingLambda(dqRelation
   let lambda = $dqRelationValidation.query->popTerminalFunctionExpression();
   
   let from = $dqRelationValidation.query.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();
-  let runtime = getInstanceValueOfType($from.parametersValues, PackageableRuntime)->concatenate(getInstanceValueOfType($from.parametersValues, Runtime));
+  let runtime = getInstanceValueOfType($from.parametersValues, meta::pure::runtime::PackageableRuntime)->concatenate(getInstanceValueOfType($from.parametersValues, Runtime));
   let mapping = getInstanceValueOfType($from.parametersValues, Mapping);
 
   assert($runtime->isEmpty() || $runtime->size() == 1, | 'multiple runtimes not supported');
@@ -52,23 +51,23 @@ function meta::external::dataquality::dataprofile::getProfilingLambda(l:LambdaFu
         [
           $cte,
           ^AggColSpecArray<Any, Any, Any>(aggSpecs = [
-            agg('name', iv($c.name->toOne()), iv($c.name->toOne()), $c.classifierGenericType.typeArguments->at(0), gt(String), PureOne, gt(String), PureOne),
-            agg('max_number', max_Number_MANY__Number_$0_1$_, $c),
-            agg('min_number', min_Number_MANY__Number_$0_1$_, $c),
-            agg('max_date', max_Date_MANY__Date_$0_1$_, $c),
-            agg('min_date', min_Date_MANY__Date_$0_1$_, $c),
-            agg('max_length', createLength($c, 'x'), max_Number_MANY__Number_$0_1$_, $c),
-            agg('min_length', createLength($c, 'x'), min_Number_MANY__Number_$0_1$_, $c),
-            agg('count', count_Any_MANY__Integer_1_, $c),
-            agg('count_distinct', mapFn(Any, $c), createDistinctCount('y'), $c.classifierGenericType.typeArguments->at(0), gt(Any), PureOne, gt(Integer), PureOne),
-            agg('count_null', createNullCase($c, 'x'), count_Any_MANY__Integer_1_, $c)
+            agg(ProfileColumn.COLUMN_NAME, iv($c.name->toOne()), iv($c.name->toOne()), $c.classifierGenericType.typeArguments->at(0), gt(String), PureOne, gt(String), PureOne),
+            agg(ProfileColumn.COUNT, count_Any_MANY__Integer_1_, $c),
+            agg(ProfileColumn.COUNT_DISTINCT, mapFn(Any, $c), createDistinctCount('y'), $c.classifierGenericType.typeArguments->at(0), gt(Any), PureOne, gt(Integer), PureOne),
+            agg(ProfileColumn.COUNT_NULL, createNullCase($c, 'x'), count_Any_MANY__Integer_1_, $c),
+            agg(ProfileColumn.NUMBER_MAX, max_Number_MANY__Number_$0_1$_, $c),
+            agg(ProfileColumn.NUMBER_MIN, min_Number_MANY__Number_$0_1$_, $c),
+            agg(ProfileColumn.DATE_MAX, max_Date_MANY__Date_$0_1$_, $c),
+            agg(ProfileColumn.DATE_MIN, min_Date_MANY__Date_$0_1$_, $c),
+            agg(ProfileColumn.STRING_MAX_LENGTH, createLength($c, 'x'), max_Integer_MANY__Integer_$0_1$_, $c),
+            agg(ProfileColumn.STRING_MIN_LENGTH, createLength($c, 'x'), min_Integer_MANY__Integer_$0_1$_, $c)
           ])->iv()
         ]
       );
   );
 
   let func = $queries->tail()->fold({val, acc | 
-      sfe(concatenate_Relation_1__Relation_1__Relation_1_, [$val, $acc])
+      sfe(concatenate_Relation_1__Relation_1__Relation_1_, [$acc->evaluateAndDeactivate(), $val->evaluateAndDeactivate()])
     }, $queries->head()->toOne()->evaluateAndDeactivate());
 
   let letCte = createLet('cte', $l.expressionSequence->evaluateAndDeactivate()->last()->toOne());
@@ -83,7 +82,7 @@ function meta::external::dataquality::dataprofile::getProfilingLambda(l:LambdaFu
                     | $lambda->compileViaGrammar());
 }
 
-function meta::external::dataquality::dataprofile::agg(name:String[1], fn:Function<Any>[1], column:Column<Nil,Any|*>[1]):AggColSpec<Any, Any, Any>[1]
+function meta::external::dataquality::dataprofile::agg(name:ProfileColumn[1], fn:Function<Any>[1], column:Column<Nil,Any|*>[1]):AggColSpec<Any, Any, Any>[1]
 {
   let paramType = $fn->getParameters()->first()->evaluateAndDeactivate().genericType.rawType->toOne();
   agg($name, mapFn($paramType, $column), $fn, $column);
@@ -106,7 +105,7 @@ function meta::external::dataquality::dataprofile::mapFn(paramType:Type[1], colu
   );
 }
 
-function meta::external::dataquality::dataprofile::agg(name:String[1],map:ValueSpecification[1], fn:Function<Any>[1], column:Column<Nil,Any|*>[1]):AggColSpec<Any, Any, Any>[1]
+function meta::external::dataquality::dataprofile::agg(name:ProfileColumn[1],map:ValueSpecification[1], fn:Function<Any>[1], column:Column<Nil,Any|*>[1]):AggColSpec<Any, Any, Any>[1]
 {
   let type = $column.classifierGenericType.typeArguments->last()->toOne();
   let multiplicity = $column.classifierGenericType.multiplicityArguments->first()->toOne();
@@ -115,10 +114,10 @@ function meta::external::dataquality::dataprofile::agg(name:String[1],map:ValueS
   agg($name, $map, sfe($fn, var('y')), $relationType, $type, $multiplicity, $fn->functionReturnType(), $fn->functionReturnMultiplicity());
 }
 
-function meta::external::dataquality::dataprofile::agg(name:String[1], map:ValueSpecification[1], reduce:ValueSpecification[1], relationType:GenericType[1], columnType:GenericType[1], columnMultiplicity:Multiplicity[1], returnType:GenericType[1], returnMultiplicity:Multiplicity[1]):AggColSpec<Any, Any, Any>[1]
+function meta::external::dataquality::dataprofile::agg(name:ProfileColumn[1], map:ValueSpecification[1], reduce:ValueSpecification[1], relationType:GenericType[1], columnType:GenericType[1], columnMultiplicity:Multiplicity[1], returnType:GenericType[1], returnMultiplicity:Multiplicity[1]):AggColSpec<Any, Any, Any>[1]
 {
   ^meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>(
-    name = $name, 
+    name = name($name), 
     map = lambda(functionType('x', $relationType, PureOne, $columnType, $columnMultiplicity), $map),
     reduce = lambda(functionType('y', $map->evaluateAndDeactivate().genericType, ZeroMany, $returnType, $returnMultiplicity), $reduce));
 }
@@ -170,4 +169,24 @@ function meta::external::dataquality::dataprofile::getInstanceValueOfType<T>(vs:
         v:ValueSpecification[*] | []
       ])
   )
+}
+
+
+Enum meta::external::dataquality::dataprofile::ProfileColumn
+{
+  {doc.doc='column_name'} COLUMN_NAME, 
+  {doc.doc='count'} COUNT, 
+  {doc.doc='count_distinct'} COUNT_DISTINCT, 
+  {doc.doc='count_null'} COUNT_NULL, 
+  {doc.doc='number/max'} NUMBER_MAX, 
+  {doc.doc='number/min'} NUMBER_MIN, 
+  {doc.doc='date/max'} DATE_MAX, 
+  {doc.doc='date/min'} DATE_MIN, 
+  {doc.doc='string/max_length'} STRING_MAX_LENGTH, 
+  {doc.doc='string/min_length'} STRING_MIN_LENGTH
+}
+
+function meta::external::dataquality::dataprofile::name(col:ProfileColumn[1]):String[1]
+{
+  $col->value4Tag('doc', meta::pure::profiles::doc).value->toOne();
 }

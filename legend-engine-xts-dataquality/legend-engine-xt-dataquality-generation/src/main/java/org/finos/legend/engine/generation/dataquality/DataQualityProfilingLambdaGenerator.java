@@ -26,17 +26,18 @@ public class DataQualityProfilingLambdaGenerator
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, String qualifiedPath)
     {
-        PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
-        return generateLambda(pureModel, packageableElement);
+        Root_meta_external_dataquality_DataQualityRelationValidation validation = getDataQualityRelationValidation(pureModel, qualifiedPath);
+        return generateDataProfileLambda(pureModel, validation);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, PackageableElement packageableElement)
+    public static Root_meta_external_dataquality_DataQualityRelationValidation getDataQualityRelationValidation(PureModel pureModel, String qualifiedPath)
     {
+        PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
         if (packageableElement instanceof Root_meta_external_dataquality_DataQualityRelationValidation)
         {
-            return generateDataProfileLambda(pureModel, (Root_meta_external_dataquality_DataQualityRelationValidation) packageableElement);
+            return (Root_meta_external_dataquality_DataQualityRelationValidation) packageableElement;
         }
-        throw new EngineException("Unsupported Dataquality element! " + packageableElement.getClass().getSimpleName(), ExceptionCategory.USER_EXECUTION_ERROR);
+        throw new EngineException("The element at path '" + qualifiedPath + "' is not a DataQualityRelationValidation!", ExceptionCategory.USER_EXECUTION_ERROR);
     }
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateDataProfileLambda(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement)

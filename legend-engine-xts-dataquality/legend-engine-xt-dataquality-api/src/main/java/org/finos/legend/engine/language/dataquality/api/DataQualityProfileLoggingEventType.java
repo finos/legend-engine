@@ -19,5 +19,8 @@ import org.finos.legend.engine.shared.core.operational.logs.ILoggingEventType;
 public enum DataQualityProfileLoggingEventType implements ILoggingEventType
 {
     DATAQUALITY_PROFILE_START,
-    DATAQUALITY_PROFILE_END
+    DATAQUALITY_PROFILE_END,
+
+    DATAQUALITY_RULE_SUGGESTION_START,
+    DATAQUALITY_RULE_SUGGESTION_END
 }

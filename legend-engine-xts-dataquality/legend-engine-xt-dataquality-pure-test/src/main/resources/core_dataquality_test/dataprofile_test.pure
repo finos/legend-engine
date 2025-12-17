@@ -28,43 +28,43 @@ function <<test.Test>> meta::external::dataquality::tests::testDataProfileLambda
       let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[DOB, AGE, FIRSTNAME]);
 
       $cte->aggregate(~[
-              name: x | 'FIRSTNAME' : y | 'FIRSTNAME',
-              max_number : x | []->cast(@Number) : y | $y->max(),
-              min_number : x | []->cast(@Number) : y | $y->min(),
-              max_date : x | []->cast(@Date) : y | $y->max(),
-              min_date : x | []->cast(@Date) : y | $y->min(),
-              max_length: x | $x.FIRSTNAME->toOne()->length() : y | $y->max(),
-              min_length: x | $x.FIRSTNAME->toOne()->length() : y | $y->min(),
-              count: x | $x.FIRSTNAME : y | $y->count(),
-              count_distinct: x | $x.FIRSTNAME : y | $y->distinct()->count(),
-              count_null: x | if ($x.FIRSTNAME->isEmpty(), | 1, | []) : y | $y->count()
-      ])->concatenate(
-        $cte->aggregate(~[
-                name: x | 'AGE' : y | 'AGE',
-                max_number : x | $x.AGE->cast(@Number) : y | $y->max(),
-                min_number : x | $x.AGE->cast(@Number) : y | $y->min(),
-                max_date : x | []->cast(@Date) : y | $y->max(),
-                min_date : x | []->cast(@Date) : y | $y->min(),
-                max_length: x | []->cast(@Integer) : y | $y->max(),
-                min_length: x | []->cast(@Integer) : y | $y->min(),
+          column_name: x | 'DOB' : y | 'DOB',
+          count: x | $x.DOB : y | $y->count(),
+          count_distinct: x | $x.DOB : y | $y->distinct()->count(),
+          count_null: x | if ($x.DOB->isEmpty(), | 1, | []) : y | $y->count(),
+          'number/max' : x | []->cast(@Number) : y | $y->max(),
+          'number/min' : x | []->cast(@Number) : y | $y->min(),
+          'date/max' : x | $x.DOB->cast(@Date) : y | $y->max(),
+          'date/min' : x | $x.DOB->cast(@Date) : y | $y->min(),
+          'string/max_length': x | []->cast(@Integer) : y | $y->max(),
+          'string/min_length': x | []->cast(@Integer) : y | $y->min()
+        ])->concatenate(
+          $cte->aggregate(~[
+                column_name: x | 'AGE' : y | 'AGE',
                 count: x | $x.AGE : y | $y->count(),
                 count_distinct: x | $x.AGE : y | $y->distinct()->count(),
-                count_null: x | if ($x.AGE->isEmpty(), | 1, | []) : y | $y->count()
-              ])->concatenate(
-        $cte->aggregate(~[
-                name: x | 'DOB' : y | 'DOB',
-                max_number : x | []->cast(@Number) : y | $y->max(),
-                min_number : x | []->cast(@Number) : y | $y->min(),
-                max_date : x | $x.DOB->cast(@Date) : y | $y->max(),
-                min_date : x | $x.DOB->cast(@Date) : y | $y->min(),
-                max_length: x | []->cast(@Integer) : y | $y->max(),
-                min_length: x | []->cast(@Integer) : y | $y->min(),
-                count: x | $x.DOB : y | $y->count(),
-                count_distinct: x | $x.DOB : y | $y->distinct()->count(),
-                count_null: x | if ($x.DOB->isEmpty(), | 1, | []) : y | $y->count()
-              ])
-      )
-      );
+                count_null: x | if ($x.AGE->isEmpty(), | 1, | []) : y | $y->count(),
+                'number/max' : x | $x.AGE->cast(@Number) : y | $y->max(),
+                'number/min' : x | $x.AGE->cast(@Number) : y | $y->min(),
+                'date/max' : x | []->cast(@Date) : y | $y->max(),
+                'date/min' : x | []->cast(@Date) : y | $y->min(),
+                'string/max_length': x | []->cast(@Integer) : y | $y->max(),
+                'string/min_length': x | []->cast(@Integer) : y | $y->min()
+          ])
+        )->concatenate(
+                $cte->aggregate(~[
+                      column_name: x | 'FIRSTNAME' : y | 'FIRSTNAME',
+                      count: x | $x.FIRSTNAME : y | $y->count(),
+                      count_distinct: x | $x.FIRSTNAME : y | $y->distinct()->count(),
+                      count_null: x | if ($x.FIRSTNAME->isEmpty(), | 1, | []) : y | $y->count(),
+                      'number/max' : x | []->cast(@Number) : y | $y->max(),
+                      'number/min' : x | []->cast(@Number) : y | $y->min(),
+                      'date/max' : x | []->cast(@Date) : y | $y->max(),
+                      'date/min' : x | []->cast(@Date) : y | $y->min(),
+                      'string/max_length': x | $x.FIRSTNAME->toOne()->length() : y | $y->max(),
+                      'string/min_length': x | $x.FIRSTNAME->toOne()->length() : y | $y->min()
+                      ])
+              );
   };
 
   let validation = '###DataQualityValidation' +
