@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,19 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.Dispatch;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ReturnInference;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 
-public class UserDefinedFunctionHandler extends FunctionHandler
+public class FuncHandlerLazyState
 {
-    public UserDefinedFunctionHandler(PureModel pureModel, String name, Function<?> func, ReturnInference returnInference, Dispatch dispatch)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> func;
+    public String functionSignature;
+    public int parametersSize;
+
+    public FuncHandlerLazyState(Function<? extends Object> func)
     {
-        super(pureModel, name, func._functionName(), false, returnInference, null, dispatch);
-        initialize(func);
+        this.func = func;
+        this.functionSignature = func._name();
+        this.parametersSize = ((FunctionType) func._classifierGenericType()._typeArguments().getAny()._rawType())._parameters().size();
     }
 }

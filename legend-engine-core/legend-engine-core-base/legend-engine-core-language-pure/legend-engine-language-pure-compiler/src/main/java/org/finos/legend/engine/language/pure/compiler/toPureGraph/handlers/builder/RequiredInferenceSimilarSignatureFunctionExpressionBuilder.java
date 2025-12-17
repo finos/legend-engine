@@ -39,6 +39,12 @@ public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends 
         this.handlers = new MultiHandlerFunctionExpressionBuilder(pureModel, handlers);
     }
 
+    @Override
+    public void validate()
+    {
+        handlers.validate();
+    }
+
     public String getFunctionName()
     {
         return this.handlers.getFunctionName();

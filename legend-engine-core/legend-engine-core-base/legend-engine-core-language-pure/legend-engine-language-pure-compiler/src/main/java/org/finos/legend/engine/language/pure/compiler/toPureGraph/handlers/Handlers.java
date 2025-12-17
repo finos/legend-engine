@@ -1006,42 +1006,42 @@ public class Handlers
         registerUnitFunctions();
         registerCalendarFunctions();
 
-        register(grp(LambdaInference, h("meta::pure::functions::collection::sortBy_T_m__Function_$0_1$__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> true)));
+        register(grp(LambdaInference, h("meta::pure::functions::collection::sortBy_T_m__Function_$0_1$__T_m_", "sortBy", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> true)));
 
         register(grp(LambdaInference,
                 // meta::pure::functions::collection::map<T,V|m>(value:T[m], func:Function<{T[1]->V[1]}>[1]):V[m];
-                h("meta::pure::functions::collection::map_T_m__Function_1__V_m_", true, ps -> res(funcReturnType(ps.get(1)), ps.get(0)._multiplicity()), ps -> isOne(funcType(ps.get(1)._genericType())._returnMultiplicity())),
+                h("meta::pure::functions::collection::map_T_m__Function_1__V_m_", "map", true, ps -> res(funcReturnType(ps.get(1)), ps.get(0)._multiplicity()), ps -> isOne(funcType(ps.get(1)._genericType())._returnMultiplicity())),
                 // meta::pure::functions::collection::map<T,V>(value:T[0..1], func:Function<{T[1]->V[0..1]}>[1]):V[0..1];
-                h("meta::pure::functions::collection::map_T_$0_1$__Function_1__V_$0_1$_", true, ps -> res(funcReturnType(ps.get(1)), "zeroOne"), ps -> matchZeroOne(ps.get(0)._multiplicity()) && matchZeroOne(funcType(ps.get(1)._genericType())._returnMultiplicity())),
+                h("meta::pure::functions::collection::map_T_$0_1$__Function_1__V_$0_1$_", "map", true, ps -> res(funcReturnType(ps.get(1)), "zeroOne"), ps -> matchZeroOne(ps.get(0)._multiplicity()) && matchZeroOne(funcType(ps.get(1)._genericType())._returnMultiplicity())),
                 // meta::pure::functions::collection::map<T,V>(value:T[*], func:Function<{T[1]->V[*]}>[1]):V[*];
-                h("meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_", true, ps -> res(funcReturnType(ps.get(1)), "zeroMany"), ps -> true)));
+                h("meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_", "map", true, ps -> res(funcReturnType(ps.get(1)), "zeroMany"), ps -> true)));
 
         register(m(
                         grp(TDSFilterInference,
                                 // meta::pure::functions::relation::filter<T>(rel:Relation<T>[1], f:Function<{T[1]->Boolean[1]}>[1]):Relation<T>[1]
-                                h("meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_relation_Relation"))),
+                                h("meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_", "filter", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_relation_Relation"))),
                                 // meta::pure::tds::filter(tds:TabularDataSet[1], f:Function<{TDSRow[1]->Boolean[1]}>[1]):TabularDataSet[1]
-                                h("meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet"))
+                                h("meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_", "filter", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet"))
                         ),
                         // meta::pure::functions::collection::filter<T>(value:T[*], func:Function<{T[1]->Boolean[1]}>[1]):T[*];
-                        grp(LambdaInference, h("meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true))
+                        grp(LambdaInference, h("meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_", "filter", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true))
                 )
         );
 
         register(m(
                         // meta::pure::tds::project<T>(set:T[*], paths:Path<T,Any|*>[*]):TabularDataSet[1]
-                        m(h("meta::pure::tds::project_T_MANY__Path_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2 && typeMany(ps.get(1), "Path"))),
+                        m(h("meta::pure::tds::project_T_MANY__Path_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2 && typeMany(ps.get(1), "Path"))),
                         //meta::pure::functions::relation::project<C,T>(cl:C[*], x:FuncColSpecArray<{C[1]->Any[*]},T>[1]):Relation<T>[1];
                         // meta::pure::tds::project<K>(set:K[*], functions:Function<{K[1]->Any[*]}>[*], ids:String[*]):TabularDataSet[1]
-                        grp(LambdaCollectionInference, h("meta::pure::tds::project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3)),
+                        grp(LambdaCollectionInference, h("meta::pure::tds::project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3)),
                         grp(LambdaColCollectionInference,
                                 //meta::pure::tds::project(tds:TabularDataSet[1], columnFunctions:ColumnSpecification<TDSRow>[*]):TabularDataSet[1]
-                                h("meta::pure::tds::project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
+                                h("meta::pure::tds::project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
                                 // meta::pure::tds::project<T>(set:T[*], columnSpecifications:ColumnSpecification<T>[*]):TabularDataSet[1]
-                                h("meta::pure::tds::project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true),
-                                h("meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_", true, ps -> ProjectReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::tds::project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true),
+                                h("meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_", "project", true, ps -> ProjectReturnInference(ps, this.pureModel), ps -> true),
                                 //meta::pure::functions::relation::project<C,T>(cl:C[*], x:FuncColSpecArray<{C[1]->Any[*]},T>[1]):Relation<T>[1];
-                                h("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", true, ps -> GraphProjectReturnInference(ps, this.pureModel), ps -> true)
+                                h("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", "project", true, ps -> GraphProjectReturnInference(ps, this.pureModel), ps -> true)
                         )
                 )
         );
@@ -1049,33 +1049,33 @@ public class Handlers
         register(m(
                         // meta::pure::tds::groupBy<T,U>(tds:TabularDataSet[1], columns:String[*], aggValues:meta::pure::tds::AggregateValue<T,U>[*]):TabularDataSet[1]
                         grp(TDSAggInference,
-                                h("meta::pure::tds::groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
-                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
+                                h("meta::pure::tds::groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_", "groupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
+                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
                         ),
                         // meta::pure::functions::collection::groupBy<K,V,U>(set:K[*], functions:meta::pure::metamodel::function::Function<{K[1]->Any[*]}>[*], aggValues:meta::pure::functions::collection::AggregateValue<K,V,U>[*], ids:String[*]):TabularDataSet[1]
-                        grp(LambdaAndAggInference, h("meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true))
+                        grp(LambdaAndAggInference, h("meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_", "groupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true))
                 )
         );
 
         register(
                 grp(TDSAggInference,
-                    h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpec_1__Relation_1_", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
-                    h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
+                    h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpec_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                    h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
                 )
         );
 
         register(m(
                         grp(TDSAggInference,
-                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true)
+                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true)
                         ),
                         grp(TDSAggInference,
-                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true)
+                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true)
                         )
                 )
         );
@@ -1083,118 +1083,118 @@ public class Handlers
         // meta::pure::tds::extend(tds:TabularDataSet[1], newColumnFunctions:BasicColumnSpecification<TDSRow >[*]):TabularDataSet[1]
         register(m(
                         grp(ExtendInference,
-                                h("meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1__FuncColSpecArray_1__Relation_1_", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1__AggColSpec_1__Relation_1_", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1__AggColSpecArray_1__Relation_1_", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::tds::extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)
+                                h("meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::extend_Relation_1__FuncColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::extend_Relation_1__AggColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::extend_Relation_1__AggColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::tds::extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_", "extend", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)
                         ),
                         grp(ExtendInference,
-                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true)
+                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true)
                         )
                 )
         );
 
         register(
-                h("meta::pure::functions::relation::unbounded__UnboundedFrameValue_1_", false, ps -> res("meta::pure::functions::relation::UnboundedFrameValue", "one"), ps -> true)
+                h("meta::pure::functions::relation::unbounded__UnboundedFrameValue_1_", "unbounded", false, ps -> res("meta::pure::functions::relation::UnboundedFrameValue", "one"), ps -> true)
         );
 
         register(m(
-                h("meta::pure::functions::relation::rows_Integer_1__Integer_1__Rows_1_", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
-                h("meta::pure::functions::relation::rows_UnboundedFrameValue_1__Integer_1__Rows_1_", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue") && typeOne(ps.get(1), "Integer")),
-                h("meta::pure::functions::relation::rows_Integer_1__UnboundedFrameValue_1__Rows_1_", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer")),
-                h("meta::pure::functions::relation::rows_UnboundedFrameValue_1__UnboundedFrameValue_1__Rows_1_", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue"))
+                h("meta::pure::functions::relation::rows_Integer_1__Integer_1__Rows_1_", "rows", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
+                h("meta::pure::functions::relation::rows_UnboundedFrameValue_1__Integer_1__Rows_1_", "rows", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue") && typeOne(ps.get(1), "Integer")),
+                h("meta::pure::functions::relation::rows_Integer_1__UnboundedFrameValue_1__Rows_1_", "rows", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer")),
+                h("meta::pure::functions::relation::rows_UnboundedFrameValue_1__UnboundedFrameValue_1__Rows_1_", "rows", false, ps -> res("meta::pure::functions::relation::Rows", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue"))
         ));
 
         register(m(
                         m(
-                                h("meta::pure::functions::relation::_range_Number_1__Number_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                                h("meta::pure::functions::relation::_range_UnboundedFrameValue_1__Number_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue") && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                                h("meta::pure::functions::relation::_range_Number_1__UnboundedFrameValue_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_Number"))),
-                                h("meta::pure::functions::relation::_range_UnboundedFrameValue_1__UnboundedFrameValue_1___Range_1_", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue"))
+                                h("meta::pure::functions::relation::_range_Number_1__Number_1___Range_1_", "_range", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                                h("meta::pure::functions::relation::_range_UnboundedFrameValue_1__Number_1___Range_1_", "_range", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue") && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                                h("meta::pure::functions::relation::_range_Number_1__UnboundedFrameValue_1___Range_1_", "_range", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_Number"))),
+                                h("meta::pure::functions::relation::_range_UnboundedFrameValue_1__UnboundedFrameValue_1___Range_1_", "_range", false, ps -> res("meta::pure::functions::relation::_Range", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "UnboundedFrameValue"))
                         ),
                         m(
-                                h("meta::pure::functions::relation::_range_Integer_1__DurationUnit_1__UnboundedFrameValue_1___RangeInterval_1_", false, ps -> res("meta::pure::functions::relation::_RangeInterval", "one"), ps -> ps.size() == 3 && typeOne(ps.get(0), "Integer")),
-                                h("meta::pure::functions::relation::_range_UnboundedFrameValue_1__Integer_1__DurationUnit_1___RangeInterval_1_", false, ps -> res("meta::pure::functions::relation::_RangeInterval", "one"), ps -> ps.size() == 3)
+                                h("meta::pure::functions::relation::_range_Integer_1__DurationUnit_1__UnboundedFrameValue_1___RangeInterval_1_", "_range", false, ps -> res("meta::pure::functions::relation::_RangeInterval", "one"), ps -> ps.size() == 3 && typeOne(ps.get(0), "Integer")),
+                                h("meta::pure::functions::relation::_range_UnboundedFrameValue_1__Integer_1__DurationUnit_1___RangeInterval_1_", "_range", false, ps -> res("meta::pure::functions::relation::_RangeInterval", "one"), ps -> ps.size() == 3)
                         ),
                         m(
-                                h("meta::pure::functions::relation::_range_Integer_1__DurationUnit_1__Integer_1__DurationUnit_1___RangeInterval_1_", false, ps -> res("meta::pure::functions::relation::_RangeInterval", "one"), ps -> ps.size() == 4)
+                                h("meta::pure::functions::relation::_range_Integer_1__DurationUnit_1__Integer_1__DurationUnit_1___RangeInterval_1_", "_range", false, ps -> res("meta::pure::functions::relation::_RangeInterval", "one"), ps -> ps.size() == 4)
                         )
         ));
 
         register(m(
                         m(
-                                h("meta::pure::functions::relation::over_ColSpec_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_ColSpecArray_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_SortInfo_MANY___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true)),
+                                h("meta::pure::functions::relation::over_ColSpec_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_ColSpecArray_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_SortInfo_MANY___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true)),
                         m(
-                                h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_MANY___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_ColSpecArray_1__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_ColSpec_1__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_MANY___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_SortInfo_1___RangeInterval_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> ps.size() == 2 && typeOne(ps.get(1), "meta::pure::functions::relation::_RangeInterval")),
-                                h("meta::pure::functions::relation::over_SortInfo_1___Range_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true)),
+                                h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_MANY___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_ColSpecArray_1__Rows_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_ColSpec_1__Rows_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_MANY___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_SortInfo_1___RangeInterval_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> ps.size() == 2 && typeOne(ps.get(1), "meta::pure::functions::relation::_RangeInterval")),
+                                h("meta::pure::functions::relation::over_SortInfo_1___Range_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true)),
                         m(
-                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_1___RangeInterval_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> ps.size() == 3 && typeOne(ps.get(0), taxoMap.get("cov_relation_ColSpec")) && typeOne(ps.get(2), "meta::pure::functions::relation::_RangeInterval")),
-                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_1___Range_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_1___RangeInterval_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> ps.size() == 3 && typeOne(ps.get(0), taxoMap.get("cov_relation_ColSpecArray")) && typeOne(ps.get(2), "meta::pure::functions::relation::_RangeInterval")),
-                                h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_1___Range_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_MANY__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
-                                h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_MANY__Rows_1___Window_1_", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true))
+                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_1___RangeInterval_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> ps.size() == 3 && typeOne(ps.get(0), taxoMap.get("cov_relation_ColSpec")) && typeOne(ps.get(2), "meta::pure::functions::relation::_RangeInterval")),
+                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_1___Range_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_1___RangeInterval_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> ps.size() == 3 && typeOne(ps.get(0), taxoMap.get("cov_relation_ColSpecArray")) && typeOne(ps.get(2), "meta::pure::functions::relation::_RangeInterval")),
+                                h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_1___Range_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_ColSpec_1__SortInfo_MANY__Rows_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true),
+                                h("meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_MANY__Rows_1___Window_1_", "over", false, ps -> OverReturnInference(ps, this.pureModel), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true))
                 )
         );
 
-        register(grp(LambdaInference, h("meta::pure::functions::collection::exists_T_MANY__Function_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> true)));
+        register(grp(LambdaInference, h("meta::pure::functions::collection::exists_T_MANY__Function_1__Boolean_1_", "exists", true, ps -> res("Boolean", "one"), ps -> true)));
 
-        register(grp(LambdaInference, h("meta::pure::functions::collection::forAll_T_MANY__Function_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> true)));
+        register(grp(LambdaInference, h("meta::pure::functions::collection::forAll_T_MANY__Function_1__Boolean_1_", "forAll", true, ps -> res("Boolean", "one"), ps -> true)));
 
-        register(grp(LambdaAndAggInference, h("meta::pure::tds::groupByWithWindowSubset_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__String_MANY__String_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)));
+        register(grp(LambdaAndAggInference, h("meta::pure::tds::groupByWithWindowSubset_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__String_MANY__String_MANY__TabularDataSet_1_", "groupByWithWindowSubset", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)));
 
         register(m(
                         // meta::pure::functions::lang::eval<T,V|m,n>(func:Function<{T[n]->V[m]}>[1], param:T[n]):V[m];
                         grp(EvalInference,
-                                h("meta::pure::functions::lang::eval_Function_1__T_n__V_m_", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))))
+                                h("meta::pure::functions::lang::eval_Function_1__T_n__V_m_", "eval", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))))
                         ),
                         // meta::pure::functions::lang::eval<V|m>(func:Function<{->V[m]}>[1]):V[m];
-                        m(h("meta::pure::functions::lang::eval_Function_1__V_m_", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))))),
+                        m(h("meta::pure::functions::lang::eval_Function_1__V_m_", "eval", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))))),
                         grp(EvalInference2,
-                                h("meta::pure::functions::lang::eval_Function_1__T_n__U_p__V_m_", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))))
+                                h("meta::pure::functions::lang::eval_Function_1__T_n__U_p__V_m_", "eval", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))))
                         )
                 )
         );
 
         // Inference in the context of the parent
-        register(m(m(h("meta::pure::tds::agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::tds::AggregateValue"), Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2))), this.pureModel), "one"), ps -> Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2))), ps -> ps.size() == 3 && typeOne(ps.get(0), "String"))),
-                m(h("meta::pure::functions::collection::agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_", false, ps -> res("meta::pure::functions::collection::AggregateValue", "one"), ps -> true))));
+        register(m(m(h("meta::pure::tds::agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_", "agg", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::tds::AggregateValue"), Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2))), this.pureModel), "one"), ps -> Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2))), ps -> ps.size() == 3 && typeOne(ps.get(0), "String"))),
+                m(h("meta::pure::functions::collection::agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_", "agg", false, ps -> res("meta::pure::functions::collection::AggregateValue", "one"), ps -> true))));
 
 
-        register(m(m(h("meta::pure::tds::col_Function_1__String_1__String_1__BasicColumnSpecification_1_", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::tds::BasicColumnSpecification"), Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType()), pureModel),
+        register(m(m(h("meta::pure::tds::col_Function_1__String_1__String_1__BasicColumnSpecification_1_", "col", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::tds::BasicColumnSpecification"), Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType()), pureModel),
                         "one"), ps -> Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType()), ps -> ps.size() == 3)),
-                m(h("meta::pure::tds::col_Function_1__String_1__BasicColumnSpecification_1_", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::tds::BasicColumnSpecification"), Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType()), pureModel),
+                m(h("meta::pure::tds::col_Function_1__String_1__BasicColumnSpecification_1_", "col", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::tds::BasicColumnSpecification"), Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType()), pureModel),
                         "one"), ps -> Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType()), ps -> true))));
         // ----------------------------
 
         register(
                 m(
                         m(
-                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 2 && isOne(ps.get(1)._multiplicity())),
-                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 2)
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_", "coalesce", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 2 && isOne(ps.get(1)._multiplicity())),
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_", "coalesce", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 2)
                         ),
                         m(
-                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 3 && isOne(ps.get(2)._multiplicity())),
-                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 3)
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_", "coalesce", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 3 && isOne(ps.get(2)._multiplicity())),
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", "coalesce", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 3)
                         ),
                         m(
-                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 4 && isOne(ps.get(3)._multiplicity())),
-                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 4)
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_", "coalesce", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "one"), ps -> ps.size() == 4 && isOne(ps.get(3)._multiplicity())),
+                                h("meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_", "coalesce", false, ps -> res(MostCommonType.mostCommon(ListIterate.collect(ps, ValueSpecification::_genericType), this.pureModel), "zeroOne"), ps -> ps.size() == 4)
                         )
                 )
         );
 
-        register(h("meta::pure::functions::relation::wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_", true,
+        register(h("meta::pure::functions::relation::wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_", "wrapPrimitiveInTDS", true,
                 ps -> res(
                         CompileContext.newGenericType(
                                 this.pureModel.getType("meta::pure::metamodel::relation::TDS"),
@@ -1217,99 +1217,99 @@ public class Handlers
                 )
         );
 
-        register(h("meta::pure::functions::collection::isEmpty_Any_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> matchZeroOne(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::collection::isEmpty_Any_MANY__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> true));
-        register(h("meta::pure::functions::collection::isNotEmpty_Any_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> matchZeroOne(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::collection::isNotEmpty_Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> true));
+        register(h("meta::pure::functions::collection::isEmpty_Any_$0_1$__Boolean_1_", "isEmpty", false, ps -> res("Boolean", "one"), ps -> matchZeroOne(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::collection::isEmpty_Any_MANY__Boolean_1_", "isEmpty", true, ps -> res("Boolean", "one"), ps -> true));
+        register(h("meta::pure::functions::collection::isNotEmpty_Any_$0_1$__Boolean_1_", "isNotEmpty", false, ps -> res("Boolean", "one"), ps -> matchZeroOne(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::collection::isNotEmpty_Any_MANY__Boolean_1_", "isNotEmpty", false, ps -> res("Boolean", "one"), ps -> true));
 
-        register("meta::pure::functions::boolean::eq_Any_1__Any_1__Boolean_1_", true, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_", true, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::boolean::is_Any_1__Any_1__Boolean_1_", true, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::boolean::equalJsonStrings_String_1__String_1__Boolean_1_", true, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::boolean::eq_Any_1__Any_1__Boolean_1_", "eq", true, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_", "equal", true, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::boolean::is_Any_1__Any_1__Boolean_1_", "is", true, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::boolean::equalJsonStrings_String_1__String_1__Boolean_1_", "equalJsonStrings", true, ps -> res("Boolean", "one"));
 
-        register("meta::pure::functions::constraints::warn_Boolean_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
-        register("meta::pure::constraints::functions::evaluateConstraint_Z_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
-        register("meta::pure::constraints::functions::evaluateConstraintMessageFunction_Z_1__String_1__String_1_", false, ps -> res("String", "one"));
-        register("meta::pure::constraints::functions::createConstraintFailureMessage_X_1__String_1__String_$0_1$_", false, ps -> res("String", "zeroOne"));
+        register("meta::pure::functions::constraints::warn_Boolean_1__String_1__Boolean_1_", "warn", false, ps -> res("Boolean", "one"));
+        register("meta::pure::constraints::functions::evaluateConstraint_Z_1__String_1__Boolean_1_", "evaluateConstraint", false, ps -> res("Boolean", "one"));
+        register("meta::pure::constraints::functions::evaluateConstraintMessageFunction_Z_1__String_1__String_1_", "evaluateConstraintMessageFunction", false, ps -> res("String", "one"));
+        register("meta::pure::constraints::functions::createConstraintFailureMessage_X_1__String_1__String_$0_1$_", "createConstraintFailureMessage", false, ps -> res("String", "zeroOne"));
 
-        register("meta::pure::functions::lang::subType_Any_m__T_1__T_m_", false, ps -> res(ps.get(1)._genericType(), ps.get(0)._multiplicity()));
-        register(h("meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "zeroOne"), ps -> isOne(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "zeroOne"), ps -> isZeroOne(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_", false, ps -> res(ps.get(1)._genericType(), "zeroMany"), ps -> true));
-        register("meta::pure::functions::lang::orElse_T_$0_1$__T_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"));
+        register("meta::pure::functions::lang::subType_Any_m__T_1__T_m_", "subType", false, ps -> res(ps.get(1)._genericType(), ps.get(0)._multiplicity()));
+        register(h("meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_", "whenSubType", false, ps -> res(ps.get(1)._genericType(), "zeroOne"), ps -> isOne(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_", "whenSubType", false, ps -> res(ps.get(1)._genericType(), "zeroOne"), ps -> isZeroOne(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_", "whenSubType", false, ps -> res(ps.get(1)._genericType(), "zeroMany"), ps -> true));
+        register("meta::pure::functions::lang::orElse_T_$0_1$__T_1__T_1_", "orElse", false, ps -> res(ps.get(0)._genericType(), "one"));
 
-        register(h("meta::pure::functions::string::contains_String_1__String_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::string::contains_String_$0_1$__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::collection::contains_Any_MANY__Any_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> true));
+        register(h("meta::pure::functions::string::contains_String_1__String_1__Boolean_1_", "contains", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
+                h("meta::pure::functions::string::contains_String_$0_1$__String_1__Boolean_1_", "contains", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
+                h("meta::pure::functions::collection::contains_Any_MANY__Any_1__Boolean_1_", "contains", false, ps -> res("Boolean", "one"), ps -> true));
 
-        register("meta::pure::functions::collection::containsAny_Any_MANY__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::collection::containsAny_Any_MANY__Any_MANY__Boolean_1_", "containsAny", false, ps -> res("Boolean", "one"));
 
-        register("meta::pure::functions::collection::objectReferenceIn_Any_1__String_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::collection::objectReferenceIn_Any_1__String_MANY__Boolean_1_", "objectReferenceIn", false, ps -> res("Boolean", "one"));
 
-        register(h("meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> isOne(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> isZeroOne(ps.get(0)._multiplicity())));
+        register(h("meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_", "in", false, ps -> res("Boolean", "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_", "in", false, ps -> res("Boolean", "one"), ps -> isZeroOne(ps.get(0)._multiplicity())));
 
-        register(h("meta::pure::functions::boolean::xor_Boolean_1__Boolean_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2));
+        register(h("meta::pure::functions::boolean::xor_Boolean_1__Boolean_1__Boolean_1_", "xor", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2));
 
-        register(h("meta::pure::tds::take_TabularDataSet_1__Integer_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
-                h("meta::pure::functions::collection::take_T_MANY__Integer_1__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true));
+        register(h("meta::pure::tds::take_TabularDataSet_1__Integer_1__TabularDataSet_1_", "take", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
+                h("meta::pure::functions::collection::take_T_MANY__Integer_1__T_MANY_", "take", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true));
 
-        register(m(m(h("meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2))), this.pureModel),
+        register(m(m(h("meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_", "if", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2))), this.pureModel),
                         MostCommonMultiplicity.mostCommon(Lists.fixedSize.of(funcReturnMul(ps.get(1)), funcReturnMul(ps.get(2))), this.pureModel)),
                         ps -> Lists.immutable.of(MostCommonType.mostCommon(Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2))), this.pureModel)), ps -> ps.size() == 3)),
-                m(h("meta::pure::functions::lang::if_Pair_MANY__Function_1__T_m_", false, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 2))));
+                m(h("meta::pure::functions::lang::if_Pair_MANY__Function_1__T_m_", "if", false, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 2))));
 
-        register(m(m(h("meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::collection::and_Boolean_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> true))));
+        register(m(m(h("meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_", "and", true, ps -> res("Boolean", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::collection::and_Boolean_MANY__Boolean_1_", "and", false, ps -> res("Boolean", "one"), ps -> true))));
 
-        register(m(m(h("meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::collection::or_Boolean_$1_MANY$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1 && matchOneMany(ps.get(0)._multiplicity())),
-                        h("meta::pure::functions::collection::or_Boolean_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> true))));
+        register(m(m(h("meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_", "or", true, ps -> res("Boolean", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::collection::or_Boolean_$1_MANY$__Boolean_1_", "or", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1 && matchOneMany(ps.get(0)._multiplicity())),
+                        h("meta::pure::functions::collection::or_Boolean_MANY__Boolean_1_", "or", false, ps -> res("Boolean", "one"), ps -> true))));
 
-        register("meta::pure::tds::tdsRows_TabularDataSet_1__TDSRow_MANY_", false, ps -> res("meta::pure::tds::TDSRow", "zeroMany"));
-        register("meta::pure::functions::boolean::not_Boolean_1__Boolean_1_", true, ps -> res("Boolean", "one"));
+        register("meta::pure::tds::tdsRows_TabularDataSet_1__TDSRow_MANY_", "tdsRows", false, ps -> res("meta::pure::tds::TDSRow", "zeroMany"));
+        register("meta::pure::functions::boolean::not_Boolean_1__Boolean_1_", "not", true, ps -> res("Boolean", "one"));
 
-        register("meta::pure::functions::boolean::isTrue_Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::boolean::isFalse_Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::boolean::isTrue_Boolean_$0_1$__Boolean_1_", "isTrue", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::boolean::isFalse_Boolean_$0_1$__Boolean_1_", "isFalse", false, ps -> res("Boolean", "one"));
 
-        register("meta::pure::functions::relation::cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::relation::ntile_Relation_1__T_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::relation::percentRank_Relation_1___Window_1__T_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::relation::lag_Relation_1__T_1__Integer_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "one"));
-        register("meta::pure::functions::relation::lag_Relation_1__T_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "one"));
-        register("meta::pure::functions::relation::lead_Relation_1__T_1__Integer_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "one"));
-        register("meta::pure::functions::relation::lead_Relation_1__T_1__T_$0_1$_", false, ps -> res(ps.get(1)._genericType(), "one"));
-        register("meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroOne"));
+        register("meta::pure::functions::relation::cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_", "cumulativeDistribution", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::relation::ntile_Relation_1__T_1__Integer_1__Integer_1_", "ntile", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::relation::percentRank_Relation_1___Window_1__T_1__Float_1_", "percentRank", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::relation::lag_Relation_1__T_1__Integer_1__T_$0_1$_", "lag", false, ps -> res(ps.get(1)._genericType(), "one"));
+        register("meta::pure::functions::relation::lag_Relation_1__T_1__T_$0_1$_", "lag", false, ps -> res(ps.get(1)._genericType(), "one"));
+        register("meta::pure::functions::relation::lead_Relation_1__T_1__Integer_1__T_$0_1$_", "lead", false, ps -> res(ps.get(1)._genericType(), "one"));
+        register("meta::pure::functions::relation::lead_Relation_1__T_1__T_$0_1$_", "lead", false, ps -> res(ps.get(1)._genericType(), "one"));
+        register("meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_", "nth", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroOne"));
 
         register(m(
-                        h("meta::pure::functions::relation::size_Relation_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> true),
-                        h("meta::pure::functions::collection::size_Any_MANY__Integer_1_", true, ps -> res("Integer", "one"), ps -> true)
+                        h("meta::pure::functions::relation::size_Relation_1__Integer_1_", "size", true, ps -> res("Integer", "one"), ps -> true),
+                        h("meta::pure::functions::collection::size_Any_MANY__Integer_1_", "size", true, ps -> res("Integer", "one"), ps -> true)
                 )
         );
 
-        register(h("meta::pure::functions::collection::pair_U_1__V_1__Pair_1_", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::functions::collection::Pair"), Lists.fixedSize.ofAll(ps.stream().map(ValueSpecificationAccessor::_genericType).collect(Collectors.toList())), this.pureModel), "one"), ps -> Lists.mutable.with(ps.get(0)._genericType(), ps.get(1)._genericType()), ps -> true));
+        register(h("meta::pure::functions::collection::pair_U_1__V_1__Pair_1_", "pair", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::functions::collection::Pair"), Lists.fixedSize.ofAll(ps.stream().map(ValueSpecificationAccessor::_genericType).collect(Collectors.toList())), this.pureModel), "one"), ps -> Lists.mutable.with(ps.get(0)._genericType(), ps.get(1)._genericType()), ps -> true));
 
-        register(h("meta::pure::functions::multiplicity::toOne_T_MANY__T_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> Lists.mutable.with(ps.get(0)._genericType()), ps -> true));
+        register(h("meta::pure::functions::multiplicity::toOne_T_MANY__T_1_", "toOne", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> Lists.mutable.with(ps.get(0)._genericType()), ps -> true));
 
         register(m(
-                m(h("meta::pure::functions::string::indexOf_String_1__String_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                        h("meta::pure::functions::collection::indexOf_T_MANY__T_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::string::indexOf_String_1__String_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"), p -> true))));
+                m(h("meta::pure::functions::string::indexOf_String_1__String_1__Integer_1_", "indexOf", true, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
+                        h("meta::pure::functions::collection::indexOf_T_MANY__T_1__Integer_1_", "indexOf", true, ps -> res("Integer", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::string::indexOf_String_1__String_1__Integer_1__Integer_1_", "indexOf", true, ps -> res("Integer", "one"), p -> true))));
 
 
-        register(m(m(m(h("meta::pure::functions::collection::removeDuplicates_T_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 1)),
+        register(m(m(m(h("meta::pure::functions::collection::removeDuplicates_T_MANY__T_MANY_", "removeDuplicates", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 1)),
                         // meta::pure::functions::collection::removeDuplicates<T>(col:T[*], eql:Function<{T[1],T[1]->Boolean[1]}>[1]):T[*]
-                        grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::removeDuplicates_T_MANY__Function_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> p.size() == 2))),
+                        grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::removeDuplicates_T_MANY__Function_1__T_MANY_", "removeDuplicates", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> p.size() == 2))),
                 grp((parameters, vsb) ->
                 {
                     List<ValueSpecification> firstPassProcessed = parameters.stream().map(p -> p instanceof LambdaFunction ? null : p.accept(vsb)).collect(Collectors.toList());
                     updateSimpleLambda(parameters.get(1), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), vsb.getContext());
                     updateTwoParamsLambda(parameters.get(2), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1));
                     return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(vsb));
-                }, h("meta::pure::functions::collection::removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> p.size() == 3))));
+                }, h("meta::pure::functions::collection::removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_", "removeDuplicates", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> p.size() == 3))));
 
-        register(h("meta::pure::tds::concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
-                h("meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_", true, ps ->
+        register(h("meta::pure::tds::concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_", "concatenate", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
+                h("meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_", "concatenate", true, ps ->
                         {
                             ProcessorSupport processorSupport = this.pureModel.getExecutionSupport().getProcessorSupport();
                             GenericType firstRelationType = ps.get(0)._genericType()._typeArguments().getFirst();
@@ -1326,85 +1326,85 @@ public class Handlers
                             );
                         },
                         ps -> true),
-                h("meta::pure::functions::collection::concatenate_T_MANY__T_MANY__T_MANY_", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "zeroMany"), ps -> Lists.fixedSize.of(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel)), ps -> true));
+                h("meta::pure::functions::collection::concatenate_T_MANY__T_MANY__T_MANY_", "concatenate", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "zeroMany"), ps -> Lists.fixedSize.of(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel)), ps -> true));
 
-        register(m(h("meta::pure::functions::collection::greatest_X_$1_MANY$__X_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> matchOneMany(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::collection::greatest_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true)));
+        register(m(h("meta::pure::functions::collection::greatest_X_$1_MANY$__X_1_", "greatest", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> matchOneMany(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::collection::greatest_X_MANY__X_$0_1$_", "greatest", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true)));
 
-        register(m(h("meta::pure::functions::collection::least_X_$1_MANY$__X_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> matchOneMany(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::collection::least_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()),ps -> true)));
+        register(m(h("meta::pure::functions::collection::least_X_$1_MANY$__X_1_", "least", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> matchOneMany(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::collection::least_X_MANY__X_$0_1$_", "least", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()),ps -> true)));
 
         register(m(
-                        m(h("meta::pure::functions::collection::first_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true)),
-                        m(h("meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_", true, ps -> res(ps.get(2)._genericType(), "zeroOne")))
+                        m(h("meta::pure::functions::collection::first_T_MANY__T_$0_1$_", "first", true, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true)),
+                        m(h("meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_", "first", true, ps -> res(ps.get(2)._genericType(), "zeroOne")))
                 )
         );
 
         register(m(
-                        m(h("meta::pure::functions::collection::last_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true)),
-                        m(h("meta::pure::functions::relation::last_Relation_1___Window_1__T_1__T_$0_1$_", true, ps -> res(ps.get(2)._genericType(), "zeroOne")))
+                        m(h("meta::pure::functions::collection::last_T_MANY__T_$0_1$_", "last", true, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true)),
+                        m(h("meta::pure::functions::relation::last_Relation_1___Window_1__T_1__T_$0_1$_", "last", true, ps -> res(ps.get(2)._genericType(), "zeroOne")))
                 )
         );
 
-        register(h("meta::pure::functions::collection::init_T_MANY__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true));
+        register(h("meta::pure::functions::collection::init_T_MANY__T_MANY_", "init", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true));
 
-        register("meta::pure::functions::meta::enumName_Enumeration_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
-        register("meta::pure::functions::meta::enumValues_Enumeration_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
+        register("meta::pure::functions::meta::enumName_Enumeration_1__String_1_", "enumName", true, ps -> res("String", "one"));
+        register("meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_", "extractEnumValue", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
+        register("meta::pure::functions::meta::enumValues_Enumeration_1__T_MANY_", "enumValues", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
 
-        register(h("meta::pure::tds::drop_TabularDataSet_1__Integer_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
-                h("meta::pure::functions::relation::drop_Relation_1__Integer_1__Relation_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true),
-                h("meta::pure::functions::collection::drop_T_MANY__Integer_1__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true));
+        register(h("meta::pure::tds::drop_TabularDataSet_1__Integer_1__TabularDataSet_1_", "drop", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
+                h("meta::pure::functions::relation::drop_Relation_1__Integer_1__Relation_1_", "drop", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true),
+                h("meta::pure::functions::collection::drop_T_MANY__Integer_1__T_MANY_", "drop", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true));
 
-        register("meta::pure::functions::multiplicity::toOneMany_T_MANY__T_$1_MANY$_", true, ps -> res(ps.get(0)._genericType(), "oneMany"));
-        register("meta::pure::functions::lang::letFunction_String_1__T_m__T_m_", true, ps -> res(ps.get(1)._genericType(), ps.get(1)._multiplicity()));
-        register("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
-        register("meta::pure::functions::collection::count_Any_MANY__Integer_1_", false, ps -> res("Integer", "one"));
+        register("meta::pure::functions::multiplicity::toOneMany_T_MANY__T_$1_MANY$_", "toOneMany", true, ps -> res(ps.get(0)._genericType(), "oneMany"));
+        register("meta::pure::functions::lang::letFunction_String_1__T_m__T_m_", "letFunction", true, ps -> res(ps.get(1)._genericType(), ps.get(1)._multiplicity()));
+        register("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_", "new", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
+        register("meta::pure::functions::collection::count_Any_MANY__Integer_1_", "count", false, ps -> res("Integer", "one"));
 
-        register(m(m(h("meta::pure::functions::collection::getAll_Class_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 1)),
-                m(h("meta::pure::functions::collection::getAll_Class_1__Date_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::collection::getAll_Class_1__Date_1__Date_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3))));
-        register(h("meta::pure::functions::collection::getAllVersions_Class_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 1));
-        register("meta::pure::functions::collection::getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
-        register("meta::pure::functions::collection::getAllForEachDate_Class_1__Date_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
+        register(m(m(h("meta::pure::functions::collection::getAll_Class_1__T_MANY_", "getAll", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 1)),
+                m(h("meta::pure::functions::collection::getAll_Class_1__Date_1__T_MANY_", "getAll", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::collection::getAll_Class_1__Date_1__Date_1__T_MANY_", "getAll", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3))));
+        register(h("meta::pure::functions::collection::getAllVersions_Class_1__T_MANY_", "getAllVersions", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 1));
+        register("meta::pure::functions::collection::getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_", "getAllVersionsInRange", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
+        register("meta::pure::functions::collection::getAllForEachDate_Class_1__Date_MANY__T_MANY_", "getAllForEachDate", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
 
         register(m(
-                        grp(DistinctInference, h("meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_", true, ps -> DistinctReturnInference(ps, this.pureModel), ps -> ps.size() == 2)),
+                        grp(DistinctInference, h("meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_", "distinct", true, ps -> DistinctReturnInference(ps, this.pureModel), ps -> ps.size() == 2)),
                         m(
-                                h("meta::pure::functions::relation::distinct_Relation_1__Relation_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_relation_Relation"))),
-                                h("meta::pure::tds::distinct_TabularDataSet_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
-                                h("meta::pure::functions::collection::distinct_T_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)
+                                h("meta::pure::functions::relation::distinct_Relation_1__Relation_1_", "distinct", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_relation_Relation"))),
+                                h("meta::pure::tds::distinct_TabularDataSet_1__TabularDataSet_1_", "distinct", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
+                                h("meta::pure::functions::collection::distinct_T_MANY__T_MANY_", "distinct", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)
                         )
                 )
         );
 
         register(m(
-                        m(h("meta::pure::functions::collection::isDistinct_T_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1)),
-                        m(h("meta::pure::functions::collection::isDistinct_T_MANY__RootGraphFetchTree_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2))
+                        m(h("meta::pure::functions::collection::isDistinct_T_MANY__Boolean_1_", "isDistinct", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1)),
+                        m(h("meta::pure::functions::collection::isDistinct_T_MANY__RootGraphFetchTree_1__Boolean_1_", "isDistinct", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2))
                 )
         );
 
-        register("meta::pure::functions::collection::isEqual_T_1__T_1__RootGraphFetchTree_1__Boolean_1_", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::collection::isEqual_T_1__T_1__RootGraphFetchTree_1__Boolean_1_", "isEqual", false, ps -> res("Boolean", "one"));
 
-        register(m(m(h("meta::pure::functions::collection::uniqueValueOnly_T_MANY__T_$0_1$__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::collection::uniqueValueOnly_T_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
+        register(m(m(h("meta::pure::functions::collection::uniqueValueOnly_T_MANY__T_$0_1$__T_$0_1$_", "uniqueValueOnly", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::collection::uniqueValueOnly_T_MANY__T_$0_1$_", "uniqueValueOnly", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
 
-        register(h("meta::pure::tds::limit_TabularDataSet_1__Integer_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet") && typeOne(ps.get(1), "Integer")),
-                h("meta::pure::tds::limit_TabularDataSet_1__Integer_$0_1$__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet") && typeZeroOne(ps.get(1), "Integer")),
-                h("meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_relation_Relation"))),
-                h("meta::pure::functions::collection::limit_T_MANY__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true));
+        register(h("meta::pure::tds::limit_TabularDataSet_1__Integer_1__TabularDataSet_1_", "limit", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet") && typeOne(ps.get(1), "Integer")),
+                h("meta::pure::tds::limit_TabularDataSet_1__Integer_$0_1$__TabularDataSet_1_", "limit", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet") && typeZeroOne(ps.get(1), "Integer")),
+                h("meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_", "limit", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_relation_Relation"))),
+                h("meta::pure::functions::collection::limit_T_MANY__Integer_1__T_MANY_", "limit", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true));
 
-        register(h("meta::pure::tds::slice_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
-                h("meta::pure::functions::relation::slice_Relation_1__Integer_1__Integer_1__Relation_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true),
-                h("meta::pure::functions::collection::slice_T_MANY__Integer_1__Integer_1__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)
+        register(h("meta::pure::tds::slice_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_", "slice", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
+                h("meta::pure::functions::relation::slice_Relation_1__Integer_1__Integer_1__Relation_1_", "slice", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true),
+                h("meta::pure::functions::collection::slice_T_MANY__Integer_1__Integer_1__T_MANY_", "slice", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)
         );
 
         register(
-                h("meta::pure::functions::collection::paginated_T_MANY__Integer_1__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true),
-                h("meta::pure::tds::paginated_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet"))
+                h("meta::pure::functions::collection::paginated_T_MANY__Integer_1__Integer_1__T_MANY_", "paginated", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true),
+                h("meta::pure::tds::paginated_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_", "paginated", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet"))
         );
 
-        register("meta::pure::functions::lang::cast_Any_m__T_1__T_m_", true, ps ->
+        register("meta::pure::functions::lang::cast_Any_m__T_1__T_m_", "cast", true, ps ->
         {
             // Support casting to a relation
             try
@@ -1423,113 +1423,113 @@ public class Handlers
             }
         });
 
-        register("meta::pure::functions::collection::at_T_MANY__Integer_1__T_1_", true, ps -> res(ps.get(0)._genericType(), "one"));
+        register("meta::pure::functions::collection::at_T_MANY__Integer_1__T_1_", "at", true, ps -> res(ps.get(0)._genericType(), "one"));
 
         register(m(
-                        m(h("meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 2)),
-                        m(h("meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))
+                        m(h("meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_", "graphFetch", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 2)),
+                        m(h("meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_", "graphFetch", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))
                 )
         );
-        register("meta::pure::executionPlan::featureFlag::withFeatureFlags_T_MANY__Enum_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
+        register("meta::pure::executionPlan::featureFlag::withFeatureFlags_T_MANY__Enum_MANY__T_MANY_", "withFeatureFlags", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
         register(m(
-                        m(h("meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::dataQuality::Checked"), ps.get(0)._genericType(), this.pureModel), "zeroMany"), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> ps.size() == 2)),
-                        m(h("meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::dataQuality::Checked"), ps.get(0)._genericType(), pureModel), "zeroMany"), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> ps.size() == 3))
+                        m(h("meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_", "graphFetchChecked", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::dataQuality::Checked"), ps.get(0)._genericType(), this.pureModel), "zeroMany"), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> ps.size() == 2)),
+                        m(h("meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_", "graphFetchChecked", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::dataQuality::Checked"), ps.get(0)._genericType(), pureModel), "zeroMany"), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> ps.size() == 3))
                 )
         );
 
-        register("meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
-        register("meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::dataQuality::Checked"), ps.get(0)._genericType(), pureModel), "zeroMany"));
+        register("meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_", "graphFetchUnexpanded", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
+        register("meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_", "graphFetchCheckedUnexpanded", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::dataQuality::Checked"), ps.get(0)._genericType(), pureModel), "zeroMany"));
         register(m(
                         m(
-                                h("meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2 && "Checked".equals(ps.get(0)._genericType()._rawType()._name())),
-                                h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2)
+                                h("meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__String_1_", "serialize", false, ps -> res("String", "one"), ps -> ps.size() == 2 && "Checked".equals(ps.get(0)._genericType()._rawType()._name())),
+                                h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_", "serialize", false, ps -> res("String", "one"), ps -> ps.size() == 2)
                         ),
                         m(
-                                h("meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 3 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()) && "AlloySerializationConfig".equals(ps.get(2)._genericType()._rawType()._name())),
-                                h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 3)
+                                h("meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", "serialize", false, ps -> res("String", "one"), ps -> ps.size() == 3 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()) && "AlloySerializationConfig".equals(ps.get(2)._genericType()._rawType()._name())),
+                                h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", "serialize", false, ps -> res("String", "one"), ps -> ps.size() == 3)
                         )
                 )
         );
 
-        register(h("meta::pure::graphFetch::calculateSourceTree_RootGraphFetchTree_1__Mapping_1__Extension_MANY__RootGraphFetchTree_1_", false, ps -> res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> true));
-        register(m(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 3))),
-                m(h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 2))));
-        register("meta::pure::functions::meta::instanceOf_Any_1__Type_1__Boolean_1_", true, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::collection::union_T_MANY__T_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
-        register("meta::pure::functions::collection::reverse_T_m__T_m_", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()));
+        register(h("meta::pure::graphFetch::calculateSourceTree_RootGraphFetchTree_1__Mapping_1__Extension_MANY__RootGraphFetchTree_1_", "calculateSourceTree", false, ps -> res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> true));
+        register(m(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_", "match", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 3))),
+                m(h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_", "match", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 2))));
+        register("meta::pure::functions::meta::instanceOf_Any_1__Type_1__Boolean_1_", "instanceOf", true, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::collection::union_T_MANY__T_MANY__T_MANY_", "union", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
+        register("meta::pure::functions::collection::reverse_T_m__T_m_", "reverse", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()));
         register(
                 m(
                         m(
-                                h("meta::pure::functions::date::add_StrictDate_1__Duration_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(1), "Duration") && typeOne(ps.get(0), "StrictDate")),
-                                h("meta::pure::functions::collection::add_T_MANY__T_1__T_$1_MANY$_", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "oneMany"), ps -> ps.size() == 2)
+                                h("meta::pure::functions::date::add_StrictDate_1__Duration_1__StrictDate_1_", "add", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(1), "Duration") && typeOne(ps.get(0), "StrictDate")),
+                                h("meta::pure::functions::collection::add_T_MANY__T_1__T_$1_MANY$_", "add", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "oneMany"), ps -> ps.size() == 2)
                         ),
                         m(
-                                h("meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "oneMany"), ps -> ps.size() == 3)
+                                h("meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_", "add", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "oneMany"), ps -> ps.size() == 3)
                         )
                 )
         );
 
-        register(m(m(h("meta::pure::functions::collection::dropAt_T_MANY__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::collection::dropAt_T_MANY__Integer_1__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))));
+        register(m(m(h("meta::pure::functions::collection::dropAt_T_MANY__Integer_1__T_MANY_", "dropAt", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::collection::dropAt_T_MANY__Integer_1__Integer_1__T_MANY_", "dropAt", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))));
 
-        register("meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_", true, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.Pair), Lists.fixedSize.ofAll(ps.stream().map(ValueSpecificationAccessor::_genericType).collect(Collectors.toList())), pureModel), "oneMany"));
-        register(m(grp(LambdaInference, h("meta::pure::functions::collection::removeDuplicatesBy_T_MANY__Function_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> true))));
-        register("meta::pure::functions::collection::containsAll_Any_MANY__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_", "zip", true, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.Pair), Lists.fixedSize.ofAll(ps.stream().map(ValueSpecificationAccessor::_genericType).collect(Collectors.toList())), pureModel), "oneMany"));
+        register(m(grp(LambdaInference, h("meta::pure::functions::collection::removeDuplicatesBy_T_MANY__Function_1__T_MANY_", "removeDuplicatesBy", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> true))));
+        register("meta::pure::functions::collection::containsAll_Any_MANY__Any_MANY__Boolean_1_", "containsAll", false, ps -> res("Boolean", "one"));
 
-        register("meta::pure::functions::meta::id_Any_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::meta::typePath_Any_1__String_1_", false, ps -> res("String", "one"));
-        register("meta::pure::functions::meta::typeName_Any_1__String_1_", false, ps -> res("String", "one"));
+        register("meta::pure::functions::meta::id_Any_1__String_1_", "id", true, ps -> res("String", "one"));
+        register("meta::pure::functions::meta::typePath_Any_1__String_1_", "typePath", false, ps -> res("String", "one"));
+        register("meta::pure::functions::meta::typeName_Any_1__String_1_", "typeName", false, ps -> res("String", "one"));
 
-        register("meta::pure::functions::meta::type_Any_MANY__Type_1_", false, ps -> res("meta::pure::metamodel::type::Type", "one"));
-        register("meta::pure::functions::lang::compare_T_1__T_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::meta::type_Any_MANY__Type_1_", "type", false, ps -> res("meta::pure::metamodel::type::Type", "one"));
+        register("meta::pure::functions::lang::compare_T_1__T_1__Integer_1_", "compare", true, ps -> res("Integer", "one"));
         // meta::pure::functions::collection::fold<T,V|m>(value:T[*], func:Function<{T[1],V[m]->V[m]}>[1], accumulator:V[m]):V[m], note return type is V and not T
-        register(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), p -> true))));
+        register(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_", "fold", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), p -> true))));
 
-        register(m(m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_", true, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 3)),
-                m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::collection::range_Integer_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 1))));
-        register(h("meta::pure::functions::collection::tail_T_MANY__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true));
-        register(h("meta::pure::functions::collection::head_T_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true));
-        register("meta::pure::functions::collection::oneOf_Boolean_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::collection::defaultIfEmpty_T_MANY__T_$1_MANY$__T_$1_MANY$_", false, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "oneMany"));
+        register(m(m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_", "range", true, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 3)),
+                m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_MANY_", "range", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::collection::range_Integer_1__Integer_MANY_", "range", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 1))));
+        register(h("meta::pure::functions::collection::tail_T_MANY__T_MANY_", "tail", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true));
+        register(h("meta::pure::functions::collection::head_T_MANY__T_$0_1$_", "head", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true));
+        register("meta::pure::functions::collection::oneOf_Boolean_MANY__Boolean_1_", "oneOf", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::collection::defaultIfEmpty_T_MANY__T_$1_MANY$__T_$1_MANY$_","defaultIfEmpty", false, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "oneMany"));
 
-        register("meta::pure::functions::string::isUUID_String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::string::isUUID_String_$0_1$__Boolean_1_", "isUUID", false, ps -> res("Boolean", "one"));
 
-        register(m(h("meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__Runtime_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)));
+        register(m(h("meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__Runtime_1__T_MANY_", "save", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)));
 
-        register("meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"));
+        register("meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_", "firstNotNull", false, ps -> res(ps.get(0)._genericType(), "zeroOne"));
 
-        register("meta::pure::functions::hash::hash_String_1__HashType_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::hash::hashCode_Any_MANY__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::hash::hash_String_1__HashType_1__String_1_", "hash", true, ps -> res("String", "one"));
+        register("meta::pure::functions::hash::hashCode_Any_MANY__Integer_1_", "hashCode", true, ps -> res("Integer", "one"));
 
         // Variant
-        register("meta::pure::functions::variant::convert::fromJson_String_1__Variant_1_", true, ps -> res(M3Paths.Variant, "one"));
-        register("meta::pure::functions::variant::convert::toJson_Variant_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_$0_1$__T_$0_1$_", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
-        register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
-        register("meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_", true, ps -> res(M3Paths.Variant, "one"));
+        register("meta::pure::functions::variant::convert::fromJson_String_1__Variant_1_", "fromJson", true, ps -> res(M3Paths.Variant, "one"));
+        register("meta::pure::functions::variant::convert::toJson_Variant_1__String_1_", "toJson", true, ps -> res("String", "one"));
+        register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_$0_1$__T_$0_1$_", "to", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
+        register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_", "toMany", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
+        register("meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_", "toVariant", true, ps -> res(M3Paths.Variant, "one"));
         register(
             m(
-                    h("meta::pure::functions::collection::get_Map_1__U_1__V_$0_1$_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getLast(), "zeroOne"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Map")),
-                    h("meta::pure::functions::variant::navigation::get_Variant_$0_1$__String_1__Variant_$0_1$_", false, ps -> res(M3Paths.Variant, "zeroOne"), ps -> ps.size() == 2 && typeZeroOne(ps.get(0), "Variant") && typeOne(ps.get(1), "String")),
-                    h("meta::pure::functions::variant::navigation::get_Variant_$0_1$__Integer_1__Variant_$0_1$_", false, ps -> res(M3Paths.Variant, "zeroOne"), ps -> ps.size() == 2 && typeZeroOne(ps.get(0), "Variant") && typeOne(ps.get(1), "Integer"))
+                    h("meta::pure::functions::collection::get_Map_1__U_1__V_$0_1$_", "get", true, ps -> res(ps.get(0)._genericType()._typeArguments().getLast(), "zeroOne"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Map")),
+                    h("meta::pure::functions::variant::navigation::get_Variant_$0_1$__String_1__Variant_$0_1$_", "get", false, ps -> res(M3Paths.Variant, "zeroOne"), ps -> ps.size() == 2 && typeZeroOne(ps.get(0), "Variant") && typeOne(ps.get(1), "String")),
+                    h("meta::pure::functions::variant::navigation::get_Variant_$0_1$__Integer_1__Variant_$0_1$_", "get", false, ps -> res(M3Paths.Variant, "zeroOne"), ps -> ps.size() == 2 && typeZeroOne(ps.get(0), "Variant") && typeOne(ps.get(1), "Integer"))
             )
         );
 
-        register("meta::pure::functions::collection::newMap_Pair_MANY__Map_1_", true, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.Map), ps.get(0)._genericType()._typeArguments(), pureModel), "one"));
-        register(h("meta::pure::functions::collection::keys_Map_1__U_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> typeOne(ps.get(0), "Map")));
-        register(h("meta::pure::functions::collection::values_Map_1__V_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getLast(), "zeroMany"), ps -> typeOne(ps.get(0), "Map")));
-        register(h("meta::pure::functions::collection::put_Map_1__U_1__V_1__Map_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), "Map")
+        register("meta::pure::functions::collection::newMap_Pair_MANY__Map_1_", "newMap", true, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.Map), ps.get(0)._genericType()._typeArguments(), pureModel), "one"));
+        register(h("meta::pure::functions::collection::keys_Map_1__U_MANY_", "keys", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> typeOne(ps.get(0), "Map")));
+        register(h("meta::pure::functions::collection::values_Map_1__V_MANY_", "values", true, ps -> res(ps.get(0)._genericType()._typeArguments().getLast(), "zeroMany"), ps -> typeOne(ps.get(0), "Map")));
+        register(h("meta::pure::functions::collection::put_Map_1__U_1__V_1__Map_1_", "put", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), "Map")
                                                                                                                                                                                                                     && typeOne(ps.get(1), ps.get(0)._genericType()._typeArguments().getFirst()._rawType()._name())
                                                                                                                                                                                                                     && typeOne(ps.get(2), ps.get(0)._genericType()._typeArguments().getLast()._rawType()._name()))
         );
         register(m(
-                    h("meta::pure::functions::collection::putAll_Map_1__Pair_MANY__Map_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), "Map")
+                    h("meta::pure::functions::collection::putAll_Map_1__Pair_MANY__Map_1_", "putAll", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), "Map")
                                                                                                                                                                                                                     && typeMany(ps.get(1), "Pair")
                                                                                                                                                                                                                     && ps.get(0)._genericType()._typeArguments().getFirst()._rawType()._name().equals(ps.get(1)._genericType()._typeArguments().getFirst()._rawType()._name())
                                                                                                                                                                                                                     && ps.get(0)._genericType()._typeArguments().getLast()._rawType()._name().equals(ps.get(1)._genericType()._typeArguments().getLast()._rawType()._name())
                     ),
-                    h("meta::pure::functions::collection::putAll_Map_1__Map_1__Map_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), "Map")
+                    h("meta::pure::functions::collection::putAll_Map_1__Map_1__Map_1_", "putAll", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), "Map")
                                                                                                                                                                                                                 && typeOne(ps.get(1), "Map")
                                                                                                                                                                                                                 && ps.get(0)._genericType()._typeArguments().getFirst()._rawType()._name().equals(ps.get(1)._genericType()._typeArguments().getFirst()._rawType()._name())
                                                                                                                                                                                                                 && ps.get(0)._genericType()._typeArguments().getLast()._rawType()._name().equals(ps.get(1)._genericType()._typeArguments().getLast()._rawType()._name())
@@ -1537,21 +1537,24 @@ public class Handlers
                 )
         );
 
-        register("meta::pure::functions::collection::list_U_MANY__List_1_", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.List), ps.get(0)._genericType(), pureModel), "one"));
+        register("meta::pure::functions::collection::list_U_MANY__List_1_", "list", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.List), ps.get(0)._genericType(), pureModel), "one"));
 
         // Extensions
         CompileContext context = this.pureModel.getContext();
         ListIterate.flatCollect(context.getCompilerExtensions().getExtraFunctionExpressionBuilderRegistrationInfoCollectors(), collector -> collector.valueOf(this)).forEach(this::register);
         ListIterate.flatCollect(context.getCompilerExtensions().getExtraFunctionHandlerRegistrationInfoCollectors(), collector -> collector.valueOf(this)).forEach(this::register);
-        validateHandlers();
     }
 
-    private void validateHandlers()
+    //-------------------------------
+    // Only called during unit tests
+    //-------------------------------
+    public void validateHandlers()
     {
         for (Map.Entry<String, FunctionExpressionBuilder> entry : map.entrySet())
         {
             HashSet<Integer> uniqueParametersSizeSet = new HashSet<>();
             FunctionExpressionBuilder builder = entry.getValue();
+            builder.validate();
             if (builder instanceof CompositeFunctionExpressionBuilder)
             {
                 CompositeFunctionExpressionBuilder compositeBuilder = (CompositeFunctionExpressionBuilder) builder;
@@ -1575,235 +1578,235 @@ public class Handlers
     {
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assert_Boolean_1__Function_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && !typeOne(ps.get(1), "String")),
-                            h("meta::pure::functions::asserts::assert_Boolean_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && typeOne(ps.get(1), "String"))
+                            h("meta::pure::functions::asserts::assert_Boolean_1__Function_1__Boolean_1_", "assert", true, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && !typeOne(ps.get(1), "String")),
+                            h("meta::pure::functions::asserts::assert_Boolean_1__String_1__Boolean_1_", "assert", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && typeOne(ps.get(1), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assert_Boolean_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1)
+                            h("meta::pure::functions::asserts::assert_Boolean_1__Boolean_1_", "assert", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assert_Boolean_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
+                            h("meta::pure::functions::asserts::assert_Boolean_1__String_1__Any_MANY__Boolean_1_", "assert", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertContains_Any_MANY__Any_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::assertContains_Any_MANY__Any_1__Boolean_1_", "assertContains", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertContains_Any_MANY__Any_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
-                            h("meta::pure::functions::asserts::assertContains_Any_MANY__Any_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
+                            h("meta::pure::functions::asserts::assertContains_Any_MANY__Any_1__String_1__Boolean_1_", "assertContains", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
+                            h("meta::pure::functions::asserts::assertContains_Any_MANY__Any_1__Function_1__Boolean_1_", "assertContains", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertContains_Any_MANY__Any_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
+                            h("meta::pure::functions::asserts::assertContains_Any_MANY__Any_1__String_1__Any_MANY__Boolean_1_", "assertContains", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertEmpty_Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1)
+                            h("meta::pure::functions::asserts::assertEmpty_Any_MANY__Boolean_1_", "assertEmpty", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertEmpty_Any_MANY__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && typeOne(ps.get(1), "String")),
-                            h("meta::pure::functions::asserts::assertEmpty_Any_MANY__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && !typeOne(ps.get(1), "String"))
+                            h("meta::pure::functions::asserts::assertEmpty_Any_MANY__String_1__Boolean_1_", "assertEmpty", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && typeOne(ps.get(1), "String")),
+                            h("meta::pure::functions::asserts::assertEmpty_Any_MANY__Function_1__Boolean_1_", "assertEmpty", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && !typeOne(ps.get(1), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertEmpty_Any_MANY__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
+                            h("meta::pure::functions::asserts::assertEmpty_Any_MANY__String_1__Any_MANY__Boolean_1_", "assertEmpty", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
                     )
                 ));
 
         register(m(
-                m(h("meta::pure::functions::asserts::assertEq_Any_1__Any_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::asserts::assertEq_Any_1__Any_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String"))),
-                m(h("meta::pure::functions::asserts::assertEq_Any_1__Any_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4))
+                m(h("meta::pure::functions::asserts::assertEq_Any_1__Any_1__Boolean_1_", "assertEq", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::asserts::assertEq_Any_1__Any_1__String_1__Boolean_1_", "assertEq", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String"))),
+                m(h("meta::pure::functions::asserts::assertEq_Any_1__Any_1__String_1__Any_MANY__Boolean_1_", "assertEq", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4))
         ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertEqWithinTolerance_Number_1__Number_1__Number_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
+                            h("meta::pure::functions::asserts::assertEqWithinTolerance_Number_1__Number_1__Number_1__Boolean_1_", "assertEqWithinTolerance", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertEqWithinTolerance_Number_1__Number_1__Number_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4 && typeOne(ps.get(3), "String")),
-                            h("meta::pure::functions::asserts::assertEqWithinTolerance_Number_1__Number_1__Number_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4 && !typeOne(ps.get(3), "String"))
+                            h("meta::pure::functions::asserts::assertEqWithinTolerance_Number_1__Number_1__Number_1__String_1__Boolean_1_", "assertEqWithinTolerance", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4 && typeOne(ps.get(3), "String")),
+                            h("meta::pure::functions::asserts::assertEqWithinTolerance_Number_1__Number_1__Number_1__Function_1__Boolean_1_", "assertEqWithinTolerance", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4 && !typeOne(ps.get(3), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertEqWithinTolerance_Number_1__Number_1__Number_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 5)
+                            h("meta::pure::functions::asserts::assertEqWithinTolerance_Number_1__Number_1__Number_1__String_1__Any_MANY__Boolean_1_", "assertEqWithinTolerance", false, ps -> res("Boolean", "one"), ps -> ps.size() == 5)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertEquals_Any_MANY__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::assertEquals_Any_MANY__Any_MANY__Boolean_1_", "assertEquals", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertEquals_Any_MANY__Any_MANY__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
-                            h("meta::pure::functions::asserts::assertEquals_Any_MANY__Any_MANY__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
+                            h("meta::pure::functions::asserts::assertEquals_Any_MANY__Any_MANY__String_1__Boolean_1_", "assertEquals", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
+                            h("meta::pure::functions::asserts::assertEquals_Any_MANY__Any_MANY__Function_1__Boolean_1_", "assertEquals", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertEquals_Any_MANY__Any_MANY__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
+                            h("meta::pure::functions::asserts::assertEquals_Any_MANY__Any_MANY__String_1__Any_MANY__Boolean_1_", "assertEquals", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertFalse_Boolean_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1)
+                            h("meta::pure::functions::asserts::assertFalse_Boolean_1__Boolean_1_", "assertFalse", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertFalse_Boolean_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && typeOne(ps.get(1), "String")),
-                            h("meta::pure::functions::asserts::assertFalse_Boolean_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && !typeOne(ps.get(1), "String"))
+                            h("meta::pure::functions::asserts::assertFalse_Boolean_1__String_1__Boolean_1_", "assertFalse", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && typeOne(ps.get(1), "String")),
+                            h("meta::pure::functions::asserts::assertFalse_Boolean_1__Function_1__Boolean_1_", "assertFalse", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && !typeOne(ps.get(1), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertFalse_Boolean_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
+                            h("meta::pure::functions::asserts::assertFalse_Boolean_1__String_1__Any_MANY__Boolean_1_", "assertFalse", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertInstanceOf_Any_1__Type_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::assertInstanceOf_Any_1__Type_1__Boolean_1_", "assertInstanceOf", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertInstanceOf_Any_1__Type_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
-                            h("meta::pure::functions::asserts::assertInstanceOf_Any_1__Type_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
+                            h("meta::pure::functions::asserts::assertInstanceOf_Any_1__Type_1__String_1__Boolean_1_", "assertInstanceOf", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
+                            h("meta::pure::functions::asserts::assertInstanceOf_Any_1__Type_1__Function_1__Boolean_1_", "assertInstanceOf", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertInstanceOf_Any_1__Type_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
+                            h("meta::pure::functions::asserts::assertInstanceOf_Any_1__Type_1__String_1__Any_MANY__Boolean_1_", "assertInstanceOf", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertIs_Any_1__Any_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::assertIs_Any_1__Any_1__Boolean_1_", "assertIs", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertIs_Any_1__Any_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
-                            h("meta::pure::functions::asserts::assertIs_Any_1__Any_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
+                            h("meta::pure::functions::asserts::assertIs_Any_1__Any_1__String_1__Boolean_1_", "assertIs", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
+                            h("meta::pure::functions::asserts::assertIs_Any_1__Any_1__Function_1__Boolean_1_", "assertIs", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertIs_Any_1__Any_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
+                            h("meta::pure::functions::asserts::assertIs_Any_1__Any_1__String_1__Any_MANY__Boolean_1_", "assertIs", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertIsNot_Any_1__Any_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::assertIsNot_Any_1__Any_1__Boolean_1_", "assertIsNot", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertIsNot_Any_1__Any_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
-                            h("meta::pure::functions::asserts::assertIsNot_Any_1__Any_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
+                            h("meta::pure::functions::asserts::assertIsNot_Any_1__Any_1__String_1__Boolean_1_", "assertIsNot", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
+                            h("meta::pure::functions::asserts::assertIsNot_Any_1__Any_1__Function_1__Boolean_1_", "assertIsNot", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertIsNot_Any_1__Any_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
+                            h("meta::pure::functions::asserts::assertIsNot_Any_1__Any_1__String_1__Any_MANY__Boolean_1_", "assertIsNot", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertNotContains_Any_MANY__Any_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::assertNotContains_Any_MANY__Any_1__Boolean_1_", "assertNotContains", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertNotContains_Any_MANY__Any_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
-                            h("meta::pure::functions::asserts::assertNotContains_Any_MANY__Any_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
+                            h("meta::pure::functions::asserts::assertNotContains_Any_MANY__Any_1__String_1__Boolean_1_", "assertNotContains", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
+                            h("meta::pure::functions::asserts::assertNotContains_Any_MANY__Any_1__Function_1__Boolean_1_", "assertNotContains", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertNotContains_Any_MANY__Any_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
+                            h("meta::pure::functions::asserts::assertNotContains_Any_MANY__Any_1__String_1__Any_MANY__Boolean_1_", "assertNotContains", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertNotEmpty_Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1)
+                            h("meta::pure::functions::asserts::assertNotEmpty_Any_MANY__Boolean_1_", "assertNotEmpty", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertNotEmpty_Any_MANY__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && typeOne(ps.get(1), "String")),
-                            h("meta::pure::functions::asserts::assertNotEmpty_Any_MANY__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && !typeOne(ps.get(1), "String"))
+                            h("meta::pure::functions::asserts::assertNotEmpty_Any_MANY__String_1__Boolean_1_", "assertNotEmpty", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && typeOne(ps.get(1), "String")),
+                            h("meta::pure::functions::asserts::assertNotEmpty_Any_MANY__Function_1__Boolean_1_", "assertNotEmpty", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2 && !typeOne(ps.get(1), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertNotEmpty_Any_MANY__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
+                            h("meta::pure::functions::asserts::assertNotEmpty_Any_MANY__String_1__Any_MANY__Boolean_1_", "assertNotEmpty", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertNotEq_Any_1__Any_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::assertNotEq_Any_1__Any_1__Boolean_1_", "assertNotEq", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertNotEq_Any_1__Any_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
-                            h("meta::pure::functions::asserts::assertNotEq_Any_1__Any_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
+                            h("meta::pure::functions::asserts::assertNotEq_Any_1__Any_1__String_1__Boolean_1_", "assertNotEq", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
+                            h("meta::pure::functions::asserts::assertNotEq_Any_1__Any_1__Function_1__Boolean_1_", "assertNotEq", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertNotEq_Any_1__Any_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
+                            h("meta::pure::functions::asserts::assertNotEq_Any_1__Any_1__String_1__Any_MANY__Boolean_1_", "assertNotEq", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertNotEquals_Any_MANY__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::assertNotEquals_Any_MANY__Any_MANY__Boolean_1_", "assertNotEquals", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertNotEquals_Any_MANY__Any_MANY__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
-                            h("meta::pure::functions::asserts::assertNotEquals_Any_MANY__Any_MANY__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
+                            h("meta::pure::functions::asserts::assertNotEquals_Any_MANY__Any_MANY__String_1__Boolean_1_", "assertNotEquals", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
+                            h("meta::pure::functions::asserts::assertNotEquals_Any_MANY__Any_MANY__Function_1__Boolean_1_", "assertNotEquals", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertNotEquals_Any_MANY__Any_MANY__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
+                            h("meta::pure::functions::asserts::assertNotEquals_Any_MANY__Any_MANY__String_1__Any_MANY__Boolean_1_", "assertNotEquals", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertNotSize_Any_MANY__Integer_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::assertNotSize_Any_MANY__Integer_1__Boolean_1_", "assertNotSize", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertNotSize_Any_MANY__Integer_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
-                            h("meta::pure::functions::asserts::assertNotSize_Any_MANY__Integer_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
+                            h("meta::pure::functions::asserts::assertNotSize_Any_MANY__Integer_1__String_1__Boolean_1_", "assertNotSize", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
+                            h("meta::pure::functions::asserts::assertNotSize_Any_MANY__Integer_1__Function_1__Boolean_1_", "assertNotSize", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertNotSize_Any_MANY__Integer_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
+                            h("meta::pure::functions::asserts::assertNotSize_Any_MANY__Integer_1__String_1__Any_MANY__Boolean_1_", "assertNotSize", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertSameElements_Any_MANY__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::assertSameElements_Any_MANY__Any_MANY__Boolean_1_", "assertSameElements", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertSameElements_Any_MANY__Any_MANY__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
-                            h("meta::pure::functions::asserts::assertSameElements_Any_MANY__Any_MANY__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
+                            h("meta::pure::functions::asserts::assertSameElements_Any_MANY__Any_MANY__String_1__Boolean_1_", "assertSameElements", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
+                            h("meta::pure::functions::asserts::assertSameElements_Any_MANY__Any_MANY__Function_1__Boolean_1_", "assertSameElements", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertSameElements_Any_MANY__Any_MANY__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
+                            h("meta::pure::functions::asserts::assertSameElements_Any_MANY__Any_MANY__String_1__Any_MANY__Boolean_1_", "assertSameElements", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::assertSize_Any_MANY__Integer_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::assertSize_Any_MANY__Integer_1__Boolean_1_", "assertSize", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertSize_Any_MANY__Integer_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
-                            h("meta::pure::functions::asserts::assertSize_Any_MANY__Integer_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
+                            h("meta::pure::functions::asserts::assertSize_Any_MANY__Integer_1__String_1__Boolean_1_", "assertSize", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "String")),
+                            h("meta::pure::functions::asserts::assertSize_Any_MANY__Integer_1__Function_1__Boolean_1_", "assertSize", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3 && !typeOne(ps.get(2), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::assertSize_Any_MANY__Integer_1__String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
+                            h("meta::pure::functions::asserts::assertSize_Any_MANY__Integer_1__String_1__Any_MANY__Boolean_1_", "assertSize", false, ps -> res("Boolean", "one"), ps -> ps.size() == 4)
                     )
                 ));
 
         register(m(
                     m(
-                            h("meta::pure::functions::asserts::fail__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 0)
+                            h("meta::pure::functions::asserts::fail__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 0)
                     ),
                     m(
-                            h("meta::pure::functions::asserts::fail_String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1 && typeOne(ps.get(0), "String")),
-                            h("meta::pure::functions::asserts::fail_Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1 && !typeOne(ps.get(0), "String"))
+                            h("meta::pure::functions::asserts::fail_String_1__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1 && typeOne(ps.get(0), "String")),
+                            h("meta::pure::functions::asserts::fail_Function_1__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 1 && !typeOne(ps.get(0), "String"))
                     ),
                     m(
-                            h("meta::pure::functions::asserts::fail_String_1__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                            h("meta::pure::functions::asserts::fail_String_1__Any_MANY__Boolean_1_", "fail", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                     )
                 ));
     }
 
     private void registerTDS()
     {
-        register(grp(RenameColInference, h("meta::pure::functions::relation::rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_", true, ps ->
+        register(grp(RenameColInference, h("meta::pure::functions::relation::rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_", "rename", true, ps ->
         {
             ProcessorSupport processorSupport = this.pureModel.getExecutionSupport().getProcessorSupport();
             RelationType<?> rel = (RelationType<?>) ps.get(0)._genericType()._typeArguments().getFirst()._rawType();
@@ -1833,62 +1836,62 @@ public class Handlers
         }, ps -> true)));
 
         register(grp(SelectColInference,
-                        h("meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true),
-                        h("meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true)
+                        h("meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_", "select", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true),
+                        h("meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_", "select", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true)
                 )
         );
 
         register(grp(LateralInference,
-                h("meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(0)._genericType()._typeArguments().getOnly()._rawType(), (RelationType<?>) funcReturnType(ps.get(1))._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getOnly(), funcReturnType(ps.get(1))._typeArguments().getOnly()), ps -> true)
+                h("meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_", "lateral", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(0)._genericType()._typeArguments().getOnly()._rawType(), (RelationType<?>) funcReturnType(ps.get(1))._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getOnly(), funcReturnType(ps.get(1))._typeArguments().getOnly()), ps -> true)
         ));
 
         register(grp(FlattenColInference,
-                    h("meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> true)
+                    h("meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_", "flatten", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> true)
                 )
         );
 
-        register(grp(EvalColInference, h("meta::pure::functions::relation::eval_ColSpec_1__T_1__Z_MANY_", false,  ps -> res(getGenericReturnTypeForEvalCol(ps), "zeroMany"), ps -> Lists.fixedSize.of(getGenericReturnTypeForEvalCol(ps), ps.get(1)._genericType()), ps -> typeOne(ps.get(0), taxoMap.get("cov_relation_ColSpec")))));
+        register(grp(EvalColInference, h("meta::pure::functions::relation::eval_ColSpec_1__T_1__Z_MANY_", "eval", false,  ps -> res(getGenericReturnTypeForEvalCol(ps), "zeroMany"), ps -> Lists.fixedSize.of(getGenericReturnTypeForEvalCol(ps), ps.get(1)._genericType()), ps -> typeOne(ps.get(0), taxoMap.get("cov_relation_ColSpec")))));
 
-        register(h("meta::pure::functions::relation::select_Relation_1__Relation_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true));
+        register(h("meta::pure::functions::relation::select_Relation_1__Relation_1_", "select", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true));
 
-        register(h("meta::pure::tds::renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true));
+        register(h("meta::pure::tds::renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_", "renameColumns", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true));
 
-        register(m(grp(LambdaColCollectionInference, h("meta::pure::tds::projectWithColumnSubset_T_MANY__ColumnSpecification_MANY__String_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "ColumnSpecification".equals(ps.get(1)._genericType()._rawType()._name()))),
-                grp(LambdaCollectionInference, h("meta::pure::tds::projectWithColumnSubset_T_MANY__Function_MANY__String_MANY__String_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true))));
+        register(m(grp(LambdaColCollectionInference, h("meta::pure::tds::projectWithColumnSubset_T_MANY__ColumnSpecification_MANY__String_MANY__TabularDataSet_1_", "projectWithColumnSubset", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "ColumnSpecification".equals(ps.get(1)._genericType()._rawType()._name()))),
+                grp(LambdaCollectionInference, h("meta::pure::tds::projectWithColumnSubset_T_MANY__Function_MANY__String_MANY__String_MANY__TabularDataSet_1_", "projectWithColumnSubset", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true))));
 
-        register("meta::pure::tds::restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"));
-        register("meta::pure::tds::restrictDistinct_TabularDataSet_1__String_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"));
+        register("meta::pure::tds::restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_", "restrict", false, ps -> res("meta::pure::tds::TabularDataSet", "one"));
+        register("meta::pure::tds::restrictDistinct_TabularDataSet_1__String_MANY__TabularDataSet_1_", "restrictDistinct", false, ps -> res("meta::pure::tds::TabularDataSet", "one"));
 
-        register("meta::pure::tds::asc_String_1__SortInformation_1_", false, ps -> res("meta::pure::tds::SortInformation", "one"));
-        register("meta::pure::tds::desc_String_1__SortInformation_1_", false, ps -> res("meta::pure::tds::SortInformation", "one"));
+        register("meta::pure::tds::asc_String_1__SortInformation_1_", "asc", false, ps -> res("meta::pure::tds::SortInformation", "one"));
+        register("meta::pure::tds::desc_String_1__SortInformation_1_", "desc", false, ps -> res("meta::pure::tds::SortInformation", "one"));
 
-        register("meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Integer_1_", "write", true, ps -> res("Integer", "one"));
 
-        register(h("meta::pure::functions::relation::ascending_ColSpec_1__SortInfo_1_", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
-        register(h("meta::pure::functions::relation::descending_ColSpec_1__SortInfo_1_", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
+        register(h("meta::pure::functions::relation::ascending_ColSpec_1__SortInfo_1_", "ascending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
+        register(h("meta::pure::functions::relation::descending_ColSpec_1__SortInfo_1_", "descending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
 
-        register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)));
+        register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "join", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)));
 
         register(m(
                         grp(AsOfJoinInference,
-                                h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)
+                                h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", "asOfJoin", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)
                         ),
                         grp(AsOfJoinInference,
-                                h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)
+                                h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_", "asOfJoin", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)
                         )
                 )
         );
 
         register(
                 m(
-                        m(h("meta::pure::functions::collection::sort_T_m__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 1)),
-                        m(grp(SortColumnInference, h("meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true))),
-                        m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::sort_T_m__Function_$0_1$__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2))),
-                        m(grp(LambdaInference, h("meta::pure::functions::collection::sort_T_m__Function_$0_1$__Function_$0_1$__T_m_", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3))),
-                        m(h("meta::pure::tds::sort_TabularDataSet_1__String_1__SortDirection_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3)),
+                        m(h("meta::pure::functions::collection::sort_T_m__T_m_", "sort", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 1)),
+                        m(grp(SortColumnInference, h("meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_", "sort", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true))),
+                        m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::sort_T_m__Function_$0_1$__T_m_", "sort", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2))),
+                        m(grp(LambdaInference, h("meta::pure::functions::collection::sort_T_m__Function_$0_1$__Function_$0_1$__T_m_", "sort", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3))),
+                        m(h("meta::pure::tds::sort_TabularDataSet_1__String_1__SortDirection_1__TabularDataSet_1_", "sort", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3)),
                         m(
-                                h("meta::pure::tds::sort_TabularDataSet_1__String_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2 && "String".equals(ps.get(1)._genericType()._rawType()._name())),
-                                h("meta::pure::tds::sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)
+                                h("meta::pure::tds::sort_TabularDataSet_1__String_MANY__TabularDataSet_1_", "sort", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2 && "String".equals(ps.get(1)._genericType()._rawType()._name())),
+                                h("meta::pure::tds::sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_", "sort", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)
                         )
                 )
         );
@@ -1897,22 +1900,22 @@ public class Handlers
         register(
                 m(
                         m(
-                                h("meta::pure::mapping::from_FunctionDefinition_1__Runtime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_function_FunctionDefinition")) && typeOne(ps.get(1), taxoMap.get("cov_runtime_Runtime"))),
-                                h("meta::pure::mapping::from_FunctionDefinition_1__PackageableRuntime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_function_FunctionDefinition")) && typeOne(ps.get(1), taxoMap.get("cov_runtime_PackageableRuntime"))),
-                                h("meta::pure::mapping::from_T_m__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), taxoMap.get("cov_runtime_Runtime"))),
-                                h("meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), taxoMap.get("cov_runtime_PackageableRuntime")))
+                                h("meta::pure::mapping::from_FunctionDefinition_1__Runtime_1__T_m_", "from", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_function_FunctionDefinition")) && typeOne(ps.get(1), taxoMap.get("cov_runtime_Runtime"))),
+                                h("meta::pure::mapping::from_FunctionDefinition_1__PackageableRuntime_1__T_m_", "from", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 2 && typeOne(ps.get(0), taxoMap.get("cov_function_FunctionDefinition")) && typeOne(ps.get(1), taxoMap.get("cov_runtime_PackageableRuntime"))),
+                                h("meta::pure::mapping::from_T_m__Runtime_1__T_m_", "from", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), taxoMap.get("cov_runtime_Runtime"))),
+                                h("meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_", "from", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), taxoMap.get("cov_runtime_PackageableRuntime")))
                         ),
                         m(
-                                h("meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 3 && typeOne(ps.get(0), taxoMap.get("cov_function_FunctionDefinition")) && typeOne(ps.get(2), taxoMap.get("cov_runtime_Runtime"))),
-                                h("meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 3 && typeOne(ps.get(0), taxoMap.get("cov_function_FunctionDefinition")) && typeOne(ps.get(2), taxoMap.get("cov_runtime_PackageableRuntime"))),
-                                h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name()) && typeOne(ps.get(2), taxoMap.get("cov_runtime_Runtime"))),
-                                h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name()) && typeOne(ps.get(2), taxoMap.get("cov_runtime_PackageableRuntime"))),
-                                h("meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), taxoMap.get("cov_runtime_Runtime"))),
-                                h("meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), taxoMap.get("cov_runtime_PackageableRuntime")))
+                                h("meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_", "from", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 3 && typeOne(ps.get(0), taxoMap.get("cov_function_FunctionDefinition")) && typeOne(ps.get(2), taxoMap.get("cov_runtime_Runtime"))),
+                                h("meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_", "from", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 3 && typeOne(ps.get(0), taxoMap.get("cov_function_FunctionDefinition")) && typeOne(ps.get(2), taxoMap.get("cov_runtime_PackageableRuntime"))),
+                                h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_", "from", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name()) && typeOne(ps.get(2), taxoMap.get("cov_runtime_Runtime"))),
+                                h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_", "from", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name()) && typeOne(ps.get(2), taxoMap.get("cov_runtime_PackageableRuntime"))),
+                                h("meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_", "from", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), taxoMap.get("cov_runtime_Runtime"))),
+                                h("meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_", "from", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), taxoMap.get("cov_runtime_PackageableRuntime")))
                         ),
                         m(
-                                h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 4 && typeOne(ps.get(2), taxoMap.get("cov_runtime_Runtime"))),
-                                h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__ExecutionContext_1__TabularDataSet_1_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 4 && typeOne(ps.get(2), taxoMap.get("cov_runtime_PackageableRuntime")))
+                                h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_", "from", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 4 && typeOne(ps.get(2), taxoMap.get("cov_runtime_Runtime"))),
+                                h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__ExecutionContext_1__TabularDataSet_1_", "from", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 4 && typeOne(ps.get(2), taxoMap.get("cov_runtime_PackageableRuntime")))
                         )
                 )
         );
@@ -1920,494 +1923,494 @@ public class Handlers
         register(
                 m(
                         m(
-                                h("meta::pure::mapping::with_T_m__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), taxoMap.get("cov_runtime_Runtime"))),
-                                h("meta::pure::mapping::with_T_m__PackageableRuntime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), taxoMap.get("cov_runtime_PackageableRuntime")))
+                                h("meta::pure::mapping::with_T_m__Runtime_1__T_m_", "with", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), taxoMap.get("cov_runtime_Runtime"))),
+                                h("meta::pure::mapping::with_T_m__PackageableRuntime_1__T_m_", "with", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), taxoMap.get("cov_runtime_PackageableRuntime")))
                         ),
                         m(
-                                h("meta::pure::mapping::with_T_m__Mapping_1__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), taxoMap.get("cov_runtime_Runtime"))),
-                                h("meta::pure::mapping::with_T_m__Mapping_1__PackageableRuntime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), taxoMap.get("cov_runtime_PackageableRuntime")))
+                                h("meta::pure::mapping::with_T_m__Mapping_1__Runtime_1__T_m_", "with", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), taxoMap.get("cov_runtime_Runtime"))),
+                                h("meta::pure::mapping::with_T_m__Mapping_1__PackageableRuntime_1__T_m_", "with", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), taxoMap.get("cov_runtime_PackageableRuntime")))
                         )
                 )
         );
         
-        register(h("meta::pure::mapping::withMapping_T_m__Mapping_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), taxoMap.get("cov_mapping_Mapping"))));
-        register(h("meta::pure::mapping::withChainedMappings_T_m__Mapping_MANY__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeMany(ps.get(1), taxoMap.get("cov_mapping_Mapping"))));
+        register(h("meta::pure::mapping::withMapping_T_m__Mapping_1__T_m_", "withMapping", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), taxoMap.get("cov_mapping_Mapping"))));
+        register(h("meta::pure::mapping::withChainedMappings_T_m__Mapping_MANY__T_m_", "withChainedMappings", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeMany(ps.get(1), taxoMap.get("cov_mapping_Mapping"))));
 
-        register(m(grp(LambdaCollectionInference, h("meta::pure::tds::tdsContains_T_1__Function_MANY__TabularDataSet_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),
-                grp(TDSContainsInference, h("meta::pure::tds::tdsContains_T_1__Function_MANY__String_MANY__TabularDataSet_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> true))));
+        register(m(grp(LambdaCollectionInference, h("meta::pure::tds::tdsContains_T_1__Function_MANY__TabularDataSet_1__Boolean_1_", "tdsContains", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),
+                grp(TDSContainsInference, h("meta::pure::tds::tdsContains_T_1__Function_MANY__String_MANY__TabularDataSet_1__Function_1__Boolean_1_", "tdsContains", false, ps -> res("Boolean", "one"), ps -> true))));
 
-        register(m(m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5 && "OlapOperation".equals(ps.get(3)._genericType()._rawType()._name()))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5 && "FunctionDefinition".equals(ps.get(3)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && typeMany(ps.get(1), "String") && "OlapOperation".equals(ps.get(2)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__FunctionDefinition_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && typeMany(ps.get(1), "String") && "FunctionDefinition".equals(ps.get(2)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "OlapOperation".equals(ps.get(2)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "SortInformation".equals(ps.get(1)._genericType()._rawType()._name()) && "FunctionDefinition".equals(ps.get(2)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "OlapOperation".equals(ps.get(1)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__FunctionDefinition_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "FunctionDefinition".equals(ps.get(1)._genericType()._rawType()._name()))))
+        register(m(m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5 && "OlapOperation".equals(ps.get(3)._genericType()._rawType()._name()))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5 && "FunctionDefinition".equals(ps.get(3)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && typeMany(ps.get(1), "String") && "OlapOperation".equals(ps.get(2)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && typeMany(ps.get(1), "String") && "FunctionDefinition".equals(ps.get(2)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "OlapOperation".equals(ps.get(2)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "SortInformation".equals(ps.get(1)._genericType()._rawType()._name()) && "FunctionDefinition".equals(ps.get(2)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "OlapOperation".equals(ps.get(1)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "FunctionDefinition".equals(ps.get(1)._genericType()._rawType()._name()))))
         )));
 
         register(
-                m(m(grp(OLAPFuncNumInference, h("meta::pure::tds::func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_", false, ps -> res("meta::pure::tds::TdsOlapAggregation", "one"), ps -> ps.size() == 2))),
-                        m(grp(OLAPFuncTDSInference, h("meta::pure::tds::func_FunctionDefinition_1__TdsOlapRank_1_", false, ps -> res("meta::pure::tds::TdsOlapRank", "one"), ps -> ps.size() == 1)))));
+                m(m(grp(OLAPFuncNumInference, h("meta::pure::tds::func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_", "func", false, ps -> res("meta::pure::tds::TdsOlapAggregation", "one"), ps -> ps.size() == 2))),
+                        m(grp(OLAPFuncTDSInference, h("meta::pure::tds::func_FunctionDefinition_1__TdsOlapRank_1_", "func", false, ps -> res("meta::pure::tds::TdsOlapRank", "one"), ps -> ps.size() == 1)))));
     }
 
     private void registerDates()
     {
-        register(h("meta::pure::functions::date::dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::dateDiff_Date_$0_1$__Date_$0_1$__DurationUnit_1__Integer_$0_1$_", false, ps -> res("Integer", "zeroOne"), ps -> true));
+        register(h("meta::pure::functions::date::dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_", "dateDiff", true, ps -> res("Integer", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::dateDiff_Date_$0_1$__Date_$0_1$__DurationUnit_1__Integer_$0_1$_", "dateDiff", false, ps -> res("Integer", "zeroOne"), ps -> true));
 
-        register(h("meta::pure::functions::date::datePart_Date_1__Date_1_", true, ps -> res("Date", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::datePart_Date_$0_1$__Date_$0_1$_", false, ps -> res("Date", "zeroOne"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::datePart_Date_1__Date_1_", "datePart", true, ps -> res("Date", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::datePart_Date_$0_1$__Date_$0_1$_", "datePart", false, ps -> res("Date", "zeroOne"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date"))));
 
-        register(h("meta::pure::functions::date::dayOfWeek_Date_1__DayOfWeek_1_", false, ps -> res("meta::pure::functions::date::DayOfWeek", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::dayOfWeek_Integer_1__DayOfWeek_1_", false, ps -> res("meta::pure::functions::date::DayOfWeek", "one"), ps -> typeOne(ps.get(0), "Integer")));
+        register(h("meta::pure::functions::date::dayOfWeek_Date_1__DayOfWeek_1_", "dayOfWeek", false, ps -> res("meta::pure::functions::date::DayOfWeek", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::dayOfWeek_Integer_1__DayOfWeek_1_", "dayOfWeek", false, ps -> res("meta::pure::functions::date::DayOfWeek", "one"), ps -> typeOne(ps.get(0), "Integer")));
 
-        register(h("meta::pure::functions::date::daysOfMonth_Date_1__Integer_MANY_", false, ps -> res("Integer", "zeroMany"), ps -> true));
+        register(h("meta::pure::functions::date::daysOfMonth_Date_1__Integer_MANY_", "daysOfMonth", false, ps -> res("Integer", "zeroMany"), ps -> true));
 
-        register("meta::pure::functions::date::firstDayOfMonth_Date_1__Date_1_", false, ps -> res("Date", "one"));
-        register("meta::pure::functions::date::firstDayOfQuarter_Date_1__StrictDate_1_", false, ps -> res("StrictDate", "one"));
-        register("meta::pure::functions::date::firstDayOfThisMonth__Date_1_", false, ps -> res("Date", "one"));
-        register("meta::pure::functions::date::firstDayOfThisQuarter__StrictDate_1_", false, ps -> res("StrictDate", "one"));
-        register("meta::pure::functions::date::firstDayOfThisWeek__Date_1_", false, ps -> res("Date", "one"));
-        register("meta::pure::functions::date::firstDayOfThisYear__Date_1_", false, ps -> res("Date", "one"));
-        register("meta::pure::functions::date::firstDayOfWeek_Date_1__Date_1_", false, ps -> res("Date", "one"));
-        register("meta::pure::functions::date::firstDayOfYear_Date_1__Date_1_", false, ps -> res("Date", "one"));
-        register("meta::pure::functions::date::firstHourOfDay_Date_1__DateTime_1_", false, ps -> res("DateTime", "one"));
-        register("meta::pure::functions::date::firstMinuteOfHour_Date_1__DateTime_1_", false, ps -> res("DateTime", "one"));
-        register("meta::pure::functions::date::firstSecondOfMinute_Date_1__DateTime_1_", false, ps -> res("DateTime", "one"));
-        register("meta::pure::functions::date::firstMillisecondOfSecond_Date_1__DateTime_1_", false, ps -> res("DateTime", "one"));
+        register("meta::pure::functions::date::firstDayOfMonth_Date_1__Date_1_", "firstDayOfMonth", false, ps -> res("Date", "one"));
+        register("meta::pure::functions::date::firstDayOfQuarter_Date_1__StrictDate_1_", "firstDayOfQuarter", false, ps -> res("StrictDate", "one"));
+        register("meta::pure::functions::date::firstDayOfThisMonth__Date_1_", "firstDayOfThisMonth", false, ps -> res("Date", "one"));
+        register("meta::pure::functions::date::firstDayOfThisQuarter__StrictDate_1_", "firstDayOfThisQuarter", false, ps -> res("StrictDate", "one"));
+        register("meta::pure::functions::date::firstDayOfThisWeek__Date_1_", "firstDayOfThisWeek", false, ps -> res("Date", "one"));
+        register("meta::pure::functions::date::firstDayOfThisYear__Date_1_", "firstDayOfThisYear", false, ps -> res("Date", "one"));
+        register("meta::pure::functions::date::firstDayOfWeek_Date_1__Date_1_", "firstDayOfWeek", false, ps -> res("Date", "one"));
+        register("meta::pure::functions::date::firstDayOfYear_Date_1__Date_1_", "firstDayOfYear", false, ps -> res("Date", "one"));
+        register("meta::pure::functions::date::firstHourOfDay_Date_1__DateTime_1_", "firstHourOfDay", false, ps -> res("DateTime", "one"));
+        register("meta::pure::functions::date::firstMinuteOfHour_Date_1__DateTime_1_", "firstMinuteOfHour", false, ps -> res("DateTime", "one"));
+        register("meta::pure::functions::date::firstSecondOfMinute_Date_1__DateTime_1_", "firstSecondOfMinute", false, ps -> res("DateTime", "one"));
+        register("meta::pure::functions::date::firstMillisecondOfSecond_Date_1__DateTime_1_", "firstMillisecondOfSecond", false, ps -> res("DateTime", "one"));
 
-        register("meta::pure::functions::date::hasYear_Date_1__Boolean_1_", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::date::hasYear_Date_1__Boolean_1_", "hasYear", false, ps -> res("Boolean", "one"));
 
-        register(h("meta::pure::functions::date::isAfterDay_Date_1__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isAfterDay_Date_$0_1$__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isAfterDay_Date_1__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isAfterDay_Date_$0_1$__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::isAfterDay_Date_1__Date_1__Boolean_1_", "isAfterDay", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isAfterDay_Date_$0_1$__Date_1__Boolean_1_", "isAfterDay", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isAfterDay_Date_1__Date_$0_1$__Boolean_1_", "isAfterDay", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isAfterDay_Date_$0_1$__Date_$0_1$__Boolean_1_", "isAfterDay", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))));
 
-        register(h("meta::pure::functions::date::isBeforeDay_Date_1__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isBeforeDay_Date_$0_1$__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isBeforeDay_Date_1__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isBeforeDay_Date_$0_1$__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::isBeforeDay_Date_1__Date_1__Boolean_1_", "isBeforeDay", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isBeforeDay_Date_$0_1$__Date_1__Boolean_1_", "isBeforeDay", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isBeforeDay_Date_1__Date_$0_1$__Boolean_1_", "isBeforeDay", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isBeforeDay_Date_$0_1$__Date_$0_1$__Boolean_1_", "isBeforeDay", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))));
 
-        register(h("meta::pure::functions::date::isOnDay_Date_1__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isOnDay_Date_$0_1$__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isOnDay_Date_1__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isOnDay_Date_$0_1$__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::isOnDay_Date_1__Date_1__Boolean_1_", "isOnDay", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isOnDay_Date_$0_1$__Date_1__Boolean_1_", "isOnDay", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isOnDay_Date_1__Date_$0_1$__Boolean_1_", "isOnDay", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isOnDay_Date_$0_1$__Date_$0_1$__Boolean_1_", "isOnDay", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))));
 
-        register(h("meta::pure::functions::date::isOnOrAfterDay_Date_1__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isOnOrAfterDay_Date_$0_1$__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isOnOrAfterDay_Date_1__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isOnOrAfterDay_Date_$0_1$__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::isOnOrAfterDay_Date_1__Date_1__Boolean_1_", "isOnOrAfterDay", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isOnOrAfterDay_Date_$0_1$__Date_1__Boolean_1_", "isOnOrAfterDay", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isOnOrAfterDay_Date_1__Date_$0_1$__Boolean_1_", "isOnOrAfterDay", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isOnOrAfterDay_Date_$0_1$__Date_$0_1$__Boolean_1_", "isOnOrAfterDay", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))));
 
-        register(h("meta::pure::functions::date::isOnOrBeforeDay_Date_1__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isOnOrBeforeDay_Date_$0_1$__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isOnOrBeforeDay_Date_1__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::isOnOrBeforeDay_Date_$0_1$__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::isOnOrBeforeDay_Date_1__Date_1__Boolean_1_", "isOnOrBeforeDay", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isOnOrBeforeDay_Date_$0_1$__Date_1__Boolean_1_", "isOnOrBeforeDay", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isOnOrBeforeDay_Date_1__Date_$0_1$__Boolean_1_", "isOnOrBeforeDay", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::isOnOrBeforeDay_Date_$0_1$__Date_$0_1$__Boolean_1_", "isOnOrBeforeDay", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))));
 
-        register(h("meta::pure::functions::date::monthNumber_Date_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::monthNumber_Date_$0_1$__Integer_$0_1$_", false, ps -> res("Integer", "zeroOne"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::monthNumber_Date_1__Integer_1_", "monthNumber", true, ps -> res("Integer", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::monthNumber_Date_$0_1$__Integer_$0_1$_", "monthNumber", false, ps -> res("Integer", "zeroOne"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date"))));
 
-        register(h("meta::pure::functions::date::month_Date_1__Month_1_", false, ps -> res("meta::pure::functions::date::Month", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::month_Integer_1__Month_1_", false, ps -> res("meta::pure::functions::date::Month", "one"), ps -> typeOne(ps.get(0), "Integer")));
+        register(h("meta::pure::functions::date::month_Date_1__Month_1_", "month", false, ps -> res("meta::pure::functions::date::Month", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::month_Integer_1__Month_1_", "month", false, ps -> res("meta::pure::functions::date::Month", "one"), ps -> typeOne(ps.get(0), "Integer")));
 
-        register(m(m(h("meta::pure::functions::date::mostRecentDayOfWeek_Date_1__DayOfWeek_1__Date_1_", false, ps -> res("Date", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::date::mostRecentDayOfWeek_DayOfWeek_1__Date_1_", false, ps -> res("Date", "one"), ps -> true))));
+        register(m(m(h("meta::pure::functions::date::mostRecentDayOfWeek_Date_1__DayOfWeek_1__Date_1_", "mostRecentDayOfWeek", false, ps -> res("Date", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::date::mostRecentDayOfWeek_DayOfWeek_1__Date_1_", "mostRecentDayOfWeek", false, ps -> res("Date", "one"), ps -> true))));
 
-        register(m(m(h("meta::pure::functions::date::previousDayOfWeek_Date_1__DayOfWeek_1__Date_1_", false, ps -> res("Date", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::date::previousDayOfWeek_DayOfWeek_1__Date_1_", false, ps -> res("Date", "one"), ps -> true))));
+        register(m(m(h("meta::pure::functions::date::previousDayOfWeek_Date_1__DayOfWeek_1__Date_1_", "previousDayOfWeek", false, ps -> res("Date", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::date::previousDayOfWeek_DayOfWeek_1__Date_1_", "previousDayOfWeek", false, ps -> res("Date", "one"), ps -> true))));
 
-        register("meta::pure::functions::date::quarterNumber_Date_1__Integer_1_", false, ps -> res("Integer", "one"));
+        register("meta::pure::functions::date::quarterNumber_Date_1__Integer_1_", "quarterNumber", false, ps -> res("Integer", "one"));
 
-        register(h("meta::pure::functions::date::quarter_Date_1__Quarter_1_", false, ps -> res("meta::pure::functions::date::Quarter", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::quarter_Integer_1__Quarter_1_", false, ps -> res("meta::pure::functions::date::Quarter", "one"), ps -> typeOne(ps.get(0), "Integer")));
+        register(h("meta::pure::functions::date::quarter_Date_1__Quarter_1_", "quarter", false, ps -> res("meta::pure::functions::date::Quarter", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::quarter_Integer_1__Quarter_1_", "quarter", false, ps -> res("meta::pure::functions::date::Quarter", "one"), ps -> typeOne(ps.get(0), "Integer")));
 
-        register(h("meta::pure::functions::date::weekOfYear_Date_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> isOne(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::date::weekOfYear_Date_$0_1$__Integer_$0_1$_", false, ps -> res("Integer", "zeroOne"), ps -> true));
+        register(h("meta::pure::functions::date::weekOfYear_Date_1__Integer_1_", "weekOfYear", true, ps -> res("Integer", "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::date::weekOfYear_Date_$0_1$__Integer_$0_1$_", "weekOfYear", false, ps -> res("Integer", "zeroOne"), ps -> true));
 
-        register(h("meta::pure::functions::date::year_Date_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::date::year_Date_$0_1$__Integer_$0_1$_", false, ps -> res("Integer", "zeroOne"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::year_Date_1__Integer_1_", "year", true, ps -> res("Integer", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::date::year_Date_$0_1$__Integer_$0_1$_", "year", false, ps -> res("Integer", "zeroOne"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date"))));
 
-        register("meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_", true, ps -> res("Date", "one"));
-        register("meta::pure::functions::date::convertTimeZone_DateTime_1__String_1__String_1__String_1_", false, ps -> res("String", "one"));
+        register("meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_", "adjust", true, ps -> res("Date", "one"));
+        register("meta::pure::functions::date::convertTimeZone_DateTime_1__String_1__String_1__String_1_", "convertTimeZone", false, ps -> res("String", "one"));
 
-        register("meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_", true, ps -> res("DateTime", "one"));
-        register("meta::pure::functions::date::timeBucket_DateTime_$0_1$__Integer_1__DurationUnit_1__DateTime_$0_1$_", false, ps -> res("DateTime", "zeroOne"));
-        register("meta::pure::functions::date::timeBucket_StrictDate_1__Integer_1__DurationUnit_1__StrictDate_1_", true, ps -> res("StrictDate", "one"));
-        register("meta::pure::functions::date::timeBucket_StrictDate_$0_1$__Integer_1__DurationUnit_1__StrictDate_$0_1$_", false, ps -> res("StrictDate", "zeroOne"));
+        register("meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_", "timeBucket", true, ps -> res("DateTime", "one"));
+        register("meta::pure::functions::date::timeBucket_DateTime_$0_1$__Integer_1__DurationUnit_1__DateTime_$0_1$_", "timeBucket", false, ps -> res("DateTime", "zeroOne"));
+        register("meta::pure::functions::date::timeBucket_StrictDate_1__Integer_1__DurationUnit_1__StrictDate_1_", "timeBucket", true, ps -> res("StrictDate", "one"));
+        register("meta::pure::functions::date::timeBucket_StrictDate_$0_1$__Integer_1__DurationUnit_1__StrictDate_$0_1$_", "timeBucket", false, ps -> res("StrictDate", "zeroOne"));
 
-        register(m(m(h("meta::pure::functions::date::date_Integer_1__Date_1_", true, ps -> res("Date", "one"), ps -> ps.size() == 1)),
-                m(h("meta::pure::functions::date::date_Integer_1__Integer_1__Date_1_", true, ps -> res("Date", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::date::date_Integer_1__Integer_1__Integer_1__StrictDate_1_", true, ps -> res("StrictDate", "one"), ps -> ps.size() == 3)),
-                m(h("meta::pure::functions::date::date_Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_", true, ps -> res("DateTime", "one"), ps -> ps.size() == 4)),
-                m(h("meta::pure::functions::date::date_Integer_1__Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_", true, ps -> res("DateTime", "one"), ps -> ps.size() == 5)),
-                m(h("meta::pure::functions::date::date_Integer_1__Integer_1__Integer_1__Integer_1__Integer_1__Number_1__DateTime_1_", true, ps -> res("DateTime", "one"), ps -> ps.size() == 6))));
+        register(m(m(h("meta::pure::functions::date::date_Integer_1__Date_1_", "date", true, ps -> res("Date", "one"), ps -> ps.size() == 1)),
+                m(h("meta::pure::functions::date::date_Integer_1__Integer_1__Date_1_", "date", true, ps -> res("Date", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::date::date_Integer_1__Integer_1__Integer_1__StrictDate_1_", "date", true, ps -> res("StrictDate", "one"), ps -> ps.size() == 3)),
+                m(h("meta::pure::functions::date::date_Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_", "date", true, ps -> res("DateTime", "one"), ps -> ps.size() == 4)),
+                m(h("meta::pure::functions::date::date_Integer_1__Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_", "date", true, ps -> res("DateTime", "one"), ps -> ps.size() == 5)),
+                m(h("meta::pure::functions::date::date_Integer_1__Integer_1__Integer_1__Integer_1__Integer_1__Number_1__DateTime_1_", "date", true, ps -> res("DateTime", "one"), ps -> ps.size() == 6))));
 
-        register("meta::pure::functions::date::dayOfMonth_Date_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::date::dayOfMonth_Date_1__Integer_1_", "dayOfMonth", true, ps -> res("Integer", "one"));
 
-        register(m(m(h("meta::pure::functions::date::dayOfWeekNumber_Date_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 1)),
-                m(h("meta::pure::functions::date::dayOfWeekNumber_Date_1__DayOfWeek_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2))));
+        register(m(m(h("meta::pure::functions::date::dayOfWeekNumber_Date_1__Integer_1_", "dayOfWeekNumber", true, ps -> res("Integer", "one"), ps -> ps.size() == 1)),
+                m(h("meta::pure::functions::date::dayOfWeekNumber_Date_1__DayOfWeek_1__Integer_1_", "dayOfWeekNumber", false, ps -> res("Integer", "one"), ps -> ps.size() == 2))));
 
-        register("meta::pure::functions::date::dayOfYear_Date_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::date::dayOfYear_Date_1__Integer_1_", "dayOfYear", true, ps -> res("Integer", "one"));
 
-        register(h("meta::pure::functions::date::hasDay_Date_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
-        register(h("meta::pure::functions::date::hasHour_Date_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
-        register(h("meta::pure::functions::date::hasMinute_Date_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
-        register(h("meta::pure::functions::date::hasMonth_Date_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
-        register(h("meta::pure::functions::date::hasSecond_Date_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
-        register(h("meta::pure::functions::date::hasSubsecondWithAtLeastPrecision_Date_1__Integer_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), "Integer")));
-        register(h("meta::pure::functions::date::hasSubsecond_Date_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::hasDay_Date_1__Boolean_1_", "hasDay", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::hasHour_Date_1__Boolean_1_", "hasHour", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::hasMinute_Date_1__Boolean_1_", "hasMinute", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::hasMonth_Date_1__Boolean_1_", "hasMonth", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::hasSecond_Date_1__Boolean_1_", "hasSecond", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
+        register(h("meta::pure::functions::date::hasSubsecondWithAtLeastPrecision_Date_1__Integer_1__Boolean_1_", "hasSubsecondWithAtLeastPrecision", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), "Integer")));
+        register(h("meta::pure::functions::date::hasSubsecond_Date_1__Boolean_1_", "hasSubsecond", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date"))));
 
-        register("meta::pure::functions::date::hour_Date_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::date::minute_Date_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::date::second_Date_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::date::hour_Date_1__Integer_1_", "hour", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::date::minute_Date_1__Integer_1_", "minute", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::date::second_Date_1__Integer_1_", "second", true, ps -> res("Integer", "one"));
 
-        register("meta::pure::functions::date::now__DateTime_1_", true, ps -> res("DateTime", "one"));
-        register("meta::pure::functions::date::today__StrictDate_1_", true, ps -> res("StrictDate", "one"));
+        register("meta::pure::functions::date::now__DateTime_1_", "now", true, ps -> res("DateTime", "one"));
+        register("meta::pure::functions::date::today__StrictDate_1_", "today", true, ps -> res("StrictDate", "one"));
 
-        register(m(m(h("meta::pure::functions::date::toEpochValue_Date_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 1)),
-                m(h("meta::pure::functions::date::toEpochValue_Date_1__DurationUnit_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2))));
+        register(m(m(h("meta::pure::functions::date::toEpochValue_Date_1__Integer_1_", "toEpochValue", false, ps -> res("Integer", "one"), ps -> ps.size() == 1)),
+                m(h("meta::pure::functions::date::toEpochValue_Date_1__DurationUnit_1__Integer_1_", "toEpochValue", false, ps -> res("Integer", "one"), ps -> ps.size() == 2))));
     }
 
     private void registerStrings()
     {
-        register("meta::pure::functions::string::ascii_String_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::string::char_Integer_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::string::decodeBase64_String_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::string::encodeBase64_String_1__String_1_", true, ps -> res("String", "one"));
-        register(h("meta::pure::functions::string::endsWith_String_1__String_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String")),
-                h("meta::pure::functions::string::endsWith_String_$0_1$__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String")));
-        register("meta::pure::functions::string::equalIgnoreCase_String_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::string::humanize_String_1__String_1_", false, ps -> res("String", "one"));
-        register("meta::pure::functions::string::isLowerCase_String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::string::isUpperCase_String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
-        register(m(m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_", true, ps -> res("String", "one"), ps -> ps.size() == 4)),
-                m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1_", false, ps -> res("String", "one"), ps -> true))));
-        register("meta::pure::functions::string::lastIndexOf_String_1__String_1__Integer_1_", false, ps -> res("Integer", "one"));
-        register(m(m(h("meta::pure::functions::string::makeCamelCase_String_1__Boolean_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::string::makeCamelCase_String_1__String_1_", false, ps -> res("String", "one"), ps -> true))));
-        register(m(m(h("meta::pure::functions::string::isDigit_String_1__Integer_1__Integer_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),
-                m(h("meta::pure::functions::string::isDigit_String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> true))));
-        register(m(m(h("meta::pure::functions::string::isLetter_String_1__Integer_1__Integer_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),
-                m(h("meta::pure::functions::string::isLetter_String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> true))));
-        register(m(m(h("meta::pure::functions::string::makeString_Pair_MANY__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "Pair")),
-                        h("meta::pure::functions::string::makeString_Any_MANY__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 1)),
-                m(h("meta::pure::functions::string::makeString_Any_MANY__String_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::string::makeString_Any_MANY__String_1__String_1__String_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 4))));
-        register("meta::pure::functions::string::splitOnCamelCase_String_1__String_MANY_", false, ps -> res("String", "zeroMany"));
-        register(h("meta::pure::functions::string::startsWith_String_1__String_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> isOne(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::string::startsWith_String_$0_1$__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> true));
-        register("meta::pure::functions::string::substringAfter_String_1__String_1__String_1_", false, ps -> res("String", "one"));
-        register("meta::pure::functions::string::substringBefore_String_1__String_1__String_1_", false, ps -> res("String", "one"));
-        register("meta::pure::functions::string::chunk_String_1__Integer_1__String_MANY_", true, ps -> res("String", "zeroMany"));
-        register("meta::pure::functions::string::format_String_1__Any_MANY__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::string::length_String_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::string::parseBoolean_String_1__Boolean_1_", true, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::string::parseDate_String_1__Date_1_", true, ps -> res("Date", "one"));
-        register("meta::pure::functions::string::parseFloat_String_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::string::parseInteger_String_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register(m(m(h("meta::pure::functions::string::parseDecimal_String_1__Integer_1__Integer_1__Decimal_1_", true, ps -> res("Decimal", "one"), ps  -> ps.size() == 3)),
-                m(h("meta::pure::functions::string::parseDecimal_String_1__Decimal_1_", true, ps -> res("Decimal", "one")))));
-        register("meta::pure::functions::string::repeatString_String_$0_1$__Integer_1__String_$0_1$_", false, ps -> res("String", "zeroOne"));
-        register("meta::pure::functions::string::replace_String_1__String_1__String_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::string::reverseString_String_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::string::split_String_1__String_1__String_MANY_", true, ps -> res("String", "zeroMany"));
-        register("meta::pure::functions::string::splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_", false, ps -> res("String", "zeroOne"));
-        register(m(m(h("meta::pure::functions::string::substring_String_1__Integer_1__Integer_1__String_1_", true, ps -> res("String", "one"), ps -> ps.size() == 3)),
-                m(h("meta::pure::functions::string::substring_String_1__Integer_1__String_1_", true, ps -> res("String", "one"), ps -> true))));
-        register("meta::pure::functions::string::toLower_String_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::string::toLowerFirstCharacter_String_1__String_1_", false, ps -> res("String", "one"));
-        register("meta::pure::functions::string::toString_Any_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::string::toUpper_String_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::string::toUpperFirstCharacter_String_1__String_1_", false, ps -> res("String", "one"));
-        register("meta::pure::functions::string::trim_String_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::string::ltrim_String_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::string::rtrim_String_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::string::left_String_1__Integer_1__String_1_", false, ps -> res("String", "one"));
-        register("meta::pure::functions::string::right_String_1__Integer_1__String_1_", false, ps -> res("String", "one"));
-        register(m(m(h("meta::pure::functions::string::lpad_String_1__Integer_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::string::lpad_String_1__Integer_1__String_1__String_1_", false, ps -> res("String", "one"), ps -> true))));
+        register("meta::pure::functions::string::ascii_String_1__Integer_1_", "ascii", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::string::char_Integer_1__String_1_", "char", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::decodeBase64_String_1__String_1_", "decodeBase64", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::encodeBase64_String_1__String_1_", "encodeBase64", true, ps -> res("String", "one"));
+        register(h("meta::pure::functions::string::endsWith_String_1__String_1__Boolean_1_", "endsWith", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String")),
+                h("meta::pure::functions::string::endsWith_String_$0_1$__String_1__Boolean_1_", "endsWith", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String")));
+        register("meta::pure::functions::string::equalIgnoreCase_String_1__String_1__Boolean_1_", "equalIgnoreCase", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::string::humanize_String_1__String_1_", "humanize", false, ps -> res("String", "one"));
+        register("meta::pure::functions::string::isLowerCase_String_1__Boolean_1_", "isLowerCase", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::string::isUpperCase_String_1__Boolean_1_", "isUpperCase", false, ps -> res("Boolean", "one"));
+        register(m(m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_", "joinStrings", true, ps -> res("String", "one"), ps -> ps.size() == 4)),
+                m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> true))));
+        register("meta::pure::functions::string::lastIndexOf_String_1__String_1__Integer_1_", "lastIndexOf", false, ps -> res("Integer", "one"));
+        register(m(m(h("meta::pure::functions::string::makeCamelCase_String_1__Boolean_1__String_1_", "makeCamelCase", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::string::makeCamelCase_String_1__String_1_", "makeCamelCase", false, ps -> res("String", "one"), ps -> true))));
+        register(m(m(h("meta::pure::functions::string::isDigit_String_1__Integer_1__Integer_1__Boolean_1_", "isDigit", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),
+                m(h("meta::pure::functions::string::isDigit_String_1__Boolean_1_", "isDigit", false, ps -> res("Boolean", "one"), ps -> true))));
+        register(m(m(h("meta::pure::functions::string::isLetter_String_1__Integer_1__Integer_1__Boolean_1_", "isLetter", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),
+                m(h("meta::pure::functions::string::isLetter_String_1__Boolean_1_", "isLetter", false, ps -> res("Boolean", "one"), ps -> true))));
+        register(m(m(h("meta::pure::functions::string::makeString_Pair_MANY__String_1_", "makeString", false, ps -> res("String", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "Pair")),
+                        h("meta::pure::functions::string::makeString_Any_MANY__String_1_", "makeString", false, ps -> res("String", "one"), ps -> ps.size() == 1)),
+                m(h("meta::pure::functions::string::makeString_Any_MANY__String_1__String_1_", "makeString", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::string::makeString_Any_MANY__String_1__String_1__String_1__String_1_", "makeString", false, ps -> res("String", "one"), ps -> ps.size() == 4))));
+        register("meta::pure::functions::string::splitOnCamelCase_String_1__String_MANY_", "splitOnCamelCase", false, ps -> res("String", "zeroMany"));
+        register(h("meta::pure::functions::string::startsWith_String_1__String_1__Boolean_1_", "startsWith", true, ps -> res("Boolean", "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::string::startsWith_String_$0_1$__String_1__Boolean_1_", "startsWith", false, ps -> res("Boolean", "one"), ps -> true));
+        register("meta::pure::functions::string::substringAfter_String_1__String_1__String_1_", "substringAfter", false, ps -> res("String", "one"));
+        register("meta::pure::functions::string::substringBefore_String_1__String_1__String_1_", "substringBefore", false, ps -> res("String", "one"));
+        register("meta::pure::functions::string::chunk_String_1__Integer_1__String_MANY_", "chunk", true, ps -> res("String", "zeroMany"));
+        register("meta::pure::functions::string::format_String_1__Any_MANY__String_1_", "format", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::length_String_1__Integer_1_", "length", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::string::parseBoolean_String_1__Boolean_1_", "parseBoolean", true, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::string::parseDate_String_1__Date_1_", "parseDate", true, ps -> res("Date", "one"));
+        register("meta::pure::functions::string::parseFloat_String_1__Float_1_", "parseFloat", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::string::parseInteger_String_1__Integer_1_", "parseInteger", true, ps -> res("Integer", "one"));
+        register(m(m(h("meta::pure::functions::string::parseDecimal_String_1__Integer_1__Integer_1__Decimal_1_", "parseDecimal", true, ps -> res("Decimal", "one"), ps  -> ps.size() == 3)),
+                m(h("meta::pure::functions::string::parseDecimal_String_1__Decimal_1_", "parseDecimal", true, ps -> res("Decimal", "one")))));
+        register("meta::pure::functions::string::repeatString_String_$0_1$__Integer_1__String_$0_1$_", "repeatString", false, ps -> res("String", "zeroOne"));
+        register("meta::pure::functions::string::replace_String_1__String_1__String_1__String_1_", "replace", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::reverseString_String_1__String_1_", "reverseString", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::split_String_1__String_1__String_MANY_", "split", true, ps -> res("String", "zeroMany"));
+        register("meta::pure::functions::string::splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_", "splitPart", false, ps -> res("String", "zeroOne"));
+        register(m(m(h("meta::pure::functions::string::substring_String_1__Integer_1__Integer_1__String_1_", "substring", true, ps -> res("String", "one"), ps -> ps.size() == 3)),
+                m(h("meta::pure::functions::string::substring_String_1__Integer_1__String_1_", "substring", true, ps -> res("String", "one"), ps -> true))));
+        register("meta::pure::functions::string::toLower_String_1__String_1_", "toLower", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::toLowerFirstCharacter_String_1__String_1_", "toLowerFirstCharacter", false, ps -> res("String", "one"));
+        register("meta::pure::functions::string::toString_Any_1__String_1_", "toString", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::toUpper_String_1__String_1_", "toUpper", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::toUpperFirstCharacter_String_1__String_1_", "toUpperFirstCharacter", false, ps -> res("String", "one"));
+        register("meta::pure::functions::string::trim_String_1__String_1_", "trim", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::ltrim_String_1__String_1_", "ltrim", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::rtrim_String_1__String_1_", "rtrim", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::left_String_1__Integer_1__String_1_", "left", false, ps -> res("String", "one"));
+        register("meta::pure::functions::string::right_String_1__Integer_1__String_1_", "right", false, ps -> res("String", "one"));
+        register(m(m(h("meta::pure::functions::string::lpad_String_1__Integer_1__String_1_", "lpad", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::string::lpad_String_1__Integer_1__String_1__String_1_", "lpad", false, ps -> res("String", "one"), ps -> true))));
 
-        register(m(m(h("meta::pure::functions::string::rpad_String_1__Integer_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::string::rpad_String_1__Integer_1__String_1__String_1_", false, ps -> res("String", "one"), ps -> true))));
-        register("meta::pure::functions::string::matches_String_1__String_1__Boolean_1_", true, ps -> res("Boolean", "one"));
+        register(m(m(h("meta::pure::functions::string::rpad_String_1__Integer_1__String_1_", "rpad", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::string::rpad_String_1__Integer_1__String_1__String_1_", "rpad", false, ps -> res("String", "one"), ps -> true))));
+        register("meta::pure::functions::string::matches_String_1__String_1__Boolean_1_", "matches", true, ps -> res("Boolean", "one"));
         register(
                 m(
                         m(
-                                h("meta::pure::functions::string::regexpLike_String_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
+                                h("meta::pure::functions::string::regexpLike_String_1__String_1__Boolean_1_", "regexpLike", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2)
                         ),
                         m(
-                                h("meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
+                                h("meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_", "regexpLike", true, ps -> res("Boolean", "one"), ps -> ps.size() == 3)
                         )
                 )
         );
         register(
                 m(
                         m(
-                                h("meta::pure::functions::string::regexpCount_String_1__String_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2)
+                                h("meta::pure::functions::string::regexpCount_String_1__String_1__Integer_1_", "regexpCount", false, ps -> res("Integer", "one"), ps -> ps.size() == 2)
                         ),
                         m(
-                                h("meta::pure::functions::string::regexpCount_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 3)
+                                h("meta::pure::functions::string::regexpCount_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_", "regexpCount", true, ps -> res("Integer", "one"), ps -> ps.size() == 3)
                         )
                 )
         );
         register(
                 m(
                         m(
-                                h("meta::pure::functions::string::regexpReplace_String_1__String_1__String_1__Boolean_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 4)
+                                h("meta::pure::functions::string::regexpReplace_String_1__String_1__String_1__Boolean_1__String_1_", "regexpReplace", false, ps -> res("String", "one"), ps -> ps.size() == 4)
                         ),
                         m(
-                                h("meta::pure::functions::string::regexpReplace_String_1__String_1__String_1__Boolean_1__RegexpParameter_$1_MANY$__String_1_", true, ps -> res("String", "one"), ps -> ps.size() == 5)
+                                h("meta::pure::functions::string::regexpReplace_String_1__String_1__String_1__Boolean_1__RegexpParameter_$1_MANY$__String_1_", "regexpReplace", true, ps -> res("String", "one"), ps -> ps.size() == 5)
                         )
                 )
         );
         register(
                 m(
                         m(
-                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__String_MANY_", false, ps -> res("String", "zeroMany"), ps -> ps.size() == 3)
+                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__String_MANY_", "regexpExtract", false, ps -> res("String", "zeroMany"), ps -> ps.size() == 3)
                         ),
                         m(
-                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__Integer_1__String_MANY_", false, ps -> res("String", "zeroMany"), ps -> ps.size() == 4 && typeOne(ps.get(3), "Integer")),
-                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__RegexpParameter_$1_MANY$__String_MANY_", false, ps -> res("String", "zeroMany"), ps -> ps.size() == 4)
+                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__Integer_1__String_MANY_", "regexpExtract", false, ps -> res("String", "zeroMany"), ps -> ps.size() == 4 && typeOne(ps.get(3), "Integer")),
+                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__RegexpParameter_$1_MANY$__String_MANY_", "regexpExtract", false, ps -> res("String", "zeroMany"), ps -> ps.size() == 4)
                         ),
                         m(
-                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__Integer_1__RegexpParameter_$1_MANY$__String_MANY_", true, ps -> res("String", "zeroMany"), ps -> ps.size() == 5)
+                                h("meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__Integer_1__RegexpParameter_$1_MANY$__String_MANY_", "regexpExtract", true, ps -> res("String", "zeroMany"), ps -> ps.size() == 5)
                         )
                 )
         );
         register(
                 m(
                         m(
-                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2)
+                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1_", "regexpIndexOf", false, ps -> res("Integer", "one"), ps -> ps.size() == 2)
                         ),
                         m(
-                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "Integer")),
-                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 3)
+                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1__Integer_1_", "regexpIndexOf", false, ps -> res("Integer", "one"), ps -> ps.size() == 3 && typeOne(ps.get(2), "Integer")),
+                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_", "regexpIndexOf", false, ps -> res("Integer", "one"), ps -> ps.size() == 3)
                         ),
                         m(
-                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1__RegexpParameter_$1_MANY$__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 4)
+                                h("meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1__RegexpParameter_$1_MANY$__Integer_1_", "regexpIndexOf", true, ps -> res("Integer", "one"), ps -> ps.size() == 4)
                         )
                 )
         );
-        register("meta::pure::functions::string::isAlphaNumeric_String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::string::isNoLongerThan_String_$0_1$__Integer_1__Boolean_1_", false, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::string::isNoShorterThan_String_$0_1$__Integer_1__Boolean_1_", false, pp -> res("Boolean", "one"));
-        register(m(m(h("meta::pure::functions::string::encodeUrl_String_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 1)),
-                m(h("meta::pure::functions::string::encodeUrl_String_1__String_1__String_1_", true, ps -> res("String", "one"), ps -> ps.size() == 2))));
-        register(m(m(h("meta::pure::functions::string::decodeUrl_String_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 1)),
-                m(h("meta::pure::functions::string::decodeUrl_String_1__String_1__String_1_", true, ps -> res("String", "one"), ps -> ps.size() == 2))));
-        register("meta::pure::functions::string::jaroWinklerSimilarity_String_1__String_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::string::levenshteinDistance_String_1__String_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::string::isAlphaNumeric_String_1__Boolean_1_", "isAlphaNumeric", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::string::isNoLongerThan_String_$0_1$__Integer_1__Boolean_1_", "isNoLongerThan", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::string::isNoShorterThan_String_$0_1$__Integer_1__Boolean_1_", "isNoShorterThan", false, pp -> res("Boolean", "one"));
+        register(m(m(h("meta::pure::functions::string::encodeUrl_String_1__String_1_", "encodeUrl", false, ps -> res("String", "one"), ps -> ps.size() == 1)),
+                m(h("meta::pure::functions::string::encodeUrl_String_1__String_1__String_1_", "encodeUrl", true, ps -> res("String", "one"), ps -> ps.size() == 2))));
+        register(m(m(h("meta::pure::functions::string::decodeUrl_String_1__String_1_", "decodeUrl", false, ps -> res("String", "one"), ps -> ps.size() == 1)),
+                m(h("meta::pure::functions::string::decodeUrl_String_1__String_1__String_1_", "decodeUrl", true, ps -> res("String", "one"), ps -> ps.size() == 2))));
+        register("meta::pure::functions::string::jaroWinklerSimilarity_String_1__String_1__Float_1_", "jaroWinklerSimilarity", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::string::levenshteinDistance_String_1__String_1__Integer_1_", "levenshteinDistance", true, ps -> res("Integer", "one"));
 
-        register("meta::pure::functions::string::generation::generateGuid__String_1_", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::generation::generateGuid__String_1_", "generateGuid", true, ps -> res("String", "one"));
     }
 
     private void registerTrigo()
     {
-        register("meta::pure::functions::math::cos_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::cosh_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::cot_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::sin_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::sinh_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::tan_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::tanh_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::asin_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::acos_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::atan_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::atan2_Number_1__Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::toDegrees_Number_1__Float_1_", false, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::toRadians_Number_1__Float_1_", false, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::pi__Float_1_", false, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::earthRadius__Float_1_", false, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::distanceHaversineDegrees_Number_1__Number_1__Number_1__Number_1__Number_1_", false, ps -> res("Number", "one"));
-        register("meta::pure::functions::math::distanceHaversineRadians_Number_1__Number_1__Number_1__Number_1__Number_1_", false, ps -> res("Number", "one"));
-        register("meta::pure::functions::math::distanceSphericalLawOfCosinesDegrees_Number_1__Number_1__Number_1__Number_1__Number_1_", false, ps -> res("Number", "one"));
-        register("meta::pure::functions::math::distanceSphericalLawOfCosinesRadians_Number_1__Number_1__Number_1__Number_1__Number_1_", false, ps -> res("Number", "one"));
+        register("meta::pure::functions::math::cos_Number_1__Float_1_", "cos", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::cosh_Number_1__Float_1_", "cosh", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::cot_Number_1__Float_1_", "cot", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::sin_Number_1__Float_1_", "sin", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::sinh_Number_1__Float_1_", "sinh", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::tan_Number_1__Float_1_", "tan", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::tanh_Number_1__Float_1_", "tanh", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::asin_Number_1__Float_1_", "asin", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::acos_Number_1__Float_1_", "acos", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::atan_Number_1__Float_1_", "atan", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::atan2_Number_1__Number_1__Float_1_", "atan2", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::toDegrees_Number_1__Float_1_", "toDegrees", false, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::toRadians_Number_1__Float_1_", "toRadians", false, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::pi__Float_1_", "pi", false, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::earthRadius__Float_1_", "earthRadius", false, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::distanceHaversineDegrees_Number_1__Number_1__Number_1__Number_1__Number_1_", "distanceHaversineDegrees", false, ps -> res("Number", "one"));
+        register("meta::pure::functions::math::distanceHaversineRadians_Number_1__Number_1__Number_1__Number_1__Number_1_", "distanceHaversineRadians", false, ps -> res("Number", "one"));
+        register("meta::pure::functions::math::distanceSphericalLawOfCosinesDegrees_Number_1__Number_1__Number_1__Number_1__Number_1_", "distanceSphericalLawOfCosinesDegrees", false, ps -> res("Number", "one"));
+        register("meta::pure::functions::math::distanceSphericalLawOfCosinesRadians_Number_1__Number_1__Number_1__Number_1__Number_1_", "distanceSphericalLawOfCosinesRadians", false, ps -> res("Number", "one"));
     }
 
     private void registerMathBitwise()
     {
-        register("meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::math::bitNot_Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_", "bitAnd", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::bitNot_Integer_1__Integer_1_", "bitNot", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_", "bitOr", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_", "bitXor", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_", "bitShiftLeft", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_", "bitShiftRight", true, ps -> res("Integer", "one"));
     }
 
     private void registerMathInequalities()
     {
-        register(h("meta::pure::functions::boolean::greaterThan_Boolean_1__Boolean_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::greaterThan_Boolean_1__Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::greaterThan_Boolean_$0_1$__Boolean_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::greaterThan_Date_1__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::greaterThan_Date_1__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::greaterThan_Date_$0_1$__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::greaterThan_Date_$0_1$__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::greaterThan_Number_1__Number_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::greaterThan_Number_$0_1$__Number_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::greaterThan_String_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::greaterThan_String_1__String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::greaterThan_String_$0_1$__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::greaterThan_String_$0_1$__String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")));
+        register(h("meta::pure::functions::boolean::greaterThan_Boolean_1__Boolean_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::greaterThan_Boolean_1__Boolean_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::greaterThan_Boolean_$0_1$__Boolean_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::greaterThan_Date_1__Date_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::greaterThan_Date_1__Date_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::greaterThan_Date_$0_1$__Date_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::greaterThan_Date_$0_1$__Date_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::greaterThan_Number_1__Number_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::greaterThan_Number_$0_1$__Number_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::greaterThan_String_1__String_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::greaterThan_String_1__String_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::greaterThan_String_$0_1$__String_1__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::greaterThan_String_$0_1$__String_$0_1$__Boolean_1_", "greaterThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")));
 
-        register(h("meta::pure::functions::boolean::greaterThanEqual_Boolean_1__Boolean_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::greaterThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::greaterThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::greaterThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::greaterThanEqual_Date_1__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::greaterThanEqual_Date_1__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::greaterThanEqual_Date_$0_1$__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::greaterThanEqual_Date_$0_1$__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::greaterThanEqual_Number_$0_1$__Number_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::greaterThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::greaterThanEqual_String_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::greaterThanEqual_String_1__String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::greaterThanEqual_String_$0_1$__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::greaterThanEqual_String_$0_1$__String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")));
+        register(h("meta::pure::functions::boolean::greaterThanEqual_Boolean_1__Boolean_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::greaterThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::greaterThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::greaterThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::greaterThanEqual_Date_1__Date_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::greaterThanEqual_Date_1__Date_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::greaterThanEqual_Date_$0_1$__Date_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::greaterThanEqual_Date_$0_1$__Date_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::greaterThanEqual_Number_$0_1$__Number_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::greaterThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::greaterThanEqual_String_1__String_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::greaterThanEqual_String_1__String_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::greaterThanEqual_String_$0_1$__String_1__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::greaterThanEqual_String_$0_1$__String_$0_1$__Boolean_1_", "greaterThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")));
 
-        register(h("meta::pure::functions::boolean::lessThan_Boolean_1__Boolean_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::lessThan_Boolean_1__Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::lessThan_Boolean_$0_1$__Boolean_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::lessThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::lessThan_Date_1__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::lessThan_Date_1__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::lessThan_Date_$0_1$__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::lessThan_Date_$0_1$__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::lessThan_Number_1__Number_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::lessThan_Number_$0_1$__Number_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::lessThan_Number_$0_1$__Number_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::lessThan_String_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::lessThan_String_1__String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::lessThan_String_$0_1$__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::lessThan_String_$0_1$__String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")));
+        register(h("meta::pure::functions::boolean::lessThan_Boolean_1__Boolean_1__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::lessThan_Boolean_1__Boolean_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::lessThan_Boolean_$0_1$__Boolean_1__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::lessThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::lessThan_Date_1__Date_1__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::lessThan_Date_1__Date_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::lessThan_Date_$0_1$__Date_1__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::lessThan_Date_$0_1$__Date_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_", "lessThan", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::lessThan_Number_1__Number_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::lessThan_Number_$0_1$__Number_1__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::lessThan_Number_$0_1$__Number_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::lessThan_String_1__String_1__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::lessThan_String_1__String_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::lessThan_String_$0_1$__String_1__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::lessThan_String_$0_1$__String_$0_1$__Boolean_1_", "lessThan", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")));
 
-        register(h("meta::pure::functions::boolean::lessThanEqual_Boolean_1__Boolean_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::lessThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::lessThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::lessThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
-                h("meta::pure::functions::boolean::lessThanEqual_Date_1__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::lessThanEqual_Date_1__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::lessThanEqual_Date_$0_1$__Date_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::lessThanEqual_Date_$0_1$__Date_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
-                h("meta::pure::functions::boolean::lessThanEqual_Number_1__Number_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::lessThanEqual_Number_1__Number_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::lessThanEqual_Number_$0_1$__Number_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::lessThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::lessThanEqual_String_1__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::lessThanEqual_String_1__String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::lessThanEqual_String_$0_1$__String_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
-                h("meta::pure::functions::boolean::lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")));
+        register(h("meta::pure::functions::boolean::lessThanEqual_Boolean_1__Boolean_1__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::lessThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::lessThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::lessThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "Boolean") && typeZeroOne(ps.get(1), "Boolean")),
+                h("meta::pure::functions::boolean::lessThanEqual_Date_1__Date_1__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::lessThanEqual_Date_1__Date_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::lessThanEqual_Date_$0_1$__Date_1__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::lessThanEqual_Date_$0_1$__Date_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Date")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Date"))),
+                h("meta::pure::functions::boolean::lessThanEqual_Number_1__Number_1__Boolean_1_", "lessThanEqual", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::lessThanEqual_Number_1__Number_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::lessThanEqual_Number_$0_1$__Number_1__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::lessThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::lessThanEqual_String_1__String_1__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::lessThanEqual_String_1__String_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::lessThanEqual_String_$0_1$__String_1__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
+                h("meta::pure::functions::boolean::lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_", "lessThanEqual", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), "String") && typeZeroOne(ps.get(1), "String")));
 
-        register(h("meta::pure::functions::boolean::between_StrictDate_$0_1$__StrictDate_$0_1$__StrictDate_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_StrictDate")) && typeZeroOne(ps.get(1), taxoMap.get("cov_StrictDate")) && typeZeroOne(ps.get(2), taxoMap.get("cov_StrictDate"))),
-                h("meta::pure::functions::boolean::between_DateTime_$0_1$__DateTime_$0_1$__DateTime_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_DateTime")) && typeZeroOne(ps.get(1), taxoMap.get("cov_DateTime")) && typeZeroOne(ps.get(2), taxoMap.get("cov_DateTime"))),
-                h("meta::pure::functions::boolean::between_Number_$0_1$__Number_$0_1$__Number_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(2), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::boolean::between_String_$0_1$__String_$0_1$__String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), Sets.mutable.with("String", "Nil")) && typeZeroOne(ps.get(1), Sets.mutable.with("String", "Nil")) && typeZeroOne(ps.get(2), Sets.mutable.with("String", "Nil"))));
+        register(h("meta::pure::functions::boolean::between_StrictDate_$0_1$__StrictDate_$0_1$__StrictDate_$0_1$__Boolean_1_", "between", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_StrictDate")) && typeZeroOne(ps.get(1), taxoMap.get("cov_StrictDate")) && typeZeroOne(ps.get(2), taxoMap.get("cov_StrictDate"))),
+                h("meta::pure::functions::boolean::between_DateTime_$0_1$__DateTime_$0_1$__DateTime_$0_1$__Boolean_1_", "between", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_DateTime")) && typeZeroOne(ps.get(1), taxoMap.get("cov_DateTime")) && typeZeroOne(ps.get(2), taxoMap.get("cov_DateTime"))),
+                h("meta::pure::functions::boolean::between_Number_$0_1$__Number_$0_1$__Number_$0_1$__Boolean_1_", "between", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(1), taxoMap.get("cov_Number")) && typeZeroOne(ps.get(2), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::boolean::between_String_$0_1$__String_$0_1$__String_$0_1$__Boolean_1_", "between", false, ps -> res("Boolean", "one"), ps -> typeZeroOne(ps.get(0), Sets.mutable.with("String", "Nil")) && typeZeroOne(ps.get(1), Sets.mutable.with("String", "Nil")) && typeZeroOne(ps.get(2), Sets.mutable.with("String", "Nil"))));
 
     }
 
     private void registerMaxMin()
     {
         register(m(
-                m(h("meta::pure::functions::math::max_Integer_1__Integer_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
-                        h("meta::pure::functions::math::max_Float_1__Float_1__Float_1_", false, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Float") && typeOne(ps.get(1), "Float")),
-                        h("meta::pure::functions::math::max_Number_1__Number_1__Number_1_", false, ps -> res("Number", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Number") && typeOne(ps.get(1), "Number")),
-                        h("meta::pure::functions::date::max_DateTime_1__DateTime_1__DateTime_1_", false, ps -> res("DateTime", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "DateTime") && typeOne(ps.get(1), "DateTime")),
-                        h("meta::pure::functions::date::max_StrictDate_1__StrictDate_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "StrictDate") && typeOne(ps.get(1), "StrictDate")),
-                        h("meta::pure::functions::date::max_Date_1__Date_1__Date_1_", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date"))),
-                m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::max_T_$1_MANY$__Function_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2))),
-                m(h("meta::pure::functions::math::max_Integer_$1_MANY$__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
-                        h("meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_", false, ps -> res("Integer", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
-                        h("meta::pure::functions::math::max_Float_$1_MANY$__Float_1_", false, ps -> res("Float", "one"), ps -> typeOneMany(ps.get(0), "Float")),
-                        h("meta::pure::functions::math::max_Float_MANY__Float_$0_1$_", false, ps -> res("Float", "zeroOne"), ps -> typeMany(ps.get(0), "Float")),
-                        h("meta::pure::functions::math::max_Number_$1_MANY$__Number_1_", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), "Number")),
-                        h("meta::pure::functions::math::max_Number_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number")),
-                        h("meta::pure::functions::date::max_DateTime_MANY__DateTime_$0_1$_", false, ps -> res("DateTime", "zeroOne"), ps -> typeMany(ps.get(0), "DateTime")),
-                        h("meta::pure::functions::date::max_StrictDate_MANY__StrictDate_$0_1$_", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
-                        h("meta::pure::functions::date::max_Date_MANY__Date_$0_1$_", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
-                        h("meta::pure::functions::collection::max_X_$1_MANY$__X_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
-                        h("meta::pure::functions::collection::max_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
+                m(h("meta::pure::functions::math::max_Integer_1__Integer_1__Integer_1_", "max", false, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
+                        h("meta::pure::functions::math::max_Float_1__Float_1__Float_1_", "max", false, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Float") && typeOne(ps.get(1), "Float")),
+                        h("meta::pure::functions::math::max_Number_1__Number_1__Number_1_", "max", false, ps -> res("Number", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Number") && typeOne(ps.get(1), "Number")),
+                        h("meta::pure::functions::date::max_DateTime_1__DateTime_1__DateTime_1_", "max", false, ps -> res("DateTime", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "DateTime") && typeOne(ps.get(1), "DateTime")),
+                        h("meta::pure::functions::date::max_StrictDate_1__StrictDate_1__StrictDate_1_", "max", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "StrictDate") && typeOne(ps.get(1), "StrictDate")),
+                        h("meta::pure::functions::date::max_Date_1__Date_1__Date_1_", "max", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date"))),
+                m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::max_T_$1_MANY$__Function_1__T_1_", "max", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2))),
+                m(h("meta::pure::functions::math::max_Integer_$1_MANY$__Integer_1_", "max", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
+                        h("meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_", "max", false, ps -> res("Integer", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
+                        h("meta::pure::functions::math::max_Float_$1_MANY$__Float_1_", "max", false, ps -> res("Float", "one"), ps -> typeOneMany(ps.get(0), "Float")),
+                        h("meta::pure::functions::math::max_Float_MANY__Float_$0_1$_", "max", false, ps -> res("Float", "zeroOne"), ps -> typeMany(ps.get(0), "Float")),
+                        h("meta::pure::functions::math::max_Number_$1_MANY$__Number_1_", "max", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), "Number")),
+                        h("meta::pure::functions::math::max_Number_MANY__Number_$0_1$_", "max", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number")),
+                        h("meta::pure::functions::date::max_DateTime_MANY__DateTime_$0_1$_", "max", false, ps -> res("DateTime", "zeroOne"), ps -> typeMany(ps.get(0), "DateTime")),
+                        h("meta::pure::functions::date::max_StrictDate_MANY__StrictDate_$0_1$_", "max", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
+                        h("meta::pure::functions::date::max_Date_MANY__Date_$0_1$_", "max", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
+                        h("meta::pure::functions::collection::max_X_$1_MANY$__X_1_", "max", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                        h("meta::pure::functions::collection::max_X_MANY__X_$0_1$_", "max", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
 
         register(m(
-                m(h("meta::pure::functions::math::min_Integer_1__Integer_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
-                        h("meta::pure::functions::math::min_Float_1__Float_1__Float_1_", false, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Float") && typeOne(ps.get(1), "Float")),
-                        h("meta::pure::functions::math::min_Number_1__Number_1__Number_1_", false, ps -> res("Number", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Number") && typeOne(ps.get(1), "Number")),
-                        h("meta::pure::functions::date::min_DateTime_1__DateTime_1__DateTime_1_", false, ps -> res("DateTime", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "DateTime") && typeOne(ps.get(1), "DateTime")),
-                        h("meta::pure::functions::date::min_StrictDate_1__StrictDate_1__StrictDate_1_", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "StrictDate") && typeOne(ps.get(1), "StrictDate")),
-                        h("meta::pure::functions::date::min_Date_1__Date_1__Date_1_", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date"))),
-                m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::min_T_$1_MANY$__Function_1__T_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2))),
-                m(h("meta::pure::functions::math::min_Integer_$1_MANY$__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
-                        h("meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_", false, ps -> res("Integer", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
-                        h("meta::pure::functions::math::min_Float_$1_MANY$__Float_1_", false, ps -> res("Float", "one"), ps -> typeOneMany(ps.get(0), "Float")),
-                        h("meta::pure::functions::math::min_Float_MANY__Float_$0_1$_", false, ps -> res("Float", "zeroOne"), ps -> typeMany(ps.get(0), "Float")),
-                        h("meta::pure::functions::math::min_Number_$1_MANY$__Number_1_", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), "Number")),
-                        h("meta::pure::functions::math::min_Number_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number")),
-                        h("meta::pure::functions::date::min_DateTime_MANY__DateTime_$0_1$_", false, ps -> res("DateTime", "zeroOne"), ps -> typeMany(ps.get(0), "DateTime")),
-                        h("meta::pure::functions::date::min_StrictDate_MANY__StrictDate_$0_1$_", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
-                        h("meta::pure::functions::date::min_Date_MANY__Date_$0_1$_", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
-                        h("meta::pure::functions::collection::min_X_$1_MANY$__X_1_", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
-                        h("meta::pure::functions::collection::min_X_MANY__X_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
+                m(h("meta::pure::functions::math::min_Integer_1__Integer_1__Integer_1_", "min", false, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
+                        h("meta::pure::functions::math::min_Float_1__Float_1__Float_1_", "min", false, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Float") && typeOne(ps.get(1), "Float")),
+                        h("meta::pure::functions::math::min_Number_1__Number_1__Number_1_", "min", false, ps -> res("Number", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Number") && typeOne(ps.get(1), "Number")),
+                        h("meta::pure::functions::date::min_DateTime_1__DateTime_1__DateTime_1_", "min", false, ps -> res("DateTime", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "DateTime") && typeOne(ps.get(1), "DateTime")),
+                        h("meta::pure::functions::date::min_StrictDate_1__StrictDate_1__StrictDate_1_", "min", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "StrictDate") && typeOne(ps.get(1), "StrictDate")),
+                        h("meta::pure::functions::date::min_Date_1__Date_1__Date_1_", "min", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date"))),
+                m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::min_T_$1_MANY$__Function_1__T_1_", "min", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2))),
+                m(h("meta::pure::functions::math::min_Integer_$1_MANY$__Integer_1_", "min", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
+                        h("meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_", "min", false, ps -> res("Integer", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
+                        h("meta::pure::functions::math::min_Float_$1_MANY$__Float_1_", "min", false, ps -> res("Float", "one"), ps -> typeOneMany(ps.get(0), "Float")),
+                        h("meta::pure::functions::math::min_Float_MANY__Float_$0_1$_", "min", false, ps -> res("Float", "zeroOne"), ps -> typeMany(ps.get(0), "Float")),
+                        h("meta::pure::functions::math::min_Number_$1_MANY$__Number_1_", "min", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), "Number")),
+                        h("meta::pure::functions::math::min_Number_MANY__Number_$0_1$_", "min", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number")),
+                        h("meta::pure::functions::date::min_DateTime_MANY__DateTime_$0_1$_", "min", false, ps -> res("DateTime", "zeroOne"), ps -> typeMany(ps.get(0), "DateTime")),
+                        h("meta::pure::functions::date::min_StrictDate_MANY__StrictDate_$0_1$_", "min", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
+                        h("meta::pure::functions::date::min_Date_MANY__Date_$0_1$_", "min", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
+                        h("meta::pure::functions::collection::min_X_$1_MANY$__X_1_", "min", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                        h("meta::pure::functions::collection::min_X_MANY__X_$0_1$_", "min", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
     }
 
     private void registerAlgebra()
     {
-        register("meta::pure::functions::math::sign_Number_1__Integer_1_", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::sign_Number_1__Integer_1_", "sign", true, ps -> res("Integer", "one"));
 
-        register(h("meta::pure::functions::math::minus_Integer_MANY__Integer_1_", true, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::minus_Float_MANY__Float_1_", true, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
-                h("meta::pure::functions::math::minus_Decimal_MANY__Decimal_1_", true, ps -> res("Decimal", "one"), ps -> typeMany(ps.get(0), "Decimal")),
-                h("meta::pure::functions::math::minus_Number_MANY__Number_1_", true, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")));
+        register(h("meta::pure::functions::math::minus_Integer_MANY__Integer_1_", "minus", true, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::minus_Float_MANY__Float_1_", "minus", true, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
+                h("meta::pure::functions::math::minus_Decimal_MANY__Decimal_1_", "minus", true, ps -> res("Decimal", "one"), ps -> typeMany(ps.get(0), "Decimal")),
+                h("meta::pure::functions::math::minus_Number_MANY__Number_1_", "minus", true, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")));
 
-        register(h("meta::pure::functions::math::times_Integer_MANY__Integer_1_", true, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::times_Float_MANY__Float_1_", true, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
-                h("meta::pure::functions::math::times_Number_MANY__Number_1_", true, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")),
-                h("meta::pure::functions::math::times_Decimal_MANY__Decimal_1_", true, ps -> res("Decimal", "one"), ps -> typeMany(ps.get(0), "Decimal")));
-
-
-        register(m(m(h("meta::pure::functions::math::divide_Number_1__Number_1__Float_1_", true, ps -> res("Float", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::math::divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_", true, ps -> res("Decimal", "one"), ps -> ps.size() == 3))));
+        register(h("meta::pure::functions::math::times_Integer_MANY__Integer_1_", "times", true, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::times_Float_MANY__Float_1_", "times", true, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
+                h("meta::pure::functions::math::times_Number_MANY__Number_1_", "times", true, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")),
+                h("meta::pure::functions::math::times_Decimal_MANY__Decimal_1_", "times", true, ps -> res("Decimal", "one"), ps -> typeMany(ps.get(0), "Decimal")));
 
 
-        register(h("meta::pure::functions::string::plus_String_MANY__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "String")),
-                h("meta::pure::functions::math::plus_Integer_MANY__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::plus_Float_MANY__Float_1_", true, ps -> res("Float", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "Float")),
-                h("meta::pure::functions::math::plus_Decimal_MANY__Decimal_1_", true, ps -> res("Decimal", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "Decimal")),
-                h("meta::pure::functions::math::plus_Number_MANY__Number_1_", true, ps -> res("Number", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "Number")));
+        register(m(m(h("meta::pure::functions::math::divide_Number_1__Number_1__Float_1_", "divide", true, ps -> res("Float", "one"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::math::divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_", "divide", true, ps -> res("Decimal", "one"), ps -> ps.size() == 3))));
 
-        register(h("meta::pure::functions::math::abs_Float_1__Float_1_", true, ps -> res("Float", "one"), ps -> typeOne(ps.get(0), "Float")),
-                h("meta::pure::functions::math::abs_Integer_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> typeOne(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::abs_Decimal_1__Decimal_1_", true, ps -> res("Decimal", "one"), ps -> typeOne(ps.get(0), "Decimal")),
-                h("meta::pure::functions::math::abs_Number_1__Number_1_", true, ps -> res("Number", "one"), ps -> typeOne(ps.get(0), "Number"))
+
+        register(h("meta::pure::functions::string::plus_String_MANY__String_1_", "plus", false, ps -> res("String", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "String")),
+                h("meta::pure::functions::math::plus_Integer_MANY__Integer_1_", "plus", true, ps -> res("Integer", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::plus_Float_MANY__Float_1_", "plus", true, ps -> res("Float", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "Float")),
+                h("meta::pure::functions::math::plus_Decimal_MANY__Decimal_1_", "plus", true, ps -> res("Decimal", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "Decimal")),
+                h("meta::pure::functions::math::plus_Number_MANY__Number_1_", "plus", true, ps -> res("Number", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "Number")));
+
+        register(h("meta::pure::functions::math::abs_Float_1__Float_1_", "abs", true, ps -> res("Float", "one"), ps -> typeOne(ps.get(0), "Float")),
+                h("meta::pure::functions::math::abs_Integer_1__Integer_1_", "abs", true, ps -> res("Integer", "one"), ps -> typeOne(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::abs_Decimal_1__Decimal_1_", "abs", true, ps -> res("Decimal", "one"), ps -> typeOne(ps.get(0), "Decimal")),
+                h("meta::pure::functions::math::abs_Number_1__Number_1_", "abs", true, ps -> res("Number", "one"), ps -> typeOne(ps.get(0), "Number"))
         );
 
-        register("meta::pure::functions::math::cbrt_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::ceiling_Number_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::math::exp_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::floor_Number_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::math::log_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::log10_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_", true, ps -> res("Integer", "one"));
-        register("meta::pure::functions::math::pow_Number_1__Number_1__Number_1_", true, ps -> res("Number", "one"));
-        register("meta::pure::functions::math::rem_Number_1__Number_1__Number_1_", true, ps -> res("Number", "one"));
-        register("meta::pure::functions::math::sqrt_Number_1__Float_1_", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::cbrt_Number_1__Float_1_", "cbrt", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::ceiling_Number_1__Integer_1_", "ceiling", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::exp_Number_1__Float_1_", "exp", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::floor_Number_1__Integer_1_", "floor", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::log_Number_1__Float_1_", "log", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::log10_Number_1__Float_1_", "log10", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_", "mod", true, ps -> res("Integer", "one"));
+        register("meta::pure::functions::math::pow_Number_1__Number_1__Number_1_", "pow", true, ps -> res("Number", "one"));
+        register("meta::pure::functions::math::rem_Number_1__Number_1__Number_1_", "rem", true, ps -> res("Number", "one"));
+        register("meta::pure::functions::math::sqrt_Number_1__Float_1_", "sqrt", true, ps -> res("Float", "one"));
 
         register(m(
                     m(
-                            h("meta::pure::functions::math::round_Float_1__Integer_1__Float_1_", true, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Float")),
-                            h("meta::pure::functions::math::round_Decimal_1__Integer_1__Decimal_1_", true, ps -> res("Decimal", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Decimal"))
+                            h("meta::pure::functions::math::round_Float_1__Integer_1__Float_1_", "round", true, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Float")),
+                            h("meta::pure::functions::math::round_Decimal_1__Integer_1__Decimal_1_", "round", true, ps -> res("Decimal", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Decimal"))
                     ),
                     m(
-                            h("meta::pure::functions::math::round_Number_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> true)
+                            h("meta::pure::functions::math::round_Number_1__Integer_1_", "round", true, ps -> res("Integer", "one"), ps -> true)
                     )
                 ));
-        register("meta::pure::functions::math::toFloat_Number_1__Float_1_", true, ps -> res("Float", "one"));
-        register("meta::pure::functions::math::toDecimal_Number_1__Decimal_1_", true, ps -> res("Decimal", "one"));
+        register("meta::pure::functions::math::toFloat_Number_1__Float_1_", "toFloat", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::toDecimal_Number_1__Decimal_1_", "toDecimal", true, ps -> res("Decimal", "one"));
     }
 
     private void registerOlapMath()
@@ -2415,168 +2418,168 @@ public class Handlers
         ReturnInference resolve = ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::functions::collection::Map"), FastList.newListWith(this.pureModel.getGenericType("meta::pure::metamodel::type::Any"), this.pureModel.getGenericType("Integer")), pureModel), "one");
 
         register(m(
-                        m(h("meta::pure::functions::math::olap::rank_Any_MANY__Map_1_", false, resolve)),
-                        m(h("meta::pure::functions::relation::rank_Relation_1___Window_1__T_1__Integer_1_", true, ps -> res("Integer", "one")))
+                        m(h("meta::pure::functions::math::olap::rank_Any_MANY__Map_1_", "rank", false, resolve)),
+                        m(h("meta::pure::functions::relation::rank_Relation_1___Window_1__T_1__Integer_1_", "rank", true, ps -> res("Integer", "one")))
                 )
         );
         register(
                 m(
-                        m(h("meta::pure::functions::math::olap::denseRank_Any_MANY__Map_1_", false, resolve)),
-                        m(h("meta::pure::functions::relation::denseRank_Relation_1___Window_1__T_1__Integer_1_", true, ps -> res("Integer", "one")))
+                        m(h("meta::pure::functions::math::olap::denseRank_Any_MANY__Map_1_", "denseRank", false, resolve)),
+                        m(h("meta::pure::functions::relation::denseRank_Relation_1___Window_1__T_1__Integer_1_", "denseRank", true, ps -> res("Integer", "one")))
                 )
         );
         register(
                 m(
-                        m(h("meta::pure::functions::math::olap::rowNumber_Any_MANY__Map_1_", false, resolve)),
-                        m(h("meta::pure::functions::relation::rowNumber_Relation_1__T_1__Integer_1_", true, ps -> res("Integer", "one")))
+                        m(h("meta::pure::functions::math::olap::rowNumber_Any_MANY__Map_1_", "rowNumber", false, resolve)),
+                        m(h("meta::pure::functions::relation::rowNumber_Relation_1__T_1__Integer_1_", "rowNumber", true, ps -> res("Integer", "one")))
                 )
         );
-        register(h("meta::pure::functions::math::olap::averageRank_Any_MANY__Map_1_", false, resolve));
+        register(h("meta::pure::functions::math::olap::averageRank_Any_MANY__Map_1_", "averageRank", false, resolve));
     }
 
     private void registerAggregations()
     {
-        register(h("meta::pure::functions::math::average_Float_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
-                h("meta::pure::functions::math::average_Integer_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::average_Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number")));
+        register(h("meta::pure::functions::math::average_Float_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
+                h("meta::pure::functions::math::average_Integer_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::average_Number_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number")));
 
-        register(h("meta::pure::functions::math::mean_Float_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
-                h("meta::pure::functions::math::mean_Integer_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::mean_Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number")));
+        register(h("meta::pure::functions::math::mean_Float_MANY__Float_1_", "mean", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
+                h("meta::pure::functions::math::mean_Integer_MANY__Float_1_", "mean", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::mean_Number_MANY__Float_1_", "mean", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number")));
 
         register(
                 m(
-                        m(h("meta::pure::functions::math::maxBy_RowMapper_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroOne"), ps -> ps.size() == 1)),
-                        m(h("meta::pure::functions::math::maxBy_RowMapper_MANY__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")),
-                          h("meta::pure::functions::math::maxBy_T_MANY__Number_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> typeMany(ps.get(1), "Number"))
+                        m(h("meta::pure::functions::math::maxBy_RowMapper_MANY__T_$0_1$_", "maxBy", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroOne"), ps -> ps.size() == 1)),
+                        m(h("meta::pure::functions::math::maxBy_RowMapper_MANY__Integer_1__T_MANY_", "maxBy", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")),
+                          h("meta::pure::functions::math::maxBy_T_MANY__Number_MANY__T_$0_1$_", "maxBy", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> typeMany(ps.get(1), "Number"))
                         ),
-                        m(h("meta::pure::functions::math::maxBy_T_MANY__Number_MANY__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))
+                        m(h("meta::pure::functions::math::maxBy_T_MANY__Number_MANY__Integer_1__T_MANY_", "maxBy", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))
                 )
         );
 
         register(
                 m(
-                        m(h("meta::pure::functions::math::minBy_RowMapper_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroOne"), ps -> ps.size() == 1)),
-                        m(h("meta::pure::functions::math::minBy_RowMapper_MANY__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")),
-                                h("meta::pure::functions::math::minBy_T_MANY__Number_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> typeMany(ps.get(1), "Number"))
+                        m(h("meta::pure::functions::math::minBy_RowMapper_MANY__T_$0_1$_", "minBy", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroOne"), ps -> ps.size() == 1)),
+                        m(h("meta::pure::functions::math::minBy_RowMapper_MANY__Integer_1__T_MANY_", "minBy", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")),
+                                h("meta::pure::functions::math::minBy_T_MANY__Number_MANY__T_$0_1$_", "minBy", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> typeMany(ps.get(1), "Number"))
                         ),
-                        m(h("meta::pure::functions::math::minBy_T_MANY__Number_MANY__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))
+                        m(h("meta::pure::functions::math::minBy_T_MANY__Number_MANY__Integer_1__T_MANY_", "minBy", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))
                 )
         );
 
-        register(h("meta::pure::functions::math::sum_Float_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
-                h("meta::pure::functions::math::sum_Integer_MANY__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::sum_Number_MANY__Number_1_", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")));
+        register(h("meta::pure::functions::math::sum_Float_MANY__Float_1_", "sum", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
+                h("meta::pure::functions::math::sum_Integer_MANY__Integer_1_", "sum", false, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::sum_Number_MANY__Number_1_", "sum", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")));
 
-        register(h("meta::pure::functions::math::median_Float_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
-                h("meta::pure::functions::math::median_Integer_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::median_Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))
+        register(h("meta::pure::functions::math::median_Float_MANY__Float_1_", "median", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
+                h("meta::pure::functions::math::median_Integer_MANY__Float_1_", "median", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::median_Number_MANY__Float_1_", "median", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))
         );
 
-        register(h("meta::pure::functions::math::mode_Float_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
-                h("meta::pure::functions::math::mode_Integer_MANY__Integer_1_", false, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::mode_Number_MANY__Number_1_", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number"))
+        register(h("meta::pure::functions::math::mode_Float_MANY__Float_1_", "mode", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
+                h("meta::pure::functions::math::mode_Integer_MANY__Integer_1_", "mode", false, ps -> res("Integer", "one"), ps -> typeMany(ps.get(0), "Integer")),
+                h("meta::pure::functions::math::mode_Number_MANY__Number_1_", "mode", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number"))
         );
 
-        register(m(m(h("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))),
-                m(h("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> ps.size() == 1))));
+        register(m(m(h("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", "wavg", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))),
+                m(h("meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_", "wavg", false, ps -> res("Float", "one"), ps -> ps.size() == 1))));
 
-        register(h("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", false, ps -> res("meta::pure::functions::math::wavgUtility::WavgRowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")));
+        register(h("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", "wavgRowMapper", false, ps -> res("meta::pure::functions::math::wavgUtility::WavgRowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")));
 
-        register(h("meta::pure::functions::math::mathUtility::rowMapper_T_$0_1$__U_$0_1$__RowMapper_1_", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::functions::math::mathUtility::RowMapper"), Lists.fixedSize.ofAll(ps.stream().map(ValueSpecificationAccessor::_genericType).collect(Collectors.toList())), this.pureModel), "one"), ps -> Lists.mutable.with(ps.get(0)._genericType(), ps.get(1)._genericType()), ps -> true));
+        register(h("meta::pure::functions::math::mathUtility::rowMapper_T_$0_1$__U_$0_1$__RowMapper_1_", "rowMapper", false, ps -> res(CompileContext.newGenericType(this.pureModel.getType("meta::pure::functions::math::mathUtility::RowMapper"), Lists.fixedSize.ofAll(ps.stream().map(ValueSpecificationAccessor::_genericType).collect(Collectors.toList())), this.pureModel), "one"), ps -> Lists.mutable.with(ps.get(0)._genericType(), ps.get(1)._genericType()), ps -> true));
 
-        register(h("meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_", false, ps -> res("Number", "one")));
+        register(h("meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_", "variance", false, ps -> res("Number", "one")));
 
-        register(m(m(h("meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> ps.size() == 4)),
-                m(h("meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> true))));
+        register(m(m(h("meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_", "percentile", false, ps -> res("Number", "zeroOne"), ps -> ps.size() == 4)),
+                m(h("meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_", "percentile", false, ps -> res("Number", "zeroOne"), ps -> true))));
     }
 
     private void registerStdDeviations()
     {
-        register(h("meta::pure::functions::math::stdDevPopulation_Number_$1_MANY$__Number_1_", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::math::stdDevPopulation_Number_MANY__Number_1_", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), taxoMap.get("cov_Number"))));
+        register(h("meta::pure::functions::math::stdDevPopulation_Number_$1_MANY$__Number_1_", "stdDevPopulation", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::math::stdDevPopulation_Number_MANY__Number_1_", "stdDevPopulation", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), taxoMap.get("cov_Number"))));
 
-        register(h("meta::pure::functions::math::stdDevSample_Number_$1_MANY$__Number_1_", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), taxoMap.get("cov_Number"))),
-                h("meta::pure::functions::math::stdDevSample_Number_MANY__Number_1_", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), taxoMap.get("cov_Number"))));
+        register(h("meta::pure::functions::math::stdDevSample_Number_$1_MANY$__Number_1_", "stdDevSample", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), taxoMap.get("cov_Number"))),
+                h("meta::pure::functions::math::stdDevSample_Number_MANY__Number_1_", "stdDevSample", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), taxoMap.get("cov_Number"))));
     }
 
     private void registerVariance()
     {
-        register("meta::pure::functions::math::variancePopulation_Number_MANY__Number_1_", false, ps -> res("Number", "one"));
-        register("meta::pure::functions::math::varianceSample_Number_MANY__Number_1_", false, ps -> res("Number", "one"));
+        register("meta::pure::functions::math::variancePopulation_Number_MANY__Number_1_", "variancePopulation", false, ps -> res("Number", "one"));
+        register("meta::pure::functions::math::varianceSample_Number_MANY__Number_1_", "varianceSample", false, ps -> res("Number", "one"));
     }
 
     private void registerCovariance()
     {
-        register(m(m(h("meta::pure::functions::math::covarPopulation_Number_MANY__Number_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number"))),
-                m(h("meta::pure::functions::math::covarPopulation_RowMapper_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
+        register(m(m(h("meta::pure::functions::math::covarPopulation_Number_MANY__Number_MANY__Number_$0_1$_", "covarPopulation", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number"))),
+                m(h("meta::pure::functions::math::covarPopulation_RowMapper_MANY__Number_$0_1$_", "covarPopulation", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
 
-        register(m(m(h("meta::pure::functions::math::covarSample_Number_MANY__Number_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number"))),
-                m(h("meta::pure::functions::math::covarSample_RowMapper_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
+        register(m(m(h("meta::pure::functions::math::covarSample_Number_MANY__Number_MANY__Number_$0_1$_", "covarSample", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number"))),
+                m(h("meta::pure::functions::math::covarSample_RowMapper_MANY__Number_$0_1$_", "covarSample", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
 
-        register(m(m(h("meta::pure::functions::math::corr_Number_MANY__Number_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number"))),
-                m(h("meta::pure::functions::math::corr_RowMapper_MANY__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
+        register(m(m(h("meta::pure::functions::math::corr_Number_MANY__Number_MANY__Number_$0_1$_", "corr", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "Number"))),
+                m(h("meta::pure::functions::math::corr_RowMapper_MANY__Number_$0_1$_", "corr", false, ps -> res("Number", "zeroOne"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::mathUtility::RowMapper")))));
     }
 
     private void registerJson()
     {
-        register(m(m(h("meta::json::toJSON_Any_MANY__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 1)),
-                m(h("meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 2 && typeMany(ps.get(1), "LambdaFunction")))));
+        register(m(m(h("meta::json::toJSON_Any_MANY__String_1_", "toJSON", false, ps -> res("String", "one"), ps -> ps.size() == 1)),
+                m(h("meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_", "toJSON", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 2 && typeMany(ps.get(1), "LambdaFunction")))));
     }
 
     private void registerRuntimeHelper()
     {
-        register(h("meta::core::runtime::mergeRuntimes_Any_$1_MANY$__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> true));
-        register(h("meta::core::runtime::getRuntimeWithModelConnection_Class_1__Any_MANY__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> true));
-        register(h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__String_1__String_1__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeOne(ps.get(1), "String") && typeOne(ps.get(2), "String")),
-                h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__String_1__Byte_MANY__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeOne(ps.get(1), "String") && typeMany(ps.get(2), "Byte")),
-                h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__Binding_1__Byte_MANY__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeMany(ps.get(2), "Byte")),
-                h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__Binding_1__String_1__Runtime_1_", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeOne(ps.get(2), "String")));
-        register(h("meta::pure::functions::runtime::currentUserId__String_1_", false, ps -> res("String", "one"), ps -> true));
+        register(h("meta::core::runtime::mergeRuntimes_Any_$1_MANY$__Runtime_1_", "mergeRuntimes", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> true));
+        register(h("meta::core::runtime::getRuntimeWithModelConnection_Class_1__Any_MANY__Runtime_1_", "getRuntimeWithModelConnection", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> true));
+        register(h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__String_1__String_1__Runtime_1_", "getRuntimeWithModelQueryConnection", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeOne(ps.get(1), "String") && typeOne(ps.get(2), "String")),
+                h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__String_1__Byte_MANY__Runtime_1_", "getRuntimeWithModelQueryConnection", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeOne(ps.get(1), "String") && typeMany(ps.get(2), "Byte")),
+                h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__Binding_1__Byte_MANY__Runtime_1_", "getRuntimeWithModelQueryConnection", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeMany(ps.get(2), "Byte")),
+                h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__Binding_1__String_1__Runtime_1_", "getRuntimeWithModelQueryConnection", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeOne(ps.get(2), "String")));
+        register(h("meta::pure::functions::runtime::currentUserId__String_1_", "currentUserId", false, ps -> res("String", "one"), ps -> true));
     }
 
     private void registerUnitFunctions()
     {
-        register(h("meta::pure::executionPlan::engine::java::unitType_Any_1__String_1_", false, ps -> res("String", "one"), ps -> typeOneMany(ps.get(0), "String")));
-        register(h("meta::pure::executionPlan::engine::java::unitValue_Any_1__Number_1_", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), taxoMap.get("cov_Number"))));
-        register(h("meta::pure::functions::meta::newUnit_Unit_1__Number_1__Any_1_", true, ps -> res("meta::pure::metamodel::type::Any", "one"), ps -> typeOneMany(ps.get(0), "Any")));
-        register(h("meta::pure::executionPlan::engine::java::convert_Any_1__Unit_1__Any_1_", false, ps -> res("meta::pure::metamodel::type::Any", "one"), ps -> typeOneMany(ps.get(0), "Any")));
+        register(h("meta::pure::executionPlan::engine::java::unitType_Any_1__String_1_", "unitType", false, ps -> res("String", "one"), ps -> typeOneMany(ps.get(0), "String")));
+        register(h("meta::pure::executionPlan::engine::java::unitValue_Any_1__Number_1_", "unitValue", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), taxoMap.get("cov_Number"))));
+        register(h("meta::pure::functions::meta::newUnit_Unit_1__Number_1__Any_1_", "newUnit", true, ps -> res("meta::pure::metamodel::type::Any", "one"), ps -> typeOneMany(ps.get(0), "Any")));
+        register(h("meta::pure::executionPlan::engine::java::convert_Any_1__Unit_1__Any_1_", "convert", false, ps -> res("meta::pure::metamodel::type::Any", "one"), ps -> typeOneMany(ps.get(0), "Any")));
     }
 
     private void registerCalendarFunctions()
     {
-        register("meta::pure::functions::date::calendar::annualized_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::cme_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::cw_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::cw_fm_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::CYMinus2_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::CYMinus3_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::mtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::p12wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::p12mtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::p12wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::p4wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::p4wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::p52wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::p52wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pma_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pmtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pqtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::priorDay_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::priorYear_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pw_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pw_fm_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pwa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pwtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pymtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pyqtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pytd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pywa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::pywtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::qtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::reportEndDay_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
-        register("meta::pure::functions::date::calendar::ytd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::annualized_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "annualized", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::cme_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "cme", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::cw_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "cw", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::cw_fm_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "cw_fm", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::CYMinus2_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "CYMinus2", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::CYMinus3_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "CYMinus3", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::mtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "mtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::p12wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "p12wa", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::p12mtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "p12mtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::p12wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "p12wtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::p4wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "p4wa", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::p4wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "p4wtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::p52wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "p52wtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::p52wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "p52wa", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pma_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pma", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pmtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pmtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pqtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pqtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::priorDay_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "priorDay", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::priorYear_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "priorYear", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pw_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pw", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pw_fm_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pw_fm", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pwa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pwa", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pwtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pwtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pymtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pymtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pyqtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pyqtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pytd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pytd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pywa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pywa", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::pywtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "pywtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::qtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "qtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::reportEndDay_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "reportEndDay", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "wtd", false, ps -> res("Number", "zeroOne"));
+        register("meta::pure::functions::date::calendar::ytd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", "ytd", false, ps -> res("Number", "zeroOne"));
     }
 
     public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
@@ -2609,21 +2612,17 @@ public class Handlers
     {
         for (FunctionHandler handler : handlers)
         {
-            org.finos.legend.pure.m3.coreinstance.Package pkg = handler.getFunc() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement ? ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) handler.getFunc())._package() : null;
-            if (pkg != null)
+            String path = handler.getFullName().substring(0, handler.getFullName().lastIndexOf(':') - 1);
+            if (path.startsWith(this.META_PACKAGE_NAME + this.PACKAGE_SEPARATOR))
             {
-                String path = Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(pkg, pureModel.getExecutionSupport());
-                if (path.startsWith(this.META_PACKAGE_NAME + this.PACKAGE_SEPARATOR))
-                {
-                    registeredMetaPackages.add(path);
-                }
+                registeredMetaPackages.add(path);
             }
         }
     }
 
-    private void register(String name, boolean isNative, ReturnInference inference)
+    private void register(String fullName, String name, boolean isNative, ReturnInference inference)
     {
-        register(new FunctionHandler(this.pureModel, name, isNative, inference));
+        register(new FunctionHandler(this.pureModel, fullName, name, isNative, inference));
     }
 
     public void register(FunctionHandler handler)
@@ -2659,7 +2658,6 @@ public class Handlers
     private void register(FunctionHandler... handlers)
     {
         MultiHandlerFunctionExpressionBuilder handler = new MultiHandlerFunctionExpressionBuilder(this.pureModel, handlers);
-        Arrays.stream(handlers).forEach(this.pureModel::loadModelFromFunctionHandler);
         insertInMap(handler);
     }
 
@@ -2788,30 +2786,28 @@ public class Handlers
 
     // --------------------------------------------- Function expression builder ----------------------------------
 
-    public FunctionHandler h(String name, boolean isNative, ReturnInference returnInference)
+    public FunctionHandler h(String fullName, String name, boolean isNative, ReturnInference returnInference)
     {
-        return new FunctionHandler(this.pureModel, name, isNative, returnInference);
+        return new FunctionHandler(this.pureModel, fullName, name, isNative, returnInference);
     }
 
-    public FunctionHandler h(String name, boolean isNative, ReturnInference returnInference, Dispatch dispatch)
+    public FunctionHandler h(String fullName, String name, boolean isNative, ReturnInference returnInference, Dispatch dispatch)
     {
-        return new FunctionHandler(this.pureModel, name, isNative, returnInference, dispatch);
+        return new FunctionHandler(this.pureModel, fullName, name, isNative, returnInference, dispatch);
     }
 
-    public FunctionHandler h(String name, boolean isNative, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
+    public FunctionHandler h(String fullName, String name, boolean isNative, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
     {
-        return new FunctionHandler(this.pureModel, name, isNative, returnInference, resolvedTypeParametersInference, dispatch);
+        return new FunctionHandler(this.pureModel, fullName, name, isNative, returnInference, resolvedTypeParametersInference, dispatch);
     }
 
     public RequiredInferenceSimilarSignatureFunctionExpressionBuilder grp(ParametersInference parametersInference, FunctionHandler... handlers)
     {
-        Arrays.stream(handlers).forEach(this.pureModel::loadModelFromFunctionHandler);
         return new RequiredInferenceSimilarSignatureFunctionExpressionBuilder(parametersInference, handlers, this.pureModel);
     }
 
     public MultiHandlerFunctionExpressionBuilder m(FunctionHandler... handlers)
     {
-        Arrays.stream(handlers).forEach(this.pureModel::loadModelFromFunctionHandler);
         return new MultiHandlerFunctionExpressionBuilder(this.pureModel, handlers);
     }
 

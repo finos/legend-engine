@@ -114,4 +114,6 @@ public abstract class FunctionExpressionBuilder
     public abstract Boolean supportFunctionHandler(FunctionHandler handler);
 
     public abstract Optional<Integer> getParametersSize();
+
+    public abstract void validate();
 }

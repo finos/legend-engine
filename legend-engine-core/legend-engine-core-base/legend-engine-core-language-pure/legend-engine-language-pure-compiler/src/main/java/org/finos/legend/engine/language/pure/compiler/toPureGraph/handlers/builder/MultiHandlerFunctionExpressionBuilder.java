@@ -38,6 +38,11 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     public MultiHandlerFunctionExpressionBuilder(PureModel pureModel, FunctionHandler... handlers)
     {
         this.handlers = FastList.newListWith(handlers);
+    }
+
+    public void validate()
+    {
+        this.handlers.forEach(handler -> Assert.assertTrue(handler.getFunctionName().equals(handler.getFunc()._functionName()), () -> "Wrong name specified in Handler: " + handler.getFunctionName() + " different from " + handler.getFunc()._functionName()));
         MutableList<String> names = this.handlers.collect(FunctionHandler::getFunctionName).distinct();
         Assert.assertTrue(names.size() == 1, () -> "Multi handlers should have the same simple name. Found " + names.size() + " -> " + names);
         MutableList<Integer> signatures = this.handlers.collect(FunctionHandler::getParametersSize).distinct();

@@ -79,7 +79,7 @@ public class ElasticsearchCompilerExtension implements CompilerExtension
         return Collections.singletonList((handlers) ->
                 Lists.fixedSize.with(
                         new FunctionHandlerRegistrationInfo(null,
-                                handlers.h("meta::external::store::elasticsearch::v7::tds::indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"))
+                                handlers.h("meta::external::store::elasticsearch::v7::tds::indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_", "indexToTDS", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"))
                         )
                 ));
     }
