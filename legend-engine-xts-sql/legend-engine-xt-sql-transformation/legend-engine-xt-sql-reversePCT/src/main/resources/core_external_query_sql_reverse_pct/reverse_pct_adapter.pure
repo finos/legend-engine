@@ -26,7 +26,7 @@ function <<PCT.adapter>> {PCT.adapterName='SQL'} meta::external::query::sql::rev
   if ($rev.shouldBeSupported,
     | let sqlString = $rev.reverse->toOne();
       let func = meta::external::query::sql::transformation::queryToPure::sqlToPure($sqlString->toOne());
-
+//      println($func->cast(@FunctionDefinition<Any>)->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
       let returnType = $func->functionReturnType();
       let expectedReturnType = $f->functionReturnType();
       if ($returnType.rawType->toOne()->subTypeOf(Relation) && ($expectedReturnType.rawType->toOne() == Nil || !$expectedReturnType.rawType->toOne()->subTypeOf(Relation)),

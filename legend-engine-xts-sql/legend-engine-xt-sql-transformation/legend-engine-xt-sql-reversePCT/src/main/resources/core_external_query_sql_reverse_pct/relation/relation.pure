@@ -40,10 +40,11 @@ function meta::external::query::sql::reversePCT::tests::relation::reverses():Rev
     meta::external::query::sql::reversePCT::tests::relation::slice::nth::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::slice::slice::reverses(),
 
+    meta::external::query::sql::reversePCT::tests::relation::functions::transformation::aggregate::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::functions::transformation::concatenate::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::functions::transformation::distinct::reverses(),
-    meta::external::query::sql::reversePCT::tests::relation::functions::transformation::aggregate::reverses(),
-    meta::external::query::sql::reversePCT::tests::relation::functions::transformation::groupBy::reverses()
+    meta::external::query::sql::reversePCT::tests::relation::functions::transformation::groupBy::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::functions::transformation::join::reverses()
 
   ]
 }

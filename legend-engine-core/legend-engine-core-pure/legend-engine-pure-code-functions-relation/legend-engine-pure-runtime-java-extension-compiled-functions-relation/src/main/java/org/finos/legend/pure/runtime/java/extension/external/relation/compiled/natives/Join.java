@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives;
 
 import org.eclipse.collections.api.list.ListIterable;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
@@ -30,6 +31,29 @@ public class Join extends AbstractNative implements Native
     @Override
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
+        return getString(transformedParams);
+    }
+
+    @Override
+    public String buildBody()
+    {
+        return "new SharedPureFunction<Object>()\n" +
+                "{\n" +
+                "   @Override\n" +
+                "   public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
+                "   {\n" +
+                "       return " + getString(Lists.mutable.with("(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation<? extends Object>)vars.get(0)", "(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relation<? extends Object>)vars.get(1)", "(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum)vars.get(2)", "vars.get(3)")) + ";" +
+                "   }\n" +
+                "\n}";
+    }
+
+    public static String extractLambda(String param)
+    {
+        return "(org.eclipse.collections.api.block.function.Function3)PureCompiledLambda.getPureFunction((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>)" + param + ", es)";
+    }
+
+    private static String getString(ListIterable<String> transformedParams)
+    {
         StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.join");
         result.append('(');
         result.append(transformedParams.get(0));
@@ -38,9 +62,8 @@ public class Join extends AbstractNative implements Native
         result.append(", ");
         result.append(transformedParams.get(2));
         result.append(", ");
-        result.append("(org.eclipse.collections.api.block.function.Function3)PureCompiledLambda.getPureFunction(");
-        result.append(transformedParams.get(3));
-        result.append(",es), es)\n");
+        result.append(extractLambda(transformedParams.get(3)));
+        result.append(", es)\n");
         return result.toString();
     }
 }
