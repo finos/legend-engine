@@ -171,7 +171,8 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                                               $s.mapFn->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^GContext(space='')),
                                               $s.aggregateFn->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^GContext(space=''))
                                               ]);,
-                                    a:Any[1] | $a->toRepresentation()
+                                    x:Enum[1]|$x->genericType().rawType->toOne()->elementToPath() + '.' + $x.name->toOne(),
+                                    a:Any[1] |$a->toRepresentation();
                                   ])->toOneMany()
                             )
                     )->match([
