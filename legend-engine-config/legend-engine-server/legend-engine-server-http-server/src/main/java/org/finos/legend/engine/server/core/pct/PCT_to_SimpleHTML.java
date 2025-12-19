@@ -104,11 +104,12 @@ public class PCT_to_SimpleHTML
                                 row.add(printFuncSignatures(d));
                                 if (!d.functionDefinition.signatures.isEmpty() && d.functionDefinition.signatures.get(0).platformOnly && adapterQualifiers.isEmpty())
                                 {
-                                    row.add("          <div style='color:#00C72B' class='hover-text'>" + d.functionDefinition.testCount + "<div class='tooltip-text' id='top'>Executed outside of PCT</div></div>");
-                                    for (int i = 0; i < orderedAdapters.size() - 1; i++)
+                                    row.add("          <div style='color:#00C72B' class='hover-text'>" + d.functionDefinition.testCount + "/" + d.functionDefinition.testCount + "<div class='tooltip-text' id='top'>Platform_function Tests are executed outside of PCT</div></div>");
+                                    row.add("          <div style='color:#00C72B' class='hover-text'>" + d.functionDefinition.testCount + "/" + d.functionDefinition.testCount + "<div class='tooltip-text' id='top'>Platform_function Tests are executed outside of PCT</div></div>");
+                                    for (int i = 0; i < orderedAdapters.size() - 2; i++)
                                     {
                                         // Should not have any tests...
-                                        row.add("<div style='color:#AAAAAA'>-</div>");
+                                        row.add("<div style='color:#AAAAAA' class='hover-text'>-<div class='tooltip-text' id='top'>Platform_function Tests are executed outside of PCT</div></div>");
                                     }
                                 }
                                 else
@@ -216,7 +217,8 @@ public class PCT_to_SimpleHTML
             MutableList<TestInfo> tests = Lists.mutable.withAll(results.tests).select(t -> hasAdapterQualifier(t, adapterQualifiers));
             if (tests.isEmpty())
             {
-                return "          <div style='color:#AAAAAA'>&empty;</div>";
+                System.out.println(z.functionDefinition.name + " " + a.adapter.name + "  //  " + ListIterate.collect(results.tests, ze -> ze.qualifiers).makeString("||"));
+                return "          <div style='color:#AAAAAA' class='hover-text'>OOO&empty;<div></div></div>";
             }
             int successfulTestCount = tests.select(t -> t.success).size();
             int totalTestCount = tests.size();
@@ -227,7 +229,7 @@ public class PCT_to_SimpleHTML
             String color = successfulTestCount == 0 ? "#C70039" : successfulTestCount != totalTestCount ? "#FFA500" : "#00C72B";
             return "          <div style='color:" + color + "' class='hover-text'>" + successfulTestCount + "/" + totalTestCount + "<div class='tooltip-text' id='top'>" + testDetail(tests) + "</div></div>";
         }
-        return "          <div style='color:#AAAAAA'>&empty;</div>";
+        return "          <div style='color:#FF0000' class='hover-text'>&#x00A4;<div class='tooltip-text' id='top'>No tests were found!</div></div>";
     }
 
     private static String testDetail(MutableList<TestInfo> tests)

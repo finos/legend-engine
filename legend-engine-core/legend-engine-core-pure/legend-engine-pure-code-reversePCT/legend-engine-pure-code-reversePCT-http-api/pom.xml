@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-reversePCT</artifactId>
-        <version>4.115.1-SNAPSHOT</version>
+        <version>4.116.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-code-reversePCT-http-api</artifactId>
@@ -53,11 +53,6 @@
     </build>
 
     <dependencies>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-
         <!-- ANNOTATIONS -->
         <dependency>
             <groupId>javax.ws.rs</groupId>
@@ -70,6 +65,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
