@@ -7,7 +7,8 @@ DataQualityRelationValidation demo::simplePersonValidation
      fullName: x|$x.fullName,
      age: x|$x.age,
      emailAddress: x|$x.emailAddress,
-     annualSalary: x|$x.annualSalary
+     annualSalary: x|$x.annualSalary,
+     dateOfBirth: x|$x.dateOfBirth
    ]
 )->from(
   demo::PersonMap,
@@ -52,7 +53,8 @@ Database demo::PersonDB
     FULL_NAME VARCHAR(200),
     AGE INTEGER,
     EMAIL VARCHAR(200),
-    SALARY DECIMAL(10, 2)
+    SALARY DECIMAL(10, 2),
+    DOB DATE
   )
 )
 
@@ -65,8 +67,8 @@ Class demo::Person
   age: Integer[0..1];
   emailAddress: String[0..1];
   annualSalary: Float[0..1];
+  dateOfBirth: StrictDate[0..1];
 }
-
 
 ###Mapping
 Mapping demo::PersonMap
@@ -82,7 +84,8 @@ Mapping demo::PersonMap
     fullName: [demo::PersonDB]PERSON_TBL.FULL_NAME,
     age: [demo::PersonDB]PERSON_TBL.AGE,
     emailAddress: [demo::PersonDB]PERSON_TBL.EMAIL,
-    annualSalary: [demo::PersonDB]PERSON_TBL.SALARY
+    annualSalary: [demo::PersonDB]PERSON_TBL.SALARY,
+    dateOfBirth: [demo::PersonDB]PERSON_TBL.DOB
   }
 )
 
@@ -96,13 +99,13 @@ RelationalDatabaseConnection demo::H2Connection
   {
     testDataSetupSqls: [
       'DROP TABLE IF EXISTS PERSON_TBL;',
-      'CREATE TABLE PERSON_TBL(ID INT, FULL_NAME VARCHAR(200), AGE INT, EMAIL VARCHAR(200), SALARY DECIMAL(10,2));',
-      'INSERT INTO PERSON_TBL VALUES (-1, \'Smith Failsson\', 30, \'fail@test.com\', 30000.00);',
-      'INSERT INTO PERSON_TBL VALUES (1, \'Alice Smith\', 30, \'alice@test.com\', 50000.00);',
-      'INSERT INTO PERSON_TBL VALUES (2, \'Bob Johnson\', 25, \'bob@test.com\', 60000.50);',
-      'INSERT INTO PERSON_TBL VALUES (3, \'Charlie Brown\', 35, \'charlie@test.com\', 75000.75);',
-      'INSERT INTO PERSON_TBL VALUES (4, \'Diana Prince\', NULL, \'diana@test.com\', 45000.00);',
-      'INSERT INTO PERSON_TBL VALUES (5, \'Eve Davis\', 28, NULL, 55000.00);'
+      'CREATE TABLE PERSON_TBL(ID INT, FULL_NAME VARCHAR(200), AGE INT, EMAIL VARCHAR(200), SALARY DECIMAL(10,2), DOB DATE);',
+      'INSERT INTO PERSON_TBL VALUES (-1, \'Smith Failsson\', 30, \'fail@test.com\', 30000.00, \'1995-01-01\');',
+      'INSERT INTO PERSON_TBL VALUES (1, \'Alice Smith\', 30, \'alice@test.com\', 50000.00, \'1995-02-01\');',
+      'INSERT INTO PERSON_TBL VALUES (2, \'Bob Johnson\', 25, \'bob@test.com\', 60000.50, \'2000-03-01\');',
+      'INSERT INTO PERSON_TBL VALUES (3, \'Charlie Brown\', 35, \'charlie@test.com\', 75000.75, \'1990-01-01\');',
+      'INSERT INTO PERSON_TBL VALUES (4, \'Diana Prince\', NULL, \'diana@test.com\', 45000.00, NULL);',
+      'INSERT INTO PERSON_TBL VALUES (5, \'Eve Davis\', 28, NULL, 55000.00, NULL);'
       ];
   };
   auth: DefaultH2;

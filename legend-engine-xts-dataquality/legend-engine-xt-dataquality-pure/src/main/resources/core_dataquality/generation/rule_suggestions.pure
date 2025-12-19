@@ -1,0 +1,157 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::dataquality::dataprofile::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::external::query::sql::transformation::compile::utils::*;
+import meta::pure::metamodel::relation::*;
+import meta::external::dataquality::rule_suggestions::*;
+import meta::external::dataquality::*;
+
+
+Class meta::external::dataquality::rule_suggestions::RuleSuggestion
+{
+  <<equality.Key>> name: String[1];
+  <<equality.Key>> type: String[0..1];
+  <<equality.Key>> description: String[0..1];
+  <<equality.Key>> assertion: String[1];
+}
+
+
+function meta::external::dataquality::rule_suggestions::ruleSuggestions(values:Map<String, Any>[*], lambda:LambdaFunction<Any>[1]):RuleSuggestion[*]
+{
+  let gt = $lambda->functionReturnType().typeArguments->at(0);
+  let relationType = relationType($gt);
+
+  $values->map(v | 
+    let name = str($v, ProfileColumn.COLUMN_NAME);
+    let column = col($relationType, $name);
+    let type = $column.classifierGenericType.typeArguments->last().rawType->toOne();
+
+    let count = int($v, ProfileColumn.COUNT);
+    let countNull = int($v, ProfileColumn.COUNT_NULL);    
+
+    let typeSpecificRules = if ([
+      pair(|$type->subTypeOf(Integer), | [
+        expectColumnToBeBetween($gt, $name, int($v, ProfileColumn.NUMBER_MIN), int($v, ProfileColumn.NUMBER_MAX))
+      ])
+    ], 
+    | []);
+
+    let commonRules = expectRowsToBeNonNull($gt, $name, $countNull)->concatenate(
+        expectRowsToBeNull($gt, $name, $count, $countNull)
+      );
+
+    let rules = $commonRules->concatenate($typeSpecificRules);
+
+    $rules->map(rule | 
+      ^RuleSuggestion(
+        name = $rule.name,
+        type = $rule.type,
+        description = $rule.description,
+        assertion = $rule.assertion->printFunctionDefinition(^GContext(space = ''))
+      )
+    );
+  );
+}
+
+function meta::external::dataquality::rule_suggestions::expectRowsToBeNonNull(rel:GenericType[1], column:String[1], countNull:Integer[1]):RelationValidation[0..1]
+{
+  if ($countNull == 0, | expectRowsToBeNonNull($rel, $column), | [])
+}
+
+function meta::external::dataquality::rule_suggestions::expectRowsToBeNonNull(rel:GenericType[1], column:String[1]):RelationValidation[1]
+{
+  let expression = sfe(rowsWithEmptyColumn_Relation_1__ColSpec_1__Relation_1_, [
+                        var('rel', PureOne, []), iv(colSpec($column))
+                      ]);
+
+  rowLevelEmpty($rel, $expression, $column + 'NonNull', []);
+}
+
+function meta::external::dataquality::rule_suggestions::expectRowsToBeNull(rel:GenericType[1], column:String[1], count:Integer[1], countNull:Integer[1]):RelationValidation[0..1]
+{
+  if ($countNull == $count, | expectRowsToBeNull($rel, $column), | []);
+}
+
+function meta::external::dataquality::rule_suggestions::expectRowsToBeNull(rel:GenericType[1], column:String[1]):RelationValidation[1]
+{
+  let expression = sfe(rowsWithNonEmptyColumn_Relation_1__ColSpec_1__Relation_1_, [
+                        var('rel', PureOne, []), iv(colSpec($column))
+                      ]);
+
+  rowLevelEmpty($rel, $expression, $column + 'Null', []);
+}
+
+
+function meta::external::dataquality::rule_suggestions::expectColumnToBeBetween(rel:GenericType[1], column:String[1], min:Integer[1], max:Integer[1]):RelationValidation[1]
+{
+  let expression = sfe(rowsWithValueOutsideRange_Relation_1__ColSpec_1__Integer_1__Integer_1__Relation_1_, [
+                        var('rel', PureOne, []), iv(colSpec($column)), iv($min), iv($max)
+                      ]);
+
+  rowLevelEmpty($rel, $expression, $column + 'BetweenValues', []);
+}
+
+function meta::external::dataquality::rule_suggestions::rowLevelEmpty(rel:GenericType[1], expression:ValueSpecification[1], name:String[1], description:String[0..1]):RelationValidation[1]
+{
+  ^RelationValidation(
+    name = $name,
+    description = $description,
+    assertion = validationLambda($rel, $expression, true)
+  );
+}
+
+function meta::external::dataquality::rule_suggestions::validationLambda(rel:GenericType[1], expression:ValueSpecification[1], addAssertNotEmpty:Boolean[1]):LambdaFunction<Any>[1]
+{
+  let finalExpression = if ($addAssertNotEmpty, 
+                              | sfe(assertRelationEmpty_Relation_1__ColSpecArray_1__Boolean_1_, [$expression, iv(relationType($rel).columns.name->colSpecArray())]), 
+                              | $expression);
+
+  //to compile we should set the rel type here, but it creates verbose grammar which we do not want.
+  lambda(functionType(var('rel', PureOne, []), gt(Boolean), PureOne), $finalExpression);
+}
+
+function meta::external::dataquality::rule_suggestions::relationType(g:GenericType[1]):RelationType<Any>[1]
+{
+  $g.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>)->toOne()
+}
+
+function meta::external::dataquality::rule_suggestions::colSpec(name:String[1]):meta::pure::metamodel::relation::ColSpec<Any>[1]
+{
+  ^meta::pure::metamodel::relation::ColSpec<Any>(name = $name);
+}
+
+function meta::external::dataquality::rule_suggestions::colSpecArray(names:String[*]):meta::pure::metamodel::relation::ColSpecArray<Any>[1]
+{
+  ^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $names);
+}
+
+function meta::external::dataquality::rule_suggestions::col(rel:RelationType<Any>[1], col:String[1]):Column<Any,Any|*>[1]
+{
+  let column = $rel.columns->filter(c | $c.name == $col);
+  assertEquals(1, $column->size(), | 'no column found with name ' + $col);
+
+  $column->toOne();
+}
+
+function meta::external::dataquality::rule_suggestions::str(m:Map<String, Any>[1], col:ProfileColumn[1]):String[1]
+{
+  $m->get(name($col))->toOne()->cast(@String);
+}
+
+function meta::external::dataquality::rule_suggestions::int(m:Map<String, Any>[1], col:ProfileColumn[1]):Integer[1]
+{
+  parseInteger($m->get(name($col))->toOne()->cast(@Number)->toString());
+}
