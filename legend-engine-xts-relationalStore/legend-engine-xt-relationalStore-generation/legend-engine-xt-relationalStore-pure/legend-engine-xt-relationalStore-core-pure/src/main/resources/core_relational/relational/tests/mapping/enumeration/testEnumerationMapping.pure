@@ -130,6 +130,22 @@ function <<test.Test>> meta::relational::tests::mapping::enumeration::testMappin
     assertEquals([], $newBob.type);
 }
 
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::enumeration::testEnumInRelation(): Boolean[1]
+{
+    let result = execute(|Employee.all()->project(~[name: x|$x.name, dateOfHire: x|$x.dateOfHire, type: x|$x.type, active: x|$x.active, firm: x|$x.firm, role: x|$x.role]), 
+                          employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions());
+    
+    assertEquals('name:String,dateOfHire:Date,type:meta::relational::tests::mapping::enumeration::model::domain::EmployeeType,'+
+                 'active:meta::relational::tests::mapping::enumeration::model::domain::YesNo,'+
+                 'firm:meta::relational::tests::mapping::enumeration::model::domain::Firm,'+
+                 'role:meta::relational::tests::mapping::enumeration::model::domain::EmployeeRole\n'+
+                 'Alice,1983-03-15,CONTRACT,YES,FIRM_A,JUNIOR\n'+
+                 'Bob,2003-07-19,FULL_TIME,NO,FIRM_A,JUNIOR\n'+
+                 'Curtis,2012-08-25,CONTRACT,TDSNull,FIRM_A,JUNIOR',
+                  $result.values->cast(@meta::pure::metamodel::relation::TDS<Any>).csv);
+
+}
+
 function <<test.Test>> meta::relational::tests::query::enumeration::testQueryWithEnum():Boolean[1]
 {
 
