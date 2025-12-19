@@ -29,6 +29,7 @@
 
     <modules>
         <module>legend-engine-language-pure-compiler</module>
+        <module>legend-engine-language-pure-compiler-test-pure</module>
         <module>legend-engine-language-pure-compiler-http-api</module>
         <module>legend-engine-language-pure-grammar</module>
         <module>legend-engine-language-pure-grammar-http-api</module>

@@ -1,0 +1,5 @@
+{
+  "name" : "core_compiler_test",
+  "pattern" : "(meta::legend)(::.*)?",
+  "dependencies" : ["platform","core"]
+}

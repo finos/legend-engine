@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder;
 
-import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -25,9 +24,11 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,15 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
         Assert.assertTrue(names.size() == 1, () -> "Multi handlers should have the same simple name. Found " + names.size() + " -> " + names);
         MutableList<Integer> signatures = this.handlers.collect(FunctionHandler::getParametersSize).distinct();
         Assert.assertTrue(signatures.size() == 1, () -> "Multi handlers should have the same kind of function signatures. Found " + signatures.size() + " -> " + signatures);
+    }
+
+    @Override
+    public void build(Map<String, Function<?>> result)
+    {
+        for (FunctionHandler handler : this.handlers)
+        {
+            handler.build(result);
+        }
     }
 
     public String getFunctionName()

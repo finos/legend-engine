@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.Dispatch;
@@ -26,19 +27,16 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
-import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
-import org.finos.legend.pure.m3.navigation.type.Type;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class FunctionHandler
 {
+    private MutableMap<String, Function<? extends Object>> fcache;
     private PureModel pureModel;
     private final String fullName;
     private String functionName;
@@ -49,19 +47,20 @@ public class FunctionHandler
 
     private FuncHandlerLazyState funcHandlerLazyState;
 
-    FunctionHandler(PureModel pureModel, String fullName, String name, boolean isNative, ReturnInference returnInference)
+    FunctionHandler(PureModel pureModel, MutableMap<String, Function<? extends Object>> fcache, String fullName, String name, boolean isNative, ReturnInference returnInference)
     {
-        this(pureModel, fullName, name, isNative, returnInference, p -> true);
+        this(pureModel, fcache, fullName, name, isNative, returnInference, p -> true);
     }
 
-    FunctionHandler(PureModel pureModel, String fullName, String name, boolean isNative, ReturnInference returnInference, Dispatch dispatch)
+    FunctionHandler(PureModel pureModel, MutableMap<String, Function<? extends Object>> fcache, String fullName, String name, boolean isNative, ReturnInference returnInference, Dispatch dispatch)
     {
-        this(pureModel, fullName, name, isNative, returnInference, null, dispatch);
+        this(pureModel, fcache, fullName, name, isNative, returnInference, null, dispatch);
     }
 
-    public FunctionHandler(PureModel pureModel, String fullName, String name, boolean isNative, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
+    public FunctionHandler(PureModel pureModel, MutableMap<String, Function<? extends Object>> fcache, String fullName, String name, boolean isNative, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
     {
         this.pureModel = pureModel;
+        this.fcache = fcache;
         this.fullName = fullName;
         this.isNative = isNative;
         this.returnInference = returnInference;
@@ -78,8 +77,7 @@ public class FunctionHandler
             {
                 if (this.funcHandlerLazyState == null)
                 {
-                    initialize(pureModel.getFunction(fullName, isNative));
-                    this.pureModel.loadModelFromFunctionHandler(this);
+                    initialize(this.fcache == null ? pureModel.getFunction(fullName, isNative) : this.fcache.get(fullName));
                 }
             }
         }
@@ -151,5 +149,10 @@ public class FunctionHandler
     {
         this.initialize();
         return this.funcHandlerLazyState.parametersSize;
+    }
+
+    public void build(Map<String, Function<?>> result)
+    {
+        result.put(this.fullName, getFunc());
     }
 }
