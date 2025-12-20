@@ -39,6 +39,15 @@ public abstract class LegendCompileTest
     }
 
     @Test
+    public void testFunctionPtr()
+    {
+        test("let x = meta::legend::compile('function x::z():Integer[1]{meta::pure::functions::math::plus_Integer_MANY__Integer_1_->eval([1,2]);}');" +
+                "println($x);" +
+                "assertEquals(1, $x->size());" +
+                "assertEquals(3, $x->toOne()->cast(@FunctionDefinition<{->Integer[1]}>).expressionSequence->at(0)->reactivate());");
+    }
+
+    @Test
     public void testClassPropertiesNavigation()
     {
         test("let x = meta::legend::compile('Class a::A{name:String[1];other:Integer[1];}')->cast(@Class<Any>);" +

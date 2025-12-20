@@ -22,10 +22,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecifica
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ParametersInference;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends FunctionExpressionBuilder
@@ -43,6 +45,12 @@ public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends 
     public void validate()
     {
         handlers.validate();
+    }
+
+    @Override
+    public void build(Map<String, Function<?>> result)
+    {
+        handlers.build(result);
     }
 
     public String getFunctionName()

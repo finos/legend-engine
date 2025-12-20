@@ -37,9 +37,7 @@ import org.finos.legend.engine.language.pure.compiler.MetadataWrapper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.defect.Defect;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.AssociationValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.ClassValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.EnumerationValidator;
@@ -56,6 +54,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -141,6 +140,9 @@ public class PureModel implements IPureModel
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
     private static final Root_meta_pure_metamodel_type_Class_Impl NULL_ELEMENT_SENTINEL = new Root_meta_pure_metamodel_type_Class_Impl("Anonymous_NoCounter");
     public static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(PureModel.class.getClassLoader(), true).collectIf(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_"), CodeRepository::getName));
+    private static final RichIterable<CodeRepository> repositories = CodeRepositoryProviderHelper.findCodeRepositories().select(CodeRepositoryProviderHelper.platformAndCore);
+    private static final MutableList<CompiledExtension> compiledExtensions = CompiledExtensionLoader.extensions();
+    private static final MutableMap<String, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object>>> fcache = Maps.mutable.empty();
 
     private final CompiledExecutionSupport executionSupport;
     private final DeploymentMode deploymentMode;
@@ -161,9 +163,6 @@ public class PureModel implements IPureModel
     final MutableMap<String, GenericType> typesGenericTypeIndex;
     private final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> packageableElementsIndex;
     private final ConcurrentLinkedQueue<EngineException> engineExceptions = new ConcurrentLinkedQueue<>();
-
-    private static final RichIterable<CodeRepository> repositories = CodeRepositoryProviderHelper.findCodeRepositories().select(CodeRepositoryProviderHelper.platformAndCore);
-    private static final MutableList<CompiledExtension> compiledExtensions = CompiledExtensionLoader.extensions();
 
     public PureModel(PureModelContextData pure, String user, DeploymentMode deploymentMode)
     {
@@ -249,7 +248,28 @@ public class PureModel implements IPureModel
             span.log("GRAPH_START");
 
             long initStart = System.nanoTime();
-            this.handlers = new Handlers(this);
+
+            // WARNING if metadata is not null we can't leverage the cache.
+            if (metaData == null)
+            {
+                String extensionNames = ListIterate.flatCollect(extensions.getExtensions(), LegendExtension::group).makeString("_");
+                // Cache function (from the static graph)
+                MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>> cache = fcache.getIfAbsentPut(extensionNames, () -> new Handlers(this, null).build());
+                this.handlers = new Handlers(this, cache);
+                // Copy functions from the static graph to the transient graph -------------
+                for (Pair<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>> val : fcache.get(extensionNames).keyValuesView())
+                {
+                    String pkg = val.getOne().substring(0, val.getOne().lastIndexOf(':') - 1);
+                    org.finos.legend.pure.m3.coreinstance.Package n = getOrCreatePackage(root, pkg);
+                    n._childrenAdd((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) val.getTwo());
+                }
+                // -------------------------------------------------------------------------
+            }
+            else
+            {
+                this.handlers = new Handlers(this, null);
+            }
+
             initializeMultiplicities();
             initializePrimitiveTypes();
             long initEnd = System.nanoTime();
@@ -1227,7 +1247,7 @@ public class PureModel implements IPureModel
         Root_meta_external_format_shared_binding_Binding binding = lookupAndCastPackageableElement(packagePrefix(fullPath), Root_meta_external_format_shared_binding_Binding.class);
         return binding == null ? null : binding;
     }
-    
+
     public Root_meta_core_runtime_Connection getConnection(String fullPath, SourceInformation sourceInformation)
     {
         Root_meta_core_runtime_Connection connection = this.getConnection_safe(fullPath);
@@ -1551,20 +1571,6 @@ public class PureModel implements IPureModel
     public RichIterable<? extends Type> getModelClasses()
     {
         return this.typesIndex.valuesView().reject(t -> (t == null) || (t == NULL_ELEMENT_SENTINEL) || (t instanceof Root_meta_pure_metamodel_type_Class_LazyImpl) || (t instanceof Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl));
-    }
-
-    public void loadModelFromFunctionHandler(FunctionHandler f)
-    {
-        if (!(f instanceof UserDefinedFunctionHandler))
-        {
-            try (AutoCloseableLock ignored = this.pureModelProcessParameter.writeLock())
-            {
-                String pkg = HelperModelBuilder.getElementFullPath(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) f.getFunc())._package(), this.getExecutionSupport());
-                org.finos.legend.pure.m3.coreinstance.Package n = getOrCreatePackage(root, pkg);
-                org.finos.legend.pure.m3.coreinstance.Package o = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pkg);
-                n._childrenAdd(o._children().detect(c -> f.getFunctionSignature().equals(c._name())));
-            }
-        }
     }
 
     public Handlers getHandlers()
