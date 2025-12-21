@@ -107,6 +107,9 @@
 
         <!-- Python -->
         <module>legend-engine-xts-python</module>
+
+        <!-- MCP -->
+        <module>legend-engine-xts-mcp</module>
     </modules>
 
     <properties>
@@ -3267,6 +3270,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-python-reversePCT-legendQL</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-mcp-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-mcp-server-orchestrator</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -30,7 +30,9 @@ Class meta::legend::service::metamodel::Service extends PackageableElement, meta
                                       |true)
                                   ),
 
-   patternMustStartWithBackslash: $this.pattern->startsWith('/')
+   patternMustStartWithBackslash: $this.pattern->startsWith('/'),
+
+   mcpServerIsValidIdentifierIfExists: if($this.mcpServer->isEmpty(), |true, |$this.mcpServer->toOne()->matches('^[a-zA-Z_][a-zA-Z0-9_]*$'))
 ]
 {
    pattern : String[1];
@@ -41,6 +43,7 @@ Class meta::legend::service::metamodel::Service extends PackageableElement, meta
    execution : Execution[1];
    tags: ServiceTag[*];
    postValidations: PostValidation<Any|*>[*];
+   mcpServer: String[0..1];
 
    <<doc.deprecated>> test: Test[0..1];
 }

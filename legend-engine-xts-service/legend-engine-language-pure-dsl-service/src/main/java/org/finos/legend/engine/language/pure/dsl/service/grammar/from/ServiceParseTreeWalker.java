@@ -153,6 +153,16 @@ public class ServiceParseTreeWalker
         {
             service.postValidations = ListIterate.collect(postValidationsContext.postValidation(), this::visitPostValidation);
         }
+        // mcpServer (optional)
+        ServiceParserGrammar.ServiceMcpServerContext mcpServerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceMcpServer(), "mcpServer", service.sourceInformation);
+        service.mcpServer = mcpServerContext != null ? PureGrammarParserUtility.fromIdentifier(mcpServerContext.identifier()) : null;
+        if (service.mcpServer != null)
+        {
+            if (!service.mcpServer.matches("[a-zA-Z_][a-zA-Z0-9_]*"))
+            {
+                throw new EngineException("Service mcpServer should be a valid identifier ([a-zA-Z_][a-zA-Z0-9_]*)", this.walkerSourceInformation.getSourceInformation(mcpServerContext), EngineErrorType.PARSER);
+            }
+        }
         return service;
     }
 
