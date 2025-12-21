@@ -183,8 +183,6 @@ public class To extends AbstractNative
 
     private static Object to(JsonNode jsonNode, String typeKeyName, ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair<String,String>> typeLookup, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType pureGenericType, SourceInformation sourceInformation, CompiledExecutionSupport es)
     {
-        boolean supportedTypeButWrongJson = false;
-
         try
         {
             if (jsonNode == null || jsonNode.isNull())
@@ -213,7 +211,6 @@ public class To extends AbstractNative
 
                         return new PureMap(map);
                     }
-                    supportedTypeButWrongJson = true;
                 }
             }
             else if (pureGenericType._rawType() == es.getProcessorSupport().package_getByUserPath(M3Paths.List))
@@ -226,7 +223,6 @@ public class To extends AbstractNative
                     list._values(values);
                     return list;
                 }
-                supportedTypeButWrongJson = true;
             }
             else if (pureGenericType._rawType() == es.getProcessorSupport().package_getByUserPath(M3Paths.Variant))
             {
@@ -262,7 +258,6 @@ public class To extends AbstractNative
                 {
                     return Long.parseLong(jsonNode.asText());
                 }
-                supportedTypeButWrongJson = true;
             }
             else if (pureGenericType._rawType() == es.getProcessorSupport().package_getByUserPath(M3Paths.Float))
             {
@@ -274,7 +269,6 @@ public class To extends AbstractNative
                 {
                     return Double.parseDouble(jsonNode.asText());
                 }
-                supportedTypeButWrongJson = true;
             }
             else if (pureGenericType._rawType() == es.getProcessorSupport().package_getByUserPath(M3Paths.Boolean))
             {
@@ -286,7 +280,6 @@ public class To extends AbstractNative
                 {
                     return ModelRepository.getBooleanValue(jsonNode.asText());
                 }
-                supportedTypeButWrongJson = true;
             }
             else if (pureGenericType._rawType() == es.getProcessorSupport().package_getByUserPath(M3Paths.String))
             {
@@ -303,8 +296,6 @@ public class To extends AbstractNative
 
                     return JsonGen.fromJson(jsonNode.toString(), (Class<Object>) pureGenericType._rawType(), config, sourceInformation, es);
                 }
-
-                supportedTypeButWrongJson = true;
             }
         }
         catch (IllegalArgumentException e)
@@ -312,10 +303,6 @@ public class To extends AbstractNative
             throw new PureExecutionException(sourceInformation, e.getMessage(), e);
         }
 
-        if (supportedTypeButWrongJson)
-        {
-            throw new PureExecutionException(sourceInformation, "Variant of type '" + jsonNode.getNodeType() + "' cannot be converted to " + GenericType.print(pureGenericType, es.getProcessorSupport()));
-        }
         throw new PureExecutionException(sourceInformation, GenericType.print(pureGenericType, es.getProcessorSupport()) + " is not managed yet!");
     }
 }

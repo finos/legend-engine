@@ -217,8 +217,7 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    dataTypeToSqlText(dt: meta::relational::metamodel::datatype::DataType[1])
    {
-     assert($this.dbExtension.dataTypeToSqlText->isNotEmpty(), 'Datatype to SQL text not supported for Database Type: ' + $this.dbType->toString());
-     $this.dbExtension.dataTypeToSqlText->toOne()->eval($dt);
+     $this.dbExtension.dataTypeToSqlText->orElse(meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault_DataType_1__String_1_)->eval($dt);
    }: String[1];
 
    lambdaParameterProcessor(r:RelationalLambdaParameter[1], sgc:SqlGenerationContext[1])

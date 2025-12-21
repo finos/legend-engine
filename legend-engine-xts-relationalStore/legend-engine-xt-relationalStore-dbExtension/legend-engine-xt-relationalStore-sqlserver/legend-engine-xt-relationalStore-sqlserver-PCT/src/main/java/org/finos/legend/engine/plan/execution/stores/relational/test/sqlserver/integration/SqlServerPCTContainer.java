@@ -20,7 +20,7 @@ import org.testcontainers.utility.DockerImageName;
 public class SqlServerPCTContainer extends JdbcDatabaseContainer<SqlServerPCTContainer>
 {
     public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName
-            .parse("mcr.microsoft.com/mssql/server:2019-latest")
+            .parse(System.getProperty("legend.engine.testcontainer.registry", "mcr.microsoft.com") + "/mssql/server:2019-latest")
             .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server:2019-latest");
     public static final Integer DEFAULT_PORT = 1433;
 

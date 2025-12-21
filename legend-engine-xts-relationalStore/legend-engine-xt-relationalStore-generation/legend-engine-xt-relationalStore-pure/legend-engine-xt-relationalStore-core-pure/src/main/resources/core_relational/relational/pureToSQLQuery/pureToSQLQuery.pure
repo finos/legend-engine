@@ -120,7 +120,6 @@ Class meta::relational::functions::pureToSqlQuery::State
    pushDownEnumTransformations :Boolean[1] = false;
    currentWindow : WindowColumn[0..1];
    idToClassMapping : Map<String, List<SetImplementation>>[1];
-   inVariantNavigation: Boolean[1] = false;
 }
 
 Class meta::relational::functions::pureToSqlQuery::FunctionParamScope
@@ -3655,31 +3654,42 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
 
 function meta::relational::functions::pureToSqlQuery::isVariantInput(v: ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], state: State[1]):Boolean[1]
 {
-  if($state.inVariantNavigation || $v.genericType.rawType == meta::pure::metamodel::variant::Variant,
-    |
-      true,
-    |
-      $v->match([
-        fe: FunctionExpression[1] | $fe.parametersValues->head()->map(x | $x->isVariantInput($vars, $state))->orElse(false),
-        ve: VariableExpression[1] | $vars->get($ve)->map(x | $x->isVariantInput($vars, $state))->orElse(false),
-        rvs: RoutedValueSpecification[1] | $rvs.value->isVariantInput($vars, $state),
-        any: Any[1] | false;
-      ])
-  );
+  $v->isVariantInputImpl($vars, $state, false);
 }
 
 function meta::relational::functions::pureToSqlQuery::isVariantInputWithInstanceValue(v: ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], state: State[1]):Boolean[1]
 {
-  if($state.inVariantNavigation || $v.genericType.rawType == meta::pure::metamodel::variant::Variant,
+  $v->isVariantInputImpl($vars, $state, true);
+}
+
+function meta::relational::functions::pureToSqlQuery::isVariantInputImpl(v: ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], state: State[1], instanceValueLookup: Boolean[1]):Boolean[1]
+{
+  if($v.genericType.rawType == meta::pure::metamodel::variant::Variant,
     |
       true,
     |
       $v->match([
-        fe: FunctionExpression[1] | $fe.parametersValues->head()->map(x | $x->isVariantInputWithInstanceValue($vars, $state))->orElse(false);,
-        ve: VariableExpression[1] | $vars->get($ve)->map(x | $x->isVariantInputWithInstanceValue($vars, $state))->orElse(false);,
-        iv: InstanceValue[1]      | $iv.values->type()->instanceOf(PrimitiveType) || $iv.values->type() == Nil,
-        rvs: RoutedValueSpecification[1] | $rvs.value->isVariantInputWithInstanceValue($vars, $state),
-        any: Any[1] | false;
+        fe: FunctionExpression[1] | 
+          $fe.parametersValues->head()->map(x | $x->isVariantInputImpl($vars, $state, $instanceValueLookup))->orElse(false);,
+        ve: VariableExpression[1] | 
+          $state.functionReferenceScope->map(frs | $frs.resolveFunctionReferenceByName($ve.name)).select.columns->match([
+            rlp: RelationalLambdaParameter[1] | 
+              $rlp.type->type()->in(
+                  [
+                    meta::relational::metamodel::datatype::SemiStructured,
+                    meta::relational::metamodel::datatype::Object, 
+                    meta::relational::metamodel::datatype::Array
+                  ]
+                ),
+            any: Any[*] |
+               $vars->get($ve)->map(x | $x->isVariantInputImpl($vars, $state, $instanceValueLookup))->orElse(false);
+          ]);,
+        iv: InstanceValue[1]      | 
+          $instanceValueLookup && $iv.values->type()->instanceOf(PrimitiveType) || $iv.values->type() == Nil,
+        rvs: RoutedValueSpecification[1] | 
+          $rvs.value->isVariantInputImpl($vars, $state, $instanceValueLookup),
+        any: Any[1] | 
+          false;
       ])
   );
 }
@@ -4214,20 +4224,30 @@ function meta::relational::functions::pureToSqlQuery::processVariantRemoveDuplic
   processDynaFunction('array_distinct', {reo | $reo->toVariantFriendlyValue($f.parametersValues->at(0).genericType->genericTypeToDataType($f.parametersValues->at(0).multiplicity))}, $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
-function meta::relational::functions::pureToSqlQuery::findVariantToMetadata(value: RelationalOperationElement[1]):VariantToElementMetadata[0..1]
+function meta::relational::functions::pureToSqlQuery::findVariantType(value: RelationalOperationElement[1]):meta::relational::metamodel::datatype::TypedSemiStructured[0..1]
 {
-  if ($value.metadata->isNotEmpty() && $value.metadata->toOne()->instanceOf(VariantToElementMetadata),
-    |
-      $value.metadata->cast(@VariantToElementMetadata)
-    ,
-    |
-      $value->match([    
-        df: DynaFunction[1] | $df.parameters->head()->map(x | $x->findVariantToMetadata()),
-        rlp: RelationalLambdaParameter[1] | $rlp.value->findVariantToMetadata(),
-        rl: RelationalLambda[1] | $rl.parameters->at(0)->findVariantToMetadata(),
-        a: RelationalOperationElement[1] | fail($a->type()->elementToPath()); $a.metadata->cast(@VariantToElementMetadata);
-      ])
-  )
+  $value->match([    
+    df: DynaFunction[1] | 
+      if ($df.name == 'variantTo' && $df.parameters->last()->toOne()->cast(@DataTypeInfo).dataType->instanceOf(meta::relational::metamodel::datatype::TypedSemiStructured),
+        |
+          $df.parameters->last()->toOne()->cast(@DataTypeInfo).dataType->cast(@meta::relational::metamodel::datatype::TypedSemiStructured)
+        ,
+        |
+          $df.parameters->head()->map(x | $x->findVariantType())
+      ),
+    rlp: RelationalLambdaParameter[1] | 
+      if($rlp.type->instanceOf(meta::relational::metamodel::datatype::TypedSemiStructured), 
+        |
+          $rlp.type->cast(@meta::relational::metamodel::datatype::TypedSemiStructured)
+        ,
+        |
+          $rlp.value->findVariantType()
+      ),
+    rl: RelationalLambda[1] | 
+      $rl.parameters->at(0)->findVariantType(),
+    a: RelationalOperationElement[1] | 
+      [];
+  ])
 }
 
 function meta::relational::functions::pureToSqlQuery::processVariantInstanceOf(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -4235,7 +4255,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantInstanceOf(f
   let variant = $f.parametersValues->at(0)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(inFilter = false), $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor).select.columns->toOne();
   let class = $f->instanceValueAtParameter(1)->toOne()->cast(@Class<Any>);
 
-  let variantToMetadata = findVariantToMetadata($variant)->toOne('did you forgot to call to() or toMany()?');
+  let variantToMetadata = findVariantType($variant);
   let keyProp = $variantToMetadata.typeName->orElse('_type');
   let className = $variantToMetadata.typeLookup->filter(p | $p.second == $class)->head().first->orElse($class.name->toOne());
 
@@ -4266,10 +4286,11 @@ function meta::relational::functions::pureToSqlQuery::processTo(f:FunctionExpres
         pair($first, $second);
       );
 
-      ^$value(metadata = ^VariantToElementMetadata(typeName = $typeName, typeLookup = $typeLookup));
+      let typedSemiStructured = ^meta::relational::metamodel::datatype::TypedSemiStructured(typeName = $typeName, typeLookup = $typeLookup);
+      newDynaFunction('variantTo', [$value, ^DataTypeInfo(dataType = $typedSemiStructured)]);
     ,
     |
-      ^$value(metadata = ^VariantToElementMetadata(typeName = '_type', typeLookup = []));
+      $value;
   );
 
   let typeParam = $f.parametersValues->at(1);
@@ -4306,10 +4327,11 @@ function meta::relational::functions::pureToSqlQuery::processToMany(f:FunctionEx
         pair($first, $second);
       );
       
-      ^$value(metadata = ^VariantToElementMetadata(typeName = $typeName, typeLookup = $typeLookup));
+      let typedSemiStructured = ^meta::relational::metamodel::datatype::TypedSemiStructured(typeName = $typeName, typeLookup = $typeLookup);
+      newDynaFunction('variantTo', [$value, ^DataTypeInfo(dataType = $typedSemiStructured)]);
     ,
     |
-      ^$value(metadata = ^VariantToElementMetadata(typeName = '_type', typeLookup = []));
+      $value;
   );
 
   let dataType = $f.parametersValues->at(1).genericType->genericTypeToDataType(ZeroOne);
@@ -4396,7 +4418,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantAt(f:Functio
     ->cast(@SelectWithCursor);
   let operand = $arraySource.select.columns->toOne();
 
-  let propertyToAccess = $params->at(1)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(inFilter = false, inVariantNavigation = true), $joinType, $nodeId, $aggFromMap, $context, $extensions)
+  let propertyToAccess = $params->at(1)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(inFilter = false), $joinType, $nodeId, $aggFromMap, $context, $extensions)
     ->cast(@SelectWithCursor);
   let property = $propertyToAccess.select.columns->toOne();
 
@@ -4424,11 +4446,11 @@ function meta::relational::functions::pureToSqlQuery::processMapGet(f:FunctionEx
     ->cast(@SelectWithCursor);
   let operand = $mapSource.select.columns->toOne();
 
-  let propertyToAccess = $params->at(1)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(inFilter = false, inVariantNavigation = true), $joinType, $nodeId, $aggFromMap, $context, $extensions)
+  let propertyToAccess = $params->at(1)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(inFilter = false), $joinType, $nodeId, $aggFromMap, $context, $extensions)
     ->cast(@SelectWithCursor);
   let property = $propertyToAccess.select.columns->toOne();
 
-  let rawRelOpElement = ^SemiStructuredPropertyAccess(property = $property, operand = $operand, returnType = $f.genericType.rawType);
+  let rawRelOpElement = ^SemiStructuredPropertyAccess(property = $property, operand = $operand->unwrapAlias(), returnType = $f.genericType.rawType);
 
   let dataType = $f.genericType->genericTypeToDataType(ZeroOne);
 
@@ -4459,7 +4481,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantFold(f:Funct
   let valueToFold = $valueToFoldProcessed.select.columns->toVariantFriendlyValue($param1Type);
   let param1 = ^RelationalLambdaParameter(name = $foldFunctionParamNames->at(0), value = $valueToFold, type = $param1Type);
 
-  let foldStartingValueProcessed = $params->at(2)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(inFilter = false, inVariantNavigation = true), $joinType, $nodeId, $aggFromMap, $context, $extensions)
+  let foldStartingValueProcessed = $params->at(2)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(inFilter = false), $joinType, $nodeId, $aggFromMap, $context, $extensions)
     ->cast(@SelectWithCursor);
 
   let param2Type = $f.genericType->genericTypeToDataType($f.multiplicity);
@@ -4476,7 +4498,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantFold(f:Funct
       ]
     );    
 
-  let lambdaBodyProcessed = $params->at(1)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$updatedState(inFilter = false, inVariantNavigation = true), $joinType, $nodeId, $aggFromMap, $context, $extensions)
+  let lambdaBodyProcessed = $params->at(1)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$updatedState(inFilter = false), $joinType, $nodeId, $aggFromMap, $context, $extensions)
     ->cast(@SelectWithCursor);
   let lambdaBody = $lambdaBodyProcessed.select.columns->toOne();
 
@@ -4509,7 +4531,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantMap(f:Functi
       ]
     );      
 
-  let lambdaBodyProcessed = $params->at(1)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$updatedState(inFilter = false, inVariantNavigation = true), $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor);
+  let lambdaBodyProcessed = $params->at(1)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$updatedState(inFilter = false), $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor);
 
   let lambdaBody = $lambdaBodyProcessed.select.columns->toOne();
 
@@ -4570,7 +4592,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantPropertyNavi
           );
         ,
         |
-          let relOpElement = ^SemiStructuredPropertyAccess(property = ^Literal(value = $prop.name->toOne()), operand = $operand.select.columns->toOne());
+          let relOpElement = ^SemiStructuredPropertyAccess(property = ^Literal(value = $prop.name->toOne()), operand = $operand.select.columns->unwrapAlias()->toOne());
 
           // dont cast if going from variant to variant
           $dataType->match([
@@ -4606,7 +4628,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantPropertyNavi
             
       let updatedState = $state->updateFunctionParamScope($ft, ^$operation(select = ^$select(columns = $param)));            
 
-      let lambdaBodyProcessed = $expression->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$updatedState(inFilter = false, inVariantNavigation = true), $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor);
+      let lambdaBodyProcessed = $expression->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$updatedState(inFilter = false), $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor);
 
       let value = $lambdaBodyProcessed.select.columns->toOne();
 
@@ -4660,7 +4682,7 @@ function meta::relational::functions::pureToSqlQuery::processVariantFilter(f:Fun
       ]
     );
 
-  let lambdaBodyProcessed = $params->at(1)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$updatedState(inFilter = false, inVariantNavigation = true), $joinType, $nodeId, $aggFromMap, $context, $extensions)
+  let lambdaBodyProcessed = $params->at(1)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$updatedState(inFilter = false), $joinType, $nodeId, $aggFromMap, $context, $extensions)
     ->cast(@SelectWithCursor);
   let lambdaBody = $lambdaBodyProcessed.select.columns->toOne();
 
@@ -4676,7 +4698,7 @@ function meta::relational::functions::pureToSqlQuery::toVariantFriendlyValue(col
     newDynaFunction('cast', newDynaFunction('toVariantList', $toList)->concatenate(^DataTypeInfo(dataType = $arrayType)));
   };
 
-  $cols->match([
+  $cols->unwrapAlias()->match([
     l: Literal[1] | $toList->eval($l->filter(v | !$v.value->instanceOf(SQLNull))),
     c: RelationalOperationElement[1] | $c,
     a: RelationalOperationElement[*] | $toList->eval($a)
@@ -4734,12 +4756,17 @@ function meta::relational::functions::pureToSqlQuery::processDynaFunction(name:S
    $processedParams.second->eval($res);
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::newDynaFunction(name: String[1], params: RelationalOperationElement[*]): DynaFunction[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::unwrapAlias<|N>(params: RelationalOperationElement[N]): RelationalOperationElement[N]
 {
    let unwrapped = $params->map(p | $p->match([
     a: Alias[1] | $a.relationalElement,
     roe: RelationalOperationElement[1] | $roe
    ])); 
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::newDynaFunction(name: String[1], params: RelationalOperationElement[*]): DynaFunction[1]
+{
+   let unwrapped = $params->unwrapAlias(); 
    if($name->in(['and','or']),
                | newAndOrDynaFunctionWrappedInGroup($name, $unwrapped),
                | ^DynaFunction(name = $name, parameters = $unwrapped)

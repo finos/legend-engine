@@ -63,12 +63,6 @@ Class meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction e
   owner: meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation[1];
 }
 
-Class meta::relational::metamodel::VariantToElementMetadata extends meta::relational::metamodel::RelationalOperationElementMetadata
-{
-   typeName : String[0..1];
-   typeLookup : Pair<String, Class<Any>>[*];
-}
-
 Class meta::relational::metamodel::TableAliasColumnName extends meta::relational::metamodel::RelationalOperationElement
 {
    alias : TableAlias[1];
@@ -110,6 +104,12 @@ Class meta::relational::metamodel::FilterRelationalLambda extends meta::relation
 ]
 {
 
+}
+
+Class meta::relational::metamodel::datatype::TypedSemiStructured extends meta::relational::metamodel::datatype::SemiStructured
+{
+  typeName : String[0..1];
+  typeLookup : Pair<String, Class<Any>>[*];
 }
 
 Class meta::relational::metamodel::StaticPivot extends meta::relational::metamodel::Pivot

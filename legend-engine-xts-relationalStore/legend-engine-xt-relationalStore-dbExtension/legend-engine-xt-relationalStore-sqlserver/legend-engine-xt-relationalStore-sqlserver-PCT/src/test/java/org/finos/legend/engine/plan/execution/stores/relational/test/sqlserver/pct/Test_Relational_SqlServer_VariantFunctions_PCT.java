@@ -83,7 +83,22 @@ public class Test_Relational_SqlServer_VariantFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::variant::navigation::tests::get::testGetFromArray_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer\""),
             one("meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyDoesNotExists_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer\""),
             one("meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyExists_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer\""),
-            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer\"")
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer\""),
+            
+            one("meta::pure::functions::variant::convert::tests::to::testToClassWithInheritance_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::to::Pet"),
+            one("meta::pure::functions::variant::convert::tests::to::testToClass_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::to::Person"),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToClassWithInheritance_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Pet"),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToClass_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Person"),
+
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_manyToMany_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: SqlServer"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_manyToOne_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: SqlServer"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_oneToMany_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: SqlServer"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_manyToMany_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: SqlServer"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_manyToOne_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: SqlServer"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_oneToMany_Function_1__Boolean_1_", "[unsupported-api] The function 'array_flatten' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_oneToOne_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: SqlServer"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessQualifiedProperty_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: SqlServer"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceAndInstanceOf_withTypeLookup_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: SqlServer")
 
             );
 

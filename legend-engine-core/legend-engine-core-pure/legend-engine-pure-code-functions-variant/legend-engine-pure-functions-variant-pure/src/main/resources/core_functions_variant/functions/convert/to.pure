@@ -56,7 +56,7 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertError(|$f->eval(|fromJson('1.25')->to(@Integer)), 'Variant of type \'NUMBER\' cannot be converted to Integer');
+    assertError(|$f->eval(|fromJson('1.25')->to(@Integer)), 'Integer is not managed yet!');
 }
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
@@ -146,7 +146,7 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertError(|$f->eval(|fromJson('"not an object"')->to(@Map<String, Variant>)), 'Variant of type \'STRING\' cannot be converted to Map<String, Variant>');
+    assertError(|$f->eval(|fromJson('"not an object"')->to(@Map<String, Variant>)), 'Map<String, Variant> is not managed yet!');
 }
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToMapWithNonStringKeys<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
@@ -172,7 +172,7 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertError(|$f->eval(|fromJson('"not an array"')->to(@List<Variant>)), 'Variant of type \'STRING\' cannot be converted to List<Variant>');
+    assertError(|$f->eval(|fromJson('"not an array"')->to(@List<Variant>)), 'List<Variant> is not managed yet!');
 }
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToEnum<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
@@ -182,7 +182,7 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToAny<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertError(|$f->eval(|fromJson('"hello"')->to(@Any)), 'Variant of type \'STRING\' cannot be converted to Any');
+  assertError(|$f->eval(|fromJson('"hello"')->to(@Any)), 'Any is not managed yet!');
 }
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToClass<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

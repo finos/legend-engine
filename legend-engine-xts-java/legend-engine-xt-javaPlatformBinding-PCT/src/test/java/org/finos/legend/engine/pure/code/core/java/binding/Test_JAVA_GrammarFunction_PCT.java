@@ -54,7 +54,7 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
 
             // Let
             one("meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::lang::tests::model::LA_Person\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 2 errors compiling /_pure/plan/root/n1/Execute.java\n/_pure/plan/root/n1/Execute.java", AdapterQualifier.needsInvestigation),
+            // one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 2 errors compiling /_pure/plan/root/n1/Execute.java\n/_pure/plan/root/n1/Execute.java", AdapterQualifier.needsInvestigation),
 
             // Map
             one("meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\"", AdapterQualifier.needsInvestigation),
@@ -64,7 +64,7 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
 
             // let
             one("meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_", "Error in 'test::testFunction': Function does not exist 'letAsLastStatement()'", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "Error in 'test::testFunction': Function does not exist 'letChainedWithAnotherFunction(Class<TestClass>[1])'", AdapterQualifier.needsInvestigation),
+            // one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "Error in 'test::testFunction': Function does not exist 'letChainedWithAnotherFunction(Class<TestClass>[1])'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "Error in 'test::testFunction': Function does not exist 'letWithParam(String[1])'", AdapterQualifier.needsInvestigation),
 
             // Minus

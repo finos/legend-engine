@@ -106,8 +106,6 @@ public abstract class AbstractTo extends NativeFunction
             return null;
         }
 
-        boolean supportedTypeButWrongJson = false;
-
         if (targetRawType == processorSupport.package_getByUserPath(M3Paths.List))
         {
             if (jsonNode.isArray())
@@ -122,8 +120,6 @@ public abstract class AbstractTo extends NativeFunction
 
                 return listCoreInstance;
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.Map))
         {
@@ -148,8 +144,6 @@ public abstract class AbstractTo extends NativeFunction
 
                     return mapCoreInstance;
                 }
-
-                supportedTypeButWrongJson = true;
             }
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.Integer))
@@ -162,8 +156,6 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newIntegerCoreInstance(jsonNode.textValue());
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.Float))
         {
@@ -175,8 +167,6 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newFloatCoreInstance(jsonNode.textValue());
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.StrictDate))
         {
@@ -184,8 +174,6 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newStrictDateCoreInstance(jsonNode.textValue());
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.DateTime))
         {
@@ -193,8 +181,6 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newDateTimeCoreInstance(jsonNode.textValue());
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.String))
         {
@@ -202,8 +188,6 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newStringCoreInstance(jsonNode.asText());
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.Boolean))
         {
@@ -215,8 +199,6 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newBooleanCoreInstance(jsonNode.textValue());
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (processorSupport.instance_instanceOf(targetRawType, M3Paths.Class))
         {
@@ -236,13 +218,6 @@ public abstract class AbstractTo extends NativeFunction
                 CoreInstance resultValue = this.exec.executeFunction(false, FunctionCoreInstanceWrapper.toFunction(fromJsonToClassFunc), arguments, new Stack<>(), new Stack<>(), VariableContext.newVariableContext(), functionExpressionCallStack, VoidProfiler.VOID_PROFILER, new InstantiationContext(), executionSupport);
                 return Instance.getValueForMetaPropertyToOneResolved(resultValue, M3Properties.values, processorSupport);
             }
-
-            supportedTypeButWrongJson = true;
-        }
-
-        if (supportedTypeButWrongJson)
-        {
-            throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), "Variant of type '" + jsonNode.getNodeType() + "' cannot be converted to " + GenericType.print(targetGenericType, processorSupport), functionExpressionCallStack);
         }
 
         throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), GenericType.print(targetGenericType, processorSupport) + " is not managed yet!", functionExpressionCallStack);
