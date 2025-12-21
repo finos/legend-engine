@@ -3685,7 +3685,7 @@ function meta::relational::functions::pureToSqlQuery::isVariantInputImpl(v: Valu
                $vars->get($ve)->map(x | $x->isVariantInputImpl($vars, $state, $instanceValueLookup))->orElse(false);
           ]);,
         iv: InstanceValue[1]      | 
-          $instanceValueLookup && $iv.values->type()->instanceOf(PrimitiveType) || $iv.values->type() == Nil,
+          $instanceValueLookup && ($iv.values->type()->instanceOf(PrimitiveType) || $iv.values->type() == Nil),
         rvs: RoutedValueSpecification[1] | 
           $rvs.value->isVariantInputImpl($vars, $state, $instanceValueLookup),
         any: Any[1] | 
