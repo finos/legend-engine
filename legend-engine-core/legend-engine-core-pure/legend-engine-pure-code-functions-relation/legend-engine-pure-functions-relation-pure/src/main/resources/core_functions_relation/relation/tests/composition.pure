@@ -1284,3 +1284,24 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   3,null,null,null\n'+
                 '#', $res->toString());
 }
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testMultiIfTDS<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {
+              | #TDS
+                id, resA, resB
+                1, a, b
+                2, aa, bb
+                3, 4, null
+              #->extend(~val : x | if([pair(|$x.id == 1, |$x.resA), pair(|$x.id == 2, |$x.resB), pair(|$x.id == $x.resA, |$x.resA)], |$x.resB));
+            };
+
+   let res =  $f->eval($expr);
+
+  assertEquals('#TDS\n'+
+                '   id,resA,resB,val\n'+
+                '   1,a,b,a\n'+
+                '   2,aa,bb,bb\n'+
+                '   3,4,null,null\n'+
+                '#', $res->toString());
+}
