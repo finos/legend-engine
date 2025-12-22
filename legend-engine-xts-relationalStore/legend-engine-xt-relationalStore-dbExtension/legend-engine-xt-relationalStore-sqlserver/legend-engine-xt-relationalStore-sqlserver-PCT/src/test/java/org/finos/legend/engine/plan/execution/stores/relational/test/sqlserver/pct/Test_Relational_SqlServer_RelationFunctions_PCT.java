@@ -222,6 +222,7 @@ public class Test_Relational_SqlServer_RelationFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::relation::tests::composition::test_Slice_Size_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near 'limit'."),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_contains_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_contains' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer\""),
 
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer\""),
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer\""),
@@ -233,11 +234,19 @@ public class Test_Relational_SqlServer_RelationFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer\""),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer\""),
 
+            pack("meta::pure::functions::relation::tests::pivot", "pivot is not supported"),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB SqlServer\""),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB SqlServer\""),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB SqlServer\""),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB SqlServer\""),
+
             // lateral
             pack("meta::pure::functions::relation::tests::lateral", "Common table expression not supported on DB SqlServer", AdapterQualifier.unsupportedFeature),
 
             // flatten
-            pack("meta::pure::functions::relation::variant::tests::flatten", "Datatype to SQL text not supported for Database Type: SqlServer", AdapterQualifier.unsupportedFeature)
+            pack("meta::pure::functions::relation::variant::tests::flatten", "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Function_1__Boolean_1_", "\"[unsupported-api] Lateral operation not supported for Database Type: SqlServer\""),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Function_1__Boolean_1_", "\"[unsupported-api] Lateral operation not supported for Database Type: SqlServer\"")
     );
 
     public static Test suite()

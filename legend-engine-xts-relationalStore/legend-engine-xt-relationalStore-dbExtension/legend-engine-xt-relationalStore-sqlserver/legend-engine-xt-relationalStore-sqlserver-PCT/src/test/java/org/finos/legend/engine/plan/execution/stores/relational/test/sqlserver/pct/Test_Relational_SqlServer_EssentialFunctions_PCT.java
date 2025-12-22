@@ -357,10 +357,6 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             // ParseInteger
             one("meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_", "\"Failed to execute plan - RuntimeException - com.microsoft.sqlserver.jdbc.SQLServerException: The conversion of the varchar value '9999999999999992' overflowed an int column.\""),
 
-            //variant
-            one("meta::pure::functions::collection::tests::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: SqlServer", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::fold::testFold_FromVariant_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: SqlServer", AdapterQualifier.unsupportedFeature),
-
             // StartsWith
             one("meta::pure::functions::string::tests::startswith::testFalseStartsWith_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'.", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::startswith::testTrueStartsWith_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'.", AdapterQualifier.needsInvestigation)
