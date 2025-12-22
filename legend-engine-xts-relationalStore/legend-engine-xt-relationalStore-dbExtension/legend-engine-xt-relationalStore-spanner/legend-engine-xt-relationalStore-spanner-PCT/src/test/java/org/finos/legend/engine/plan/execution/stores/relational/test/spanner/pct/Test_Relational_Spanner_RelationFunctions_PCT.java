@@ -71,6 +71,7 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameExtend_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Where, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner\""),
 
             //concatenate
             one("meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\"", AdapterQualifier.unsupportedFeature),
@@ -291,7 +292,13 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             pack("meta::pure::functions::relation::tests::lateral", "Common table expression not supported on DB Spanner", AdapterQualifier.unsupportedFeature),
 
             // flatten
-            pack("meta::pure::functions::relation::variant::tests::flatten", "Datatype to SQL text not supported for Database Type: Spanner", AdapterQualifier.unsupportedFeature)
+            pack("meta::pure::functions::relation::variant::tests::flatten", "[unsupported-api] Lateral operation not supported for Database Type: Spanner", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Extend_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner\""),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner\""),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Array_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner\""),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Map_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner\""),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner\"")
+
     );
 
     public static Test suite()
