@@ -1344,5 +1344,5 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '   1,a,b,a\n'+
                 '   2,aa,bb,bb\n'+
                 '   3,aaa,bbb,bbb\n'+
-                '#', $res->toString());
+                '#', $res->sort([~id->ascending()])->toString());
 }
