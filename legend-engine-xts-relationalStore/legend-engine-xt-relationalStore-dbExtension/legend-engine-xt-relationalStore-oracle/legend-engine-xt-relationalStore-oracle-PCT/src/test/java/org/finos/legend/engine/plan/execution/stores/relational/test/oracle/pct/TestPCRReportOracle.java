@@ -14,16 +14,19 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct;
 
+import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestPCRReport
+public class TestPCRReportOracle
 {
     @Test
     public void canFindPCTReport()
     {
-        Assert.assertEquals("Native, Oracle", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
-        Assert.assertEquals(9, PCTReportProviderLoader.gatherReports().size());
+        Assert.assertEquals(
+                Sets.mutable.with("essential", "grammar", "standard", "relation"),
+                PCTReportProviderLoader.gatherReports().select(x -> x.adapterKey.adapter.name.equals("Oracle")).collect(x -> x.reportScope.module).toSet()
+        );
     }
 }
