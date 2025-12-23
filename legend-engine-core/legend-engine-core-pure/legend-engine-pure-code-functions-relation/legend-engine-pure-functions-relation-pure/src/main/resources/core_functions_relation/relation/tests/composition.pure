@@ -1325,3 +1325,24 @@ Class <<access.private>> meta::pure::functions::relation::tests::composition::Pe
 {
   <<equality.Key>> name: String[1];
 }
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testMultiIfTDS<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {
+              | #TDS
+                id, resA, resB
+                1, a, b
+                2, aa, bb
+                3, aaa, bbb
+              #->extend(~val : x | if([pair(|$x.id == 1, |$x.resA), pair(|$x.id == 2, |$x.resB)], |$x.resB));
+            };
+
+   let res =  $f->eval($expr);
+
+  assertEquals('#TDS\n'+
+                '   id,resA,resB,val\n'+
+                '   1,a,b,a\n'+
+                '   2,aa,bb,bb\n'+
+                '   3,aaa,bbb,bbb\n'+
+                '#', $res->toString());
+}
