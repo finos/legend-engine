@@ -434,7 +434,7 @@ function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], d
 
   let pctDbConfig = ^$dbConfig(dbExtension = ^$originalExtension(ddlCommandsTranslator = $ddlTranslator));
 
-  let setUpSQLs = $csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($database->toOne(), $pctDbConfig);
+  let setUpSQLs = $csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLsV2($database->toOne(), $pctDbConfig);
   print(if($debug.debug,|'\n' + $setUpSQLs->joinStrings('\n') + '\n',|''));
 
   let nodes = ^meta::pure::executionPlan::SequenceExecutionNode(
