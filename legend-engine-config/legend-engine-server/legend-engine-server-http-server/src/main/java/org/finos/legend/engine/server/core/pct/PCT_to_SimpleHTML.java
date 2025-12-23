@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.server.core.pct;
 
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
@@ -36,6 +38,7 @@ import org.finos.legend.pure.m3.pct.functions.model.FunctionDefinition;
 import org.finos.legend.pure.m3.pct.functions.model.Signature;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterKey;
+import org.finos.legend.pure.m3.pct.reports.model.AdapterReverse;
 import org.finos.legend.pure.m3.pct.reports.model.FunctionTestResults;
 import org.finos.legend.pure.m3.pct.reports.model.TestInfo;
 import org.finos.legend.pure.m3.pct.shared.generation.Shared;
@@ -211,14 +214,17 @@ public class PCT_to_SimpleHTML
 
     private static String writeTest(FunctionDocumentation z, AdapterKey a, MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter, Set<String> adapterQualifiers)
     {
+        boolean reverse = a.adapter instanceof AdapterReverse;
         FunctionTestResults results = z.functionTestResults.get(a);
         if (results != null)
         {
             MutableList<TestInfo> tests = Lists.mutable.withAll(results.tests).select(t -> hasAdapterQualifier(t, adapterQualifiers));
             if (tests.isEmpty())
             {
-                System.out.println(z.functionDefinition.name + " " + a.adapter.name + "  //  " + ListIterate.collect(results.tests, ze -> ze.qualifiers).makeString("||"));
-                return "          <div style='color:#AAAAAA' class='hover-text'>OOO&empty;<div></div></div>";
+                boolean allTestsAreUnsupported = ListIterate.injectInto(true, results.tests, (ac, b) -> ac && b.qualifiers.contains("unsupportedFeature"));
+                return allTestsAreUnsupported ?
+                        "          <div style='color:#FFA500' class='hover-text'>&#x0398<div class='tooltip-text' id='top'>Unsupported</div></div>" :
+                        "          <div style='color:#000000' class='hover-text'>[??]<div class='tooltip-text' id='top'>Unknown. To Define.</div></div>";
             }
             int successfulTestCount = tests.select(t -> t.success).size();
             int totalTestCount = tests.size();
@@ -227,15 +233,17 @@ public class PCT_to_SimpleHTML
             testResultCount.totalTestCount += totalTestCount;
             testResultCountByAdapter.put(a, testResultCount);
             String color = successfulTestCount == 0 ? "#C70039" : successfulTestCount != totalTestCount ? "#FFA500" : "#00C72B";
-            return "          <div style='color:" + color + "' class='hover-text'>" + successfulTestCount + "/" + totalTestCount + "<div class='tooltip-text' id='top'>" + testDetail(tests) + "</div></div>";
+
+            return (reverse ? "<a href='/api/pct/reversePCTdocumentation?file=" + URLEncoder.encode(z.functionDefinition.sourceId) + "&reverseFunction=" + URLEncoder.encode(((AdapterReverse) a.adapter).reversesFunction) + "' target='_blank'>" : "") +
+                    "          <div style='color:" + color + ";" + (reverse ? "text-decoration: underline;" : "") + "' class='hover-text'>" + successfulTestCount + "/" + totalTestCount + "<div class='tooltip-text' id='top'>" + testDetail(tests) + "</div></div>" +
+                    (reverse ? "</a>" : "");
         }
-        return "          <div style='color:#FF0000' class='hover-text'>&#x00A4;<div class='tooltip-text' id='top'>No tests were found!</div></div>";
+        return "          <div style='color:#FF0000' class='hover-text'>&#x00A4;<div class='tooltip-text' id='top'>No tests (or reports) were found!</div></div>";
     }
 
     private static String testDetail(MutableList<TestInfo> tests)
     {
         return tests.sortThisBy(x -> x.testName).collect(x -> "<span style='color:" + (x.success ? "00FF00" : "#FF0000") + "'>" + x.testName + "</span><span>" + (x.errorMessage == null ? "" : x.errorMessage) + "</span>").makeString("<BR>");
-
     }
 
     private static String printFuncName(FunctionDocumentation functionDocumentation)
@@ -258,8 +266,8 @@ public class PCT_to_SimpleHTML
         else
         {
             return f.signatures.stream().map(x ->
-                        "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.simple.substring(x.simple.indexOf(f.name + "("))) + "</td>"
-                      + "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.documentation != null ? x.documentation : "") + "</td>"
+                    "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.simple.substring(x.simple.indexOf(f.name + "("))) + "</td>"
+                            + "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.documentation != null ? x.documentation : "") + "</td>"
             ).collect(Collectors.joining("<tr></tr>", "<table style='width:1000; table-layout: fixed;'><tr>\n", "</tr></table>"));
         }
     }

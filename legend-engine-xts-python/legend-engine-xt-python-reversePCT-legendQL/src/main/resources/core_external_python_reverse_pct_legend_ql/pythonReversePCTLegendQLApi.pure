@@ -41,9 +41,26 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReverses():
                           ->concatenate(pythonLegendQLReversesStandard())
                           ->concatenate(pythonLegendQLReversesUnclassified())
                           ->concatenate(pythonLegendQLReversesVariant()),
-    reverseTransformer = val:String[1]|'#PythonLegendQL{'+$val+'}#';    
+    reverseTransformer = val:String[1]| ^FunctionExpression
+                                        (
+                                          func = meta::external::python::reversePCT::legendQL::pythonToPure_String_1__Any_1_,
+                                          importGroup = ^ImportGroup(),
+                                          multiplicity=PureOne,
+                                          genericType=^GenericType(rawType=Any),
+                                          parametersValues = ^InstanceValue
+                                                              (
+                                                                genericType = ^GenericType(rawType=String),
+                                                                multiplicity = PureOne,
+                                                                values = $val
+                                                              )
+                                        );    
   )
+}
 
+function meta::external::python::reversePCT::legendQL::pythonToPure(python:String[1]): Any[1]
+{
+  // Used only for documentation
+  '';
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEssential(): ReversesForSource[*]

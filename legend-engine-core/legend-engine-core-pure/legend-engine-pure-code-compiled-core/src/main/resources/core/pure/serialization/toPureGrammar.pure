@@ -229,7 +229,10 @@ function <<access.private>> meta::pure::metamodel::serialization::grammar::force
     'assertIs',
     'assertSize',
     'assertSameElements',
-    'assertError'
+    'assertError',
+    'noReverse',
+    'pythonToPure',
+    'expectedError'
   ]
 }
 

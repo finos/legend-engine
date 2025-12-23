@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-reversePCT</artifactId>
-        <version>4.116.1-SNAPSHOT</version>
+        <version>4.116.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-code-reversePCT-http-api</artifactId>
@@ -53,6 +53,10 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+        </dependency>
         <!-- ANNOTATIONS -->
         <dependency>
             <groupId>javax.ws.rs</groupId>
