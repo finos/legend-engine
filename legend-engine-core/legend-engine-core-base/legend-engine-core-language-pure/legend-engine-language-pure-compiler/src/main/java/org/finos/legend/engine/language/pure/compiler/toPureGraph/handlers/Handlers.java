@@ -84,7 +84,7 @@ public class Handlers
     private static final String PACKAGE_SEPARATOR = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.DEFAULT_PATH_SEPARATOR;
     private static final String META_PACKAGE_NAME = "meta";
 
-    private Set<String> registeredMetaPackages = Sets.mutable.empty();
+    private final Set<String> registeredMetaPackages = Sets.mutable.empty();
 
     private static Collection toCollection(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification vs)
     {
@@ -1508,7 +1508,9 @@ public class Handlers
         register("meta::pure::functions::variant::convert::fromJson_String_1__Variant_1_", "fromJson", true, ps -> res(M3Paths.Variant, "one"));
         register("meta::pure::functions::variant::convert::toJson_Variant_1__String_1_", "toJson", true, ps -> res("String", "one"));
         register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_$0_1$__T_$0_1$_", "to", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
+        register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_$0_1$__String_1__Pair_MANY__T_$0_1$_", "to", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
         register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_", "toMany", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
+        register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__String_1__Pair_MANY__T_MANY_", "toMany", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
         register("meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_", "toVariant", true, ps -> res(M3Paths.Variant, "one"));
         register(
             m(

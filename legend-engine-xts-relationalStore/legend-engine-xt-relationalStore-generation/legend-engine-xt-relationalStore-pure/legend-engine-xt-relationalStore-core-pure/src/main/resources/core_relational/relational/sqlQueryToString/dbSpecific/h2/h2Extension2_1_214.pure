@@ -166,6 +166,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     c : meta::relational::metamodel::datatype::Char[1]     | format('CHAR(%d)', max([$MIN_CHAR_LENGTH, min([$c.size, maxVarcharLength()])])),  // H2 now pads characters to hit stated size
     //b : meta::relational::metamodel::datatype::Bit[1]      | 'TINYINT',  // allows comparisons to Booleans with new H2
     n : meta::relational::metamodel::datatype::Numeric[1]  | format('NUMERIC(%d, %d)', [max([$n.precision, $MIN_PRECISION]), $n.scale]),
+    s : meta::relational::metamodel::datatype::SemiStructured[1] | format('VARCHAR(%d)', maxVarcharLength()),
     d : meta::relational::metamodel::datatype::DataType[1] | getColumnTypeSqlTextDefault($d)
   ]);
 }

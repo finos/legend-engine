@@ -55,11 +55,9 @@ public class TestLegendExecuteCompiled extends LegendExecuteTest
 
         try
         {
-            System.out.println("starting preparing compiled execution");
             FunctionExecutionCompiled compileFunctionExecution = new FunctionExecutionCompiledBuilder().build();
             compileFunctionExecution.getConsole().disable();
             compileFunctionExecution.init(runtime, new Message(""));
-            System.out.println("finish preparing compiled execution");
             return compileFunctionExecution;
         }
         finally

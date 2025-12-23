@@ -613,16 +613,16 @@ function meta::relational::functions::sqlQueryToString::default::translateCreate
   'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
       + '('
       + $t.columns->cast(@meta::relational::metamodel::Column)
-         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextDefault($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
+         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  $dbConfig.dataTypeToSqlText($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
         ->joinStrings(',')
       + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ')')
       +');';
 }
 
-    function meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+function <<doc.deprecated>> meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
 {
    $columnType->match([
-      s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARCHAR(4000)', // todo this is wrong and mislead user of variant support!
+      s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARCHAR(4000)',
       a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
    ])
 }

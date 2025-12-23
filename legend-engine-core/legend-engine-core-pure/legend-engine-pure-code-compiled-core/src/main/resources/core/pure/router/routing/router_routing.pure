@@ -247,15 +247,20 @@ function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpress
    $newFe->match([
                   nfe : FunctionExpression[1]|
                     $nfe.func->match([
-                                    p:Property<Nil,Any|*>[1] | $state.routingStrategy.processProperty($p, $nfe, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);,
-                                    c:Column<Nil,Any|*>[1] | print(if($debug.debug,|$debug.space+' Column: '+$c.name->toOne()+'\n',|''));
-                                                              $c->routeFunctionExpressionColumn($nfe, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);,
-                                    f:Function<Any>[1]       | print(if($debug.debug,|$debug.space+if($f->instanceOf(NativeFunction),|'NativeFunction',|'FunctionDefinition')+' : '+$f->elementToPath()+'\n',|''));
-                                                                let specializedFunctionProcessor = specializedFunctionExpressionRouterProcessor($extensions)->filter(e|$e.first->eval($nfe)).second;
-                                                                if($specializedFunctionProcessor->isNotEmpty(),
-                                                                  | assert($specializedFunctionProcessor->size() == 1, | 'Only one match is authorized for specializedFunctionProcessor');
-                                                                    $specializedFunctionProcessor->toOne()->evaluate([list($f), list($nfe), list($state), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);,
-                                                                  | $f->routeFunctionExpressionFunctionDefinition($nfe, $state, $executionContext, $vars, $inScopeVars->putAll($f->openVariableValues()), $extensions, $debug););
+                                    p:Property<Nil,Any|*>[1] | 
+                                        print(if($debug.debug,|$debug.space+' Property: '+$p.name->toOne()+'\n',|''));
+                                        $state.routingStrategy.processProperty($p, $nfe, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);,
+                                    c:Column<Nil,Any|*>[1] | 
+                                        print(if($debug.debug,|$debug.space+' Column: '+$c.name->toOne()+'\n',|''));
+                                        $c->routeFunctionExpressionColumn($nfe, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);,
+                                    f:Function<Any>[1]       |
+                                        print(if($debug.debug,|$debug.space+if($f->instanceOf(NativeFunction),|'NativeFunction',|'FunctionDefinition')+' : '+$f->elementToPath()+'\n',|''));
+                                        let specializedFunctionProcessor = specializedFunctionExpressionRouterProcessor($extensions)->filter(e|$e.first->eval($nfe)).second;
+                                        if($specializedFunctionProcessor->isNotEmpty(),
+                                              | assert($specializedFunctionProcessor->size() == 1, | 'Only one match is authorized for specializedFunctionProcessor');
+                                                $specializedFunctionProcessor->toOne()->evaluate([list($f), list($nfe), list($state), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);,
+                                              | $f->routeFunctionExpressionFunctionDefinition($nfe, $state, $executionContext, $vars, $inScopeVars->putAll($f->openVariableValues()), $extensions, $debug);
+                                        );
                                   ]);,
                   i : InstanceValue[1]|^$state(value=$i)
           ]

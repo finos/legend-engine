@@ -135,8 +135,16 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                                                   type = $cType,
                                                                   sourceDataType = $cType->match([
                                                                                               p : PrimitiveType[1] | $pureToDbMap->get($cType->toOne()->bypassExtendedPrimitives()),
-                                                                                              e : Enumeration<Any>[1] | $query->cast(@TdsSelectSqlQuery).columns->cast(@Alias)->filter(c | $c.name == '\"' + $p.name->toOne() + '\"').relationalElement->cast(@TableAliasColumn).column->cast(@Column).type->toOne(),
-                                                                                              a : Any[*] | []
+                                                                                              e : Enumeration<Any>[1] | $query->cast(@TdsSelectSqlQuery).columns->cast(@Alias)->filter(c | $c.name == '\"' + $p.name->toOne() + '\"').relationalElement->cast(@TableAliasColumn).column->cast(@Column).type->toOne(),                                                                                              
+                                                                                              a : Any[*] | 
+                                                                                                if([
+                                                                                                  pair(|$cType == Variant, |$pureToDbMap->get(Variant)),
+                                                                                                  pair(|$cType == Map, |$pureToDbMap->get(Variant)),
+                                                                                                  pair(|$cType == List, |$pureToDbMap->get(Variant))
+                                                                                                ],
+                                                                                                | 
+                                                                                                  fail('The type %s is not supported yet!'->format($cType.name->toOne()));[]; 
+                                                                                                )
                                                                                            ])
                                                                 );
                                                           )

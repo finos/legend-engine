@@ -340,19 +340,30 @@ function <<access.private>> meta::pure::router::store::routing::processClass(c:C
 
 function <<access.private>> meta::pure::router::store::routing::routeFunctionExpressionProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], v:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
-   let mapping = $v.routingStrategy->cast(@StoreMappingRoutingStrategy).mapping;
-   let runtime = $v.routingStrategy->cast(@StoreMappingRoutingStrategy).runtime;
-
    let results = $v->processCollection($fe.parametersValues->evaluateAndDeactivate(), $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug)->evaluateAndDeactivate();
    let newPV   = $results.value->cast(@ValueSpecification)->toOneMany();
    let preLast = $results->last()->toOne();
 
-   let res = if($results.value->size() == 1 && $results.value->toOne()->instanceOf(InstanceValue),
-                | let val  = $results.value->toOne()->cast(@InstanceValue).values->map(v | $p->eval($v));
-                  let iv   = ^InstanceValue(genericType = $p->functionReturnType(),multiplicity = $p.multiplicity, values = $val);
-                  let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
-                  ^$last(value = $iv);,
-                | let srcSets   = $preLast.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[*]|[]->cast(@SetImplementation)]);
+   let res = if([
+                  pair(
+                    |$results.value->size() == 1 && $results.value->toOne()->instanceOf(InstanceValue),
+                      | 
+                        let val  = $results.value->toOne()->cast(@InstanceValue).values->map(v | $p->eval($v));
+                        let iv   = ^InstanceValue(genericType = $p->functionReturnType(),multiplicity = $p.multiplicity, values = $val);
+                        let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
+                        ^$last(value = $iv);
+                    ),
+                  pair(
+                    |!$v.routingStrategy->instanceOf(StoreMappingRoutingStrategy),
+                      | 
+                        ^$preLast(value=^NoSetRoutedValueSpecification(genericType = $fe.genericType, multiplicity = $fe.multiplicity, value=^$fe(parametersValues = $results.value->cast(@ValueSpecification)->toOneMany())), shouldBeRouted=false)->evaluateAndDeactivate();
+                    )
+                ],
+                | 
+                  let mapping = $v.routingStrategy->cast(@StoreMappingRoutingStrategy).mapping;
+                  let runtime = $v.routingStrategy->cast(@StoreMappingRoutingStrategy).runtime;
+                
+                  let srcSets   = $preLast.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[*]|[]->cast(@SetImplementation)]);
                   let isPropertyAutoMapped = $srcSets->isPropertyAutoMapped($p, $extensions, $mapping);
                   if (!$v.shouldBeRouted || !$preLast.shouldBeRouted || $isPropertyAutoMapped,
                       | ^$preLast(value=^NoSetRoutedValueSpecification(genericType = $fe.genericType, multiplicity = $fe.multiplicity, value=^$fe(parametersValues = $results.value->cast(@ValueSpecification)->toOneMany())), shouldBeRouted=false)->evaluateAndDeactivate();,
@@ -438,7 +449,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                             );
                         );
                    ););
-   print(if($debug.debug,|$debug.space+'~>FEP) ('+$res.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$res.value->toOne()->cast(@ValueSpecification)->asString()+'\n',|''));
+   print(if($debug.debug,|$debug.space+'~>FEP)' + $res.value->toOne()->cast(@ValueSpecification)->asString()+'\n',|''));
    $res;
 }
 

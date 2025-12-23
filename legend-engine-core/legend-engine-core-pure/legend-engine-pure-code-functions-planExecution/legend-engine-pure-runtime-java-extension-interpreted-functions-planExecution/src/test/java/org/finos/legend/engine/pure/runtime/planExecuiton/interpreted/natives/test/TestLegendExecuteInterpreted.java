@@ -29,12 +29,10 @@ public class TestLegendExecuteInterpreted extends LegendExecuteTest
 
     private static FunctionExecutionInterpreted interpretedExecution() throws Exception
     {
-        System.out.println("starting preparing interpreted execution");
         FunctionExecutionInterpreted interpretedFunctionExecution = new FunctionExecutionInterpreted();
         interpretedFunctionExecution.init(setUpRuntime(null), new Message(""));
         //interpretedFunctionExecution.setProcessorSupport(new LegendCompileMixedProcessorSupport(interpretedFunctionExecution.getRuntime().getContext(), interpretedFunctionExecution.getRuntime().getModelRepository(), interpretedFunctionExecution.getProcessorSupport()));
         interpretedFunctionExecution.getConsole().disable();
-        System.out.println("finish preparing interpreted execution");
         return interpretedFunctionExecution;
     }
 }

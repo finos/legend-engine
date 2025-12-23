@@ -194,12 +194,9 @@ function meta::relational::contract::supports(f:FunctionExpression[1]):Boolean[1
   if($f->meta::pure::router::utils::isUnionOnGraphFetch(true),
     | false,
     |
-      !meta::relational::functions::pureToSqlQuery::findSupportedFunction(
-                        $f,
-                        newMap([]->cast(@Pair<VariableExpression, ValueSpecification>)),
-                        meta::relational::functions::pureToSqlQuery::getSupportedFunctions(),
-                        meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFunctions()
-                    )->isEmpty()
+        meta::relational::functions::pureToSqlQuery::getSupportedFunctions()->get($f.func)->isNotEmpty() 
+      ||
+        meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFunctions()->get($f.func)->isNotEmpty()    
       //These are here because the router does not go deep enough, should remove
       || [
             meta::pure::functions::math::sum_Float_MANY__Float_1_,
