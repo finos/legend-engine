@@ -51,6 +51,8 @@
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_EssentialFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_GrammarFunctions_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_RelationFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_UnclassifiedFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_VariantFunctions_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -148,6 +150,14 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-variant-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

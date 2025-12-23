@@ -36,7 +36,9 @@ public class Core_Relational_Oracle_PCTReportProvider implements PCTReportProvid
                 "pct-reports/ADAPTER_standard_compiled_Oracle.json",
                 "pct-reports/ADAPTER_essential_compiled_Oracle.json",
                 "pct-reports/ADAPTER_grammar_compiled_Oracle.json",
-                "pct-reports/ADAPTER_relation_compiled_Oracle.json"
+                "pct-reports/ADAPTER_relation_compiled_Oracle.json",
+                "pct-reports/ADAPTER_unclassified_compiled_Oracle.json",
+                "pct-reports/ADAPTER_variant_compiled_Oracle.json"
         );
     }
 }

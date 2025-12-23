@@ -25,7 +25,7 @@ public class TestPCRReportOracle
     public void canFindPCTReport()
     {
         Assert.assertEquals(
-                Sets.mutable.with("essential", "grammar", "standard", "relation"),
+                Sets.mutable.with("essential", "grammar", "standard", "relation", "unclassified", "variant"),
                 PCTReportProviderLoader.gatherReports().select(x -> x.adapterKey.adapter.name.equals("Oracle")).collect(x -> x.reportScope.module).toSet()
         );
     }
