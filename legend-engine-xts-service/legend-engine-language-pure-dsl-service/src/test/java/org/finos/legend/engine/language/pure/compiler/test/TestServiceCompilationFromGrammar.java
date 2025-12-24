@@ -3719,4 +3719,27 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "COMPILATION warning at [40:12-34]: Execution Environment 'test::executionEnvironment', key: 'UAT', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"
         ));
     }
+
+    @Test
+    public void testServiceWithMcpServer()
+    {
+        String resource = "Class test::class\n" +
+                "{\n" +
+                "  prop1 : String[0..1];\n" +
+                "}\n";
+
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: '/url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::class.all()->project(x | $x.prop1, 'prop1');\n" +
+                "  }\n" +
+                "  mcpServer: ab;\n" +
+                "}\n");
+    }
 }

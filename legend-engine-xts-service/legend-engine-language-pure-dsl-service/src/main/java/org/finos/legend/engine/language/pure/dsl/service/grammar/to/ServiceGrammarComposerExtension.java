@@ -143,6 +143,10 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
             serviceBuilder.append(String.join(",\n", ListIterate.collect(service.postValidations, postValidation -> HelperServiceGrammarComposer.renderPostValidation(postValidation, context))));
             serviceBuilder.append(getTabString()).append("]\n");
         }
+        if (service.mcpServer != null)
+        {
+            serviceBuilder.append(getTabString()).append("mcpServer: ").append(PureGrammarComposerUtility.convertIdentifier(service.mcpServer)).append(";\n");
+        }
         return serviceBuilder.append("}").toString();
     }
 

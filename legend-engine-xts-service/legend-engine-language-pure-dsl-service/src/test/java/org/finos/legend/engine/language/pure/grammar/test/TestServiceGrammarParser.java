@@ -1393,4 +1393,56 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  ]\n" +
                 "}", "PARSER error at [16:5-19:5]: Field 'assertions' is required");
     }
+
+    @Test
+    public void testServiceWithMcpServer()
+    {
+        test("###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: '/url/myUrl'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  mcpServer: '11';\n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: |test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "}", "PARSER error at [8:3-18]: Service mcpServer should be a valid identifier ([a-zA-Z_][a-zA-Z0-9_]*)");
+
+        test("###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: '/url/myUrl'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: |test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "  mcpServer: 'ab';\n" +
+                "}");
+
+        test("###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: '/url/myUrl'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  mcpServer: ab;\n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: |test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "}");
+    }
 }
