@@ -1,0 +1,9 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": {
+    "_currency": "USD",
+    "value__": 9999
+  }
+}
