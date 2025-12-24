@@ -38,10 +38,30 @@ public class Test_Relational_Oracle_UnclassifiedFunctions_PCT extends PCTReportC
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             //char
-            one("meta::pure::functions::string::tests::char::testEmptyChar_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: null character not permitted", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_", "\"\nexpected: [0]\nactual:   []\"", AdapterQualifier.needsInvestigation),
 
             //base64
-            one("meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: invalid base64 end sequence\n  Hint: Input data is missing padding, is truncated, or is otherwise corrupted.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"CONVERT_FROM\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"CONVERT_FROM\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::string::tests::base64::testDecodeBase64_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"CONVERT_FROM\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"ENCODE\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"ENCODE\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+
+            // hash
+            one("meta::pure::functions::hash::tests::testMD5Hash_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"MD5\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::hash::tests::testSHA1Hash_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"ENCODE\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::hash::tests::testSHA256Hash_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"ENCODE\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+
+            // left
+            pack("meta::pure::functions::string::tests::left", "java.sql.SQLSyntaxErrorException: ORA-00904: \"LEFT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+
+            // lpad
+            one("meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_", "\"\nexpected: ['abcd']\nactual:   []\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::lpad::testLpadEmptyString_Function_1__Boolean_1_", "\"\nexpected: ['???']\nactual:   []\"", AdapterQualifier.needsInvestigation),
+
+            // matches
+            one("meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00911: invalid character\n\nhttps://docs.oracle.com/error-help/db/ora-00911/", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00911: invalid character\n\nhttps://docs.oracle.com/error-help/db/ora-00911/", AdapterQualifier.needsInvestigation),
 
             //jarowinklersimilarity
             one("meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual_Function_1__Boolean_1_", "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
@@ -52,20 +72,33 @@ public class Test_Relational_Oracle_UnclassifiedFunctions_PCT extends PCTReportC
             one("meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceNotEqual_Function_1__Boolean_1_", "\"[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             //tolowerfirstcharacter
-            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'xoXoXoX'\nactual:   'XoXoXoX'\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterEmptyString_Function_1__Boolean_1_", "\"\nexpected: ['']\nactual:   []\"", AdapterQualifier.needsInvestigation),
 
             //toupperfirstcharacter
-            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'xOxOxOx'\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterEmptyString_Function_1__Boolean_1_", "\"\nexpected: ['']\nactual:   []\"", AdapterQualifier.needsInvestigation),
 
             //currentUserId
-            one("meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"(\"\n  Position: 20", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"CURRENT_USER\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsInvestigation),
 
             // regexp
             pack("meta::pure::functions::string::tests::regexpCount", "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
             pack("meta::pure::functions::string::tests::regexpExtract", "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
             pack("meta::pure::functions::string::tests::regexpIndexOf", "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
             pack("meta::pure::functions::string::tests::regexpLike", "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
-            pack("meta::pure::functions::string::tests::regexpReplace", "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation)
+            pack("meta::pure::functions::string::tests::regexpReplace", "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+
+            // repeat string
+            pack("meta::pure::functions::string::tests::repeatstring", "java.sql.SQLSyntaxErrorException: ORA-00904: \"REPEAT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsInvestigation),
+
+            // right
+            pack("meta::pure::functions::string::tests::right", "java.sql.SQLSyntaxErrorException: ORA-00904: \"RIGHT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+
+            // rpad
+            one("meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_", "\"\nexpected: ['abcd']\nactual:   []\""),
+            one("meta::pure::functions::string::tests::rpad::testRpadEmptyString_Function_1__Boolean_1_", "\"\nexpected: ['???']\nactual:   []\""),
+
+            // split part
+            pack("meta::pure::functions::string::tests::splitPart", "java.sql.SQLSyntaxErrorException: ORA-00904: \"SPLIT_PART\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/")
     );
 
     public static Test suite()
@@ -74,7 +107,7 @@ public class Test_Relational_Oracle_UnclassifiedFunctions_PCT extends PCTReportC
                 () -> true,
                 () -> PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter),
                 () -> false,
-                Lists.mutable.with((TestServerResource) TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.Postgres).getFirst())
+                Lists.mutable.with((TestServerResource) TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.Oracle).getFirst())
         );
     }
 
