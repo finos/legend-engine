@@ -78,7 +78,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -131,7 +131,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -218,7 +218,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -252,6 +252,10 @@
             <artifactId>legend-pure-m2-store-relational-pure</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
@@ -325,7 +329,7 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+            <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
         </dependency>
 
         <!-- TEST -->

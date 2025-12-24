@@ -17,17 +17,18 @@ package org.finos.legend.engine.external.python;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.m3.pct.functions.model.Functions;
-import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterReport;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProvider;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderTool;
+import org.finos.legend.pure.m3.pct.reports.model.AdapterReverse;
 
 public class Core_External_PythonLegendQL_ReversePCTReportProvider implements PCTReportProvider
 {
-    public static final Adapter LegendQLAdapter = new Adapter(
+    public static final AdapterReverse LegendQLAdapter = new AdapterReverse(
             "PythonLegendQL",
             "Reverse_PCT",
-            "meta::external::python::reversePCT::legendQL::pythonLegendQLReversePCTAdapter_Function_1__X_o_"
+            "meta::external::python::reversePCT::legendQL::pythonLegendQLReversePCTAdapter_Function_1__X_o_",
+            "meta::external::python::reversePCT::legendQL::pythonLegendQLReverses__ReverseInformation_1_"
     );
 
     @Override

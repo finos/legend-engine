@@ -58,7 +58,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -96,7 +96,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -144,7 +144,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -181,7 +181,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+            <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

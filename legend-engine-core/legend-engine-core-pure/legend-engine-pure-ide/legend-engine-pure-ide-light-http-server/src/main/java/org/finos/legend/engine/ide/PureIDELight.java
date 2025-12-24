@@ -163,7 +163,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-duckdb/legend-engine-xt-relationalStore-duckdb-PCT", "relational-duckdb-pct"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-h2/legend-engine-xt-relationalStore-h2-PCT", "relational-h2-pct"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-memsql/legend-engine-xt-relationalStore-memsql-sqlDialectTranslation-pure", "external-store-relational-sql-dialect-translation-memsql"))
-                .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-reversePCT", "reverse-pct"))
+                .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-reversePCT/legend-engine-pure-code-reversePCT-pure", "reverse-pct"))
                 .with(this.buildCore("legend-engine-xts-python/legend-engine-xt-python-reversePCT-legendQL", "external-python-reverse-pct-legend-ql"))
                 ;
 

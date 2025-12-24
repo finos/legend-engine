@@ -20,7 +20,12 @@ function meta::external::query::sql::expression::sqlExpressionFeatureExtension()
                                                           | processCollection($state, extractFunctionFromSQLExpression($i.values->at(0)->cast(@SQLExpression<Any>)), $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug);
                                                         )
                                                    }
-                          )
+                          ),
+      grammarSerializerExtensions = ^meta::pure::metamodel::serialization::grammar::GrammarExtension(
+                                            extraInstanceValueHandlers = [
+                                                            x:SQLExpression<Any>[1]| '#SQL{'+$x.sqlString+'}#'
+                                                        ]
+                                    )
 
    )
 }
