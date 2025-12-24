@@ -740,7 +740,6 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return Collections.singletonList(registerElementForPathToElement ->
         {
             registerElementForPathToElement.value("meta::relational::contract", Lists.mutable.with(
-                    "supports_FunctionExpression_1__Boolean_1_",
                     "supportsStream_FunctionExpression_1__Boolean_1_",
                     "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_"
             ));

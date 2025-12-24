@@ -2313,7 +2313,7 @@ function meta::relational::functions::pureToSqlQuery::processFunctionDefinition(
 
 function meta::relational::functions::pureToSqlQuery::processFunctionExpressionForNonPropertyFunction(functionExpression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[*]
 {
-   let func = findSupportedFunction($functionExpression, $vars, $state, $state.supportedFunctions, $state.contextBasedSupportedFunctions);   
+   let func = findSupportedFunction($functionExpression, $vars, $state);
 
    if ([
          pair(
@@ -7196,7 +7196,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
 
                             if($func->isNotEmpty(),
                                     |$func->toOne().second->cast(@meta::pure::metamodel::function::Function<{->RelationalOperationElement[*]}>)->eval(),
-                                    |let supportedFunction = findSupportedFunction($f, $vars, $state, $state.supportedFunctions, $state.contextBasedSupportedFunctions);
+                                    |let supportedFunction = findSupportedFunction($f, $vars, $state);
                                      if($supportedFunction->isNotEmpty(),
                                        |
                                           let inHandler =  {|
@@ -9740,12 +9740,12 @@ Class meta::relational::functions::pureToSqlQuery::ProcessingSide
    target : Boolean[1];
 }
 
-function meta::relational::functions::pureToSqlQuery::findSupportedFunction(fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state: State[1], supportedFunctions:Map<meta::pure::metamodel::function::Function<Any>,meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>[1], contextBasedSupportedFunctions:Map<meta::pure::metamodel::function::Function<Any>, List<Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1],Map<VariableExpression, ValueSpecification>[1],State[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>>[1]):meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>[0..1]
+function meta::relational::functions::pureToSqlQuery::findSupportedFunction(fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state: State[1]):meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>[0..1]
 {
-   let supportedFuncIfPairs = $contextBasedSupportedFunctions->get($fe.func).values->map(cb | pair(|$cb.first->eval($fe,$vars,$state), |$cb.second));
+   let supportedFuncIfPairs = $state.contextBasedSupportedFunctions->get($fe.func).values->map(cb | pair(|$cb.first->eval($fe,$vars,$state), |$cb.second));
    if(
     $supportedFuncIfPairs,
-    | $supportedFunctions->get($fe.func)
+    | $state.supportedFunctions->get($fe.func)
    );
 }
 
