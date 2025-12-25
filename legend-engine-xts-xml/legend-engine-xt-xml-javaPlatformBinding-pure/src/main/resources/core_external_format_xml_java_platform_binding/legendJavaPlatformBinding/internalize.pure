@@ -116,14 +116,17 @@ function <<access.private>> meta::external::format::xml::executionPlan::platform
 
 Class <<access.private>> meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::PropertyCodes
 {
-   elementVar    : Code[1];
-   elementInit   : Code[1];
-   attributeVar  : Code[0..1];
-   attributeInit : Code[0..1];
-   calledMethods : meta::external::language::java::metamodel::Method[*];
+   elementVar      : Code[0..1];
+   elementInit     : Code[0..1];
+   attributeVar    : Code[0..1];
+   attributeInit   : Code[0..1];
+   textContentVar  : Code[0..1];
+   textContentInit : Code[0..1];
+   calledMethods   : meta::external::language::java::metamodel::Method[*];
 
-   elementDeclare()   { $this.elementVar->j_declare($this.elementInit); }: Code[1];
-   attributeDeclare() { $this.attributeVar->map(v| $v->j_declare($this.attributeInit->toOne())); }: Code[0..1];
+   elementDeclare()     { $this.elementVar->map(v| $v ->j_declare($this.elementInit->toOne())); }: Code[0..1];
+   attributeDeclare()   { $this.attributeVar->map(v| $v->j_declare($this.attributeInit->toOne())); }: Code[0..1];
+   textContentDeclare() { $this.textContentVar->map(v| $v->j_declare($this.textContentInit->toOne())); }: Code[0..1];
 }
 
 function <<access.private>> meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::createClassElementNoSchemaMethods(jc:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], class:meta::pure::metamodel::type::Class<Any>[1], property:Property<Nil,Any|*>[0..1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Method[*]
@@ -176,21 +179,26 @@ function <<access.private>> meta::external::format::xml::executionPlan::platform
                              );
    let withAttrsAdded      = $propertyCodes.attributeVar->fold({v, c| $c->j_invoke('add', $v, $conventions->className(h_Element))}, $classElementVar);
 
+   let textContentVars = $propertyCodes.textContentVar;
+   let hasTextContent = $textContentVars->isNotEmpty();
+   let withTextContentAdded = $textContentVars->fold({v, c| $c->j_invoke('add', $v, $conventions->className(h_Element))}, $withAttrsAdded);
+
    let elementVars         = $propertyCodes.elementVar;
    let choiceVar           = j_variable($conventions->className(h_Choice), '_choice');
    let choiceOf            = $conventions->className(h_Choice)->j_invoke('of', [j_long(0), javaLongMax()]);
    let choiceWithElements  = $elementVars->fold({v, c| $c->j_invoke('add', $v, $conventions->className(h_Choice))}, $choiceOf);
-   let choiceDeclare       = if($elementVars->isEmpty(),
+   let choiceDeclare       = if($elementVars->isEmpty() || $hasTextContent,
                                 | [],
                                 | $choiceVar->j_declare($choiceWithElements)
                              );
-   let withChoiceAdded     = if($elementVars->isEmpty(),
-                                | $withAttrsAdded,
-                                | $withAttrsAdded->j_invoke('add', $choiceVar, $conventions->className(h_Element))
+   let withChoiceAdded     = if($elementVars->isEmpty() || $hasTextContent,
+                                | $withTextContentAdded,
+                                | $withTextContentAdded->j_invoke('add', $choiceVar, $conventions->className(h_Element))
                              );
 
    javaMethod('private', $conventions->className(h_Element), $conventions->elementMethodName($class), [$ctxParam, $minOccursParam, $maxOccursParam, $adderParam],
       $propertyCodes.attributeDeclare
+         ->concatenate($propertyCodes.textContentDeclare)
          ->concatenate($propertyCodes.elementDeclare)
          ->concatenate($choiceDeclare)
          ->concatenate($classElementDeclare)
@@ -269,12 +277,16 @@ function <<access.private>> meta::external::format::xml::executionPlan::platform
    let textContentType  = javaParameterizedType($conventions->className(h_TextContent), $dataClass);
    let textContent      = j_new($textContentType, $addTo);
    let attributeAllowed = $prop.multiplicity == ZeroOne || $prop.multiplicity == PureOne;
+   let isValueProperty  = $prop.name->toOne() == 'value__';
+   let textContentVar   = j_variable($conventions->className(h_TextContent), $conventions->identifier($prop.name->toOne() + 'TextContent'));
 
    ^PropertyCodes(
-      elementVar    = $elementVar,
-      elementInit   = $conventions->className(h_Element)->j_invoke('ofLenient', [$pOccurs.first, $pOccurs.second, j_string($prop.name->toOne())])->j_invoke('add', $textContent, $conventions->className(h_Element)),
-      attributeVar  = if($attributeAllowed, |$attributeVar, |[]),
-      attributeInit = if($attributeAllowed, |$conventions->className(h_Attribute)->j_invoke('ofLenient', [j_long(0), $pOccurs.second, j_string($prop.name->toOne()), $addTo]), |[])
+      elementVar      = if($isValueProperty, | [], | $elementVar),
+      elementInit     = if($isValueProperty, | [], | $conventions->className(h_Element)->j_invoke('ofLenient', [$pOccurs.first, $pOccurs.second, j_string($prop.name->toOne())])->j_invoke('add', $textContent, $conventions->className(h_Element))),
+      attributeVar    = if($attributeAllowed && !$isValueProperty, |$attributeVar, |[]),
+      attributeInit   = if($attributeAllowed && !$isValueProperty, |$conventions->className(h_Attribute)->j_invoke('ofLenient', [j_long(0), $pOccurs.second, j_string($prop.name->toOne()), $addTo]), |[]),
+      textContentVar  = if($isValueProperty, | $textContentVar, | []),
+      textContentInit = if($isValueProperty, | $textContent, | [])
    );
 }
 
