@@ -6436,7 +6436,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let paths = $mainQuery.select->cast(@TdsSelectSqlQuery).paths;
   
   // todo this should be the behavior, but just scoping variant to reduce scope of change
-  let newElement = if($expressionToRoute->isVariantInput($vars, $state),
+  let newElement = if($expressionToRoute->isVariantInput($vars, $state) || ($expressionToRoute->instanceOf(FunctionExpression) && $expressionToRoute->cast(@FunctionExpression).func == if_Pair_MANY__Function_1__T_m_),
     |
         let select = $mainQuery.select;
         $expressionToRoute->cast(@FunctionExpression)->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne();,
