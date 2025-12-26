@@ -15,6 +15,17 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::convert::tests::to::*;
+
+native function
+    <<PCT.function>>
+    {
+        doc.doc='Converts the $variant to the given $type.\n' +
+                 'This allows to extract the variant actual value, like primitives.\n' +
+                 'The type key name and type lookup are leveraged when coercing a complex type (ie Class).\n' +
+                 'This will fail if value cannot be coerced.'
+    }
+meta::pure::functions::variant::convert::to<T>(variant: Variant[0..1], type: T[0..1], typeKeyName: String[1], typeLookup: Pair<String,Class<Any>>[*]): T[0..1];
 
 native function
     <<PCT.function>>
@@ -24,6 +35,9 @@ native function
                  'This will fail if value cannot be coerced.'
     }
 meta::pure::functions::variant::convert::to<T>(variant: Variant[0..1], type: T[0..1]): T[0..1];
+//{
+//  to($variant, $type, '_type', [])
+//}
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToNull<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
@@ -42,7 +56,7 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertError(|$f->eval(|fromJson('1.25')->to(@Integer)), 'Variant of type \'NUMBER\' cannot be converted to Integer');
+    assertError(|$f->eval(|fromJson('1.25')->to(@Integer)), 'Integer is not managed yet!');
 }
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
@@ -132,7 +146,7 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertError(|$f->eval(|fromJson('"not an object"')->to(@Map<String, Variant>)), 'Variant of type \'STRING\' cannot be converted to Map<String, Variant>');
+    assertError(|$f->eval(|fromJson('"not an object"')->to(@Map<String, Variant>)), 'Map<String, Variant> is not managed yet!');
 }
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToMapWithNonStringKeys<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
@@ -158,7 +172,7 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertError(|$f->eval(|fromJson('"not an array"')->to(@List<Variant>)), 'Variant of type \'STRING\' cannot be converted to List<Variant>');
+    assertError(|$f->eval(|fromJson('"not an array"')->to(@List<Variant>)), 'List<Variant> is not managed yet!');
 }
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToEnum<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
@@ -168,12 +182,50 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToAny<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertError(|$f->eval(|fromJson('"hello"')->to(@Any)), 'Any is not managed yet!');
+  assertError(|$f->eval(|fromJson('"hello"')->to(@Any)), 'Any is not managed yet!');
 }
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToClass<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('{"firstName": "John", "lastName": "Smith"}')->to(@Person));
+    assertEquals(^Person(firstName = 'John', lastName = 'Smith'), $result);
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToClassWithInheritance<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let dogResult = $f->eval(|fromJson('{"_type": "Dog", "name": "Doggo", "isPuppy": true}')->to(@Pet));
+    assertEquals(^Dog(name = 'Doggo', isPuppy = true), $dogResult);
+
+    let catResult = $f->eval(|fromJson('{"_type": "Cat", "name": "Gato", "isKitten": false}')->to(@Pet));
+    assertEquals(^Cat(name = 'Gato', isKitten = false), $catResult);    
+}
+
 
 //written as standard test as we are testing special handling of @type only triggered via reactivate
 function <<test.Test>> meta::pure::functions::variant::convert::tests::to::testReactivate():Boolean[1]
 {
     let value = {|fromJson('1')->to(@Integer)}.expressionSequence->at(0)->reactivate();
     assertEquals(1, $value);
+}
+
+Class <<access.private>> meta::pure::functions::variant::convert::tests::to::Person
+{
+  <<equality.Key>> firstName: String[1];
+  <<equality.Key>> lastName: String[1];
+}
+
+Class <<access.private>> meta::pure::functions::variant::convert::tests::to::Pet
+{
+  <<equality.Key>> name: String[1];  
+  <<equality.Key>> owner: Person[0..1]; 
+}
+
+Class <<access.private>> meta::pure::functions::variant::convert::tests::to::Dog extends meta::pure::functions::variant::convert::tests::to::Pet
+{
+  <<equality.Key>> isPuppy: Boolean[1];
+}
+
+Class <<access.private>> meta::pure::functions::variant::convert::tests::to::Cat extends meta::pure::functions::variant::convert::tests::to::Pet
+{
+  <<equality.Key>> isKitten: Boolean[1];  
 }

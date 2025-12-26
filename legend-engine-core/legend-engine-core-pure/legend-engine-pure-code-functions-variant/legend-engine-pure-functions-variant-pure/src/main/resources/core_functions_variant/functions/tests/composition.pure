@@ -15,6 +15,7 @@
 import meta::pure::test::pct::*;
 import meta::pure::functions::variant::convert::*;
 import meta::pure::metamodel::variant::*;
+import meta::pure::functions::variant::tests::convert::to::model::*;
 
 // MAP
 
@@ -50,4 +51,158 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::collection::filter::testFilter_FromVariantAsPrimitive<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertEquals('[1,3]', $f->eval(|toVariant([1, 2, 3])->toMany(@Integer)->filter(x | $x != 2)->toVariant())->toString());
+}
+
+// variant to model
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessProperty<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('{"firstName": "John", "lastName": "Smith", "address": {"line1": "1234 Hello World Street", "line2": "Unit 5678"}}')->to(@Person).lastName);
+    assertEquals('Smith', $result);     
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessQualifiedProperty<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('{"firstName": "John", "lastName": "Smith", "address": {"line1": "1234 Hello World Street", "line2": "Unit 5678"}}')->to(@Person).fullName());
+    assertEquals('John Smith', $result);     
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_oneToOne<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('{"firstName": "John", "lastName": "Smith", "address": {"line1": "1234 Hello World Street", "line2": "Unit 5678"}}')->to(@Person).address.line1);
+    assertEquals('1234 Hello World Street', $result);   
+}
+
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_oneToOne<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('{"firstName": "John", "lastName": "Smith", "address": {"line1": "1234 Hello World Street", "line2": "Unit 5678"}}')->to(@Person).addressToString());
+    assertEquals('1234 Hello World Street Unit 5678', $result);   
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_oneToMany<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('{"firstName": "John", "lastName": "Smith", "address": {"line1": "1234 Hello World Street", "line2": "Unit 5678"}, "previousAddresses": [ {"line1": "1234 Hello World Street", "line2": "Unit 0001"}, {"line1": "9876 Hello World Street", "line2": "Unit 1000"} ]}')->to(@Person).previousAddresses.line1);
+    assertEquals(['1234 Hello World Street', '9876 Hello World Street'], $result);        
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_manyToMany<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('[{"firstName": "Jonh", "lastName": "Smith", "address": {"line1": "9876 Hello World Street", "line2": "Unit 4523"}, "previousAddresses": [ {"line1": "9876 Hello World Street", "line2": "Unit 0001"}, {"line1": "1256 Hello World Street", "line2": "Unit 7000"} ]}, {"firstName": "Jane", "lastName": "Smith", "address": {"line1": "1234 Hello World Street", "line2": "Unit 5678"}, "previousAddresses": [ {"line1": "1234 Hello World Street", "line2": "Unit 0001"}, {"line1": "9876 Hello World Street", "line2": "Unit 1000"} ]}]')->toMany(@Person).previousAddresses.line1);
+    assertEquals(['9876 Hello World Street', '1256 Hello World Street', '1234 Hello World Street', '9876 Hello World Street'], $result);        
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_manyToOne<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('[{"firstName": "Jonh", "lastName": "Smith", "address": {"line1": "9876 Hello World Street", "line2": "Unit 4523"}, "previousAddresses": [ {"line1": "9876 Hello World Street", "line2": "Unit 0001"}, {"line1": "1256 Hello World Street", "line2": "Unit 7000"} ]}, {"firstName": "Jane", "lastName": "Smith", "address": {"line1": "1234 Hello World Street", "line2": "Unit 5678"}, "previousAddresses": [ {"line1": "1234 Hello World Street", "line2": "Unit 0001"}, {"line1": "9876 Hello World Street", "line2": "Unit 1000"} ]}]')->toMany(@Person).firstName);
+    assertEquals(['Jonh', 'Jane'], $result);        
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_manyToOne<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('[{"firstName": "Jonh", "lastName": "Smith", "address": {"line1": "9876 Hello World Street", "line2": "Unit 4523"}, "previousAddresses": [ {"line1": "9876 Hello World Street", "line2": "Unit 0001"}, {"line1": "1256 Hello World Street", "line2": "Unit 7000"} ]}, {"firstName": "Jane", "lastName": "Smith", "address": {"line1": "1234 Hello World Street", "line2": "Unit 5678"}, "previousAddresses": [ {"line1": "1234 Hello World Street", "line2": "Unit 0001"}, {"line1": "9876 Hello World Street", "line2": "Unit 1000"} ]}]')->toMany(@Person).fullName());
+    assertEquals(['Jonh Smith', 'Jane Smith'], $result);        
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_oneToMany<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('{"firstName": "John", "lastName": "Smith", "address": {"line1": "1234 Hello World Street", "line2": "Unit 5678"}, "previousAddresses": [ {"line1": "1234 Hello World Street", "line2": "Unit 0001"}, {"line1": "9876 Hello World Street", "line2": "Unit 1000"} ]}')->to(@Person).previousAddressesToString());
+    assertEquals(['1234 Hello World Street Unit 0001', '9876 Hello World Street Unit 1000'], $result);        
+}
+
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_manyToMany<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result = $f->eval(|fromJson('[{"firstName": "Jonh", "lastName": "Smith", "address": {"line1": "9876 Hello World Street", "line2": "Unit 4523"}, "previousAddresses": [ {"line1": "9876 Hello World Street", "line2": "Unit 0001"}, {"line1": "1256 Hello World Street", "line2": "Unit 7000"} ]}, {"firstName": "John", "lastName": "Smith", "address": {"line1": "1234 Hello World Street", "line2": "Unit 5678"}, "previousAddresses": [ {"line1": "1234 Hello World Street", "line2": "Unit 0001"}, {"line1": "9876 Hello World Street", "line2": "Unit 1000"} ]}]')->toMany(@Person).previousAddresses.toString());
+    assertEquals(['9876 Hello World Street Unit 0001', '1256 Hello World Street Unit 7000', '1234 Hello World Street Unit 0001', '9876 Hello World Street Unit 1000'], $result);        
+}
+
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceAndAccessProperty<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let dogResult = $f->eval(|fromJson('{"_type": "Dog", "name": "Doggo", "isPuppy": true}')->to(@Pet)->cast(@Dog).isPuppy);
+    assertEquals(true, $dogResult);
+
+    let catResult = $f->eval(|fromJson('{"_type": "Cat", "name": "Gato", "isKitten": false}')->to(@Pet)->cast(@Cat).isKitten);
+    assertEquals(false, $catResult);    
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceUsingCustomTypeProperty<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let dogResult = $f->eval(|fromJson('{"__type": "Dog", "name": "Doggo", "isPuppy": true}')->to(@Pet, '__type', [])->cast(@Dog).isPuppy);
+    assertEquals(true, $dogResult);
+
+    let catResult = $f->eval(|fromJson('{"__type": "Cat", "name": "Gato", "isKitten": false}')->to(@Pet, '__type', [])->cast(@Cat).isKitten);
+    assertEquals(false, $catResult);    
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceUsingCustomTypePropertyAndClassToType<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let dogResult = $f->eval(|fromJson('{"__type": "perro", "name": "Doggo", "isPuppy": true}')->to(@Pet, '__type', [pair('gato', Cat), pair('perro',Dog)])->cast(@Dog).isPuppy);
+    assertEquals(true, $dogResult);
+
+    let catResult = $f->eval(|fromJson('{"__type": "gato", "name": "Gato", "isKitten": false}')->to(@Pet, '__type', [pair('gato',Cat), pair('perro',Dog)])->cast(@Cat).isKitten);
+    assertEquals(false, $catResult);    
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceAndInstanceOf<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result1 = $f->eval(|fromJson('[{"_type": "Dog", "name": "Doggo", "isPuppy": true}, {"_type": "Cat", "name": "Gato", "isKitten": false}]')->toMany(@Pet)->filter(x | $x->instanceOf(Dog)).name);
+    assertEquals('Doggo', $result1);
+
+    let result2 = $f->eval(|fromJson('[{"_type": "Dog", "name": "Doggo", "isPuppy": true}, {"_type": "Cat", "name": "Gato", "isKitten": false}]')->toMany(@Pet)->filter(x | $x->instanceOf(Cat)).name);
+    assertEquals('Gato', $result2);
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceAndInstanceOf_withTypeLookup<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let result3 = $f->eval(|fromJson('[{"@type": "perro", "name": "Doggo", "isPuppy": true}, {"@type": "gato", "name": "Gato", "isKitten": false}]')->toMany(@Pet, '@type', [pair('gato',Cat), pair('perro',Dog)])->filter(x | $x->instanceOf(Dog)).name);
+    assertEquals('Doggo', $result3);
+
+    let result4 = $f->eval(|fromJson('[{"@type": "perro", "name": "Doggo", "isPuppy": true}, {"@type": "gato", "name": "Gato", "isKitten": false}]')->toMany(@Pet, '@type', [pair('gato',Cat), pair('perro',Dog)])->filter(x | $x->instanceOf(Cat)).name);
+    assertEquals('Gato', $result4);
+}
+
+Class <<access.private>> meta::pure::functions::variant::tests::convert::to::model::Person
+{
+  <<equality.Key>> firstName: String[1];
+  <<equality.Key>> lastName: String[1];
+  <<equality.Key>> address: Address[1];
+  <<equality.Key>> previousAddresses: Address[*];
+  fullName(){
+    $this.firstName + ' ' + $this.lastName;
+  }:String[1];
+
+  addressToString(){
+    $this.address.line1 + ' ' + $this.address.line2;
+  }:String[1];
+
+  previousAddressesToString(){
+    $this.previousAddresses.toString();
+  }:String[*];
+}
+
+Class <<access.private>> meta::pure::functions::variant::tests::convert::to::model::Address
+{
+  <<equality.Key>> line1: String[1];
+  <<equality.Key>> line2: String[1];
+  toString(){
+    $this.line1 + ' ' + $this.line2;
+  }:String[1];
+}
+
+Class <<access.private>> meta::pure::functions::variant::tests::convert::to::model::Pet
+{
+  <<equality.Key>> name: String[1];  
+  <<equality.Key>> owner: Person[0..1]; 
+}
+
+Class <<access.private>> meta::pure::functions::variant::tests::convert::to::model::Dog extends meta::pure::functions::variant::tests::convert::to::model::Pet
+{
+  <<equality.Key>> isPuppy: Boolean[1];
+}
+
+Class <<access.private>> meta::pure::functions::variant::tests::convert::to::model::Cat extends meta::pure::functions::variant::tests::convert::to::model::Pet
+{
+  <<equality.Key>> isKitten: Boolean[1];  
 }

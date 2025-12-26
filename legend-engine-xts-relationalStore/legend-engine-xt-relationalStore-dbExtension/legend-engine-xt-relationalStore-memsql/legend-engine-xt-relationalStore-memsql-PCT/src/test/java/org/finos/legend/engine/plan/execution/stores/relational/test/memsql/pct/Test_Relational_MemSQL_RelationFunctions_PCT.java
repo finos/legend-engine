@@ -186,7 +186,7 @@ public class Test_Relational_MemSQL_RelationFunctions_PCT extends PCTReportConfi
 
             one("meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE leSchema.tb", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_", "Feature 'GROUP_CONCAT in window function' is not supported by SingleStore.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariant_if_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE leSchema.tb", AdapterQualifier.unsupportedFeature),
@@ -196,23 +196,29 @@ public class Test_Relational_MemSQL_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_contains_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_contains' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE leSchema.tb"),
 
-            one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_", "\"Datatype to SQL text not supported for Database Type: MemSQL\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE leSchema.tb", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE leSchema.tb", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_", "\"[unsupported-api] relational lambda processing not supported for Database Type: MemSQL\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE leSchema.tb", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE leSchema.tb", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE", AdapterQualifier.needsInvestigation),
 
             // lateral
             pack("meta::pure::functions::relation::tests::lateral", "Common table expression not supported on DB MemSQL", AdapterQualifier.unsupportedFeature),
 
             // flatten
-            pack("meta::pure::functions::relation::variant::tests::flatten", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature)
+            pack("meta::pure::functions::relation::variant::tests::flatten", "[unsupported-api] Lateral operation not supported for Database Type: MemSQL", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Extend_Function_1__Boolean_1_", "\"[unsupported-api] relational lambda processing not supported for Database Type: MemSQL\""),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_", "\"Match failure: SemiStructuredArrayFlattenRelationObject instanceOf SemiStructuredArrayFlattenRelation\""),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Array_Function_1__Boolean_1_", "\"Match failure: SemiStructuredArrayFlattenRelationObject instanceOf SemiStructuredArrayFlattenRelation\""),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Map_Function_1__Boolean_1_", "\"Match failure: SemiStructuredArrayFlattenRelationObject instanceOf SemiStructuredArrayFlattenRelation\""),
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_", "\"Match failure: SemiStructuredArrayFlattenRelationObject instanceOf SemiStructuredArrayFlattenRelation\"")
     );
 
     public static Test suite()

@@ -117,7 +117,6 @@ public abstract class AlloyTestServer
         }
         insertTestData(serverPort);
         planExecutor = buildRelationalPlanExecutor();
-        System.out.println("Finished setup");
     }
 
     @After
@@ -125,7 +124,6 @@ public abstract class AlloyTestServer
     {
         server.shutdown();
         server.stop();
-        System.out.println("Teardown complete");
     }
 
     protected PlanExecutor buildRelationalPlanExecutor()

@@ -47,6 +47,8 @@ SERVICE_POST_VALIDATION_DESCRIPTION:'description';
 SERVICE_POST_VALIDATION_PARAMETERS: 'params';
 SERVICE_POST_VALIDATION_ASSERTIONS: 'assertions';
 
+SERVICE_MCP_SERVER:                 'mcpServer';
+
 // -------------------------------------- LEGACY --------------------------------------
 
 SERVICE_TEST:                       'test';

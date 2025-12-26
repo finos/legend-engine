@@ -24,10 +24,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecifica
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,6 +48,15 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
         MutableList<String> names = this.builders.collect(FunctionExpressionBuilder::getFunctionName).distinct();
         Assert.assertTrue(names.size() == 1, () -> "Composite builders should have the same simple name. Found " + names);
         this.builders.forEach(FunctionExpressionBuilder::validate);
+    }
+
+    @Override
+    public void build(Map<String, Function<?>> result)
+    {
+        for (FunctionExpressionBuilder builder : this.builders)
+        {
+            builder.build(result);
+        }
     }
 
     public String getFunctionName()

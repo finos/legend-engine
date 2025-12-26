@@ -86,7 +86,6 @@ public class TestValidation
     public void testList() throws Exception
     {
         Response response = api.list(null);
-        System.out.println(response.getEntity().toString());
         List<FunctionActivatorInfo> info = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(response.getEntity().toString(), new TypeReference<List<FunctionActivatorInfo>>(){});
         Assert.assertEquals(2, info.size());
         Assert.assertEquals("Snowflake App", info.get(0).name);

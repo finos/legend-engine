@@ -84,7 +84,7 @@ public class Handlers
     private static final String PACKAGE_SEPARATOR = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.DEFAULT_PATH_SEPARATOR;
     private static final String META_PACKAGE_NAME = "meta";
 
-    private Set<String> registeredMetaPackages = Sets.mutable.empty();
+    private final Set<String> registeredMetaPackages = Sets.mutable.empty();
 
     private static Collection toCollection(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification vs)
     {
@@ -973,6 +973,7 @@ public class Handlers
     private final Map<String, FunctionExpressionBuilder> map = UnifiedMap.newMap();
     private final Map<String, Dispatch> dispatchMap;
     private final PureModel pureModel;
+    private final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object>> fcache;
     private static final String Nil = "Nil";
 
     /**
@@ -980,9 +981,10 @@ public class Handlers
      * handlers, it should not be context-aware. We may revise that decision but to assert that fact, we will pass just the Pure
      * model here instead
      */
-    public Handlers(PureModel pureModel)
+    public Handlers(PureModel pureModel, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object>> fcache)
     {
         this.pureModel = pureModel;
+        this.fcache = fcache;
         this.dispatchMap = buildDispatch();
 
         registerAdditionalSubtypes(pureModel.getContext().getCompilerExtensions());
@@ -1506,7 +1508,9 @@ public class Handlers
         register("meta::pure::functions::variant::convert::fromJson_String_1__Variant_1_", "fromJson", true, ps -> res(M3Paths.Variant, "one"));
         register("meta::pure::functions::variant::convert::toJson_Variant_1__String_1_", "toJson", true, ps -> res("String", "one"));
         register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_$0_1$__T_$0_1$_", "to", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
+        register("meta::pure::functions::variant::convert::to_Variant_$0_1$__T_$0_1$__String_1__Pair_MANY__T_$0_1$_", "to", true, ps -> res(ps.get(1)._genericType(), "zeroOne"));
         register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_", "toMany", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
+        register("meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__String_1__Pair_MANY__T_MANY_", "toMany", true, ps -> res(ps.get(1)._genericType(), "zeroMany"));
         register("meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_", "toVariant", true, ps -> res(M3Paths.Variant, "one"));
         register(
             m(
@@ -1573,6 +1577,20 @@ public class Handlers
             }
         }
     }
+
+    //-------------------------------
+    // Only called during unit tests
+    //-------------------------------
+    public MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object>> build()
+    {
+        MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object>> result = Maps.mutable.empty();
+        for (FunctionExpressionBuilder entry : map.values())
+        {
+            entry.build(result);
+        }
+        return result;
+    }
+
 
     private void registerAsserts()
     {
@@ -2622,7 +2640,7 @@ public class Handlers
 
     private void register(String fullName, String name, boolean isNative, ReturnInference inference)
     {
-        register(new FunctionHandler(this.pureModel, fullName, name, isNative, inference));
+        register(new FunctionHandler(this.pureModel, this.fcache, fullName, name, isNative, inference));
     }
 
     public void register(FunctionHandler handler)
@@ -2788,17 +2806,17 @@ public class Handlers
 
     public FunctionHandler h(String fullName, String name, boolean isNative, ReturnInference returnInference)
     {
-        return new FunctionHandler(this.pureModel, fullName, name, isNative, returnInference);
+        return new FunctionHandler(this.pureModel, this.fcache, fullName, name, isNative, returnInference);
     }
 
     public FunctionHandler h(String fullName, String name, boolean isNative, ReturnInference returnInference, Dispatch dispatch)
     {
-        return new FunctionHandler(this.pureModel, fullName, name, isNative, returnInference, dispatch);
+        return new FunctionHandler(this.pureModel, this.fcache, fullName, name, isNative, returnInference, dispatch);
     }
 
     public FunctionHandler h(String fullName, String name, boolean isNative, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
     {
-        return new FunctionHandler(this.pureModel, fullName, name, isNative, returnInference, resolvedTypeParametersInference, dispatch);
+        return new FunctionHandler(this.pureModel, this.fcache, fullName, name, isNative, returnInference, resolvedTypeParametersInference, dispatch);
     }
 
     public RequiredInferenceSimilarSignatureFunctionExpressionBuilder grp(ParametersInference parametersInference, FunctionHandler... handlers)

@@ -21,7 +21,7 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
                                         | SERVICE_TEST_SERIALIZATION_FORMAT | SERVICE_TEST | PARAM_GROUP | ASSERT_FOR_KEYS | SERVICE_POST_VALIDATION | SERVICE_POST_VALIDATION_DESCRIPTION
                                         | SERVICE_POST_VALIDATION_PARAMETERS | SERVICE_POST_VALIDATION_ASSERTIONS
-                                        | EXEC_ENV | SERVICE_COMPONENT_BINDING | SERVICE_COMPONENT_CLASS | SERVICE_RUNTIME_COMPONENTS
+                                        | EXEC_ENV | SERVICE_COMPONENT_BINDING | SERVICE_COMPONENT_CLASS | SERVICE_RUNTIME_COMPONENTS | SERVICE_MCP_SERVER
 ;
 
 
@@ -47,6 +47,7 @@ service:                                SERVICE stereotypes? taggedValues? quali
                                                     | serviceTest
                                                     | serviceTestSuites
                                                     | servicePostValidations
+                                                    | serviceMcpServer
                                                 )*
                                             BRACE_CLOSE
 ;
@@ -90,6 +91,8 @@ userList:                               SERVICE_OWNERSHIP_USERLIST
 serviceDocumentation:                   SERVICE_DOCUMENTATION COLON STRING SEMI_COLON
 ;
 serviceAutoActivateUpdates:             SERVICE_AUTO_ACTIVATE_UPDATES COLON BOOLEAN SEMI_COLON
+;
+serviceMcpServer:                       SERVICE_MCP_SERVER COLON identifier SEMI_COLON
 ;
 
 

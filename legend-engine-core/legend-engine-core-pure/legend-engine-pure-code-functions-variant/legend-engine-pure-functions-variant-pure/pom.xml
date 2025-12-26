@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-functions-variant</artifactId>
-        <version>4.116.1-SNAPSHOT</version>
+        <version>4.117.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -69,6 +69,13 @@
                         </goals>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-json-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -83,9 +90,16 @@
                 </executions>
                 <configuration>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
-                    <scopeProviderMethod>org.finos.legend.pure.code.core.VariantCodeRepositoryProvider.variantFunctions</scopeProviderMethod>
+                    <scopeProviderMethod>
+                        org.finos.legend.pure.code.core.VariantCodeRepositoryProvider.variantFunctions
+                    </scopeProviderMethod>
                 </configuration>
                 <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-json-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -100,6 +114,12 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-json-pure</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>

@@ -15,6 +15,12 @@
 import meta::pure::test::pct::reversePCT::framework::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
+Class meta::pure::test::pct::reversePCT::framework::ReverseInformation
+{
+  reverseTransformer : Function<{String[1]->Any[1]}>[1];
+  reversesForSource : ReversesForSource[*];  
+}
+
 Class meta::pure::test::pct::reversePCT::framework::ReversesForSource
 {
   source : String[1];

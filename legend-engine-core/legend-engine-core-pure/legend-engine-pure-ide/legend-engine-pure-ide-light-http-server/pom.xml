@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-ide</artifactId>
-        <version>4.116.1-SNAPSHOT</version>
+        <version>4.117.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -335,7 +335,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+            <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- Engine extensions -->
