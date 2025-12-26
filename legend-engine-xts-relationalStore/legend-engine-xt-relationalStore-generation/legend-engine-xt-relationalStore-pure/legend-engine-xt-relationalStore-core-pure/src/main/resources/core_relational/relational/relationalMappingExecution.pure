@@ -120,6 +120,11 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                               |$class->_subTypeOf(TabularDataSet),
                               | meta::relational::mapping::TDSSelectQueryToTDSResultType($class,$query->cast(@TdsSelectSqlQuery),$exeCtx);
                           ),
+						  pair(
+                              |$class->_subTypeOf(meta::pure::metamodel::relation::Relation) && $query->instanceOf(TdsSelectSqlQuery) && $query->cast(@TdsSelectSqlQuery).paths->isNotEmpty() &&
+                               $query->cast(@TdsSelectSqlQuery).paths->map(p|$p.first) == $sq.vs.genericType.typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->map(c|$c.name->toOne()),
+                              | meta::relational::mapping::TDSSelectQueryToTDSResultType($class,$query->cast(@TdsSelectSqlQuery),$exeCtx)
+                          ),
                           pair(
                               |$class->_subTypeOf(meta::pure::metamodel::relation::Relation),
                               |

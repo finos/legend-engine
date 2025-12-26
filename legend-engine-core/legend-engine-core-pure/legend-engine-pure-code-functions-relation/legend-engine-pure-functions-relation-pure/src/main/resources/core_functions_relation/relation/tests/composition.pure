@@ -1296,7 +1296,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 #->project(~[name: x | $x.payload->to(@meta::pure::functions::relation::tests::composition::Person)])
               };
 
-   let res =  assertError(|$f->eval($expr), 'The type Person is not supported yet!');
+   let res =  assertError(|$f->eval($expr), 'Cast exception: Class<Person> cannot be cast to DataType');
 }
 
 
