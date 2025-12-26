@@ -172,6 +172,7 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                                               $s.aggregateFn->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^GContext(space=''))
                                               ]);,
                                     x:Enum[1]|$x->genericType().rawType->toOne()->elementToPath() + '.' + $x.name->toOne(),
+                                    t:meta::pure::metamodel::relation::TDS<Any>[1]|'#TDS{\n'+$t.csv->replace(' ','')+'}#',
                                     a:Any[1] |$a->toRepresentation();
                                   ])->toOneMany()
                             )
