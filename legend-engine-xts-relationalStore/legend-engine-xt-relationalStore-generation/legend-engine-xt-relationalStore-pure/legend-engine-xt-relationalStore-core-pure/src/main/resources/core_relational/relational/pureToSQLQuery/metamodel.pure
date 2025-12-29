@@ -106,6 +106,12 @@ Class meta::relational::metamodel::FilterRelationalLambda extends meta::relation
 
 }
 
+Class meta::relational::metamodel::datatype::TypedSemiStructured extends meta::relational::metamodel::datatype::SemiStructured
+{
+  typeName : String[0..1];
+  typeLookup : Pair<String, Class<Any>>[*];
+}
+
 Class meta::relational::metamodel::StaticPivot extends meta::relational::metamodel::Pivot
 {
   values : meta::relational::metamodel::Literal[1..*];

@@ -221,7 +221,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimal()})),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as BIGINT)')),
-    dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='%s::JSON')),
+    dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='cast(%s as JSON)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s IN %s)')),
     // dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_add(DAY, case when %s - DAY_OF_WEEK(%s) >= 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
@@ -248,11 +248,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toJson',                 $allStates,            ^ToSql(format='(json(%s)::STRING)')),
     dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='ifnull(to_json(%s), \'null\'::json)')),
-    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='[%s]', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='list_value(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='MAP {%s}', transform={p:String[*] | range(0, $p->size(), 2)->map(i | $p->at($i) + ': ' + $p->at($i + 1))->joinStrings(', ')})),
+    dynaFnToSql('variantTo',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | if($p->at(1)->startsWith('VARCHAR'), |'(%s->>\'$\')'->format($p->at(0)), |'cast(%s as %s)'->format($p))})),
     dynaFnToSql('keys',                   $allStates,            ^ToSql(format='map_keys(%s)')),
     dynaFnToSql('values',                 $allStates,            ^ToSql(format='map_values(%s)')),    
-    dynaFnToSql('mapConcatenate',          $allStates,           ^ToSql(format='map_concat(%s, %s)')),    
+    dynaFnToSql('mapConcatenate',         $allStates,           ^ToSql(format='map_concat(%s, %s)')),  
+    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='flatten(%s)')),  
     // dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
@@ -573,10 +575,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
    let elementAccess = $s->match([
       p: SemiStructuredPropertyAccess[1]     | $p.property,
-      a: SemiStructuredArrayElementAccess[1] | ^DynaFunction(name = 'plus', parameters = [$a.index, ^Literal(value = 1)]) // duckdb is 1-index rather than 0-index which pure is
+      a: SemiStructuredArrayElementAccess[1] | $a.index
    ]);
 
-   '%s[%s]'->format([
+   '%s->%s'->format([
       $processedOperand,
       $elementAccess->processOperation($sgc)
    ]);

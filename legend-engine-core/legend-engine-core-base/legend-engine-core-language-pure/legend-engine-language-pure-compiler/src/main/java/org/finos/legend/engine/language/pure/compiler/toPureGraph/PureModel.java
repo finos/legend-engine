@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.predicate.Predicate;
 import org.eclipse.collections.api.factory.Lists;
@@ -197,8 +194,7 @@ public class PureModel implements IPureModel
         this.extensions = extensions;
         this.deploymentMode = deploymentMode;
         this.pureModelProcessParameter = pureModelProcessParameter;
-        Span span = GlobalTracer.get().buildSpan("Build Pure Model").start();
-        try (Scope ignore = GlobalTracer.get().scopeManager().activate(span))
+        try
         {
             ConsoleCompiled console = new ConsoleCompiled();
             console.disable();
@@ -244,8 +240,7 @@ public class PureModel implements IPureModel
             registerElementsForPathToElement();
             long preInitEnd = System.nanoTime();
 
-            LOGGER.info("{}", new LogInfo(user, "GRAPH_START", (pureModelContextData.origin == null || pureModelContextData.origin.sdlcInfo == null) ? "" : pureModelContextData.origin.sdlcInfo.packageableElementPointers, nanosDurationToMillis(start, preInitEnd)));
-            span.log("GRAPH_START");
+            LOGGER.debug("{}", new LogInfo(user, "GRAPH_START", (pureModelContextData.origin == null || pureModelContextData.origin.sdlcInfo == null) ? "" : pureModelContextData.origin.sdlcInfo.packageableElementPointers, nanosDurationToMillis(start, preInitEnd)));
 
             long initStart = System.nanoTime();
 
@@ -273,15 +268,13 @@ public class PureModel implements IPureModel
             initializeMultiplicities();
             initializePrimitiveTypes();
             long initEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(user, "GRAPH_INITIALIZED", nanosDurationToMillis(initStart, initEnd)));
-            span.log("GRAPH_INITIALIZED");
+            LOGGER.debug("{}", new LogInfo(user, "GRAPH_INITIALIZED", nanosDurationToMillis(initStart, initEnd)));
 
             // Pre Validation
             long preValidationStart = System.nanoTime();
             new PureModelContextDataValidator().validate(this, pureModelContextData);
             long preValidationEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(user, "GRAPH_PRE_VALIDATION_COMPLETED", nanosDurationToMillis(preValidationStart, preValidationEnd)));
-            span.log("GRAPH_PRE_VALIDATION_COMPLETED");
+            LOGGER.debug("{}", new LogInfo(user, "GRAPH_PRE_VALIDATION_COMPLETED", nanosDurationToMillis(preValidationStart, preValidationEnd)));
 
             List<org.finos.legend.engine.protocol.pure.m3.PackageableElement> elements = pureModelContextData.getElements();
             MutableSet<String> elementPaths = Sets.mutable.empty();
@@ -440,24 +433,17 @@ public class PureModel implements IPureModel
                 }
             }
             long postValidationEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(user, "GRAPH_POST_VALIDATION_COMPLETED", nanosDurationToMillis(postValidationStart, postValidationEnd)));
-            span.log("GRAPH_POST_VALIDATION_COMPLETED");
+            LOGGER.debug("{}", new LogInfo(user, "GRAPH_POST_VALIDATION_COMPLETED", nanosDurationToMillis(postValidationStart, postValidationEnd)));
 
             long end = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(user, "GRAPH_STOP", nanosDurationToMillis(start, end)));
-            span.log("GRAPH_STOP");
+            LOGGER.debug("{}", new LogInfo(user, "GRAPH_STOP", nanosDurationToMillis(start, end)));
         }
         catch (Exception e)
         {
             long end = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(user, "GRAPH_ERROR", e, nanosDurationToMillis(start, end)));
-            span.log("GRAPH_ERROR");
+            LOGGER.debug("{}", new LogInfo(user, "GRAPH_ERROR", e, nanosDurationToMillis(start, end)));
             // TODO: we need to have a better strategy to throw compilation error instead of the generic exception
             throw e;
-        }
-        finally
-        {
-            span.finish();
         }
     }
 

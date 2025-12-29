@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.116.2-SNAPSHOT</version>
+    <version>4.117.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -107,11 +107,14 @@
 
         <!-- Python -->
         <module>legend-engine-xts-python</module>
+
+        <!-- MCP -->
+        <module>legend-engine-xts-mcp</module>
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.68.0</legend.pure.version>
+        <legend.pure.version>5.70.0</legend.pure.version>
         <legend.shared.version>0.30.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
         <legend.pylegend.version>0.10.0</legend.pylegend.version>
@@ -139,7 +142,7 @@
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
         <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
-        <project.build.outputTimestamp>1766241257</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1766728939</project.build.outputTimestamp>
         <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1 -Duser.timezone=GMT</surefire.vm.params>
         <surefire.reports.directory />
         <publish.server.id>central</publish.server.id>
@@ -2943,7 +2946,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->
@@ -3287,6 +3290,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-python-reversePCT-legendQL</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-mcp-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-mcp-server-orchestrator</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

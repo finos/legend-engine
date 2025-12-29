@@ -14,6 +14,7 @@
     "platform_dsl_store",
     "platform_dsl_tds",
     "platform_store_relational",
+    "core_external_compiler",
     "core_relational",
     "core_external_test_connection"
   ]

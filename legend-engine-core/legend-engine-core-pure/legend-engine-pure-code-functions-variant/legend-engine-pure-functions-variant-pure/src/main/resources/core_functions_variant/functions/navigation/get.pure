@@ -57,3 +57,13 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
 {
     assertEquals('2', $f->eval(|fromJson('[1,2,3]')->get(1)->toOne())->toString());
 }
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::navigation::tests::get::testNestedGet_arrayToMap<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('"moon"', $f->eval(|fromJson('[{"hello":"world"}, {"hello":"moon"}]')->get(1)->get('hello')->toOne())->toString());
+}
+
+function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::navigation::tests::get::testNestedGet_mapToArray<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals('"sun"', $f->eval(|fromJson('{"hello":["world", "moon", "sun"]}')->get('hello')->get(2)->toOne())->toString());
+}

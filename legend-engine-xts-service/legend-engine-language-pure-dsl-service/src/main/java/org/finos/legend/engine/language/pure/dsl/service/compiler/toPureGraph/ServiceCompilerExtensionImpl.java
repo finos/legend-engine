@@ -207,6 +207,12 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                                         );
                                     });
                                 }
+
+                                // mcpServer
+                                if (service.mcpServer != null)
+                                {
+                                    pureService._mcpServer(service.mcpServer);
+                                }
                             }
                         },
                         this::servicePrerequisiteElementsPass),

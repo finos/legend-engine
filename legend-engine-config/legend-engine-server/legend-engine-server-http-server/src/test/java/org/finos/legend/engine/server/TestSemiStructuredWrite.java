@@ -115,7 +115,6 @@ public class TestSemiStructuredWrite
         }
         insertTestData(serverPort);
         planExecutor = buildPlanExecutor();
-        System.out.println("Finished setup");
     }
 
     protected PlanExecutor buildPlanExecutor()
@@ -134,7 +133,6 @@ public class TestSemiStructuredWrite
     {
         server.shutdown();
         server.stop();
-        System.out.println("Teardown complete");
     }
 
     public static int getServerPort()

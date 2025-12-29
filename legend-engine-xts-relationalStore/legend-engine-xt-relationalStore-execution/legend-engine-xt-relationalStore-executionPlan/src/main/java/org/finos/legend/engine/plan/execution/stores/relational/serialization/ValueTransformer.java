@@ -19,18 +19,18 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
 
-class ValueTransformer
+public class ValueTransformer
 {
     private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final DateTimeFormatter timeFormatterWithZ = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.nnnnnnnnnZ");
     private final ZoneOffset offset = ZoneOffset.UTC;
 
-    protected ValueTransformer()
+    public ValueTransformer()
     {
 
     }
 
-    protected String transformWrappedRelationalValueForJSON(Object relationalValue, Function<Object, String> transformer)
+    public String transformWrappedRelationalValueForJSON(Object relationalValue, Function<Object, String> transformer)
     {
         if (relationalValue instanceof Timestamp)
         {
@@ -48,7 +48,7 @@ class ValueTransformer
 
     }
 
-    protected Object transformRelationalValue(Object relationalValue, Function<Object, ?> transformer)
+    public Object transformRelationalValue(Object relationalValue, Function<Object, ?> transformer)
     {
         if (relationalValue instanceof Timestamp)
         {

@@ -96,7 +96,6 @@ public class TestConnectionStateManagerRelationalExecutorFlow extends AlloyTestS
         executorService.awaitTermination(100000, TimeUnit.MINUTES);
 
         ConnectionStateManager connectionStateManager = ConnectionStateManager.getInstance();
-        System.out.println(new ObjectMapper().writeValueAsString(connectionStateManager));
         Assert.assertEquals(numberOfThreads, workerStates.size());
 
         workerStates.stream().forEach(thread -> Assert.assertTrue(thread.name, thread.ok));

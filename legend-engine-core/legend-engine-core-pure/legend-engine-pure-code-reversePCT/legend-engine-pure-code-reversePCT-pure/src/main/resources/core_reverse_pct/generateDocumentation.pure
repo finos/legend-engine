@@ -1,0 +1,150 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::functions::meta::*;
+import meta::pure::test::pct::*;
+import meta::pure::test::pct::reversePCT::framework::documentation::*;
+import meta::pure::test::pct::reversePCT::framework::*;
+
+function meta::pure::test::pct::reversePCT::framework::documentation::reprocess(f:ConcreteFunctionDefinition<Any>[1], reverses: ReversesForSource[*], reverseTransformer:Function<{String[1]->Any[1]}>[1]):ConcreteFunctionDefinition<Any>[1]
+{
+  if ($f->hasStereotype('test', PCT),
+    | let path = $f->elementToPath();
+      let foundReverse = $reverses.reverses->filter(v|$v.testFunction == $path);
+      $f->swapReverse($foundReverse.reverses->groupBy(x|$x.function), $reverseTransformer);,
+    |$f
+  );
+}
+
+function meta::pure::test::pct::reversePCT::framework::documentation::swapReverse(f:ConcreteFunctionDefinition<Any>[1], reverses:Map<String,List<Reverse>>[1], reverseTransformer:Function<{String[1]->Any[1]}>[1]):ConcreteFunctionDefinition<Any>[1]
+{
+  ^$f(
+    expressionSequence = if ($reverses->keys()->isEmpty(),
+                              |^FunctionExpression
+                               (
+                                 func = meta::pure::test::pct::reversePCT::framework::documentation::noReverse_T_1__T_1_,
+                                 importGroup = ^ImportGroup(),
+                                 multiplicity=PureOne,
+                                 genericType=^GenericType(rawType=Any),
+                                 parametersValues = ^InstanceValue
+                                                    (
+                                                      genericType = ^GenericType(rawType=Any),
+                                                      multiplicity = PureOne,
+                                                      values = ^LambdaFunction<{->Any[*]}>
+                                                               (
+                                                                    expressionSequence = $f.expressionSequence->evaluateAndDeactivate()
+                                                               )
+                                                    )
+                               ),
+                              |$f.expressionSequence->evaluateAndDeactivate()->map(x|$x->swapReverse($reverses, $reverseTransformer))
+                         )
+  );
+}
+
+function meta::pure::test::pct::reversePCT::framework::documentation::noReverse<T>(x:T[1]):T[1]
+{
+  $x;
+}
+
+function meta::pure::test::pct::reversePCT::framework::documentation::expectedError<T>(x:T[1], value:String[1], error:String[1], message:String[1]):T[1]
+{
+  $x;
+}
+
+function meta::pure::test::pct::reversePCT::framework::documentation::swapReverse(v:ValueSpecification[1], reverses:Map<String,List<Reverse>>[1], reverseTransformer:Function<{String[1]->Any[1]}>[1]):ValueSpecification[1]
+{
+  $v->match([
+    fe:FunctionExpression[1]|^$fe(parametersValues=$fe.parametersValues->evaluateAndDeactivate()->map(x|$x->swapReverse($reverses, $reverseTransformer))),
+    i:InstanceValue[1]|if ($i.values->genericType().rawType == LambdaFunction,
+                            | ^$i(
+                                  values = $i.values->map(x|
+                                    let f = $x->cast(@FunctionDefinition<Any>)->printFunctionDefinition(meta::pure::test::pct::reversePCT::framework::documentation::dynamicGrammarConfiguration(), ^GContext(space=''));
+                                    let reverse = $reverses->get($f).values;
+                                    if ([
+                                          pair(|$reverse->isEmpty() || $reverse.reverse->isEmpty(), |$x),
+                                          pair(|!$reverse.expectedError->isEmpty(),
+                                            |^FunctionExpression
+                                              (
+                                                func = meta::pure::test::pct::reversePCT::framework::documentation::expectedError_T_1__String_1__String_1__String_1__T_1_,
+                                                importGroup = ^ImportGroup(),
+                                                multiplicity=PureOne,
+                                                genericType=^GenericType(rawType=Any),
+                                                parametersValues = [
+                                                                      ^InstanceValue
+                                                                      (
+                                                                        genericType = ^GenericType(rawType=Any),
+                                                                        multiplicity = PureOne,
+                                                                        values = $x
+                                                                      ),
+                                                                      ^InstanceValue
+                                                                      (
+                                                                        genericType = ^GenericType(rawType=String),
+                                                                        multiplicity = PureOne,
+                                                                        values = 'reverse: ' + $reverse.reverse->toOne()
+                                                                      ),
+                                                                      ^InstanceValue
+                                                                      (
+                                                                        genericType = ^GenericType(rawType=String),
+                                                                        multiplicity = PureOne,
+                                                                        values = 'error: ' + $reverse.expectedError->toOne()
+                                                                      ),
+                                                                      ^InstanceValue
+                                                                      (
+                                                                        genericType = ^GenericType(rawType=String),
+                                                                        multiplicity = PureOne,
+                                                                        values = 'infoMessage: ' + if($reverse.infoMessage->isEmpty(),|'',|$reverse.infoMessage->toOne())
+                                                                      )
+                                                                   ]
+                                              )
+                                          )
+                                        ],
+                                      |$reverseTransformer->eval($reverse.reverse->toOne());
+                                    );
+                                  )
+                               ),
+                            | $i->evaluateAndDeactivate()
+                       )->cast(@ValueSpecification),
+    a:ValueSpecification[1]|$a;
+  ])
+}
+
+function meta::pure::test::pct::reversePCT::framework::documentation::dynamicGrammarConfiguration():meta::pure::metamodel::serialization::grammar::Configuration[1]
+{
+  ^meta::pure::metamodel::serialization::grammar::Configuration
+  (
+    fullPath = true,
+    extensions = meta::pure::extension::runtime::getExtensions().grammarSerializerExtensions
+  );
+}
+
+function meta::pure::test::pct::reversePCT::framework::documentation::generateDoc(file:String[1], reverseFunc : String[1]):String[1]
+{
+    let funcs = meta::pure::functions
+                ->getAllPackageElements(true)
+                ->filter(x|$x->instanceOf(ConcreteFunctionDefinition))
+                ->cast(@ConcreteFunctionDefinition<Any>)
+                ->filter(x|$x->sourceInformation()->toOne().source == $file && $x->hasStereotype('test', PCT));
+
+    let revs = $reverseFunc->pathToElement()->cast(@Function<{->ReverseInformation[1]}>)->eval();
+    let reverses = $revs.reversesForSource->filter(x|$x.source == $file);
+
+    let configuration = meta::pure::test::pct::reversePCT::framework::documentation::dynamicGrammarConfiguration();
+    let conf = ^$configuration(fullPath=false);
+
+    $funcs->sortBy(x|$x->sourceInformation().startLine->toOne())
+          ->map(f| $f->reprocess($reverses, $revs.reverseTransformer))
+          ->printPackageableElements($conf)
+          ->makeString('\n');
+}

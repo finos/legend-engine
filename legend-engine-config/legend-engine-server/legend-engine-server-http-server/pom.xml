@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-server</artifactId>
-        <version>4.116.2-SNAPSHOT</version>
+        <version>4.117.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server-http-server</artifactId>
@@ -1135,6 +1135,11 @@
         <!-- PCT -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-standard</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
@@ -1224,6 +1229,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-python-reversePCT-legendQL</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-reversePCT-http-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <!-- PCT -->
 

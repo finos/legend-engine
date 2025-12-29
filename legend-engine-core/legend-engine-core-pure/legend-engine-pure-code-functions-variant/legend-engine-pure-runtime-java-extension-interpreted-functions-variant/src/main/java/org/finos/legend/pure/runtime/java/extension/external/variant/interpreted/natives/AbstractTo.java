@@ -27,25 +27,31 @@ import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.pure.m3.compiler.Context;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionCoreInstanceWrapper;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.*;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.generictype.GenericType;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.variant.VariantInstanceImpl;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
+import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.MapCoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.natives.NativeFunction;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
+import org.finos.legend.pure.runtime.java.interpreted.profiler.VoidProfiler;
 
 public abstract class AbstractTo extends NativeFunction
 {
+    private final FunctionExecutionInterpreted exec;
     private final ModelRepository repository;
 
-    public AbstractTo(ModelRepository repository)
+    public AbstractTo(FunctionExecutionInterpreted exec, ModelRepository repository)
     {
+        this.exec = exec;
         this.repository = repository;
     }
 
@@ -54,18 +60,39 @@ public abstract class AbstractTo extends NativeFunction
     {
         CoreInstance variantCoreInstance = params.get(0);
         CoreInstance typeParameter = params.get(1);
+        CoreInstance typeKeyName;
+        ListIterable<? extends CoreInstance> typeLookup;
+
+        if (params.size() > 2)
+        {
+            typeKeyName = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport);
+            typeLookup = Instance.getValueForMetaPropertyToManyResolved(params.get(3), M3Properties.values, processorSupport)
+                    .collect(x ->
+                    {
+                        CoreInstance pair = processorSupport.newAnonymousCoreInstance(functionExpressionCallStack.peek().getSourceInformation(), "meta::pure::functions::collection::Pair");
+                        Instance.setValueForProperty(pair, M3Properties.first, x.getValueForMetaPropertyToOne("first"), processorSupport);
+                        Instance.setValueForProperty(pair, M3Properties.second, repository.newStringCoreInstance_cached(PackageableElement.getUserPathForPackageableElement(x.getValueForMetaPropertyToOne("second"))), processorSupport);
+                        return pair;
+                    });
+        }
+        else
+        {
+            typeKeyName = this.repository.newStringCoreInstance_cached("_type");
+            typeLookup = Lists.fixedSize.empty();
+        }
+
         CoreInstance targetGenericType = Instance.getValueForMetaPropertyToOneResolved(typeParameter, M3Properties.genericType, processorSupport);
 
         RichIterable<? extends CoreInstance> values = Instance.getValueForMetaPropertyToManyResolved(variantCoreInstance, M3Properties.values, processorSupport)
-                .flatCollect(x -> this.toCoreInstances((VariantInstanceImpl) x, targetGenericType, functionExpressionCallStack, processorSupport))
+                .flatCollect(x -> this.toCoreInstances((VariantInstanceImpl) x, targetGenericType, typeKeyName, typeLookup, functionExpressionCallStack, executionSupport, processorSupport))
                 .select(Objects::nonNull);
 
         return ValueSpecificationBootstrap.wrapValueSpecification(values, true, targetGenericType, processorSupport);
     }
 
-    abstract Iterable<? extends CoreInstance> toCoreInstances(VariantInstanceImpl variantCoreInstance, CoreInstance targetGenericType, MutableStack<CoreInstance> functionExpressionCallStack, ProcessorSupport processorSupport);
+    abstract Iterable<? extends CoreInstance> toCoreInstances(VariantInstanceImpl variantCoreInstance, CoreInstance targetGenericType, CoreInstance typeKeyName, ListIterable<? extends CoreInstance> typeLookup, MutableStack<CoreInstance> functionExpressionCallStack, ExecutionSupport executionSupport, ProcessorSupport processorSupport);
 
-    CoreInstance toCoreInstance(JsonNode jsonNode, CoreInstance targetGenericType, MutableStack<CoreInstance> functionExpressionCallStack, ProcessorSupport processorSupport)
+    CoreInstance toCoreInstance(JsonNode jsonNode, CoreInstance targetGenericType, CoreInstance typeKeyName, ListIterable<? extends CoreInstance> typeLookup, MutableStack<CoreInstance> functionExpressionCallStack, ExecutionSupport executionSupport, ProcessorSupport processorSupport)
     {
         CoreInstance targetRawType = Instance.getValueForMetaPropertyToOneResolved(targetGenericType, M3Properties.rawType, processorSupport);
 
@@ -79,15 +106,13 @@ public abstract class AbstractTo extends NativeFunction
             return null;
         }
 
-        boolean supportedTypeButWrongJson = false;
-
         if (targetRawType == processorSupport.package_getByUserPath(M3Paths.List))
         {
             if (jsonNode.isArray())
             {
                 CoreInstance listValueGenericType = Instance.getValueForMetaPropertyToOneResolved(targetGenericType, M3Properties.typeArguments, processorSupport);
 
-                Iterable<CoreInstance> values = Iterate.collect(jsonNode, x -> this.toCoreInstance(x, listValueGenericType, functionExpressionCallStack, processorSupport));
+                Iterable<CoreInstance> values = Iterate.collect(jsonNode, x -> this.toCoreInstance(x, listValueGenericType, typeKeyName, typeLookup, functionExpressionCallStack, executionSupport, processorSupport));
 
                 CoreInstance listCoreInstance = processorSupport.newEphemeralAnonymousCoreInstance(M3Paths.List);
                 Instance.addValueToProperty(listCoreInstance, M3Properties.values, values, processorSupport);
@@ -95,34 +120,31 @@ public abstract class AbstractTo extends NativeFunction
 
                 return listCoreInstance;
             }
-
-            supportedTypeButWrongJson = true;
         }
-        else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.Map)
-                && Instance.getValueForMetaPropertyToOneResolved(Instance.getValueForMetaPropertyToManyResolved(targetGenericType, M3Properties.typeArguments, processorSupport).get(0), M3Properties.rawType, processorSupport) == processorSupport.package_getByUserPath(M3Paths.String)
-        )
+        else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.Map))
         {
-            if (jsonNode.isObject())
+            if (Instance.getValueForMetaPropertyToOneResolved(Instance.getValueForMetaPropertyToManyResolved(targetGenericType, M3Properties.typeArguments, processorSupport).get(0), M3Properties.rawType, processorSupport) == processorSupport.package_getByUserPath(M3Paths.String))
             {
-                CoreInstance mapValueGenericType = Instance.getValueForMetaPropertyToManyResolved(targetGenericType, M3Properties.typeArguments, processorSupport).get(1);
-
-                MapCoreInstance mapCoreInstance = new MapCoreInstance(Lists.immutable.empty(), "", null, processorSupport.package_getByUserPath(M3Paths.Map), -1, this.repository, false, processorSupport);
-                Instance.setValueForProperty(mapCoreInstance, M3Properties.classifierGenericType, targetGenericType, processorSupport);
-
-                MutableMap<CoreInstance, CoreInstance> internalMap = mapCoreInstance.getMap();
-                for (Iterator<Map.Entry<String, JsonNode>> it = jsonNode.fields(); it.hasNext(); )
+                if (jsonNode.isObject())
                 {
-                    Map.Entry<String, JsonNode> entry = it.next();
-                    internalMap.put(
-                            this.repository.newStringCoreInstance(entry.getKey()),
-                            this.toCoreInstance(entry.getValue(), mapValueGenericType, functionExpressionCallStack, processorSupport)
-                    );
+                    CoreInstance mapValueGenericType = Instance.getValueForMetaPropertyToManyResolved(targetGenericType, M3Properties.typeArguments, processorSupport).get(1);
+
+                    MapCoreInstance mapCoreInstance = new MapCoreInstance(Lists.immutable.empty(), "", null, processorSupport.package_getByUserPath(M3Paths.Map), -1, this.repository, false, processorSupport);
+                    Instance.setValueForProperty(mapCoreInstance, M3Properties.classifierGenericType, targetGenericType, processorSupport);
+
+                    MutableMap<CoreInstance, CoreInstance> internalMap = mapCoreInstance.getMap();
+                    for (Iterator<Map.Entry<String, JsonNode>> it = jsonNode.fields(); it.hasNext(); )
+                    {
+                        Map.Entry<String, JsonNode> entry = it.next();
+                        internalMap.put(
+                                this.repository.newStringCoreInstance(entry.getKey()),
+                                this.toCoreInstance(entry.getValue(), mapValueGenericType, typeKeyName, typeLookup, functionExpressionCallStack, executionSupport, processorSupport)
+                        );
+                    }
+
+                    return mapCoreInstance;
                 }
-
-                return mapCoreInstance;
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.Integer))
         {
@@ -134,8 +156,6 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newIntegerCoreInstance(jsonNode.textValue());
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.Float))
         {
@@ -147,8 +167,6 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newFloatCoreInstance(jsonNode.textValue());
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.StrictDate))
         {
@@ -156,8 +174,6 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newStrictDateCoreInstance(jsonNode.textValue());
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.DateTime))
         {
@@ -165,8 +181,6 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newDateTimeCoreInstance(jsonNode.textValue());
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.String))
         {
@@ -174,8 +188,6 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newStringCoreInstance(jsonNode.asText());
             }
-
-            supportedTypeButWrongJson = true;
         }
         else if (targetRawType == processorSupport.package_getByUserPath(M3Paths.Boolean))
         {
@@ -187,13 +199,25 @@ public abstract class AbstractTo extends NativeFunction
             {
                 return this.repository.newBooleanCoreInstance(jsonNode.textValue());
             }
-
-            supportedTypeButWrongJson = true;
         }
-
-        if (supportedTypeButWrongJson)
+        else if (processorSupport.instance_instanceOf(targetRawType, M3Paths.Class))
         {
-            throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), "Variant of type '" + jsonNode.getNodeType() + "' cannot be converted to " + GenericType.print(targetGenericType, processorSupport), functionExpressionCallStack);
+            if (jsonNode.isObject())
+            {
+                CoreInstance desConfig = processorSupport.newAnonymousCoreInstance(functionExpressionCallStack.peek().getSourceInformation(), "meta::json::JSONDeserializationConfig");
+                Instance.setValueForProperty(desConfig, "typeKeyName", typeKeyName, processorSupport);
+                Instance.setValuesForProperty(desConfig, "typeLookup", typeLookup, processorSupport);
+                Instance.setValueForProperty(desConfig, "failOnUnknownProperties", this.repository.newBooleanCoreInstance(false), processorSupport);
+
+                CoreInstance fromJsonToClassFunc = processorSupport.package_getByUserPath("meta::json::fromJson_String_1__Class_1__JSONDeserializationConfig_1__T_1_");
+                ListIterable<CoreInstance> arguments = Lists.fixedSize.of(
+                        ValueSpecificationBootstrap.wrapValueSpecification(this.repository.newStringCoreInstance(jsonNode.toString()), true, processorSupport),
+                        ValueSpecificationBootstrap.wrapValueSpecification(targetRawType, true, processorSupport),
+                        ValueSpecificationBootstrap.wrapValueSpecification(desConfig, true, processorSupport)
+                );
+                CoreInstance resultValue = this.exec.executeFunction(false, FunctionCoreInstanceWrapper.toFunction(fromJsonToClassFunc), arguments, new Stack<>(), new Stack<>(), VariableContext.newVariableContext(), functionExpressionCallStack, VoidProfiler.VOID_PROFILER, new InstantiationContext(), executionSupport);
+                return Instance.getValueForMetaPropertyToOneResolved(resultValue, M3Properties.values, processorSupport);
+            }
         }
 
         throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), GenericType.print(targetGenericType, processorSupport) + " is not managed yet!", functionExpressionCallStack);

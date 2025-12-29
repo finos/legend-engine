@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-python</artifactId>
-        <version>4.116.2-SNAPSHOT</version>
+        <version>4.117.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -58,7 +58,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -96,7 +96,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -144,7 +144,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -181,7 +181,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-reversePCT</artifactId>
+            <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

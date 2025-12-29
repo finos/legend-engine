@@ -34,7 +34,7 @@ import static org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBui
 public class Test_Query_SQL_UnclassifiedFunctions_Reverse_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
-    private static final Adapter adapter = CoreExternalSQLReversePCTCodeRepositoryProvider.SQLAdapter;
+    private static final Adapter adapter = Core_Query_SQL_ReversePCTReportProvider.SQLAdapter;
     private static final String platform = "compiled";
     private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_query_sql_reverse_pct_unclassified_unclassified.Root_meta_external_query_sql_reversePCT_tests_unclassified_reverses__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
     private static final MutableList<ExclusionSpecification> expectedFailures = ExpectedFailuresBuilder.build(reverseInfo);

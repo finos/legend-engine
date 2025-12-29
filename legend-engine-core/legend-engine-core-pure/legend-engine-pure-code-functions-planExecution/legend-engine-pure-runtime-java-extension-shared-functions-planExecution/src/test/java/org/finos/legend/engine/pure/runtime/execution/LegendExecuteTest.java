@@ -40,8 +40,6 @@ public abstract class LegendExecuteTest
 {
     protected static PureRuntime setUpRuntime(CoreInstanceFactoryRegistry registryOverride) throws Exception
     {
-        System.out.println("starting to setup runtime");
-
         RichIterable<CodeRepository> repositories = getRepositories().select(p -> !p.getName().startsWith("other_") && !p.getName().startsWith("test_"));
         System.out.println(repositories.collect(CodeRepository::getName).makeString("Code Repos: ", ", ", ""));
         CompositeCodeStorage codeStorage = new CompositeCodeStorage(new ClassLoaderCodeStorage(repositories));

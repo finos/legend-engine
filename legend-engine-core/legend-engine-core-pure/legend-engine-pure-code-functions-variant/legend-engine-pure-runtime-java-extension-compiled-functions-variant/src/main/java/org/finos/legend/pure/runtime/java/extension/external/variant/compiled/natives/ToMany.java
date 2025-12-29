@@ -23,7 +23,7 @@ public class ToMany extends AbstractNative
 {
     public ToMany()
     {
-        super("toMany_Variant_$0_1$__T_$0_1$__T_MANY_");
+        super("toMany_Variant_$0_1$__T_$0_1$__T_MANY_", "toMany_Variant_$0_1$__T_$0_1$__String_1__Pair_MANY__T_MANY_");
     }
 
     @Override

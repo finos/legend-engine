@@ -352,6 +352,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='{%s}', transform={p:String[*] | range(0, $p->size(), 2)->map(i | $p->at($i) + ': ' + $p->at($i + 1))->joinStrings(', ')})),
     dynaFnToSql('keys',                   $allStates,            ^ToSql(format='map_keys(%s)')),
     dynaFnToSql('values',                 $allStates,            ^ToSql(format='transform(map_keys(%s), k -> GET(%s, k))', transform = {p:String[1] | $p->concatenate($p)})),
+    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='array_flatten(%s)')),  
     dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='map_cat(%s, %s)')), 
     dynaFnToSql('parseBoolean',           $allStates,            ^ToSql(format='to_boolean(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
