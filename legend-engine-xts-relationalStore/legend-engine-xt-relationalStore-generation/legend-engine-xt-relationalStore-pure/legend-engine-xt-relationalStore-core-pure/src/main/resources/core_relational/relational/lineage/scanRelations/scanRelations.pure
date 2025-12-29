@@ -716,7 +716,15 @@ function <<access.private>> meta::pure::lineage::scanRelations::extractSourceCol
                                                            $colName == $tableAliasColumn.column.name;)->extractTableAliasColumns()->removeDuplicates();
 
    if($reqTableAliasColumn->isEmpty() || $select.data->isEmpty(),
-      |[],
+     |if($select.columns->isEmpty() && $select.data->isNotEmpty(),
+        |let rootTree        = $select.data->toOne();
+         let childTrees      = $rootTree->children()->map(child | $child->extractJoinChildren());
+         let allTrees = $rootTree->concatenate($childTrees);
+         if($allTrees->forAll(t | $t.alias.relation->instanceOf(SelectSQLQuery)),
+           |let newSelectColumns =  $allTrees->map(t | $t.alias->meta::relational::functions::pureToSqlQuery::switchAliasForColumns($t.alias.relation->cast(@SelectSQLQuery).columns) )->fold({x,y| $y->concatenate($x)}, []);
+            ^$select(columns=$newSelectColumns)->extractSourceColumnFromSelectSQLQuery($tableAliasColumn,$relationIdentifiers, $sourceTree);,
+           |[]);,
+        |[]),
       |let rootTree        = $select.data->toOne();
        let childTrees      = $rootTree->children()->map(child | $child->extractJoinChildren());
        $reqTableAliasColumn->map(c|$c->extractSourceColumn( $rootTree->concatenate($childTrees)->filter(tree | $tree.alias.name == $c.alias.name).alias->toOne(), $relationIdentifiers, $sourceTree));
