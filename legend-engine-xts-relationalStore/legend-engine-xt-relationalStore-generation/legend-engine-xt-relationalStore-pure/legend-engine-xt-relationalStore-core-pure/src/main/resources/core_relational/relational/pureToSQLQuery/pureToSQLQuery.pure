@@ -6802,7 +6802,8 @@ function meta::relational::functions::pureToSqlQuery::processTdsJoin(asOfJoin:Bo
 
     let child = ^JoinTreeNode(alias=$rightAlias, join=$join, joinType=if($type->instanceOf(JoinType),|$type->cast(@JoinType),|meta::relational::functions::pureToSqlQuery::joinKindToType($type->cast(@JoinKind))), database=^Database(), joinName='tdsJoin');
     let root = ^RootJoinTreeNode(alias=$leftAliasForJoinNode, childrenData=$child);
-    let newAlias = ^TableAlias(name = 'tdsJoined_' + $nodeId, relationalElement=^TdsSelectSqlQuery(data=$root, columns=if($Q1isVarSetPlaceHolder,|[],|$leftAliasWithColumns->concatenate($aliases2))));
+     let columnList = $swc1.select.columns->concatenate($swc2.select.columns);
+    let newAlias = ^TableAlias(name = 'tdsJoined_' + $nodeId, relationalElement=^TdsSelectSqlQuery(data=$root, columns=if($Q1isVarSetPlaceHolder,|[],|if($columnList->fold({cl, res | $cl->instanceOf(Alias) && $res}, true) && ($columnList->map(cl | $cl->cast(@Alias).name) == $leftAliasWithColumns->concatenate($aliases2)->map(cl | $cl->cast(@Alias).name)), | [], | $leftAliasWithColumns->concatenate($aliases2)))));
     let newData = ^RootJoinTreeNode(alias = $newAlias);
 
     ^$swc1(select = ^TdsSelectSqlQuery(
@@ -7071,7 +7072,7 @@ function <<access.protected>> meta::relational::functions::pureToSqlQuery::recur
 }
 
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::switchAliasForColumns(newAlias : TableAlias[1], columns : RelationalOperationElement[*]):Alias[*]
+function meta::relational::functions::pureToSqlQuery::switchAliasForColumns(newAlias : TableAlias[1], columns : RelationalOperationElement[*]):Alias[*]
 {
    $columns->map(cl|
       $cl->match([

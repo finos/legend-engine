@@ -1798,7 +1798,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinOneDBOneExpressi
     '(\n'+
     '  type = TDS[(firstName, String, VARCHAR(200), ""), (eID, Integer, INT, ""), (fID, Integer, INT, ""), (legalName, String, VARCHAR(200), "")]\n'+
     '  resultColumns = [("firstName", VARCHAR(200)), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
-    '  sql = select \"persontable_0\".\"firstName\" as \"firstName\", \"persontable_0\".\"eID\" as \"eID\", \"persontable_0\".\"fID\" as \"fID\", \"persontable_0\".\"legalName\" as \"legalName\" from (select \"persontable_1\".\"firstName\" as \"firstName\", \"persontable_1\".\"eID\" as \"eID\", \"firmtable_0\".\"fID\" as \"fID\", \"firmtable_0\".\"legalName\" as \"legalName\" from (select \"root\".FIRSTNAME as \"firstName\", \"root\".FIRMID as \"eID\" from personTable as \"root\") as \"persontable_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"persontable_1\".\"eID\" = \"firmtable_0\".\"fID\")) as \"persontable_0\"\n'+
+    '  sql = select \"persontable_0\".\"firstName\" as \"firstName\", \"persontable_0\".\"eID\" as \"eID\", \"persontable_0\".\"fID\" as \"fID\", \"persontable_0\".\"legalName\" as \"legalName\" from (select * from (select \"root\".FIRSTNAME as \"firstName\", \"root\".FIRMID as \"eID\" from personTable as \"root\") as \"persontable_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"persontable_1\".\"eID\" = \"firmtable_0\".\"fID\")) as \"persontable_0\"\n'+
     '  connection = TestDatabaseConnection(type = "H2")\n'+
     ')\n', $result->planToString(meta::relational::extension::relationalExtensions()));
 }

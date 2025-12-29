@@ -1006,7 +1006,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   let syntheticColumnName = '"_lhsJoinValid_' + $left.alias->replace('"', '') + '"';
   let syntheticColumn = ^SingleColumn(alias = $syntheticColumnName, expression = ^IntegerLiteral(value = 1));
   let leftWithSyntheticColumn = ^AliasedRelation(relation = ^TableSubquery(query = ^Query(queryBody = ^$leftQS(select = ^$leftSelect(selectItems += $syntheticColumn)))), alias = $left.alias);
-  let leftJoin = ^$qs(from = ^$join(type = JoinType.LEFT));
+  let leftJoin = ^$qs(from = ^$join(left = $leftWithSyntheticColumn, type = JoinType.LEFT));
   let rightJoin = ^$qs(
     from = ^$join(left = $leftWithSyntheticColumn, type = JoinType.RIGHT),
     where = ^LogicalBinaryExpression(
