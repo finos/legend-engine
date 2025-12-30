@@ -20,6 +20,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 
 import java.util.Properties;
@@ -36,12 +37,20 @@ public class OracleManager extends DatabaseManager
     public String buildURL(String host, int port, String serviceName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
         String additionalProperties = "";
+        return "jdbc:oracle:thin:@" + host + ":" + port + "/" + serviceName + additionalProperties;
+    }
+
+    @Override
+    public Properties getExtraDataSourceProperties(AuthenticationStrategy authenticationStrategy, Identity identity)
+    {
+        Properties properties = new Properties();
         if (authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
         {
-            additionalProperties = "?user=" + SubjectTools.getCurrentPrincipal().getName();
+            properties.put("oracle.net.authentication_services", "(KERBEROS5)");
+            properties.put("oracle.net.kerberos5_mutual_authentication", "true");
+            properties.put("oracle.jdbc.user", identity.getName());
         }
-
-        return "jdbc:oracle:thin:@" + host + ":" + port + "/" + serviceName + additionalProperties;
+        return properties;
     }
 
     @Override
