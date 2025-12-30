@@ -91,14 +91,14 @@ public class Test_Relational_Oracle_UnclassifiedFunctions_PCT extends PCTReportC
             pack("meta::pure::functions::string::tests::repeatstring", "java.sql.SQLSyntaxErrorException: ORA-00904: \"REPEAT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsInvestigation),
 
             // right
-            pack("meta::pure::functions::string::tests::right", "java.sql.SQLSyntaxErrorException: ORA-00904: \"RIGHT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+            pack("meta::pure::functions::string::tests::right", "java.sql.SQLSyntaxErrorException: ORA-00904: \"RIGHT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsInvestigation),
 
             // rpad
-            one("meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_", "\"\nexpected: ['abcd']\nactual:   []\""),
-            one("meta::pure::functions::string::tests::rpad::testRpadEmptyString_Function_1__Boolean_1_", "\"\nexpected: ['???']\nactual:   []\""),
+            one("meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_", "\"\nexpected: ['abcd']\nactual:   []\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::rpad::testRpadEmptyString_Function_1__Boolean_1_", "\"\nexpected: ['???']\nactual:   []\"", AdapterQualifier.needsInvestigation),
 
             // split part
-            pack("meta::pure::functions::string::tests::splitPart", "java.sql.SQLSyntaxErrorException: ORA-00904: \"SPLIT_PART\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/")
+            pack("meta::pure::functions::string::tests::splitPart", "java.sql.SQLSyntaxErrorException: ORA-00904: \"SPLIT_PART\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()
