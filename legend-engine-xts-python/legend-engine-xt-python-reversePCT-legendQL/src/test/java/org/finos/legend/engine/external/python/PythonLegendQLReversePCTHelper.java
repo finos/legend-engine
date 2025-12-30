@@ -20,25 +20,18 @@ import junit.framework.TestSuite;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.pure.generated.Root_meta_pure_test_pct_reversePCT_framework_Reverse;
 import org.finos.legend.pure.generated.Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource;
 import org.finos.legend.pure.generated.Root_meta_pure_test_pct_reversePCT_framework_ReversesForTest;
 import org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
-import org.finos.legend.pure.m3.execution.test.TestCollection;
-import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionOneTest;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
-import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
-import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiled;
-import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
-import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
+import org.finos.legend.pure.runtime.java.interpreted.testHelper.PureTestBuilderInterpreted;
 
 import java.util.Enumeration;
 import java.util.Objects;
@@ -51,14 +44,7 @@ public class PythonLegendQLReversePCTHelper
     {
         return wrapSuite(
                 () -> true,
-                () ->
-                {
-                    FunctionExecutionCompiled functionExecutionCompiled = new FunctionExecutionCompiledBuilder().build();
-                    AbstractPureTestWithCoreCompiled.setUpRuntime(functionExecutionCompiled);
-                    CompiledExecutionSupport executionSupport = functionExecutionCompiled.getExecutionSupport();
-                    MutableMap<String, String> explodedExpectedFailures = PCTReportConfiguration.explodeExpectedFailures(expectedFailures, executionSupport.getProcessorSupport());
-                    return PureTestBuilderCompiled.buildPCTTestSuite(TestCollection.buildPCTTestCollection(reportScope._package, reportScope.filePath, executionSupport.getProcessorSupport()), explodedExpectedFailures, adapter.function, executionSupport);
-                },
+                () -> PureTestBuilderInterpreted.buildPCTTestSuite(reportScope, expectedFailures, adapter),
                 () -> false,
                 Lists.mutable.empty()
         );

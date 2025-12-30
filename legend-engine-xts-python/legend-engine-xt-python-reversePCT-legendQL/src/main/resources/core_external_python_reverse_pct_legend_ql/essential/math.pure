@@ -66,7 +66,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         rev('|meta::pure::functions::math::abs(-2.222)', 'abs(c(-2.222))')
       ),
       meta::pure::functions::math::tests::abs::testBigFloatAbs_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::abs(-123456789123456784.0)') // Making it noRev because of float precision mismatch in github runner
+        noRev('|meta::pure::functions::math::abs(-123456789123456789.99)') // Making it noRev because of float precision mismatch in github runner
       ),
       meta::pure::functions::math::tests::abs::testDecimalAbs_Function_1__Boolean_1_->testRev(
         [
@@ -339,7 +339,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
       ),
       meta::pure::functions::math::tests::round::testFloatRoundWithScale_Function_1__Boolean_1_->testRev(
         [
-          revError('|17.3->meta::pure::functions::math::round(0)', 'c(17.3).round(0)', 'class java.lang.Long cannot be cast to class java.lang.Double (java.lang.Long and java.lang.Double are in module java.base of loader \'bootstrap\')', 'pylegend does integer rounding'),
+          revError('|17.3->meta::pure::functions::math::round(0)', 'c(17.3).round(0)', 'cannot be cast to', 'pylegend does integer rounding'),
           rev('|meta::pure::functions::math::round(-17.36, 1)', 'c(-17.36).round(1)')
         ]
       )
