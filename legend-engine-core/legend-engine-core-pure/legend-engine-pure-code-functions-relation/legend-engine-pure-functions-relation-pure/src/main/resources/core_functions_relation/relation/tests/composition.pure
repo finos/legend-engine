@@ -1285,19 +1285,19 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
-// function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_modelOutputNotSupported<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-// {
-//     let expr = {
-//                 | #TDS
-//                   id, payload:meta::pure::metamodel::variant::Variant
-//                   1, "{"name": "Jose"}"
-//                   2, "{"name": "Juan"}"
-//                   3, "{"name": "Pedro"}"
-//                 #->project(~[name: x | $x.payload->to(@meta::pure::functions::relation::tests::composition::Person)])
-//               };
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_modelOutputNotSupported<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, payload:meta::pure::metamodel::variant::Variant
+                  1, "{"name": "Jose"}"
+                  2, "{"name": "Juan"}"
+                  3, "{"name": "Pedro"}"
+                #->project(~[name: x | $x.payload->to(@meta::pure::functions::relation::tests::composition::Person)])
+              };
 
-//    let res =  assertError(|$f->eval($expr), 'Cast exception: Class<Person> cannot be cast to DataType');
-// }
+   let res =  assertError(|$f->eval($expr), 'The type Person is not supported yet!');
+}
 
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
