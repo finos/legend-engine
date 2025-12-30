@@ -17,18 +17,18 @@ package org.finos.legend.engine.authentication.flows;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.OracleDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
-public class OracleStaticWithUserPasswordFlow implements DatabaseAuthenticationFlow<StaticDatasourceSpecification, UserNamePasswordAuthenticationStrategy>
+public class OracleStaticWithUserPasswordFlow implements DatabaseAuthenticationFlow<OracleDatasourceSpecification, UserNamePasswordAuthenticationStrategy>
 {
     @Override
-    public Class<StaticDatasourceSpecification> getDatasourceClass()
+    public Class<OracleDatasourceSpecification> getDatasourceClass()
     {
-        return StaticDatasourceSpecification.class;
+        return OracleDatasourceSpecification.class;
     }
 
     @Override
@@ -44,7 +44,7 @@ public class OracleStaticWithUserPasswordFlow implements DatabaseAuthenticationF
     }
 
     @Override
-    public Credential makeCredential(Identity identity, StaticDatasourceSpecification datasourceSpecification, UserNamePasswordAuthenticationStrategy authStrategy)
+    public Credential makeCredential(Identity identity, OracleDatasourceSpecification datasourceSpecification, UserNamePasswordAuthenticationStrategy authStrategy)
     {
         String userNameVaultKey = authStrategy.baseVaultReference == null ? authStrategy.userNameVaultReference : authStrategy.baseVaultReference + authStrategy.userNameVaultReference;
         String passwordVaultKey = authStrategy.baseVaultReference == null ? authStrategy.passwordVaultReference : authStrategy.baseVaultReference + authStrategy.passwordVaultReference;
