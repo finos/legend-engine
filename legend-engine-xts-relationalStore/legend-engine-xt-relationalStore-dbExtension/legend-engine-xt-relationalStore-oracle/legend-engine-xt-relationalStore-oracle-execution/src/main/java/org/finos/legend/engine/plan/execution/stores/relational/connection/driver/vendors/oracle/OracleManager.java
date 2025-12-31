@@ -44,6 +44,7 @@ public class OracleManager extends DatabaseManager
     public Properties getExtraDataSourceProperties(AuthenticationStrategy authenticationStrategy, Identity identity)
     {
         Properties properties = new Properties();
+        properties.setProperty("oracle.jdbc.jsonDefaultGetObjectType", "oracle.sql.json.OracleJsonValue");
         if (authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
         {
             properties.put("oracle.net.authentication_services", "(KERBEROS5)");

@@ -237,6 +237,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='json(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='cast(%s as date) + cast(case when %s - date_part(\'dow\', %s) >= 0 then %s - date_part(\'dow\', %s) - 7 else %s - date_part(\'dow\', %s) end as integer)', transform={p:String[1..2] | $p->formatMostRecentOracle('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='extract(quarter from %s)')),
