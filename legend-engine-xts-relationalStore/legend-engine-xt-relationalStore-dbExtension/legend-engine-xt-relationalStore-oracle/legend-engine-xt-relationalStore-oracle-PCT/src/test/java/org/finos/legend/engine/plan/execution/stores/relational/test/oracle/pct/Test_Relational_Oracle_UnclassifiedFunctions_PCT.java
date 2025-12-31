@@ -49,11 +49,11 @@ public class Test_Relational_Oracle_UnclassifiedFunctions_PCT extends PCTReportC
 
             // hash
             one("meta::pure::functions::hash::tests::testMD5Hash_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"MD5\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::hash::tests::testSHA1Hash_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"ENCODE\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::hash::tests::testSHA256Hash_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"ENCODE\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::hash::tests::testSHA1Hash_Function_1__Boolean_1_", "Failed to parse input: null", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::hash::tests::testSHA256Hash_Function_1__Boolean_1_", "Failed to parse input: null", AdapterQualifier.needsInvestigation),
 
             // left
-            pack("meta::pure::functions::string::tests::left", "java.sql.SQLSyntaxErrorException: ORA-00904: \"LEFT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::string::tests::left::testLeftEmptyString_Function_1__Boolean_1_", "\"\nexpected: ['']\nactual:   []\""),
 
             // lpad
             one("meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_", "\"\nexpected: ['abcd']\nactual:   []\"", AdapterQualifier.needsInvestigation),
@@ -77,9 +77,6 @@ public class Test_Relational_Oracle_UnclassifiedFunctions_PCT extends PCTReportC
             //toupperfirstcharacter
             one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterEmptyString_Function_1__Boolean_1_", "\"\nexpected: ['']\nactual:   []\"", AdapterQualifier.needsInvestigation),
 
-            //currentUserId
-            one("meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"CURRENT_USER\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsInvestigation),
-
             // regexp
             pack("meta::pure::functions::string::tests::regexpCount", "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
             pack("meta::pure::functions::string::tests::regexpExtract", "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
@@ -91,7 +88,7 @@ public class Test_Relational_Oracle_UnclassifiedFunctions_PCT extends PCTReportC
             pack("meta::pure::functions::string::tests::repeatstring", "java.sql.SQLSyntaxErrorException: ORA-00904: \"REPEAT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsInvestigation),
 
             // right
-            pack("meta::pure::functions::string::tests::right", "java.sql.SQLSyntaxErrorException: ORA-00904: \"RIGHT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::right::testRightEmptyString_Function_1__Boolean_1_", "\"\nexpected: ['']\nactual:   []\""),
 
             // rpad
             one("meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_", "\"\nexpected: ['abcd']\nactual:   []\"", AdapterQualifier.needsInvestigation),
