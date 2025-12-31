@@ -37,6 +37,8 @@ Class meta::relational::tests::mapping::enumeration::model::domain::Employee
     type: EmployeeType[0..1];
     active: YesNo[0..1];
     skills:Skills[*];
+    role : EmployeeRole[0..1];
+    firm : Firm[0..1];
 }
 
 Class meta::relational::tests::mapping::enumeration::model::domain::EmployeeTypeInfo extends Employee
@@ -54,6 +56,18 @@ Class meta::relational::tests::mapping::enumeration::model::domain::EmployeeSkil
 {
     id: Integer[1];
     skills:String[*];
+}
+
+Enum meta::relational::tests::mapping::enumeration::model::domain::EmployeeRole
+{
+    JUNIOR,
+    SENIOR
+}
+
+Enum meta::relational::tests::mapping::enumeration::model::domain::Firm
+{
+    FIRM_A,
+    FIRM_B
 }
 
 Enum meta::relational::tests::mapping::enumeration::model::domain::EmployeeType
@@ -217,6 +231,18 @@ Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeT
         NO: 0
     }
 
+    EmployeeRole: EnumerationMapping EmployeeRoleMapping
+    {
+        JUNIOR : 'J',
+        SENIOR : 'S'
+    }
+
+    Firm: EnumerationMapping FirmMapping
+    {
+        FIRM_A: 'A',
+        FIRM_B: 'B'
+    }
+
     Employee: Relational
     {
         scope([myDB]default.employeeTable)
@@ -225,8 +251,10 @@ Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeT
             name: name,
             dateOfHire: doh,
             type : EnumerationMapping Foo : type,
-            active : EnumerationMapping Active : active
-        )
+            active : EnumerationMapping Active : active,
+            role: EnumerationMapping EmployeeRoleMapping : case(and(equal(type, 'FTE'), equal(active, 1)), 'S', 'J')
+        ),
+        firm: EnumerationMapping FirmMapping : 'A'
     }
 )
 
