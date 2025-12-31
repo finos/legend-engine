@@ -28,6 +28,7 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-oracle-pure</module>
+        <module>legend-engine-xt-relationalStore-oracle-grammar</module>
         <module>legend-engine-xt-relationalStore-oracle-execution</module>
         <module>legend-engine-xt-relationalStore-oracle-protocol</module>
         <module>legend-engine-xt-relationalStore-oracle-PCT</module>

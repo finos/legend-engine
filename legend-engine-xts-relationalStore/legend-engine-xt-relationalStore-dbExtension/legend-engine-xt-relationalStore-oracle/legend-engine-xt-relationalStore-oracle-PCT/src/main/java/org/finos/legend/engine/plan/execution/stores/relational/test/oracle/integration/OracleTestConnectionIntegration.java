@@ -19,7 +19,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.tests
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.OracleDatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultImplementation;
@@ -75,10 +75,10 @@ public class OracleTestConnectionIntegration implements TestConnectionIntegratio
             this.registerVault();
         }
 
-        StaticDatasourceSpecification staticDatasourceSpecification = new StaticDatasourceSpecification();
+        OracleDatasourceSpecification staticDatasourceSpecification = new OracleDatasourceSpecification();
         staticDatasourceSpecification.host = this.oracleContainer.getHost();
         staticDatasourceSpecification.port = this.oracleContainer.getOraclePort();
-        staticDatasourceSpecification.databaseName = this.oracleContainer.getDatabaseName();
+        staticDatasourceSpecification.serviceName = this.oracleContainer.getDatabaseName();
 
         UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
         authSpec.baseVaultReference = "oracle.";
